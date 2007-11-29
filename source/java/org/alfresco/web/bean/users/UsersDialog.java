@@ -112,6 +112,11 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       return this.users;
    }
    
+   public int getUsersSize()
+   {
+      return getUsers().size();
+   }
+   
    public long getUsersTotalUsage()
    {
        long totalUsage = 0L;
@@ -121,7 +126,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
            Long sizeLatest = (Long)properties.getUserUsage((String)user.getProperties().get("userName"));
            if (sizeLatest != null)
            {
-              totalUsage = totalUsage + sizeLatest;
+              totalUsage += sizeLatest;
            }
        }
        return totalUsage;
@@ -136,7 +141,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
            Long sizeCurrent = (Long)user.getProperties().get("sizeQuota");
            if (sizeCurrent != null)
            {
-               totalQuota = totalQuota + sizeCurrent;
+               totalQuota += sizeCurrent;
            }
        }
        return totalQuota;
@@ -366,8 +371,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
    
    public NodePropertyResolver resolverUserSizeLatest = new NodePropertyResolver() {
       public Object get(Node personNode) {
-         Long sizeLatest = (Long)properties.getUserUsage((String)personNode.getProperties().get("userName"));
-         return sizeLatest;
+         return (Long)properties.getUserUsage((String)personNode.getProperties().get("userName"));
       }
    };
    
@@ -397,6 +401,14 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
    {
       return null;
    }
+   
+   public String close()
+   {
+      contextUpdated();
+      
+      return DIALOG_CLOSE;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation

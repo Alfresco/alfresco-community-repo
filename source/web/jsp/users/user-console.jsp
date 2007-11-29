@@ -28,136 +28,97 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<f:verbatim>
-	<table cellspacing=0 cellpadding=3 border=0 width=100%>
-		<tr>
-			<td width="100%" valign="top"><%-- wrapper comment used by the panel to add additional component facets --%>
-			</f:verbatim>
-			<h:panelGroup id="mydetails-panel-facets">
-				<f:facet name="title" >
-					<a:actionLink value="#{msg.modify}" action="dialog:editUserDetails"
-						showLink="false" image="/images/icons/Change_details.gif"
-						rendered="#{NavigationBean.isGuest == false}" />
-				</f:facet>
-			</h:panelGroup> 
-			<a:panel label="#{msg.my_details}"  id="mydetails-panel" 
-				facetsId="dialog:dialog-body:mydetails-panel-facets" border="white" bgcolor="white"
-				titleBorder="lbgrey" expandedTitleBorder="dotted"
-				titleBgcolor="white">
-				<f:verbatim>
-					<table cellspacing=2 cellpadding=2 border=0>
-						<tr>
-							<td class="propertiesLabel"></f:verbatim> <h:outputText
-								value="#{msg.first_name}" /> <f:verbatim>:</td>
-							<td></f:verbatim><h:outputText
-								value="#{UsersBeanProperties.person.properties.firstName}" /><f:verbatim></td>
-						</tr>
-						<tr>
-							<td class="propertiesLabel"></f:verbatim><h:outputText
-								value="#{msg.last_name}" /><f:verbatim>:</td>
-							<td></f:verbatim><h:outputText
-								value="#{UsersBeanProperties.person.properties.lastName}" /><f:verbatim></td>
-						</tr>
-						<tr>
-							<td class="propertiesLabel"></f:verbatim><h:outputText
-								value="#{msg.email}" /><f:verbatim>:</td>
-							<td></f:verbatim><h:outputText
-								value="#{UsersBeanProperties.person.properties.email}" /><f:verbatim></td>
-						</tr>
-					</table>
-					<div style="padding:4px"></div>
-					<%-- context for current user is setup on entry to user console --%>
-				</f:verbatim>
-				<a:actionLink id="change-password" value="#{msg.change_password}"
-					action="dialog:changeMyPassword"
-					image="/images/icons/change_password.gif"
-					rendered="#{NavigationBean.isGuest == false}" />
-			</a:panel><f:verbatim>
+<h:panelGrid columns="1" cellpadding="0" cellspacing="3" width="100%">
+   <h:panelGroup>
+      <h:panelGroup id="mydetails-panel-facets">
+         <f:facet name="title" >
+            <a:actionLink value="#{msg.modify}" action="dialog:editUserDetails"
+                  showLink="false" image="/images/icons/Change_details.gif"
+                  rendered="#{NavigationBean.isGuest == false}" />
+         </f:facet>
+      </h:panelGroup> 
+      <a:panel label="#{msg.my_details}" id="mydetails-panel" 
+            facetsId="dialog:dialog-body:mydetails-panel-facets" border="white" bgcolor="white"
+            titleBorder="lbgrey" expandedTitleBorder="dotted"
+            titleBgcolor="white">
+         <h:panelGrid columns="2" cellpadding="2" cellspacing="2">
+            <h:outputText value="#{msg.first_name}:" styleClass="propertiesLabel" />
+            <h:outputText value="#{UsersBeanProperties.person.properties.firstName}" />
+            
+            <h:outputText value="#{msg.last_name}:" styleClass="propertiesLabel" />
+            <h:outputText value="#{UsersBeanProperties.person.properties.lastName}" />
+            
+            <h:outputText value="#{msg.email}:" styleClass="propertiesLabel" />
+            <h:outputText value="#{UsersBeanProperties.person.properties.email}" />
+         </h:panelGrid>
+         
+         <%-- context for current user is setup on entry to user console --%>
+         <a:actionLink id="change-password" value="#{msg.change_password}"
+               action="dialog:changeMyPassword"
+               image="/images/icons/change_password.gif"
+               rendered="#{NavigationBean.isGuest == false}" />
+      </a:panel>
+   </h:panelGroup>
+   
+   <f:verbatim/>
 
-				<div style="padding:4px"></div>
+   <a:panel label="#{msg.general_pref}" id="pref-panel"
+         rendered="#{NavigationBean.isGuest == false || UserPreferencesBean.allowGuestConfig == true}"
+         border="white" bgcolor="white" titleBorder="lbgrey"
+         expandedTitleBorder="dotted" titleBgcolor="white">
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2">
+         <h:outputText value="#{msg.start_location}:" />
+         <%-- Start Location drop-down selector --%>
+         <h:selectOneMenu
+               id="start-location" value="#{UserPreferencesBean.startLocation}"
+               onchange="document.forms['dialog'].submit(); return true;">
+            <f:selectItems value="#{UserPreferencesBean.startLocations}" />
+         </h:selectOneMenu>
+         
+         <h:outputText value="#{msg.interface_language}:" />
+         <h:selectOneMenu
+               id="language" value="#{UserPreferencesBean.language}"
+               onchange="document.forms['dialog'].submit(); return true;">
+            <f:selectItems value="#{UserPreferencesBean.languages}" />
+         </h:selectOneMenu>
+         
+         <h:outputText value="#{msg.content_language_filter}:" />
+         <%-- Content Language Filter drop-down selector --%>
+         <h:selectOneMenu
+               id="content-filter-language"
+               value="#{UserPreferencesBean.contentFilterLanguage}"
+               onchange="document.forms['dialog'].submit(); return true;">
+            <f:selectItems value="#{UserPreferencesBean.contentFilterLanguages}" />
+         </h:selectOneMenu>
+      </h:panelGrid>
+   </a:panel>
+   
+   <f:verbatim/>
 
-			</f:verbatim><a:panel label="#{msg.general_pref}" id="pref-panel"
-				rendered="#{NavigationBean.isGuest == false || UserPreferencesBean.allowGuestConfig == true}"
-				border="white" bgcolor="white" titleBorder="lbgrey"
-				expandedTitleBorder="dotted" titleBgcolor="white">
-				<f:verbatim>
-					<table cellspacing=2 cellpadding=2 border=0>
-						<tr>
-							<td></f:verbatim><h:outputText value="#{msg.start_location}" /><f:verbatim>:&nbsp;</td>
-							<td><%-- Start Location drop-down selector --%> </f:verbatim><h:selectOneMenu
-								id="start-location" value="#{UserPreferencesBean.startLocation}"
-								onchange="document.forms['dialog'].submit(); return true;">
-								<f:selectItems value="#{UserPreferencesBean.startLocations}" />
-							</h:selectOneMenu><f:verbatim></td>
-						</tr>
-						<tr>
-							<td></f:verbatim><h:outputText value="#{msg.interface_language}" /><f:verbatim>:&nbsp;
-					</td>
-							<td><%-- Interface Language drop-down selector --%> </f:verbatim><h:selectOneMenu
-								id="language" value="#{UserPreferencesBean.language}"
-								onchange="document.forms['dialog'].submit(); return true;">
-								<f:selectItems value="#{UserPreferencesBean.languages}" />
-							</h:selectOneMenu><f:verbatim></td>
-						</tr>
-						<tr>
-							<td></f:verbatim><h:outputText value="#{msg.content_language_filter}" /><f:verbatim>:&nbsp;</td>
-							<td><%-- Content Language Filter drop-down selector --%> </f:verbatim><h:selectOneMenu
-								id="content-filter-language"
-								value="#{UserPreferencesBean.contentFilterLanguage}"
-								onchange="document.forms['dialog'].submit(); return true;">
-								<f:selectItems
-									value="#{UserPreferencesBean.contentFilterLanguages}" />
-							</h:selectOneMenu><f:verbatim></td>
-						</tr>
-					</table>
-				</f:verbatim>
-			</a:panel><f:verbatim>
-
-				<div style="padding:4px"></div>
-
-			</f:verbatim><a:panel label="#{msg.user_management}" id="man-panel"
-				rendered="#{NavigationBean.isGuest == false}" border="white"
-				bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted"
-				titleBgcolor="white">
-				
-				<a:panel id="usage-quota" rendered="#{UsersBeanProperties.usagesEnabled == true}">			
-				<f:verbatim>
-					<table cellspacing=2 cellpadding=2 border=0>
-						<tr>
-							<td class="propertiesLabel"></f:verbatim> <h:outputText
-								value="#{msg.sizeCurrent}" /> <f:verbatim>:
-							</td>
-							<td></f:verbatim><h:outputText value="#{UsersBeanProperties.userUsage}">
-									<a:convertSize />
-								</h:outputText><f:verbatim>
-							</td>
-					    </tr>
-					    <tr>
-							<td class="propertiesLabel"></f:verbatim> <h:outputText
-								value="#{msg.sizeQuota}" /> <f:verbatim>:
-							</td>
-							<td></f:verbatim>
-							    <h:outputText value="#{UsersBeanProperties.userQuota}">
-									<a:convertSize />
-								</h:outputText>
-								<f:verbatim>
-							</td>
-						</tr>
-					</table>
-				</f:verbatim>
-				</a:panel>
-						
-				<f:verbatim>
-					<table cellspacing=2 cellpadding=2 border=0>
-						<tr>
-							<td></f:verbatim><a:actionLink id="manage-deleted-items"
-								value="#{msg.manage_deleted_items}"
-								action="dialog:manageDeletedItems" 
-								image="/images/icons/trashcan.gif" /><f:verbatim></td>
-						</tr>
-					</table>
-				</f:verbatim>
-			</a:panel><f:verbatim></td>
-		</tr>
-	</table>
-</f:verbatim>
+   <a:panel label="#{msg.user_management}" id="man-panel"
+         rendered="#{NavigationBean.isGuest == false}" border="white"
+         bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted"
+         titleBgcolor="white">
+      
+      <a:panel id="usage-quota" rendered="#{UsersBeanProperties.usagesEnabled == true}">        
+         <h:panelGrid columns="2" cellpadding="2" cellspacing="2">
+            <h:outputText value="#{msg.sizeCurrent}:" styleClass="propertiesLabel" />
+            <h:outputText value="#{UsersBeanProperties.userUsage}">
+               <a:convertSize />
+            </h:outputText>
+            
+            <h:outputText value="#{msg.sizeQuota}:" />
+            <h:outputText value="#{UsersBeanProperties.userQuota}">
+               <a:convertSize />
+            </h:outputText>
+         </h:panelGrid>
+      </a:panel>
+      
+      <h:panelGrid columns="2" cellpadding="2" cellspacing="2">
+         <a:actionLink id="manage-deleted-items"
+               value="#{msg.manage_deleted_items}"
+               action="dialog:manageDeletedItems" 
+               image="/images/icons/trashcan.gif" />
+      </h:panelGrid>
+   </a:panel>
+</h:panelGrid>

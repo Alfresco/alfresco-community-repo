@@ -230,7 +230,7 @@
                                  <a:dataPager styleClass="pager" />
                               </a:richList>
                               
-                              <a:panel id="quota-panel" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+                              <a:panel id="quota-panel" rendered="#{UsersDialog.usersSize != 0 && UsersBeanProperties.usagesEnabled == true}">
                                  <table border="0" cellspacing="2" cellpadding="2">
                                     <tr>
                                        <td><h:outputText value="#{msg.quota_totalusage}:" /></td>
@@ -252,7 +252,7 @@
                               <table cellpadding="0" cellspacing="0" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="dialog:close" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="#{UsersDialog.close}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

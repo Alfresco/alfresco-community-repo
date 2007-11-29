@@ -682,6 +682,24 @@
          </properties>
       </aspect>
       
+      <aspect name="cm:taggable">
+         <title>Taggable</title>
+         <parent>cm:classifiable</parent>
+         <properties>
+            <property name="cm:taggable">
+               <title>Tags</title>
+               <type>d:category</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>         
+         </properties>
+      </aspect>
+   
       <aspect name="cm:attachable">
          <title>Attachable</title>
          <associations>

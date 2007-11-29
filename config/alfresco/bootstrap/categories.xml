@@ -1100,9 +1100,21 @@
 
              </cm:category>
 
+               <!-- Tags -->
+               <cm:category>
+                  <view:acl>
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>GROUP_EVERYONE</view:authority>
+                        <view:permission>Contributor</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <cm:name>Tags</cm:name>
+               </cm:category>
+
              </cm:subcategories>
 
              </cm:category>
+
 		</cm:categories>
 	</cm:category_root>
 

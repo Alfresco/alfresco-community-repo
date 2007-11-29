@@ -25,12 +25,15 @@
 package org.alfresco.repo.jscript;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -124,6 +127,26 @@ public final class Classification extends BaseScopableProcessorExtension
         return Context.getCurrentContext().newArray(getScope(), cats);
     }
 
+    /**
+     * Get the category usage count.
+     * 
+     * @param aspect
+     * @param maxCount
+     * @return
+     */
+    public Scriptable getCategoryUsage(String aspect, int maxCount)
+    {
+        List<Pair<NodeRef, Integer>> topCats = services.getCategoryService().getTopCategories(storeRef, createQName(aspect), maxCount);
+        Object[] tags = new Object[topCats.size()];
+        int i = 0;
+        for (Pair<NodeRef, Integer> topCat : topCats)
+        {
+           tags[i++] = new Tag(new CategoryNode(topCat.getFirst(), this.services, getScope()), topCat.getSecond());
+        }
+        
+        return Context.getCurrentContext().newArray(getScope(), tags);
+    }
+
     private Object[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
         Object[] categoryNodes = new Object[cars.size()];
@@ -148,4 +171,33 @@ public final class Classification extends BaseScopableProcessorExtension
         }
         return qname;
     }
+    
+    /**
+     * Tag class returned from getCategoryUsage().
+     * 
+     * @param CategoryNode
+     * @param frequency
+     * @return
+     */
+    public final class Tag
+    {
+        private CategoryNode categoryNode;
+        private int frequency = 0;
+       
+        public Tag(CategoryNode categoryNode, int frequency)
+        {
+            this.categoryNode = categoryNode;
+            this.frequency = frequency;
+        }
+       
+        public CategoryNode getCategory()
+        {
+            return categoryNode;
+        }
+       
+        public int getFrequency()
+        {
+            return frequency;
+        }
+     }
 }

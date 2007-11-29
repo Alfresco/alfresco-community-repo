@@ -158,7 +158,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
      */
     private void addRepoParameters(Map<String, Object> params)
     {
-        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        if (AlfrescoTransactionSupport.getTransactionId() != null && AuthenticationUtil.getCurrentAuthentication() != null)
         {
             NodeRef rootHome = repository.getRootHome();
             if (rootHome != null && permissionService.hasPermission(rootHome, PermissionService.READ).equals(AccessStatus.ALLOWED))

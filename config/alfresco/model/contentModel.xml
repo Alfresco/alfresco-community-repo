@@ -185,15 +185,43 @@
             <property name="cm:presenceUsername">
             	<type>d:text</type>
             </property>
+            <property name="cm:organization">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:jobtitle">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:location">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:persondescription">
+            	<type>d:text</type>
+            </property>
             
+            <!-- system maintained values -->
             <property name="cm:sizeCurrent">
                 <type>d:long</type>
             </property>
             <property name="cm:sizeQuota">
                 <type>d:long</type>
             </property>
-            
          </properties>
+         
+         <associations>
+            <association name="cm:avatar">
+               <source>
+                  <role>cm:avatarOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasAvatar</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
       </type>
 
       <!-- Classification -->

@@ -1,3 +1,4 @@
+<#assign maxRecentDocs = 5>
 <script type="text/javascript" src="${url.context}/scripts/ajax/presence.js"></script>
 
 <div class="presenceTitle">Colleague Status</div>
@@ -25,9 +26,9 @@
 </div>
 
 <div id="recentDocsContainer">
-	<div class="recentDocsTitle">Recently created or modified documents</div>
+	<div class="recentDocsTitle">Recently created or modified documents<#if (maxRecentDocs != -1)><span class="recentDocsTitleExtra">(showing ${maxRecentDocs} max.)</span></#if></div>
 	<div id="recentDocsTable">
-		<table cellspacing="0" cellpadding="3" border="0">
+		<table cellspacing="1" cellpadding="2" border="0">
 		   <tr>
 	   	   <td></td>
 		      <td><b>Name</b></td>
@@ -35,14 +36,17 @@
 	      	<td><b>Modified Date</b></td>
 	   	</tr>
 	<#assign rowNum=0>
-	<#list space.childrenByXPath[".//*[subtypeOf('cm:content')]"] as child>
+	<#list space.childrenByXPath[".//*[subtypeOf('cm:content')]"]?sort_by(['properties','cm:modified'])?reverse as child>
 	   <#if (dateCompare(child.properties["cm:modified"], date, 1000*60*60*24*7) == 1) || (dateCompare(child.properties["cm:created"], date, 1000*60*60*24*7) == 1)>
 	   	<#assign rowNum = rowNum + 1>
+	   	<#if ((maxRecentDocs != -1) && (rowNum > maxRecentDocs))>
+	   		<#break>
+	   	</#if>
 	      <tr class="recentDoc ${(rowNum % 2 = 0)?string("even", "odd")}">
 	         <td><a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" alt="*" border="0"></a></td>
-	         <td><a href="${url.context}${child.url}" target="new">${child.properties.name}</a></td>
-	         <td>${child.properties["cm:created"]?datetime}</td>
-	         <td>${child.properties["cm:modified"]?datetime}</td>
+	         <td>&nbsp;<a href="${url.context}${child.url}" target="new">${child.properties.name}</a>&nbsp;&nbsp;</td>
+	         <td>&nbsp;&nbsp;${child.properties["cm:created"]?datetime}&nbsp;&nbsp;</td>
+	         <td>&nbsp;&nbsp;${child.properties["cm:modified"]?datetime}&nbsp;&nbsp;</td>
 	      </tr>
 	   </#if>
 	</#list>
@@ -116,7 +120,7 @@
 {
 	background-image: url(${url.context}/images/icons/presence_yahoo_offline.png) !important;
 }
-.presenceStatus.unknown
+.presenceStatus.unknown, .presenceStatus.skype-unknown, .presenceStatus.yahoo-unknown
 {
 	background-image: url(${url.context}/images/icons/presence_status_unknown.png) !important;
 }
@@ -138,6 +142,13 @@
 	font-weight: bold;
 	margin: 0px 0px 4px;
 	float: left;
+}
+
+.recentDocsTitleExtra
+{
+   font-size: small;
+   font-style: italic;
+   margin-left: 0.5em;
 }
 
 #recentDocsContainer

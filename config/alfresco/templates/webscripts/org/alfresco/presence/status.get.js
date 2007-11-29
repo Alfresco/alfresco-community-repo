@@ -29,12 +29,12 @@ function parsePermissions(space)
 			tokens = perm.split(";");
 			if (tokens[0] == "ALLOWED")
 			{
-				if (("CollaboratorContributorCoordinatorEditor").indexOf(tokens[2]) != -1)
+				if (("AllCollaboratorContributorCoordinatorEditor").indexOf(tokens[2]) != -1)
 				{
 					user = people.getPerson(tokens[1]);
 					if (user != null)
 					{
-						pushUnique(results, user, presence.getDetails(user));
+						pushUnique(user, presence.getDetails(user));
 					}
 					else
 					{
@@ -43,7 +43,7 @@ function parsePermissions(space)
 						{
 							for each(user in people.getMembers(group))
 							{
-								pushUnique(results, user, presence.getDetails(user));
+								pushUnique(user, presence.getDetails(user));
 							}
 						}
 					}
@@ -56,7 +56,7 @@ function parsePermissions(space)
 	}
 }
 
-function pushUnique(results, user, details)
+function pushUnique(user, details)
 {
 	var provider = String(details).split("|")[0];
 	if (provider == "null")

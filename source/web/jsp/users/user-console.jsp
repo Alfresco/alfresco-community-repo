@@ -41,20 +41,52 @@
             facetsId="dialog:dialog-body:mydetails-panel-facets" border="white" bgcolor="white"
             titleBorder="lbgrey" expandedTitleBorder="dotted"
             titleBgcolor="white">
-         <h:panelGrid columns="2" cellpadding="2" cellspacing="2">
-            <h:outputText value="#{msg.first_name}:" styleClass="propertiesLabel" />
-            <h:outputText value="#{UsersBeanProperties.person.properties.firstName}" />
+         <h:panelGrid columns="2" columnClasses="alignTop,alignTop">
+            <h:panelGrid columns="2" cellpadding="2" cellspacing="2" columnClasses="userPropertyLabel,userPropertyValue">
+               <h:outputText value="#{msg.first_name}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.firstName}" />
+               
+               <h:outputText value="#{msg.last_name}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.lastName}" />
+               
+               <h:outputText value="#{msg.email}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.email}" />
+               
+               <h:outputText value="#{msg.user_description}:" styleClass="propertiesLabel" />
+               <h:panelGroup rendered="#{!empty UsersBeanProperties.personDescription}">
+                  <f:verbatim><div style="border: 1px solid #cccccc;padding:4px"></f:verbatim>
+                     <h:outputText value="#{UsersBeanProperties.personDescription}" escape="false" />
+                  <f:verbatim></div></f:verbatim>
+               </h:panelGroup>
+            </h:panelGrid>
             
-            <h:outputText value="#{msg.last_name}:" styleClass="propertiesLabel" />
-            <h:outputText value="#{UsersBeanProperties.person.properties.lastName}" />
-            
-            <h:outputText value="#{msg.email}:" styleClass="propertiesLabel" />
-            <h:outputText value="#{UsersBeanProperties.person.properties.email}" />
+            <h:panelGrid columns="2" cellpadding="2" cellspacing="2" columnClasses="userPropertyLabel,userPropertyValue">
+               <h:outputText value="#{msg.user_organization}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.organization}" />
+               
+               <h:outputText value="#{msg.user_jobtitle}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.jobtitle}" />
+               
+               <h:outputText value="#{msg.user_location}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.location}" />
+               
+               <h:outputText value="#{msg.user_avatar}:" styleClass="propertiesLabel" />
+               <h:panelGroup>
+                  <h:panelGroup rendered="#{UsersBeanProperties.avatarUrl == null}">
+                     <f:verbatim><div style="border: 2px solid #cccccc;width:120px;height:120px"></f:verbatim>
+                  </h:panelGroup>
+                  <h:panelGroup rendered="#{UsersBeanProperties.avatarUrl != null}">
+                     <f:verbatim><div style="border: 2px solid #cccccc;width:120px;height:auto"></f:verbatim>
+                  </h:panelGroup>
+                  <h:graphicImage url="#{UsersBeanProperties.avatarUrl}" width="120" rendered="#{UsersBeanProperties.avatarUrl != null}" />
+                  <f:verbatim></div></f:verbatim>
+               </h:panelGroup>
+            </h:panelGrid>
          </h:panelGrid>
          
          <%-- context for current user is setup on entry to user console --%>
          <a:actionLink id="change-password" value="#{msg.change_password}"
-               action="dialog:changeMyPassword"
+               action="dialog:changeMyPassword" style="padding-top:6px"
                image="/images/icons/change_password.gif"
                rendered="#{NavigationBean.isGuest == false}" />
       </a:panel>

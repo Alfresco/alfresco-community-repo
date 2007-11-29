@@ -489,6 +489,18 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    vertical-align: top;
 }
 
+.userPropertyLabel
+{
+   vertical-align: top;
+   white-space: nowrap;
+}
+
+.userPropertyValue
+{
+   vertical-align: top;
+   padding-right: 16px;
+}
+
 .summaryPopupPanel
 {
    background-image: url(../images/parts/popup_bg.gif);

@@ -24,13 +24,19 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
+import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
 public class UsersBeanProperties
@@ -256,5 +262,27 @@ public class UsersBeanProperties
     public boolean getUsagesEnabled()
     {
        return this.contentUsageService.getEnabled();
+    }
+    
+    public String getPersonDescription()
+    {
+       String desc = (String)this.person.getProperties().get(ContentModel.PROP_PERSONDESC);
+       return desc != null ? Utils.stripUnsafeHTMLTags(desc).replace("\r\n", "<p>") : null;
+    }
+    
+    public String getAvatarUrl()
+    {
+       String avatarUrl = null;
+       
+       List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.person.getNodeRef(), ContentModel.ASSOC_AVATAR);
+       // remove old association if it exists
+       if (refs.size() == 1)
+       {
+          NodeRef photoRef = refs.get(0).getTargetRef();
+          String name = (String)this.nodeService.getProperty(photoRef, ContentModel.PROP_NAME);
+          avatarUrl = DownloadContentServlet.generateBrowserURL(photoRef, name);
+       }
+       
+       return avatarUrl;
     }
 }

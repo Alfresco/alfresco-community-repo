@@ -355,7 +355,15 @@ public abstract class BaseAjaxItemPicker extends UIInput
       ValueBinding vb = getValueBinding("initialSelection");
       if (vb != null)
       {
-         this.initialSelectionId = (String)vb.getValue(getFacesContext());
+         Object objSelection = vb.getValue(getFacesContext());
+         if (objSelection instanceof NodeRef)
+         {
+             this.initialSelectionId = ((NodeRef)objSelection).toString();
+         }
+         else
+         {
+             this.initialSelectionId = (String)objSelection;
+         }
       }
       
       return this.initialSelectionId;

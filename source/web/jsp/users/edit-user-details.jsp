@@ -60,7 +60,7 @@ function updateButtonState()
    <h:outputText value="&nbsp;#{msg.person_properties}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%">
+<h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%" columnClasses=",alignTop,">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.first_name}:"/>
    <h:inputText id="first-name" value="#{DialogManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
@@ -72,6 +72,31 @@ function updateButtonState()
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.email}"/>
    <h:inputText id="email" value="#{DialogManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.user_organization}:"/>
+   <h:inputText id="organsiation" value="#{DialogManager.bean.personProperties.organization}" size="35" maxlength="1024" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.user_jobtitle}:"/>
+   <h:inputText id="jobtitle" value="#{DialogManager.bean.personProperties.jobtitle}" size="35" maxlength="1024" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.user_location}:"/>
+   <h:inputText id="location" value="#{DialogManager.bean.personProperties.location}" size="35" maxlength="1024" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.user_description}:"/>
+   <h:inputTextarea id="biography" value="#{DialogManager.bean.personProperties.persondescription}" rows="6" cols="60" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.user_avatar}:"/>
+   <r:ajaxFileSelector id="avatar"
+         value="#{DialogManager.bean.personPhotoRef}"
+         label="#{msg.select_avatar_prompt}"
+         initialSelection="#{DialogManager.bean.personProperties.homeFolder}"
+         styleClass="selector" />
+   
 </h:panelGrid>
 
 <f:verbatim>

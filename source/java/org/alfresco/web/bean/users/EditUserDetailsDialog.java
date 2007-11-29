@@ -26,11 +26,14 @@ package org.alfresco.web.bean.users;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -46,6 +49,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
 {
     private Node person;
     protected UsersBeanProperties properties;
+    private NodeRef photoRef;
 
     /**
      * @param properties the properties to set
@@ -68,14 +72,42 @@ public class EditUserDetailsDialog extends BaseDialogBean
         try
         {
             Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
-            props.put(ContentModel.PROP_FIRSTNAME, getFirstName());
-            props.put(ContentModel.PROP_LASTNAME, getLastName());
-            props.put(ContentModel.PROP_EMAIL, getEmail());
+            //props.put(ContentModel.PROP_FIRSTNAME, getFirstName());
+            //props.put(ContentModel.PROP_LASTNAME, getLastName());
+            //props.put(ContentModel.PROP_EMAIL, getEmail());
+            for (String key : getPerson().getProperties().keySet())
+            {
+                props.put(QName.createQName(key), (Serializable)getPerson().getProperties().get(key));
+            }
 
-            // persist changes
-            this.nodeService.setProperties(getPerson().getNodeRef(), props);
+            // crop person description to 1024 chars as HTML TextArea has no limiter 
+            String personDesc = (String)props.get(ContentModel.PROP_PERSONDESC);
+            if (personDesc != null && personDesc.length() > 1024)
+            {
+                personDesc = personDesc.substring(0, 1024);
+                props.put(ContentModel.PROP_PERSONDESC, personDesc);
+            }
 
-            // if the above call was successful, then reset Person Node in the session
+            // persist all property changes
+            NodeRef personRef = getPerson().getNodeRef();
+            this.nodeService.setProperties(personRef, props);
+
+            // setup user avatar association
+            if (this.photoRef != null)
+            {
+                List<AssociationRef> refs = this.nodeService.getTargetAssocs(personRef, ContentModel.ASSOC_AVATAR);
+                // remove old association if it exists
+                if (refs.size() == 1)
+                {
+                    NodeRef existingRef = refs.get(0).getTargetRef();
+                    this.nodeService.removeAssociation(
+                            personRef, existingRef, ContentModel.ASSOC_AVATAR);
+                }
+                // setup new association
+                this.nodeService.createAssociation(personRef, this.photoRef, ContentModel.ASSOC_AVATAR);
+            }
+            
+            // if the above calls were successful, then reset Person Node in the session
             Application.getCurrentUser(context).reset();
         }
         catch (Throwable err)
@@ -121,4 +153,26 @@ public class EditUserDetailsDialog extends BaseDialogBean
         person.getProperties().put(ContentModel.PROP_LASTNAME.toString(), lastName);
     }
 
+    public Map<String, Object> getPersonProperties()
+    {
+        return person.getProperties();
+    }
+    
+    public NodeRef getPersonPhotoRef()
+    {
+        if (this.photoRef == null)
+        {
+            List<AssociationRef> refs = this.nodeService.getTargetAssocs(person.getNodeRef(), ContentModel.ASSOC_AVATAR);
+            if (refs.size() == 1)
+            {
+                this.photoRef = refs.get(0).getTargetRef();
+            }
+        }
+        return this.photoRef;
+    }
+    
+    public void setPersonPhotoRef(NodeRef ref)
+    {
+        this.photoRef = ref;
+    }
 }

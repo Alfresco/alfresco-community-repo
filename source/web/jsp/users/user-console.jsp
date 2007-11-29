@@ -107,7 +107,7 @@
                <a:convertSize />
             </h:outputText>
             
-            <h:outputText value="#{msg.sizeQuota}:" />
+            <h:outputText value="#{msg.sizeQuota}:" styleClass="propertiesLabel" />
             <h:outputText value="#{UsersBeanProperties.userQuota}">
                <a:convertSize />
             </h:outputText>

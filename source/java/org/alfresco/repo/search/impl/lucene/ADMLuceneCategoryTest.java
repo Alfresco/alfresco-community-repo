@@ -668,7 +668,7 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
         assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
         assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
-        assertEquals(6, categoryService.getClassificationAspects().size());
+        assertEquals(7, categoryService.getClassificationAspects().size());
         assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
 
         NodeRef newRoot = categoryService.createRootCategory(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "AssetClass"), "Fruit");
@@ -818,7 +818,7 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
         assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
         assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
-        assertEquals(6, categoryService.getClassificationAspects().size());
+        assertEquals(7, categoryService.getClassificationAspects().size());
         assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
         
         List<Pair<NodeRef, Integer>> top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), 10);

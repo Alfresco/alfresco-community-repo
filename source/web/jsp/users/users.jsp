@@ -204,7 +204,7 @@
                                     <f:facet name="header">
                                        <h:outputText value="#{msg.sizeQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}"/>
                                     </f:facet>
-                                    <h:outputText value="#{r.sizeQuota}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
+                                    <h:outputText value="#{r.quota}" rendered="#{UsersBeanProperties.usagesEnabled == true}">
                               			<a:convertSize />
                            			</h:outputText>
                                  </a:column>
@@ -237,7 +237,7 @@
                                        <td><h:outputText value="#{UsersDialog.usersTotalUsage}"><a:convertSize/></h:outputText></td>
                                     </tr>
                                     <tr>
-                                       <td><h:outputText value="#{msg.quote_totalquota}:" /></td>
+                                       <td><h:outputText value="#{msg.quota_totalquota}:" /></td>
                                        <td><h:outputText value="#{UsersDialog.usersTotalQuota}"><a:convertSize/></h:outputText></td>
                                     </tr>
                                  </table>

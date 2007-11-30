@@ -84,9 +84,16 @@
             </h:panelGrid>
          </h:panelGrid>
          
+         <!-- custom properties for cm:person type -->
+         <f:verbatim><div style="padding-bottom:12px"></f:verbatim>
+         <r:propertySheetGrid id="person-props" value="#{UsersBeanProperties.person}"
+               var="personProps" columns="1" mode="view" labelStyleClass="propertiesLabel"
+               externalConfig="true" />
+         <f:verbatim></div></f:verbatim>
+         
          <%-- context for current user is setup on entry to user console --%>
          <a:actionLink id="change-password" value="#{msg.change_password}"
-               action="dialog:changeMyPassword" style="padding-top:6px"
+               action="dialog:changeMyPassword"
                image="/images/icons/change_password.gif"
                rendered="#{NavigationBean.isGuest == false}" />
       </a:panel>

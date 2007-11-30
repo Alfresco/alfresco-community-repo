@@ -75,7 +75,7 @@ function updateButtonState()
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_organization}:"/>
-   <h:inputText id="organsiation" value="#{DialogManager.bean.personProperties.organization}" size="35" maxlength="1024" />
+   <h:inputText id="organisation" value="#{DialogManager.bean.personProperties.organization}" size="35" maxlength="1024" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_jobtitle}:"/>
@@ -97,6 +97,13 @@ function updateButtonState()
          initialSelection="#{DialogManager.bean.personProperties.homeFolder}"
          styleClass="selector" />
    
+</h:panelGrid>
+
+<h:panelGrid columns="2" cellpadding="2" cellspacing="0" width="100%" style="padding-top:8px">
+   <!-- custom properties for cm:person type -->
+   <f:verbatim/>
+   <r:propertySheetGrid id="person-props" value="#{DialogManager.bean.person}"
+         var="personProps" columns="1" externalConfig="true" />
 </h:panelGrid>
 
 <f:verbatim>

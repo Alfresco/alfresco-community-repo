@@ -79,6 +79,15 @@
    <h:outputText value="#{msg.company_id}:"/>
    <h:inputText value="#{WizardManager.bean.companyId}" size="35" maxlength="1024" />
    
+   <h:outputText value="#{msg.user_organization}:"/>
+   <h:inputText id="organisation" value="#{WizardManager.bean.organization}" size="35" maxlength="1024" />
+   
+   <h:outputText value="#{msg.user_jobtitle}:"/>
+   <h:inputText id="jobtitle" value="#{WizardManager.bean.jobtitle}" size="35" maxlength="1024" />
+   
+   <h:outputText value="#{msg.user_location}:"/>
+   <h:inputText id="location" value="#{WizardManager.bean.location}" size="35" maxlength="1024" />
+   
    <h:outputText value="#{msg.presence_provider}:"/>
    <h:selectOneMenu value="#{WizardManager.bean.presenceProvider}">
 		<f:selectItem itemValue="" itemLabel="(#{msg.none})"/>

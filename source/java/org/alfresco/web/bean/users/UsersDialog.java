@@ -342,6 +342,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
                }
                
                node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
+               node.addPropertyResolver("quota", this.resolverUserQuota);
                
                this.users.add(node);
             }
@@ -375,6 +376,13 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       }
    };
    
+   public NodePropertyResolver resolverUserQuota = new NodePropertyResolver() {
+      public Object get(Node personNode) {
+         Long quota = (Long)personNode.getProperties().get("sizeQuota");
+         return (quota != null && quota != -1L) ? quota : null;
+      }
+   };
+   
    /**
     * Action handler to show all the users currently in the system
     * 
@@ -390,6 +398,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       for (Node node : this.users)
       {
          node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
+         node.addPropertyResolver("quota", this.resolverUserQuota);
       }
       
       // return null to stay on the same page

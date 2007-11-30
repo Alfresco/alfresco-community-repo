@@ -83,6 +83,9 @@ public class CreateUserWizard extends BaseWizardBean
     protected NodeRef homeSpaceLocation = null;
     protected String presenceProvider = null;
     protected String presenceUsername = null;
+    protected String organisation = null;
+    protected String jobtitle = null;
+    protected String location = null;
     
     protected Long sizeQuota = null; // null is also equivalent to -1 (ie. no quota limit set)
     protected String sizeQuotaUnits = null;
@@ -169,6 +172,9 @@ public class CreateUserWizard extends BaseWizardBean
         this.homeSpaceLocation = getDefaultHomeSpace();
         this.presenceProvider = "";
         this.presenceUsername = "";
+        this.organisation = "";
+        this.jobtitle = "";
+        this.location = "";
         
         this.sizeQuota = null;
         this.sizeQuotaUnits = "";
@@ -179,16 +185,39 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public String getSummary()
     {
+        ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
+        
         String homeSpaceLabel = this.homeSpaceName;
         if (this.homeSpaceName.length() == 0 && this.homeSpaceLocation != null)
         {
             homeSpaceLabel = Repository.getNameForNode(this.nodeService, this.homeSpaceLocation);
         }
+        
+        String quotaLabel = "";
+        if (this.sizeQuota != null && this.sizeQuota != -1L)
+        {
+            quotaLabel = Long.toString(this.sizeQuota) + bundle.getString(this.sizeQuotaUnits);
+        }
+        
+        String presenceLabel = "";
+        if (this.presenceProvider != null && this.presenceProvider.length() != 0)
+        {
+            presenceLabel = this.presenceUsername + " (" + presenceProvider + ")";
+        }
 
-        ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-
-        return buildSummary(new String[] { bundle.getString("name"), bundle.getString("username"), bundle.getString("password"), bundle.getString("homespace") }, new String[] {
-                this.firstName + " " + this.lastName, this.userName, "********", homeSpaceLabel });
+        return buildSummary(
+                new String[] {
+                    bundle.getString("name"), bundle.getString("username"),
+                    bundle.getString("password"), bundle.getString("homespace"),
+                    bundle.getString("email"), bundle.getString("user_organization"),
+                    bundle.getString("user_jobtitle"), bundle.getString("user_location"),
+                    bundle.getString("presence_username"), bundle.getString("quota")},
+                new String[] {
+                    this.firstName + " " + this.lastName, this.userName,
+                    "********", homeSpaceLabel,
+                    this.email, this.organisation,
+                    this.jobtitle, this.location,
+                    presenceLabel, quotaLabel});
     }
     
     /**
@@ -377,6 +406,54 @@ public class CreateUserWizard extends BaseWizardBean
         this.confirm = confirm;
     }
     
+    /**
+     * @return the jobtitle
+     */
+    public String getJobtitle()
+    {
+        return this.jobtitle;
+    }
+
+    /**
+     * @param jobtitle the jobtitle to set
+     */
+    public void setJobtitle(String jobtitle)
+    {
+        this.jobtitle = jobtitle;
+    }
+
+    /**
+     * @return the location
+     */
+    public String getLocation()
+    {
+        return this.location;
+    }
+
+    /**
+     * @param location the location to set
+     */
+    public void setLocation(String location)
+    {
+        this.location = location;
+    }
+
+    /**
+     * @return the organisation
+     */
+    public String getOrganization()
+    {
+        return this.organisation;
+    }
+
+    /**
+     * @param organisation the organisation to set
+     */
+    public void setOrganization(String organisation)
+    {
+        this.organisation = organisation;
+    }
+
     public Long getSizeQuota()
     {
        return sizeQuota;
@@ -630,6 +707,9 @@ public class CreateUserWizard extends BaseWizardBean
                 props.put(ContentModel.PROP_HOMEFOLDER, homeSpaceNodeRef);
                 props.put(ContentModel.PROP_EMAIL, this.email);
                 props.put(ContentModel.PROP_ORGID, this.companyId);
+                props.put(ContentModel.PROP_ORGANIZATION, this.organisation);
+                props.put(ContentModel.PROP_JOBTITLE, this.jobtitle);
+                props.put(ContentModel.PROP_LOCATION, this.location);
                 props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
                 props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
 

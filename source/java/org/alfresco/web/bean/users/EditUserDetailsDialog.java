@@ -118,7 +118,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
         return outcome;
     }
 
-    private Node getPerson()
+    public Node getPerson()
     {
         return person;
     }

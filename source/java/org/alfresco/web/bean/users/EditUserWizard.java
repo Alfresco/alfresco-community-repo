@@ -71,9 +71,16 @@ public class EditUserWizard extends CreateUserWizard
         this.userName = (String) props.get("userName");
         this.email = (String) props.get("email");
         this.companyId = (String) props.get("organizationId");
+        this.organisation = (String) props.get("organization");
+        this.jobtitle = (String) props.get("jobtitle");
+        this.location = (String) props.get("location");
         this.presenceProvider = (String) props.get("presenceProvider");
         this.presenceUsername = (String) props.get("presenceUsername");
         this.sizeQuota = (Long) props.get("sizeQuota");
+        if (this.sizeQuota != null && this.sizeQuota == -1L)
+        {
+            this.sizeQuota = null;
+        }
         
         if (this.sizeQuota != null)
         {
@@ -188,6 +195,9 @@ public class EditUserWizard extends CreateUserWizard
             props.put(ContentModel.PROP_HOMEFOLDER, newHomeFolderRef);
             props.put(ContentModel.PROP_EMAIL, this.email);
             props.put(ContentModel.PROP_ORGID, this.companyId);
+            props.put(ContentModel.PROP_ORGANIZATION, this.organisation);
+            props.put(ContentModel.PROP_JOBTITLE, this.jobtitle);
+            props.put(ContentModel.PROP_LOCATION, this.location);
             props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
             props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
             this.nodeService.setProperties(nodeRef, props);

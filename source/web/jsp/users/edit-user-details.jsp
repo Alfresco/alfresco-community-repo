@@ -87,7 +87,7 @@ function updateButtonState()
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_description}:"/>
-   <h:inputTextarea id="biography" value="#{DialogManager.bean.personProperties.persondescription}" rows="6" cols="60" />
+   <h:inputTextarea id="biography" value="#{DialogManager.bean.personDescription}" rows="6" cols="60" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_avatar}:"/>

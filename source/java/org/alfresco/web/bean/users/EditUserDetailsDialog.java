@@ -32,7 +32,12 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
@@ -50,6 +55,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
     private Node person;
     protected UsersBeanProperties properties;
     private NodeRef photoRef;
+    private String personDescription;
 
     /**
      * @param properties the properties to set
@@ -63,7 +69,9 @@ public class EditUserDetailsDialog extends BaseDialogBean
     public void init(Map<String, String> parameters)
     {
         super.init(parameters);
-        person = properties.getPerson();
+        this.person = this.properties.getPerson();
+        this.photoRef = null;
+        this.personDescription = null;
     }
 
     @Override
@@ -77,17 +85,18 @@ public class EditUserDetailsDialog extends BaseDialogBean
                 props.put(QName.createQName(key), (Serializable)getPerson().getProperties().get(key));
             }
 
-            // crop person description to 1024 chars as HTML TextArea has no limiter 
-            String personDesc = (String)props.get(ContentModel.PROP_PERSONDESC);
-            if (personDesc != null && personDesc.length() > 1024)
-            {
-                personDesc = personDesc.substring(0, 1024);
-                props.put(ContentModel.PROP_PERSONDESC, personDesc);
-            }
-
             // persist all property changes
             NodeRef personRef = getPerson().getNodeRef();
             this.nodeService.setProperties(personRef, props);
+            
+            // save person description content field
+            if (this.personDescription != null)
+            {
+                ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+                ContentWriter writer = cs.getWriter(personRef, ContentModel.PROP_PERSONDESC, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
+                writer.putContent(this.personDescription);
+            }
 
             // setup user avatar association
             if (this.photoRef != null)
@@ -143,6 +152,25 @@ public class EditUserDetailsDialog extends BaseDialogBean
     public String getLastName()
     {
         return person.getProperties().get(ContentModel.PROP_LASTNAME).toString();
+    }
+    
+    public String getPersonDescription()
+    {
+        if (personDescription == null)
+        {
+            ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+            ContentReader reader = cs.getReader(this.person.getNodeRef(), ContentModel.PROP_PERSONDESC);
+            if (reader != null && reader.exists())
+            {
+                personDescription = reader.getContentString();
+            }
+        }
+        return personDescription;
+    }
+    
+    public void setPersonDescription(String s)
+    {
+        this.personDescription = s;
     }
 
     public void setLastName(String lastName)

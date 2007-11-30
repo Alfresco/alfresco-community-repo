@@ -26,8 +26,12 @@ package org.alfresco.web.bean.users;
 
 import java.util.List;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -36,6 +40,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
@@ -266,8 +271,16 @@ public class UsersBeanProperties
     
     public String getPersonDescription()
     {
-       String desc = (String)this.person.getProperties().get(ContentModel.PROP_PERSONDESC);
-       return desc != null ? Utils.stripUnsafeHTMLTags(desc).replace("\r\n", "<p>") : null;
+       ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+       ContentReader reader = cs.getReader(this.person.getNodeRef(), ContentModel.PROP_PERSONDESC);
+       if (reader != null && reader.exists())
+       {
+           return Utils.stripUnsafeHTMLTags(reader.getContentString()).replace("\r\n", "<p>");
+       }
+       else
+       {
+           return null;
+       }
     }
     
     public String getAvatarUrl()

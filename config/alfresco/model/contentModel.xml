@@ -195,7 +195,7 @@
             	<type>d:text</type>
             </property>
             <property name="cm:persondescription">
-            	<type>d:text</type>
+            	<type>d:content</type>
             </property>
             
             <!-- system maintained values -->

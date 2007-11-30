@@ -275,7 +275,6 @@ public class UsersBeanProperties
        String avatarUrl = null;
        
        List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.person.getNodeRef(), ContentModel.ASSOC_AVATAR);
-       // remove old association if it exists
        if (refs.size() == 1)
        {
           NodeRef photoRef = refs.get(0).getTargetRef();

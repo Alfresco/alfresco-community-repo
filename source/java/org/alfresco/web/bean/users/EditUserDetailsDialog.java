@@ -72,9 +72,6 @@ public class EditUserDetailsDialog extends BaseDialogBean
         try
         {
             Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
-            //props.put(ContentModel.PROP_FIRSTNAME, getFirstName());
-            //props.put(ContentModel.PROP_LASTNAME, getLastName());
-            //props.put(ContentModel.PROP_EMAIL, getEmail());
             for (String key : getPerson().getProperties().keySet())
             {
                 props.put(QName.createQName(key), (Serializable)getPerson().getProperties().get(key));

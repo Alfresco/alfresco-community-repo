@@ -634,7 +634,7 @@ public class ADMLuceneCategoryTest extends TestCase
       
         
         Collection<QName> aspects = impl.getClassificationAspects();
-        assertEquals(6, aspects.size());    
+        assertEquals(7, aspects.size());    
        
         tx.rollback();
     }

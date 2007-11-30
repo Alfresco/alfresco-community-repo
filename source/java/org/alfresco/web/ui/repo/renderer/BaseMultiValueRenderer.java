@@ -120,7 +120,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
          UIMultiValueEditor editor = (UIMultiValueEditor)component;
          
          // start outer table
-         out.write("<table border='0' cellspacing='3' cellpadding='3' class='selector'");
+         out.write("<table border='0' cellspacing='3' cellpadding='3'");
          this.outputAttribute(out, attrs.get("style"), "style");
          this.outputAttribute(out, attrs.get("styleClass"), "class");
          out.write(">");

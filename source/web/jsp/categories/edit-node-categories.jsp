@@ -42,7 +42,7 @@
                                selectItemMsg="#{msg.select_category}"
                                selectedItemsMsg="#{msg.selected_categories}"
                                noSelectedItemsMsg="#{msg.no_selected_categories}"
-                               styleClass="selector">
+                               styleClass="multiValueSelector">
             <f:subview id="categorySelector">
                <r:ajaxCategorySelector id="catSelector" styleClass="selector"
                         value="#{DialogManager.bean.addedCategory}" 

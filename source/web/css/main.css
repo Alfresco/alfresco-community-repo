@@ -418,6 +418,12 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
    color: #93a8b2;
 }
 
+.multiValueSelector
+{
+   border: 1px dashed #cccccc;
+   padding: 4px;
+}
+
 .selector
 {
    border: 1px dashed #cccccc;

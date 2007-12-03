@@ -109,9 +109,12 @@ public final class Classification extends BaseScopableProcessorExtension
      * @param aspect
      * @param name
      */
-    public void createRootCategory(String aspect, String name)
+    public CategoryNode createRootCategory(String aspect, String name)
     {
-        services.getCategoryService().createRootCategory(storeRef, createQName(aspect), name);
+        NodeRef categoryNodeRef = services.getCategoryService().createRootCategory(storeRef, createQName(aspect), name);
+        CategoryNode categoryNode = new CategoryNode(categoryNodeRef, this.services, getScope());
+
+        return categoryNode;
     }
 
     /**

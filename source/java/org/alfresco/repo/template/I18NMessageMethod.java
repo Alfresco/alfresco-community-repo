@@ -49,15 +49,41 @@ public class I18NMessageMethod extends BaseTemplateProcessorExtension implements
     public Object exec(List args) throws TemplateModelException
     {
         String result = "";
-        
-        if (args.size() == 1)
+        int argSize = args.size();
+
+        if (argSize > 0)
         {
-            Object arg0 = args.get(0);
-            if (arg0 instanceof TemplateScalarModel)
-            {
-                String id = ((TemplateScalarModel)arg0).getAsString();
+           String id = "";
+           Object arg0 = args.get(0);
+           if (arg0 instanceof TemplateScalarModel)
+           {
+               id = ((TemplateScalarModel)arg0).getAsString();
+           }
+
+           if (argSize == 1)
+           {
+              // Shortcut for no additional params
                 result = I18NUtil.getMessage(id);
-            }
+           }
+           else
+           {
+              Object arg;
+              Object[] params = new Object[argSize - 1];
+              for (int i = 0; i < argSize-1; i++)
+              {
+                 // Note: need to ignore first passed-in arg
+                 arg = args.get(i+1);
+                 if (arg instanceof TemplateScalarModel)
+                 {
+                     params[i] = ((TemplateScalarModel)arg).getAsString();
+                 }
+                 else
+                 {
+                    params[i] = new String("");
+                 }
+              }
+              result = I18NUtil.getMessage(id, params);
+           }
         }
         
         return result;

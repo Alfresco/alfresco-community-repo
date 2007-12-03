@@ -25,6 +25,7 @@
 package org.alfresco.repo.usage;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -35,7 +36,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.usage.ContentUsageService;
@@ -64,8 +64,7 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private boolean enabled = true;
     
-    public static final StoreRef SPACES_STOREREF = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-    
+    private List<String> stores;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -91,7 +90,16 @@ public class ContentUsageImpl implements ContentUsageService,
     {
         this.enabled = enabled;
     }
+
+    public void setStores(List<String> stores)
+    {
+        this.stores = stores;
+    }
     
+    public List<String> getStores()
+    {
+        return this.stores;
+    }
     
     /**
      * The initialise method     
@@ -129,7 +137,7 @@ public class ContentUsageImpl implements ContentUsageService,
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeRef.getStoreRef().equals(SPACES_STOREREF))
+        if (stores.contains(nodeRef.getStoreRef().toString()))
         {
             // Get content size
             
@@ -165,7 +173,7 @@ public class ContentUsageImpl implements ContentUsageService,
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (nodeRef.getStoreRef().equals(SPACES_STOREREF))
+        if (stores.contains(nodeRef.getStoreRef().toString()))
         {
             // Check for change in content size
             
@@ -258,7 +266,7 @@ public class ContentUsageImpl implements ContentUsageService,
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {   
-        if (nodeRef.getStoreRef().equals(SPACES_STOREREF))
+        if (stores.contains(nodeRef.getStoreRef().toString()))
         {
             // TODO use data dictionary to get content property
             ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);

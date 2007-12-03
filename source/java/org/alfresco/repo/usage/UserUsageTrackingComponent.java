@@ -26,11 +26,13 @@ package org.alfresco.repo.usage;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -201,52 +203,56 @@ public class UserUsageTrackingComponent
                 else
                 {
                     // Collapse usage deltas (if a person has initial usage set)
-                    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                    final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
                     
-                    // wrap to make the request in a transaction
-                    RetryingTransactionCallback<Object> collapseUsages = new RetryingTransactionCallback<Object>()
+                    // wrap to make the request in a transaction and run as System user
+                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                     {
-                        public Object execute() throws Throwable
+                        public Object doWork() throws Exception
                         {
-                            // Get distinct candidates
-                            Set<NodeRef> usageNodeRefs = usageService.getUsageDeltaNodes();
-                            
-                            for(NodeRef usageNodeRef : usageNodeRefs)
-                            {                            
-                                QName nodeType = nodeService.getType(usageNodeRef);
-                                
-                                if (nodeType.equals(ContentModel.TYPE_PERSON))
+                            return txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+                            {
+                                public Object execute() throws Throwable
                                 {
-                                    NodeRef personNodeRef = usageNodeRef;
-                                    String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                                    // Get distinct candidates
+                                    Set<NodeRef> usageNodeRefs = usageService.getUsageDeltaNodes();
                                     
-                                    long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
-                                    if (currentUsage != -1)
-                                    {
-                                        // collapse the usage deltas
-                                        currentUsage = contentUsageImpl.getUserUsage(userName);                                 
-                                        usageService.deleteDeltas(personNodeRef);
-                                        contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
+                                    for(NodeRef usageNodeRef : usageNodeRefs)
+                                    {                            
+                                        QName nodeType = nodeService.getType(usageNodeRef);
                                         
-                                        if (logger.isDebugEnabled()) 
+                                        if (nodeType.equals(ContentModel.TYPE_PERSON))
                                         {
-                                            logger.debug("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
+                                            NodeRef personNodeRef = usageNodeRef;
+                                            String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                                            
+                                            long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
+                                            if (currentUsage != -1)
+                                            {
+                                                // collapse the usage deltas
+                                                currentUsage = contentUsageImpl.getUserUsage(userName);                                 
+                                                usageService.deleteDeltas(personNodeRef);
+                                                contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
+                                                
+                                                if (logger.isDebugEnabled()) 
+                                                {
+                                                    logger.debug("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (logger.isWarnEnabled())
+                                                {
+                                                    logger.warn("Initial usage for user has not yet been calculated: " + userName);
+                                                }
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        if (logger.isWarnEnabled())
-                                        {
-                                            logger.warn("Initial usage for user has not yet been calculated: " + userName);
-                                        }
-                                    }
+                                    }  
+                                    return null;
                                 }
-                            }  
-                            return null;
+                            });
                         }
-                    };
-                    
-                    txnHelper.doInTransaction(collapseUsages, false);
+                    }, AuthenticationUtil.getSystemUserName());
                 }
             }
         }
@@ -265,45 +271,50 @@ public class UserUsageTrackingComponent
      */
     public void recalculateUsage(final String userName)
     { 
-        final StoreRef storeRef = ContentUsageImpl.SPACES_STOREREF;
-        
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         
         // wrap to make the request in a transaction
         RetryingTransactionCallback<Long> calculatePersonCurrentUsage = new RetryingTransactionCallback<Long>()
         {
             public Long execute() throws Throwable
             {
-                // get nodes for which user is owner
-                Collection<Node> ownerNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_OWNER, userName);
-                
+                List<String> stores = contentUsageImpl.getStores();
                 long totalUsage = 0;
-                for (Node ownerNode : ownerNodes)
+                
+                for (String store : stores)
                 {
-                    if (ownerNode.getTypeQName().equals(ContentModel.TYPE_CONTENT))
+                    StoreRef storeRef = new StoreRef(store);
+                    
+                    // get nodes for which user is owner
+                    Collection<Node> ownerNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_OWNER, userName);
+                    
+                    for (Node ownerNode : ownerNodes)
                     {
-                        ContentData contentData = ContentData.createContentProperty(ownerNode.getProperties().get(ContentModel.PROP_CONTENT).getStringValue());
-                        totalUsage = totalUsage + contentData.getSize();
+                        if (ownerNode.getTypeQName().equals(ContentModel.TYPE_CONTENT))
+                        {
+                            ContentData contentData = ContentData.createContentProperty(ownerNode.getProperties().get(ContentModel.PROP_CONTENT).getStringValue());
+                            totalUsage = totalUsage + contentData.getSize();
+                        }
                     }
-                }
-                
-                // get nodes for which user is creator, and then filter out those that have an owner
-                Collection<Node> creatorNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_CREATOR, userName);
-                
-                for (Node creatorNode : creatorNodes)
-                {
-                    if (creatorNode.getTypeQName().equals(ContentModel.TYPE_CONTENT) &&
-                        creatorNode.getProperties().get(ContentModel.PROP_OWNER) == null)
+                    
+                    // get nodes for which user is creator, and then filter out those that have an owner
+                    Collection<Node> creatorNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_CREATOR, userName);
+                    
+                    for (Node creatorNode : creatorNodes)
                     {
-                        ContentData contentData = ContentData.createContentProperty(creatorNode.getProperties().get(ContentModel.PROP_CONTENT).getStringValue());
-                        totalUsage = totalUsage + contentData.getSize();
+                        if (creatorNode.getTypeQName().equals(ContentModel.TYPE_CONTENT) &&
+                            creatorNode.getProperties().get(ContentModel.PROP_OWNER) == null)
+                        {
+                            ContentData contentData = ContentData.createContentProperty(creatorNode.getProperties().get(ContentModel.PROP_CONTENT).getStringValue());
+                            totalUsage = totalUsage + contentData.getSize();
+                        }
+                    }                   
+                    
+                    if (logger.isDebugEnabled()) 
+                    {
+                        long quotaSize = contentUsageImpl.getUserQuota(userName);
+                        logger.debug("Recalc usage ("+ userName+") totalUsage="+totalUsage+", quota="+quotaSize);
                     }
-                }                   
-                
-                if (logger.isDebugEnabled()) 
-                {
-                    long quotaSize = contentUsageImpl.getUserQuota(userName);
-                    logger.debug("Recalc usage ("+ userName+") totalUsage="+totalUsage+", quota="+quotaSize);
                 }
                 		
                 return totalUsage;
@@ -312,17 +323,22 @@ public class UserUsageTrackingComponent
         // execute in READ-ONLY txn
         final Long currentUsage = txnHelper.doInTransaction(calculatePersonCurrentUsage, true);
         
-        // wrap to make the request in a transaction
-        RetryingTransactionCallback<Object> setUserCurrentUsage = new RetryingTransactionCallback<Object>()
+        // wrap to make the request in a transaction and run as System user
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object execute() throws Throwable
+            public Object doWork() throws Exception
             {
-                NodeRef personNodeRef = personService.getPerson(userName);
-                contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
-                usageService.deleteDeltas(personNodeRef);
-                return null;
+                return txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        NodeRef personNodeRef = personService.getPerson(userName);
+                        contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
+                        usageService.deleteDeltas(personNodeRef);
+                        return null;
+                    }
+                });
             }
-        };
-        txnHelper.doInTransaction(setUserCurrentUsage, false);           
+        }, AuthenticationUtil.getSystemUserName());
     }
 }

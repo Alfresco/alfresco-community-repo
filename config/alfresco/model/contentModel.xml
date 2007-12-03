@@ -201,9 +201,11 @@
             <!-- system maintained values -->
             <property name="cm:sizeCurrent">
                 <type>d:long</type>
+                <protected>true</protected>
             </property>
             <property name="cm:sizeQuota">
                 <type>d:long</type>
+                <protected>true</protected>
             </property>
          </properties>
          

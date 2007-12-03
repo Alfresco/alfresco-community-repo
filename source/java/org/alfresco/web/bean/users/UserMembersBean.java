@@ -346,6 +346,7 @@ public abstract class UserMembersBean implements IContextListener
                   props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
                   props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);
+                  props.put("isGroup", Boolean.FALSE);
                   
                   personNodes.add(node);
                }
@@ -366,6 +367,7 @@ public abstract class UserMembersBean implements IContextListener
                node.put("id", authority);
                node.put("roles", roleListToString(context, permissionMap.get(authority)));
                node.put("icon", WebResources.IMAGE_GROUP);
+               node.put("isGroup", Boolean.TRUE);
                personNodes.add(node);
             }
          }

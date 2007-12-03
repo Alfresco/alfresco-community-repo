@@ -4989,12 +4989,25 @@
    </managed-bean>
 
    <managed-bean>
-      <description>The bean for Change Users Password Screen.</description>
+      <description>The bean for Users Profile and Settings screen.</description>
       <managed-bean-name>UserConsoleDialog</managed-bean-name>
       <managed-bean-class>
          org.alfresco.web.bean.users.UserConsoleDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>The bean for a User Profile.</description>
+      <managed-bean-name>UserProfileDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.users.UserProfileDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>properties</property-name>
+         <value>#{UsersBeanProperties}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

@@ -438,6 +438,10 @@
                  icon="/images/icons/user_console_large.gif" title-id="user_console_info"
                  description-id="user_console_description" show-ok-button="false"/>
          
+         <dialog name="userProfile" page="/jsp/users/user-profile.jsp" managed-bean="UserProfileDialog"
+                 icon="/images/icons/user_console_large.gif" title-id="user_profile"
+                 show-ok-button="false"/>
+         
          <dialog name="recoveryReport" page="/jsp/trashcan/recovery-report.jsp" managed-bean="TrashcanRecoveryReportDialog"
                  icon="/images/icons/recover_all_large.gif" title-id="recovery_report"
                  description-id="recovery_report_info" show-ok-button="false" />

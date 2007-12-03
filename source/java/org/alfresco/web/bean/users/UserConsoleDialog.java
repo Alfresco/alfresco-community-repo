@@ -31,8 +31,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class UserConsoleDialog extends BaseDialogBean
 {
-
-    private static final String BUTTON_CLOSE = "close";
+    private static final String MSG_CLOSE = "close";
 
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
@@ -43,7 +42,7 @@ public class UserConsoleDialog extends BaseDialogBean
     @Override
     public String getCancelButtonLabel()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_CLOSE);
+        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
     }
 
     @Override

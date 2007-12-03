@@ -136,7 +136,10 @@
                                     <f:facet name="small-icon">
                                        <h:graphicImage url="#{r.icon}" />
                                     </f:facet>
-                                    <h:outputText value="#{r.fullName}" />
+                                    <a:actionLink id="user-link" value="#{r.fullName}" actionListener="#{UsersDialog.setupUserAction}" action="dialog:userProfile" rendered="#{!r.isGroup}">
+                                       <f:param name="id" value="#{r.id}" />
+                                    </a:actionLink>
+                                    <h:outputText id="user-txt" value="#{r.fullName}" rendered="#{r.isGroup}" />
                                  </a:column>
                                  
                                  <%-- Username column --%>

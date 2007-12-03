@@ -34,7 +34,7 @@
 
 <r:page titleId="title_deleted_items">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
 
    window.onload = pageLoaded;
    

@@ -29,7 +29,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script type="text/javascript">
 window.onload = pageLoaded;
 
 function pageLoaded()

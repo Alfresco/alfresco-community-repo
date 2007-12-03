@@ -34,7 +34,7 @@
 
 <r:page titleId="title_condition_contains_text">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
    function checkButtonState(inputField)
    {
       var disabled = (inputField.value.length == 0);

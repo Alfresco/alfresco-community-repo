@@ -36,7 +36,7 @@
 
 <r:page titleId="title_category_browse">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
    function applySizeSpaces(e)
    {
       return applySize(e, 'spaces-apply');

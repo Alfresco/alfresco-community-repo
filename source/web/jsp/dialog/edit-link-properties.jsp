@@ -29,7 +29,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script type="text/javascript">
 function checkButtonState()
 {
 if (document.getElementById("dialog:dialog-body:file-name").value.length == 0)

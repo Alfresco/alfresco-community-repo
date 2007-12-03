@@ -34,7 +34,7 @@
 
 <r:page titleId="title_advanced_search">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
 
    window.onload = pageLoaded;
    

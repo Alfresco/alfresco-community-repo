@@ -32,7 +32,7 @@
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script type="text/javascript">
    window.onload = pageLoaded;
    
    function pageLoaded()

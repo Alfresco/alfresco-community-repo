@@ -29,7 +29,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script>
 
 window.onload = pageLoaded;
 
@@ -105,9 +105,3 @@ function updateButtonState()
    <r:propertySheetGrid id="person-props" value="#{DialogManager.bean.person}"
          var="personProps" columns="1" externalConfig="true" />
 </h:panelGrid>
-
-<f:verbatim>
-<script>
-   updateButtonState();
-</script>
-</f:verbatim>

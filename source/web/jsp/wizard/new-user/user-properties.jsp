@@ -34,7 +34,7 @@
 
 <r:page titleId="title_new_user_user_props">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
 
    window.onload = pageLoaded;
    
@@ -289,9 +289,5 @@
     </h:form>
     
 </f:view>
-
-<script>
-   updateButtonState();
-</script>
 
 </r:page>

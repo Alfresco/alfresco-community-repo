@@ -29,7 +29,7 @@
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script type="text/javascript">
 
    window.onload = pageLoaded;
    
@@ -83,8 +83,4 @@
             &nbsp;</f:verbatim><h:message id="errors2" for="confirm" style="color:red" /><f:verbatim></td>
    </tr>
 </table>
-
-<script>
-   updateButtonState();
-</script>
 </f:verbatim>

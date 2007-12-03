@@ -26,7 +26,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 
 <f:verbatim>
-<script language="JavaScript1.2">
+<script type="text/javascript">
 	window.onload = pageLoaded;
 
 	function pageLoaded()

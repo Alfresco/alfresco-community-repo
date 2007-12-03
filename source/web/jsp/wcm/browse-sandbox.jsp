@@ -35,7 +35,7 @@
 
 <r:page titleId="title_browse_sandbox">
 
-<script language="JavaScript1.2">
+<script type="text/javascript">
    function applySizeFolders(e)
    {
       return applySize(e, 'folders-apply');

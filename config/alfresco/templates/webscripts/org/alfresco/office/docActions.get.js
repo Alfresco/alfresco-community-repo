@@ -8,19 +8,19 @@ var resultString = "Action failed",
    resultCode = false;
 
 // Is this action targetting a document?
-var docId = args.d;
-if ((docId != "") && (docId != null))
+var nodeId = args.n;
+if ((nodeId != "") && (nodeId != null))
 {
-   var doc = search.findNode("workspace://SpacesStore/" + docId);
+   var node = search.findNode("workspace://SpacesStore/" + nodeId);
 
-   if (doc != null && doc.isDocument)
+   if (node != null && node.isDocument)
    {
       try
       {
          if (runAction == "makepdf")
          {
             resultString = "Could not convert document";
-            var nodeTrans = doc.transformDocument("application/pdf");
+            var nodeTrans = node.transformDocument("application/pdf");
             if (nodeTrans != null)
             {
                resultString = "Document converted";
@@ -30,7 +30,7 @@ if ((docId != "") && (docId != null))
          else if (runAction == "delete")
          {
             resultString = "Could not delete document";
-            if (doc.remove())
+            if (node.remove())
             {
                resultString = "Document deleted";
                resultCode = true;
@@ -38,7 +38,7 @@ if ((docId != "") && (docId != null))
          }
          else if (runAction == "checkout")
          {
-            var workingCopy = doc.checkout();
+            var workingCopy = node.checkout();
             if (workingCopy != null)
             {
                resultString = "Document checked out";
@@ -47,7 +47,7 @@ if ((docId != "") && (docId != null))
          }
          else if (runAction == "checkin")
          {
-            var originalDoc = doc.checkin();
+            var originalDoc = node.checkin();
             if (originalDoc != null)
             {
                resultString = "Document checked in";
@@ -57,7 +57,7 @@ if ((docId != "") && (docId != null))
          else if (runAction == "makeversion")
          {
             resultString = "Could not version document";
-            if (doc.addAspect("cm:versionable"))
+            if (node.addAspect("cm:versionable"))
             {
                resultString = "Document versioned";
                resultCode = true;
@@ -78,7 +78,7 @@ if ((docId != "") && (docId != null))
             {
                workflow.parameters["bpm:workflowDueDate"] = dueDate;
             } 
-            workflow.execute(doc);
+            workflow.execute(node);
             resultString = "New workflow started";
             resultCode = true;
          }

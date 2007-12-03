@@ -61,13 +61,13 @@
          <#if res.isLocked >
                <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
          <#elseif hasAspect(res, "cm:workingcopy") == 1>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkin','${res.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkin','${res.id}');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
          <#else>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
          </#if>
                <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
          <#if !res.name?ends_with(".pdf")>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
          </#if>
             </td>
       <#else>

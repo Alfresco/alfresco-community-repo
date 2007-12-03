@@ -10,7 +10,7 @@
    top: -2px;
 }
 
-.containerBig, .containerMedium, .containerSmall, .containerSearchResults, #currentSpaceInfo, #documentActions, #documentActionsNavigation {
+.containerBig, .containerBigAlt, .containerMedium, .containerSmall, .containerSearchTerms, .containerSearchResults, .containerTabMedium, #currentSpaceInfo, #myAlfrescoActions, #navigationActions, #documentActions {
    margin: 0px 4px 0px 1px;
 }
 

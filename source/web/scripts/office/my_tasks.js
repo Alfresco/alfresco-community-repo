@@ -113,8 +113,7 @@ var OfficeMyTasks =
                      OfficeAddin.hideStatusText();
                      $("taskDetails").innerHTML = textResponse;
                   }
-               });
-               myAjax.request();
+               }).request();
                
                // close other open tasks
                tasks.each(function(otherTask, j)
@@ -180,8 +179,7 @@ var OfficeMyTasks =
          {
             OfficeAddin.showStatusText("Couldn't run workflow", "action_failed.gif", true);
          }
-      });
-      myAjax.request();
+      }).request();
    },
    
    startWorkflow: function(commandURL, Doc)
@@ -229,18 +227,18 @@ var OfficeMyTasks =
    },
    
    /* AJAX call to perform server-side actions */
-   runAction: function(useTemplate, Action, Doc, Msg)
+   runAction: function(useTemplate, action, nodeId, confirmMsg)
    {
       // Re-select a selected task after reload
       var taskSel = $E('#taskList .taskItemSelected');
-      var extraParams = "";
+      var outParams = null;
       if (taskSel != null)
       {
          var taskId = taskSel.id;
-         extraParams = "t=" + encodeURI(taskId);
+         outParams = "t=" + encodeURI(taskId);
       }
       
-      OfficeAddin.runAction(useTemplate, Action, Doc, Msg, extraParams);
+      return OfficeAddin.getAction(useTemplate, action, nodeId, confirmMsg, null, outParams);
    },
 
    refreshPage: function()

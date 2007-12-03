@@ -91,17 +91,32 @@ var OfficeAddin =
    },
    
    /* AJAX call to perform server-side actions */
-   runAction: function(useTemplate, Action, Doc, Msg, extraParams)
+   getAction: function(useTemplate, action, nodeId, confirmMsg, inParams, outParams)
    {
-      if (Msg != "" && !confirm(Msg))
+      return OfficeAddin.runAction("get", useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+   },
+   postAction: function(useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+   {
+      return OfficeAddin.runAction("post", useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+   },
+   runAction: function(httpMethod, useTemplate, action, nodeId, confirmMsg, inParams, outParams)
+   {
+      if ((confirmMsg != null) && (confirmMsg != ""))
       {
-         return;
+         if (!confirm(confirmMsg))
+         {
+            return;
+         }
       }
    
       OfficeAddin.showStatusText("Running action...", "ajax_anim.gif", false);
-      var actionURL = useTemplate + "?a=" + Action + "&d=" + Doc;
+      var actionURL = useTemplate + "?a=" + action + "&n=" + nodeId;
+      if ((inParams != null) && (inParams != ""))
+      {
+         actionURL += "&" + inParams;
+      }
       var myAjax = new Ajax(actionURL, {
-         method: 'get',
+         method: httpMethod,
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(textResponse, xmlResponse)
          {
@@ -114,12 +129,14 @@ var OfficeAddin =
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
                href += "st=" + encodeURI(textResponse);
-               href += "&" + extraParams;
+               if ((outParams != null) && (outParams != ""))
+               {
+                  href += "&" + outParams;
+               }
             }
             window.location.href = href;
          }
-      });
-      myAjax.request();
+      }).request();
    },
 
    /* Calculates and returns the context path for the current page */

@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Document Tags (Office Add-In)</shortname>
+  <description>Generate the Office Add-In Tags page</description>
+  <url>/office/tags?p={path?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -63,31 +63,31 @@ input.button {
    overflow-x: hidden;
 }
 
-#tabBar {
+.tabBar {
    float: left;
    width: 100%;
    background: #efefef;
    border-bottom: 1px solid #ccc;
 }
-#tabBar ul {
+.tabBar ul {
    margin: 0px;
    padding: 4px 10px 0px 4px;
    list-style: none;
 }
-#tabBar li {
+.tabBar li {
    display: inline;
    margin: 0px;
    padding: 0px;
    height: 18px;
 }
-#tabBar a {
+.tabBar a {
    background: url("../images/office/tab_left.gif") no-repeat left top;
    float:left;
    margin: 0px;
    padding: 0px 0px 0px 4px;
    text-decoration: none;
 }
-#tabBar a span {
+.tabBar a span {
    background: url("../images/office/tab_right.gif") no-repeat right top;
    color: #666;
    display: block;
@@ -95,21 +95,77 @@ input.button {
    padding: 5px 15px 4px 6px;
 }
 
-#tabBar a:hover span {
+.tabBar a:hover span {
    color: #FFF;
 }
-#tabBar a:hover {
+.tabBar a:hover {
    background-position: 0% -42px;
 }
-#tabBar a:hover span {
+.tabBar a:hover span {
    background-position: 100% -42px;
 }
 
-#tabBar #current a {
+.tabBar #current a {
    background-position: 0% -42px;
 }
-#tabBar #current a span {
+.tabBar #current a span {
    background-position: 100% -42px;
+}
+
+.tabBarInline {
+   clear: left;
+   float: left;
+   margin: 0px 4px;
+   width: 284px;
+}
+.tabBarInline ul {
+   margin: 0px;
+   padding: 4px 10px 0px 4px;
+   list-style: none;
+}
+.tabBarInline li {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+   height: 18px;
+}
+.tabBarInline a {
+   background: url("../images/office/tab_left.gif") no-repeat left top;
+   float:left;
+   margin: 0px;
+   padding: 0px 0px 0px 4px;
+   text-decoration: none;
+}
+.tabBarInline a span {
+   background: url("../images/office/tab_right.gif") no-repeat right top;
+   color: #666;
+   display: block;
+   float: none;
+   padding: 5px 15px 4px 6px;
+}
+
+.tabBarInline a:hover span {
+   color: #FFF;
+}
+.tabBarInline a:hover {
+   background-position: 0% -42px;
+}
+.tabBarInline a:hover span {
+   background-position: 100% -42px;
+}
+
+.tabBarInline .current a {
+   background-position: 0% -42px;
+}
+.tabBarInline .current a span {
+   background-position: 100% -42px;
+}
+
+.tabPanel {
+}
+
+.tabPanelHidden {
+   display: none;
 }
 
 .header {
@@ -122,6 +178,22 @@ input.button {
    overflow: hidden;
    text-overflow: ellipsis;
    white-space:nowrap;
+}
+
+.tabHeader {
+   background: #ffffff;
+   border: 1px solid #cccccc;
+   border-bottom: none;
+   clear: both;
+   font-weight: bold;
+   float: left;
+   margin: 0px 4px;
+   padding: 2px;
+   height: 13px;
+   width: 278px;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
 }
 
 .headerExtra {
@@ -174,13 +246,23 @@ input.button {
    clear: both;
    float: left;
    width: 282px;
-   height: 76px;
+   height: 89px;
    overflow: auto;
    border: 1px solid #cccccc;
    margin: 0px 4px 0px 4px;
    background: #fff;
 }
 
+.containerSearchTerms {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 76px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
+}
 .containerSearchResults {
    clear: both;
    float: left;
@@ -191,8 +273,20 @@ input.button {
    margin: 0px 4px 0px 4px;
    background: #fff;
 }
+.containerTabMedium {
+   clear: both;
+   float: left;
+   width: 282px;
+   height: 174px;
+   overflow: auto;
+   border: 1px solid #cccccc;
+   border-top: none;
+   margin: 0px 4px 0px 4px;
+   background: #fff;
+}
 
-#checkedoutList, #taskList, #spaceList, #documentList, #versionList, #resultsList {
+
+#checkedoutList, #taskList, #spaceList, #documentList, #versionList, #taggedList, #resultsList {
    overflow-y: scroll;
 }
 
@@ -307,46 +401,35 @@ input.button {
    width: 226px;
 }
 
-#documentActions {
+.actionsPanel {
    clear: both;
    background-color: #ffffcc;
    border: 1px solid #ccc;
    float: left;
    margin: 0px 4px;
-   height: 150px;
    width: 282px;
 }
-#documentActions ul {
+.actionsPanel ul {
    padding: 2px 0px 0px 24px;
 }
-#documentActions li a {
+.actionsPanel li a {
    font-weight: bold;
    margin: 0px 0px 0px -22px;
 }
-#documentActions li a img {
+.actionsPanel li a img {
    margin: 0px 0px -2px 0px;
    padding: 0px 3px 0px 0px;
 }
 
-#documentActionsNavigation {
-   clear: both;
-   background-color: #ffffcc;
-   border: 1px solid #ccc;
-   float: left;
-   margin: 0px 4px;
+
+#myAlfrescoActions {
+   height: 150px;
+}
+#documentActions {
+   height: 149px;
+}
+#navigationActions {
    height: 89px;
-   width: 282px;
-}
-#documentActionsNavigation ul {
-   padding: 2px 0px 0px 24px;
-}
-#documentActionsNavigation li a {
-   font-weight: bold;
-   margin: 0px 0px 0px -22px;
-}
-#documentActionsNavigation li a img {
-   margin: 0px 0px -2px 0px;
-   padding: 0px 3px 0px 0px;
 }
 
 #saveDetailsPanel
@@ -637,4 +720,120 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 #date-wrapper td.date-tdover {
    background-color: #0073e6;
    color: #fff;
+}
+
+/* Document tags */
+.addTagIcon {
+   background: url("../images/office/new_tag.gif") no-repeat;
+   float: left;
+   height: 16px;
+   width: 16px;
+   margin: 2px 4px;
+}
+
+#addTagLinkContainer {
+   height: 16px;
+   margin: 3px 0px;
+}
+
+#addTagFormContainer {
+   display: none;
+}
+
+#addTagForm {
+   margin: 1px;
+}
+
+#addTagBox {
+   border: 1px solid #cccccc;
+   height: 14px;
+   margin: 0px 0px 0px;
+   padding: 1px;
+   color: #0073e6;
+   font-family: tahoma, sans-serif;
+   font-size: 11px;
+}
+
+.addTagImage {
+   margin: 0px 0px -2px;
+   outline: none;
+}
+
+.tagListEntry {
+   cursor: pointer;
+   margin: 1px 0px;
+   padding: 0px 4px;
+}
+
+.tagDelete {
+   color: #ccc;
+   font-size: 11px;
+}
+
+.tagName {
+}
+
+/* Tag cloud */
+#tagCloud {
+   line-height: 2em;
+   padding: 4px;
+}
+
+#tagCloud .tagContainer {
+   float: left;
+   padding: 2px;
+}
+
+#tagCloud a {
+   cursor: pointer;
+}
+
+#tagCloud .tagName0 {
+   font-size: 11px;
+}
+#tagCloud .tagName1 {
+   font-size: 12px;
+}
+#tagCloud .tagName2 {
+   font-size: 13px;
+}
+#tagCloud .tagName3 {
+   font-size: 14px;
+}
+#tagCloud .tagName4 {
+   font-size: 15px;
+}
+#tagCloud .tagName5 {
+   font-size: 16px;
+}
+
+#tagCloud .tagCount {
+   color: #cccccc;
+   font-size: 11px;
+   padding-left: 0.1em;
+}
+
+#taggedList {
+   border-top: none;
+   float: left;
+   height: 356px !important;
+}
+
+.taggedFound {
+   background: #ffffff;
+   border: 1px solid #cccccc;
+   border-bottom: none;
+   clear: both;
+   float: left;
+   margin: 0px 4px;
+   padding: 2px;
+   height: 13px;
+   width: 278px;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.taggedFound {
+   float: left;
 }

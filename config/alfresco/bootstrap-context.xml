@@ -234,6 +234,12 @@
                     <prop key="location">alfresco/bootstrap/formsSpace.xml</prop>
                 </props>
                 
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/projectsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
             </list>
         </property>
     </bean>

@@ -318,7 +318,8 @@
                 <prop key="spaces.wcm.childname">${spaces.wcm.childname}</prop>
                 <prop key="spaces.wcm_content_forms.childname">${spaces.wcm_content_forms.childname}</prop>
                 <prop key="spaces.content_forms.childname">${spaces.content_forms.childname}</prop>
-				<prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
+                <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
+                <prop key="spaces.projects.childname">${spaces.projects.childname}</prop>
             </props>
         </property>
     </bean>

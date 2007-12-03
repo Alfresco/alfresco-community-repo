@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,21 +32,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
-import org.alfresco.service.namespace.QName;
 import org.dom4j.Element;
 import org.jbpm.context.def.VariableAccess;
 import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.jpdl.xml.JpdlXmlReader;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 import org.springframework.beans.factory.BeanFactory;
 import org.xml.sax.InputSource;
 
@@ -73,6 +68,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     private static JpdlXmlReader jpdlReader = new JpdlXmlReader((InputSource)null);
     private ServiceRegistry services;
     private Element script;
+    private String runas;
     
 
     /* (non-Javadoc)
@@ -89,7 +85,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
      */
     @SuppressWarnings("unchecked")
-    public void execute(ExecutionContext executionContext) throws Exception
+    public void execute(final ExecutionContext executionContext) throws Exception
     {
         // validate script
         if (script == null)
@@ -130,7 +126,30 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         }
 
         // execute
-        Object result = executeScript(executionContext, services, expression, variableAccesses);
+        Object result = null;
+        if (runas == null)
+        {
+             result = executeScript(executionContext, services, expression, variableAccesses);
+        }
+        else
+        {
+            boolean runasExists = services.getPersonService().personExists(runas);
+            if (!runasExists)
+            {
+            	throw new WorkflowException("runas user '" + runas + "' does not exist.");
+            }
+
+            // execute as specified runas user
+        	final String expr = expression;
+        	final List<VariableAccess> varAcc = variableAccesses;
+        	result = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+			{
+            	public Object doWork() throws Exception
+            	{
+            		return executeScript(executionContext, services, expr, varAcc);
+            	}
+			}, runas);
+        }
 
         // map script return variable to process context
         VariableAccess returnVariable = getWritableVariable(variableAccesses);

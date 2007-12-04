@@ -61,4 +61,7 @@ public interface ApplicationModel
     // feed source aspect
     static final QName ASPECT_FEEDSOURCE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "feedsource");
     static final QName PROP_FEEDTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "template");
+    
+    // project space
+    static final QName TYPE_PROJECTSPACE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "projectfolder");
 }

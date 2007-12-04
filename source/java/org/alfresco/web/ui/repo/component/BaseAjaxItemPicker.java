@@ -154,7 +154,8 @@ public abstract class BaseAjaxItemPicker extends UIInput
       ResourceBundle msg = Application.getBundle(fc);
       
       // get values from submitted value or none selected
-      String selection = null;
+      String selectedValues = null;
+      String selectedNames = null;
       List<NodeRef> submitted = null;
       if (getSingleSelect() == true)
       {
@@ -193,19 +194,23 @@ public abstract class BaseAjaxItemPicker extends UIInput
             tx = Repository.getUserTransaction(fc, true);
             tx.begin();
             
-            StringBuilder buf = new StringBuilder(128);
+            StringBuilder nameBuf = new StringBuilder(128);
+            StringBuilder valueBuf = new StringBuilder(128);
             NodeService nodeService = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(
                   fc).getBean("nodeService");
             for (NodeRef value : submitted)
             {
                String name = (String)nodeService.getProperty(value, ContentModel.PROP_NAME);
-               if (buf.length() != 0)
+               if (nameBuf.length() != 0)
                {
-                  buf.append(", ");
+                  nameBuf.append(", ");
+                  valueBuf.append(",");
                }
-               buf.append(name);
+               nameBuf.append(name);
+               valueBuf.append(value.toString());
             }
-            selection = buf.toString();
+            selectedNames = nameBuf.toString();
+            selectedValues = valueBuf.toString();
             
             // commit the transaction
             tx.commit();
@@ -240,7 +245,12 @@ public abstract class BaseAjaxItemPicker extends UIInput
       
       // generate the DIV structure for our component as expected by the script object
       out.write("<div id='" + divId + "' class='picker'>") ;
-      out.write(" <input id='" + getHiddenFieldName() + "' name='" + getHiddenFieldName() + "' type='hidden'>");
+      out.write(" <input id='" + getHiddenFieldName() + "' name='" + getHiddenFieldName() + "' type='hidden' value='");
+      if (selectedValues != null)
+      {
+         out.write(selectedValues);
+      }
+      out.write("'>");
       // current selection displayed as link and message to launch the selector
       out.write(" <div id='" + divId + "-noitems'");
       if (attrs.get("style") != null)
@@ -256,13 +266,13 @@ public abstract class BaseAjaxItemPicker extends UIInput
       }
       out.write(">");
       out.write("  <span class='pickerActionButton'><a href='javascript:" + objId + ".showSelector();'>");
-      if (selection == null)
+      if (selectedNames == null)
       {
          out.write(getLabel());
       }
       else
       {
-         out.write(selection);
+         out.write(selectedNames);
       }
       out.write("</a></span>");
       out.write(" </div>");

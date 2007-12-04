@@ -41,7 +41,7 @@ function pageLoaded()
 function checkButtonState()
 {
 	if (document.getElementById("dialog:dialog-body:package-name").value.length == 0 ||
-		document.getElementById("dialog:dialog-body:destination_selected").value.length == 0)
+		 document.getElementById("destination-value").value.length == 0)
 	{
 		document.getElementById("dialog:finish-button").disabled = true;
 	}

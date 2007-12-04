@@ -70,38 +70,14 @@ var OfficeDocDetails =
    
    addTag: function(nodeId, tagName)
    {
-      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "add", nodeId, null, "&t=" + tagName);
+      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "add", nodeId, null, "t=" + tagName);
       return false;
    },
    
-   tagAction: function(action, nodeId, tagName, msg)
+   removeTag: function(nodeId, tagName)
    {
-      if (msg != "" && !confirm(msg))
-      {
-         return;
-      }
-   
-      OfficeAddin.showStatusText("Processing...", "ajax_anim.gif", false);
-      var actionURL = window.serviceContextPath + "/collaboration/tagActions?a=" + action + "&n=" + nodeId + "&t=" + tagName;
-      var myAjax = new Ajax(actionURL, {
-         method: 'post',
-         headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
-         onComplete: function(textResponse, xmlResponse)
-         {
-            // Optionally add a status string
-            if (textResponse != "")
-            {
-               var objResponse = Json.evaluate(textResponse);
-               var imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif");
-               var colBackground = (objResponse.statusCode ? "#50ff50" : "#ff5050");
-               OfficeAddin.showStatusText(objResponse.statusString, imgSuccess, true, colBackground);
-            }
-         },
-         onFailure: function()
-         {
-            OfficeAddin.showStatusText("Action failed", "action_failed.gif", true);
-         }
-      }).request();
+      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "remove", nodeId , null, "t=" + tagName);
+      return false;
    }
 };
 

@@ -155,22 +155,22 @@ var OfficeNavigation =
 
    submitCreateSpace: function(commandURL, nodeId)
    {
-      var spcName = $('spaceName').value,
-         spcTitle = $('spaceTitle').value,
-         spcDescription = $('spaceDescription').value;
+      var spaceName = $('spaceName').value,
+         spaceTitle = $('spaceTitle').value,
+         spaceDescription = $('spaceDescription').value;
          
-      var spcTemplate;
+      var spaceTemplate;
       if ($('spaceTemplate'))
       {
-         spcTemplate = $('spaceTemplate').value;
+         spaceTemplate = $('spaceTemplate').value;
       }
 
       OfficeAddin.showStatusText("Creating space...", "ajax_anim.gif", false);
-      var actionURL = commandURL + "?a=newspace&n=" + nodeId;
-      actionURL += "&sn=" + encodeURI(spcName);
-      actionURL += "&st=" + encodeURI(spcTitle);
-      actionURL += "&sd=" + encodeURI(spcDescription);
-      actionURL += "&t=" + encodeURI(spcTemplate);
+      var actionURL = commandURL + "?a=newspace&p=" + nodeId;
+      actionURL += "&sn=" + encodeURI(spaceName);
+      actionURL += "&st=" + encodeURI(spaceTitle);
+      actionURL += "&sd=" + encodeURI(spaceDescription);
+      actionURL += "&t=" + encodeURI(spaceTemplate);
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

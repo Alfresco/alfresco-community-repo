@@ -1,5 +1,4 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#assign tag_actions="${url.serviceContext}/collaboration/tagActions">
 
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
@@ -38,62 +37,65 @@
 <div class="header">Current Document Details</div>
 
 <div class="containerMedium">
-   <table width="265">
-      <tbody>
-         <tr>
-            <td valign="top">
+   <div id="nonStatusText">
+      <table width="265">
+         <tbody>
+            <tr>
+               <td valign="top">
 <#if d.isDocument>
-               <img src="${url.context}${d.icon32}" alt="${d.name}" />
-            </td>
-            <td style="padding-top: 4px;">
-               <span style="font-weight:bold; vertical-align: top;">
+                  <img src="${url.context}${d.icon32}" alt="${d.name}" />
+               </td>
+               <td style="padding-top: 4px;">
+                  <span style="font-weight:bold; vertical-align: top;">
    <#if d.isLocked >
-                  <img src="${url.context}/images/office/lock.gif" alt="Locked" title="Locked" style="margin: -2px 0px;" />
+                     <img src="${url.context}/images/office/lock.gif" alt="Locked" title="Locked" style="margin: -2px 0px;" />
    </#if>
-                  ${d.name}
-               </span>
-               <br />
-               <table style="margin-top: 4px;">
+                     ${d.name}
+                  </span>
+                  <br />
+                  <table style="margin-top: 4px;">
    <#if d.properties.title?exists>
-                  <tr><td>Title:</td><td>${d.properties.title}</td></tr>
+                     <tr><td valign="top">Title:</td><td>${d.properties.title}</td></tr>
    <#else>
-                  <tr><td>Title:</td><td>&nbsp;</td></tr>
+                     <tr><td valign="top">Title:</td><td>&nbsp;</td></tr>
    </#if>
    <#if d.properties.description?exists>
-                  <tr><td>Description:</td><td>${d.properties.description}</td></tr>
+                     <tr><td valign="top">Description:</td><td>${d.properties.description}</td></tr>
    <#else>
-                  <tr><td valign="top">Description:</td><td>&nbsp;</td></tr>
+                     <tr><td valign="top">Description:</td><td>&nbsp;</td></tr>
    </#if>
-                  <tr><td>Creator:</td><td>${d.properties.creator}</td></tr>
-                  <tr><td>Created:</td><td>${d.properties.created?datetime}</td></tr>
-                  <tr><td>Modifier:</td><td>${d.properties.modifier}</td></tr>
-                  <tr><td>Modified:</td><td>${d.properties.modified?datetime}</td></tr>
-                  <tr><td>Size:</td><td>${d.size / 1024} Kb</td></tr>
-                  <tr><td valign="top">Categories:</td>
-                     <td>
+                     <tr><td>Creator:</td><td>${d.properties.creator}</td></tr>
+                     <tr><td>Created:</td><td>${d.properties.created?datetime}</td></tr>
+                     <tr><td>Modifier:</td><td>${d.properties.modifier}</td></tr>
+                     <tr><td>Modified:</td><td>${d.properties.modified?datetime}</td></tr>
+                     <tr><td>Size:</td><td>${d.size / 1024} Kb</td></tr>
+                     <tr><td valign="top">Categories:</td>
+                        <td>
    <#if d.properties.categories?exists>
       <#list d.properties.categories as category>
-                        ${companyhome.nodeByReference[category].name};
+                           ${companyhome.nodeByReference[category].name};
       </#list>
    <#else>
-                        None.
+                           None.
    </#if>
-                     </td>
-                  </tr>
-               </table>
+                        </td>
+                     </tr>
+                  </table>
 <#else>
-               The current document is not managed by Alfresco.
+                  The current document is not managed by Alfresco.
 </#if>
-            </td>
-         </tr>
-      </tbody>
-   </table>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+   <div id="statusText"></div>
 </div>
 
 <div class="tabBarInline">
    <ul>
-      <li class="current"><a title="Document Tags" href="#"><span><img src="${url.context}/images/office/document_tag.gif" alt="Document Tags" /></span></a></li>
-      <li><a title="Version History" href="#"><span><img src="${url.context}/images/office/version.gif" alt="Version History")}" /></span></a></li>
+      <li class="current"><a id="tabLinkTags" title="Document Tags" href="#"><span><img src="${url.context}/images/office/document_tag.gif" alt="Document Tags" /></span></a></li>
+      <li><a id="tabLinkVersion" title="Version History" href="#"><span><img src="${url.context}/images/office/version.gif" alt="Version History")}" /></span></a></li>
    </ul>
 </div>
 
@@ -106,7 +108,7 @@
          <a href="#" onclick="OfficeDocDetails.showAddTagForm(); return false;">Add a tag</a>
       </div>
       <div id="addTagFormContainer">
-         <form id="addTagForm" name="addTagForm" method="get" action="#" onsubmit="return OfficeDocDetails.addTag('${d.id}', this.tag.value);">
+         <form id="addTagForm" name="addTagForm" onsubmit="return OfficeDocDetails.addTag('${d.id}', this.tag.value);">
             <input id="addTagBox" name="tag" type="text">
             <input class="addTagImage" type="image" src="${url.context}/images/office/action_successful.gif" onclick="return (document.addTagForm.tag.value.length > 0);">
             <input class="addTagImage" type="image" src="${url.context}/images/office/action_failed.gif" onclick="return OfficeDocDetails.hideAddTagForm();">
@@ -117,8 +119,8 @@
             <#list d.properties["cm:taggable"]?sort_by("name") as tag>
                <#if tag?exists>
       <div class="tagListEntry">
-         <a class="tagDelete" href="#" title="Delete this tag" onclick="OfficeAddin.postAction('${tag_actions}','remove','${d.id}','', '&t=${tag.name}');">[x]</a>
-         <a class="tagName" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}">${tag.name}</a>
+         <a class="tagListDelete" href="#" title="Remove tag &quot;${tag.name}&quot;" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name}');">[x]</a>
+         <a class="tagListName" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}&amp;tag=${tag.name}">${tag.name}</a>
       </div>
                </#if>
             </#list>
@@ -169,7 +171,7 @@
                The current document is not versioned.<br />
                <br />
                <ul>
-                  <li><a title="Make Versionable" href="#" onclick="OfficeAddin.getAction('${doc_actions}','makeversion','${d.id}',null,null,'tab=v');">
+                  <li><a title="Make Versionable" href="#" onclick="OfficeAddin.getAction('${doc_actions}','makeversion','${d.id}',null,null,'version=1');">
                      <img src="${url.context}/images/office/make_versionable.gif" alt="Make Versionable" /> Make Versionable
                   </a></li>
                </ul>
@@ -190,65 +192,66 @@
 <div class="header">Document Actions</div>
 
 <div id="documentActions" class="actionsPanel">
-   <div id="nonStatusText">
-      <ul>
+   <ul>
 <#if d.isDocument>
    <#if d.isLocked >
    <#elseif d.hasAspect("cm:workingcopy")>
-         <li>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${d.id}');">
-               <img src="${url.context}/images/office/checkin.gif" alt="Check In">
-               Check In
-            </a>
-            <br />Check in the current document.
-         </li>
+      <li>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${d.id}');">
+            <img src="${url.context}/images/office/checkin.gif" alt="Check In">
+            Check In
+         </a>
+         <br />Check in the current document.
+      </li>
    <#else>
-         <li>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${d.id}');">
-               <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
-               Check Out
-            </a>
-            <br />Check out the current document to a working copy.
-         </li>
+      <li>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${d.id}');">
+            <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
+            Check Out
+         </a>
+         <br />Check out the current document to a working copy.
+      </li>
    </#if>
-         <li>
-            <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new">
-               <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow" />
-               Start Workflow
-            </a>
-            <br />Start Advanced Workflow for the current document.
-         </li>
+      <li>
+         <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new">
+            <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow" />
+            Start Workflow
+         </a>
+         <br />Start Advanced Workflow for the current document.
+      </li>
    <#if d.name?ends_with(extn) || d.name?ends_with(extnx)>
-         <li>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${d.id}');">
-               <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />
-               Transform to PDF
-            </a>
-            <br />Transform the current document to Adobe PDF format.
-         </li>
+      <li>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${d.id}');">
+            <img src="${url.context}/images/office/makepdf.gif" alt="Transform to PDF" />
+            Transform to PDF
+         </a>
+         <br />Transform the current document to Adobe PDF format.
+      </li>
     </#if>
-         <li>
-            <a href="${url.context}/navigate/showDocDetails/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
-               <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
-               Open Full Details
-            </a>
-            <br />Open the document details in the Alfresco Web Client.
-         </li>
+      <li>
+         <a href="${url.context}/navigate/showDocDetails/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
+            <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
+            Open Full Details
+         </a>
+         <br />Open the document details in the Alfresco Web Client.
+      </li>
 <#else>
-         <li>
-            <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
-               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
-               Save to Alfresco
-            </a>
-            <br />Allows you to place the current document under Alfresco management.
-         </li>
+      <li>
+         <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
+            <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
+            Save to Alfresco
+         </a>
+         <br />Allows you to place the current document under Alfresco management.
+      </li>
 </#if>
-      </ul>
-   </div>
-   
-   <div id="statusText"></div>
-
+   </ul>
 </div>
+
+<#if args.version?exists>
+<script>
+   window.addEvent("domready", function(){$('tabLinkVersion').fireEvent('click');});
+</script>
+</#if>
 
 </body>
 </html>

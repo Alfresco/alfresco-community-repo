@@ -16,7 +16,7 @@
 </div>
 <#else>
    <#assign totalResults = results?size>
-   <#list results as child>
+   <#list results?sort_by(["properties","cm:modified"])?reverse as child>
       <#assign resCount=resCount + 1>
       <#if child.isDocument>
          <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />

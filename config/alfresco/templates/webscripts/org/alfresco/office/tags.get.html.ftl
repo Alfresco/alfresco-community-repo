@@ -54,7 +54,7 @@
 </script>
 <#if (args.tag?exists)>
 <script type="text/javascript">
-   window.addEvent('domready', function(){OfficeTags.selectTag("${args.tag}")});
+   window.addEvent("domready", function(){OfficeTags.preselectTag("${args.tag}")});
 </script>
 </#if>
 </body>

@@ -765,12 +765,12 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
    padding: 0px 4px;
 }
 
-.tagDelete {
+.tagListDelete {
    color: #ccc;
    font-size: 11px;
 }
 
-.tagName {
+.tagListName {
 }
 
 /* Tag cloud */
@@ -786,6 +786,11 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 
 #tagCloud a {
    cursor: pointer;
+   padding: 1px;
+}
+
+#tagCloud a.tagSelected {
+   background-color: #ffff90;
 }
 
 #tagCloud .tagName0 {

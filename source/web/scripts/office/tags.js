@@ -10,6 +10,9 @@ var OfficeTags =
    /* Manadatory params for searchResults component */
    searchParams: "",
    
+   /* Set to preselect a tag after the tag cloud populated */
+   preselectedTag: "",
+   
    init: function()
    {
       OfficeTags.getTagCloud();
@@ -48,8 +51,12 @@ var OfficeTags =
       tagCloud.empty();      
       tagQuery.tags.each(function(tag, i)
       {
-         tagNameClass = "tagName" + Math.round((tag.count - tagQuery.countMin) / scale);         
-         tagName = new Element("a", {"class": tagNameClass});
+         tagNameClass = "tagName" + Math.round((tag.count - tagQuery.countMin) / scale);
+         if (OfficeTags.preselectedTag == tag.name)
+         {
+            tagNameClass += " tagSelected";
+         }  
+         tagName = new Element("a", {"class": tagNameClass, "rel": tag.name});
          tagName.appendText(tag.name);
          tagName.injectInside(tagCloud);
          tagName.addEvent('click', function(e)
@@ -62,8 +69,6 @@ var OfficeTags =
          tagCount.appendText("(" + tag.count + ")");
          tagCount.injectInside(tagName);
       });
-      
-      // $("tagCloud").innerHTML = Json.toString(tagQuery);
    },
 
    /* AJAX call to perform server-side tag search */
@@ -87,6 +92,25 @@ var OfficeTags =
             $('taggedHeader').innerHTML = "Tagged with \"" + tagName + "\"";
          }
       }).request();
+      
+      var tags = $$("#tagCloud a");
+      tags.each(function(tag, i)
+      {
+         if (tag.rel == tagName)
+         {
+            tag.addClass("tagSelected");
+         }
+         else
+         {
+            tag.removeClass("tagSelected");
+         }
+      });
+   },
+   
+   preselectTag: function(tagName)
+   {
+      OfficeTags.preselectedTag = tagName;
+      OfficeTags.selectTag(tagName);
    }
 };
 

@@ -8,19 +8,19 @@ var resultString = "Action failed",
    resultCode = false;
 
 // Is this action targetting a document?
-var nodeId = args.n;
-if ((nodeId != "") && (nodeId != null))
+var docNodeId = args.n;
+if ((docNodeId != "") && (docNodeId != null))
 {
-   var node = search.findNode("workspace://SpacesStore/" + nodeId);
+   var docNode = search.findNode("workspace://SpacesStore/" + docNodeId);
 
-   if (node != null && node.isDocument)
+   if (docNode != null && docNode.isDocument)
    {
       try
       {
          if (runAction == "makepdf")
          {
             resultString = "Could not convert document";
-            var nodeTrans = node.transformDocument("application/pdf");
+            var nodeTrans = docNode.transformDocument("application/pdf");
             if (nodeTrans != null)
             {
                resultString = "Document converted";
@@ -30,7 +30,7 @@ if ((nodeId != "") && (nodeId != null))
          else if (runAction == "delete")
          {
             resultString = "Could not delete document";
-            if (node.remove())
+            if (docNode.remove())
             {
                resultString = "Document deleted";
                resultCode = true;
@@ -38,7 +38,7 @@ if ((nodeId != "") && (nodeId != null))
          }
          else if (runAction == "checkout")
          {
-            var workingCopy = node.checkout();
+            var workingCopy = docNode.checkout();
             if (workingCopy != null)
             {
                resultString = "Document checked out";
@@ -47,7 +47,7 @@ if ((nodeId != "") && (nodeId != null))
          }
          else if (runAction == "checkin")
          {
-            var originalDoc = node.checkin();
+            var originalDoc = docNode.checkin();
             if (originalDoc != null)
             {
                resultString = "Document checked in";
@@ -57,7 +57,7 @@ if ((nodeId != "") && (nodeId != null))
          else if (runAction == "makeversion")
          {
             resultString = "Could not version document";
-            if (node.addAspect("cm:versionable"))
+            if (docNode.addAspect("cm:versionable"))
             {
                resultString = "Document versioned";
                resultCode = true;
@@ -78,13 +78,13 @@ if ((nodeId != "") && (nodeId != null))
             {
                workflow.parameters["bpm:workflowDueDate"] = dueDate;
             } 
-            workflow.execute(node);
+            workflow.execute(docNode);
             resultString = "New workflow started";
             resultCode = true;
          }
          else if (runAction == "test")
          {
-            resultString = "Test complete.";
+            resultString = "Tested ok.";
             resultCode = true;
          }
          else
@@ -105,7 +105,7 @@ else  // Non document-based actions
       if (runAction == "newspace")
       {
          resultString = "Could not create space";
-         var nodeId = args.n,
+         var parentNodeId = args.p,
             spaceName = args.sn,
             spaceTitle = (args.st == "undefined") ? "" : args.st,
             spaceDescription = (args.sd == "undefined") ? "" : args.sd,
@@ -118,7 +118,7 @@ else  // Non document-based actions
          }
          else
          {
-            var nodeParent = search.findNode("workspace://SpacesStore/" + nodeId);
+            var nodeParent = search.findNode("workspace://SpacesStore/" + parentNodeId);
             // Copy from template?
             if ((templateId != null) && (templateId != ""))
             {

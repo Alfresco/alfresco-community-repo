@@ -123,7 +123,7 @@ var OfficeAddin =
             // Remove any trailing hash
             var href = window.location.href.replace("#", "")
             // Remove any previous "st" parameters
-            href = OfficeAddin.removeParameters(href, "st");
+            href = OfficeAddin.removeParameters(href, "st|version");
             // Optionally add a status string
             if (textResponse != "")
             {

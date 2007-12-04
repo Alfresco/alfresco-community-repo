@@ -110,7 +110,7 @@ public class UsageQuotaProtector implements NodeServicePolicies.OnUpdateProperti
         }
         
         // Check for change in sizeQuota
-        if ((sizeQuotaBefore != sizeQuotaAfter) && (! authorityService.hasAdminAuthority()))
+        if ((sizeQuotaBefore != sizeQuotaAfter) && (! (authorityService.hasAdminAuthority() || authenticationService.isCurrentUserTheSystemUser())))
         {
             throw new AlfrescoRuntimeException("Update failed: protected property 'sizeQuota'");
         }

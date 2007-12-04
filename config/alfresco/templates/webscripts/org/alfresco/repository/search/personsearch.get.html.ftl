@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head profile="http://a9.com/-/spec/opensearch/1.1/"> 
     <title>Alfresco Person Search: ${search.searchTerms}</title>
     <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
@@ -30,13 +28,12 @@
       </tr>
       <tr>
       <td></td>
-      <td><#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
-             <#if row.properties.organization??>${row.properties.organization},</#if>
-             <#if row.properties.location??>${row.properties.location},</#if>
-             <#--
-             <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
-             -->
-             </td>
+      <td>
+         <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
+         <#if row.properties.organization??>${row.properties.organization},</#if>
+         <#if row.properties.location??>${row.properties.location},</#if>
+         <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
+      </td>
       </tr>
 </#list>
     </table>

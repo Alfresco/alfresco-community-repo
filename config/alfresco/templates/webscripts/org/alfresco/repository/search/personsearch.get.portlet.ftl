@@ -11,13 +11,12 @@
       </tr>
       <tr>
       <td></td>
-      <td><#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
-             <#if row.properties.organization??>${row.properties.organization},</#if>
-             <#if row.properties.location??>${row.properties.location},</#if>
-             <#--
-             <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
-             -->
-             </td>
+      <td>
+         <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
+         <#if row.properties.organization??>${row.properties.organization},</#if>
+         <#if row.properties.location??>${row.properties.location},</#if>
+         <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
+      </td>
       </tr>
 </#list>
     </table>

@@ -32,12 +32,11 @@
   <item>
     <title>${row.firstName} ${row.lastName}</title>
     <link>${absurl(url.serviceContext)}</link>
-    <description><#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
-             <#if row.properties.organization??>${row.properties.organization},</#if>
-             <#if row.properties.location??>${row.properties.location},</#if>
-             <#--
-             <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
-             -->
+    <description>
+      <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
+      <#if row.properties.organization??>${row.properties.organization},</#if>
+      <#if row.properties.location??>${row.properties.location},</#if>
+      <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
     </description>
     <pubDate>${xmldate(row.properties.modified)}</pubDate>
     <guid isPermaLink="false">${row.id}</guid>

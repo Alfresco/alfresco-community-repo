@@ -35,12 +35,10 @@
     <id>urn:uuid:${row.id}</id>
     <updated>${xmldate(row.properties.modified)}</updated>
     <summary>
-             <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
-             <#if row.properties.organization??>${row.properties.organization},</#if>
-             <#if row.properties.location??>${row.properties.location},</#if>
-             <#--
-             <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
-             -->
+       <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
+       <#if row.properties.organization??>${row.properties.organization},</#if>
+       <#if row.properties.location??>${row.properties.location},</#if>
+       <#if row.properties.persondescription??>${row.properties.persondescription.content}</#if>
     </summary>
     <relevance:score>${row.score}</relevance:score>
   </entry>

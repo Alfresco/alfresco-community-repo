@@ -17,3 +17,7 @@
 #documentActionsNavigation ul {
    padding: 2px 0px 0px 24px;
 }
+
+.tabBarInline, .tabHeader, .taggedFound {
+   margin: 0px 1px;
+}

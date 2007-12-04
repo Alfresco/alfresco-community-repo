@@ -506,7 +506,7 @@ public abstract class BaseContentNode implements TemplateContent
         /**
          * @return the content stream to the specified maximum length in characters
          */
-        public String getContent(int length)
+        public String getContentMaxLength(int length)
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(getNodeRef(), property);
@@ -526,7 +526,7 @@ public abstract class BaseContentNode implements TemplateContent
             
             if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(getMimetype()))
             {
-                result = getContent(length);
+                result = getContentMaxLength(length);
             }
             else
             {

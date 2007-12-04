@@ -286,7 +286,6 @@
       <!-- The list of custom folder types to show in the advanced space wizard -->
       <folder-types>
          <type name="fm:forums" icon="/images/icons/forums.gif" description-id="forums_desc" />
-         <type name="app:projectfolder" icon="/images/icons/project.gif" description-id="projectfolder_desc" />
       </folder-types>
    </config>
    

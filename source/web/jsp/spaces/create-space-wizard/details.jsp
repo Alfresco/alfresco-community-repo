@@ -93,77 +93,34 @@
       }
    }
 </script>
+</f:verbatim>
 
-<table cellpadding="3" cellspacing="2" border="0" width="100%">
-   <tr>
-      <td colspan="3" class="wizardSectionHeading">
-         </f:verbatim>
-         <h:outputText value="#{msg.title_space_details}"/>
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
-      <td align="middle">
-         </f:verbatim>
-         <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
-         <f:verbatim>
-      </td>
-      <td>
-         </f:verbatim>
-         <h:outputText value="#{msg.name}:"/>
-         <f:verbatim>
-      </td>
-      <td width="85%">
-         </f:verbatim>
-         <h:inputText id="name" value="#{WizardManager.bean.name}" size="35" maxlength="1024"
-                      onkeyup="javascript:checkButtonState();" />
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
-      <td></td>
-      <td>
-         </f:verbatim>
-         <h:outputText value="#{msg.title}:" />
-         <f:verbatim>
-      </td>
-      <td>
-         </f:verbatim>
-         <h:inputText id="title" value="#{WizardManager.bean.title}" size="35" maxlength="1024" />
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
-      <td></td>
-      <td>
-         </f:verbatim>
-         <h:outputText value="#{msg.description}:"/>
-         <f:verbatim>
-      </td>
-      <td>
-         </f:verbatim>
-         <h:inputText id="description" value="#{WizardManager.bean.description}" size="35" maxlength="1024" />
-         <f:verbatim>
-      </td>
-   </tr>
-   <tr>
-      <td></td>
-      <td>
-         </f:verbatim>
-         <h:outputText value="#{msg.icon}:"/>
-         <f:verbatim>
-      </td>
-      <td>
-         <table border="0" cellpadding="0" cellspacing="0"><tr><td>
-         </f:verbatim>
-         <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{WizardManager.bean.icon}"
-                                  panelBorder="greyround" panelBgcolor="#F5F5F5">
-            <a:listItems value="#{WizardManager.bean.icons}" />
-         </a:imagePickerRadioPanel>
-         <f:verbatim>
-         </td></tr></table>
-      </td>
-   </tr>
+<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
+             width="100%" rowClasses="wizardSectionHeading">
+   <h:outputText value="&nbsp;#{msg.title_space_details}" escape="false" />
+</h:panelGrid>
+
+<h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%">
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.name}:"/>
+   <h:inputText id="name" value="#{WizardManager.bean.name}" size="35" maxlength="1024" onkeyup="javascript:checkButtonState();" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.title}:" />
+   <h:inputText id="title" value="#{WizardManager.bean.title}" size="35" maxlength="1024" />
+   
+   <f:verbatim/>
+   <h:outputText value="#{msg.description}:"/>
+   <h:inputText id="description" value="#{WizardManager.bean.description}" size="35" maxlength="1024" />
+
+   <f:verbatim/>
+   <h:outputText value="#{msg.icon}:"/>
+   <h:panelGrid columns="1" cellpadding="0" cellspacing="0">
+      <a:imagePickerRadioPanel id="space-icon" columns="6" spacing="4" value="#{WizardManager.bean.icon}"
+                               panelBorder="greyround" panelBgcolor="#F5F5F5">
+         <a:listItems value="#{WizardManager.bean.icons}" />
+      </a:imagePickerRadioPanel>
+   </h:panelGrid>
    <%--
    <tr>
       <td colspan="2">
@@ -182,5 +139,4 @@
       </td>
    </tr>
    --%>
-</table>
-</f:verbatim>
+</h:panelGrid>

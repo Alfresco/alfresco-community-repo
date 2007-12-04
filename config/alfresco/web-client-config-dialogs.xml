@@ -448,6 +448,10 @@
          
          <dialog name="showSystemInfo" page="/jsp/dialog/system-info.jsp" managed-bean="ShowSystemInfoDialog"
                  icon="/images/icons/file_large.gif" title-id="system_info" show-ok-button="false"/>
+         
+         <dialog name="createProject" page="/jsp/projects/create-project-details.jsp" managed-bean="CreateProjectDialog"
+                 icon="/images/icons/create_project_large.gif" title-id="create_project_title" 
+                 description-id="create_project_desc" />
       </dialogs>
    </config>
    

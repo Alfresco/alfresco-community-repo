@@ -36,11 +36,11 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
- * UI Action Evaluator - Create Web Project in the Websites folder
+ * UI Action Evaluator - Create Project Collaboration Space in the Projects folder
  * 
  * @author Kevin Roast
  */
-public class CreateWebProjectEvaluator extends BaseActionEvaluator
+public class CreateProjectEvaluator extends BaseActionEvaluator
 {
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -56,9 +56,9 @@ public class CreateWebProjectEvaluator extends BaseActionEvaluator
       Path.Element element = path.get(path.size() - 1);
       String endPath = element.getPrefixedString(services.getNamespaceService());
       
-      if (Application.getWebsitesFolderName(fc).equals(endPath))
+      if (Application.getProjectsFolderName(fc).equals(endPath))
       {
-         // check we have the permission to create nodes in that Website folder
+         // check we have the permission to create nodes in the Projects folder
          return navigator.getCurrentNode().hasPermission(PermissionService.ADD_CHILDREN);
       }
       return false;

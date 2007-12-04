@@ -88,6 +88,7 @@ public class Application
    private static String websitesFolderName;
    private static String webContentFormsFolderName;
    private static String contentFormsFolderName;
+   private static String projectsFolderName;
    
    private static Boolean isDynamicConfig = null;
    
@@ -554,6 +555,22 @@ public class Application
    }
    
    /**
+    * @return the Projects folder name
+    */
+   public static String getProjectsFolderName(ServletContext context)
+   {
+      return getProjectsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
+    * @return the Projects folder name
+    */
+   public static String getProjectsFolderName(FacesContext context)
+   {
+      return getProjectsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
+   }
+   
+   /**
     * Set the language locale for the current user context
     * 
     * @param context        FacesContext for current user
@@ -948,6 +965,24 @@ public class Application
       }
       
       return websitesFolderName;
+   }
+   
+   /**
+    * Returns the Projects folder name
+    * 
+    * @param context The Spring context
+    * @return The Projects folder name
+    */
+   private static String getProjectsFolderName(WebApplicationContext context)
+   {
+      if (projectsFolderName == null)
+      {
+         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
+         Properties configuration = bootstrap.getConfiguration();
+         projectsFolderName = configuration.getProperty("spaces.projects.childname");
+      }
+      
+      return projectsFolderName;
    }
    
    /**

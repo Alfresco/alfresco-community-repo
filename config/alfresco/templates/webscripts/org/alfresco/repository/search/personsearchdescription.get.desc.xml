@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Person Search Description</shortname>
+  <description>OpenSearch description document for Alfresco Repository person search</description>
+  <url>/api/search/person/description.xml</url>
+  <url>/search/person/description.xml</url>
+  <format default="opensearchdescription">argument</format>
+</webscript>

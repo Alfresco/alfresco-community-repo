@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Alfresco Person Search (OpenSearch Enabled)</shortname>
+  <description>Execute Person Search against Alfresco Repository</description>
+  <url>/api/search/person.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/search/person.html?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/api/search/person.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/search/person.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/api/search/person.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/search/person.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <url>/api/search/person.portlet?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
+  <authentication>guest</authentication>
+</webscript>

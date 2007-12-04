@@ -23,17 +23,18 @@
  */
 package org.alfresco.web.forms;
 
-import freemarker.ext.dom.NodeModel;
-import freemarker.template.SimpleDate;
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-import java.io.*;
-import java.net.URI;
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -41,7 +42,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateException;
@@ -56,8 +56,12 @@ import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.forms.xforms.XFormsProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import freemarker.ext.dom.NodeModel;
+import freemarker.template.SimpleDate;
+import freemarker.template.SimpleHash;
 
 public class FormImpl 
     implements Form
@@ -277,6 +281,18 @@ public class FormImpl
    public NodeRef getNodeRef()
    {
       return this.folderNodeRef;
+   }
+   
+   public boolean isWebForm()
+   {
+      boolean isWebForm = true;
+      NodeService nodeService = this.getServiceRegistry().getNodeService();
+      if (nodeService.getPrimaryParent(this.folderNodeRef).getParentRef().equals(this.formsService.getContentFormsNodeRef()))
+      {
+         // ECM form
+         isWebForm = false;
+      }
+      return isWebForm;
    }
 
    public int hashCode() 

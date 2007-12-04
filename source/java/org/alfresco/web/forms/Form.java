@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import org.alfresco.service.cmr.repository.NodeRef;
+
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.namespace.QName;
 import org.w3c.dom.Document;
@@ -113,4 +113,9 @@ public interface Form
     * @return the rendering engine template or <tt>null</tt> if not found.
     */
    public RenderingEngineTemplate getRenderingEngineTemplate(final String name);
+   
+   /**
+    * @return true if WCM Form, false if ECM form
+    */
+   public boolean isWebForm();
 }

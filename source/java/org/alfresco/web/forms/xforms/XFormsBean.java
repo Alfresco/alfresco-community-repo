@@ -657,14 +657,16 @@ public class XFormsBean
    private Document getXFormsDocument()
       throws FormBuilderException
    {
-      // TODO - need better way to to determine if WCM or ECM context, or earlier ...
-      final String path = this.getCurrentPath();
-      
-      if (path == null)
+      String path = null;
+      if (this.xformsSession.form.isWebForm())
       {
-         this.getCurrentAVMPath();
+         path = this.getCurrentAVMPath();
       }
-
+      else
+      {
+         path = this.getCurrentPath();
+      }
+      
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug("building xform for schema " + this.xformsSession.form.getName() +

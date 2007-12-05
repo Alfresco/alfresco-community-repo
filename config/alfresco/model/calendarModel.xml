@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="ia:CalendarEventModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Optional meta-data about the model -->   
+   <description>Calendar Event Model</description>
+   <author>Snig Bhaumik</author>
+   <version>1.0</version>
+
+   <imports>
+   	  <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+
+   <!-- Introduction of new namespaces defined by this model -->
+   <namespaces>
+      <namespace uri="com.infoaxon.alfresco.calendar" prefix="ia"/>
+   </namespaces>
+
+   <types>
+      <type name="ia:calendarEvent">
+         <title>Calendar Event</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="ia:whatEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:fromDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:toDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:whereEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:descriptionEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:colorEvent">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="ia:calendar">
+         <title>Calendar Space</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="ia:whatEventDefault">
+               <type>d:text</type>
+            </property>
+            <property name="ia:fromDateDefault">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:toDateDefault">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:whereEventDefault">
+               <type>d:text</type>
+            </property>
+            <property name="ia:colorEventDefault">
+               <type>d:text</type>
+            </property>
+		   </properties>
+         <associations>
+   			<association name="ia:subscribedCalendarList">
+   				<source>
+   					<mandatory>false</mandatory>
+   					<many>true</many>
+   				</source>
+   				<target>
+   					<class>ia:calendar</class>
+   					<mandatory>false</mandatory>
+   					<many>true</many>
+   				</target>
+   			</association>
+   		</associations>
+      </type>
+   </types>
+   
+</model>

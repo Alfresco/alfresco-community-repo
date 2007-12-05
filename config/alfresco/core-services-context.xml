@@ -690,6 +690,9 @@
                 
                 <!-- Email model -->
                 <value>alfresco/model/emailServerModel.xml</value>
+                
+                <!-- Calendar model -->
+                <value>alfresco/model/calendarModel.xml</value>
 
                 <!-- Deprecated types -->
                 <value>alfresco/model/deprecated/deprecated_contentModel.xml</value>

@@ -240,6 +240,16 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
                 
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/cm:webscripts/cm:org/cm:alfresco</prop>
+                    <prop key="location">alfresco/bootstrap/calendar_webscripts.acp</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/calendar_templates.acp</prop>
+                </props>
+                
             </list>
         </property>
     </bean>

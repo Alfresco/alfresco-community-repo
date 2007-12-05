@@ -33,6 +33,8 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -79,10 +81,16 @@ public class EditUserDetailsDialog extends BaseDialogBean
     {
         try
         {
+            ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+            DictionaryService dd = services.getDictionaryService();
             Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
             for (String key : getPerson().getProperties().keySet())
             {
-                props.put(QName.createQName(key), (Serializable)getPerson().getProperties().get(key));
+                QName propQName = QName.createQName(key);
+                if (dd.getProperty(propQName) == null || dd.getProperty(propQName).isProtected() == false)
+                {
+                    props.put(propQName, (Serializable)getPerson().getProperties().get(key));
+                }
             }
 
             // persist all property changes
@@ -92,7 +100,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
             // save person description content field
             if (this.personDescription != null)
             {
-                ContentService cs = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+                ContentService cs = services.getContentService();
                 ContentWriter writer = cs.getWriter(personRef, ContentModel.PROP_PERSONDESC, true);
                 writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
                 writer.putContent(this.personDescription);

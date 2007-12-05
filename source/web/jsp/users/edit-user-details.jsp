@@ -86,6 +86,18 @@ function updateButtonState()
    <h:inputText id="location" value="#{DialogManager.bean.personProperties.location}" size="35" maxlength="1024" />
    
    <f:verbatim/>
+   <h:outputText value="#{msg.presence_provider}:"/>
+   <h:selectOneMenu value="#{DialogManager.bean.personProperties.presenceProvider}">
+		<f:selectItem itemValue="" itemLabel="(#{msg.none})"/>
+		<f:selectItem itemValue="skype" itemLabel="Skype"/>
+		<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
+	</h:selectOneMenu>
+	
+	<f:verbatim/>
+	<h:outputText value="#{msg.presence_username}:"/>
+	<h:inputText value="#{DialogManager.bean.personProperties.presenceUsername}" size="35" maxlength="256" />
+   
+   <f:verbatim/>
    <h:outputText value="#{msg.user_description}:"/>
    <h:inputTextarea id="biography" value="#{DialogManager.bean.personDescription}" rows="6" cols="60" />
    

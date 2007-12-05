@@ -70,6 +70,12 @@
                <h:outputText value="#{msg.user_location}:" styleClass="propertiesLabel" />
                <h:outputText value="#{UsersBeanProperties.person.properties.location}" />
                
+               <h:outputText value="#{msg.presence_provider}:" styleClass="propertiesLabel" />
+               <h:outputText value="#{UsersBeanProperties.person.properties.presenceProvider}" />
+	
+            	<h:outputText value="#{msg.presence_username}:" styleClass="propertiesLabel" />
+            	<h:outputText value="#{UsersBeanProperties.person.properties.presenceUsername}" />
+               
                <h:outputText value="#{msg.user_avatar}:" styleClass="propertiesLabel" />
                <h:panelGroup>
                   <h:panelGroup rendered="#{UsersBeanProperties.avatarUrl == null}">

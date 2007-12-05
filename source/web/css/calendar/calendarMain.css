@@ -1,0 +1,100 @@
+div.calendar_entry {
+  height: 30px;
+  width: 70px;
+  float: left;
+  background: white;
+  border-right: 1px solid black;
+  margin: 0 3px 0 3px;
+  padding-top: 1px;
+}
+
+div.calendar_spacer {
+  height: 30px;
+  width: 77px;
+  float: left;
+  margin: 0 3px 0 3px;
+  padding-top: 1px;
+}
+
+.buttonStyle
+{
+	font-size: smaller;
+	cursor: pointer;
+	color: white;
+	background-color: cornflowerblue;
+}
+
+.inputBox
+{
+	border-right: 0px solid;
+	border-top: 0px solid;
+	border-left: 0px solid;
+	border-bottom: 0px solid;
+	background-color: lightyellow;
+}
+
+.alternateRow
+{
+	background-color:#D3E6FE;
+}
+
+.eventViewTable
+{
+	border:solid 1px #99CCFF;
+	border-collapse:collapse;
+}
+
+.eventViewTable td 
+{
+	border-right: 1px solid #99CCFF;
+	border-top: 1px solid #FFFFFF;
+	border-bottom: 1px solid #99CCFF;
+	border-left: 1px solid #99CCFF;
+}
+
+.eventCaption
+{
+	cursor:pointer;
+	padding-left:1px;
+	margin-bottom:2px;
+}
+
+.eventCaptionAllDay
+{
+	cursor:pointer;
+	vertical-align:top;
+	padding-left:1px;
+	margin-bottom:2px;
+}
+
+.eventCaptionNonEditable
+{
+	padding-left:1px;
+	margin-bottom:2px;
+}
+
+.eventCaptionAllDayNonEditable
+{
+	vertical-align:top;
+	padding-left:1px;
+	margin-bottom:2px;
+}
+
+.divDates
+{
+  background-color: #e9f0f4;
+  color: blue;
+  text-align: center;
+  font-size:x-small;
+  text-align:center;
+}
+
+.weekDay
+{
+	vertical-align:top;
+}
+
+.weekEnd
+{
+	vertical-align:top;
+}

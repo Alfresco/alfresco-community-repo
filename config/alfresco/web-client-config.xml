@@ -438,5 +438,31 @@
          <icon name="project" path="/images/icons/project.gif" />
       </icons>
    </config>
+   
+   <config evaluator="node-type" condition="ia:calendarEvent">
+      <property-sheet>
+         <show-property name="mimetype" display-label-id="content_type" 
+                        component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="size" display-label-id="size" 
+                        converter="org.alfresco.faces.ByteSizeConverter" 
+                        show-in-edit-mode="false" />               
+         <show-property name="ia:whatEvent" />
+         <show-property name="ia:fromDate" />
+         <show-property name="ia:toDate" />
+         <show-property name="ia:whereEvent" />
+         <show-property name="ia:descriptionEvent" />
+         <show-property name="ia:colorEvent" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="ia:calendar">
+      <property-sheet>
+         <show-property name="ia:whatEventDefault" />
+         <show-property name="ia:fromDateDefault" />
+         <show-property name="ia:toDateDefault" />
+         <show-property name="ia:whereEventDefault" />
+         <show-property name="ia:colorEventDefault" />
+      </property-sheet>
+   </config>
 
 </alfresco-config>

@@ -61,7 +61,7 @@ public class UserProfileDialogCommand extends BaseUIActionCommand
       ServletContext sc = (ServletContext)properties.get(PROP_SERVLETCONTEXT);
       ServletRequest req = (ServletRequest)properties.get(PROP_REQUEST);
       ServletResponse res = (ServletResponse)properties.get(PROP_RESPONSE);
-      FacesContext fc = FacesHelper.getFacesContext(req, res, sc, "/jsp/browse/browse.jsp");
+      FacesContext fc = FacesHelper.getFacesContext(req, res, sc, "/jsp/return.jsp");
       UsersDialog dialog = (UsersDialog)FacesHelper.getManagedBean(fc, UsersDialog.BEAN_NAME);
       
       // setup dialog context from url args in properties map

@@ -15,7 +15,7 @@
 			<param name="bgcolor" value="#282828" />
 			<param name="allowScriptAccess" value="sameDomain" />
 			<embed src="/alfresco/swf/Flexbook.swf?dataURL=${dataURL?url}&ticket=${ticket}" quality="high" bgcolor="#000000"
-				width="100%" height="420" name="Flexbook" align="middle"
+				width="100%" height="310" name="Flexbook" align="middle"
 				play="true"
 				loop="false"
 				quality="high"

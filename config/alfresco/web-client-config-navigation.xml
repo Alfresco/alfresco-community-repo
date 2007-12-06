@@ -58,4 +58,11 @@
       </navigation>
    </config>
    
+   <config evaluator="node-type" condition="ia:calendar">
+      <navigation>
+         <override from-view-id="/jsp/browse/browse.jsp" to-view-id="/jsp/projects/calendar.jsp" />
+         <override from-outcome="browse" to-view-id="/jsp/projects/calendar.jsp" />
+      </navigation>
+   </config>
+   
 </alfresco-config>

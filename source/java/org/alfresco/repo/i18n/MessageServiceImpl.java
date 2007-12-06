@@ -1,7 +1,9 @@
 package org.alfresco.repo.i18n;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -11,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.PropertyResourceBundle;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -332,19 +334,14 @@ public class MessageServiceImpl implements MessageService
                                 String path = resBundlePath.substring(idx2);
                 
                                 StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                      
-                                InputStream resBundleStream = getRepoResourceBundle(storeRef, path, locale);
-                
+                                
                                 try
                                 {
-                                    if (resBundleStream != null)
-                                    {
-                                        resourcebundle = new PropertyResourceBundle(resBundleStream);
-                                    }
+                                    resourcebundle = getRepoResourceBundle(storeRef, path, locale);
                                 }
                                 catch (IOException ioe)
                                 {
-                                    throw new RuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
+                                    throw new AlfrescoRuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
                                 }
                             }
                             else
@@ -485,19 +482,14 @@ public class MessageServiceImpl implements MessageService
                             String path = resBundlePath.substring(idx2);
 
                             StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                  
-                            InputStream resBundleStream = getRepoResourceBundle(storeRef, path, locale);
-
+                            
                             try
                             {
-                                if (resBundleStream != null)
-                                {
-                                    resourcebundle = new PropertyResourceBundle(resBundleStream);
-                                }
+                                resourcebundle = getRepoResourceBundle(storeRef, path, locale);
                             }
                             catch (IOException ioe)
                             {
-                                throw new RuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
+                                throw new AlfrescoRuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
                             }
                         }
                         else
@@ -536,9 +528,9 @@ public class MessageServiceImpl implements MessageService
      * (non-Javadoc)
      * @see org.alfresco.repo.i18n.MessageService#getRepoResourceBundle(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.util.Locale)
      */
-    public InputStream getRepoResourceBundle(StoreRef storeRef, String path, Locale locale)
+    public ResourceBundle getRepoResourceBundle(StoreRef storeRef, String path, Locale locale) throws IOException
     {   
-        InputStream resBundleStream = null;
+        ResourceBundle resBundle = null;
         
         // TODO - need to replace basic strategy with a more complete
         // search & instantiation strategy similar to ResourceBundle.getBundle()
@@ -573,10 +565,10 @@ public class MessageServiceImpl implements MessageService
             NodeRef messageResourceNodeRef = nodeRefs.get(0);
     
             ContentReader cr = serviceRegistry.getContentService().getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
-            resBundleStream = cr.getContentInputStream();
+            resBundle = new MessagePropertyResourceBundle(new InputStreamReader(cr.getContentInputStream(), cr.getEncoding()));
         }
         
-        return resBundleStream;
+        return resBundle;
     }
     
     /*
@@ -851,6 +843,84 @@ public class MessageServiceImpl implements MessageService
         if (logger.isDebugEnabled()) 
         {
             logger.debug("... resetting messages completed");
+        }
+    }
+    
+    /**
+     * Message Resource Bundle
+     * 
+     * Custom message property resource bundle, to overcome known limitation of JDK 5.0 (and lower).
+     *
+     * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6204853
+     * 
+     * Note: JDK 6.0 provides the ability to construct a PropertyResourceBundle from a Reader.
+     */
+    private class MessagePropertyResourceBundle extends ResourceBundle
+    {   
+        private Properties properties = new Properties();
+        
+        public MessagePropertyResourceBundle(Reader reader) throws IOException
+        {
+            try
+            {
+                BufferedReader br = new BufferedReader(reader);
+                String line = br.readLine();
+                while (line != null)
+                {
+                    if ((line.length() > 0) && (line.charAt(0) != '#'))
+                    {
+                        String[] splits = line.split("=");
+                        if (splits.length != 2)
+                        {
+                            throw new AlfrescoRuntimeException("Unexpected message properties file format: " + line);
+                        }
+                        properties.put(splits[0], splits[1]);
+                    }
+                    line = br.readLine();
+                }
+            }
+            finally
+            {
+                reader.close();
+            }
+        }
+        
+        @Override
+        public Enumeration<String> getKeys()
+        {
+           List<String> keys = new ArrayList<String>();
+           Enumeration<Object> enums = properties.keys();
+           while (enums.hasMoreElements())
+           {
+               keys.add((String)enums.nextElement());
+           }
+           return new StringIteratorEnumeration(keys.iterator());
+        }
+
+        @Override
+        protected Object handleGetObject(String arg0)
+        {
+            return properties.get(arg0);
+        }        
+        
+        private class StringIteratorEnumeration implements Enumeration<String>
+        {
+            private Iterator<String> enums;
+            
+            public StringIteratorEnumeration(Iterator<String> enums)
+            {
+                this.enums = enums;
+            }
+            
+            public boolean hasMoreElements()
+            {
+                return enums.hasNext();
+            }
+
+            public String nextElement()
+            {
+                return enums.next();
+            }
         }
     }
 }

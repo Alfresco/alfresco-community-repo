@@ -1,7 +1,8 @@
 package org.alfresco.repo.i18n;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.alfresco.repo.tenant.TenantDeployer;
@@ -137,7 +138,7 @@ public interface MessageService extends TenantDeployer
      * @param locale    locale
      * @return          input stream
      */
-    public InputStream getRepoResourceBundle(StoreRef storeRef, String path, Locale locale);
+    public ResourceBundle getRepoResourceBundle(StoreRef storeRef, String path, Locale locale) throws IOException;
     
     /**
      * Get set of registered message resource bundles

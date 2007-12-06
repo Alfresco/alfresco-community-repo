@@ -319,6 +319,11 @@
       <servlet-name>pageRendererServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.PageRendererServlet</servlet-class>
    </servlet>
+   
+   <servlet>
+     <servlet-name>QuercusServlet</servlet-name>
+     <servlet-class>org.alfresco.module.phpIntegration.servlet.AlfrescoQuercusServlet</servlet-class>
+   </servlet>
 
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -485,10 +490,15 @@
       <url-pattern>/page/*</url-pattern>
    </servlet-mapping>
 
+   <servlet-mapping>
+      <servlet-name>QuercusServlet</servlet-name>
+      <url-pattern>*.php</url-pattern>
+   </servlet-mapping>
+
    <session-config>
       <session-timeout>60</session-timeout>
    </session-config>
-   
+
    <welcome-file-list>
       <welcome-file>index.jsp</welcome-file>
    </welcome-file-list>
@@ -497,5 +507,5 @@
       <exception-type>java.lang.Exception</exception-type>
       <location>/jsp/error.jsp</location>
    </error-page>
-     
+
 </web-app>

@@ -24,11 +24,9 @@
  */
 package org.alfresco.web.app;
 
-import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
@@ -199,12 +197,7 @@ public final class ResourceBundleWrapper extends ResourceBundle
           // TODO - make path configurable in one place ... 
           // Note: path here is XPath for selectNodes query
           path = PATH + "/cm:" + customName;
-          InputStream is = messageService.getRepoResourceBundle(Repository.getStoreRef(), path, locale);
-          if (is != null)
-          {
-              customBundle = new PropertyResourceBundle(is);
-              is.close();
-          }
+          customBundle = messageService.getRepoResourceBundle(Repository.getStoreRef(), path, locale);
       }
       catch (Throwable t)
       {

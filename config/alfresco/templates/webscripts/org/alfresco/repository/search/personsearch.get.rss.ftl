@@ -31,7 +31,7 @@
 <#list search.results as row>            
   <item>
     <title>${row.firstName} ${row.lastName}</title>
-    <link>${absurl(url.serviceContext)}</link>
+    <link>${absurl(url.context)}/c/ui/userprofile?id=${row.id}</link>
     <description>
       <#if row.properties.jobtitle??>${row.properties.jobtitle},</#if>
       <#if row.properties.organization??>${row.properties.organization},</#if>

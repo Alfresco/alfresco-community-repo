@@ -26,7 +26,7 @@
 <#list search.results as row>
   <entry>
     <title>${row.properties.firstName} ${row.properties.lastName}</title>
-    <link rel="alternate" href="${absurl(url.serviceContext)}"/>
+    <link rel="alternate" href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}"/>
 <#if row.assocs["cm:avatar"]?exists>
     <icon>${absurl(url.context)}${row.assocs["cm:avatar"][0].url}</icon>
 <#else>

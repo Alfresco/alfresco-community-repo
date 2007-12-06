@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>DocLib Custom View</shortname>
+  <description>Collaboration Document Library view</description>
+  <url>/collaboration/docLibrary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

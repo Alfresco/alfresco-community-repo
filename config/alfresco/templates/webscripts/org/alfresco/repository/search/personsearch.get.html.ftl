@@ -24,7 +24,7 @@
     <table>
 <#list search.results as row>            
       <tr>
-      <td><img src="${url.context}${row.assocs[\"cm:avatar\"][0].url}"/></td><td>${row.firstName} ${row.lastName}</td>
+      <td><img src="${url.context}${row.assocs[\"cm:avatar\"][0].url}"/></td><td><a href="${absurl(url.context)}/c/ui/userprofile?id=${row.id}">${row.firstName} ${row.lastName}</a></td>
       </tr>
       <tr>
       <td></td>

@@ -406,6 +406,17 @@
          </properties>
       </aspect>
       
+      <aspect name="cm:projectsummary">
+         <title>Project Summary</title>
+         <properties>
+            <property name="cm:summaryWebscript">
+               <title>Project Summary Webscript</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
       <aspect name="cm:complianceable">
          <title>Complianceable</title>
          <properties>

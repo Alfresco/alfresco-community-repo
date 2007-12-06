@@ -96,9 +96,9 @@
 
                            <%-- Navigation --%>
                            <td align=right>
-                              <a:actionLink id="act-prev" value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{VersionedDocumentDetailsBean.previousItem}" action="showVersionedDetails"/>
+                              <a:actionLink id="act-prev" value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{VersionedDocumentDetailsBean.previousItem}" action="showVersionedDetails"/>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink id="act-next" value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{VersionedDocumentDetailsBean.nextItem}" action="showVersionedDetails"/>
+                              <a:actionLink id="act-next" value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{VersionedDocumentDetailsBean.nextItem}" action="showVersionedDetails"/>
                            </td>
                         </tr>
                      </table>

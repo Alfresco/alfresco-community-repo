@@ -64,6 +64,8 @@ import org.apache.commons.logging.LogFactory;
 public class UsersDialog extends BaseDialogBean implements IContextListener
 {
    private static Log    logger = LogFactory.getLog(UsersDialog.class);
+   
+   public static String BEAN_NAME = "UsersDialog";
 
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
    private static final String ERROR_DELETE = "error_delete_user";
@@ -157,16 +159,26 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
    {
       UIActionLink link = (UIActionLink) event.getComponent();
       Map<String, String> params = link.getParameterMap();
-      String id = params.get("id");
-      if (id != null && id.length() != 0)
+      setupUserAction(params.get("id"));
+   }
+
+   /**
+    * Called in preparation for actions that need to setup a Person context on
+    * the Users bean before an action page is called. 
+    * 
+    * @param personId
+    */
+   public void setupUserAction(String personId)
+   {
+      if (personId != null && personId.length() != 0)
       {
          if (logger.isDebugEnabled())
-            logger.debug("Setup for action, setting current Person to: " + id);
+            logger.debug("Setup for action, setting current Person to: " + personId);
 
          try
          {
             // create the node ref, then our node representation
-            NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
+            NodeRef ref = new NodeRef(Repository.getStoreRef(), personId);
             Node node = new Node(ref);
             
             // remember the Person node
@@ -179,7 +191,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
          catch (InvalidNodeRefException refErr)
          {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext
-                  .getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] { id }));
+                  .getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] { personId }));
          }
       }
       else

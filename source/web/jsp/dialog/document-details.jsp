@@ -104,11 +104,11 @@
 
                            <%-- Navigation --%>
                            <td align=right>
-                              <a:actionLink id="act-prev" value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="showDocDetails">
+                              <a:actionLink id="act-prev" value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink id="act-next" value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="showDocDetails">
+                              <a:actionLink id="act-next" value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}" action="showDocDetails">
                                  <f:param name="id" value="#{DocumentDetailsBean.id}" />
                               </a:actionLink>
                            </td>

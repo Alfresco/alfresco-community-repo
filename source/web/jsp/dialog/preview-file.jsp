@@ -96,11 +96,11 @@
                            <%-- Navigation --%>
                            <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
                            <td style="padding-left:4px" width=80>
-                              <a:actionLink value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}">
+                              <a:actionLink value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{DocumentDetailsBean.previousItem}">
                                  <f:param name="id" value="#{DocumentPreviewBean.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}">
+                              <a:actionLink value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{DocumentDetailsBean.nextItem}">
                                  <f:param name="id" value="#{DocumentPreviewBean.id}" />
                               </a:actionLink>
                            </td>

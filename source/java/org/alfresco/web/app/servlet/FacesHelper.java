@@ -74,7 +74,22 @@ public final class FacesHelper
     */
    public static FacesContext getFacesContext(ServletRequest request, ServletResponse response, ServletContext context)
    {
-      return getFacesContextImpl(request, response, context);
+      return getFacesContextImpl(request, response, context, null);
+   }
+   
+   /**
+    * Return a valid FacesContext for the specific context, request and response.
+    * The FacesContext can be constructor for Servlet use.
+    * 
+    * @param context       ServletContext
+    * @param request       ServletRequest
+    * @param response      ServletReponse
+    * 
+    * @return FacesContext
+    */
+   public static FacesContext getFacesContext(ServletRequest request, ServletResponse response, ServletContext context, String viewRoot)
+   {
+      return getFacesContextImpl(request, response, context, viewRoot);
    }
    
    /**
@@ -89,7 +104,7 @@ public final class FacesHelper
     */
    public static FacesContext getFacesContext(PortletRequest request, PortletResponse response, PortletContext context)
    {
-      return getFacesContextImpl(request, response, context);
+      return getFacesContextImpl(request, response, context, null);
    }
    
    /**
@@ -102,7 +117,7 @@ public final class FacesHelper
     * 
     * @return FacesContext
     */
-   private static FacesContext getFacesContextImpl(Object request, Object response, Object context)
+   private static FacesContext getFacesContextImpl(Object request, Object response, Object context, String viewRoot)
    {
       FacesContextFactory contextFactory = (FacesContextFactory)FactoryFinder.getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
       LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
@@ -115,7 +130,11 @@ public final class FacesHelper
       InnerFacesContext.setFacesContextAsCurrent(facesContext);
       
       // set a new viewRoot, otherwise context.getViewRoot returns null
-      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, "/jsp/close.jsp");
+      if (viewRoot == null)
+      {
+         viewRoot = "/jsp/close.jsp";
+      }
+      UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, viewRoot);
       facesContext.setViewRoot(view);
       
       return facesContext;

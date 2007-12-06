@@ -86,11 +86,11 @@
                            <%-- Navigation --%>
                            <a:panel id="nav-panel" rendered="#{FileDetailsBean.isBrowseList}">
                            <td align=right>
-                              <a:actionLink id="actPrev" value="#{msg.previous_item}" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{FileDetailsBean.previousItem}" action="showFileDetails">
+                              <a:actionLink id="actPrev" value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{FileDetailsBean.previousItem}" action="showFileDetails">
                                  <f:param name="id" value="#{FileDetailsBean.path}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink id="actNext" value="#{msg.next_item}" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{FileDetailsBean.nextItem}" action="showFileDetails">
+                              <a:actionLink id="actNext" value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{FileDetailsBean.nextItem}" action="showFileDetails">
                                  <f:param name="id" value="#{FileDetailsBean.path}" />
                               </a:actionLink>
                            </td>

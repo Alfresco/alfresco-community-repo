@@ -73,6 +73,7 @@ public class UIActionLink extends UICommand
       this.href = (String)values[4];
       this.tooltip = (String)values[5];
       this.target = (String)values[6];
+      this.verticalAlign = (String)values[7];
    }
    
    /**
@@ -89,7 +90,8 @@ public class UIActionLink extends UICommand
          this.showLink,
          this.href,
          this.tooltip,
-         this.target
+         this.target,
+         this.verticalAlign
       };
    }
 
@@ -277,6 +279,28 @@ public class UIActionLink extends UICommand
    }
    
    /**
+    * @return the verticalAlign
+    */
+   public String getVerticalAlign()
+   {
+      ValueBinding vb = getValueBinding("verticalAlign");
+      if (vb != null)
+      {
+         this.verticalAlign = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.verticalAlign;
+   }
+
+   /**
+    * @param verticalAlign the verticalAlign to set
+    */
+   public void setVerticalAlign(String verticalAlign)
+   {
+      this.verticalAlign = verticalAlign;
+   }
+
+   /**
     * Returns the onclick handler
     * 
     * @return The onclick handler
@@ -326,6 +350,9 @@ public class UIActionLink extends UICommand
    
    /** the onclick handler */
    private String onclick = null;
+   
+   /** the vertical alignment value */
+   private String verticalAlign = null;
    
    /** Transient map of currently set param name/values pairs */
    private Map<String, String> params = null;

@@ -66,6 +66,7 @@ public class UIActionCommandProcessor implements ExtCommandProcessor
       CommandFactory.getInstance().registerCommand("editwebcontent", EditWebContentCommand.class);
       CommandFactory.getInstance().registerCommand("managetask", ManageTaskDialogCommand.class);
       CommandFactory.getInstance().registerCommand("editcontentprops", EditContentPropertiesCommand.class);
+      CommandFactory.getInstance().registerCommand("userprofile", UserProfileDialogCommand.class);
    }
    
    

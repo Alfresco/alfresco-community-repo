@@ -142,7 +142,9 @@ public class ActionLinkRenderer extends BaseRenderer
             renderActionLinkAnchor(context, out, link); 
          }
          
-         out.write(Utils.buildImageTag(context, image, (String)link.getValue(), "-4px"));
+         String verticalAlign = link.getVerticalAlign();
+         out.write(Utils.buildImageTag(
+               context, image, (String)link.getValue(), verticalAlign == null ? "-4px" : verticalAlign));
          
          if (link.getShowLink() == false)
          {

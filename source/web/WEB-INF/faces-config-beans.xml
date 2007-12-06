@@ -551,7 +551,7 @@
 
    <managed-bean>
       <description>
-         The bean that holds state for the Groups Management screens.
+         The bean that holds state for the User Management screens.
       </description>
       <managed-bean-name>UsersDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.users.UsersDialog</managed-bean-class>

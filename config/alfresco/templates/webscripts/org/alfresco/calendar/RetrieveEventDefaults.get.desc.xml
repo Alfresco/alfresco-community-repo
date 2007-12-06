@@ -1,0 +1,8 @@
+<webscript>
+	<shortname>Retrieve Event Defaults</shortname> 
+	<description>Retrieve Event Defaults</description> 
+	<url>/calendar/RetrieveEventDefaults?s={spaceRef}</url> 
+	<format default="html">extension</format> 
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

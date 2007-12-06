@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Calendar View</shortname>
+  <description>Collaboration Calendar Space view</description>
+  <url>/collaboration/calendar?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

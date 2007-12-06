@@ -1,0 +1,8 @@
+<webscript>
+	<shortname>Retrieve Event Details</shortname> 
+	<description>Retrieve Event Details</description> 
+	<url>/calendar/RetrieveEventDetails?e={eventId}</url> 
+	<format default="html">extension</format> 
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

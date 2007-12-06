@@ -44,12 +44,4 @@ public class UserConsoleDialog extends BaseDialogBean
     {
         return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
     }
-
-    @Override
-    public String cancel()
-    {
-
-        super.cancel();
-        return "dialog:close:browse";
-    }
 }

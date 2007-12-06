@@ -410,6 +410,13 @@
          <icon name="space-icon-pen" path="/images/icons/space-icon-pen.gif" />
          <icon name="space-icon-cd" path="/images/icons/space-icon-cd.gif" />
          <icon name="space-icon-image" path="/images/icons/space-icon-image.gif" />
+         <icon name="project-icon-blog" path="/images/icons/project-icon-blog.gif" />
+         <icon name="project-icon-calendar" path="/images/icons/project-icon-calendar.gif" />
+         <icon name="project-icon-doclibrary" path="/images/icons/project-icon-doclibrary.gif" />
+         <icon name="project-icon-emailarchive" path="/images/icons/project-icon-emailarchive.gif" />
+         <icon name="project-icon-forums" path="/images/icons/project-icon-forums.gif" />
+         <icon name="project-icon-gallery" path="/images/icons/project-icon-gallery.gif" />
+         <icon name="project-icon-wiki" path="/images/icons/project-icon-wiki.gif" />
       </icons>
    </config>
 

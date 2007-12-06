@@ -6,7 +6,7 @@
 <#list blogSpace.pending as p>
    	<div class="blogPost">
    	   <div class="blogPostName">
-      	   ${p.name}, ${p.properties["cm:title"]}
+      	   ${p.name}, ${p.properties["cm:title"]!""}
    	   </div>
    	   <div class="blogPostActions">
    	      <span class="blogPostAction"><img src="${url.context}/images/icons/blog_post.png"><input type="button" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=p")}" value="Post" /></span>
@@ -20,7 +20,7 @@
 <#list blogSpace.published as p>
    	<div class="blogPost">
    	   <div class="blogPostName">
-   	      <a href="${p.properties["blg:link"]}" target="_blank">${p.properties["cm:title"]} (${p.name}) Published=${p.properties["blg:published"]?string}</a>
+   	      <a href="${p.properties["blg:link"]}" target="_blank">${p.properties["cm:title"]!""} (${p.name}) Published=${p.properties["blg:published"]?string}</a>
    	   </div>
    	   <div class="blogPostActions">
    	      <span class="blogPostAction"><img src="${url.context}/images/icons/blog_update.png"><input type="button" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=u")}" value="Update" /></span>

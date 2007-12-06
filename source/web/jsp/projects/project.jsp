@@ -109,10 +109,21 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     
-                     <%-- TODO: Project View webscripts --%>
-                     <r:webScript id="presence" scriptUrl="/wcs/ui/presence/status?nodeRef={noderef}" context="#{NavigationBean.currentNode.nodeRef}" />
-                     
+                     <table id="projectContainer" cellspacing="0" cellpadding="2" width="100%">
+                        <tr>
+
+                           <%-- Project Summary webscript --%>
+                           <td id="projectSummary" valign="top">
+                              <r:webScript id="projectSummary" scriptUrl="/wcs/collaboration/projectSpace?nodeRef={noderef}" context="#{NavigationBean.currentNode.nodeRef}" />
+                           </td>
+
+                           <%-- Colleague Presence Status webscript --%>
+                           <td id="projectColleagues" valign="top">
+                              <r:webScript id="projectColleagues" scriptUrl="/wcs/collaboration/colleaguePresence?nodeRef={noderef}" context="#{NavigationBean.currentNode.nodeRef}" />
+                           </td>
+
+                        </tr>
+                     </table>
                      
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Project Space Custom View</shortname>
+  <description>Collaboration Project Space Space view</description>
+  <url>/collaboration/projectSpace?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

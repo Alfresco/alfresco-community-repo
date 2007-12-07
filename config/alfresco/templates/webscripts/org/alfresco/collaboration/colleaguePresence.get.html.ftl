@@ -41,7 +41,7 @@
 .colleagueList {
    border-left: 1px solid #B9BEC4;
    border-right: 1px solid #B9BEC4;
-   height: 400px;
+   min-height: 290px;
    overflow-x: hidden;
    overflow-y: scroll;
 }

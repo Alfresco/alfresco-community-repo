@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Calendar Summary</shortname>
+  <description>Collaboration Calendar Summary</description>
+  <url>/collaboration/calendarSummary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

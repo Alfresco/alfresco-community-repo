@@ -15,7 +15,7 @@
          <div style="float:left">
             <a href="${curl}" target="new"><img src="${url.context}${c.icon32}" width="32" height="32" border="0" alt="${c.name?html}" title="${c.name?html}"></a>
          </div>
-         <div style="margin-left:36px;height:32px;padding: 4px 0px 2px 0px">
+         <div style="margin-left:36px;padding: 4px 0px 4px 0px">
             <div>
                <div class="collabNodeActions">
                   <a href="${url.context}/n/showDocDetails/${c.nodeRef.storeRef.protocol}/${c.nodeRef.storeRef.identifier}/${c.id}" alt="Details" title="Details"><img src="${url.context}/images/icons/View_details.gif" border="0"></a>
@@ -23,7 +23,7 @@
                <a class="collabNodeLink" href="${curl}" target="new">${c.name?html}</a>
             </div>
             <div>
-               <#if c.properties.description?exists>${c.properties.description?html}</#if>
+               <span class="metaData"><#if c.properties.description?exists>${c.properties.description?html}</#if></span>
             </div>
             <div>
                <span class="metaTitle">Modified:</span>&nbsp;<span class="metaData">${c.properties.modified?string(datetimeformat)}</span>&nbsp;
@@ -98,7 +98,7 @@ span.metaData {
    color: #515D6B;
 }
 
-a.collabNodeLink {
+a.collabNodeLink, a.collabNodeLink:hover {
    font-size: 12px;
    font-weight: bold;
 }

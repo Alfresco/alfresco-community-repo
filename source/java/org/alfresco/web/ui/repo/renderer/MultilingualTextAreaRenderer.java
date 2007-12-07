@@ -55,6 +55,6 @@ public class MultilingualTextAreaRenderer extends HtmlTextareaRenderer
       out.write(facesContext.getExternalContext().getRequestContextPath());
       out.write("/images/icons/multilingual_marker.gif' title='");
       out.write(tooltip);
-      out.write("' style='margin-left: 6px; _vertical-align: -2px;' />");
+      out.write("' style='margin-left:6px; vertical-align:-2px;'>");
    }
 }

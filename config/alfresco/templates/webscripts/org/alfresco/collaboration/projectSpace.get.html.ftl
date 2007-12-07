@@ -15,7 +15,7 @@
             <div class="projectSpaceIcon">
                <img src="${url.context}${node.icon64}" height="64" width="64">
             </div>
-            <div class="projectSpaceTitle"><a href="${url.context}${node.url}">${node.name}</a></div>
+            <div><a class="projectSpaceTitle" href="${url.context}${node.url}">${node.name}</a></div>
             <div class="projectSpaceSummary" rel="<#if summary != "">${url.context}${summary}?nodeRef=${node.nodeRef}</#if>"></div>
          </div>
 </#list>      
@@ -83,9 +83,15 @@
    padding-right: 8px;
 }
 
-.projectSpaceTitle a {
+a.projectSpaceTitle:link, a.projectSpaceTitle:visited {
    font-weight: bold;
    font-size: 10pt;
+}
+
+a.projectSpaceTitle:hover {
+   font-weight: bold;
+   font-size: 10pt;
+   text-decoration: underline;
 }
 
 .projectSpaceSummary {

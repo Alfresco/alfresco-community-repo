@@ -22,7 +22,7 @@ function main(nodeRef)
       {
          if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}projectsummary"))
          {
-            subSpaces[node.nodeRef] = node;
+            subSpaces[node.name] = node;
          }
       }
    }

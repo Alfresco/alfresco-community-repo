@@ -5,6 +5,8 @@
 </div>
 <div class="colleagueList" rel="${colleaguePresence.colleagues?size}">
    <div id="colleaguesOnline">
+   </div>
+   <div id="colleaguesNotOnline">
 <#list colleaguePresence.colleagues?keys as key>
    <#assign c = colleaguePresence.colleagues[key]>
       <div class="colleagueRow">
@@ -26,8 +28,6 @@
       </div>
 </#list>
    </div>
-   <div id="colleaguesNotOnline">
-   </div>
 </div>
 <div class="collabFooter">
    <span>&nbsp;</span>
@@ -41,21 +41,24 @@
 .colleagueList {
    border-left: 1px solid #B9BEC4;
    border-right: 1px solid #B9BEC4;
-   min-height: 290px;
+   height: 400px;
    overflow-x: hidden;
    overflow-y: scroll;
 }
 
 #colleaguesOnline {
+   float: left;
 }
 #colleaguesNotOnline {
-   
+   float: left;
 }
 
 .colleagueRow {
    clear: both;
+   float: left;
    min-height: 56px;
    padding: 8px 8px 0px;
+   width: 208px;
 }
 
 .colleagueAvatar {

@@ -8,7 +8,7 @@
 <table width="100%" cellpadding="16" cellspacing="0">
    <tr valign="top">
       <td>
-<#list projectSpace.subSpaces?keys as key>
+<#list projectSpace.subSpaces?keys?sort as key>
    <#assign node = projectSpace.subSpaces[key]>
    <#assign summary = node.properties["cm:summaryWebscript"]!"">
          <div class="projectSpace">

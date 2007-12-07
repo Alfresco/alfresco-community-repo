@@ -17,6 +17,9 @@
          </div>
          <div style="margin-left:36px;height:32px;padding: 4px 0px 2px 0px">
             <div>
+               <div class="collabNodeActions">
+                  <a href="${url.context}/n/showDocDetails/${c.nodeRef.storeRef.protocol}/${c.nodeRef.storeRef.identifier}/${c.id}" alt="Details" title="Details"><img src="${url.context}/images/icons/View_details.gif" border="0"></a>
+               </div>
                <a class="collabNodeLink" href="${curl}" target="new">${c.name?html}</a>
             </div>
             <div>
@@ -98,5 +101,10 @@ span.metaData {
 a.collabNodeLink {
    font-size: 12px;
    font-weight: bold;
+}
+
+div.collabNodeActions {
+   float: right;
+   padding: 0px 4px 0px 4px;
 }
 </style>

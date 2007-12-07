@@ -1,49 +1,41 @@
 <#assign doclib = companyhome.nodeByReference[args["nodeRef"]]>
-<table id="collabContainer" cellspacing="0" cellpadding="2" width="100%">
-   <tr>
-      <td valign="top">
+<#assign datetimeformat="EEE, dd MMM yyyy HH:mm">
+<div id="collabContainer">
 
-         <div class="collabHeader">
-            <span>Recent Changes</span>
+   <div class="collabHeader">
+      <span>Recent Changes</span>
+   </div>
+
+   <div class="collabContent">
+   <#assign count=0>
+   <#list doclib.childrenByXPath[".//*[subtypeOf('cm:content')]"] as c>
+      <#assign count=count+1>
+      <#assign curl=url.serviceContext + c.serviceUrl>
+      <div class="collab${(count%2=0)?string("RowEven", "RowOdd")}">
+         <div style="float:left">
+            <a href="${curl}" target="new"><img src="${url.context}${c.icon32}" width="32" height="32" border="0" alt="${c.name?html}" title="${c.name?html}"></a>
          </div>
-
-         <div class="collabContent">
-         
-            <table width="100%" cellpadding="16" cellspacing="0">
-               <tr valign="top">
-                  <td>
-   <#list doclib.childrenByXPath[".//*[subtypeOf('cm:content')]"] as child>
-      <#if (dateCompare(child.properties["cm:modified"], date, 1000*60*60*24*7) == 1) || (dateCompare(child.properties["cm:created"], date, 1000*60*60*24*7) == 1)>
-   	<div class="docLib">
-         <a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" border=0></a>
-   	   <div class="docLibName">
-            <a href="${url.context}${child.url}" target="new">${child.properties.name}</a>
-   	   </div>
-   	   <div class="docLibProperty">
-   	   <#if dateCompare(child.properties["cm:modified"], child.properties["cm:created"], 100, "==") == 1>
-            Created
-         <#else>
-            Modified
-         </#if>
-   	   </div>
-   	   <div class="docLibProperty">
-            ${child.properties["cm:modified"]?datetime}
-   	   </div>
-   	</div>
-      </#if>
+         <div style="margin-left:36px;height:32px;padding: 4px 0px 2px 0px">
+            <div>
+               <a class="collabNodeLink" href="${curl}" target="new">${c.name?html}</a>
+            </div>
+            <div>
+               <#if c.properties.description?exists>${c.properties.description?html}</#if>
+            </div>
+            <div>
+               <span class="metaTitle">Modified:</span>&nbsp;<span class="metaData">${c.properties.modified?string(datetimeformat)}</span>&nbsp;
+               <span class="metaTitle">Modified&nbsp;By:</span>&nbsp;<span class="metaData">${c.properties.modifier}</span>
+               <span class="metaTitle">Size:</span>&nbsp;<span class="metaData">${(c.size/1000)?string("0.##")}&nbsp;KB</span>
+            </div>
+         </div>
+      </div>
    </#list>
-                  </td>
-               </tr>
-            </table>
 
-         </div>
-         <div class="collabFooter">
-            <span>&nbsp;</span>
-         </div>
-
-      </td>
-   </tr>
-</table>
+   </div>
+   <div class="collabFooter">
+      <span>&nbsp;</span>
+   </div>
+</div>
 
 <style>
 /* Main Container elements */
@@ -68,6 +60,7 @@
 .collabContent {
    border-left: 1px solid #B9BEC4;
    border-right: 1px solid #B9BEC4;
+   padding: 8px;
 }
 
 .collabFooter {
@@ -75,10 +68,35 @@
    margin: 0px;
    padding: 0px 0px 0px 4px;
 }
+
 .collabFooter span {
    background: url(${url.context}/images/parts/collab_bottomright.png) no-repeat right top;
    display: block;
    float: none;
    padding: 5px 15px 4px 6px;
+}
+
+div.collabRowEven {
+   padding: 4px 2px 4px 2px;
+}
+
+div.collabRowEven {
+   padding: 4px 2px 4px 2px;
+   background-color: #F1F7FD;
+}
+
+span.metaTitle {
+   font-size: 11px;
+   color: #666677;
+}
+
+span.metaData {
+   font-size: 11px;
+   color: #515D6B;
+}
+
+a.collabNodeLink {
+   font-size: 12px;
+   font-weight: bold;
 }
 </style>

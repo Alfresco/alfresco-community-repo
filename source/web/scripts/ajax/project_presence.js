@@ -16,9 +16,12 @@ var ProjectPresence =
       
       statuses.each(function(stat, i)
       {
+         var row = rows[i];
          var userDetails = stat.attributes["rel"].value.split("|");
          var proxyURL = window.contextPath + "/ajax/invoke/PresenceProxyBean.proxyRequest";
          var statusURL = ProjectPresence.getStatusURL(userDetails);
+         row.removeEvent("click");
+         row.setStyle("cursor", "auto");
          
          if (statusURL != "")
          {
@@ -40,11 +43,20 @@ var ProjectPresence =
                   }
                   if (statusType == "online")
                   {
-                     $("colleaguesOnline").adopt(rows[i]);
+                     $("colleaguesOnline").adopt(row);
+                     if ((userDetails[0] == "skype") && (row.attributes["rel"] == null))
+                     {
+                        row.addEvent("click", function()
+                        {
+                           window.location = "skype:" + userDetails[1] + "?chat";
+                        });
+                        row.setStyle("cursor", "pointer");
+                     }
                   }
                   else
                   {
                      $("colleaguesNotOnline").adopt(rows[i]);
+                     // Fix-up IE overlay for images
                      if (window.ie)
                      {
                         stat.getParent().setStyle("opacity", ProjectPresence.OFFLINE_OPACITY);
@@ -57,7 +69,8 @@ var ProjectPresence =
          {
             stat.addClass("none");
             stat.title = "User's presence provider has not been configured by Alfresco admin";
-            $("colleaguesNotOnline").adopt(rows[i]);
+            $("colleaguesNotOnline").adopt(row);
+            // Fix-up IE overlay for images
             if (window.ie)
             {
                stat.getParent().setStyle("opacity", ProjectPresence.OFFLINE_OPACITY);

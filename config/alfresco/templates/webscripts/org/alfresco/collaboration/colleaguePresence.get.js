@@ -18,14 +18,10 @@ function main(nodeRef)
       colleagues = parsePermissions(space);
    }
 
-   if (person.assocs["cm:avatar"] != null)
-   {
-      model.img =  person.assocs["cm:avatar"][0].url;
-   }
-   
    var colleaguePresence =
    {
-      "colleagues": colleagues
+      "colleagues": colleagues,
+      "self": person
    };
    return colleaguePresence;
 }

@@ -9,7 +9,7 @@
    <div id="colleaguesNotOnline">
 <#list colleaguePresence.colleagues?keys as key>
    <#assign c = colleaguePresence.colleagues[key]>
-      <div class="colleagueRow">
+      <div class="colleagueRow"<#if c.nodeRef = colleaguePresence.self.nodeRef>rel="self"</#if>>
          <div class="colleagueAvatar">
    <#if (c.assocs["cm:avatar"]?exists)>
       <#assign avatarURL = c.assocs["cm:avatar"][0].url>

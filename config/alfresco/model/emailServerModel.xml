@@ -63,7 +63,7 @@
 				<property name="emailserver:alias">
 					<title>Alias</title>
 					<type>d:text</type>
-					<mandatory>true</mandatory>
+					<mandatory>false</mandatory>
                <constraints>
                   <constraint ref="emailserver:alias" />
                </constraints>

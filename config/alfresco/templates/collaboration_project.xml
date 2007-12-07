@@ -139,6 +139,7 @@
             <app:uifacets></app:uifacets>
             <cm:projectsummary></cm:projectsummary>
             <cm:webscriptable></cm:webscriptable>
+            <emailserver:aliasable></emailserver:aliasable>
           </view:aspects>
           <view:properties>
             <cm:description></cm:description>

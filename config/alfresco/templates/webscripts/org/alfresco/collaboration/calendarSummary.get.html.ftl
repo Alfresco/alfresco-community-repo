@@ -1,2 +1,2 @@
-${calendarSummary.eventsToday} events today<br>
-${calendarSummary.eventsTomorrow} events tomorrow
+${calendarSummary.thisWeek} events this week<br>
+${calendarSummary.nextWeek} events next week

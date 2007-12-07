@@ -1,74 +1,146 @@
-<div class="blogTitle">Blog Status</div>
+<div id="collabContainer">
 
-<div id="blogContainer">
-   <div class="blogStatusTitle">Pending Articles</div>
-   <div class="blogPending">
-<#list blogSpace.pending as p>
-   	<div class="blogPost">
-   	   <div class="blogPostName">
-      	   ${p.name}, ${p.properties["cm:title"]!""}
-   	   </div>
-   	   <div class="blogPostActions">
-   	      <span class="blogPostAction"><img src="${url.context}/images/icons/blog_post.png"><input type="button" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=p")}" value="Post" /></span>
-   	   </div>
-   	</div>
-</#list>
+   <div class="collabHeader">
+      <span>Articles pending publishing (${blogSpace.pending?size})</span>
    </div>
 
-   <div class="blogStatusTitle">Published Articles</div>
-   <div class="blogPublished">
-<#list blogSpace.published as p>
-   	<div class="blogPost">
-   	   <div class="blogPostName">
-   	      <a href="${p.properties["blg:link"]}" target="_blank">${p.properties["cm:title"]!""} (${p.name}) Published=${p.properties["blg:published"]?string}</a>
-   	   </div>
-   	   <div class="blogPostActions">
-   	      <span class="blogPostAction"><img src="${url.context}/images/icons/blog_update.png"><input type="button" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=u")}" value="Update" /></span>
-   	      <span class="blogPostAction"><img src="${url.context}/images/icons/blog_remove.png"><input type="button" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=r")}" value="Remove" /></span>
-   	   </div>
-   	</div>
+   <div class="collabContent">
+   
+      <table width="100%" cellpadding="16" cellspacing="0">
+         <tr valign="top">
+            <td>
+
+               <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr class="blogRowHeader">
+                     <td>&nbsp;</td>
+                     <td>Name</td>
+                     <td>Created on</td>
+                     <td>Created by</td>
+                     <td>Actions</td>
+                  </tr>
+<#assign rowNum = 0>
+<#list blogSpace.pending as article>
+   <#assign n = article.node>
+   <#assign p = article.person>
+   <#assign rowNum = rowNum + 1>
+               	<tr class="blogRowPost${(rowNum % 2 = 0)?string("Even", "Odd")}">
+               	   <td><img src="${url.context}${n.icon32}"></td>
+               	   <td>${n.name}</td>
+               	   <td>${n.properties["cm:created"]?datetime}</td>
+               	   <td>${p.properties["cm:firstName"]} ${p.properties["cm:lastName"]}</td>
+               	   <td>
+               	      <a class="blogAction" title="Post this article" href="${scripturl("?nodeRef=" + n.parent.nodeRef + "&n=" + n.nodeRef + "&a=p")}"><img src="${url.context}/images/icons/blog_post.png"></a>
+               	   </td>
+               	</tr>
 </#list>
+               </table>
+            </td>
+         </tr>
+      </table>
+
    </div>
+   <div class="collabFooter">
+      <span>&nbsp;</span>
+   </div>
+
+   <div class="collabHeader">
+      <span>Articles to be updated (${blogSpace.updates?size})</span>
+   </div>
+
+   <div class="collabContent">
+   
+      <table width="100%" cellpadding="16" cellspacing="0">
+         <tr valign="top">
+            <td>
+
+               <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr class="blogRowHeader">
+                     <td>&nbsp;</td>
+                     <td>Name</td>
+                     <td>Published on</td>
+                     <td>Modified on</td>
+                     <td>Actions</td>
+                  </tr>
+<#assign rowNum = 0>
+<#list blogSpace.updates as article>
+   <#assign n = article.node>
+   <#assign p = article.person>
+   <#assign rowNum = rowNum + 1>
+               	<tr class="blogRowPost${(rowNum % 2 = 0)?string("Even", "Odd")}">
+               	   <td><img src="${url.context}${n.icon32}"></td>
+               	   <td>${n.name}</td>
+               	   <td>${n.properties["blg:lastUpdate"]?datetime}</td>
+               	   <td>${n.properties["cm:modified"]?datetime}</td>
+               	   <td>
+               	      <a class="blogAction" title="Update blog" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=u")}"><img src="${url.context}/images/icons/blog_update.png"></a>
+               	      <a class="blogAction" title="Remove from blog" href="${scripturl("?nodeRef=" + n.parent.nodeRef + "&n=" + n.nodeRef + "&a=r")}"><img src="${url.context}/images/icons/blog_remove.png"></a>
+               	   </td>
+               	</tr>
+</#list>
+               </table>
+            </td>
+         </tr>
+      </table>
+
+   </div>
+   <div class="collabFooter">
+      <span>&nbsp;</span>
+   </div>
+
 </div>
 
 <style>
-.blogTitle
-{
-	font-family: "Trebuchet MS", Verdana, Helvetica, sans-serif;
-	font-size: medium;
-	font-weight: bold;
-	margin: -8px 0px 4px;
-	float: left;
+/* Main Container elements */
+#collabContainer {
+   width: 100%;
 }
 
-.blogStatusTitle
-{
-	padding: 4px 0px 0px 0px;
-	font-weight: bold;
-   clear: left;
-	float: left;
+.collabHeader {
+   background: url(${url.context}/images/parts/collab_topleft.png) no-repeat left top;
+   margin: 0px -1px;
+   padding: 0px 0px 0px 8px;
+}
+.collabHeader span {
+   background: url(${url.context}/images/parts/collab_topright.png) no-repeat right top;
+   display: block;
+   float: none;
+   padding: 5px 15px 4px 6px;
+   font-weight: bold;
+   font-size: 10pt;
 }
 
-.blogPending
-{
-   clear: left;
-   float: left;
+.collabContent {
+   border-left: 1px solid #B9BEC4;
+   border-right: 1px solid #B9BEC4;
 }
 
-.blogPublished
-{
-   clear: left;
-   float: left;
+.collabFooter {
+   background: url(${url.context}/images/parts/collab_bottomleft.png) no-repeat left top;
+   margin: 0px;
+   padding: 0px 0px 0px 4px;
+}
+.collabFooter span {
+   background: url(${url.context}/images/parts/collab_bottomright.png) no-repeat right top;
+   display: block;
+   float: none;
+   padding: 5px 15px 4px 6px;
 }
 
-.blogPost
-{
-   clear: left;
-   float: left;
+.blogRowHeader {
+}
+.blogRowHeader td {
+   border-bottom: 1px solid #ccc;
+   font-size: 12px;
+   font-weight: bold;
 }
 
-#blogContainer
-{
-	clear: left;
+.blogRowPostEven {
+   background-color: #f0f0f0;
+}
+.blogRowPostOdd {
+}
+
+.blogAction img {
+   border: none;
 }
 </style>

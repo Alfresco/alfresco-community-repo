@@ -22,7 +22,12 @@ function main(nodeRef)
       
       if (space != null)
       {
-         for each(node in space.children)
+         // generate lucene PATH to get all child documents
+         var path = space.qnamePath + "//*";
+         var nodes = search.luceneSearch("+PATH:\"" + path + "\"" +
+            " +(@cm\\:content.mimetype:\"text/plain\" OR @cm\\:content.mimetype:\"text/html\")");
+
+         for each(node in nodes)
          {
             if ((node.hasAspect("blg:blogPost")) && (node.properties["blg:published"] == true))
             {

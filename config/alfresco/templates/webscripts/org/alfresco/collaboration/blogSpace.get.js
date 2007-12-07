@@ -9,7 +9,7 @@
  *                 "u" = update
  *                 "r" = remove
  *
- * Outputs: blogSpace - object containing published and pending node arrays
+ * Outputs: blogSpace - object containing node arrays of articles pending and to be updated
  */
 parseArgs(args["n"], args["a"]);
 model.blogSpace = main(args["nodeRef"]);
@@ -54,8 +54,11 @@ function parseArgs(nodeId, action)
 
 function main(nodeRef)
 {
-   var published = new Array(),
-      pending = new Array();
+   var pending = new Array(),
+      updates = new Array();
+
+   var article = {};
+   var person;
 
    var space = search.findNode(nodeRef);
    
@@ -63,21 +66,31 @@ function main(nodeRef)
    {
       for each(node in space.children)
       {
+         person = people.getPerson(node.properties["cm:creator"]);
+         article = 
+         {
+            "node": node,
+            "person": person
+         };
+
          if ((node.hasAspect("blg:blogPost")) && (node.properties["blg:published"] == true))
          {
-            published.push(node);
+               if (node.properties["cm:modified"] > node.properties["blg:lastUpdate"])
+               {
+                  updates.push(article);
+               }
          }
          else
          {
-            pending.push(node);
+            pending.push(article);
          }
       }
    }
    
    var blogSpace =
    {
-      "published": published,
-      "pending": pending
+      "pending": pending,
+      "updates": updates
    };
    return blogSpace;
 }

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Email Summary</shortname>
+  <description>Collaboration Email Summary</description>
+  <url>/collaboration/emailSummary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

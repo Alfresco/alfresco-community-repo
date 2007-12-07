@@ -6,15 +6,15 @@
  *
  * Outputs:
  *    calendarSummary - object containing
- *       eventsToday - Number of events occuring today
+ *       eventsthis - Number of events occuring this
  *       eventsTomorrow - Number of events occuring tomorrow
  */
 model.calendarSummary = main(args["nodeRef"]);
  
 function main(nodeRef)
 {
-   var eventsToday = 0,
-       eventsTomorrow = 0;
+   var thisWeek = 0,
+       nextWeek = 0;
 
    if (nodeRef != null)
    {
@@ -24,26 +24,33 @@ function main(nodeRef)
          // generate lucene PATH to calendar events
          var path = calSpace.qnamePath + "/cm:CalEvents/*";
          
-         // find the events scheduled for today
-         var t = new Date();
-         var todayQuery = t.getFullYear() + "\\-" + (t.getMonth()+1) + "\\-" + t.getDate();
+         // find the events scheduled for this week
+         var fromDate = new Date();
+         // go back to previous Sunday
+         fromDate.setDate(fromDate.getDate() - fromDate.getDay());
+         var fromQuery = fromDate.getFullYear() + "\\-" + (fromDate.getMonth()+1) + "\\-" + fromDate.getDate();
+         var toDate = new Date();
+         toDate.setDate(fromDate.getDate() + 7);
+         var toQuery = toDate.getFullYear() + "\\-" + (toDate.getMonth()+1) + "\\-" + toDate.getDate();
          var events = search.luceneSearch("+PATH:\"" + path + '"' +
-            " +@ia\\:fromDate:[" + todayQuery + "T00\\:00\\:00 TO " + todayQuery + "T23\\:59\\:59]");
-         eventsToday = events.length;
+            " +@ia\\:fromDate:[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]");
+         thisWeek = events.length;
          
-         // inc date to tommorow
-         t.setDate(t.getDate() + 1);
-         var tomQuery = t.getFullYear() + "\\-" + (t.getMonth()+1) + "\\-" + t.getDate();
+         // increment to and from dates to cover next week
+         fromDate.setDate(toDate.getDate());
+         fromQuery = fromDate.getFullYear() + "\\-" + (fromDate.getMonth()+1) + "\\-" + fromDate.getDate();
+         toDate.setDate(toDate.getDate() + 7);
+         toQuery = toDate.getFullYear() + "\\-" + (toDate.getMonth()+1) + "\\-" + toDate.getDate();
          events = search.luceneSearch("+PATH:\"" + path + '"' +
-            " +@ia\\:fromDate:[" + tomQuery + "T00\\:00\\:00 TO " + tomQuery + "T23\\:59\\:59]");
-         eventsTomorrow = events.length;
+            " +@ia\\:fromDate:[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]");
+         nextWeek = events.length;
       }
    }
    
    var calendarSummary =
    {
-      "eventsToday": eventsToday,
-      "eventsTomorrow": eventsTomorrow
+      "thisWeek": thisWeek,
+      "nextWeek": nextWeek
    };
    return calendarSummary
 }

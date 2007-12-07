@@ -179,6 +179,10 @@
                     <prop key="messages">alfresco/messages/bootstrap-templates</prop>
                 </props>
                 <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
+                    <prop key="location">alfresco/templates/collaboration_project.xml</prop>
+                </props>
+                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
                     <prop key="location">alfresco/templates/content_template_examples.xml</prop>
                 </props>

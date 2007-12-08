@@ -79,12 +79,12 @@
    padding: 5px 15px 4px 6px;
 }
 
-div.collabRowEven {
-   padding: 4px 2px 4px 2px;
+div.collabRowOdd {
+   padding: 4px 2px;
 }
 
 div.collabRowEven {
-   padding: 4px 2px 4px 2px;
+   padding: 4px 2px;
    background-color: #F1F7FD;
 }
 
@@ -105,6 +105,6 @@ a.collabNodeLink, a.collabNodeLink:hover {
 
 div.collabNodeActions {
    float: right;
-   padding: 0px 4px 0px 4px;
+   padding: 0px 4px;
 }
 </style>

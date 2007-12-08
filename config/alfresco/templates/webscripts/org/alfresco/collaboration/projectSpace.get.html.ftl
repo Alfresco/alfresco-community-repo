@@ -5,21 +5,34 @@
 </div>
 <div class="collabContainer">
 
-<table width="100%" cellpadding="16" cellspacing="0">
+<table width="100%" cellpadding="0" cellspacing="0">
    <tr valign="top">
+      <td width="1" style="background-color:#b9bec4;"></td>
       <td>
+         <table width="100%" cellpadding="16" cellspacing="0">
+            <tr vaalign="top">
+               <td>
+<#assign panelCount = 0>
 <#list projectSpace.subSpaces?keys?sort as key>
    <#assign node = projectSpace.subSpaces[key]>
    <#assign summary = node.properties["cm:summaryWebscript"]!"">
-         <div class="projectSpace">
-            <div class="projectSpaceIcon">
-               <img src="${url.context}${node.icon64}" height="64" width="64">
-            </div>
-            <div><a class="projectSpaceTitle" href="${url.context}${node.url}">${node.name}</a></div>
-            <div class="projectSpaceSummary" rel="<#if summary != "">${url.context}${summary}?nodeRef=${node.nodeRef}</#if>"></div>
-         </div>
+                  <div class="projectSpace">
+                     <div class="projectSpaceIcon">
+                        <a href="${url.context}${node.url}"><img src="${url.context}${node.icon64}" height="64" width="64"></a>
+                     </div>
+                     <div><a class="projectSpaceTitle" href="${url.context}${node.url}">${node.name}</a></div>
+                     <div class="projectSpaceSummary" rel="<#if summary != "">${url.context}${summary}?nodeRef=${node.nodeRef}</#if>"></div>
+                  </div>
+   <#assign panelCount = panelCount + 1>
+   <#if (panelCount % 2 = 0)>
+         <div style="clear:left;"></div>
+   </#if>
 </#list>      
+               </td>
+            </tr>
+         </table>
       </td>
+      <td width="1" style="background-color:#b9bec4;"></td>
    </tr>
 </table>
 
@@ -54,21 +67,19 @@
 
 .collabHeader {
    background: url(${url.context}/images/parts/collab_topleft.png) no-repeat left top;
-   margin: 0px -1px;
-   padding: 0px 0px 0px 8px;
+   margin: 0px;
+   padding: 0px 0px 0px 2px;
 }
 .collabHeader span {
    background: url(${url.context}/images/parts/collab_topright.png) no-repeat right top;
    display: block;
    float: none;
-   padding: 5px 15px 4px 6px;
+   padding: 5px 15px 6px 6px;
    font-weight: bold;
    font-size: 10pt;
 }
 
 .collabContainer {
-   border-left: 1px solid #B9BEC4;
-   border-right: 1px solid #B9BEC4;
    min-height: 290px;
 }
 
@@ -81,6 +92,9 @@
 .projectSpaceIcon {
    float: left;
    padding-right: 8px;
+}
+.projectSpaceIcon a img {
+   border: none;
 }
 
 a.projectSpaceTitle:link, a.projectSpaceTitle:visited {

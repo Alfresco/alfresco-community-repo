@@ -8,7 +8,12 @@ var ProjectPresence =
    init: function()
    {
       window.contextPath = ProjectPresence.getContextPath();
-      
+		// $("refreshColleagues").addEvent("click", ProjectPresence.refreshStatus);
+		ProjectPresence.refreshStatus();
+	},
+	
+	refreshStatus: function()
+	{
       var statuses = $$("#projectColleagues .colleaguePresence");
       var rows = $$("#projectColleagues .colleagueRow");
       
@@ -20,11 +25,14 @@ var ProjectPresence =
          var userDetails = stat.attributes["rel"].value.split("|");
          var proxyURL = window.contextPath + "/ajax/invoke/PresenceProxyBean.proxyRequest";
          var statusURL = ProjectPresence.getStatusURL(userDetails);
+
          row.removeEvent("click");
          row.setStyle("cursor", "auto");
          
          if (statusURL != "")
          {
+            stat.attributes["class"].value = "colleaguePresence";
+            
             // ajax call to load online status
             var myAjax = new Ajax(proxyURL, {
                method: 'get',

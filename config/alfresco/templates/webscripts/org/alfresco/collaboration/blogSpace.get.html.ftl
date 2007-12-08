@@ -29,7 +29,8 @@
                	   <td>${n.properties["cm:created"]?datetime}</td>
                	   <td>${p.properties["cm:firstName"]} ${p.properties["cm:lastName"]}</td>
                	   <td>
-               	      <a class="blogAction" title="Post this article" href="${scripturl("?nodeRef=" + n.parent.nodeRef + "&n=" + n.nodeRef + "&a=p")}"><img src="${url.context}/images/icons/blog_post.png"></a>
+                        <a class="blogAction" title="Details" href="${url.context}/n/showDocDetails/${n.nodeRef.storeRef.protocol}/${n.nodeRef.storeRef.identifier}/${n.id}"><img src="${url.context}/images/icons/View_details.gif" alt="details"></a>
+               	      <a class="blogAction" title="Post this article" href="${scripturl("?nodeRef=" + n.parent.nodeRef + "&n=" + n.nodeRef + "&a=p")}"><img src="${url.context}/images/icons/blog_post.png" alt="details"></a>
                	   </td>
                	</tr>
 </#list>
@@ -72,6 +73,7 @@
                	   <td>${n.properties["blg:lastUpdate"]?datetime}</td>
                	   <td>${n.properties["cm:modified"]?datetime}</td>
                	   <td>
+                        <a class="blogAction" title="Details" href="${url.context}/n/showDocDetails/${n.nodeRef.storeRef.protocol}/${n.nodeRef.storeRef.identifier}/${n.id}"><img src="${url.context}/images/icons/View_details.gif" alt="details"></a>
                	      <a class="blogAction" title="Update blog" href="${scripturl("?nodeRef=" + p.parent.nodeRef + "&n=" + p.nodeRef + "&a=u")}"><img src="${url.context}/images/icons/blog_update.png"></a>
                	      <a class="blogAction" title="Remove from blog" href="${scripturl("?nodeRef=" + n.parent.nodeRef + "&n=" + n.nodeRef + "&a=r")}"><img src="${url.context}/images/icons/blog_remove.png"></a>
                	   </td>

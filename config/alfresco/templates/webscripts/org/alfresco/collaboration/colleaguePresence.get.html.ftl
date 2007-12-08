@@ -35,9 +35,6 @@
 
 <style>
 /* Colleague Status */
-#projectColleagues .collabHeader {
-}
-
 .colleagueList {
    border-left: 1px solid #B9BEC4;
    border-right: 1px solid #B9BEC4;
@@ -111,31 +108,5 @@
 }
 
 .colleagueDetail {
-}
-
-.collabHeader {
-   background: url(${url.context}/images/parts/collab_topleft.png) no-repeat left top;
-   margin: 0px -1px;
-   padding: 0px 0px 0px 8px;
-}
-.collabHeader span {
-   background: url(${url.context}/images/parts/collab_topright.png) no-repeat right top;
-   display: block;
-   float: none;
-   padding: 5px 15px 4px 6px;
-   font-weight: bold;
-   font-size: 10pt;
-}
-
-.collabFooter {
-   background: url(${url.context}/images/parts/collab_bottomleft.png) no-repeat left top;
-   margin: 0px;
-   padding: 0px 0px 0px 4px;
-}
-.collabFooter span {
-   background: url(${url.context}/images/parts/collab_bottomright.png) no-repeat right top;
-   display: block;
-   float: none;
-   padding: 5px 15px 4px 6px;
 }
 </style>

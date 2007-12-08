@@ -5,6 +5,12 @@ var ProjectSpace =
 {
 	init: function()
 	{
+		// $("refreshProjectSpace").addEvent("click", ProjectSpace.updateSummaries);
+		ProjectSpace.updateSummaries();
+   },
+   
+   updateSummaries: function()
+   {
 		var summaries = $$("#projectSummary .projectSpaceSummary");
 
 		summaries.each(function(summary, i)

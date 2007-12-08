@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Blog Integration Service -->
+    
+    <bean id="BlogIntegrationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.blogIntegration.BlogIntegrationService</value>
+        </property>
+        <property name="target">
+            <ref bean="blogIntegrationService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="BlogIntegrationService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="BlogIntegrationService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="BlogIntegrationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="BlogIntegrationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <bean id="blogIntegrationService" class="org.alfresco.module.blogIntegration.BlogIntegrationServiceImpl">
+    	<property name="nodeService" ref="NodeService"/>
+    	<property name="contentService" ref="ContentService"/>
+    </bean>    
+    
+    <!-- Blog Integration Implementations -->
+    
+    <bean id="baseBlogIntegrationImplmentation" abstract="true" init-method="register">
+    	<property name="blogIntegrationService" ref="blogIntegrationService"/>
+    </bean>
+    
+    <bean id="wordPressBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.module.blogIntegration.wordpress.WordPressIntegration">
+    	<property name="name" value="wordpress"/>
+    	<property name="displayName" value="WordPress"/>
+    </bean>
+    
+    <bean id="typePadBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.module.blogIntegration.typepad.TypepadIntegration">
+    	<property name="name" value="typepad"/>
+    	<property name="displayName" value="Typepad"/>
+    </bean>
+
+	<!-- UI Configuration Bootstrap -->
+
+	<bean id="org_alfresco_module_blogIntegration_ConfigBootstrap" class="org.alfresco.web.config.WebClientConfigBootstrap" init-method="init">
+       <property name="configs">
+         <list>
+            <value>classpath:alfresco/module/org.alfresco.module.blogIntegration/ui/web-client-custom.xml</value>
+         </list>
+       </property>
+    </bean>    
+    
+    <!-- UI Action Listeners -->
+    
+    <bean id="org_alfresco_module_blogIntegration_BlogDetailsActionListener" class="org.alfresco.module.blogIntegration.ui.BlogDetailsActionListener">               
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="org_alfresco_module_blogIntegration_BlogActionListener" class="org.alfresco.module.blogIntegration.ui.BlogActionListener">               
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="blogIntegrationService" ref="BlogIntegrationService"/>
+    </bean>
+
+	<!-- Blog Repository Actions -->
+	
+   <bean id="blog-post" class="org.alfresco.module.blogIntegration.BlogAction" parent="action-executer">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="blogIntegrationService">
+         <ref bean="blogIntegrationService" />
+      </property>
+   </bean>
+
+</beans>

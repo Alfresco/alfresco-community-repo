@@ -61,6 +61,7 @@
             <app:uifacets></app:uifacets>
             <cm:webscriptable></cm:webscriptable>
             <cm:projectsummary></cm:projectsummary>
+            <blg:blogDetails></blg:blogDetails>
           </view:aspects>
           <view:properties>
             <cm:description></cm:description>

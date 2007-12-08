@@ -11,13 +11,13 @@ body {
    margin: 0px;
    padding: 0px;
    overflow: hidden;
-scrollbar-arrow-color: #0073e6;
-scrollbar-3dlight-color: #c0c0c0;
-scrollbar-darkshadow-color: #4F4F82;
-scrollbar-face-color: #f4f4f0;
-scrollbar-highlight-color: #fffff;
-scrollbar-shadow-color: #d0d0d0;
-scrollbar-track-color: #ffffff;
+   scrollbar-arrow-color: #0073e6;
+   scrollbar-3dlight-color: #c0c0c0;
+   scrollbar-darkshadow-color: #4F4F82;
+   scrollbar-face-color: #f4f4f0;
+   scrollbar-highlight-color: #fffff;
+   scrollbar-shadow-color: #d0d0d0;
+   scrollbar-track-color: #f0f0f0;
 }
 
 #overlayPanel

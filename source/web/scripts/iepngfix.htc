@@ -1,0 +1,103 @@
+<public:component" lightweight="true">
+<public:attach event="onpropertychange" onevent="iePNGFix(0)" />
+
+<script type="text/javascript">
+
+// IE5.5+ PNG Alpha Fix v1.0RC5
+// (c) 2004-2007 Angus Turnbull http://www.twinhelix.com
+
+// This is licensed under the GNU LGPL, version 2.1 or later.
+// For details, see: http://creativecommons.org/licenses/LGPL/2.1/
+
+
+// This must be a path to a blank image, relative to the HTML document(s).
+// In production use I suggest '/images/blank.gif' or similar. That's all!
+if (typeof blankImg == 'undefined') var blankImg = getContextPath() + '/images/parts/blank.gif';
+
+function getContextPath()
+{
+   var path = window.location.pathname;
+   var idx = path.indexOf("/", 1);
+   var contextPath = "";
+   if (idx != -1)
+   {
+      contextPath = path.substring(0, idx);
+   }
+   else
+   {
+      contextPath = "";
+   }
+
+   return contextPath;
+}
+
+
+function filt(s)
+{
+ if (s && currentStyle.width == 'auto' && currentStyle.height == 'auto')
+  style.width = offsetWidth + 'px';
+
+ var f = 'DXImageTransform.Microsoft.AlphaImageLoader';
+ var sM = (currentStyle.backgroundRepeat == 'no-repeat') ? 'crop' : 'scale';
+ s = (s || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
+ if (filters[f])
+ {
+  filters[f].enabled = s ? true : false;
+  if (s) with (filters[f]) { src = s }
+ }
+ else if (s) style.filter = 'progid:'+f+'(src="'+s+'",sizingMethod="' + sM + '")';
+}
+
+function iePNGFix(init)
+{
+ if (!/MSIE (5\.5|6)/.test(navigator.userAgent)) return;
+ var evt = init ? { propertyName: 'src,background' } : event;
+ var isSrc = /src/.test(evt.propertyName);
+ var isBg = /background/.test(evt.propertyName);
+ var isClass = !init &&
+  ((this.className != this._png_class) && (this.className || this._png_class));
+ if (!(isSrc || isBg || isClass)) return;
+ this._png_class = this.className;
+ var blank = blankImg.match(/([^\/]+)$/)[1];
+
+ // Required for Whatever:hover support - erase any set BG if className changes.
+ if (isClass && ((style.backgroundImage.indexOf('url(') == -1) ||
+     (style.backgroundImage.indexOf(blank) > -1)))
+ {
+  style.backgroundImage = '';
+  return;
+ }
+
+ var bgSrc = currentStyle.backgroundImage || style.backgroundImage;
+
+ if (isSrc && this.src && /IMG|INPUT/.test(nodeName))
+ {
+  if ((/\.png([^\.]+|$)/i).test(src))
+  {
+   filt(src);
+   src = blankImg;
+  }
+  else if (src.indexOf(blank) == -1) filt();
+ }
+ else if (bgSrc.indexOf(blankImg) == -1)
+ {
+  var bgPNG = bgSrc.match(/^url[("']+(.*\.png[^\)"']*)[\)"']+$/i);
+
+  if (bgPNG)
+  {
+   style.backgroundImage = 'url("' + blankImg + '")';
+   filt(bgPNG[1]);
+   // IE link fix -- maybe add IFRAMEs etc here.
+   var links = all.tags('a'), i = links.length;
+   if (i && (/relative|absolute/i).test(currentStyle.position))
+    alert('IEPNGFix: Links won\'t work within positioned elements');
+   while (i--) links[i].style.position = 'relative';
+  }
+  else filt();
+ }
+}
+
+iePNGFix(1);
+
+</script>
+</public:component>

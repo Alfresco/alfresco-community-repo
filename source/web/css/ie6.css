@@ -1,0 +1,8 @@
+/* IE6 Fixes */
+
+/*
+ *** .png fix
+ */
+img {
+   behavior: url(/alfresco/scripts/iepngfix.htc)
+}

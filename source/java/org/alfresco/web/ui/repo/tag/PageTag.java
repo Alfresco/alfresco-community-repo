@@ -48,6 +48,8 @@ public class PageTag extends TagSupport
    private final static String SCRIPTS_END   = "\"></script>\n";
    private final static String STYLES_START  = "<link rel=\"stylesheet\" href=\"";
    private final static String STYLES_MAIN   = "\" type=\"text/css\">\n";
+   private final static String IE6COND_START = "<!--[if IE 6]>\n";
+   private final static String IE6COND_END   = "<![endif]-->\n";
 
    private final static String[] SCRIPTS = 
    {
@@ -75,6 +77,11 @@ public class PageTag extends TagSupport
    {
       "/css/main.css",
       "/css/picker.css"
+   };
+
+   private final static String[] IE6COND_CSS = 
+   {
+      "/css/ie6.css"
    };
 
 /**
@@ -234,6 +241,17 @@ public class PageTag extends TagSupport
             out.write(css);
             out.write(STYLES_MAIN);
          }
+         
+         // IE6COND_CSS style includes
+         out.write(IE6COND_START);
+         for (final String ie6cond_css : PageTag.IE6COND_CSS)
+         {
+            out.write(STYLES_START);
+            out.write(reqPath);
+            out.write(ie6cond_css);
+            out.write(STYLES_MAIN);
+         }
+         out.write(IE6COND_END);
          
          // JavaScript includes
          for (final String s : PageTag.SCRIPTS)

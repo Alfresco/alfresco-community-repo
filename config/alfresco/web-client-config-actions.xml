@@ -746,7 +746,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- delete item action -->
          <action id="delete_item">
             <label-id>delete</label-id>
@@ -758,11 +758,54 @@
             </params>
          </action>
 
+
+         <action id="postBlog">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.module.blogIntegration.ui.PostBlogEvaluator</evaluator>
+            <label>Post To Blog</label>
+            <image>/images/icons/edit_icon.gif</image>
+		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+		      <params>
+		         <param name="id">#{actionContext.id}</param>
+         		<param name="action">post</param>
+      		</params>
+         </action>
+
+         <action id="updateBlog">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.module.blogIntegration.ui.UpdateBlogEvaluator</evaluator>
+            <label>Update Blog Post</label>
+            <image>/images/icons/edit_icon.gif</image>
+		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+		      <params>
+		         <param name="id">#{actionContext.id}</param>
+         		<param name="action">update</param>
+      		</params>
+         </action>
+
+         <action id="removeBlog">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.module.blogIntegration.ui.UpdateBlogEvaluator</evaluator>
+            <label>Remove Blog Post</label>
+            <image>/images/icons/edit_icon.gif</image>
+		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+		      <params>
+		         <param name="id">#{actionContext.id}</param>
+         		<param name="action">remove</param>
+      		</params>
+         </action>
+
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
               as defined above and can override or supply display elements for the group of actions -->
          <!-- the component is responsible for making the context Node object available with name
               of 'actionContext' so the actions can access it directly to get properties -->
-         
+
          <!-- Action for adding content - quick upload -->
          <action-group id="add_content_menu">
              <style>white-space:nowrap</style>
@@ -877,6 +920,9 @@
             <action idref="add_translation" />
             <action idref="add_translation_wc" />
             <action idref="ml_details" />
+            <action idref="postBlog" />
+            <action idref="updateBlog" />
+            <action idref="removeBlog" />
          </action-group>
 
          <action-group id="multilingual_details_actions">

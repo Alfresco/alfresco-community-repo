@@ -678,5 +678,33 @@
          <show-property name="title" show-in-view-mode="false" show-in-edit-mode="false" />
       </property-sheet>
    </config>
+
+   <!-- ********************************** -->
+   <!-- Configuration for Blog aspects     -->
+   <!-- ********************************** -->
+
+   <config evaluator="aspect-name" condition="blg:blogDetails">
+      <property-sheet>
+         <separator name="sepBlogDetails" display-label="Blog Details" component-generator="HeaderSeparatorGenerator" />
+         <show-property name="blg:blogImplementation" component-generator="BlogSelectorGenerator"/>
+         <show-property name="blg:id" />         
+         <show-property name="blg:name" />
+         <show-property name="blg:description" />
+         <show-property name="blg:url" component-generator="LinkGenerator"/>
+         <show-property name="blg:userName" />
+         <show-property name="blg:password" />     
+      </property-sheet>
+   </config>   
    
+   <config evaluator="aspect-name" condition="blg:blogPost">
+      <property-sheet>
+         <separator name="seprmTransferInstrustions" display-label="Blog Post Details" component-generator="HeaderSeparatorGenerator"  show-in-edit-mode="false"/> 
+         <show-property name="blg:postId" show-in-edit-mode="false"/>
+         <show-property name="blg:link" component-generator="LinkGenerator"  show-in-edit-mode="false"/>
+         <show-property name="blg:posted"  show-in-edit-mode="false"/>
+         <show-property name="blg:lastUpdate"  show-in-edit-mode="false"/>
+         <show-property name="blg:published"  show-in-edit-mode="false"/>             
+      </property-sheet>
+   </config>
+
 </alfresco-config>

@@ -6,7 +6,13 @@
       <span>Recent Changes</span>
    </div>
 
+<table width="100%" cellpadding="0" cellspacing="0">
+   <tr valign="top">
+      <td width="1" style="background-color:#b9bec4;"></td>
+      <td>
+
    <div class="collabContent">
+
    <#assign count=0>
    <#list doclib.childrenByXPath[".//*[subtypeOf('cm:content')]"] as c>
       <#assign count=count+1>
@@ -35,6 +41,12 @@
    </#list>
 
    </div>
+
+      </td>
+      <td width="1" style="background-color:#b9bec4;"></td>
+   </tr>
+</table>
+
    <div class="collabFooter">
       <span>&nbsp;</span>
    </div>
@@ -48,8 +60,8 @@
 
 .collabHeader {
    background: url(${url.context}/images/parts/collab_topleft.png) no-repeat left top;
-   margin: 0px -1px;
-   padding: 0px 0px 0px 8px;
+   margin: 0px;
+   padding: 0px 0px 0px 2px;
 }
 .collabHeader span {
    background: url(${url.context}/images/parts/collab_topright.png) no-repeat right top;
@@ -61,8 +73,6 @@
 }
 
 .collabContent {
-   border-left: 1px solid #B9BEC4;
-   border-right: 1px solid #B9BEC4;
    padding: 8px;
 }
 

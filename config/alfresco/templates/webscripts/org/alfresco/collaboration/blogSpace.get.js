@@ -11,11 +11,12 @@
  *
  * Outputs: blogSpace - object containing node arrays of articles pending and to be updated
  */
-parseArgs(args["n"], args["a"]);
-model.blogSpace = main(args["nodeRef"]);
+var actionResult = parseArgs(args["n"], args["a"]);
+model.blogSpace = main(args["nodeRef"], actionResult);
 
 function parseArgs(nodeId, action)
 {
+   var result = "";
    if ((nodeId != null) && (action != null))
    {
       var blog = actions.create("blog-post");
@@ -47,12 +48,14 @@ function parseArgs(nodeId, action)
          {
             blog.parameters.action = blogAction;
             blog.execute(node);
+            result = blog.parameters["result"];
          }
       }
    }
+   return result;
 }
 
-function main(nodeRef)
+function main(nodeRef, actionResult)
 {
    var pending = new Array(),
       updates = new Array();
@@ -89,6 +92,7 @@ function main(nodeRef)
    
    var blogSpace =
    {
+      "actionResult": actionResult,
       "pending": pending,
       "updates": updates
    };

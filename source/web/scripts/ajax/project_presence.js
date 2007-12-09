@@ -8,7 +8,7 @@ var ProjectPresence =
    init: function()
    {
       window.contextPath = ProjectPresence.getContextPath();
-		// $("refreshColleagues").addEvent("click", ProjectPresence.refreshStatus);
+		$("refreshColleagues").addEvent("click", ProjectPresence.refreshStatus);
 		ProjectPresence.refreshStatus();
 	},
 	

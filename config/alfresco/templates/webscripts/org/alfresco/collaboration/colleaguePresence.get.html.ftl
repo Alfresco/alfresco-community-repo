@@ -1,7 +1,10 @@
 <script type="text/javascript" src="${url.context}/scripts/ajax/project_presence.js"></script>
 
 <div class="collabHeader">
-   <span>Colleagues Online</span>
+   <span>
+      <img id="refreshColleagues" src="${url.context}/images/icons/reset.gif" align="top" alt="Refresh">
+      Colleagues Online
+   </span>
 </div>
 <div class="colleagueList" rel="${colleaguePresence.colleagues?size}">
    <div id="colleaguesOnline">
@@ -35,6 +38,10 @@
 
 <style>
 /* Colleague Status */
+#refreshColleagues {
+   cursor: pointer;
+}
+
 .colleagueList {
    border-left: 1px solid #B9BEC4;
    border-right: 1px solid #B9BEC4;

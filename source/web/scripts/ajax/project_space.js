@@ -5,7 +5,7 @@ var ProjectSpace =
 {
 	init: function()
 	{
-		// $("refreshProjectSpace").addEvent("click", ProjectSpace.updateSummaries);
+		$("refreshProjectSpace").addEvent("click", ProjectSpace.updateSummaries);
 		ProjectSpace.updateSummaries();
    },
    

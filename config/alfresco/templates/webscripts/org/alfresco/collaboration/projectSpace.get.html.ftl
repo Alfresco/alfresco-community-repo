@@ -1,7 +1,10 @@
 <script type="text/javascript" src="${url.context}/scripts/ajax/project_space.js"></script>
 
 <div class="collabHeader">
-   <span>${projectSpace.title} Summary</span>
+   <span>
+      <img id="refreshProjectSpace" src="${url.context}/images/icons/reset.gif" align="top" alt="Refresh">
+      ${projectSpace.title} Summary
+   </span>
 </div>
 <div class="collabContainer">
 
@@ -77,6 +80,10 @@
    padding: 5px 15px 6px 6px;
    font-weight: bold;
    font-size: 10pt;
+}
+
+#refreshProjectSpace {
+   cursor: pointer;
 }
 
 .collabContainer {

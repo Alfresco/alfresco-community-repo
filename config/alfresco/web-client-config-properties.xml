@@ -687,23 +687,53 @@
       <property-sheet>
          <separator name="sepBlogDetails" display-label="Blog Details" component-generator="HeaderSeparatorGenerator" />
          <show-property name="blg:blogImplementation" component-generator="BlogSelectorGenerator"/>
-         <show-property name="blg:id" />         
+         <show-property name="blg:id" />
          <show-property name="blg:name" />
          <show-property name="blg:description" />
          <show-property name="blg:url" component-generator="LinkGenerator"/>
          <show-property name="blg:userName" />
-         <show-property name="blg:password" />     
+         <show-property name="blg:password" />
       </property-sheet>
-   </config>   
-   
+   </config>
+
    <config evaluator="aspect-name" condition="blg:blogPost">
       <property-sheet>
-         <separator name="seprmTransferInstrustions" display-label="Blog Post Details" component-generator="HeaderSeparatorGenerator"  show-in-edit-mode="false"/> 
+         <separator name="seprmTransferInstrustions" display-label="Blog Post Details" component-generator="HeaderSeparatorGenerator"  show-in-edit-mode="false"/>
          <show-property name="blg:postId" show-in-edit-mode="false"/>
          <show-property name="blg:link" component-generator="LinkGenerator"  show-in-edit-mode="false"/>
          <show-property name="blg:posted"  show-in-edit-mode="false"/>
          <show-property name="blg:lastUpdate"  show-in-edit-mode="false"/>
-         <show-property name="blg:published"  show-in-edit-mode="false"/>             
+         <show-property name="blg:published"  show-in-edit-mode="false"/>
+      </property-sheet>
+   </config>
+
+   <!-- ********************************** -->
+   <!-- Configuration for Email ID aspects -->
+   <!-- ********************************** -->
+
+   <config evaluator="node-type" condition="content">
+      <property-sheet>
+         <show-property name="sys:node-dbid" display-label="Email ID" />
+      </property-sheet>
+   </config>
+   <config evaluator="node-type" condition="folder">
+      <property-sheet>
+         <show-property name="sys:node-dbid" display-label="Email ID" />
+      </property-sheet>
+   </config>
+   <config evaluator="node-type" condition="fm:forum">
+      <property-sheet>
+         <show-property name="sys:node-dbid" display-label="Email ID" />
+      </property-sheet>
+   </config>
+   <config evaluator="node-type" condition="fm:topic">
+      <property-sheet>
+         <show-property name="sys:node-dbid" display-label="Email ID" />
+      </property-sheet>
+   </config>
+   <config evaluator="aspect-name" condition="emailserver:attached" display-label="Attachment to">
+      <property-sheet>
+         <show-association name="emailserver:attachment" />
       </property-sheet>
    </config>
 

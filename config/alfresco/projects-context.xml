@@ -6,7 +6,7 @@
     <!-- Project behaviour registration -->
     <bean id="app_projectfolder_onCreateNode" class="org.alfresco.repo.policy.registration.ClassPolicyRegistration" parent="policyRegistration">
         <property name="policyName">
-            <value>{http://www.alfresco.org}onUpdateNode</value>
+            <value>{http://www.alfresco.org}onCreateNode</value>
         </property>
         <property name="className">
             <value>{http://www.alfresco.org/model/application/1.0}projectfolder</value>

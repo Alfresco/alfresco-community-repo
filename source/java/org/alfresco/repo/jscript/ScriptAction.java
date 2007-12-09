@@ -151,6 +151,9 @@ public final class ScriptAction implements Serializable, Scopeable
         }
         services.getActionService().executeAction(action, node.getNodeRef());
         
+        // Parameters may have been updated by action execution, so reset cache
+        this.parameters = null;
+        
         // Reset the actioned upon node
         node.reset();
     }
@@ -178,6 +181,9 @@ public final class ScriptAction implements Serializable, Scopeable
             }
         }
         services.getActionService().executeAction(action, nodeRef);
+
+        // Parameters may have been updated by action execution, so reset cache
+        this.parameters = null;
     }
 
     /**

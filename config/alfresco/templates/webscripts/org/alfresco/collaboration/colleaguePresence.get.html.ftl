@@ -43,9 +43,9 @@
 }
 
 .colleagueList {
-   border-left: 1px solid #B9BEC4;
-   border-right: 1px solid #B9BEC4;
-   height: 290px;
+   border-left: 1px solid #CACFD3;
+   border-right: 1px solid #CACFD3;
+   height: 297px;
    overflow-x: hidden;
    overflow-y: scroll;
 }

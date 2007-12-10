@@ -12,7 +12,7 @@
    
 <table width="100%" cellpadding="0" cellspacing="0">
    <tr valign="top">
-      <td width="1" style="background-color:#b9bec4;"></td>
+      <td width="1" style="background-color:#cacfd3;"></td>
       <td>
 
          <table width="100%" cellpadding="16" cellspacing="0">
@@ -48,7 +48,7 @@
             </tr>
          </table>
       </td>
-      <td width="1" style="background-color:#b9bec4;"></td>
+      <td width="1" style="background-color:#cacfd3;"></td>
    </tr>
 </table>
 

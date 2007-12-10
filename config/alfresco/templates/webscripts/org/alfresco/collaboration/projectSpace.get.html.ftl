@@ -10,21 +10,24 @@
 
 <table width="100%" cellpadding="0" cellspacing="0">
    <tr valign="top">
-      <td width="1" style="background-color:#b9bec4;"></td>
+      <td width="1" style="background-color:#cacfd3;"></td>
       <td>
-         <table width="100%" cellpadding="16" cellspacing="0">
-            <tr vaalign="top">
+         <table width="100%" cellpadding="8" cellspacing="0">
+            <tr valign="top">
                <td>
 <#assign panelCount = 0>
 <#list projectSpace.subSpaces?keys?sort as key>
    <#assign node = projectSpace.subSpaces[key]>
    <#assign summary = node.properties["cm:summaryWebscript"]!"">
                   <div class="projectSpace">
-                     <div class="projectSpaceIcon">
-                        <a href="${url.context}${node.url}"><img src="${url.context}${node.icon64}" height="64" width="64"></a>
-                     </div>
-                     <div><a class="projectSpaceTitle" href="${url.context}${node.url}">${node.name}</a></div>
-                     <div class="projectSpaceSummary" rel="<#if summary != "">${url.context}${summary}?nodeRef=${node.nodeRef}</#if>"></div>
+                     <span>
+                        <a class="projectSpaceArrow" href="${url.context}${node.url}"><img src="${url.context}/images/parts/collab_arrow.png" height="16" width="16" alt=">"></a>
+                        <div class="projectSpaceIcon">
+                           <a href="${url.context}${node.url}"><img src="${url.context}${node.icon64}" height="64" width="64"></a>
+                        </div>
+                        <div><a class="projectSpaceTitle" href="${url.context}${node.url}">${node.name}</a></div>
+                        <div class="projectSpaceSummary" rel="<#if summary != "">${url.context}${summary}?nodeRef=${node.nodeRef}</#if>"></div>
+                     </span>
                   </div>
    <#assign panelCount = panelCount + 1>
    <#if (panelCount % 2 = 0)>
@@ -35,7 +38,7 @@
             </tr>
          </table>
       </td>
-      <td width="1" style="background-color:#b9bec4;"></td>
+      <td width="1" style="background-color:#cacfd3;"></td>
    </tr>
 </table>
 
@@ -48,6 +51,10 @@
 /* Main Container elements */
 #projectContainer {
    width: 100%;
+}
+
+#projectContainer a img {
+   border: none;
 }
 
 #projectSummary {
@@ -77,7 +84,7 @@
    background: url(${url.context}/images/parts/collab_topright.png) no-repeat right top;
    display: block;
    float: none;
-   padding: 5px 15px 6px 6px;
+   padding: 5px 15px 4px 6px;
    font-weight: bold;
    font-size: 10pt;
 }
@@ -87,23 +94,33 @@
 }
 
 .collabContainer {
-   min-height: 290px;
+   min-height: 289px;
 }
 
 .projectSpace {
+   background: url(${url.context}/images/parts/collab_gradleft.png) no-repeat left top;
    float: left;
-   padding: 1em 0px;
+   margin: 1em 0px;
+   padding: 0px;
    width: 50%;
+}
+.projectSpace span {
+   background: url(${url.context}/images/parts/collab_gradright.png) no-repeat right top;
+   display: block;
+   float: none;
+   margin: 0px 0px 0px 16px;
+   padding: 8px 0px 0px;
+}
+
+.projectSpaceArrow {
+   float: right;
+   margin: 0px 16px 0px 0px;
 }
 
 .projectSpaceIcon {
    float: left;
    padding-right: 8px;
 }
-.projectSpaceIcon a img {
-   border: none;
-}
-
 a.projectSpaceTitle:link, a.projectSpaceTitle:visited {
    font-weight: bold;
    font-size: 10pt;
@@ -116,6 +133,7 @@ a.projectSpaceTitle:hover {
 }
 
 .projectSpaceSummary {
+   margin: 0px 8px;
 }
 
 .collabFooter {

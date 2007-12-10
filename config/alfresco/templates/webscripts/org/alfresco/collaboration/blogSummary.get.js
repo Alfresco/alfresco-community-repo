@@ -31,7 +31,7 @@ function main(nodeRef)
          {
             if ((node.hasAspect("blg:blogPost")) && (node.properties["blg:published"] == true))
             {
-               if (node.properties["cm:modified"] > node.properties["blg:lastUpdate"])
+               if (node.properties["cm:modified"] - node.properties["blg:lastUpdate"] > 5000)
                {
                   ++numUpdates;
                }

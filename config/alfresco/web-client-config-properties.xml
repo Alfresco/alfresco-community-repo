@@ -737,4 +737,13 @@
       </property-sheet>
    </config>
 
+   <!-- ********************************** -->
+   <!-- Configuration for Taggable aspect  -->
+   <!-- ********************************** -->
+   <config evaluator="aspect-name" condition="taggable">
+      <property-sheet>
+         <show-property name="cm:taggable" display-label="Tags" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+
 </alfresco-config>

@@ -75,4 +75,10 @@ public class CreatePostDialog extends CreateContentWizard
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "post");
    }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return true;
+   }
 }

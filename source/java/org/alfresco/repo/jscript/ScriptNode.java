@@ -918,7 +918,7 @@ public class ScriptNode implements Serializable, Scopeable
     {
         String userName = this.services.getAuthenticationService().getCurrentUserName();
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
-        String[] permissions = new String[acls.size()];
+        Object[] permissions = new Object[acls.size()];
         int count = 0;
         for (AccessPermission permission : acls)
         {

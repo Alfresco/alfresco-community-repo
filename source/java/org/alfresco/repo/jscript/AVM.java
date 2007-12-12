@@ -73,7 +73,7 @@ public final class AVM extends BaseScopableProcessorExtension
     /**
      * @return a array of all AVM stores in the system
      */
-    public Object[] getStores()
+    public Scriptable getStores()
     {
         List<AVMStoreDescriptor> stores = this.services.getAVMService().getStores();
         Object[] results = new Object[stores.size()];
@@ -82,12 +82,7 @@ public final class AVM extends BaseScopableProcessorExtension
         {
             results[i++] = new AVMScriptStore(this.services, store, getScope());
         }
-        return results;
-    }
-    
-    public Scriptable jsGet_stores()
-    {
-        return Context.getCurrentContext().newArray(getScope(), getStores());
+        return Context.getCurrentContext().newArray(getScope(), results);
     }
     
     /**
@@ -324,11 +319,6 @@ public final class AVM extends BaseScopableProcessorExtension
                '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
     }
     
-    public static String jsGet_webappsFolderPath()
-    {
-        return getWebappsFolderPath();
-    }
-
     private static String getStoreRootPath(String store)
     {
         return store + ":" + getWebappsFolderPath();

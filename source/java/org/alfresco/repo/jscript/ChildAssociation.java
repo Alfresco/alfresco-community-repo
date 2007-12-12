@@ -91,19 +91,9 @@ public class ChildAssociation implements Scopeable, Serializable
 		return childAssocRef.getTypeQName().toString();
 	}
 	
-	public String jsGet_type()
-	{
-		return getType();
-	}
-	
 	public String getName()
 	{
 		return childAssocRef.getQName().toString();
-	}
-	
-	public String jsGet_name()
-	{
-		return getName();
 	}
 	
 	public ScriptNode getParent()
@@ -111,19 +101,9 @@ public class ChildAssociation implements Scopeable, Serializable
 		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getParentRef());
 	}
 	
-	public ScriptNode jsGet_parent()
-	{
-		return getParent();
-	}
-	
 	public ScriptNode getChild()
 	{
 		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, childAssocRef.getChildRef());
-	}
-	
-	public ScriptNode jsGet_child()
-	{
-		return getChild();
 	}
 	
 	public boolean isPrimary()
@@ -134,10 +114,5 @@ public class ChildAssociation implements Scopeable, Serializable
 	public int getNthSibling()
 	{
 		return this.childAssocRef.getNthSibling();
-	}
-	
-	public int jsGet_nthSibling()
-	{
-		return getNthSibling();
 	}
 }

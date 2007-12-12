@@ -122,7 +122,7 @@ public final class People extends BaseScopableProcessorExtension
     public void deleteGroup(ScriptNode group)
     {
         ParameterCheck.mandatory("Group", group);
-        if (group.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        if (group.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             String groupName = (String)group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             authorityService.deleteAuthority(groupName);
@@ -180,11 +180,11 @@ public final class People extends BaseScopableProcessorExtension
     {
         ParameterCheck.mandatory("Authority", authority);
         ParameterCheck.mandatory("ParentGroup", parentGroup);
-        if (parentGroup.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        if (parentGroup.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             String parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             String authorityName;
-            if (authority.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+            if (authority.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
             {
                 authorityName = (String)authority.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             }
@@ -206,11 +206,11 @@ public final class People extends BaseScopableProcessorExtension
     {
         ParameterCheck.mandatory("Authority", authority);
         ParameterCheck.mandatory("ParentGroup", parentGroup);
-        if (parentGroup.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        if (parentGroup.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             String parentGroupName = (String)parentGroup.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             String authorityName;
-            if (authority.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+            if (authority.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
             {
                 authorityName = (String)authority.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             }
@@ -293,7 +293,7 @@ public final class People extends BaseScopableProcessorExtension
     {
         Object[] members = null;
         
-        if (container.getType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        if (container.getQNameType().equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             String groupName = (String)container.getProperties().get(ContentModel.PROP_AUTHORITY_NAME);
             Set<String> authorities = authorityService.getContainedAuthorities(type, groupName, !recurse);

@@ -98,11 +98,6 @@ public final class Classification extends BaseScopableProcessorExtension
         return answer;
     }
     
-    public String[] jsGet_allClassificationAspects()
-    {
-        return getAllClassificationAspects();
-    }
-
     /**
      * Create a root category in a classification.
      * 

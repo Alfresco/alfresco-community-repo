@@ -58,14 +58,4 @@ public class Session extends BaseProcessorExtension
     {
         return services.getAuthenticationService().getCurrentTicket();
     }
-    
-    /**
-     * Expose the user's authentication ticket as JavaScipt property.
-     * 
-     * @return
-     */
-    public String jsGet_ticket()
-    {
-        return getTicket();
-    }
 }

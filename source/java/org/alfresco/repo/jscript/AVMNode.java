@@ -113,19 +113,9 @@ public class AVMNode extends ScriptNode
         return this.path;
     }
     
-    public String jsGet_path()
-    {
-        return getPath();
-    }
-    
     public int getVersion()
     {
         return this.version;
-    }
-    
-    public int jsGet_version()
-    {
-        return getVersion();
     }
     
     /**
@@ -136,15 +126,10 @@ public class AVMNode extends ScriptNode
         return AVMNodeConverter.SplitBase(this.path)[0];
     }
     
-    public String jsGet_parentPath()
-    {
-        return getParentPath();
-    }
-    
     /**
      * @return QName type of this node
      */
-    public QName getType()
+    public String getType()
     {
         if (this.type == null)
         {
@@ -158,32 +143,17 @@ public class AVMNode extends ScriptNode
             }
         }
         
-        return type;
+        return type.toString();
     }
     
-    public String jsGet_type()
-    {
-        return getType().toString();
-    }
-
     public boolean isDirectory()
     {
         return this.avmRef.isDirectory() || this.avmRef.isDeletedDirectory();
     }
     
-    public boolean jsGet_isDirectory()
-    {
-        return isDirectory();
-    }
-
     public boolean isFile()
     {
         return this.avmRef.isFile() || this.avmRef.isDeletedFile();
-    }
-    
-    public boolean jsGet_isFile()
-    {
-        return isFile();
     }
     
     /**
@@ -205,11 +175,6 @@ public class AVMNode extends ScriptNode
         return (lock != null);
     }
     
-    public boolean jsGet_isLocked()
-    {
-        return isLocked();
-    }
-    
     /**
      * @return true if this node is locked and the current user is the lock owner
      */
@@ -228,11 +193,6 @@ public class AVMNode extends ScriptNode
         return lockOwner;
     }
 
-    public boolean jsGet_isLockOwner()
-    {
-        return isLockOwner();
-    }
-    
     /**
      * @return true if this user can perform operations on the node when locked.
      *         This is true if the item is either unlocked, or locked and the current user is the lock owner,
@@ -244,11 +204,6 @@ public class AVMNode extends ScriptNode
                 getWebProject(), path, this.services.getAuthenticationService().getCurrentUserName());
     }
     
-    public boolean jsGet_hasLockAccess()
-    {
-        return hasLockAccess();
-    }
-
     /**
      * Copy this Node into a new parent destination.
      * 
@@ -361,7 +316,7 @@ public class AVMNode extends ScriptNode
      * @return The list of aspects applied to this node
      */
     @Override
-    public Set<QName> getAspects()
+    public Set<QName> getAspectsSet()
     {
         if (this.aspects == null)
         {
@@ -411,7 +366,7 @@ public class AVMNode extends ScriptNode
             return "AVM Path: " + getPath() + 
                    "\nNode Type: " + getType() + 
                    "\nNode Properties: " + this.getProperties().size() + 
-                   "\nNode Aspects: " + this.getAspects().toString();
+                   "\nNode Aspects: " + this.getAspectsSet().toString();
         }
         else
         {

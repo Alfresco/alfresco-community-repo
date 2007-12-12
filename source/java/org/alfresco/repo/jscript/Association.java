@@ -85,28 +85,13 @@ public class Association implements Scopeable, Serializable
 		return assocRef.getTypeQName().toString();
 	}
 	
-	public String jsGet_type()
-	{
-		return getType();
-	}
-	
 	public ScriptNode getSource()
 	{
 		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getSourceRef());
 	}
 	
-	public ScriptNode jsGet_source()
-	{
-		return getSource();
-	}
-	
 	public ScriptNode getTarget()
 	{
 		return (ScriptNode)new ValueConverter().convertValueForScript(this.services, this.scope, null, assocRef.getTargetRef());
-	}
-	
-	public ScriptNode jsGet_target()
-	{
-		return getTarget();
 	}
 }

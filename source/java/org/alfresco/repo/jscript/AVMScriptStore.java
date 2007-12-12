@@ -71,22 +71,12 @@ public class AVMScriptStore implements Serializable
         return this.descriptor.getName();
     }
     
-    public String jsGet_name()
-    {
-        return getName();
-    }
-    
     /**
      * @return Store name
      */
     public String getId()
     {
         return this.descriptor.getName();
-    }
-    
-    public String jsGet_id()
-    {
-        return getId();
     }
     
     /**
@@ -97,23 +87,13 @@ public class AVMScriptStore implements Serializable
         return this.descriptor.getCreator();
     }
     
-    public String jsGet_creator()
-    {
-        return getCreator();
-    }
-    
     /**
      * @return Creation date of the store
      */
-    public Date getCreatedDate()
-    {
-        return new Date(this.descriptor.getCreateDate());
-    }
-    
-    public Serializable jsGet_createdDate()
+    public Serializable getCreatedDate()
     {
         return new ValueConverter().convertValueForScript(
-                this.services, this.scope, null, getCreatedDate());
+                this.services, this.scope, null, new Date(this.descriptor.getCreateDate()));
     }
     
     /**

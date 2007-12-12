@@ -40,11 +40,6 @@ public final class ScriptLogger extends BaseProcessorExtension
         return logger.isDebugEnabled();
     }
     
-    public boolean jsGet_isLoggingEnabled()
-    {
-        return isLoggingEnabled();
-    }
-    
     public void log(String str)
     {
         logger.debug(str);

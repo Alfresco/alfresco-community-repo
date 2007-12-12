@@ -74,11 +74,6 @@ public class CategoryNode extends ScriptNode
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY));
     }
     
-    public ScriptNode[] jsGet_categoryMembers()
-    {
-        return getCategoryMembers();
-    }
-
     /**
      * @return all the subcategories of a category
      */
@@ -87,11 +82,6 @@ public class CategoryNode extends ScriptNode
         return buildCategoryNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY));
     }
     
-    public CategoryNode[] jsGet_subCategories()
-    {
-        return getSubCategories();
-    }
-
     /**
      * @return members and subcategories of a category
      */
@@ -100,11 +90,6 @@ public class CategoryNode extends ScriptNode
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.ANY));
     }
     
-    public ScriptNode[] jsGet_membersAndSubCategories()
-    {
-        return getMembersAndSubCategories();
-    }
-
     /**
      * @return all the immediate member of a category
      */
@@ -113,11 +98,6 @@ public class CategoryNode extends ScriptNode
         return buildNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.MEMBERS, CategoryService.Depth.IMMEDIATE));
     }
     
-    public ScriptNode[] jsGet_immediateCategoryMembers()
-    {
-        return getImmediateCategoryMembers();
-    }
-
     /**
      * @return all the immediate subcategories of a category
      */
@@ -126,11 +106,6 @@ public class CategoryNode extends ScriptNode
         return buildCategoryNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.IMMEDIATE));
     }
     
-    public CategoryNode[] jsGet_immediateSubCategories()
-    {
-        return getImmediateSubCategories();
-    }
-
     /**
      * @return immediate members and subcategories of a category 
      */
@@ -139,11 +114,6 @@ public class CategoryNode extends ScriptNode
         return buildMixedNodes(services.getCategoryService().getChildren(getNodeRef(), CategoryService.Mode.ALL, CategoryService.Depth.IMMEDIATE));
     }
     
-    public ScriptNode[] jsGet_immediateMembersAndSubCategories()
-    {
-        return getImmediateMembersAndSubCategories();
-    }
-
     /**
      * Create a new subcategory
      * 

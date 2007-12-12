@@ -69,11 +69,6 @@ public final class Actions extends BaseScopableProcessorExtension
         return registered;
     }
 
-    public String[] jsGet_registered()
-    {
-        return getRegistered();
-    }
-
     /**
      * Create an Action
      * 
@@ -94,5 +89,4 @@ public final class Actions extends BaseScopableProcessorExtension
         }
         return scriptAction;
     } 
-
 }

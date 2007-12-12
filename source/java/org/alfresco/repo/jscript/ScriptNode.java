@@ -122,8 +122,11 @@ public class ScriptNode implements Serializable, Scopeable
     /** The aspects applied to this node */
     protected Set<QName> aspects = null;
     
-    /** The target associations for this node */
-    private ScriptableQNameMap<String, Object> assocs = null;
+    /** The target associations from this node */
+    private ScriptableQNameMap<String, Object> targetAssocs = null;
+    
+    /** The source assoications to this node */
+    private ScriptableQNameMap<String, Object> sourceAssocs = null;
     
     /** The child associations for this node */
     private ScriptableQNameMap<String, Object> childAssocs = null;
@@ -236,11 +239,6 @@ public class ScriptNode implements Serializable, Scopeable
         return this.id;
     }
     
-    public String jsGet_id()
-    {
-        return getId();
-    }
-    
     /**
      * @return Returns the NodeRef this Node object represents
      */
@@ -249,15 +247,10 @@ public class ScriptNode implements Serializable, Scopeable
         return this.nodeRef;
     }
     
-    public String jsGet_nodeRef()
-    {
-        return getNodeRef().toString();
-    }
-    
     /**
-     * @return Returns the type.
+     * @return Returns the QName type.
      */
-    public QName getType()
+    public QName getQNameType()
     {
         if (this.type == null)
         {
@@ -267,9 +260,12 @@ public class ScriptNode implements Serializable, Scopeable
         return type;
     }
     
-    public String jsGet_type()
+    /**
+     * @return Returns the type.
+     */
+    public String getType()
     {
-        return getType().toString();
+        return getQNameType().toString();
     }
     
     /**
@@ -300,11 +296,6 @@ public class ScriptNode implements Serializable, Scopeable
         return this.name;
     }
     
-    public String jsGet_name()
-    {
-        return getName();
-    }
-    
     /**
      * Helper to set the 'name' property for the node.
      * 
@@ -314,7 +305,7 @@ public class ScriptNode implements Serializable, Scopeable
     {
         if (name != null)
         {
-            QName typeQName = getType();
+            QName typeQName = getQNameType();
             if ((services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_FOLDER) &&
                  !services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER)) ||
                  services.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_CONTENT))
@@ -336,11 +327,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
     }
     
-    public void jsSet_name(String name)
-    {
-        setName(name);
-    }
-    
     /**
      * @return The children of this Node as JavaScript array of Node object wrappers
      */
@@ -359,11 +345,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
         
         return this.children;
-    }
-    
-    public Scriptable jsGet_children()
-    {
-        return getChildren();
     }
     
     /**
@@ -403,12 +384,6 @@ public class ScriptNode implements Serializable, Scopeable
         return (nodes.length != 0) ? (ScriptNode)nodes[0] : null;
     }
     
-    // TODO: find out why this doesn't work - the function defs do not seem to get found
-    // public Node jsFunction_childByNamePath(String path)
-    // {
-    // return getChildByNamePath(path);
-    // }
-    
     /**
      * @return Returns a JavaScript array of Nodes at the specified XPath starting at this Node.
      *         So a valid call might be <code>mynode.childrenByXPath("*[@cm:name='Testing']/*");</code>
@@ -429,46 +404,89 @@ public class ScriptNode implements Serializable, Scopeable
     @SuppressWarnings("unchecked")
     public Map<String, Object> getAssocs()
     {
-        if (this.assocs == null)
+        if (this.targetAssocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.assocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+            this.targetAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
 
             // get the list of target nodes for each association type
             List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                List<ScriptNode> nodes = (List<ScriptNode>)this.assocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.targetAssocs.get(qname);
                 if (nodes == null)
                 {
                     // first access of the list for this qname
                     nodes = new ArrayList<ScriptNode>(4);
-                    this.assocs.put(ref.getTypeQName().toString(), nodes);
+                    this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
                 nodes.add(newInstance(ref.getTargetRef(), this.services, this.scope));
             }
             
             // convert each Node list into a JavaScript array object
-            for (String qname : this.assocs.keySet())
+            for (String qname : this.targetAssocs.keySet())
             {
-                List<ScriptNode> nodes = (List<ScriptNode>)this.assocs.get(qname);
+                List<ScriptNode> nodes = (List<ScriptNode>)this.targetAssocs.get(qname);
                 Object[] objs = nodes.toArray(new Object[nodes.size()]);
-                this.assocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
+                this.targetAssocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
             }
         }
 
-        return this.assocs;
+        return this.targetAssocs;
     }
     
-    public Map<String, Object> jsGet_assocs()
+    public Map<String, Object> getAssociations()
     {
         return getAssocs();
     }
     
-    public Map<String, Object> jsGet_associations()
+    /**
+     * Return the source associations to this Node. As a Map of assoc name to a JavaScript array of Nodes.
+     * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
+     * associative array access. This means source associations to this node can be access thus:
+     * <code>node.sourceAssocs["translations"][0]</code>
+     * 
+     * @return source associations as a Map of assoc name to a JavaScript array of Nodes.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getSourceAssocs()
     {
-       return getAssocs();
+        if (this.sourceAssocs == null)
+        {
+            // this Map implements the Scriptable interface for native JS syntax property access
+            this.sourceAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+
+            // get the list of source nodes for each association type
+            List<AssociationRef> refs = this.nodeService.getSourceAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
+            for (AssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                List<ScriptNode> nodes = (List<ScriptNode>)this.sourceAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access of the list for this qname
+                    nodes = new ArrayList<ScriptNode>(4);
+                    this.sourceAssocs.put(ref.getTypeQName().toString(), nodes);
+                }
+                nodes.add(newInstance(ref.getSourceRef(), this.services, this.scope));
+            }
+            
+            // convert each Node list into a JavaScript array object
+            for (String qname : this.sourceAssocs.keySet())
+            {
+                List<ScriptNode> nodes = (List<ScriptNode>)this.sourceAssocs.get(qname);
+                Object[] objs = nodes.toArray(new Object[nodes.size()]);
+                this.sourceAssocs.put(qname, Context.getCurrentContext().newArray(this.scope, objs));
+            }
+        }
+        
+        return this.sourceAssocs;
+    }
+    
+    public Map<String, Object> getSourceAssociations()
+    {
+        return getSourceAssocs();
     }
     
     /**
@@ -514,12 +532,7 @@ public class ScriptNode implements Serializable, Scopeable
         return this.childAssocs;
     }
     
-    public Map<String, Object> jsGet_childAssocs()
-    {
-        return getChildAssocs();
-    }
-    
-    public Map<String, Object> jsGet_childAssociations()
+    public Map<String, Object> getChildAssociations()
     {
         return getChildAssocs();
     }
@@ -554,11 +567,6 @@ public class ScriptNode implements Serializable, Scopeable
         return this.properties;
     }
     
-    public Map<String, Object> jsGet_properties()
-    {
-        return getProperties();
-    }
-    
     /**
      * @return true if this Node is a container (i.e. a folder)
      */
@@ -567,16 +575,11 @@ public class ScriptNode implements Serializable, Scopeable
         if (isContainer == null)
         {
             DictionaryService dd = this.services.getDictionaryService();
-            isContainer = Boolean.valueOf((dd.isSubClass(getType(), ContentModel.TYPE_FOLDER) == true &&
-                    dd.isSubClass(getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false));
+            isContainer = Boolean.valueOf((dd.isSubClass(getQNameType(), ContentModel.TYPE_FOLDER) == true &&
+                    dd.isSubClass(getQNameType(), ContentModel.TYPE_SYSTEM_FOLDER) == false));
         }
         
         return isContainer.booleanValue();
-    }
-    
-    public boolean jsGet_isContainer()
-    {
-        return getIsContainer();
     }
     
     /**
@@ -587,15 +590,10 @@ public class ScriptNode implements Serializable, Scopeable
         if (isDocument == null)
         {
             DictionaryService dd = this.services.getDictionaryService();
-            isDocument = Boolean.valueOf(dd.isSubClass(getType(), ContentModel.TYPE_CONTENT));
+            isDocument = Boolean.valueOf(dd.isSubClass(getQNameType(), ContentModel.TYPE_CONTENT));
         }
         
         return isDocument.booleanValue();
-    }
-    
-    public boolean jsGet_isDocument()
-    {
-        return getIsDocument();
     }
     
     /**
@@ -606,17 +604,12 @@ public class ScriptNode implements Serializable, Scopeable
         if (isLinkToContainer == null)
         {
             DictionaryService dd = this.services.getDictionaryService();
-            isLinkToContainer = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FOLDERLINK));
+            isLinkToContainer = Boolean.valueOf(dd.isSubClass(getQNameType(), ApplicationModel.TYPE_FOLDERLINK));
         }
         
         return isLinkToContainer.booleanValue();
     }
 
-    public boolean jsGet_isLinkToContainer()
-    {
-        return getIsLinkToContainer();
-    }
-    
     /**
      * @return true if this Node is a Link to a Document (i.e. a filelink)
      */
@@ -625,17 +618,12 @@ public class ScriptNode implements Serializable, Scopeable
         if (isLinkToDocument == null)
         {
             DictionaryService dd = this.services.getDictionaryService();
-            isLinkToDocument = Boolean.valueOf(dd.isSubClass(getType(), ApplicationModel.TYPE_FILELINK));
+            isLinkToDocument = Boolean.valueOf(dd.isSubClass(getQNameType(), ApplicationModel.TYPE_FILELINK));
         }
         
         return isLinkToDocument.booleanValue();
     }
 
-    public boolean jsGet_isLinkToDocument()
-    {
-        return getIsLinkToDocument();
-    }
-    
     /**
      * @return true if the Node is a Category
      */
@@ -645,15 +633,10 @@ public class ScriptNode implements Serializable, Scopeable
         return false;
     }
     
-    public boolean jsGet_isCategory()
-    {
-        return getIsCategory();
-    }
-    
     /**
      * @return The list of aspects applied to this node
      */
-    public Set<QName> getAspects()
+    public Set<QName> getAspectsSet()
     {
         if (this.aspects == null)
         {
@@ -663,16 +646,19 @@ public class ScriptNode implements Serializable, Scopeable
         return this.aspects;
     }
     
-    public String[] jsGet_aspects()
+    /**
+     * @return The array of aspects applied to this node
+     */
+    public Scriptable getAspects()
     {
-        Set<QName> aspects = getAspects();
+        Set<QName> aspects = getAspectsSet();
         String[] result = new String[aspects.size()];
         int count = 0;
         for (QName qname : aspects)
         {
             result[count++] = qname.toString();
         }
-        return result;
+        return Context.getCurrentContext().newArray(this.scope, result);
     }
     
     /**
@@ -681,7 +667,7 @@ public class ScriptNode implements Serializable, Scopeable
      */
     public boolean hasAspect(String aspect)
     {
-        return getAspects().contains(createQName(aspect));
+        return getAspectsSet().contains(createQName(aspect));
     }
     
     /**
@@ -690,11 +676,6 @@ public class ScriptNode implements Serializable, Scopeable
     public String getQnamePath()
     {
         return this.services.getNodeService().getPath(getNodeRef()).toPrefixString(this.services.getNamespaceService());
-    }
-
-    public String jsGet_qnamePath()
-    {
-        return getQnamePath();
     }
 
     /**
@@ -711,22 +692,12 @@ public class ScriptNode implements Serializable, Scopeable
         return displayPath;
     }
     
-    public String jsGet_displayPath()
-    {
-        return getDisplayPath();
-    }
-    
     /**
      * @return the small icon image for this node
      */
     public String getIcon16()
     {
         return "/images/filetypes/_default.gif";
-    }
-    
-    public String jsGet_icon16()
-    {
-        return getIcon16();
     }
     
     /**
@@ -737,11 +708,6 @@ public class ScriptNode implements Serializable, Scopeable
         return "/images/filetypes32/_default.gif";
     }
     
-    public String jsGet_icon32()
-    {
-        return getIcon32();
-    }
-    
     /**
      * @return true if the node is currently locked
      */
@@ -749,7 +715,7 @@ public class ScriptNode implements Serializable, Scopeable
     {
         boolean locked = false;
         
-        if (getAspects().contains(ContentModel.ASPECT_LOCKABLE))
+        if (getAspectsSet().contains(ContentModel.ASPECT_LOCKABLE))
         {
             LockStatus lockStatus = this.services.getLockService().getLockStatus(this.nodeRef);
             if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
@@ -759,11 +725,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
         
         return locked;
-    }
-    
-    public boolean jsGet_isLocked()
-    {
-        return isLocked();
     }
     
     /**
@@ -784,11 +745,6 @@ public class ScriptNode implements Serializable, Scopeable
         return parent;
     }
     
-    public ScriptNode jsGet_parent()
-    {
-        return getParent();
-    }
-    
     /**
      * @return the primary parent association so we can get at the association QName and the association type QName.
      */
@@ -799,11 +755,6 @@ public class ScriptNode implements Serializable, Scopeable
             primaryParentAssoc = this.nodeService.getPrimaryParent(nodeRef);
         }
         return primaryParentAssoc;
-    }
-    
-    public ChildAssociationRef jsGet_primaryParentAssoc()
-    {
-        return getPrimaryParentAssoc();
     }
     
     
@@ -826,11 +777,6 @@ public class ScriptNode implements Serializable, Scopeable
         return content;
     }
     
-    public String jsGet_content()
-    {
-        return getContent();
-    }
-    
     /**
      * Set the content for this node
      * 
@@ -843,11 +789,6 @@ public class ScriptNode implements Serializable, Scopeable
         {
             contentData.setContent(content);
         }
-    }
-    
-    public void jsSet_content(String content)
-    {
-        setContent(content);
     }
     
     /**
@@ -869,11 +810,6 @@ public class ScriptNode implements Serializable, Scopeable
             return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] { nodeRef.getStoreRef().getProtocol(),
                     nodeRef.getStoreRef().getIdentifier(), nodeRef.getId() });
         }
-    }
-    
-    public String jsGet_url()
-    {
-        return getUrl();
     }
     
     /**
@@ -898,11 +834,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
     }
 
-    public String jsGet_downloadUrl()
-    {
-        return getDownloadUrl();
-    }
-
     /**
      * @return The mimetype encoding for content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -917,11 +848,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
         
         return mimetype;
-    }
-    
-    public String jsGet_mimetype()
-    {
-        return getMimetype();
     }
     
     /**
@@ -939,11 +865,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
     }
     
-    public void jsSet_mimetype(String mimetype)
-    {
-        setMimetype(mimetype);
-    }
-    
     /**
      * @return The size in bytes of the content attached to the node from the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -958,11 +879,6 @@ public class ScriptNode implements Serializable, Scopeable
         }
         
         return size;
-    }
-    
-    public long jsGet_size()
-    {
-        return getSize();
     }
     
     
@@ -998,7 +914,7 @@ public class ScriptNode implements Serializable, Scopeable
      *         Strings returned are of the format [ALLOWED|DENIED];[USERNAME|GROUPNAME];PERMISSION for example
      *         ALLOWED;kevinr;Consumer so can be easily tokenized on the ';' character.
      */
-    public String[] getPermissions()
+    public Scriptable getPermissions()
     {
         String userName = this.services.getAuthenticationService().getCurrentUserName();
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
@@ -1014,7 +930,7 @@ public class ScriptNode implements Serializable, Scopeable
                 .append(permission.getPermission());
             permissions[count++] = buf.toString();
         }
-        return permissions;
+        return Context.getCurrentContext().newArray(this.scope, permissions);
     }
     
     /**
@@ -1044,8 +960,8 @@ public class ScriptNode implements Serializable, Scopeable
     public void setPermission(String permission)
     {
         ParameterCheck.mandatoryString("Permission Name", permission);
-        this.services.getPermissionService().setPermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission,
-                true);
+        this.services.getPermissionService().setPermission(
+                this.nodeRef, PermissionService.ALL_AUTHORITIES, permission, true);
     }
     
     /**
@@ -1058,7 +974,8 @@ public class ScriptNode implements Serializable, Scopeable
     {
         ParameterCheck.mandatoryString("Permission Name", permission);
         ParameterCheck.mandatoryString("Authority", authority);
-        this.services.getPermissionService().setPermission(this.nodeRef, authority, permission, true);
+        this.services.getPermissionService().setPermission(
+                this.nodeRef, authority, permission, true);
     }
     
     /**
@@ -1069,8 +986,8 @@ public class ScriptNode implements Serializable, Scopeable
     public void removePermission(String permission)
     {
         ParameterCheck.mandatoryString("Permission Name", permission);
-        this.services.getPermissionService()
-            .deletePermission(this.nodeRef, PermissionService.ALL_AUTHORITIES, permission);
+        this.services.getPermissionService().deletePermission(
+                this.nodeRef, PermissionService.ALL_AUTHORITIES, permission);
     }
     
     /**
@@ -1083,7 +1000,8 @@ public class ScriptNode implements Serializable, Scopeable
     {
         ParameterCheck.mandatoryString("Permission Name", permission);
         ParameterCheck.mandatoryString("Authority", authority);
-        this.services.getPermissionService().deletePermission(this.nodeRef, authority, permission);
+        this.services.getPermissionService().deletePermission(
+                this.nodeRef, authority, permission);
     }
     
     
@@ -1114,16 +1032,6 @@ public class ScriptNode implements Serializable, Scopeable
     public String getOwner()
     {
         return this.services.getOwnableService().getOwner(this.nodeRef);
-    }
-    
-    /**
-     * Make owner available as a property.
-     * 
-     * @return
-     */
-    public String jsGet_owner()
-    {
-        return getOwner();
     }
     
     
@@ -1166,8 +1074,8 @@ public class ScriptNode implements Serializable, Scopeable
         QName qnameType = createQName(type);
         
         // Ensure that we are performing a specialise
-        if (getType().equals(qnameType) == false &&
-                this.services.getDictionaryService().isSubClass(qnameType, getType()) == true)
+        if (getQNameType().equals(qnameType) == false &&
+                this.services.getDictionaryService().isSubClass(qnameType, getQNameType()) == true)
         {
             // Specialise the type of the node
             this.nodeService.setType(this.nodeRef, qnameType);
@@ -1945,7 +1853,7 @@ public class ScriptNode implements Serializable, Scopeable
                 // TODO: DC: Allow debug output of property values - for now it's disabled as this could potentially
                 // follow a large network of nodes. Unfortunately, JBPM issues unprotected debug statements
                 // where node.toString is used - will request this is fixed in next release of JBPM.
-                return "Node Type: " + getType() + ", Node Aspects: " + this.getAspects().toString();
+                return "Node Type: " + getType() + ", Node Aspects: " + getAspectsSet().toString();
             }
             else
             {
@@ -1990,7 +1898,8 @@ public class ScriptNode implements Serializable, Scopeable
         this.type = null;
         this.properties = null;
         this.aspects = null;
-        this.assocs = null;
+        this.targetAssocs = null;
+        this.sourceAssocs = null;
         this.childAssocs = null;
         this.children = null;
         this.displayPath = null;
@@ -2214,11 +2123,6 @@ public class ScriptNode implements Serializable, Scopeable
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
         
-        public void jsSet_content(String content)
-        {
-            setContent(content);
-        }
-
         /**
          * Set the content stream from another content object
          *  
@@ -2247,11 +2151,6 @@ public class ScriptNode implements Serializable, Scopeable
                     URLEncoder.encode(property.toString()) });
         }
         
-        public String jsGet_url()
-        {
-            return getUrl();
-        }
-        
         /**
          * @return download URL to the content for a document item only
          */
@@ -2270,11 +2169,6 @@ public class ScriptNode implements Serializable, Scopeable
             {
                 return "";
             }
-        }
-
-        public String jsGet_downloadUrl()
-        {
-            return getDownloadUrl();
         }
 
         public long getSize()
@@ -2310,13 +2204,7 @@ public class ScriptNode implements Serializable, Scopeable
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
         
-        public void jsSet_mimetype(String mimetype)
-        {
-            setMimetype(mimetype);
-        }
-        
         private ContentData contentData;
-        
         private QName property;
     }
     

@@ -104,16 +104,6 @@ public class DesktopResponse extends ScriptableObject {
 	}
 	
 	/**
-	 * Return the status property
-	 * 
-	 * @return int
-	 */
-	public int jsGet_status()
-	{
-		return m_status;
-	}
-	
-	/**
 	 * Determine if there is an optional status message
 	 * 
 	 * @return boolean
@@ -131,16 +121,6 @@ public class DesktopResponse extends ScriptableObject {
 	public final String getStatusMessage()
 	{
 		return m_statusMsg;
-	}
-	
-	/**
-	 * Return the status message property
-	 * 
-	 * @return String
-	 */
-	public String jsGet_message()
-	{
-		return m_statusMsg != null ? m_statusMsg : ""; 
 	}
 	
 	/**

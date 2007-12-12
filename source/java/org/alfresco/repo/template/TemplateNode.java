@@ -78,7 +78,10 @@ public class TemplateNode extends BasePermissionsNode
     private static Log logger = LogFactory.getLog(TemplateNode.class);
     
     /** Target associations from this node */
-    private Map<String, List<TemplateNode>> assocs = null;
+    private Map<String, List<TemplateNode>> targetAssocs = null;
+    
+    /** Source associations to this node */
+    private Map<String, List<TemplateNode>> sourceAssocs = null;
     
     /** The child associations from this node */
     private Map<String, List<TemplateNode>> childAssocs = null;
@@ -224,25 +227,61 @@ public class TemplateNode extends BasePermissionsNode
      */
     public Map<String, List<TemplateNode>> getAssocs()
     {
-        if (this.assocs == null)
+        if (this.targetAssocs == null)
         {
             List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
-            this.assocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            this.targetAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
-                List<TemplateNode> nodes = this.assocs.get(qname);
+                List<TemplateNode> nodes = this.targetAssocs.get(qname);
                 if (nodes == null)
                 {
                     // first access for the list for this qname
                     nodes = new ArrayList<TemplateNode>(4);
-                    this.assocs.put(ref.getTypeQName().toString(), nodes);
+                    this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
                 nodes.add( new TemplateNode(ref.getTargetRef(), this.services, this.imageResolver) );
             }
         }
         
-        return this.assocs;
+        return this.targetAssocs;
+    }
+    
+    public Map<String, List<TemplateNode>> getAssociations()
+    {
+        return getAssocs();
+    }
+    
+    /**
+     * @return Source associations for this Node. As a Map of assoc name to a List of TemplateNodes. 
+     */
+    public Map<String, List<TemplateNode>> getSourceAssocs()
+    {
+        if (this.sourceAssocs == null)
+        {
+            List<AssociationRef> refs = this.services.getNodeService().getSourceAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
+            this.sourceAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            for (AssociationRef ref : refs)
+            {
+                String qname = ref.getTypeQName().toString();
+                List<TemplateNode> nodes = this.sourceAssocs.get(qname);
+                if (nodes == null)
+                {
+                    // first access for the list for this qname
+                    nodes = new ArrayList<TemplateNode>(4);
+                    this.sourceAssocs.put(ref.getTypeQName().toString(), nodes);
+                }
+                nodes.add( new TemplateNode(ref.getSourceRef(), this.services, this.imageResolver) );
+            }
+        }
+        
+        return this.sourceAssocs;
+    }
+    
+    public Map<String, List<TemplateNode>> getSourceAssociations()
+    {
+        return getSourceAssocs();
     }
     
     /**
@@ -269,6 +308,11 @@ public class TemplateNode extends BasePermissionsNode
         }
         
         return this.childAssocs;
+    }
+    
+    public Map<String, List<TemplateNode>> getChildAssociations()
+    {
+        return getChildAssocs();
     }
     
     /**

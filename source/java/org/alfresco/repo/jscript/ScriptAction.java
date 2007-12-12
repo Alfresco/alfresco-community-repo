@@ -93,11 +93,6 @@ public final class ScriptAction implements Serializable, Scopeable
         return this.actionDef.getName();
     }
 
-    public String jsGet_name()
-    {
-        return getName();
-    }
-
     /**
      * Return all the properties known about this node. The Map returned implements the Scriptable interface to allow access to the properties via JavaScript associative array
      * access. This means properties of a node can be access thus: <code>node.properties["name"]</code>
@@ -120,11 +115,6 @@ public final class ScriptAction implements Serializable, Scopeable
             this.parameters.setModified(false);
         }
         return this.parameters;
-    }
-
-    public Map<String, Serializable> jsGet_parameters()
-    {
-        return getParameters();
     }
 
     /**

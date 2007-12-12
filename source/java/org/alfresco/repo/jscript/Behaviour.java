@@ -87,16 +87,6 @@ public class Behaviour implements Scopeable, Serializable
 	}
 	
 	/**
-	 * JS accessor method
-	 * 
-	 * @return	the name of the policy
-	 */
-	public String jsGet_name()
-	{
-		return getName();
-	}
-	
-	/**
 	 * The argument values
 	 * 
 	 * @return	array containing the argument values
@@ -115,15 +105,5 @@ public class Behaviour implements Scopeable, Serializable
 			}
 		}
 		return this.jsArgs;
-	}
-	
-	/**
-	 * JS accessor method
-	 * 
-	 * @return	array containing the argument values
-	 */
-	public Serializable[] jsGet_args()
-	{
-		return getArgs();
 	}
 }

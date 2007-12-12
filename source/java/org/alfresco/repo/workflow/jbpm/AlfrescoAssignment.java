@@ -217,7 +217,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     private String mapAuthorityToName(ScriptNode authority, boolean allowGroup)
     {
         String name = null;
-        QName type = authority.getType();
+        QName type = authority.getQNameType();
         if (type.equals(ContentModel.TYPE_PERSON))
         {
             name = (String)authority.getProperties().get(ContentModel.PROP_USERNAME);
@@ -232,5 +232,4 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
         }
         return name;
     }
-    
 }

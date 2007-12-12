@@ -49,7 +49,7 @@ var OfficeDocDetails =
       {
          tag.addEvent('click', function(e)
          {
-            window.location.href = window.serviceContextPath + "/office/tags?p=" + window.queryObject.p + "&tag=" + tag.innerHTML;
+            window.location.href = window.serviceContextPath + "/office/tags?p=" + window.queryObject.p + "&tag=" + encodeURI(tag.innerHTML);
          });
       });
    },
@@ -70,13 +70,13 @@ var OfficeDocDetails =
    
    addTag: function(nodeId, tagName)
    {
-      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "add", nodeId, null, "t=" + tagName);
+      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "add", nodeId, null, "t=" + encodeURI(tagName));
       return false;
    },
    
    removeTag: function(nodeId, tagName)
    {
-      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "remove", nodeId , null, "t=" + tagName);
+      OfficeAddin.postAction(window.serviceContextPath + "/collaboration/tagActions", "remove", nodeId , null, "t=" + encodeURI(tagName));
       return false;
    }
 };

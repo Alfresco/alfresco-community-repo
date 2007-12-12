@@ -80,7 +80,7 @@ var OfficeTags =
       var maxResults = 100;
       
       var args = OfficeTags.searchParams + "&type=tag";
-      var actionURL = window.serviceContextPath + "/office/searchResults?p=" + args + "&search=" + tagName.replace(" ", "_x0020_") + "&maxresults=" + maxResults;
+      var actionURL = window.serviceContextPath + "/office/searchResults?p=" + args + "&search=" + encodeURI(tagName.replace(" ", "_x0020_")) + "&maxresults=" + maxResults;
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

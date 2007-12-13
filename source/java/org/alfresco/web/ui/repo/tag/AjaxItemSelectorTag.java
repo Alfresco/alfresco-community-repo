@@ -53,6 +53,9 @@ public abstract class AjaxItemSelectorTag extends HtmlComponentTag
    /** Whether the component is disabled */
    private String disabled;
    
+   /** the height */
+   private String height;
+   
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
     */
@@ -78,6 +81,7 @@ public abstract class AjaxItemSelectorTag extends HtmlComponentTag
       setStringProperty(component, "label", this.label);
       setBooleanProperty(component, "singleSelect", this.singleSelect);
       setBooleanProperty(component, "disabled", this.disabled);
+      setStringProperty(component, "height", this.height);
    }
    
    /**
@@ -92,6 +96,7 @@ public abstract class AjaxItemSelectorTag extends HtmlComponentTag
       this.singleSelect = null;
       this.initialSelection = null;
       this.disabled = null;
+      this.height = null;
    }
    
    /**
@@ -143,5 +148,15 @@ public abstract class AjaxItemSelectorTag extends HtmlComponentTag
    public void setDisabled(String disabled)
    {
       this.disabled = disabled;
+   }
+   
+   /**
+    * Set the height
+    *
+    * @param height     the height
+    */
+   public void setHeight(String height)
+   {
+      this.height = height;
    }
 }

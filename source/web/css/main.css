@@ -416,6 +416,7 @@ a.topToolbarLinkHighlight, a.topToolbarLinkHighlight:link, a.topToolbarLinkHighl
 {
    padding-right: 20px;
    color: #93a8b2;
+   white-space: nowrap;
 }
 
 .multiValueSelector

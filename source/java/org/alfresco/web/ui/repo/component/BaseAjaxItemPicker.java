@@ -66,6 +66,9 @@ public abstract class BaseAjaxItemPicker extends UIInput
    /** True for single select mode, false for multi-select mode */
    protected Boolean singleSelect;
    
+   /** Height style override for picker selector area */
+   protected String height = null;
+   
    protected static int ACTION_DONE = 0;
    protected static int ACTION_CANCEL = 1;
    
@@ -93,6 +96,7 @@ public abstract class BaseAjaxItemPicker extends UIInput
       this.singleSelect = (Boolean)values[2];
       this.initialSelectionId = (String)values[3];
       this.disabled = (Boolean)values[4];
+      this.height = (String)values[5];
    }
    
    /**
@@ -106,7 +110,8 @@ public abstract class BaseAjaxItemPicker extends UIInput
          this.label,
          this.singleSelect,
          this.initialSelectionId,
-         this.disabled};
+         this.disabled,
+         this.height};
       return (values);
    }
    
@@ -301,8 +306,19 @@ public abstract class BaseAjaxItemPicker extends UIInput
       out.write("   </div>");
       // container for item selection
       out.write("   <div>");
-      out.write("    <div id='" + divId + "-ajax-wait' class='pickerAjaxWait'></div>");
-      out.write("    <div id='" + divId + "-results-list' class='pickerResultsList'></div>");
+      out.write("    <div id='" + divId + "-ajax-wait' class='pickerAjaxWait'");
+      String height = getHeight();
+      if (height != null)
+      {
+         out.write(" style='height:" + height + "'");
+      }
+      out.write("></div>");
+      out.write("    <div id='" + divId + "-results-list' class='pickerResultsList'");
+      if (height != null)
+      {
+         out.write(" style='height:" + height + "'");
+      }
+      out.write("></div>");
       out.write("   </div>");
       out.write("  </div>");
       // controls (OK & Cancel buttons etc.)
@@ -439,6 +455,28 @@ public abstract class BaseAjaxItemPicker extends UIInput
    public void setSingleSelect(Boolean singleSelect)
    {
       this.singleSelect = singleSelect;
+   }
+      
+   /**
+    * @return Returns the height.
+    */
+   public String getHeight()
+   {
+      ValueBinding vb = getValueBinding("height");
+      if (vb != null)
+      {
+         this.height = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.height;
+   }
+   
+   /**
+    * @param height The height to set.
+    */
+   public void setHeight(String height)
+   {
+      this.height = height;
    }
    
    

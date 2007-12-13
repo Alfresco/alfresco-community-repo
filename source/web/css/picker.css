@@ -60,7 +60,7 @@ div.pickerSelector
 div.pickerResultsList
 {
    *width: 300px;
-   height: 120px;
+   height: 168px;
    overflow: auto;
    clear: both;
 }
@@ -87,7 +87,7 @@ div.pickerAjaxWait
    background-repeat: no-repeat;
    background-position: 50% 65%;
    width: 292px;
-   height: 120px;
+   height: 168px;
    overflow: hidden;
    display: none;
    position: absolute;

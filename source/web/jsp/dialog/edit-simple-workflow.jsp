@@ -42,7 +42,7 @@
    function checkButtonState()
    {
       if (document.getElementById("dialog:dialog-body:approve-step-name").value.length == 0 ||
-          document.getElementById("dialog:dialog-body:client-approve-folder_selected").value.length == 0 ||
+          document.getElementById("clientApproveFolder-value").value.length == 0 ||
           rejectValid() == false)
       {
          document.getElementById("dialog:finish-button").disabled = true;
@@ -59,7 +59,7 @@
       
       if (document.forms['dialog']['dialog:dialog-body:reject-step-present'][0].checked && 
           (document.getElementById("dialog:dialog-body:reject-step-name").value.length == 0 ||
-           document.getElementById("dialog:dialog-body:client-reject-folder_selected").value.length == 0))
+           document.getElementById("clientRejectFolder-value").value.length == 0))
       {
          result = false;
       }

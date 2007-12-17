@@ -39,7 +39,7 @@
    
    function checkButtonState()
    {
-      if (document.getElementById("wizard:wizard-body:space-selector_selected").value.length == 0)
+      if (document.getElementById("spaceSelector-value").value.length == 0)
       {
          document.getElementById("wizard:next-button").disabled = true;
       }

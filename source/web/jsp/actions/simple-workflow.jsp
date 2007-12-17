@@ -47,7 +47,7 @@
    function checkButtonState()
    {
       if (document.getElementById("simple-workflow-action:approve-step-name").value.length == 0 ||
-          document.getElementById("simple-workflow-action:client-approve-folder_selected").value.length == 0 ||
+          document.getElementById("clientApproveFolder-value").value.length == 0 ||
           rejectValid() == false)
       {
          document.getElementById("simple-workflow-action:ok-button").disabled = true;
@@ -64,7 +64,7 @@
       
       if (document.forms['simple-workflow-action']['simple-workflow-action:reject-step-present'][0].checked && 
           (document.getElementById("simple-workflow-action:reject-step-name").value.length == 0 ||
-           document.getElementById("simple-workflow-action:client-reject-folder_selected").value.length == 0))
+           document.getElementById("clientRejectFolder-value").value.length == 0))
       {
          result = false;
       }

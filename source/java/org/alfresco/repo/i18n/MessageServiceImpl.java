@@ -46,6 +46,8 @@ public class MessageServiceImpl implements MessageService
 {
     private static final Log logger = LogFactory.getLog(MessageServiceImpl.class);
     
+    public static final String PROPERTIES_FILE_SUFFIX = ".properties";
+    
     /**
      * Lock objects
      */
@@ -542,12 +544,12 @@ public class MessageServiceImpl implements MessageService
         NodeRef rootNode = serviceRegistry.getNodeService().getRootNode(storeRef);        
         
         // first attempt - with locale        
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+".properties", null, resolver, false);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, resolver, false);
         
         if ((nodeRefs == null) || (nodeRefs.size() == 0))
         {
             // second attempt - basename 
-            nodeRefs = searchService.selectNodes(rootNode, path+".properties", null, resolver, false);
+            nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, resolver, false);
            
             if ((nodeRefs == null) || (nodeRefs.size() == 0))
             {

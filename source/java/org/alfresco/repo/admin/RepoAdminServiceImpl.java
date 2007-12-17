@@ -40,6 +40,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.i18n.MessageServiceImpl;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
@@ -553,33 +554,26 @@ public class RepoAdminServiceImpl implements RepoAdminService
         // Check that all the passed values are not null        
         ParameterCheck.mandatory("ResourceClasspath", resourceClasspath);
         
-        String bundleBaseName = null;
+        String bundleBaseName = resourceClasspath;
         
         // note: resource path should be in form path1/path2/path3/bundlebasename
         int idx = resourceClasspath.lastIndexOf("/");
         
-        if ((idx != -1) && (idx < (resourceClasspath.length()-1)))
+        if (idx != -1)
         {
-            bundleBaseName = resourceClasspath.substring(idx+1);
+            if (idx < (resourceClasspath.length()-1))
+            {
+                bundleBaseName = resourceClasspath.substring(idx+1);
+            }
+            else
+            {
+                bundleBaseName = null;
+            }
         }
         
-        if (bundleBaseName == null)
-        {
-            throw new AlfrescoRuntimeException("Message deployment failed - missing bundle base name (path = " + resourceClasspath + ")");
-        }
+        checkBundleBaseName(bundleBaseName);
         
-        if (bundleBaseName.indexOf("_") != -1)
-        {
-            // currently limited due to parser in DictionaryRepositoryBootstrap
-            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '_' (underscore)");  
-        }
-        
-        if (bundleBaseName.indexOf(".") != -1)
-        {
-            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '.' (period)");           
-        }
-        
-        String pattern = "classpath*:" + resourceClasspath + "*.properties";
+        String pattern = "classpath*:" + resourceClasspath + "*" + MessageServiceImpl.PROPERTIES_FILE_SUFFIX;
         
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
        
@@ -625,7 +619,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Message resource bundle deployment failed ", e);
+            throw new AlfrescoRuntimeException("Message resource bundle deployment failed for resource classpath " + resourceClasspath, e);
         }
         
         return bundleBaseName;
@@ -653,12 +647,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             if (nodeRefs.size() == 0)
             {
-                throw new AlfrescoRuntimeException("Could not find custom labels location " + repoMessagesLocation.getPath());
+                throw new AlfrescoRuntimeException("Could not find messages location " + repoMessagesLocation.getPath());
             }
             else if (nodeRefs.size() > 1)
             {
                 // unexpected: should not find multiple nodes with same name                
-                throw new AlfrescoRuntimeException("Found multiple custom labels location " + repoMessagesLocation.getPath());
+                throw new AlfrescoRuntimeException("Found multiple messages location " + repoMessagesLocation.getPath());
             }
 
             NodeRef customLabelsNodeRef = nodeRefs.get(0);
@@ -721,8 +715,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
      */
     public void undeployMessageBundle(String bundleBaseName)
     {   
-        // Check that all the passed values are not null        
-        ParameterCheck.mandatory("bundleBaseName", bundleBaseName);
+        checkBundleBaseName(bundleBaseName);
     
         try
         {
@@ -751,7 +744,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
         catch (Throwable t)
         {
-            throw new AlfrescoRuntimeException("Messages undeployment failed ", t);
+            throw new AlfrescoRuntimeException("Message resource bundle undeployment failed ", t);
         }
     }
     
@@ -760,9 +753,8 @@ public class RepoAdminServiceImpl implements RepoAdminService
      * @see org.alfresco.service.cmr.admin.RepoAdminService#reloadMessageBundle(java.lang.String)
      */
     public void reloadMessageBundle(String bundleBaseName)
-    {    
-        // Check that all the passed values are not null        
-        ParameterCheck.mandatory("bundleBaseName", bundleBaseName);
+    {
+        checkBundleBaseName(bundleBaseName);
     
         try
         {
@@ -771,15 +763,57 @@ public class RepoAdminServiceImpl implements RepoAdminService
             // re-register bundle
             
             String repoBundlePath = storeRef.toString() + repoMessagesLocation.getPath() + "/cm:" + bundleBaseName;
+             
+            NodeRef rootNode = nodeService.getRootNode(storeRef);
+             
+            List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoMessagesLocation.getPath()+CRITERIA_ALL, null, namespaceService, false);
+                    
+            boolean found = false;
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                String customLabelName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                
+                if (customLabelName.startsWith(bundleBaseName))
+                {
+                    found = true;
+                    break;
+                }               
+            }
             
-            messageService.unregisterResourceBundle(repoBundlePath);           
-            messageService.registerResourceBundle(repoBundlePath);
-
-            logger.info("Message resources re-loaded: " + bundleBaseName);
+            if (found)
+            {          
+                messageService.unregisterResourceBundle(repoBundlePath);           
+                messageService.registerResourceBundle(repoBundlePath);
+    
+                logger.info("Message resources re-loaded: " + bundleBaseName);
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Could not find message resource bundle " + repoBundlePath);
+            }
         }
         catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Message resource re-load failed", e);
         }      
+    }
+    
+    private void checkBundleBaseName(String bundleBaseName)
+    {
+        if ((bundleBaseName == null) || (bundleBaseName.equals("")))
+        {
+            throw new AlfrescoRuntimeException("Message deployment failed - missing bundle base name");
+        }
+        
+        if (bundleBaseName.indexOf("_") != -1)
+        {
+            // currently limited due to parser in DictionaryRepositoryBootstrap
+            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '_' (underscore)");  
+        }
+        
+        if (bundleBaseName.indexOf(".") != -1)
+        {
+            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '.' (period)");           
+        }
     }
 }

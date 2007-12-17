@@ -98,7 +98,7 @@ ok> reload messages <resourceBundleBaseName>
 
     Reload message resource bundle from repository into runtime message service.
     
-    e.g. undeploy messages lifecycle-messages
+    e.g. reload messages lifecycle-messages
 
 ##
 ##  end

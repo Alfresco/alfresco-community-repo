@@ -131,7 +131,7 @@
                                  </nobr>
                               </td>
                               <td class="separator" width=1><img src="<%=request.getContextPath()%>/images/parts/dotted_separator.gif" border=0 height=29 width=1></td>
-                              <td style="padding-left:4px" align=right>
+                              <td style="padding-left:4px; white-space:nowrap" align="right">
                                  <%-- Quick upload action --%>
                                 <r:actions id="acts_add_content" value="add_content_menu" context="#{NavigationBean.currentNode}" showLink="true" />
                               </td>

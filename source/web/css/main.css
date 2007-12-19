@@ -1,4 +1,4 @@
-body 
+body
 {
    font-family: Tahoma, Arial, Helvetica, sans-serif;
    background-color: white;
@@ -33,10 +33,10 @@ th
 
 p.status
 {
-   margin:0px;
-   padding-left:0px;
-   padding-top:4px;
-   padding-bottom:4px;
+   margin: 0px;
+   padding-left: 0px;
+   padding-top: 4px;
+   padding-bottom: 4px;
 }
 
 a:link, a:visited
@@ -121,6 +121,7 @@ a.small:hover
 
 a.footer:link, a.footer:visited
 {
+   font-family: Arial,Helvetica;
    font-size: 10px;
    text-decoration: underline;
    color: #004488;
@@ -128,6 +129,7 @@ a.footer:link, a.footer:visited
 
 a.footer:hover
 {
+   font-family: Arial,Helvetica;
    font-size: 10px;
    text-decoration: underline;
    color: #4272B4;
@@ -135,7 +137,7 @@ a.footer:hover
 
 .footer
 {
-   font-family:Arial,Helvetica;
+   font-family: Arial,Helvetica;
    font-size: 10px;
 }
 

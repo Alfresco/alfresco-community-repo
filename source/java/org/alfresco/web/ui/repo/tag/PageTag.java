@@ -102,7 +102,7 @@ public class PageTag extends TagSupport
         "<a class='footer' href='http://www.alfresco.com'>Alfresco</a> or its " +
         "<a class='footer' href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
         "<a class='footer' href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2007 All rights reserved.";
+        "Alfresco Software Inc. &copy; 2005-2008 All rights reserved.";
    
    private final static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;
@@ -340,7 +340,7 @@ public class PageTag extends TagSupport
                              "'>" +"</a></td><td align='center'>" +
                              "<span class='footer'>" + ALF_COPY +
                              "</span></td><td><a href='http://sourceforge.net/projects/alfresco'>" +
-                             "<img style='vertical-align:middle;border-width:0px' alt='' title='SourceForge' src='" +
+                             "<img style='vertical-align:middle' border='0' alt='' title='SourceForge' width='88' height='31' src='" +
                              req.getContextPath() + SF_LOGO + "'></a>" +
                              "</td></tr></table></center>");
       }

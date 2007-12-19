@@ -110,7 +110,7 @@
                         <div style="padding:4px">
                            <a href="http://www.alfresco.com/" class="title" target="new">http://www.alfresco.com</a>
                            <p>
-                           Alfresco Software Inc. &#169; 2005-2006 All rights reserved. <a href="http://www.alfresco.com/legal/" target="new">Legal and License</a>
+                           Alfresco Software Inc. &#169; 2005-2008 All rights reserved. <a href="http://www.alfresco.com/legal/" target="new">Legal and License</a>
                         </div>
                         
                         <div style="padding:4px" class="mainSubTitle">

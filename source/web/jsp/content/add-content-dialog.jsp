@@ -45,9 +45,9 @@ if (dialog != null && dialog.getFileName() != null)
 }
 %>
 
-<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
-
 <r:page titleId="title_add_content">
+
+<script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"></script>
 
 <f:view>
    

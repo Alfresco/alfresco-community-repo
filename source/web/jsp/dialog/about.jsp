@@ -117,7 +117,7 @@
                            Alfresco Software utilises components or libraries from the following software vendors and companies
                         </div>
                         
-                        <p>
+                        <p>&nbsp;</p>
                         
                         <div style="padding:4px">
                            <span style="text-align:center">
@@ -174,8 +174,8 @@
                            </span>
                         </div>
                         
-                        <p>
-                        <p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
                         
                         <div style="padding:4px" class="mainSubTitle">
                            Alfresco Development tools:
@@ -190,8 +190,8 @@
                            </span>
                         </div>
                         
-                        <p>
-                        <p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
                         
                         <div style="padding:4px" class="mainSubTitle">
                            Alfresco Software contributors

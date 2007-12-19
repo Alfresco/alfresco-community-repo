@@ -214,6 +214,11 @@ public class PageTag extends TagSupport
                }
                out.write(">\n");
             }
+            else
+            {
+               out.write("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n");
+               out.write("    \"http://www.w3.org/TR/html4/loose.dtd\">\n");
+            }
             out.write("<html><head><title>");
             if (this.titleId != null && this.titleId.length() != 0)
             {

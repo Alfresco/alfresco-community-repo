@@ -223,7 +223,7 @@
                                                                 rowClasses="selectedItemsRow,selectedItemsRowAlt"
                                                                 styleClass="selectedItems" headerClass="selectedItemsHeader"
                                                                 cellspacing="0" cellpadding="4" 
-                                                                rendered="#{SearchProperties.categoriesDataModel.rowCount != 0}">
+                                                                rendered="#{AdvancedSearchDialog.categoriesDataModel.rowCount != 0}">
                                                       <h:column id="col1">
                                                          <f:facet name="header">
                                                             <h:outputText value="#{msg.category}" id="tblCatNameHead" />
@@ -244,7 +244,7 @@
                                                       </h:column>
                                                    </h:dataTable>
                                                    
-                                                   <a:panel id="no-items" rendered="#{SearchProperties.categoriesDataModel.rowCount == 0}">
+                                                   <a:panel id="no-items" rendered="#{AdvancedSearchDialog.categoriesDataModel.rowCount == 0}">
                                                       <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
                                                          <tr>
                                                             <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-category" value="#{msg.category}" /></td>

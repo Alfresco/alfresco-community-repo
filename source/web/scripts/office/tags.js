@@ -7,20 +7,12 @@ var OfficeTags =
    /* Scaling for tag clouds - must have supporting CSS classes defined */
    SCALE_FACTOR: 5,
    
-   /* Manadatory params for searchResults component */
-   searchParams: "",
-   
    /* Set to preselect a tag after the tag cloud populated */
    preselectedTag: "",
    
    init: function()
    {
       OfficeTags.getTagCloud();
-   },
-   
-   setParams: function(params)
-   {
-      OfficeTags.searchParams = params;
    },
    
    getTagCloud: function()
@@ -79,8 +71,8 @@ var OfficeTags =
       // var maxResults = $('maxResults').value;
       var maxResults = 100;
       
-      var args = OfficeTags.searchParams + "&type=tag";
-      var actionURL = window.serviceContextPath + "/office/searchResults?p=" + args + "&search=" + encodeURI(tagName.replace(" ", "_x0020_")) + "&maxresults=" + maxResults;
+      var args = OfficeAddin.defaultQuery + "&type=tag";
+      var actionURL = window.serviceContextPath + "/office/searchResults" + args + "&search=" + encodeURI(tagName.replace(" ", "_x0020_")) + "&maxresults=" + maxResults;
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

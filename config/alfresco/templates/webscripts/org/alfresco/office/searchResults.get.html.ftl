@@ -1,7 +1,9 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
 <#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
+<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
 <#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
 <#if args.search?exists><#assign searchString = args.search><#else><#assign searchString=""></#if>
+<#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 
 <#if args.maxresults?exists>
    <#assign maxresults=args.maxresults?number>
@@ -28,7 +30,7 @@
             <#assign hrefExtra = " target=\"_blank\"">
          </#if>
       <#else>
-         <#assign openURL = "${url.serviceContext}/office/navigation?p=${args.p?url}&amp;e=$(extn}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
+         <#assign openURL = "${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
          <#assign hrefExtra = "">
       </#if>
 <div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}"">
@@ -51,7 +53,7 @@
          <#else>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
          </#if>
-         <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
+         <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
          <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
          <#if !child.name?ends_with(".pdf")>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>

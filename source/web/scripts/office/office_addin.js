@@ -7,6 +7,8 @@ var OfficeAddin =
    STATUS_FADE: 10000,
    LIST_DEF_HEIGHT: 204,
    
+   defaultQuery: "",
+   
    init: function()
    {
       window.queryObject = OfficeAddin.toQueryObject(document.location.search);

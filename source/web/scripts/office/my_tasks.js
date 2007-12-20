@@ -5,8 +5,6 @@
  */
 var OfficeMyTasks =
 {
-   fileExtn: "doc",
-   
    init: function()
    {
       OfficeAddin.sortTasks($('taskList'));
@@ -104,7 +102,7 @@ var OfficeMyTasks =
                OfficeAddin.showStatusText("Loading task...", "ajax_anim.gif", false);
 
                // ajax call to load task details               
-               var actionURL = window.serviceContextPath + "/office/myTasksDetail?t=" + task.id.replace(/\./, "$") + "&e=" + OfficeMyTasks.fileExtn;
+               var actionURL = window.serviceContextPath + "/office/myTasksDetail" + OfficeAddin.defaultQuery + "&t=" + task.id.replace(/\./, "$");
                var myAjax = new Ajax(actionURL, {
                   method: 'get',
                   headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

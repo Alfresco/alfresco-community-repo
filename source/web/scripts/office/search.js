@@ -44,7 +44,7 @@ var OfficeSearch =
       var searchString = $('searchText').value;
       var maxResults = $('maxResults').value;
 
-      var actionURL = useTemplate + "?p=" + argPath + "&search=" + searchString + "&maxresults=" + maxResults;
+      var actionURL = useTemplate + argPath + "&search=" + searchString + "&maxresults=" + maxResults;
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},

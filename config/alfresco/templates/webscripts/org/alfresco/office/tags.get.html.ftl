@@ -8,6 +8,7 @@
 <#else>
    <#assign d=companyhome>
 </#if>
+<#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -19,17 +20,20 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/tags.js"></script>
+   <script type="text/javascript">//<![CDATA[
+      OfficeAddin.defaultQuery = '${defaultQuery}';
+   //]]></script>
 </head>
 <body>
 
 <div class="tabBar">
    <ul>
-      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
-      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
-      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
-      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
-      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
-      <li id="current"><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
+      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
+      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
+      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
+      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
+      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
+      <li id="current"><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
 </div>
 
@@ -49,9 +53,6 @@
    <div id="taggedList" class="containerBig"></div>
 </div>
 
-<script type="text/javascript">
-   OfficeTags.setParams("${path?url}&amp;e=${extn}");
-</script>
 <#if (args.tag?exists)>
 <script type="text/javascript">
    window.addEvent("domready", function(){OfficeTags.preselectTag("${args.tag}")});

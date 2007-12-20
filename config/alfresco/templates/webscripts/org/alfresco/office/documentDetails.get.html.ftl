@@ -9,6 +9,7 @@
 <#else>
    <#assign d=companyhome>
 </#if>
+<#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -20,17 +21,20 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/doc_details.js"></script>
+   <script type="text/javascript">//<![CDATA[
+      OfficeAddin.defaultQuery = '${defaultQuery}';
+   //]]></script>
 </head>
 <body>
 
 <div class="tabBar">
    <ul>
-      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
-      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
-      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
-      <li id="current"><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
-      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
-      <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
+      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
+      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
+      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
+      <li id="current"><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
+      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
+      <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
 </div>
 
@@ -95,7 +99,7 @@
 <div class="tabBarInline">
    <ul>
       <li class="current"><a id="tabLinkTags" title="Document Tags" href="#"><span><img src="${url.context}/images/office/document_tag.gif" alt="Document Tags" /></span></a></li>
-      <li><a id="tabLinkVersion" title="Version History" href="#"><span><img src="${url.context}/images/office/version.gif" alt="Version History")}" /></span></a></li>
+      <li><a id="tabLinkVersion" title="Version History" href="#"><span><img src="${url.context}/images/office/version.gif" alt="Version History" /></span></a></li>
    </ul>
 </div>
 
@@ -108,10 +112,12 @@
          <a href="#" onclick="OfficeDocDetails.showAddTagForm(); return false;">Add a tag</a>
       </div>
       <div id="addTagFormContainer">
-         <form id="addTagForm" name="addTagForm" onsubmit="return OfficeDocDetails.addTag('${d.id}', this.tag.value);">
-            <input id="addTagBox" name="tag" type="text">
-            <input class="addTagImage" type="image" src="${url.context}/images/office/action_successful.gif" onclick="return (document.addTagForm.tag.value.length > 0);">
-            <input class="addTagImage" type="image" src="${url.context}/images/office/action_failed.gif" onclick="return OfficeDocDetails.hideAddTagForm();">
+         <form id="addTagForm" action="#" onsubmit="return OfficeDocDetails.addTag('${d.id}', this.tag.value);">
+            <fieldset class="addTagFieldset">
+               <input id="addTagBox" name="tag" type="text" />
+               <input class="addTagImage" type="image" src="${url.context}/images/office/action_successful.gif" onclick="return (document.addTagForm.tag.value.length > 0);" />
+               <input class="addTagImage" type="image" src="${url.context}/images/office/action_failed.gif" onclick="return OfficeDocDetails.hideAddTagForm();" />
+            </fieldset>
          </form>
       </div>
       <#if d.hasAspect("cm:taggable")>
@@ -120,7 +126,7 @@
                <#if tag?exists>
       <div class="tagListEntry">
          <a class="tagListDelete" href="#" title="Remove tag &quot;${tag.name}&quot;" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name}');">[x]</a>
-         <a class="tagListName" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}&amp;tag=${tag.name}">${tag.name}</a>
+         <a class="tagListName" href="${url.serviceContext}/office/tags${defaultQuery?html}&amp;tag=${tag.name}">${tag.name}</a>
       </div>
                </#if>
             </#list>
@@ -206,14 +212,14 @@
    <#else>
       <li>
          <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${d.id}');">
-            <img src="${url.context}/images/office/checkout.gif" alt="Check Out">
+            <img src="${url.context}/images/office/checkout.gif" alt="Check Out" />
             Check Out
          </a>
          <br />Check out the current document to a working copy.
       </li>
    </#if>
       <li>
-         <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new">
+         <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new">
             <img src="${url.context}/images/office/new_workflow.gif" alt="Start Workflow" />
             Start Workflow
          </a>
@@ -237,7 +243,7 @@
       </li>
 <#else>
       <li>
-         <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation?p=${path?url}">
+         <a title="Save to Alfresco" href="${url.serviceContext}/office/navigation${defaultQuery?html}">
             <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
             Save to Alfresco
          </a>

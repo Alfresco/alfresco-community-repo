@@ -7,6 +7,7 @@
 <#else>
    <#assign thisSpace = node>
 </#if>
+<#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
@@ -18,17 +19,20 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
 	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
+   <script type="text/javascript">//<![CDATA[
+      OfficeAddin.defaultQuery = '${defaultQuery}';
+   //]]></script>
 </head>
 <body>
 <div id="overlayPanel"></div>
 <div class="tabBar">
    <ul>
-      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li id="current"><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
-      <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags?p=${path?url}&amp;e=${extn}&amp;n=${nav}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
+      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
+      <li id="current"><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
+      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
+      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
+      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
 </div>
 
@@ -49,9 +53,11 @@
 <#if thisSpace=companyhome>
 <#else>
    <span style="float: right;">
-      <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${thisSpace.parent.id}">
-      <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
-      <span>Up</span>
+      <a title="To UserHome Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${userhome.id}">
+         <img src="${url.context}/images/office/userhome.gif" alt="To UserHome Space" />
+      </a>
+      <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${thisSpace.parent.id}">
+         <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
       </a>
    </span>
 </#if>
@@ -110,10 +116,10 @@
       <#assign spacesFound = spacesFound + 1>
       <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
          <span style="float: left; width: 36px;">
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
          </span>
          <span>
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;n=${child.id}" title="Open ${child.name}">
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="Open ${child.name}">
                <span class="bold">${child.name}</span>
             </a>
       <#if child.properties.description?exists>
@@ -164,7 +170,7 @@
       <#else>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
       </#if>
-            <a href="${url.serviceContext}/office/myTasks?p=${path?url}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
+            <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
             <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
       <#if !child.name?ends_with(".pdf")>
             <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
@@ -194,7 +200,7 @@
    </div>
    <div id="nonStatusText">
       <ul>
-<#if !node.isDocument>
+<#if (path?length != 0)>
          <li>
             <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
@@ -205,7 +211,7 @@
 </#if>
 <#if args.search?exists>
          <li>
-            <a href="${url.serviceContext}/office/search?p=${path?url}&amp;e=$(extn}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">
+            <a href="${url.serviceContext}/office/search${defaultQuery?html}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">
                <img src="${url.context}/images/office/search_again.gif" alt="Back to results" />
                Back to search results
             </a>

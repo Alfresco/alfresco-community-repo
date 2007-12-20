@@ -751,6 +751,12 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
    margin: 1px;
 }
 
+.addTagFieldset {
+   border: none;
+   margin: 0px;
+   padding: 0px;
+}
+
 #addTagBox {
    border: 1px solid #cccccc;
    height: 14px;

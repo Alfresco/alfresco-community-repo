@@ -38,6 +38,9 @@ var AlfPicker = new Class(
    
    /* list of items currently selected */
    selected: null,
+
+   /* list of items pre-selected */
+   preselected: null,
    
    /* the current parent being shown */
    parent: null,
@@ -73,6 +76,8 @@ var AlfPicker = new Class(
       {
          this.singleSelect = singleSelect;
       }
+      this.selected = [];
+      this.preselected = [];
    },
    
    setDefaultIcon: function(icon)
@@ -83,6 +88,11 @@ var AlfPicker = new Class(
    setStartId: function(id)
    {
       this.startId = id;
+   },
+   
+   setSelectedItems: function(jsonString)
+   {
+      this.preselected = Json.evaluate(jsonString);
    },
    
    showSelector: function()
@@ -100,6 +110,11 @@ var AlfPicker = new Class(
       {
          $(this.id + "-finish").setStyle("display", "none");
       }
+      
+      this.preselected.each(function(item, i)
+      {
+         this.addSelectedItem(item);
+      }, this);
       
       // first ajax request for the children of the start item
       this.getChildData(this.startId, this.populateChildren);
@@ -136,55 +151,60 @@ var AlfPicker = new Class(
          item = this.parent;
       }
       
-      // add item to list of selected items      
-      this.selected.push(item);
-      
       if (this.singleSelect)
       {
+         this.selected.push(item);
          this.doneClicked();
       }
       else
       {
-         // add the item to list above the selector
-         var itemId = this.id + "-sel-" + item.id;
-         var itemDiv = new Element("div", {"id": itemId, "class": "pickerSelectedItem"});
-         
-         var itemSpan = new Element("span", {"class": "pickerSelectedItemText"});
-         itemSpan.appendText(item.name);
-         itemSpan.injectInside(itemDiv);
-         
-         var actionSpan = new Element("span", {"class": "pickerSelectedItemAction"});
-         var actionScript = "javascript:" + this.varName + ".delItem('" + item.id + "');";
-         var actionLink = new Element("a", {"href": actionScript});
-         var deleteIcon = new Element("img", {"src": getContextPath() + "/images/icons/minus.gif", "class": "pickerSelectedIcon",
-                                      "border": 0, "title": "Remove", "alt": "Remove"});
-         deleteIcon.injectInside(actionLink);
-         actionLink.injectInside(actionSpan);
-         actionSpan.injectInside(itemDiv);
-         
-         // add mouse enter/leave enter to toggle delete icon (and toggle margin on outer div)
-         itemDiv.addEvent('mouseenter', function(e) {
-            $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 1);
-         });
-         itemDiv.addEvent('mouseleave', function(e) {
-            $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 0);
-         });
-         // add the item to the main selected item div
-         itemDiv.injectInside($(this.id + "-selected"));
-         
-         // set the background image now the itemdiv has been added to the DOM (for IE)
-         itemDiv.setStyle("background-image", "url(" + getContextPath() + item.icon + ")");
-         
-         // set opacity the style now the item has been added to the DOM (for IE)
-         $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 0);
-         
-         // apply the effect
-         var fx = new Fx.Styles(itemDiv, {duration: 1000, wait: false, transition: Fx.Transitions.Quad.easeOut});
-         fx.start({'background-color': ['#faf7ce', '#ffffff']});
-         
+         this.addSelectedItem(item);
          // hide the Add button as this item is now added
          $(this.id + "-add-" + item.id).setStyle("display", "none");
       }
+   },
+
+   addSelectedItem: function(item)
+   {
+      // add item to list of selected items
+      this.selected.push(item);
+
+      // add the item to list outside the selector
+      var itemId = this.id + "-sel-" + item.id;
+      var itemDiv = new Element("div", {"id": itemId, "class": "pickerSelectedItem"});
+      
+      var itemSpan = new Element("span", {"class": "pickerSelectedItemText"});
+      itemSpan.appendText(item.name);
+      itemSpan.injectInside(itemDiv);
+      
+      var actionSpan = new Element("span", {"class": "pickerSelectedItemAction"});
+      var actionScript = "javascript:" + this.varName + ".delItem('" + item.id + "');";
+      var actionLink = new Element("a", {"href": actionScript});
+      var deleteIcon = new Element("img", {"src": getContextPath() + "/images/icons/minus.gif", "class": "pickerSelectedIcon",
+                                   "border": 0, "title": "Remove", "alt": "Remove"});
+      deleteIcon.injectInside(actionLink);
+      actionLink.injectInside(actionSpan);
+      actionSpan.injectInside(itemDiv);
+      
+      // add mouse enter/leave enter to toggle delete icon (and toggle margin on outer div)
+      itemDiv.addEvent('mouseenter', function(e) {
+         $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 1);
+      });
+      itemDiv.addEvent('mouseleave', function(e) {
+         $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 0);
+      });
+      // add the item to the main selected item div
+      itemDiv.injectInside($(this.id + "-selected"));
+      
+      // set the background image now the itemdiv has been added to the DOM (for IE)
+      itemDiv.setStyle("background-image", "url(" + getContextPath() + item.icon + ")");
+      
+      // set opacity the style now the item has been added to the DOM (for IE)
+      $E('.pickerSelectedIcon', itemDiv).setStyle("opacity", 0);
+      
+      // apply the effect
+      var fx = new Fx.Styles(itemDiv, {duration: 1000, wait: false, transition: Fx.Transitions.Quad.easeOut});
+      fx.start({'background-color': ['#faf7ce', '#ffffff']});
    },
    
    delItem: function(itemId)
@@ -278,6 +298,13 @@ var AlfPicker = new Class(
          if (i != 0) ids += ",";
          ids += this.selected[i].id;
       }
+      
+      // special case for clearing out multi-select lists
+      if (!this.singleSelect && (ids == ""))
+      {
+         ids = "empty";
+      }
+      
       $(this.id + "-value").setProperty("value", ids);
       
       document.forms[this.formClientId].submit();
@@ -351,6 +378,8 @@ var AlfPicker = new Class(
       
       // iterate through the children and render a row for each one
       picker.items = [];
+      picker.oddRow = true;
+      
       for (var i=0; i<response.children.length; i++)
       {
          var item = response.children[i];
@@ -364,8 +393,6 @@ var AlfPicker = new Class(
       
       // scroll back to last position if required
       results.scrollTop = (scrollpos == undefined ? 0 : scrollpos);
-      
-      picker.oddRow = true;
       
       picker.populateBreadcrumb();
    },

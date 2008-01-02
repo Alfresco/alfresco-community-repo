@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.repo.component;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +38,12 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.ajax.JSONWriter;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -53,6 +56,12 @@ public abstract class BaseAjaxItemPicker extends UIInput
    private static final String MSG_GO_UP = "go_up";
    private static final String MSG_OK = "ok";
    private static final String MSG_CANCEL = "cancel";
+
+   private static final String ID_ID = "id";
+   private static final String ID_NAME = "name";
+   private static final String ID_ICON = "icon";
+
+   private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
    
    /** label to be displayed before an item is selected */
    protected String label = null;
@@ -161,6 +170,7 @@ public abstract class BaseAjaxItemPicker extends UIInput
       // get values from submitted value or none selected
       String selectedValues = null;
       String selectedNames = null;
+      String selectedItems = null;
       List<NodeRef> submitted = null;
       if (getSingleSelect() == true)
       {
@@ -190,6 +200,11 @@ public abstract class BaseAjaxItemPicker extends UIInput
          {
             submitted = (List<NodeRef>)getValue();
          }
+         // special case to submit empty lists on multi-select values
+         else if (submitted.equals("empty"))
+         {
+            submitted = null;
+         }
       }
       if (submitted != null)
       {
@@ -201,21 +216,26 @@ public abstract class BaseAjaxItemPicker extends UIInput
             
             StringBuilder nameBuf = new StringBuilder(128);
             StringBuilder valueBuf = new StringBuilder(128);
+            StringBuilder itemBuf = new StringBuilder(256);
             NodeService nodeService = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(
                   fc).getBean("nodeService");
             for (NodeRef value : submitted)
             {
                String name = (String)nodeService.getProperty(value, ContentModel.PROP_NAME);
+               String icon = (String)nodeService.getProperty(value, ApplicationModel.PROP_ICON);
                if (nameBuf.length() != 0)
                {
                   nameBuf.append(", ");
                   valueBuf.append(",");
+                  itemBuf.append(",");
                }
                nameBuf.append(name);
                valueBuf.append(value.toString());
+               itemBuf.append(getItemJson(value.toString(), name, icon));
             }
             selectedNames = nameBuf.toString();
             selectedValues = valueBuf.toString();
+            selectedItems = "[" + itemBuf.toString() + "]";
             
             // commit the transaction
             tx.commit();
@@ -243,6 +263,10 @@ public abstract class BaseAjaxItemPicker extends UIInput
       if (getDefaultIcon() != null)
       {
          out.write(" window." + objId + ".setDefaultIcon('" + getDefaultIcon() + "');");
+      }
+      if ((!getSingleSelect()) && (selectedItems != null))
+      {
+         out.write(" window." + objId + ".setSelectedItems('" + selectedItems + "');");
       }
       out.write("}");
       out.write("window.addEvent('domready', init" + divId + ");");
@@ -493,5 +517,31 @@ public abstract class BaseAjaxItemPicker extends UIInput
    protected String getHiddenFieldName()
    {
       return this.getId() + "-value";
+   }
+   
+   /**
+    * Returns Json string representing an already-selected item.
+    * 
+    * @return hidden field name
+    */
+   protected String getItemJson(String id, String name, String icon)
+   {
+      String itemJson = "";
+      StringWriter item = new StringWriter(128);
+      JSONWriter json = new JSONWriter(item);
+      
+      try
+      {
+         json.startObject();
+         json.writeValue(ID_ID, id);
+         json.writeValue(ID_NAME, name);
+         json.writeValue(ID_ICON, (icon != null ? FOLDER_IMAGE_PREFIX + icon + "-16.gif" : getDefaultIcon()));
+         json.endObject();
+      }
+      catch (Throwable err)
+      {
+      }
+      itemJson = item.toString();
+      return itemJson;
    }
 }

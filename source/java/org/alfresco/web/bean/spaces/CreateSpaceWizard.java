@@ -490,12 +490,13 @@ public class CreateSpaceWizard extends BaseWizardBean
          NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
          List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, this.namespaceService, false);
 
-         if (results.size() > 0)
+         if (results.size() != 0)
          {
             for (NodeRef assocRef : results)
             {
                Node childNode = new Node(assocRef);
-               if (this.dictionaryService.isSubClass(childNode.getType(), ContentModel.TYPE_FOLDER))
+               if (this.dictionaryService.isSubClass(childNode.getType(), ContentModel.TYPE_FOLDER) &&
+                   !this.dictionaryService.isSubClass(childNode.getType(), ApplicationModel.TYPE_PROJECTSPACE))
                {
                   this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
                }

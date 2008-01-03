@@ -652,7 +652,7 @@ public class NavigationBean
     */
    public boolean getIsGuest()
    {
-      return Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName().equals(PermissionService.GUEST_AUTHORITY);
+      return Repository.getIsGuest(FacesContext.getCurrentInstance());
    }
    
    /**

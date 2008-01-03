@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -664,6 +665,16 @@ public final class Repository
       }
       
       return personNodes;
+   }
+   
+   /**
+    * @return true if we are currently the special Guest user
+    */
+   public static boolean getIsGuest(FacesContext context)
+   {
+	   TenantService tenantService = (TenantService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("tenantService");
+	   String userName = Application.getCurrentUser(context).getUserName();
+	   return tenantService.getBaseNameUser(userName).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY);
    }
    
    /**

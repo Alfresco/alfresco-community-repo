@@ -119,9 +119,9 @@ public class ModeListRenderer extends BaseRenderer
             // output icon column
             if (list.getIconColumnWidth() != 0)
             {
-               out.write("<td  style='width:");
+               out.write("<td style='width:");
                out.write(String.valueOf(list.getIconColumnWidth()));
-               out.write(";'></td>");
+               out.write("px'></td>");
             }
             
             // output title label
@@ -354,7 +354,7 @@ public class ModeListRenderer extends BaseRenderer
       {
          out.write("<td style='width:");
          out.write(String.valueOf(list.getIconColumnWidth()));
-         out.write(";'>");
+         out.write("px'>");
          
          // if the "selectedImage" property is set and this item is selected then show it
          if (selected == true && selectedImage != null)

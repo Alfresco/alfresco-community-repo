@@ -601,9 +601,6 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
         props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), salt));
         
-        // override guest username property
-        props.put("alfresco_user_store.guestusername", getTenantGuestUser(tenantDomain));
-        
         userImporterBootstrap.bootstrap();
         
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
@@ -669,6 +666,9 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         // override admin username property
         Properties props = spacesImporterBootstrap.getConfiguration();
         props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
+        
+        // override guest username property
+        props.put("alfresco_user_store.guestusername", getTenantGuestUser(tenantDomain));
    
         spacesImporterBootstrap.bootstrap();
        

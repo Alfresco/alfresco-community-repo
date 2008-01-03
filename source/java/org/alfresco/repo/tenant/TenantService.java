@@ -42,6 +42,8 @@ public interface TenantService
 {
     public static final String SEPARATOR = "@";
     
+    public static final String DEFAULT_DOMAIN = "";
+    
     public static final String ADMIN_BASENAME = "admin";
     
     public NodeRef getName(NodeRef nodeRef);
@@ -80,6 +82,8 @@ public interface TenantService
     
     public boolean isTenantName(String name);
 
+    public String getUserDomain(String username);
+    
     public String getCurrentUserDomain();
     
     public String getDomain(String name);

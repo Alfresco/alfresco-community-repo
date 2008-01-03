@@ -128,14 +128,19 @@ public class SingleTServiceImpl implements TenantService
         return false;
     }
     
+    public String getUserDomain(String username)
+    {
+        return DEFAULT_DOMAIN;
+    }
+    
     public String getCurrentUserDomain()
     {
-        return "";
+        return DEFAULT_DOMAIN;
     }
     
     public String getDomain(String name)
     {
-        return "";
+        return DEFAULT_DOMAIN;
     }
     
     public String getDomainUser(String baseUsername, String tenantDomain)

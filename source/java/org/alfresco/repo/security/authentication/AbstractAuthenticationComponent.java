@@ -32,6 +32,7 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
@@ -46,6 +47,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      * The abstract class keeps track of support for guest login
      */
     private Boolean allowGuestLogin = null;
+    
+    private TenantService tenantService;
 
     public AbstractAuthenticationComponent()
     {
@@ -61,13 +64,18 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.allowGuestLogin = allowGuestLogin;
     }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+    	this.tenantService = tenantService;
+    }
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         // Support guest login from the login screen
-        if ((userName != null) && (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY)))
+        if (isGuestUserName(userName))
         {
-            setGuestUserAsCurrentUser();
+            setGuestUserAsCurrentUser(tenantService.getUserDomain(userName));
         }
         else
         {
@@ -111,10 +119,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
                 ud = new User(AuthenticationUtil.SYSTEM_USER_NAME, "", true, true, true, true, gas);
             }
-            else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+            else if (isGuestUserName(userName))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
+                ud = new User(getGuestUserName(tenantService.getUserDomain(userName)), "", true, true, true, true, gas);
             }
             else
             {
@@ -203,22 +211,37 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     /**
      * Get the name of the Guest User
+     * note: for MT, will get guest for default domain only
      */
     public String getGuestUserName()
     {
         return PermissionService.GUEST_AUTHORITY.toLowerCase();
     }
 
+    private String getGuestUserName(String tenantDomain)
+    {
+    	return tenantService.getDomainUser(getGuestUserName(), tenantDomain);
+    }
+    
+    /**
+     * Set the guest user as the current user.
+     * note: for MT, will set to default domain only
+     */
+    public Authentication setGuestUserAsCurrentUser() throws AuthenticationException
+    {
+    	return setGuestUserAsCurrentUser(TenantService.DEFAULT_DOMAIN);
+    }
+    
     /**
      * Set the guest user as the current user.
      */
-    public Authentication setGuestUserAsCurrentUser() throws AuthenticationException
+    private Authentication setGuestUserAsCurrentUser(String tenantDomain) throws AuthenticationException
     {
         if (allowGuestLogin == null)
         {
             if (implementationAllowsGuestLogin())
             {
-                return setCurrentUser(PermissionService.GUEST_AUTHORITY);
+                return setCurrentUser(getGuestUserName(tenantDomain));
             }
             else
             {
@@ -229,7 +252,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             if (allowGuestLogin.booleanValue())
             {
-                return setCurrentUser(PermissionService.GUEST_AUTHORITY);
+            	return setCurrentUser(getGuestUserName(tenantDomain));
             }
             else
             {
@@ -237,6 +260,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             }
 
         }
+    }
+    
+    private boolean isGuestUserName(String userName)
+    {
+    	return ((userName != null) && tenantService.getBaseNameUser(userName).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY));
     }
 
     protected abstract boolean implementationAllowsGuestLogin();

@@ -154,7 +154,7 @@ public class AuthorityServiceImpl implements AuthorityService
         {
             authorities.addAll(adminSet);
         }
-        if(AuthorityType.getAuthorityType(currentUserName) != AuthorityType.GUEST)
+        if (AuthorityType.getAuthorityType(tenantService.getBaseNameUser(currentUserName)) != AuthorityType.GUEST)
         {
            authorities.addAll(allSet);
         }

@@ -158,6 +158,9 @@
         <property name="allowGuestLogin">
             <value>true</value>
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
     </bean>
 
 

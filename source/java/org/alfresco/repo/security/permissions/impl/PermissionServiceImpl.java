@@ -433,7 +433,15 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         }
         // TODO: Refactor and use the authentication service for this.
         User user = (User) auth.getPrincipal();
-        auths.add(user.getUsername());
+        
+        String username = user.getUsername();
+        auths.add(username);
+        
+        if (tenantService.getBaseNameUser(username).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+        {
+        	auths.add(PermissionService.GUEST_AUTHORITY);
+        }
+        
         for (GrantedAuthority authority : auth.getAuthorities())
         {
             auths.add(authority.getAuthority());
@@ -444,7 +452,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             {
                 for (DynamicAuthority da : dynamicAuthorities)
                 {
-                    if (da.hasAuthority(nodeRef, user.getUsername()))
+                    if (da.hasAuthority(nodeRef, username))
                     {
                         auths.add(da.getAuthority());
                     }

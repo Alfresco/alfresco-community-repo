@@ -183,7 +183,7 @@ public class MultiTServiceImpl implements TenantService
         
         String tenantDomain = getCurrentUserDomain();
         
-        if (! tenantDomain.equals(""))
+        if (! tenantDomain.equals(DEFAULT_DOMAIN))
         {
             int idx1 = name.indexOf(SEPARATOR);
             if (idx1 != 0)
@@ -246,12 +246,12 @@ public class MultiTServiceImpl implements TenantService
             int idx2 = name.indexOf(SEPARATOR, 1);
             String nameDomain = name.substring(1, idx2);
             
-            if ((! tenantDomain.equals("")) && (! tenantDomain.equals(nameDomain)))
+            if ((! tenantDomain.equals(DEFAULT_DOMAIN)) && (! tenantDomain.equals(nameDomain)))
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
             
-            if ((! tenantDomain.equals("")) || (forceForNonTenant))
+            if ((! tenantDomain.equals(DEFAULT_DOMAIN)) || (forceForNonTenant))
             {
                 // remove tenant domain
                 name = name.substring(idx2+1);
@@ -282,7 +282,7 @@ public class MultiTServiceImpl implements TenantService
         
         String tenantDomain = getCurrentUserDomain();
           
-         if (! tenantDomain.equals(""))
+         if (! tenantDomain.equals(DEFAULT_DOMAIN))
          {
             int idx2 = username.lastIndexOf(SEPARATOR);
             if ((idx2 > 0) && (idx2 < (username.length()-1)))
@@ -317,7 +317,7 @@ public class MultiTServiceImpl implements TenantService
                 
         String tenantDomain = getCurrentUserDomain();
         
-        if (((nameDomain == null) && (! tenantDomain.equals(""))) || 
+        if (((nameDomain == null) && (! tenantDomain.equals(DEFAULT_DOMAIN))) || 
             ((nameDomain != null) && (! nameDomain.equals(tenantDomain))))
         {
             throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
@@ -432,17 +432,15 @@ public class MultiTServiceImpl implements TenantService
         return false;  
     }
     
-    public String getCurrentUserDomain()
+    public String getUserDomain(String username)
     {
-        String user = AuthenticationUtil.getCurrentUserName();
-        
-        // can be null (e.g. for System user / during app ctx init)
-        if (user != null) 
+    	// can be null (e.g. for System user / during app ctx init)
+        if (username != null) 
         {
-            int idx = user.lastIndexOf(SEPARATOR);
-            if ((idx > 0) && (idx < (user.length()-1)))
+            int idx = username.lastIndexOf(SEPARATOR);
+            if ((idx > 0) && (idx < (username.length()-1)))
             {
-               String tenantDomain = user.substring(idx+1);
+               String tenantDomain = username.substring(idx+1);
                
                checkTenantEnabled(tenantDomain);
                
@@ -450,7 +448,13 @@ public class MultiTServiceImpl implements TenantService
             }
         }        
         
-        return ""; // default domain - non-tenant user
+        return DEFAULT_DOMAIN; // default domain - non-tenant user
+    }
+    
+    public String getCurrentUserDomain()
+    {
+        String user = AuthenticationUtil.getCurrentUserName();
+        return getUserDomain(user);
     }
     
     public String getDomain(String name)
@@ -460,7 +464,7 @@ public class MultiTServiceImpl implements TenantService
 
         String tenantDomain = getCurrentUserDomain();
         
-        String nameDomain = "";
+        String nameDomain = DEFAULT_DOMAIN;
         
         int idx1 = name.indexOf(SEPARATOR);
         if (idx1 == 0)
@@ -468,7 +472,7 @@ public class MultiTServiceImpl implements TenantService
             int idx2 = name.indexOf(SEPARATOR, 1);
             nameDomain = name.substring(1, idx2);
             
-            if ((! tenantDomain.equals("")) && (! tenantDomain.equals(nameDomain)))
+            if ((! tenantDomain.equals(DEFAULT_DOMAIN)) && (! tenantDomain.equals(nameDomain)))
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }    
@@ -483,7 +487,7 @@ public class MultiTServiceImpl implements TenantService
         ParameterCheck.mandatory("baseUsername", baseUsername);
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
-        if (! tenantDomain.equals(""))
+        if (! tenantDomain.equals(DEFAULT_DOMAIN))
         {
             if (baseUsername.contains(SEPARATOR))
             {

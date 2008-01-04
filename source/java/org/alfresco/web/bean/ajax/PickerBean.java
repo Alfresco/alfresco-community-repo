@@ -73,6 +73,7 @@ public class PickerBean
    private static final String ID_ID = "id";
    private static final String ID_PARENT = "parent";
    private static final String PARAM_PARENT = "parent";
+   private static final String PARAM_CHILD = "child";
    private static final String PARAM_MIMETYPES = "mimetypes";
    
    private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
@@ -200,7 +201,10 @@ public class PickerBean
    /**
     * Return the JSON objects representing a list of cm:folder nodes.
     * 
-    * IN: "parent" - null for Company Home child folders, else the parent noderef of the folders to retrieve.
+    * IN: "parent" - noderef (can be null) of the parent to retrieve the child folder nodes for. Null is valid
+    *        and specifies the Company Home root as the parent.
+    * IN: "child" - non-null value of the child noderef to retrieve the siblings for - the parent value returned
+    *        in the JSON response will be the parent of the specified child.
     * 
     * The 16x16 pixel folder icon path is output as the 'icon' property for each child folder. 
     */
@@ -217,25 +221,38 @@ public class PickerBean
          
          List<ChildAssociationRef> childRefs;
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
+         
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(PARAM_PARENT);
-         if (strParentRef == null || strParentRef.length() == 0)
+         String strChildRef = (String)params.get(PARAM_CHILD);
+         if (strChildRef != null && strChildRef.length() != 0)
          {
-            parentRef = companyHomeRef;
-            strParentRef = parentRef.toString();
+            // TODO: check permission on the parent
+            NodeRef childRef = new NodeRef(strChildRef);
+            parentRef = this.nodeService.getPrimaryParent(childRef).getParentRef();
          }
          else
          {
-            parentRef = new NodeRef(strParentRef);
+            // TODO: check permission on the parent
+            String strParentRef = (String)params.get(PARAM_PARENT);
+            if (strParentRef == null || strParentRef.length() == 0)
+            {
+               parentRef = companyHomeRef;
+               strParentRef = parentRef.toString();
+            }
+            else
+            {
+               parentRef = new NodeRef(strParentRef);
+            }
          }
+         
          List<FileInfo> folders = this.fileFolderService.listFolders(parentRef);
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
          out.startValue(ID_PARENT);
          out.startObject();
-         out.writeValue(ID_ID, strParentRef);
+         out.writeValue(ID_ID, parentRef.toString());
          out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
          if (parentRef.equals(companyHomeRef))
          {
@@ -274,7 +291,10 @@ public class PickerBean
    /**
     * Return the JSON objects representing a list of cm:folder and cm:content nodes.
     * 
-    * IN: "parent" - null for Company Home child nodes, else the parent noderef of the folders to retrieve.
+    * IN: "parent" - noderef (can be null) of the parent to retrieve the child nodes for. Null is valid
+    *        and specifies the Company Home root as the parent.
+    * IN: "child" - non-null value of the child noderef to retrieve the siblings for - the parent value returned
+    *        in the JSON response will be the parent of the specified child.
     * IN: "mimetypes" (optional) - if set, a comma separated list of mimetypes to restrict the file list.
     * 
     * It is assumed that only files should be selectable, all cm:folder nodes will be marked with the
@@ -299,17 +319,29 @@ public class PickerBean
          
          List<ChildAssociationRef> childRefs;
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
+         
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(PARAM_PARENT);
-         if (strParentRef == null || strParentRef.length() == 0)
+         String strChildRef = (String)params.get(PARAM_CHILD);
+         if (strChildRef != null && strChildRef.length() != 0)
          {
-            parentRef = companyHomeRef;
-            strParentRef = parentRef.toString();
+            // TODO: check permission on the parent
+            NodeRef childRef = new NodeRef(strChildRef);
+            parentRef = this.nodeService.getPrimaryParent(childRef).getParentRef();
          }
          else
          {
-            parentRef = new NodeRef(strParentRef);
+            // TODO: check permission on the parent
+            String strParentRef = (String)params.get(PARAM_PARENT);
+            if (strParentRef == null || strParentRef.length() == 0)
+            {
+               parentRef = companyHomeRef;
+               strParentRef = parentRef.toString();
+            }
+            else
+            {
+               parentRef = new NodeRef(strParentRef);
+            }
          }
          
          // look for mimetype restriction parameter
@@ -331,7 +363,7 @@ public class PickerBean
          out.startObject();
          out.startValue(ID_PARENT);
          out.startObject();
-         out.writeValue(ID_ID, strParentRef);
+         out.writeValue(ID_ID, parentRef.toString());
          out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
          if (parentRef.equals(companyHomeRef))
          {

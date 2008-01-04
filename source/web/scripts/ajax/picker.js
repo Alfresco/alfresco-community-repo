@@ -125,7 +125,7 @@ var AlfPicker = new Class(
       }, this);
       
       // first ajax request for the children of the start item
-      this.getChildData(this.startId, this.populateChildren);
+      this.getNodeData(this.startId, null, this.populateChildren);
    },
    
    childClicked: function(index)
@@ -135,20 +135,22 @@ var AlfPicker = new Class(
       // add an extra property to record the scroll position for this item
       item.scrollpos = $(this.id + "-results-list").scrollTop;
       this.stack.push(item);  // ready for the breadcrumb redraw after the child data request
-      this.getChildData(item.id, this.populateChildren)
+      this.getNodeData(item.id, null, this.populateChildren)
    },
    
    upClicked: function()
    {
       this.hidePanels();
-      // pop the parent off - peek for the grandparent
+      // pop the parent off
       var parent = this.stack.pop();
+      // peek for the grandparent - we may not have a grandparent (depending on start location) - so use the
+      // getNodeData(parent, child, ...) call to pass in the child rather than the parent and let server calculate it
       var grandParent = null;
       if (this.stack.length != 0)
       {
          grandParent = this.stack[this.stack.length-1];
       }
-      this.getChildData(grandParent != null ? grandParent.id : null, this.populateChildren, parent.scrollpos);
+      this.getNodeData(grandParent != null ? grandParent.id : null, grandParent == null ? parent.id : null, this.populateChildren, parent.scrollpos);
    },
    
    addItem: function(index)
@@ -273,7 +275,7 @@ var AlfPicker = new Class(
       {
          this.stack.splice(index + 1, removeCount);
       }
-      this.getChildData(item.id, this.populateChildren);
+      this.getNodeData(item.id, null, this.populateChildren);
    },
    
    breadcrumbToggle: function()
@@ -475,7 +477,7 @@ var AlfPicker = new Class(
       }
    },
    
-   getChildData: function(parent, callback, scrollpos)
+   getNodeData: function(parent, child, callback, scrollpos)
    {
       // show ajax wait panel
       $(this.id + '-ajax-wait').setStyle('display', 'block');
@@ -485,7 +487,8 @@ var AlfPicker = new Class(
       
       // execute ajax service call to retrieve list of child nodes as JSON response
       new Ajax(getContextPath() + "/ajax/invoke/" + this.service +
-               "?parent=" + (parent!=null ? parent : "") +
+               "?parent=" + (parent != null ? parent : "") +
+               (child != null ? ("&child=" + child) : "") +
                (this.requestAttributes!=null ? ("&" + this.requestAttributes) : ""),
       {
          method: 'get',

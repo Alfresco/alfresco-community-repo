@@ -40,6 +40,8 @@ import javax.faces.validator.ValidatorException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -95,6 +97,9 @@ public class CreateUserWizard extends BaseWizardBean
 
     /** PersonService bean reference */
     private PersonService personService;
+    
+    /** TenantService bean reference */
+    private TenantService tenantService;
 
     /** PermissionService bean reference */
     private PermissionService permissionService;
@@ -126,6 +131,14 @@ public class CreateUserWizard extends BaseWizardBean
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    /**
+     * @param tenantService         The tenantService to set.
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+       this.tenantService = tenantService;
     }
 
     /**
@@ -185,6 +198,18 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public String getSummary()
     {
+        if (tenantService.isEnabled())
+        {      
+        	try
+        	{
+        		checkTenantUserName();
+        	}
+        	catch (Exception e)
+        	{
+        		// TODO - ignore for now, but ideally should handle earlier
+        	}
+        }
+        
         ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
         
         String homeSpaceLabel = this.homeSpaceName;
@@ -682,6 +707,11 @@ public class CreateUserWizard extends BaseWizardBean
         {
             if (this.password.equals(this.confirm))
             {
+                if (tenantService.isEnabled())
+                {         
+                	checkTenantUserName();
+                }
+            	
                 // create properties for Person type from submitted Form data
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
                 props.put(ContentModel.PROP_USERNAME, this.userName);
@@ -813,5 +843,30 @@ public class CreateUserWizard extends BaseWizardBean
           units = QUOTA_UNITS_GB;
        }
        return new Pair<Long, String>(size, units);
+    }
+    
+    protected void checkTenantUserName()
+    {
+        String currentDomain = tenantService.getCurrentUserDomain();
+        if (currentDomain != null)
+        {
+            if (! tenantService.isTenantUser(this.userName))
+            {
+                // force domain onto the end of the username
+                this.userName = tenantService.getDomainUser(this.userName, currentDomain);
+                logger.warn("Added domain to username: " + this.userName);
+            }
+            else
+            {
+                try
+                {                  
+                    tenantService.checkDomainUser(this.userName);
+                }
+                catch (RuntimeException re)
+                {
+                    throw new AuthenticationException("User must belong to same domain as admin: " + currentDomain);
+                }
+            }
+        } 
     }
 }

@@ -4389,6 +4389,10 @@
          <value>#{PersonService}</value>
       </managed-property>
       <managed-property>
+         <property-name>tenantService</property-name>
+         <value>#{tenantService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
@@ -4439,6 +4443,10 @@
          <property-name>personService</property-name>
          <value>#{PersonService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>tenantService</property-name>
+         <value>#{tenantService}</value>
+      </managed-property>     
       <managed-property>
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>

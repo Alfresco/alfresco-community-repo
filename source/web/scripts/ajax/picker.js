@@ -66,6 +66,9 @@ var AlfPicker = new Class(
    /* initial display style of the outer div */
    initialDisplayStyle: null,
    
+   /* addition service request attributes if any */
+   requestAttributes: null,
+   
    initialize: function(id, varName, service, formClientId, singleSelect) 
    {
       this.id = id;
@@ -93,6 +96,11 @@ var AlfPicker = new Class(
    setSelectedItems: function(jsonString)
    {
       this.preselected = Json.evaluate(jsonString);
+   },
+   
+   setRequestAttributes: function(attrs)
+   {
+      this.requestAttributes = attrs;
    },
    
    showSelector: function()
@@ -135,7 +143,11 @@ var AlfPicker = new Class(
       this.hidePanels();
       // pop the parent off - peek for the grandparent
       var parent = this.stack.pop();
-      var grandParent = this.stack[this.stack.length-1];
+      var grandParent = null;
+      if (this.stack.length != 0)
+      {
+         grandParent = this.stack[this.stack.length-1];
+      }
       this.getChildData(grandParent != null ? grandParent.id : null, this.populateChildren, parent.scrollpos);
    },
    
@@ -344,7 +356,7 @@ var AlfPicker = new Class(
       else
       {
          upLink.setStyle("display", "block");
-         upLink.setProperty("href", "javascript:" + picker.varName + ".upClicked('" + picker.parent.id + "');");
+         upLink.setProperty("href", "javascript:" + picker.varName + ".upClicked();");
       }
       
       // show what the parent next to the breadcrumb drop-down
@@ -472,7 +484,9 @@ var AlfPicker = new Class(
       var picker = this;
       
       // execute ajax service call to retrieve list of child nodes as JSON response
-      new Ajax(getContextPath() + "/ajax/invoke/" + this.service + "?parent=" + (parent!=null ? parent : ""),
+      new Ajax(getContextPath() + "/ajax/invoke/" + this.service +
+               "?parent=" + (parent!=null ? parent : "") +
+               (this.requestAttributes!=null ? ("&" + this.requestAttributes) : ""),
       {
          method: 'get',
          async: false,
@@ -489,6 +503,15 @@ var AlfPicker = new Class(
                $(picker.id + '-results-list').setStyle('visibility', 'visible');
                $(picker.id + '-ajax-wait').setStyle('display', 'none');
             }
+            else
+            {
+               // display results list again and hide ajax wait panel
+               $(picker.id + '-results-list').setStyle('visibility', 'visible');
+               $(picker.id + '-ajax-wait').setStyle('display', 'none');
+               
+               // display the error
+               alert(r);
+            }
          },
          onFailure: function (r)
          {
@@ -498,6 +521,13 @@ var AlfPicker = new Class(
    
    sortByName: function(a, b)
    {
-      return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+      if (a.selectable == b.selectable)
+      {
+         return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+      }
+      else
+      {
+         return (a.selectable == false) ? -1 : 1;
+      }
    }
 });

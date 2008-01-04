@@ -25,6 +25,8 @@
 package org.alfresco.web.ui.repo.component;
 
 /**
+ * JSF Ajax object picker for navigating through and selecting folders.
+ * 
  * @author Kevin Roast
  */
 public class UIAjaxFolderPicker extends BaseAjaxItemPicker

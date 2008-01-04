@@ -25,8 +25,11 @@
 package org.alfresco.web.bean.ajax;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
@@ -38,6 +41,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,6 +63,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PickerBean
 {
+   private static final String MSG_CATEGORIES = "categories";
    private static final String ID_URL = "url";
    private static final String ID_ICON = "icon";
    private static final String ID_CHILDREN = "children";
@@ -66,6 +72,8 @@ public class PickerBean
    private static final String ID_NAME = "name";
    private static final String ID_ID = "id";
    private static final String ID_PARENT = "parent";
+   private static final String PARAM_PARENT = "parent";
+   private static final String PARAM_MIMETYPES = "mimetypes";
    
    private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
    
@@ -110,6 +118,13 @@ public class PickerBean
    }
    
    
+   /**
+    * Return the JSON objects representing a list of categories.
+    * 
+    * IN: "parent" - null for root categories, else the parent noderef of the categories to retrieve.
+    * 
+    * The pseudo root node 'Categories' is not selectable.
+    */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
    public void getCategoryNodes() throws Exception
    {
@@ -124,7 +139,7 @@ public class PickerBean
          Collection<ChildAssociationRef> childRefs;
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(ID_PARENT);
+         String strParentRef = (String)params.get(PARAM_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             childRefs = this.categoryService.getRootCategories(
@@ -147,7 +162,7 @@ public class PickerBean
          if (parentRef == null)
          {
             out.writeNullValue(ID_ID);
-            out.writeValue(ID_NAME, "Categories");
+            out.writeValue(ID_NAME, Application.getMessage(fc, MSG_CATEGORIES));
             out.writeValue(ID_ISROOT, true);
             out.writeValue(ID_SELECTABLE, false);
          }
@@ -182,6 +197,13 @@ public class PickerBean
       }
    }
    
+   /**
+    * Return the JSON objects representing a list of cm:folder nodes.
+    * 
+    * IN: "parent" - null for Company Home child folders, else the parent noderef of the folders to retrieve.
+    * 
+    * The 16x16 pixel folder icon path is output as the 'icon' property for each child folder. 
+    */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
    public void getFolderNodes() throws Exception
    {
@@ -197,7 +219,7 @@ public class PickerBean
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(ID_PARENT);
+         String strParentRef = (String)params.get(PARAM_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             parentRef = companyHomeRef;
@@ -249,6 +271,18 @@ public class PickerBean
       }
    }
    
+   /**
+    * Return the JSON objects representing a list of cm:folder and cm:content nodes.
+    * 
+    * IN: "parent" - null for Company Home child nodes, else the parent noderef of the folders to retrieve.
+    * IN: "mimetypes" (optional) - if set, a comma separated list of mimetypes to restrict the file list.
+    * 
+    * It is assumed that only files should be selectable, all cm:folder nodes will be marked with the
+    * 'selectable:false' property. Therefore the parent (which is a folder) is not selectable.
+    * 
+    * The 16x16 pixel node icon path is output as the 'icon' property for each child, in addition each
+    * cm:content node has an property of 'url' for content download. 
+    */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
    public void getFileFolderNodes() throws Exception
    {
@@ -261,12 +295,13 @@ public class PickerBean
          tx.begin();
          
          DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
+         ContentService cs = Repository.getServiceRegistry(fc).getContentService();
          
          List<ChildAssociationRef> childRefs;
          NodeRef companyHomeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(ID_PARENT);
+         String strParentRef = (String)params.get(PARAM_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
             parentRef = companyHomeRef;
@@ -276,6 +311,20 @@ public class PickerBean
          {
             parentRef = new NodeRef(strParentRef);
          }
+         
+         // look for mimetype restriction parameter
+         Set<String> mimetypes = null;
+         String mimetypeParam = (String)params.get(PARAM_MIMETYPES);
+         if (mimetypeParam != null && mimetypeParam.length() != 0)
+         {
+            // convert to a set of mimetypes to test each file against
+            mimetypes = new HashSet<String>();
+            for (StringTokenizer t = new StringTokenizer(mimetypeParam, ","); t.hasMoreTokens(); /**/)
+            {
+               mimetypes.add(t.nextToken());
+            }
+         }
+         
          List<FileInfo> items = this.fileFolderService.list(parentRef);
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
@@ -294,28 +343,46 @@ public class PickerBean
          out.startValue(ID_CHILDREN);
          out.startArray();
          
-         // filter out those children that are not spaces
          for (FileInfo item : items)
          {
-            out.startObject();
-            out.writeValue(ID_ID, item.getNodeRef().toString());
-            String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
-            out.writeValue(ID_NAME, name);
             if (dd.isSubClass(this.internalNodeService.getType(item.getNodeRef()), ContentModel.TYPE_FOLDER))
             {
                // found a folder
+               out.startObject();
+               out.writeValue(ID_ID, item.getNodeRef().toString());
+               String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
+               out.writeValue(ID_NAME, name);
                String icon = (String)item.getProperties().get(ApplicationModel.PROP_ICON);
                out.writeValue(ID_ICON, FOLDER_IMAGE_PREFIX + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif"));
                out.writeValue(ID_SELECTABLE, false);
+               out.endObject();
             }
             else
             {
                // must be a file
-               String icon = Utils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
-               out.writeValue(ID_ICON, icon);
-               out.writeValue(ID_URL, DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
+               boolean validFile = true;
+               if (mimetypes != null)
+               {
+                  validFile = false;
+                  ContentReader reader = cs.getReader(item.getNodeRef(), ContentModel.PROP_CONTENT);
+                  if (reader != null)
+                  {
+                     String mimetype = reader.getMimetype();
+                     validFile = (mimetype != null && mimetypes.contains(mimetype));
+                  }
+               }
+               if (validFile)
+               {
+                  out.startObject();
+                  out.writeValue(ID_ID, item.getNodeRef().toString());
+                  String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
+                  out.writeValue(ID_NAME, name);
+                  String icon = Utils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
+                  out.writeValue(ID_ICON, icon);
+                  out.writeValue(ID_URL, DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
+                  out.endObject();
+               }
             }
-            out.endObject();
          }
          
          out.endArray();

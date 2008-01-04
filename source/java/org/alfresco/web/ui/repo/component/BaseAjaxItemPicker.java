@@ -49,6 +49,14 @@ import org.alfresco.web.ui.common.Utils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
+ * Base class for the JSP components representing Ajax object pickers.
+ * 
+ * Handles the JSF lifecycle for the Ajax component. The Ajax calls themselves
+ * are processed via the class <code>org.alfresco.web.bean.ajax.PickerBean</code>.
+ * 
+ * The derived components are only responsible for specifing the ajax service call
+ * to make, plus any defaults for icons etc. 
+ * 
  * @author Kevin Roast
  */
 public abstract class BaseAjaxItemPicker extends UIInput
@@ -121,7 +129,7 @@ public abstract class BaseAjaxItemPicker extends UIInput
          this.initialSelectionId,
          this.disabled,
          this.height};
-      return (values);
+      return values;
    }
    
    /**
@@ -268,6 +276,12 @@ public abstract class BaseAjaxItemPicker extends UIInput
       {
          out.write(" window." + objId + ".setSelectedItems('" + selectedItems + "');");
       }
+      // write any addition custom request attributes required by specific picker implementations
+      String requestProps = getRequestAttributes();
+      if (requestProps != null)
+      {
+         out.write(" window." + objId + ".setRequestAttributes('" + requestProps + "');");
+      }
       out.write("}");
       out.write("window.addEvent('domready', init" + divId + ");");
       out.write("</script>");
@@ -370,6 +384,14 @@ public abstract class BaseAjaxItemPicker extends UIInput
     *         service call results JSON objects.
     */
    protected abstract String getDefaultIcon();
+   
+   /**
+    * @return custom request properties optional for some specific picker implementations
+    */
+   protected String getRequestAttributes()
+   {
+      return null;
+   }
    
    
    // ------------------------------------------------------------------------------

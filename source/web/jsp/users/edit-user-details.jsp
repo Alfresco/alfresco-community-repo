@@ -107,6 +107,7 @@ function updateButtonState()
          value="#{DialogManager.bean.personPhotoRef}"
          label="#{msg.select_avatar_prompt}"
          initialSelection="#{DialogManager.bean.personProperties.homeFolder}"
+         mimetypes="image/gif,image/jpeg,image/png"
          styleClass="selector" />
    
 </h:panelGrid>

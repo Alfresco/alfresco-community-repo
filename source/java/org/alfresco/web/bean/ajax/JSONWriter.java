@@ -29,7 +29,8 @@ import java.io.Writer;
 import java.util.Stack;
 
 /**
- * Very simple JSON writer. Wraps a Writer to output a JSON stream.
+ * Fast and simple JSON stream writer. Wraps a Writer to output a JSON object stream.
+ * No intermediate objects are created - writes are immediate to the underlying stream.
  * 
  * @author Kevin Roast
  */

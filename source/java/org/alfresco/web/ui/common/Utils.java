@@ -32,6 +32,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,9 +54,12 @@ import javax.servlet.ServletContext;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.CIFSServer;
-import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.smb.server.repo.ContentContext;
+import org.alfresco.filesys.CIFSServerBean;
+import org.alfresco.filesys.repo.ContentContext;
+import org.alfresco.jlan.server.core.SharedDevice;
+import org.alfresco.jlan.server.core.SharedDeviceList;
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -767,12 +771,25 @@ public final class Utils
             NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
             NavigationBean navBean = (NavigationBean)context.getExternalContext().
                   getSessionMap().get(NavigationBean.BEAN_NAME);
-            CIFSServer cifsServer = (CIFSServer)FacesContextUtils.getRequiredWebApplicationContext(
+            CIFSServerBean cifsServer = (CIFSServerBean)FacesContextUtils.getRequiredWebApplicationContext(
                   context).getBean("cifsServer");
             
             if (nodeService != null && navBean != null && cifsServer != null)
             {
-               DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
+                // Resolve CIFS network folder location for this node
+                
+                FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+                DiskSharedDevice diskShare = null;
+                 
+                SharedDeviceList shares = filesysConfig.getShares();
+                Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
+                 
+                while ( shareEnum.hasMoreElements() && diskShare == null) {
+                   SharedDevice curShare = shareEnum.nextElement();
+                   if ( curShare.getContext() instanceof ContentContext)
+                     diskShare = (DiskSharedDevice) curShare;
+                }
+               
                
                if (diskShare != null)
                {

@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.filesys.server.filesys.FileExistsException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;

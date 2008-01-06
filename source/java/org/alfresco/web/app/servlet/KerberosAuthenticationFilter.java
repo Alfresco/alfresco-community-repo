@@ -54,14 +54,14 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigService;
-import org.alfresco.filesys.server.auth.kerberos.KerberosDetails;
-import org.alfresco.filesys.server.auth.kerberos.SessionSetupPrivilegedAction;
-import org.alfresco.filesys.server.auth.spnego.NegTokenInit;
-import org.alfresco.filesys.server.auth.spnego.NegTokenTarg;
-import org.alfresco.filesys.server.auth.spnego.OID;
-import org.alfresco.filesys.server.auth.spnego.SPNEGO;
-import org.alfresco.filesys.server.config.ServerConfiguration;
+import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.jlan.server.auth.kerberos.KerberosDetails;
+import org.alfresco.jlan.server.auth.kerberos.SessionSetupPrivilegedAction;
+import org.alfresco.jlan.server.auth.spnego.NegTokenInit;
+import org.alfresco.jlan.server.auth.spnego.NegTokenTarg;
+import org.alfresco.jlan.server.auth.spnego.OID;
+import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -112,7 +112,7 @@ public class KerberosAuthenticationFilter extends AbstractAuthenticationFilter i
     
     // File server configuration
     
-    private ServerConfiguration m_srvConfig;
+    private ServerConfigurationBean m_srvConfig;
     
     // Various services required by the Kerberos authenticator
     
@@ -196,7 +196,7 @@ public class KerberosAuthenticationFilter extends AbstractAuthenticationFilter i
         m_personService = (PersonService) ctx.getBean("personService");
         m_configService = (ConfigService) ctx.getBean("webClientConfigService");
         
-        m_srvConfig = (ServerConfiguration) ctx.getBean(ServerConfiguration.SERVER_CONFIGURATION);
+        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
         
         // Check that the authentication component supports the required mode
         

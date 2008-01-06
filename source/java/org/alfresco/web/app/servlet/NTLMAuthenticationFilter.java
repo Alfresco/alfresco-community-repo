@@ -48,19 +48,20 @@ import javax.transaction.UserTransaction;
 import net.sf.acegisecurity.BadCredentialsException;
 
 import org.alfresco.config.ConfigService;
-import org.alfresco.filesys.server.auth.PasswordEncryptor;
-import org.alfresco.filesys.server.auth.ntlm.NTLM;
-import org.alfresco.filesys.server.auth.ntlm.NTLMLogonDetails;
-import org.alfresco.filesys.server.auth.ntlm.NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.TargetInfo;
-import org.alfresco.filesys.server.auth.ntlm.Type1NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.Type2NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.Type3NTLMMessage;
-import org.alfresco.filesys.server.auth.passthru.DomainMapping;
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.util.DataPacker;
-import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.jlan.server.auth.ntlm.NTLM;
+import org.alfresco.jlan.server.auth.ntlm.NTLMLogonDetails;
+import org.alfresco.jlan.server.auth.ntlm.NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
+import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
+import org.alfresco.jlan.server.auth.passthru.DomainMapping;
+import org.alfresco.jlan.server.config.SecurityConfigSection;
+import org.alfresco.jlan.util.DataPacker;
+import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -116,7 +117,7 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
     
     // File server configuration
     
-    private ServerConfiguration m_srvConfig;
+    private ServerConfigurationBean m_srvConfig;
     
     // Various services required by NTLM authenticator
     
@@ -126,6 +127,10 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
     private NodeService m_nodeService;
     private TransactionService m_transactionService;
     private ConfigService m_configService;
+    
+    // Security configuration section, for domain mappings
+    
+    private SecurityConfigSection m_secConfig;
     
     // Password encryptor
     
@@ -180,7 +185,7 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
         m_personService = (PersonService) ctx.getBean("personService");
         m_configService = (ConfigService) ctx.getBean("webClientConfigService");
         
-        m_srvConfig = (ServerConfiguration) ctx.getBean(ServerConfiguration.SERVER_CONFIGURATION);
+        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
         
         // Check that the authentication component supports the required mode
         
@@ -203,6 +208,10 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                 
                 m_srvName = m_srvConfig.getLocalServerName(true) + "_A";
             }
+            
+            // Find the security configuration section
+            
+            m_secConfig = (SecurityConfigSection) m_srvConfig.getConfigSection( SecurityConfigSection.SectionName);
         }
         else
         {
@@ -781,6 +790,10 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
                     
                     NodeRef personNodeRef = m_personService.getPerson(userName);
                     
+                    // Use the system user context to do the user lookup
+                    
+                    m_authComponent.setCurrentUser( m_authComponent.getSystemUserName());
+
                     // User name should match the uid in the person entry found
                     
                     userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
@@ -946,13 +959,13 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
     {
     	// Check if there are any domain mappings
     	
-    	if ( m_srvConfig.hasDomainMappings() == false)
+    	if ( m_secConfig != null && m_secConfig.hasDomainMappings() == false)
     		return null;
 
     	// convert the client IP address to an integer value
     	
     	int clientAddr = IPAddress.parseNumericAddress( clientIP);
-    	for ( DomainMapping domainMap : m_srvConfig.getDomainMappings())
+    	for ( DomainMapping domainMap : m_secConfig.getDomainMappings())
     	{
     		if ( domainMap.isMemberOfDomain( clientAddr))
     		{

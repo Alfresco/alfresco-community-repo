@@ -26,6 +26,7 @@ package org.alfresco.web.bean;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +35,14 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.CIFSServer;
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.smb.server.repo.ContentContext;
-import org.alfresco.filesys.smb.server.repo.ContentDiskInterface;
+import org.alfresco.filesys.CIFSServerBean;
+import org.alfresco.filesys.ServerConfigurationBean;
+import org.alfresco.filesys.repo.ContentContext;
+import org.alfresco.filesys.repo.ContentDiskInterface;
+import org.alfresco.jlan.server.core.SharedDevice;
+import org.alfresco.jlan.server.core.SharedDeviceList;
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
@@ -131,7 +135,7 @@ public class NavigationBean
    /**
     * @param cifsServer The cifsServer to set.
     */
-   public void setCifsServer(CIFSServer cifsServer)
+   public void setCifsServer(CIFSServerBean cifsServer)
    {
       this.cifsServer = cifsServer;
    }
@@ -595,27 +599,33 @@ public class NavigationBean
          Path path = node.getNodePath();
          
          // resolve CIFS network folder location for this node
-         ServerConfiguration fileServiceConfig = (ServerConfiguration)FacesContextUtils.getRequiredWebApplicationContext(
-               FacesContext.getCurrentInstance()).getBean("fileServerConfiguration");
-         if (fileServiceConfig.isSMBServerEnabled())
+         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+         DiskSharedDevice diskShare = null;
+         
+         SharedDeviceList shares = filesysConfig.getShares();
+         Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
+         
+         while ( shareEnum.hasMoreElements() && diskShare == null) {
+           SharedDevice curShare = shareEnum.nextElement();
+           if ( curShare.getContext() instanceof ContentContext)
+             diskShare = (DiskSharedDevice) curShare;
+         }
+         
+         if (diskShare != null)
          {
-            DiskSharedDevice diskShare = cifsServer.getConfiguration().getPrimaryFilesystem();
-            if (diskShare != null && diskShare.getContext() instanceof ContentContext)
+            ContentContext contentCtx = (ContentContext) diskShare.getContext();
+            NodeRef rootNode = contentCtx.getRootNode();
+            try
             {
-               ContentContext contentCtx = (ContentContext) diskShare.getContext();
-               NodeRef rootNode = contentCtx.getRootNode();
-               try
-               {
-                  String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
-                  
-                  node.getProperties().put("cifsPath", cifsPath);
-                  node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
-               }
-               catch(AccessDeniedException ade)
-               {
-                  node.getProperties().put("cifsPath", "");
-                  node.getProperties().put("cifsPathLabel","");  // strip file:/// part
-               }
+               String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+               
+               node.getProperties().put("cifsPath", cifsPath);
+               node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
+            }
+            catch(AccessDeniedException ade)
+            {
+               node.getProperties().put("cifsPath", "");
+               node.getProperties().put("cifsPathLabel","");  // strip file:/// part
             }
          }
          
@@ -975,7 +985,7 @@ public class NavigationBean
    protected RuleService ruleService;
    
    /** CIFSServer bean reference */
-   protected CIFSServer cifsServer;
+   protected CIFSServerBean cifsServer;
    
    /** CIFS content disk driver bean reference */
    protected ContentDiskInterface contentDiskDriver;

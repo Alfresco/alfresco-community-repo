@@ -31,7 +31,7 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.filesys.util.IPAddress;
+import org.alfresco.jlan.util.IPAddress;
 
 /**
  * Abstract base class for the hierarchical methods COPY and MOVE

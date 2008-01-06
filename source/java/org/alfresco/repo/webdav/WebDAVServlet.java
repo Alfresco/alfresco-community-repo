@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.filesys.server.config.ServerConfiguration;
+import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -277,13 +277,13 @@ public class WebDAVServlet extends HttpServlet
         
         // Initialize the root node
         
-        ServerConfiguration fileSrvConfig = (ServerConfiguration) context.getBean(ServerConfiguration.SERVER_CONFIGURATION);
+        ServerConfigurationBean fileSrvConfig = (ServerConfigurationBean) context.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
         if ( fileSrvConfig == null)
             throw new ServletException("File server configuration not available");
 
         // Use the system user as the authenticated context for the filesystem initialization
 
-        AuthenticationComponent authComponent = fileSrvConfig.getAuthenticationComponent();
+        AuthenticationComponent authComponent = (AuthenticationComponent) context.getBean("authenticationComponent");
         authComponent.setCurrentUser( authComponent.getSystemUserName());
         
         // Wrap the initialization in a transaction

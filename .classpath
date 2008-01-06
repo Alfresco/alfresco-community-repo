@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Repository"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

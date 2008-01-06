@@ -44,16 +44,16 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.filesys.server.auth.PasswordEncryptor;
-import org.alfresco.filesys.server.auth.ntlm.NTLM;
-import org.alfresco.filesys.server.auth.ntlm.NTLMLogonDetails;
-import org.alfresco.filesys.server.auth.ntlm.NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.TargetInfo;
-import org.alfresco.filesys.server.auth.ntlm.Type1NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.Type2NTLMMessage;
-import org.alfresco.filesys.server.auth.ntlm.Type3NTLMMessage;
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.util.DataPacker;
+import org.alfresco.filesys.ServerConfigurationBean;
+import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.jlan.server.auth.ntlm.NTLM;
+import org.alfresco.jlan.server.auth.ntlm.NTLMLogonDetails;
+import org.alfresco.jlan.server.auth.ntlm.NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
+import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
+import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
+import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -109,7 +109,7 @@ public class NTLMAuthenticationFilter implements Filter
     
     // File server configuration
     
-    private ServerConfiguration m_srvConfig;
+    private ServerConfigurationBean m_srvConfig;
     
     // Various services required by NTLM authenticator
     
@@ -163,7 +163,7 @@ public class NTLMAuthenticationFilter implements Filter
         m_authComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         m_personService = (PersonService) ctx.getBean("personService");
         
-        m_srvConfig = (ServerConfiguration) ctx.getBean(ServerConfiguration.SERVER_CONFIGURATION);
+        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
         
         // Check that the authentication component supports the required mode
         

@@ -50,13 +50,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.filesys.server.auth.kerberos.KerberosDetails;
-import org.alfresco.filesys.server.auth.kerberos.SessionSetupPrivilegedAction;
-import org.alfresco.filesys.server.auth.spnego.NegTokenInit;
-import org.alfresco.filesys.server.auth.spnego.NegTokenTarg;
-import org.alfresco.filesys.server.auth.spnego.OID;
-import org.alfresco.filesys.server.auth.spnego.SPNEGO;
-import org.alfresco.filesys.server.config.ServerConfiguration;
+import org.alfresco.filesys.ServerConfigurationBean;
+import org.alfresco.jlan.server.auth.kerberos.KerberosDetails;
+import org.alfresco.jlan.server.auth.kerberos.SessionSetupPrivilegedAction;
+import org.alfresco.jlan.server.auth.spnego.NegTokenInit;
+import org.alfresco.jlan.server.auth.spnego.NegTokenTarg;
+import org.alfresco.jlan.server.auth.spnego.OID;
+import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -107,7 +107,7 @@ public class KerberosAuthenticationFilter implements Filter, CallbackHandler
     
     // File server configuration
     
-    private ServerConfiguration m_srvConfig;
+    private ServerConfigurationBean m_srvConfig;
     
     // Various services required by the Kerberos authenticator
     
@@ -177,7 +177,7 @@ public class KerberosAuthenticationFilter implements Filter, CallbackHandler
         m_authComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         m_personService = (PersonService) ctx.getBean("personService");
         
-        m_srvConfig = (ServerConfiguration) ctx.getBean(ServerConfiguration.SERVER_CONFIGURATION);
+        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
         
         // Check that the authentication component supports the required mode
         

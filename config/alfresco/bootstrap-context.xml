@@ -399,13 +399,13 @@
 
     <!-- CIFS Server -->
 
-    <bean id="fileServerConfiguration" class="org.alfresco.filesys.server.config.ServerConfiguration" parent="fileServerConfigurationBase">
+    <bean id="fileServerConfiguration" class="org.alfresco.filesys.ServerConfigurationBean" parent="fileServerConfigurationBase">
        <property name="configService">
            <ref bean="fileServersConfigService"/>
        </property>
     </bean>
 
-    <bean id="cifsServer" class="org.alfresco.filesys.CIFSServer" destroy-method="stopServer">
+    <bean id="cifsServer" class="org.alfresco.filesys.CIFSServerBean" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
         </constructor-arg>
@@ -413,7 +413,7 @@
 
     <!-- FTP Server -->
 
-    <bean id="ftpServer" class="org.alfresco.filesys.FTPServer" destroy-method="stopServer">
+    <bean id="ftpServer" class="org.alfresco.filesys.FTPServerBean" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
         </constructor-arg>
@@ -421,7 +421,7 @@
 
     <!-- NFS Server -->
 
-    <bean id="nfsServer" class="org.alfresco.filesys.NFSServer" destroy-method="stopServer">
+    <bean id="nfsServer" class="org.alfresco.filesys.NFSServerBean" destroy-method="stopServer">
         <constructor-arg>
            <ref local="fileServerConfiguration"/>
         </constructor-arg>

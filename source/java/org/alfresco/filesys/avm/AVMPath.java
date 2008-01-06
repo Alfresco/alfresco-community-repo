@@ -23,7 +23,7 @@
 
 package org.alfresco.filesys.avm;
 
-import org.alfresco.filesys.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.FileName;
 
 /**
  * AVM Path Class

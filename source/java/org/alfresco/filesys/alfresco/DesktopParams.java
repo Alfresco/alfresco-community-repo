@@ -25,9 +25,9 @@ package org.alfresco.filesys.alfresco;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.auth.ClientInfo;
-import org.alfresco.filesys.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.auth.ClientInfo;
+import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -42,6 +42,10 @@ public class DesktopParams {
 	// File server session
 	
 	private SrvSession m_session;
+	
+	// Filesystem driver
+	
+	private AlfrescoDiskDriver m_driver;
 	
 	// Folder node that the actions are working in
 	
@@ -66,12 +70,14 @@ public class DesktopParams {
 	 * Class constructor
 	 * 
 	 * @param sess SrvSession
+	 * @param driver AlfrescoDiskDriver
 	 * @param folderNode NodeRef
 	 * @param folderFile NetworkFile
 	 */
-	public DesktopParams(SrvSession sess, NodeRef folderNode, NetworkFile folderFile)
+	public DesktopParams(SrvSession sess, AlfrescoDiskDriver driver, NodeRef folderNode, NetworkFile folderFile)
 	{
 		m_session    = sess;
+		m_driver     = driver;
 		m_folderNode = folderNode;
 		m_folderFile = folderFile;
 	}
@@ -104,8 +110,10 @@ public class DesktopParams {
 	public final String getTicket()
 	{
 		ClientInfo cInfo = m_session.getClientInformation();
-		if ( cInfo != null)
-			return cInfo.getAuthenticationTicket();
+		if ( cInfo != null && cInfo instanceof AlfrescoClientInfo) {
+		    AlfrescoClientInfo alfInfo = (AlfrescoClientInfo) cInfo;
+		    return alfInfo.getAuthenticationTicket();
+		}
 		return null;
 	}
 	
@@ -127,6 +135,16 @@ public class DesktopParams {
 	public final NetworkFile getFolder()
 	{
 		return m_folderFile;
+	}
+
+	/**
+	 * Return the filesystem driver
+	 * 
+	 * @return AlfrescoDiskDriver
+	 */
+	public final AlfrescoDiskDriver getDriver()
+	{
+	    return m_driver;
 	}
 	
 	/**

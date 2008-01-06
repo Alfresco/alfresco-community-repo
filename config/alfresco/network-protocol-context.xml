@@ -58,7 +58,7 @@
    </bean>
    
    <!-- Filesystem Interface -->
-   <bean id="contentDiskDriver" class="org.alfresco.filesys.smb.server.repo.ContentDiskDriver" >
+   <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver" >
       <constructor-arg>
          <ref bean="cifsHelper" />
       </constructor-arg>
@@ -76,7 +76,7 @@
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>
    </bean>
    
-   <bean id="cifsHelper" class="org.alfresco.filesys.smb.server.repo.CifsHelper">
+   <bean id="cifsHelper" class="org.alfresco.filesys.repo.CifsHelper">
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
@@ -103,7 +103,7 @@
    </bean>
 	
    <!-- File State Reaper -->
-   <bean id="fileStateReaper" class="org.alfresco.filesys.server.state.FileStateReaper"
+   <bean id="fileStateReaper" class="org.alfresco.filesys.state.FileStateReaper"
       destroy-method="shutdownRequest"/>
 	   
 </beans>

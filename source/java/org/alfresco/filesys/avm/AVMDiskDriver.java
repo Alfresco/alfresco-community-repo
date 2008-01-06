@@ -36,30 +36,30 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
-import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.auth.ClientInfo;
-import org.alfresco.filesys.server.core.DeviceContext;
-import org.alfresco.filesys.server.core.DeviceContextException;
-import org.alfresco.filesys.server.core.DeviceInterface;
-import org.alfresco.filesys.server.filesys.AccessDeniedException;
-import org.alfresco.filesys.server.filesys.DirectoryNotEmptyException;
-import org.alfresco.filesys.server.filesys.DiskInterface;
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.FileExistsException;
-import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.FileName;
-import org.alfresco.filesys.server.filesys.FileOpenParams;
-import org.alfresco.filesys.server.filesys.FileStatus;
-import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.filesys.PathNotFoundException;
-import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.server.filesys.TreeConnection;
-import org.alfresco.filesys.server.pseudo.PseudoFile;
-import org.alfresco.filesys.server.pseudo.PseudoFileList;
-import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
-import org.alfresco.filesys.server.state.FileState;
-import org.alfresco.filesys.util.StringList;
-import org.alfresco.filesys.util.WildCard;
+import org.alfresco.filesys.state.FileState;
+import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.auth.ClientInfo;
+import org.alfresco.jlan.server.core.DeviceContext;
+import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.core.DeviceInterface;
+import org.alfresco.jlan.server.filesys.AccessDeniedException;
+import org.alfresco.jlan.server.filesys.DirectoryNotEmptyException;
+import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileExistsException;
+import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.FileOpenParams;
+import org.alfresco.jlan.server.filesys.FileStatus;
+import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.filesys.PathNotFoundException;
+import org.alfresco.jlan.server.filesys.SearchContext;
+import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFolderNetworkFile;
+import org.alfresco.jlan.util.StringList;
+import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.CreateStoreTxnListener;
 import org.alfresco.repo.avm.CreateVersionTxnListener;
@@ -130,7 +130,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     // Services and helpers
 
     private AVMService m_avmService;
-    private TransactionService m_transactionService;
     private MimetypeService m_mimetypeService;
     private AuthenticationComponent m_authComponent;
     private AuthenticationService m_authService;
@@ -175,16 +174,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     }
 
     /**
-     * Return the transaction service
-     * 
-     * @return TransactionService
-     */
-    public final TransactionService getTransactionService()
-    {
-        return m_transactionService;
-    }
-
-    /**
      * Set the AVM service
      * 
      * @param avmService
@@ -193,17 +182,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     public void setAvmService(AVMService avmService)
     {
         m_avmService = avmService;
-    }
-
-    /**
-     * Set the transaction service
-     * 
-     * @param transactionService
-     *            the transaction service
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        m_transactionService = transactionService;
     }
 
     /**
@@ -307,16 +285,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * Parse and validate the parameter string and create a device context object for this instance of the shared
      * device.
      * 
-     * @param devIface
-     *            DeviceInterface
-     * @param name
-     *            String
-     * @param cfg
-     *            ConfigElement
+     * @param shareName String
+     * @param cfg ConfigElement
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    public DeviceContext createContext(DeviceInterface devIface, String name, ConfigElement cfg)
+    public DeviceContext createContext(String shareName, ConfigElement cfg)
             throws DeviceContextException
     {
         // Use the system user as the authenticated context for the filesystem initialization
@@ -328,7 +302,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
             // Wrap the initialization in a transaction
 
-            UserTransaction tx = m_transactionService.getUserTransaction(false);
+            UserTransaction tx = getTransactionService().getUserTransaction(false);
 
             AVMContext context = null;
 
@@ -385,7 +359,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                     // Create the context
 
-                    context = new AVMContext(name, showOptions, this);
+                    context = new AVMContext(shareName, showOptions, this);
 
                     // Enable file state caching
 
@@ -558,7 +532,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                     // Create the context
 
-                    context = new AVMContext(name, storePath, version);
+                    context = new AVMContext(shareName, storePath, version);
 
                     // Enable file state caching
 
@@ -622,7 +596,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
             // Wrap the service request in a transaction
 
-            UserTransaction tx = m_transactionService.getUserTransaction(false);
+            UserTransaction tx = getTransactionService().getUserTransaction(false);
 
             StringList storeNames = new StringList();
 
@@ -697,7 +671,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
             // Wrap the service request in a transaction
 
-            UserTransaction tx = m_transactionService.getUserTransaction(false);
+            UserTransaction tx = getTransactionService().getUserTransaction(false);
 
             Map<QName, PropertyValue> properties = null;
 
@@ -808,7 +782,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         //  Start a transaction if the file has been updated
         
         if ( file.getWriteCount() > 0)
-            sess.beginWriteTransaction( m_transactionService);
+            beginWriteTransaction( sess);
         
         //  Close the file
         
@@ -870,7 +844,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Create a new file
 
-        sess.beginWriteTransaction(m_transactionService);
+        beginWriteTransaction( sess);
 
         try
         {
@@ -942,7 +916,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Create a new file
 
-        sess.beginWriteTransaction(m_transactionService);
+        beginWriteTransaction( sess);
 
         AVMNetworkFile netFile = null;
 
@@ -1032,7 +1006,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Make sure the path is to a folder before deleting it
 
-        sess.beginWriteTransaction(m_transactionService);
+        beginWriteTransaction( sess);
 
         try
         {
@@ -1100,7 +1074,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Make sure the path is to a file before deleting it
 
-        sess.beginWriteTransaction(m_transactionService);
+        beginWriteTransaction( sess);
 
         try
         {
@@ -1214,7 +1188,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Search for the file/folder
 
-        sess.beginReadTransaction(m_transactionService);
+        beginReadTransaction( sess);
 
         AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
 
@@ -1270,7 +1244,16 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Convert the relative path to a store path
         
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath( ctx, name, sess);
+        AVMPath storePath = null;
+        
+        try
+        {
+        	storePath = buildStorePath( ctx, name, sess);
+        }
+        catch ( Exception ex)
+        {
+        	throw new FileNotFoundException( name);
+        }
 
         // DEBUG
         
@@ -1314,7 +1297,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         
         // Search for the file/folder
         
-        sess.beginReadTransaction( m_transactionService);
+        beginReadTransaction( sess);
         
         FileInfo info = null;
         
@@ -1465,7 +1448,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Search for the file/folder
 
-        sess.beginReadTransaction(m_transactionService);
+        beginReadTransaction( sess);
 
         AVMNetworkFile netFile = null;
 
@@ -1550,7 +1533,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
         if (avmFile.hasContentChannel() == false)
-            sess.beginReadTransaction(m_transactionService);
+            beginReadTransaction( sess);
 
         // Read the file
 
@@ -1612,7 +1595,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Start a transaction for the rename
 
-        sess.beginWriteTransaction(m_transactionService);
+        beginWriteTransaction( sess);
 
         try
         {
@@ -1662,7 +1645,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
         if (avmFile.hasContentChannel() == false)
-            sess.beginReadTransaction(m_transactionService);
+            beginReadTransaction( sess);
 
         // Set the file position
 
@@ -1819,7 +1802,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the path is a wildcard search
 
-        sess.beginReadTransaction(m_transactionService);
+        beginReadTransaction( sess);
         SearchContext context = null;
 
         if (WildCard.containsWildcards(searchPath))
@@ -1908,7 +1891,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
         if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-            sess.beginWriteTransaction(m_transactionService);
+            beginWriteTransaction( sess);
 
         // Truncate or extend the file
 
@@ -1950,7 +1933,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
         if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-            sess.beginWriteTransaction(m_transactionService);
+            beginWriteTransaction( sess);
 
         // Write the data to the file
 

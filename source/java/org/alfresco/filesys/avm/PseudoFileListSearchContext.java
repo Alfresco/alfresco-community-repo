@@ -23,12 +23,13 @@
 
 package org.alfresco.filesys.avm;
 
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.SearchContext;
-import org.alfresco.filesys.server.pseudo.PseudoFile;
-import org.alfresco.filesys.server.pseudo.PseudoFileList;
-import org.alfresco.filesys.util.WildCard;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.SearchContext;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
+import org.alfresco.jlan.util.WildCard;
+
 
 /**
  * Pseudo File List Search Context Class

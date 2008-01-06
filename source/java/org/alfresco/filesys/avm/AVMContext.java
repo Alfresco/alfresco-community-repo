@@ -27,12 +27,12 @@ import java.util.Map;
 
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
-import org.alfresco.filesys.server.filesys.DiskInterface;
-import org.alfresco.filesys.server.filesys.FileName;
-import org.alfresco.filesys.server.filesys.FileSystem;
-import org.alfresco.filesys.server.filesys.NotifyChange;
-import org.alfresco.filesys.server.state.FileState;
-import org.alfresco.filesys.server.state.FileStateTable;
+import org.alfresco.filesys.state.FileState;
+import org.alfresco.filesys.state.FileStateTable;
+import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.server.filesys.NotifyChange;
 import org.alfresco.repo.avm.CreateStoreCallback;
 import org.alfresco.repo.avm.CreateVersionCallback;
 import org.alfresco.repo.avm.PurgeStoreCallback;

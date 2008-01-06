@@ -26,17 +26,17 @@ package org.alfresco.filesys.avm;
 import java.util.Enumeration;
 
 import org.alfresco.config.ConfigElement;
-import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.auth.InvalidUserException;
-import org.alfresco.filesys.server.config.InvalidConfigurationException;
-import org.alfresco.filesys.server.config.ServerConfiguration;
-import org.alfresco.filesys.server.core.InvalidDeviceInterfaceException;
-import org.alfresco.filesys.server.core.ShareMapper;
-import org.alfresco.filesys.server.core.ShareType;
-import org.alfresco.filesys.server.core.SharedDevice;
-import org.alfresco.filesys.server.core.SharedDeviceList;
-import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.util.StringList;
+import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.config.InvalidConfigurationException;
+import org.alfresco.jlan.server.config.ServerConfiguration;
+import org.alfresco.jlan.server.core.InvalidDeviceInterfaceException;
+import org.alfresco.jlan.server.core.ShareMapper;
+import org.alfresco.jlan.server.core.ShareType;
+import org.alfresco.jlan.server.core.SharedDevice;
+import org.alfresco.jlan.server.core.SharedDeviceList;
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
+import org.alfresco.jlan.util.StringList;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
@@ -63,11 +63,16 @@ public class AVMShareMapper implements ShareMapper {
     // Server configuration
 
     private ServerConfiguration m_config;
+    private FilesystemsConfigSection m_filesysConfig;
 
     // List of available AVM shares
     
     private StringList m_avmShareNames;
     
+    // Filesystem driver to be used to create home shares
+    
+    private AVMDiskDriver m_driver;
+
     // Debug enable flag
 
     private boolean m_debug;
@@ -91,6 +96,7 @@ public class AVMShareMapper implements ShareMapper {
         // Save the server configuration
 
         m_config = config;
+        m_filesysConfig = (FilesystemsConfigSection) m_config.getConfigSection(FilesystemsConfigSection.SectionName);
         
         // Check if debug is enabled
 
@@ -101,7 +107,7 @@ public class AVMShareMapper implements ShareMapper {
         
         m_avmShareNames = new StringList();
         
-        SharedDeviceList shrList = m_config.getShares();
+        SharedDeviceList shrList = m_filesysConfig.getShares();
         Enumeration<SharedDevice> shrEnum = shrList.enumerateShares();
         
         while ( shrEnum.hasMoreElements())
@@ -112,8 +118,17 @@ public class AVMShareMapper implements ShareMapper {
         	
         	try
         	{
-	        	if ( curShare.getInterface() instanceof AVMDiskDriver)
-	        		m_avmShareNames.addString( curShare.getName());
+  	        	if ( curShare.getInterface() instanceof AVMDiskDriver)
+  	        	{
+  	        	    // Add the shared filesystem name to the list of AVM shares
+  	        	  
+  	        		  m_avmShareNames.addString( curShare.getName());
+  	        		  
+  	        		  // Set the AVM filesystem driver to be used when creating dynamic shares
+  	        		  
+  	        		  if ( m_driver == null)
+  	        		      m_driver = (AVMDiskDriver) curShare.getInterface();
+  	        	}
         	}
         	catch ( InvalidDeviceInterfaceException ex)
         	{
@@ -143,7 +158,7 @@ public class AVMShareMapper implements ShareMapper {
     {
         // Make a copy of the global share list and add the per session dynamic shares
         
-        SharedDeviceList shrList = new SharedDeviceList(m_config.getShares());
+        SharedDeviceList shrList = new SharedDeviceList(m_filesysConfig.getShares());
         
         if ( sess != null && sess.hasDynamicShares()) {
             
@@ -176,14 +191,14 @@ public class AVMShareMapper implements ShareMapper {
         //  Find the required share by name/type. Use a case sensitive search first, if that fails use a case
         //  insensitive search.
         
-        SharedDevice share = m_config.getShares().findShare(name, typ, false);
+        SharedDevice share = m_filesysConfig.getShares().findShare(name, typ, false);
         
         if ( share == null)
         {
             
             //  Try a case insensitive search for the required share
             
-            share = m_config.getShares().findShare(name, typ, true);
+            share = m_filesysConfig.getShares().findShare(name, typ, true);
         }
         
         //  If the share was not found then check if the share is in the AVM versioned share format - '<storename>_<version>'
@@ -238,12 +253,11 @@ public class AVMShareMapper implements ShareMapper {
 
 	            if ( storePath.length() > 0 && storeVersion != -1)
 	            {
-	            	// Validate the store name and version
+	            	  // Validate the store name and version
 	            	
-	                AVMDiskDriver avmDrv = (AVMDiskDriver) m_config.getAvmDiskInterface();
-	                AVMService avmService = avmDrv.getAvmService();
+	                AVMService avmService = m_driver.getAvmService();
 
-	                sess.beginReadTransaction( avmDrv.getTransactionService());
+	                m_driver.beginReadTransaction( sess);
 	                
 	                try
 	                {
@@ -254,11 +268,11 @@ public class AVMShareMapper implements ShareMapper {
 	                	// Create a dynamic share mapped to the AVM store/version
 	                	
 		                AVMContext avmCtx = new AVMContext( name, storePath, storeVersion);
-		                avmCtx.enableStateTable( true, avmDrv.getStateReaper());
+		                avmCtx.enableStateTable( true, m_driver.getStateReaper());
 		
 		                //  Create a dynamic shared device for the store version
 		                
-		                DiskSharedDevice diskShare = new DiskSharedDevice( name, avmDrv, avmCtx, SharedDevice.Temporary);
+		                DiskSharedDevice diskShare = new DiskSharedDevice( name, m_driver, avmCtx, SharedDevice.Temporary);
 		                
 		                // Add the new share to the sessions dynamic share list
 		

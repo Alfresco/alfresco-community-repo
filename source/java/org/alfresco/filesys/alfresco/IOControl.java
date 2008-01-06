@@ -24,7 +24,7 @@
  */
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.filesys.smb.NTIOCtl;
+import org.alfresco.jlan.smb.nt.NTIOCtl;
 
 /**
  * Content Disk Driver I/O Control Codes Class

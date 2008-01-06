@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.security.authentication.ntlm;
 
-import org.alfresco.filesys.util.HexDump;
+import org.alfresco.jlan.util.HexDump;
 
 /**
  * Contains the NTLM challenge bytes.

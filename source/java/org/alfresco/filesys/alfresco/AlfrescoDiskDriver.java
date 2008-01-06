@@ -23,16 +23,24 @@
 
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.filesys.server.SrvSession;
-import org.alfresco.filesys.server.filesys.IOControlNotImplementedException;
-import org.alfresco.filesys.server.filesys.IOCtlInterface;
-import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.filesys.TreeConnection;
-import org.alfresco.filesys.server.state.FileStateReaper;
-import org.alfresco.filesys.smb.SMBException;
-import org.alfresco.filesys.smb.SMBStatus;
-import org.alfresco.filesys.util.DataBuffer;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
+import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
+import org.alfresco.jlan.server.filesys.IOCtlInterface;
+import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.filesys.TransactionalFilesystemInterface;
+import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.smb.SMBException;
+import org.alfresco.jlan.smb.SMBStatus;
+import org.alfresco.jlan.util.DataBuffer;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.state.FileStateReaper;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Alfresco Disk Driver Base Class
@@ -41,16 +49,24 @@ import org.alfresco.service.ServiceRegistry;
  *
  * @author gkspencer
  */
-public class AlfrescoDiskDriver implements IOCtlInterface {
+public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesystemInterface {
 
+    // Logging
+    
+    private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
+    
     // Service registry for desktop actions
     
-    private ServiceRegistry serviceRegistry;
+    private ServiceRegistry m_serviceRegistry;
     
     // File state reaper
     
     private FileStateReaper m_stateReaper;
-	
+
+    //  Transaction service
+    
+    private TransactionService m_transactionService;
+    
     /**
      * Return the service registry
      * 
@@ -58,7 +74,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface {
      */
     public final ServiceRegistry getServiceRegistry()
     {
-    	return this.serviceRegistry;
+    	return m_serviceRegistry;
     }
 
     /**
@@ -72,13 +88,23 @@ public class AlfrescoDiskDriver implements IOCtlInterface {
     }
     
     /**
+     * Return the transaction service
+     * 
+     * @return TransactionService
+     */
+    public final TransactionService getTransactionService()
+    {
+        return m_transactionService;
+    }
+    
+    /**
      * Set the service registry
      * 
      * @param serviceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.serviceRegistry = serviceRegistry;
+    	m_serviceRegistry = serviceRegistry;
     }
     
     /**
@@ -91,6 +117,14 @@ public class AlfrescoDiskDriver implements IOCtlInterface {
     	m_stateReaper = stateReaper;
     }
     
+    /**
+     * @param transactionService the transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        m_transactionService = transactionService;
+    }
+
     /**
      * Process a filesystem I/O control request
      * 
@@ -122,5 +156,192 @@ public class AlfrescoDiskDriver implements IOCtlInterface {
             return ctx.getIOHandler().processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
         else
             throw new IOControlNotImplementedException();
+    }
+    
+    /**
+     * Begin a read-only transaction
+     * 
+     * @param sess SrvSession
+     */
+    public void beginReadTransaction(SrvSession sess) {
+      beginTransaction( sess, true);
+    }
+    
+    /**
+     * Begin a writeable transaction
+     * 
+     * @param sess SrvSession
+     */
+    public void beginWriteTransaction(SrvSession sess) {
+      beginTransaction( sess, false);
+    }
+    
+    /**
+     * End an active transaction
+     * 
+     * @param sess SrvSession
+     * @param tx ThreadLocal<Object>
+     */
+    public void endTransaction(SrvSession sess, ThreadLocal<Object> tx) {
+
+      // Check that the transaction object is valid
+      
+      if ( tx == null)
+        return;
+      
+      // Get the filesystem transaction
+      
+      FilesysTransaction filesysTx = (FilesysTransaction) tx.get();
+
+      // Check if there is an active transaction
+      
+      if ( filesysTx != null && filesysTx.hasTransaction())
+      {
+        // Get the active transaction
+        
+          UserTransaction ftx = filesysTx.getTransaction();
+          
+          try
+          {
+              // Commit or rollback the transaction
+              
+              if ( ftx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+              {
+                  // Transaction is marked for rollback
+                  
+                  ftx.rollback();
+                  
+                  // DEBUG
+                  
+                  if ( logger.isDebugEnabled())
+                      logger.debug("End transaction (rollback)");
+              }
+              else
+              {
+                  // Commit the transaction
+                  
+                  ftx.commit();
+                  
+                  // DEBUG
+                  
+                  if ( logger.isDebugEnabled())
+                      logger.debug("End transaction (commit)");
+              }
+          }
+          catch ( Exception ex)
+          {
+              throw new AlfrescoRuntimeException("Failed to end transaction", ex);
+          }
+          finally
+          {
+              // Clear the current transaction
+              
+              filesysTx.clearTransaction();
+          }
+        }
+      
+        // Clear the active transaction interface, leave the transaction object as we will reuse it
+      
+        sess.setTransaction( null);
+    }
+
+    /**
+     * Create and start a transaction, if not already active
+     * 
+     * @param sess SrvSession
+     * @param readOnly boolean
+     * @exception AlfrescoRuntimeException
+     */
+    private final void beginTransaction( SrvSession sess, boolean readOnly)
+        throws AlfrescoRuntimeException
+    {
+        // Initialize the per session thread local that holds the transaction
+        
+        sess.initializeTransactionObject();
+
+        // Get the filesystem transaction
+        
+        FilesysTransaction filesysTx = (FilesysTransaction) sess.getTransactionObject().get();
+        if ( filesysTx == null)
+        {
+          filesysTx = new FilesysTransaction();
+          sess.getTransactionObject().set( filesysTx);
+        }
+        
+        // If there is an active transaction check that it is the required type
+
+        if ( filesysTx.hasTransaction())
+        {
+          // Get the active transaction
+          
+            UserTransaction tx = filesysTx.getTransaction();
+            
+            // Check if the current transaction is marked for rollback
+            
+            try
+            {
+                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLEDBACK ||
+                     tx.getStatus() == Status.STATUS_ROLLING_BACK)
+                {
+                    //  Rollback the current transaction
+                    
+                    tx.rollback();
+                }
+            }
+            catch ( Exception ex)
+            {
+            }
+            
+            // Check if the transaction is a write transaction, if write has been requested
+            
+            if ( readOnly == false && filesysTx.isReadOnly() == true)
+            {
+                // Commit the read-only transaction
+                
+                try
+                {
+                    tx.commit();
+                }
+                catch ( Exception ex)
+                {
+                    throw new AlfrescoRuntimeException("Failed to commit read-only transaction, " + ex.getMessage());
+                }
+                finally
+                {
+                    // Clear the active transaction
+
+                    filesysTx.clearTransaction();
+                }
+            }
+        }
+        
+        // Create the transaction
+        
+        if ( filesysTx.hasTransaction() == false)
+        {
+            try
+            {
+                UserTransaction userTrans = m_transactionService.getUserTransaction(readOnly);
+                userTrans.begin();
+
+                // Store the transaction
+                
+                filesysTx.setTransaction( userTrans, readOnly);
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                    logger.debug("Created transaction readOnly=" + readOnly);
+            }
+            catch (Exception ex)
+            {
+                throw new AlfrescoRuntimeException("Failed to create transaction, " + ex.getMessage());
+            }
+        }
+        
+        //  Store the transaction callback
+        
+        sess.setTransaction( this);
     }
 }

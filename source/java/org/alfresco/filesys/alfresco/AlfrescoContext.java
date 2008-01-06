@@ -26,11 +26,14 @@ package org.alfresco.filesys.alfresco;
 
 import java.util.Enumeration;
 
-import org.alfresco.filesys.server.filesys.*;
-import org.alfresco.filesys.server.pseudo.PseudoFileImpl;
-import org.alfresco.filesys.server.pseudo.PseudoFileInterface;
-import org.alfresco.filesys.server.state.FileStateReaper;
-import org.alfresco.filesys.server.state.FileStateTable;
+import org.alfresco.jlan.server.filesys.DiskDeviceContext;
+import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.server.filesys.SrvDiskInfo;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
+import org.alfresco.filesys.state.FileStateReaper;
+import org.alfresco.filesys.state.FileStateTable;
+
 
 /**
  * Alfresco Filesystem Context Class
@@ -125,7 +128,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         {
         	// Remove the state table from the reaper
         	
-        	stateReaper.removeStateTable( getFilesystemName());
+        	stateReaper.removeStateTable( getShareName());
             m_stateTable = null;
         }
         else if ( m_stateTable == null)
@@ -136,7 +139,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
             
             // Register with the file state reaper
             
-            stateReaper.addStateTable( getFilesystemName(), m_stateTable);
+            stateReaper.addStateTable( getShareName(), m_stateTable);
         }
         
         // Save the reaper, for deregistering when the filesystem is closed

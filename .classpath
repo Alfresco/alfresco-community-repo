@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="/3rd Party"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Deployment"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

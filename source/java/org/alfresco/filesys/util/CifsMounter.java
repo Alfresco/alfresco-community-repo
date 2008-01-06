@@ -28,6 +28,7 @@ package org.alfresco.filesys.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.jlan.util.Platform;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;

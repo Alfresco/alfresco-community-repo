@@ -115,7 +115,7 @@
     </bean>
 
     <bean id="FileServerConfig"
-          class="org.alfresco.filesys.server.config.FileServerConfig">
+          class="org.alfresco.filesys.FileServerConfig">
         <property name="fileServerConfiguration"><ref bean="fileServerConfiguration"/></property>
     </bean>
 

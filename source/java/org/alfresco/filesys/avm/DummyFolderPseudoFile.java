@@ -22,12 +22,13 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.filesys.avm;
 
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.FileName;
-import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.pseudo.PseudoFile;
-import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFolderNetworkFile;
+
 
 /**
  * Dummy Folder Pseudo File Class

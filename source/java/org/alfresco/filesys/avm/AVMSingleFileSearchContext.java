@@ -23,9 +23,9 @@
 
 package org.alfresco.filesys.avm;
 
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.SearchContext;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
 /**

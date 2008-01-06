@@ -28,10 +28,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.server.filesys.AccessDeniedException;
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.smb.SeekType;
+import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
+import org.alfresco.jlan.server.filesys.AccessDeniedException;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -46,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author GKSpencer
  */
-public class AVMNetworkFile extends NetworkFile {
+public class AVMNetworkFile extends AlfrescoNetworkFile {
 
 	// Logging
 	
@@ -218,7 +219,7 @@ public class AVMNetworkFile extends NetworkFile {
         // Write to the channel
         
         ByteBuffer byteBuffer = ByteBuffer.wrap(buf, pos, len);
-        int count = m_channel.write(byteBuffer, fileOff);
+        m_channel.write(byteBuffer, fileOff);
         
         // Set modification flag
         

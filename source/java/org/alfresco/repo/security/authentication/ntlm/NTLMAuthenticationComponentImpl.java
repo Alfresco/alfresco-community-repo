@@ -44,11 +44,11 @@ import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.server.auth.PasswordEncryptor;
-import org.alfresco.filesys.server.auth.passthru.AuthenticateSession;
-import org.alfresco.filesys.server.auth.passthru.PassthruServers;
-import org.alfresco.filesys.smb.SMBException;
-import org.alfresco.filesys.smb.SMBStatus;
+import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
+import org.alfresco.jlan.server.auth.passthru.PassthruServers;
+import org.alfresco.jlan.smb.SMBException;
+import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -287,7 +287,14 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         
         // Configure the passthru authentication server list using the domain controllers
         
-        m_passthruServers.setDomain(domain);
+        try
+        {
+            m_passthruServers.setDomain(domain);
+        }
+        catch ( IOException ex)
+        {
+            throw new AlfrescoRuntimeException("Failed to set passthru domain, " + ex);
+        }
     }
     
     /**

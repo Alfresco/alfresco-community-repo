@@ -25,7 +25,7 @@
 
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.filesys.server.filesys.IOCtlInterface;
+import org.alfresco.jlan.server.filesys.IOCtlInterface;
 
 /**
  * I/O Control Handler Interface

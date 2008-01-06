@@ -19,7 +19,8 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+ * http://www.alfresco.com/legal/licensing"
+ */
 
 package org.alfresco.filesys.alfresco;
 
@@ -29,10 +30,10 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
 
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.config.ConfigElement;
-import org.alfresco.filesys.server.filesys.DiskSharedDevice;
-import org.alfresco.filesys.server.pseudo.LocalPseudoFile;
-import org.alfresco.filesys.server.pseudo.PseudoFile;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +42,6 @@ import org.apache.commons.logging.LogFactory;
  * Desktop Action Class
  *
  * @author gkspencer
- *
  */
 public abstract class DesktopAction {
 

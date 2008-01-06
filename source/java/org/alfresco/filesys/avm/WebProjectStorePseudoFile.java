@@ -25,12 +25,8 @@ package org.alfresco.filesys.avm;
 
 import java.util.Hashtable;
 
-import org.alfresco.filesys.server.filesys.FileAttribute;
-import org.alfresco.filesys.server.filesys.FileInfo;
-import org.alfresco.filesys.server.filesys.FileName;
-import org.alfresco.filesys.server.filesys.NetworkFile;
-import org.alfresco.filesys.server.pseudo.PseudoFile;
-import org.alfresco.filesys.server.pseudo.PseudoFolderNetworkFile;
+import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 

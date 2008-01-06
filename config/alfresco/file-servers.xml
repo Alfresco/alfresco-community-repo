@@ -25,6 +25,10 @@
       <Win32NetBIOS/>
       <Win32Announce interval="5"/>
 
+      <!-- CIFS authentication -->
+      <authenticator type="enterprise">
+      </authenticator>
+      
 <!--
       <WINS>
          <primary>1.2.3.4</primary>
@@ -36,6 +40,15 @@
 
    <config evaluator="string-compare" condition="FTP Server">
 	  <serverEnable enabled="true"/>
+	  
+	  <!-- Run on a non-privileged port -->
+	  <!--
+	  <port>1121</port>
+	  -->
+
+      <!-- FTP authentication -->
+      <authenticator type="alfresco"/>
+      	  
 <!--      <debug flags="File,Search,Error,Directory,Info,DataPort"/> -->
    </config>
    
@@ -133,27 +146,25 @@
    </config>
 
    <config evaluator="string-compare" condition="Filesystem Security">
-      <authenticator type="enterprise">
-      </authenticator>
-
+      <!-- Domain mappings used for passthri authentication routing -->
+      <!--
+      <DomainMappings>
+      	<Domain name="ALFRESCO" subnet="192.168.1.0" mask="192.168.1.255"/>
+      </DomainMappings>
+      -->
+      
+      <!-- Custom share mapper when multi-tenancy is enabled -->
+      <!--
+	  <shareMapper type="multi-tenant">
+	    <debug/>
+	  </shareMapper>
+      -->
+      
 <!--
       <globalAccessControl default="None">
          <user name="admin" access="Write"/>
          <address ip="90.1.0.90" access="Write"/>
       </globalAccessControl>
-
-      <users>
-         <localuser name="user">
-            <password>user</password>
-            <comment>Normal user account</comment>
-         </localuser>
-	
-         <localuser name="administrator">
-            <password>admin</password>
-            <administrator/>
-            <comment>Administrator account</comment>
-         </localuser>
-      </users>
 -->
    </config>
 

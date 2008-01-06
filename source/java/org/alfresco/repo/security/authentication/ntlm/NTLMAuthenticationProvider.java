@@ -35,11 +35,11 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.server.auth.PasswordEncryptor;
-import org.alfresco.filesys.server.auth.passthru.AuthenticateSession;
-import org.alfresco.filesys.server.auth.passthru.PassthruServers;
-import org.alfresco.filesys.smb.SMBException;
-import org.alfresco.filesys.smb.SMBStatus;
+import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
+import org.alfresco.jlan.server.auth.passthru.PassthruServers;
+import org.alfresco.jlan.smb.SMBException;
+import org.alfresco.jlan.smb.SMBStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -341,7 +341,14 @@ public class NTLMAuthenticationProvider implements AuthenticationProvider
         
         // Configure the passthru authentication server list using the domain controllers
         
-        m_passthruServers.setDomain(domain);
+        try
+        {
+            m_passthruServers.setDomain(domain);
+        }
+        catch (IOException ex)
+        {
+            throw new AlfrescoRuntimeException("Failed to set passthru domain", ex);
+        }
     }
     
     /**

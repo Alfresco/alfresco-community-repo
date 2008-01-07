@@ -21,6 +21,7 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="policyComponent" ref="policyComponent"/>
       <property name="usageService" ref="usageService"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
       <property name="enabled">
          <value>${system.usages.enabled}</value>
       </property>

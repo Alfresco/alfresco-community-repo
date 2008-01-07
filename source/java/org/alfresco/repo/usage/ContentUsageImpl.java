@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,6 +62,7 @@ public class ContentUsageImpl implements ContentUsageService,
     private PersonService personService;
     private PolicyComponent policyComponent;
     private UsageService usageService;
+    private AuthenticationComponent authenticationComponent;
     
     private boolean enabled = true;
     
@@ -84,6 +86,11 @@ public class ContentUsageImpl implements ContentUsageService,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+    
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
     }
 
     public void setEnabled(boolean enabled)
@@ -288,49 +295,55 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private void incrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        // increment usage - add positive delta
-        if (logger.isDebugEnabled()) logger.debug("incrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
-        
-        long currentSize = getUserUsage(userName);
-        long quotaSize = getUserQuota(userName);
-        
-        long newSize = currentSize + contentSize;
-        
-        // check whether user's quota exceeded
-        if ((quotaSize != -1) && (newSize > quotaSize))
+        if (! userName.equals(authenticationComponent.getSystemUserName()))
         {
-            if (logger.isWarnEnabled())
+            // increment usage - add positive delta
+            if (logger.isDebugEnabled()) logger.debug("incrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
+            
+            long currentSize = getUserUsage(userName);
+            long quotaSize = getUserQuota(userName);
+            
+            long newSize = currentSize + contentSize;
+            
+            // check whether user's quota exceeded
+            if ((quotaSize != -1) && (newSize > quotaSize))
             {
-                logger.warn("User (" + userName + ") quota exceeded: content=" + contentSize +
-                              ", usage=" + currentSize +
-                              ", quota=" + quotaSize);
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("User (" + userName + ") quota exceeded: content=" + contentSize +
+                                  ", usage=" + currentSize +
+                                  ", quota=" + quotaSize);
+                }
+                throw new ContentQuotaException("User quota exceeded");
             }
-            throw new ContentQuotaException("User quota exceeded");
+            
+            NodeRef personNodeRef = personService.getPerson(userName);
+            usageService.insertDelta(personNodeRef, contentSize);
         }
-        
-        NodeRef personNodeRef = personService.getPerson(userName);
-        usageService.insertDelta(personNodeRef, contentSize);
     }
     
     private void decrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        // decrement usage - add negative delta
-        if (logger.isDebugEnabled()) logger.debug("decrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
-        
-        long currentSize = getUserUsage(userName);
-        
-        long newSize = currentSize + contentSize;
-        
-        if (newSize < 0)
+        if (! userName.equals(authenticationComponent.getSystemUserName()))
         {
-           if (logger.isDebugEnabled())
-           {
-               logger.debug("User (" + userName + ") has negative usage (" + newSize + ") - reset to 0");
-           }
+            // decrement usage - add negative delta
+            if (logger.isDebugEnabled()) logger.debug("decrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
+            
+            long currentSize = getUserUsage(userName);
+            
+            long newSize = currentSize + contentSize;
+            
+            if (newSize < 0)
+            {
+               if (logger.isDebugEnabled())
+               {
+                   logger.debug("User (" + userName + ") has negative usage (" + newSize + ") - reset to 0");
+               }
+            }
+    
+            NodeRef personNodeRef = personService.getPerson(userName);
+            usageService.insertDelta(personNodeRef, (-contentSize));
         }
-
-        NodeRef personNodeRef = personService.getPerson(userName);
-        usageService.insertDelta(personNodeRef, (-contentSize));
     }
     
     /**

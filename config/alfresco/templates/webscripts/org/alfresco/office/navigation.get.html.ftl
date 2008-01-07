@@ -200,7 +200,6 @@
    </div>
    <div id="nonStatusText">
       <ul>
-<#if (path?length != 0)>
          <li>
             <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath}')">
                <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
@@ -208,7 +207,6 @@
             </a>
             <br />Save the document to the current Space.
          </li>
-</#if>
 <#if args.search?exists>
          <li>
             <a href="${url.serviceContext}/office/search${defaultQuery?html}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">

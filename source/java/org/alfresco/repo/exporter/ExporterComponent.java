@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -454,11 +455,11 @@ public class ExporterComponent
             // Export node children
             if (parameters.isCrawlChildNodes())
             {
-                exporter.startAssocs(nodeRef);
+            	// sort associations into assoc type buckets filtering out unneccessary associations
+                Map<QName, List<ChildAssociationRef>> assocTypes = new HashMap<QName, List<ChildAssociationRef>>();
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
-                for (int i = 0; i < childAssocs.size(); i++)
+                for (ChildAssociationRef childAssoc : childAssocs)
                 {
-                    ChildAssociationRef childAssoc = childAssocs.get(i);
                     QName childAssocType = childAssoc.getTypeQName();
                     if (isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssocType.getNamespaceURI()))
                     {
@@ -469,20 +470,39 @@ public class ExporterComponent
                         nodesWithSecondaryLinks.put(nodeRef, nodeRef);
                         continue;
                     }
-                    if (i == 0 || childAssocs.get(i - 1).getTypeQName().equals(childAssocType) == false)
+                    if (isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
                     {
-                        exporter.startAssoc(nodeRef, childAssocType);
+                    	continue;
                     }
-                    if (!isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
-                    {
-                        walkNode(childAssoc.getChildRef(), parameters, exporter, false);
-                    }
-                    if (i == childAssocs.size() - 1 || childAssocs.get(i + 1).getTypeQName().equals(childAssocType) == false)
-                    {
-                        exporter.endAssoc(nodeRef, childAssocType);
-                    }
+                    
+                	List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
+                	if (assocRefs == null)
+                	{
+                		assocRefs = new ArrayList<ChildAssociationRef>();
+                		assocTypes.put(childAssocType, assocRefs);
+                	}
+                	assocRefs.add(childAssoc);
                 }
-                exporter.endAssocs(nodeRef);
+                	
+                // output each association type bucket
+                if (assocTypes.size() > 0)
+                {
+    	            exporter.startAssocs(nodeRef);
+    	            for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
+    	            {
+    	            	List<ChildAssociationRef> assocRefs = assocType.getValue();
+    	            	if (assocRefs.size() > 0)
+    	            	{
+    	                    exporter.startAssoc(nodeRef, assocType.getKey());
+    	            		for (ChildAssociationRef assocRef : assocRefs)
+    	            		{
+    	                        walkNode(assocRef.getChildRef(), parameters, exporter, false);
+    	            		}
+    	                    exporter.endAssoc(nodeRef, assocType.getKey());
+    	            	}
+    	            }
+    	            exporter.endAssocs(nodeRef);
+                }
             }
             
             // Export node associations
@@ -592,13 +612,11 @@ public class ExporterComponent
          */
         private void walkNodeSecondaryLinks(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
-            exporter.startReference(nodeRef, null);
-            exporter.startAssocs(nodeRef);
+        	// sort associations into assoc type buckets filtering out unneccessary associations
+            Map<QName, List<ChildAssociationRef>> assocTypes = new HashMap<QName, List<ChildAssociationRef>>();
             List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
-            for (int i = 0; i < childAssocs.size(); i++)
+            for (ChildAssociationRef childAssoc : childAssocs)
             {
-                ChildAssociationRef childAssoc = childAssocs.get(i);
-                
                 // determine if child association should be exported
                 QName childAssocType = childAssoc.getTypeQName();
                 if (isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssocType.getNamespaceURI()))
@@ -614,24 +632,37 @@ public class ExporterComponent
                     continue;
                 }
                 
-                // export the association
-                if (i == 0 || childAssocs.get(i - 1).getTypeQName().equals(childAssocType) == false)
-                {
-                    exporter.startAssoc(nodeRef, childAssocType);
-                }
-                QName childName = childAssoc.getQName();
-                if (!isExcludedURI(parameters.getExcludeNamespaceURIs(), childName.getNamespaceURI()))
-                {
-                    exporter.startReference(childAssoc.getChildRef(), childName);
-                    exporter.endReference(childAssoc.getChildRef());
-                }
-                if (i == childAssocs.size() - 1 || childAssocs.get(i + 1).getTypeQName().equals(childAssocType) == false)
-                {
-                    exporter.endAssoc(nodeRef, childAssocType);
-                }
+            	List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
+            	if (assocRefs == null)
+            	{
+            		assocRefs = new ArrayList<ChildAssociationRef>();
+            		assocTypes.put(childAssocType, assocRefs);
+            	}
+            	assocRefs.add(childAssoc);
             }
-            exporter.endAssocs(nodeRef);
-            exporter.endReference(nodeRef);
+            	
+            // output each association type bucket
+            if (assocTypes.size() > 0)
+            {
+	            exporter.startReference(nodeRef, null);
+	            exporter.startAssocs(nodeRef);
+	            for (Map.Entry<QName, List<ChildAssociationRef>> assocType : assocTypes.entrySet())
+	            {
+	            	List<ChildAssociationRef> assocRefs = assocType.getValue();
+	            	if (assocRefs.size() > 0)
+	            	{
+	                    exporter.startAssoc(nodeRef, assocType.getKey());
+	            		for (ChildAssociationRef assocRef : assocRefs)
+	            		{
+	                        exporter.startReference(assocRef.getChildRef(), assocRef.getQName());
+	                        exporter.endReference(assocRef.getChildRef());
+	            		}
+	                    exporter.endAssoc(nodeRef, assocType.getKey());
+	            	}
+	            }
+	            exporter.endAssocs(nodeRef);
+	            exporter.endReference(nodeRef);
+            }
         }
         
         /**
@@ -643,14 +674,11 @@ public class ExporterComponent
          */
         private void walkNodeAssociations(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
-            exporter.startReference(nodeRef, null);
-            exporter.startAssocs(nodeRef);
+        	// sort associations into assoc type buckets filtering out unneccessary associations
+            Map<QName, List<AssociationRef>> assocTypes = new HashMap<QName, List<AssociationRef>>();
             List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
-            for (int i = 0; i < assocs.size(); i++)
+            for (AssociationRef assoc : assocs)
             {
-                AssociationRef assoc = assocs.get(i);
-                
-                // determine if association should be exported
                 QName assocType = assoc.getTypeQName();
                 if (isExcludedURI(parameters.getExcludeNamespaceURIs(), assocType.getNamespaceURI()))
                 {
@@ -660,21 +688,38 @@ public class ExporterComponent
                 {
                     continue;
                 }
-
-                // export the association
-                if (i == 0 || assocs.get(i - 1).getTypeQName().equals(assocType) == false)
-                {
-                    exporter.startAssoc(nodeRef, assocType);
-                }
-                exporter.startReference(assoc.getTargetRef(), null);
-                exporter.endReference(assoc.getTargetRef());
-                if (i == assocs.size() - 1 || assocs.get(i + 1).getTypeQName().equals(assocType) == false)
-                {
-                    exporter.endAssoc(nodeRef, assocType);
-                }
+                
+            	List<AssociationRef> assocRefs = assocTypes.get(assocType);
+            	if (assocRefs == null)
+            	{
+            		assocRefs = new ArrayList<AssociationRef>();
+            		assocTypes.put(assocType, assocRefs);
+            	}
+            	assocRefs.add(assoc);
             }
-            exporter.endAssocs(nodeRef);
-            exporter.endReference(nodeRef);
+            	
+            // output each association type bucket
+            if (assocTypes.size() > 0)
+            {
+	            exporter.startReference(nodeRef, null);
+	            exporter.startAssocs(nodeRef);
+	            for (Map.Entry<QName, List<AssociationRef>> assocType : assocTypes.entrySet())
+	            {
+	            	List<AssociationRef> assocRefs = assocType.getValue();
+	            	if (assocRefs.size() > 0)
+	            	{
+	                    exporter.startAssoc(nodeRef, assocType.getKey());
+	            		for (AssociationRef assocRef : assocRefs)
+	            		{
+	                        exporter.startReference(assocRef.getTargetRef(), null);
+	                        exporter.endReference(assocRef.getTargetRef());
+	            		}
+	                    exporter.endAssoc(nodeRef, assocType.getKey());
+	            	}
+	            }
+	            exporter.endAssocs(nodeRef);
+	            exporter.endReference(nodeRef);
+            }
         }
 
         /**

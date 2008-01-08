@@ -48,7 +48,8 @@
 
    function checkButtonState()
    {
-      if (document.getElementById("dialog:dialog-body:name").value.length == 0)
+      if (document.getElementById("dialog:dialog-body:name").value.length == 0 ||
+          document.getElementById("dialog:dialog-body:template-space-id").selectedIndex == 0)
       {
          document.getElementById("dialog:finish-button").disabled = true;
       }
@@ -92,4 +93,11 @@
    <f:verbatim/>
    <h:outputText value="#{msg.description}:"/>
    <h:inputText id="description" value="#{DialogManager.bean.description}" size="35" maxlength="1024" />
+   
+   <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+   <h:outputText value="#{msg.select_project_template}:"/>
+   <h:selectOneMenu id="template-space-id" value="#{DialogManager.bean.templateSpaceId}" 
+                    onchange="javascript:checkButtonState();">
+      <f:selectItems value="#{DialogManager.bean.templateSpaces}" />
+   </h:selectOneMenu>
 </h:panelGrid>

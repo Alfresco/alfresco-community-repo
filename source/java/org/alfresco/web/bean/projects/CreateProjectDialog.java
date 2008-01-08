@@ -50,6 +50,7 @@ public class CreateProjectDialog extends CreateSpaceWizard
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
+      this.createFrom = CREATEFROM_TEMPLATE;
       setSpaceType(ApplicationModel.TYPE_PROJECTSPACE.toString());
       setIcon("project");
    }

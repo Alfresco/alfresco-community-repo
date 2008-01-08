@@ -5247,6 +5247,10 @@
          <property-name>namespaceService</property-name>
          <value>#{NamespaceService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

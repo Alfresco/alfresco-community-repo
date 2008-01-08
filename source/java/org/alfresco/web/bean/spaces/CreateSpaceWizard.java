@@ -70,6 +70,10 @@ public class CreateSpaceWizard extends BaseWizardBean
    public static final String DEFAULT_SPACE_TYPE_ICON_PATH = "/images/icons/space.gif";
 
    private static Log logger = LogFactory.getLog(CreateSpaceWizard.class);
+   
+   protected static final String CREATEFROM_TEMPLATE = "template";
+   protected static final String CREATEFROM_EXISTING = "existing";
+   protected static final String CREATEFROM_SCRATCH = "scratch";
 
    protected String spaceType;
    protected String icon;
@@ -107,7 +111,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       }
 
       // reset all variables
-      this.createFrom = "scratch";
+      this.createFrom = CREATEFROM_SCRATCH;
       this.spaceType = ContentModel.TYPE_FOLDER.toString();
       this.icon = null;
       this.copyPolicy = "contents";
@@ -125,11 +129,11 @@ public class CreateSpaceWizard extends BaseWizardBean
       // if the user has chosen to create the space from an existing
       // space or from a template we need to find it's type to show
       // the current set of icons.
-      if (this.createFrom.equals("existing") && this.existingSpaceId != null)
+      if (this.createFrom.equals(CREATEFROM_EXISTING) && this.existingSpaceId != null)
       {
          this.spaceType = this.nodeService.getType(this.existingSpaceId).toString();
       }
-      else if (this.createFrom.equals("template") && this.templateSpaceId != null)
+      else if (this.createFrom.equals(CREATEFROM_TEMPLATE) && this.templateSpaceId != null)
       {
          NodeRef templateNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
          this.spaceType = this.nodeService.getType(templateNode).toString();
@@ -143,7 +147,7 @@ public class CreateSpaceWizard extends BaseWizardBean
    {
       String newSpaceId = null;
 
-      if (this.createFrom.equals("scratch"))
+      if (this.createFrom.equals(CREATEFROM_SCRATCH))
       {
          // create the space (just create a folder for now)
          NodeRef parentNodeRef;
@@ -180,7 +184,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // remember the created node
          this.createdNode = nodeRef;
       }
-      else if (this.createFrom.equals("existing"))
+      else if (this.createFrom.equals(CREATEFROM_EXISTING))
       {
          // copy the selected space and update the name, description and icon
          NodeRef sourceNode = this.existingSpaceId;
@@ -202,7 +206,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          // remember the created node
          this.createdNode = copiedNode;
       }
-      else if (this.createFrom.equals("template"))
+      else if (this.createFrom.equals(CREATEFROM_TEMPLATE))
       {
          // copy the selected space and update the name, description and icon
          NodeRef sourceNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
@@ -442,15 +446,15 @@ public class CreateSpaceWizard extends BaseWizardBean
       String summaryCreateType = null;
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
 
-      if (this.createFrom.equals("scratch"))
+      if (this.createFrom.equals(CREATEFROM_SCRATCH))
       {
-         summaryCreateType = bundle.getString("scratch");
+         summaryCreateType = bundle.getString(CREATEFROM_SCRATCH);
       }
-      else if (this.createFrom.equals("existing"))
+      else if (this.createFrom.equals(CREATEFROM_EXISTING))
       {
          summaryCreateType = bundle.getString("an_existing_space");
       }
-      else if (this.createFrom.equals("template"))
+      else if (this.createFrom.equals(CREATEFROM_TEMPLATE))
       {
          summaryCreateType = bundle.getString("a_template");
       }
@@ -492,16 +496,17 @@ public class CreateSpaceWizard extends BaseWizardBean
 
          if (results.size() != 0)
          {
+            // show templates of the type relating to the space we are creating
+            QName spaceType = QName.createQName(this.spaceType);
             for (NodeRef assocRef : results)
             {
                Node childNode = new Node(assocRef);
-               if (this.dictionaryService.isSubClass(childNode.getType(), ContentModel.TYPE_FOLDER) &&
-                   !this.dictionaryService.isSubClass(childNode.getType(), ApplicationModel.TYPE_PROJECTSPACE))
+               if (this.dictionaryService.isSubClass(childNode.getType(), spaceType))
                {
                   this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
                }
             }
-
+            
             // make sure the list is sorted by the label
             QuickSort sorter = new QuickSort(this.templates, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
             sorter.sort();

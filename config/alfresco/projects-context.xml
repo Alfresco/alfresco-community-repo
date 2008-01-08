@@ -4,19 +4,20 @@
 <!-- Project bean definitions -->
 <beans>
     <!-- Project behaviour registration -->
-    <bean id="app_projectfolder_onCreateNode" class="org.alfresco.repo.policy.registration.ClassPolicyRegistration" parent="policyRegistration">
+    <bean id="emailserver_aliasable_onAddAspect" class="org.alfresco.repo.policy.registration.ClassPolicyRegistration" parent="policyRegistration">
         <property name="policyName">
-            <value>{http://www.alfresco.org}onCreateNode</value>
+            <value>{http://www.alfresco.org}onAddAspect</value>
         </property>
         <property name="className">
-            <value>{http://www.alfresco.org/model/application/1.0}projectfolder</value>
+            <value>{http://www.alfresco.org/model/emailserver/1.0}aliasable</value>
         </property>
         <property name="behaviour">
             <bean class="org.alfresco.repo.jscript.ScriptBehaviour" parent="scriptBehaviour">
+                <property name="notificationFrequency"><value>TRANSACTION_COMMIT</value></property>
                 <property name="location">
                     <bean class="org.alfresco.repo.jscript.ClasspathScriptLocation">
                         <constructor-arg>
-                            <value>alfresco/module/projects/script/onCreateNode_app_projectfolder.js</value>
+                            <value>alfresco/module/projects/script/onAddAspect_emailserver_aliasable.js</value>
                         </constructor-arg>
                     </bean>
                 </property>

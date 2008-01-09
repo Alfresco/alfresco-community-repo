@@ -293,8 +293,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
       public Iterator<String> iterator()
       {
          // create a list of the visible actions and return it's iterator
-         ArrayList<String> visibleActions = new ArrayList<String>(
-               this.actions.size() - this.hiddenActions.size());
+         ArrayList<String> visibleActions = new ArrayList<String>(this.actions.size());
          for (String actionId : this.actions)
          {
             if (this.hiddenActions.contains(actionId) == false)
@@ -302,6 +301,8 @@ public class ActionsConfigElement extends ConfigElementAdapter
                visibleActions.add(actionId);
             }
          }
+         
+         visibleActions.trimToSize();
          
          return visibleActions.iterator();
       }

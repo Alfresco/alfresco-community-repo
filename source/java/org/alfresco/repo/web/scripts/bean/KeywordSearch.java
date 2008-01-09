@@ -25,9 +25,7 @@
 package org.alfresco.repo.web.scripts.bean;
 
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -45,6 +43,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -409,18 +408,11 @@ public class KeywordSearch extends DeclarativeWebScript
         @Override
         public String getUrl()
         {
-            try
-            {
-                return MessageFormat.format(URL, new Object[] {
-                    getNodeRef().getStoreRef().getProtocol(),
-                    getNodeRef().getStoreRef().getIdentifier(),
-                    getNodeRef().getId(),
-                    StringUtils.replace(URLEncoder.encode(getName(), "UTF-8"), "+", "%20") } );
-            }
-            catch (UnsupportedEncodingException err)
-            {
-                throw new TemplateException("Failed to encode content URL for node: " + getNodeRef(), err);
-            }
+            return MessageFormat.format(URL, new Object[] {
+                getNodeRef().getStoreRef().getProtocol(),
+                getNodeRef().getStoreRef().getIdentifier(),
+                getNodeRef().getId(),
+                URLEncoder.encode(getName()) } );
         }
     }
     

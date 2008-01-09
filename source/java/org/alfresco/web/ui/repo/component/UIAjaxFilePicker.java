@@ -24,13 +24,11 @@
  */
 package org.alfresco.web.ui.repo.component;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -89,14 +87,7 @@ public class UIAjaxFilePicker extends BaseAjaxItemPicker
       String mimetypes = getMimetypes();
       if (mimetypes != null)
       {
-         try
-         {
-            return "mimetypes=" + URLEncoder.encode(mimetypes, "UTF-8");
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new AlfrescoRuntimeException("Unsupported encoding.", e);
-         }
+         return "mimetypes=" + URLEncoder.encode(mimetypes);
       }
       else
       {

@@ -25,7 +25,6 @@
 package org.alfresco.repo.template;
 
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
+import org.alfresco.util.URLEncoder;
 
 /**
  * Template Node wrapper representing a record in the version history of a node.

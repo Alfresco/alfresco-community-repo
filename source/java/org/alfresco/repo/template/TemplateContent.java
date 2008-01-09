@@ -24,14 +24,6 @@
  */
 package org.alfresco.repo.template;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.MessageFormat;
-
-import org.alfresco.service.cmr.repository.TemplateException;
-import org.springframework.util.StringUtils;
-
-
 /**
  * Contract for Template API objects that support content on the 'cm:content' default property.
  * 

@@ -42,6 +42,7 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
@@ -63,13 +64,14 @@ import org.w3c.dom.Document;
  * @author Ariel Backenroth
  * @author Kevin Roast
  */
-public class AVMEditBean
+public class AVMEditBean extends BaseDialogBean
 {
    private static final Log LOGGER = LogFactory.getLog(AVMEditBean.class);
    
    private static final String MSG_ERROR_UPDATE = "error_update";
    private static final String MSG_UPLOAD_SUCCESS = "file_upload_success";
-   
+   private static final String MSG_APPLY_RSS_FEED= "update";
+   private static final String MSG_UPDATE = "update";
    private File file = null;
    private String fileName = null;
 
@@ -225,13 +227,13 @@ public class AVMEditBean
    private void resetState()
    {
       // clean up and clear action context
-      clearUpload();
+      removeUploadedFile();
    }
    
    /**
     * Clear form state and upload file bean
     */
-   private void clearUpload()
+   public void removeUploadedFile()
    {
       // delete the temporary file we uploaded earlier
       if (this.file != null)
@@ -262,5 +264,30 @@ public class AVMEditBean
                                   rr.getException());
          }
       }
+   }
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return updateFileOK();
+   }
+   
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_APPLY_RSS_FEED) + " '" + getAvmNode().getName() + "'";
+   }
+   
+   @Override
+   public boolean getFinishButtonDisabled()
+   {
+      return getFileName() == null;
+   }
+   
+   @Override
+   public String getFinishButtonLabel()
+   {
+      // TODO Auto-generated method stub
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPDATE);
    }
 }

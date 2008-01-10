@@ -45,6 +45,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.TemplateSupportBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
@@ -56,7 +57,7 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author Kevin Roast
  */
-public abstract class BasePreviewBean
+public abstract class BasePreviewBean extends BaseDialogBean
 {
    /** BrowseBean instance */
    protected BrowseBean browseBean;

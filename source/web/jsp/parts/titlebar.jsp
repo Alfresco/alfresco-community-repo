@@ -29,7 +29,7 @@
       <td style="width:100%;">
          <table cellspacing="0" cellpadding="0" width="100%">
             <tr>
-               <td style="padding-right:4px;"><a:actionLink id="about_alfresco" image="/images/logo/AlfrescoLogo32.png" value="Alfresco" tooltip="Alfresco" showLink="false" action="about" /></td>
+               <td style="padding-right:4px;"><a:actionLink id="about_alfresco" image="/images/logo/AlfrescoLogo32.png" value="Alfresco" tooltip="Alfresco" showLink="false" action="dialog:aboutDialog" /></td>
                <td><img src="<%=request.getContextPath()%>/images/parts/titlebar_begin.gif" width="10" height="31" alt=""/></td>
                <td style="width: 100%; background-image: url(<%=request.getContextPath()%>/images/parts/titlebar_bg.gif); background-repeat:repeat-x">
                   <%-- Toolbar --%>

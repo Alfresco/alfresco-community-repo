@@ -22,182 +22,35 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
 --%>
-<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
-<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
-<%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h"%>
+<%@ taglib uri="http://java.sun.com/jsf/core" prefix="f"%>
+<%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a"%>
+<%@ taglib uri="/WEB-INF/repo.tld" prefix="r"%>
 
-<%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
-<%@ page isELIgnored="false" %>
-<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
-<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
-<%@ page import="org.alfresco.web.bean.wcm.AVMEditBean" %>
-<%@ page import="org.alfresco.web.app.Application" %>
-<%@ page import="javax.faces.context.FacesContext" %>
+<%@ page buffer="32kb" contentType="text/html;charset=UTF-8"%>
 
-<r:page titleId="title_update_file">
+<f:verbatim>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+   <tr>
+      <td class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.local_copy_location}" /><f:verbatim></td>
+   </tr>
+   <tr>
+      <td></f:verbatim>
+         <h:panelGrid id="upload_panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumn,panelGridValueColumn">
 
-<f:view>
-   
-   <%-- load a bundle of properties with I18N strings --%>
-   <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
-   
-   <%-- set the form name here --%>
-   <h:form acceptcharset="UTF-8" id="update-file1">
-   
-   <%-- Main outer table --%>
-   <table cellspacing="0" cellpadding="2">
-      
-      <%-- Title bar --%>
-      <tr>
-         <td colspan="2">
-            <%@ include file="../parts/titlebar.jsp" %>
-         </td>
-      </tr>
-      
-      <%-- Main area --%>
-      <tr valign="top">
-         <%-- Shelf --%>
-         <td>
-            <%@ include file="../parts/shelf.jsp" %>
-         </td>
-         
-         <%-- Work Area --%>
-         <td width="100%">
-            <table cellspacing="0" cellpadding="0" width="100%">
-               <%-- Breadcrumb --%>
-               <%@ include file="../parts/breadcrumb.jsp" %>
-               
-               <%-- Status and Actions --%>
-               <tr>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_4.gif)" width="4"></td>
-                  <td bgcolor="#dfe6ed">
-                  
-                     <%-- Status and Actions inner contents table --%>
-                     <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
-                     <table cellspacing="4" cellpadding="0" width="100%">
-                        <tr>
-                           <td width="32">
-                              <h:graphicImage id="wizard-logo" url="/images/icons/update_large.gif" />
-                           </td>
-                           <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.update}" /> '<h:outputText value="#{AVMEditBean.avmNode.name}" />'</div>
-                              <div class="mainSubText"><h:outputText value="#{msg.update_avm_file_desc}" /></div>
-                           </td>
-                        </tr>
-                     </table>
-                     
-                  </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_6.gif)" width="4"></td>
-               </tr>
-               
-               <%-- separator row with gradient shadow --%>
-               <tr>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_7.gif" width="4" height="9"></td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width="4" height="9"></td>
-               </tr>
-               
-               <%-- Details --%>
-               <tr valign=top>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
-                  <td>
-                     <table cellspacing="0" cellpadding="3" border="0" width="100%">
-                        <tr>
-                           <td width="100%" valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
-                              <table cellpadding="2" cellspacing="2" border="0" width="100%">
-                                 <tr>
-                                    <td class="wizardSectionHeading"><h:outputText value="#{msg.local_copy_location}" /></td>
-                                 </tr>
-                                 <tr>
-                                    <td>
-                                       1. <h:outputText value="#{msg.locate_content_upload}" />
-                                    </td>
-                                 </tr>
-                                 </h:form>
-                                 
-                                 <r:uploadForm>
-                                 <tr><td class="paddingRow"></td></tr>
-                                 <tr>
-                                    <td>
-                                       <h:outputText value="#{msg.location}" />:<input style="margin-left:12px;" type="file" size="50" name="alfFileInput"/>
-                                    </td>
-                                 </tr>
-                                 <tr><td class="paddingRow"></td></tr>
-                                 <tr>
-                                    <td class="mainSubText">2. <h:outputText value="#{msg.click_upload}" /></td>
-                                 </tr>
-                                 <tr>
-                                    <td>
-                                       <input style="margin-left:12px;" type="submit" value="<%=Application.getMessage(FacesContext.getCurrentInstance(), "upload")%>" />
-                                    </td>
-                                 </tr>
-                                 <%
-                                 AVMEditBean bean = (AVMEditBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "AVMEditBean");
-                                 if (bean != null && bean.getFileName() != null) {
-                                 %>
-                                    <tr>
-                                       <td>
-                                          <img alt="" align="absmiddle" src="<%=request.getContextPath()%>/images/icons/info_icon.gif" />
-                                          <%=bean.getFileUploadSuccessMsg()%>
-                                       </td>
-                                    </tr>
-                                 <% } %>
-                                 </r:uploadForm>
-                                 
-                                 <h:form acceptcharset="UTF-8" id="update-file2">
-                              </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
-                           </td>
-                           
-                           <td width="100%" valign="top">
-                              <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
-                              <table cellpadding="1" cellspacing="1" border="0">
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton value="#{msg.update}" action="#{AVMEditBean.updateFileOK}" disabled="#{AVMEditBean.fileName == null}" styleClass="dialogControls" />
-                                    </td>
-                                 </tr>
-                                 <tr><td class="dialogButtonSpacing"></td></tr>
-                                 <tr>
-                                    <td align="center">
-                                       <h:commandButton value="#{msg.cancel}" action="#{AVMEditBean.cancel}" styleClass="dialogControls" />
-                                    </td>
-                                 </tr>
-                              </table>
-                              <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "greyround"); %>
-                           </td>
-                        </tr>
-                     </table>
-                  </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
-               </tr>
-               
-               <%-- Error Messages --%>
-               <tr valign="top">
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width="4"></td>
-                  <td>
-                     <%-- messages tag to show messages not handled by other specific message tags --%>
-                     <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />
-                  </td>
-                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width="4"></td>
-               </tr>
-               
-               <%-- separator row with bottom panel graphics --%>
-               <tr>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_7.gif" width="4" height="4"></td>
-                  <td width="100%" align="center" style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_8.gif)"></td>
-                  <td><img src="<%=request.getContextPath()%>/images/parts/whitepanel_9.gif" width="4" height="4"></td>
-               </tr>
-               
-            </table>
-          </td>
-       </tr>
-    </table>
-    
-    </h:form>
-    
-</f:view>
+            <h:outputText value="#{msg.locate_content_upload}" style="padding-left:8px"/>
+            <f:verbatim/>
 
-</r:page>
+            <h:outputText id="out_schema" value="#{msg.file_location}:" style="padding-left:8px" />
+            <h:column id="upload_empty" rendered="#{empty DialogManager.bean.fileName}">
+               <r:upload id="uploader" value="#{DialogManager.bean.fileName}" framework="dialog"/>
+            </h:column>
+            <h:column id="upload_not_empty" rendered="#{!empty DialogManager.bean.fileName}">
+               <h:outputText id="upload_name" value="#{DialogManager.bean.fileName}" style="padding-right:8px"/>
+               <a:actionLink id="upload_remove" image="/images/icons/delete.gif" value="#{msg.remove}" action="#{DialogManager.bean.removeUploadedFile}" showLink="false"/>
+            </h:column>
+         </h:panelGrid>
+      <f:verbatim></td>
+   </tr>
+</table>
+</f:verbatim>

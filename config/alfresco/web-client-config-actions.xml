@@ -211,7 +211,7 @@
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext["app:approveStep"]}</label>
             <image>/images/icons/approve.gif</image>
-            <action-listener>#{DocumentDetailsBean.approve}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.approve}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -223,7 +223,7 @@
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext["app:rejectStep"]}</label>
             <image>/images/icons/reject.gif</image>
-            <action-listener>#{DocumentDetailsBean.reject}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.reject}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -235,7 +235,7 @@
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:approveStep"]}</label>
             <image>/images/icons/approve.gif</image>
-            <action-listener>#{DocumentDetailsBean.approve}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.approve}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -247,7 +247,7 @@
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:rejectStep"]}</label>
             <image>/images/icons/reject.gif</image>
-            <action-listener>#{DocumentDetailsBean.reject}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.reject}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -259,7 +259,7 @@
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext["app:approveStep"]}</label>
             <image>/images/icons/approve.gif</image>
-            <action-listener>#{SpaceDetailsBean.approve}</action-listener>
+            <action-listener>#{SpaceDetailsDialog.approve}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -271,7 +271,7 @@
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext["app:rejectStep"]}</label>
             <image>/images/icons/reject.gif</image>
-            <action-listener>#{SpaceDetailsBean.reject}</action-listener>
+            <action-listener>#{SpaceDetailsDialog.reject}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -283,7 +283,7 @@
             <evaluator>org.alfresco.web.action.evaluator.ApproveDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:approveStep"]}</label>
             <image>/images/icons/approve.gif</image>
-            <action-listener>#{SpaceDetailsBean.approve}</action-listener>
+            <action-listener>#{SpaceDetailsDialog.approve}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -295,7 +295,7 @@
             <evaluator>org.alfresco.web.action.evaluator.RejectDocEvaluator</evaluator>
             <label>#{actionContext.properties["app:rejectStep"]}</label>
             <image>/images/icons/reject.gif</image>
-            <action-listener>#{SpaceDetailsBean.reject}</action-listener>
+            <action-listener>#{SpaceDetailsDialog.reject}</action-listener>
             <action>browse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -504,6 +504,29 @@
             <action>dialog:manageDeletedItems</action>
          </action>
 
+         <!-- Recover All Items  -->
+         <action id="recover_all_items">
+            <label-id>recover_all_items</label-id>
+            <image>/images/icons/recover_all.gif</image>
+            <action>dialog:recoverAllItems</action>
+            <action-listener>#{TrashcanRecoverAllItemsDialog.setupListAction}</action-listener>
+         </action>
+         
+         <!-- Delete All Items  -->
+         <action id="delete_all_items">
+            <label-id>delete_all_items</label-id>
+            <image>/images/icons/delete_all.gif</image>
+            <action>dialog:deleteAllItems</action>
+            <action-listener>#{TrashcanDeleteAllItemsDialog.setupListAction}</action-listener>
+         </action>
+         
+          <!-- Create user action-->
+         <action id="create_user">
+            <label-id>create_user</label-id>
+            <image>/images/icons/create_user.gif</image>
+            <action>wizard:createUser</action>
+         </action>
+
          <!-- Take Ownership of document -->
          <action id="take_ownership_doc">
             <permissions>
@@ -512,7 +535,7 @@
             <evaluator>org.alfresco.web.action.evaluator.TakeOwnershipDocEvaluator</evaluator>
             <label-id>take_ownership</label-id>
             <image>/images/icons/take_ownership.gif</image>
-            <action-listener>#{DocumentDetailsBean.takeOwnership}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.takeOwnership}</action-listener>
          </action>
 
          <!-- Take Ownership of space -->
@@ -522,7 +545,7 @@
             </permissions>
             <label-id>take_ownership</label-id>
             <image>/images/icons/take_ownership.gif</image>
-            <action-listener>#{SpaceDetailsBean.takeOwnership}</action-listener>
+            <action-listener>#{SpaceDetailsDialog.takeOwnership}</action-listener>
          </action>
 
          <!-- Unlock document -->
@@ -533,7 +556,7 @@
             <evaluator>org.alfresco.web.action.evaluator.UnlockDocEvaluator</evaluator>
             <label-id>unlock</label-id>
             <image>/images/icons/unlock.gif</image>
-            <action-listener>#{DocumentDetailsBean.unlock}</action-listener>
+            <action-listener>#{DocumentDetailsDialog.unlock}</action-listener>
          </action>
 
          <!-- Manage Content Users -->
@@ -571,7 +594,21 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-
+		
+		 <!-- Invite Space user action-->
+         <action id="ivite_user">
+            <label-id>invite</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>wizard:inviteSpaceUsers</action>
+         </action>
+			
+		<!-- Invite Content user action-->
+         <action id="ivite_content_user">
+            <label-id>invite</label-id>
+            <image>/images/icons/invite.gif</image>
+            <action>wizard:inviteContentUsers</action>
+         </action>	
+			
          <!-- Import into Space -->
          <action id="import_space">
             <permissions>
@@ -640,7 +677,7 @@
             <tooltip-id>add_translation_tooltip</tooltip-id>
             <image>/images/icons/add_tranlsation.gif</image>
             <action-listener>#{AddTranslationDialog.start}</action-listener>
-            <action>addTranslation</action>
+            <action>dialog:addTranslation</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -684,6 +721,61 @@
             <tooltip-id>new_edition_tooltip</tooltip-id>
             <image>/images/icons/new_edition_icon.gif</image>
             <action>wizard:newEdition</action>
+         </action>
+         
+         <!-- Create rule action-->
+         <action id="create_rule">
+            <label-id>create_rule</label-id>
+            <image>/images/icons/new_rule.gif</image>
+            <action>wizard:createRule</action>
+         </action>
+         
+          <!-- ReApply Rules -->
+         <action id="reapply-rules">
+            <label-id>reapply_rules</label-id>
+            <image>/images/icons/reapply_rules.gif</image>
+            <action-listener>#{RulesDialog.reapplyRules}</action-listener>
+         </action>
+
+         <!-- Ignore Inherited Rules -->
+         <action id="ignore-inherited-rules">
+            <label>#{RulesDialog.ignoreInheritedRulesLabelId}</label>
+            <image>/images/icons/reapply_rules.gif</image>
+            <action-listener>#{RulesDialog.ignoreInheritedRules}</action-listener>
+         </action>
+         
+         
+         <!-- Create a category -->
+         <action id="add_category">
+            <label-id>add_category</label-id>
+            <image>/images/icons/add_category.gif</image>
+            <action>dialog:createCategory</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="categoryRef">#{actionContext.categoryRef}</param>
+            </params>
+         </action>
+         
+         <!-- Delete category -->
+         <action id="delete_category">
+            <label-id>delete_category</label-id>
+            <image>/images/icons/delete_category.gif</image>
+            <action>dialog:deleteCategory</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="categoryRef">#{actionContext.nodeRef}</param>
+            </params>
+         </action>
+         
+         <!-- Edit category -->
+         <action id="edit_category">
+            <label-id>edit_category</label-id>
+            <image>/images/icons/edit_category.gif</image>
+            <action>dialog:editCategory</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="categoryRef">#{actionContext.nodeRef}</param>
+            </params>
          </action>
          
          <!-- Create a group -->
@@ -848,7 +940,17 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
          </action-group>
-
+		
+		<!-- Action menu for Invite Space user in Manage invite users screen-->
+         <action-group id="invite_user_menu">
+            <action idref="ivite_user"/>
+         </action-group>
+         
+         <!-- Action menu for Invite Content user in Manage invite users screen-->
+         <action-group id="invite_content_user_menu">
+            <action idref="ivite_content_user"/>
+         </action-group>
+		
          <!-- Actions for a space in the Browse screen -->
          <action-group id="space_browse">
             <show-link>false</show-link>
@@ -1003,6 +1105,43 @@
             <style-class>inlineAction</style-class>
             <action idref="recover_item" />
             <action idref="delete_item" />
+         </action-group>
+         
+         <!-- Actions for the manage categories dialog -->
+         <action-group id="category_actions">
+            <action idref="add_category" />
+         </action-group>
+         
+         <action-group id="category_more_actions">
+            <action idref="edit_category" />
+            <action idref="delete_category" />
+         </action-group>
+         
+         <action-group id="category_inline_actions">
+            <action idref="edit_category" />
+            <action idref="delete_category" />
+         </action-group>
+         
+         <!-- Action menu for Create rule in Space details screen-->
+         <action-group id="create_rule_menu">
+            <action idref="create_rule"/>
+         </action-group> 
+         
+         <!-- Actions Menu for Manage Rules screen -->
+         <action-group id="rules_actions_menu">
+            <action idref="reapply-rules" />
+            <action idref="ignore-inherited-rules" />
+         </action-group>
+         
+          <!-- Actions Menu for Manage Deleted Items screen -->
+         <action-group id="manage_deleted_items_menu">
+            <action idref="recover_all_items" />
+            <action idref="delete_all_items" />
+         </action-group>
+         
+          <!-- Action menu for Create user-->
+         <action-group id="create_user_menu">
+            <action idref="create_user"/>
          </action-group>
          
       </actions>

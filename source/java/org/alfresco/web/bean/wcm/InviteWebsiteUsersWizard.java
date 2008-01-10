@@ -44,7 +44,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.wizard.InviteUsersWizard;
+import org.alfresco.web.bean.wizard.BaseInviteUsersWizard;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -52,7 +52,7 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author kevinr
  */
-public class InviteWebsiteUsersWizard extends InviteUsersWizard
+public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
 {
    /** Cache of available folder permissions */
    Set<String> folderPermissions = null;
@@ -82,7 +82,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    }
    
    /**
-    * @see org.alfresco.web.bean.wizard.InviteUsersWizard#init(java.util.Map)
+    * @see org.alfresco.web.bean.wizard.BaseInviteUsersWizard#init(java.util.Map)
     */
    @Override
    public void init(Map<String, String> parameters)
@@ -105,7 +105,7 @@ public class InviteWebsiteUsersWizard extends InviteUsersWizard
    }
    
    /**
-    * @see org.alfresco.web.bean.wizard.InviteUsersWizard#finishImpl(javax.faces.context.FacesContext, java.lang.String)
+    * @see org.alfresco.web.bean.wizard.BaseInviteUsersWizard#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception

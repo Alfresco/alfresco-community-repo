@@ -63,7 +63,10 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
+import org.alfresco.web.bean.spaces.SpaceDetailsDialog;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
@@ -859,7 +862,7 @@ public class NavigationBean
     */
    public boolean isRSSFeed()
    {
-      return SpaceDetailsBean.hasRSSFeed(getCurrentNode());
+      return SpaceDetailsDialog.hasRSSFeed(getCurrentNode());
    }
    
    /**
@@ -867,7 +870,7 @@ public class NavigationBean
     */
    public String getRSSFeedURL()
    {
-      return SpaceDetailsBean.buildRSSFeedURL(getCurrentNode());
+      return SpaceDetailsDialog.buildRSSFeedURL(getCurrentNode());
    }
    
    

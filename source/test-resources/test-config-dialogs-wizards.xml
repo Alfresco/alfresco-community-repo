@@ -19,7 +19,7 @@
                  actions-menu-label-id="actions_menu_label" more-actions-config-id="more-actions"
                  more-actions-menu-label-id="more_actions_menu_label" />
                  
-         <dialog name="spaceDetails" page="/jsp/dialog/space-details.jsp" managed-bean="SpaceDetailsDialog"
+         <dialog name="spaceDetails" page="/jsp/spaces/space-details.jsp" managed-bean="SpaceDetailsDialog"
                  title="Space Details Dialog" subtitle="Space details subtitle"
                  description="Space Details Dialog Decsription" 
                  actions-config-id="space-actions" icon="/images/icons/create_space_large.gif" 

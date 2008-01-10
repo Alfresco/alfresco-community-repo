@@ -24,15 +24,22 @@
  */
 package org.alfresco.web.bean;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 /**
  * Simple backing bean used by the about page to display the version.
  * 
  * @author gavinc
  */
-public class AboutBean
+public class AboutBean extends BaseDialogBean
 {
+   private final static String MSG_VERSION = "version";
+   private final static String MSG_CLOSE = "close";
+   
    DescriptorService descriptorService;
    
    /**
@@ -64,4 +71,29 @@ public class AboutBean
    {
       this.descriptorService = descriptorService;
    }
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
+   
+   @Override
+   public String getContainerDescription()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_VERSION) + " :" + getEdition() + " - v" + getVersion();
+}
+   
+   @Override
+   public String getCancelButtonLabel()
+   {
+    
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
+   }
+   
+   @Override
+protected String getDefaultCancelOutcome() {
+
+	return "dialog:close:browse";
+}
 }

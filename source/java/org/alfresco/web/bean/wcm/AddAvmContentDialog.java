@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.AddContentDialog;
 
 /**
@@ -46,6 +47,8 @@ import org.alfresco.web.bean.content.AddContentDialog;
  */
 public class AddAvmContentDialog extends AddContentDialog
 {
+   private static final String MSG_OK = "ok";
+   
    /** The AVMService bean reference */
    protected AVMService avmService;
    
@@ -147,6 +150,20 @@ public class AddAvmContentDialog extends AddContentDialog
    @Override
    protected String getDefaultFinishOutcome()
    {
-      return "cancel";
+      return "dialog:close";
+   }
+   
+   @Override
+   public String cancel()
+   {
+      super.cancel();
+      return getDefaultCancelOutcome();
+   }
+   
+   @Override
+   public String getFinishButtonLabel()
+   {
+    
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
    }
 }

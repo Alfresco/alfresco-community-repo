@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.NavigationSupport;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -53,7 +55,7 @@ import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
  * 
  * @author Kevin Roast
  */
-public abstract class AVMDetailsBean
+public abstract class AVMDetailsBean extends BaseDialogBean implements NavigationSupport
 {
    /** NodeService bean reference */
    protected NodeService nodeService;

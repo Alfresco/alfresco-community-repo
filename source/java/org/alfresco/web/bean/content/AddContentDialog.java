@@ -58,6 +58,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class AddContentDialog extends BaseContentWizard
 {
+   private final static String MSG_OK = "ok";
+   
    protected List<String> inlineEditableMimeTypes;
    protected File file;
    
@@ -138,7 +140,7 @@ public class AddContentDialog extends BaseContentWizard
       // as we are using this dialog outside the dialog framework 
       // just go back to the main page
       
-      return "browse";
+      return "dialog:close:browse";
    }
 
    // ------------------------------------------------------------------------------
@@ -255,8 +257,7 @@ public class AddContentDialog extends BaseContentWizard
    public String cancel()
    {
       clearUpload();
-      
-      return "cancel";
+      return "dialog:close";
    }
    
    // ------------------------------------------------------------------------------
@@ -305,4 +306,12 @@ public class AddContentDialog extends BaseContentWizard
       
       return this.inlineEditableMimeTypes;
    }
+   
+   @Override
+   public String getFinishButtonLabel()
+   {
+    
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
+   }
+
 }

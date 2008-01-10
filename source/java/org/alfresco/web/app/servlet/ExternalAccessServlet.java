@@ -72,8 +72,8 @@ public class ExternalAccessServlet extends BaseServlet
    
    private static Log logger = LogFactory.getLog(ExternalAccessServlet.class);
    
-   public final static String OUTCOME_DOCDETAILS   = "showDocDetails";
-   public final static String OUTCOME_SPACEDETAILS = "showSpaceDetails";
+   public final static String OUTCOME_DOCDETAILS   = "dialog:showDocDetails";
+   public final static String OUTCOME_SPACEDETAILS = "dialog:showSpaceDetails";
    public final static String OUTCOME_BROWSE       = "browse";
    public final static String OUTCOME_MYALFRESCO   = "myalfresco";
    public final static String OUTCOME_LOGOUT       = "logout";

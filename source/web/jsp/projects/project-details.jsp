@@ -77,18 +77,18 @@
                               <img src="<%=request.getContextPath()%>/images/icons/details_large.gif" width=32 height=32>
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{msg.details_of}" /> '<h:outputText value="#{SpaceDetailsBean.name}" />'</div>
-                              <div class="mainSubText"><h:outputText value="#{msg.location}" />: <r:nodePath value="#{SpaceDetailsBean.space.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" /></div>
+                              <div class="mainTitle"><h:outputText value="#{msg.details_of}" /> '<h:outputText value="#{SpaceDetailsDialog.name}" />'</div>
+                              <div class="mainSubText"><h:outputText value="#{msg.location}" />: <r:nodePath value="#{SpaceDetailsDialog.space.nodeRef}" breadcrumb="true" actionListener="#{BrowseBean.clickSpacePath}" /></div>
                            </td>
                            
                            <%-- Navigation --%>
                            <td align=right>
-                              <a:actionLink value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsBean.previousItem}" action="showSpaceDetails">
-                                 <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                              <a:actionLink value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" showLink="false" actionListener="#{SpaceDetailsDialog.previousItem}" action="dialog:showSpaceDetails">
+                                 <f:param name="id" value="#{SpaceDetailsDialog.id}" />
                               </a:actionLink>
                               <img src="<%=request.getContextPath()%>/images/icons/nav_space.gif" width=24 height=24 align=absmiddle>
-                              <a:actionLink value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{SpaceDetailsBean.nextItem}" action="showSpaceDetails">
-                                 <f:param name="id" value="#{SpaceDetailsBean.id}" />
+                              <a:actionLink value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" showLink="false" actionListener="#{SpaceDetailsDialog.nextItem}" action="dialog:showSpaceDetails">
+                                 <f:param name="id" value="#{SpaceDetailsDialog.id}" />
                               </a:actionLink>
                            </td>
                         </tr>
@@ -113,17 +113,17 @@
                            <td width="100%" valign="top">
                               <a:panel label="#{msg.links}" id="links-panel" progressive="true"
                                        border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
-                                       expanded='#{SpaceDetailsBean.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsBean.expandPanel}">
+                                       expanded='#{SpaceDetailsDialog.panels["links-panel"]}' expandedActionListener="#{SpaceDetailsDialog.expandPanel}">
                                  <table width="100%" cellspacing="2" cellpadding="2" border="0" align="center">
                                     <tr>
                                        <td>
-                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsBean.webdavUrl}" target="new" id="link1" />
+                                          <a:actionLink value="#{msg.view_in_webdav}" href="#{SpaceDetailsDialog.webdavUrl}" target="new" id="link1" />
                                        </td>
                                        <td>
-                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsBean.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
+                                          <a href='<%=request.getContextPath()%><a:outputText value="#{SpaceDetailsDialog.bookmarkUrl}" id="out1" />' onclick="return false;"><a:outputText value="#{msg.details_page_bookmark}" id="out2" /></a>
                                        </td>
                                        <td>
-                                          <a href='<a:outputText value="#{SpaceDetailsBean.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
+                                          <a href='<a:outputText value="#{SpaceDetailsDialog.nodeRefUrl}" id="out3" />' onclick="return false;"><a:outputText value="#{msg.noderef_link}" id="out4" /></a>
                                        </td>
                                        
                                        <%-- TODO: add mail-to link etc. --%>
@@ -137,7 +137,7 @@
                               <%-- wrapper comment used by the panel to add additional component facets --%>
                               <h:column id="props-panel-facets">
                                  <f:facet name="title">
-                                    <r:permissionEvaluator value="#{SpaceDetailsBean.space}" allow="Write">
+                                    <r:permissionEvaluator value="#{SpaceDetailsDialog.space}" allow="Write">
                                        <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/Change_details.gif"
                                              action="dialog:editProject" />
                                     </r:permissionEvaluator>
@@ -154,7 +154,7 @@
                                              <tr>
                                                 <td>
                                                    <div style="border: thin solid #CCCCCC; padding:4px">
-                                                      <h:graphicImage id="space-logo" url="/images/icons/#{SpaceDetailsBean.space.properties.icon}.gif" width="32" height="32" />
+                                                      <h:graphicImage id="space-logo" url="/images/icons/#{SpaceDetailsDialog.space.properties.icon}.gif" width="32" height="32" />
                                                    </div>
                                                 </td>
                                                 <td><img src="<%=request.getContextPath()%>/images/parts/rightSideShadow42.gif" width=6 height=42></td>
@@ -166,7 +166,7 @@
                                        </td>
                                        <td>
                                           <%-- properties for the space --%>
-                                          <r:propertySheetGrid id="space-props" value="#{SpaceDetailsBean.space}" var="spaceProps" 
+                                          <r:propertySheetGrid id="space-props" value="#{SpaceDetailsDialog.space}" var="spaceProps" 
                                                          columns="1" mode="view" labelStyleClass="propertiesLabel" 
                                                          externalConfig="true" />
                                           <h:messages globalOnly="true" styleClass="errorMessage" layout="table" />
@@ -181,7 +181,7 @@
                               <table cellpadding="1" cellspacing="1" border="0" width="100%">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.close}" action="#{SpaceDetailsBean.closeDialog}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.close}" action="#{SpaceDetailsDialog.closeDialog}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>
@@ -191,7 +191,7 @@
                               
                               <%-- Actions Panel --%>
                               <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center" progressive="true">
-                                 <r:actions id="actions_project" value="project_details_actions" context="#{SpaceDetailsBean.space}" verticalSpacing="3" style="white-space:nowrap" />
+                                 <r:actions id="actions_project" value="project_details_actions" context="#{SpaceDetailsDialog.space}" verticalSpacing="3" style="white-space:nowrap" />
                               </a:panel>
                            </td>
 

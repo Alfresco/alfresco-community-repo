@@ -61,6 +61,7 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -75,7 +76,7 @@ import org.apache.tools.zip.ZipFile;
  *
  * @author Kevin Roast
  */
-public class ImportWebsiteDialog
+public class ImportWebsiteDialog extends BaseDialogBean
 {
    private static final int BUFFER_SIZE = 16384;
    private static Log logger = LogFactory.getLog(ImportWebsiteDialog.class);
@@ -433,5 +434,11 @@ public class ImportWebsiteDialog
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
          }
       }
+   }
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
    }
 }

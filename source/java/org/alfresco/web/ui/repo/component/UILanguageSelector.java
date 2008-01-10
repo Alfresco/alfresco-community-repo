@@ -34,7 +34,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.UserPreferencesBean;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.users.SpaceUsersBean;
 
 /**

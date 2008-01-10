@@ -27,6 +27,7 @@ package org.alfresco.web.bean;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.web.bean.search.SearchContext;
 
 public class CategoryBrowserBean
 {

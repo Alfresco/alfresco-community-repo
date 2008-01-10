@@ -29,7 +29,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.UserPreferencesBean;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.ml.MultilingualUtils;
 import org.alfresco.web.bean.repository.Node;
 

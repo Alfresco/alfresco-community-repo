@@ -33,7 +33,7 @@
 <f:verbatim>
 <table cellpadding="2" cellspacing="2" border="0">
 </f:verbatim>
-   <a:panel id="delete-panel" rendered="#{DialogManager.bean.members != 0}">
+   <a:panel id="delete-panel" rendered="#{DialogManager.bean.membersSize != 0}">
    <f:verbatim>
    <tr>
       <td width="100%" valign="top">
@@ -48,7 +48,7 @@
                <td class="mainSubText">
                   </f:verbatim>
                   <h:outputFormat value="#{msg.delete_category_warning}">
-                     <f:param value="#{DialogManager.bean.members}" />
+                     <f:param value="#{DialogManager.bean.membersSize}" />
                   </h:outputFormat>
                   <f:verbatim>
                </td>
@@ -64,7 +64,7 @@
       <td class="mainSubTitle">
          </f:verbatim>
          <h:outputFormat value="#{msg.delete_category_confirm}">
-            <f:param value="#{CategoriesProperties.actionCategory.name}"/>
+            <f:param value="#{DialogManager.bean.actionCategory.name}"/>
          </h:outputFormat>
          <f:verbatim>
       </td>

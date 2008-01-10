@@ -14,6 +14,34 @@
          org.alfresco.web.bean.ml.MultilingualManageDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>multilingualContentService</property-name>
+         <value>#{MultilingualContentService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentFilterLanguagesService</property-name>
+         <value>#{ContentFilterLanguagesService}</value>
+      </managed-property>
+       <managed-property>
+         <property-name>editionService</property-name>
+         <value>#{EditionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>versionService</property-name>
+         <value>#{VersionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>translationDocument</property-name>
+         <value>#{DocumentDetailsDialog.translationDocument}</value>
+      </managed-property>
    </managed-bean>
   
    <managed-bean>
@@ -445,7 +473,7 @@
          The bean that manages the state for the Recent Spaces Shelf component.
       </description>
       <managed-bean-name>RecentSpacesBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.RecentSpacesBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.spaces.RecentSpacesBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>navigator</property-name>
@@ -462,7 +490,7 @@
          The bean that manages the state for the User Shortcuts Shelf component.
       </description>
       <managed-bean-name>UserShortcutsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.UserShortcutsBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.users.UserShortcutsBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -483,7 +511,7 @@
          The bean that holds a state for the Advanced Search screen.
       </description>
       <managed-bean-name>SearchProperties</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.SearchProperties</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.search.SearchProperties</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
 
@@ -492,7 +520,7 @@
          The bean that holds a state for the Advanced Search screen.
       </description>
       <managed-bean-name>AdvancedSearchDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.AdvancedSearchDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.search.AdvancedSearchDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>navigator</property-name>
@@ -601,15 +629,15 @@
          The bean that holds state for the Category Management screens.
       </description>
       <managed-bean-name>CategoriesDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.CategoriesDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.categories.CategoriesDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>properties</property-name>
-         <value>#{CategoriesProperties}</value>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
 
@@ -1181,7 +1209,7 @@
          The bean that backs up the Invite Users Wizard
       </description>
       <managed-bean-name>InviteSpaceUsersWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.InviteSpaceUsersWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.spaces.InviteSpaceUsersWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1226,7 +1254,7 @@
          The bean that backs up the Invite Content Users Wizard
       </description>
       <managed-bean-name>InviteContentUsersWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wizard.InviteContentUsersWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.content.InviteContentUsersWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1271,7 +1299,7 @@
          The bean that presents the Checkin and Checkout bean's properties.
       </description>
       <managed-bean-name>CCProperties</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.CCProperties</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.coci.CCProperties</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>versionOperationsService</property-name>
@@ -1290,7 +1318,7 @@
    <managed-bean>
       <description>The bean that backs up the Checkin and Checkout pages.</description>
       <managed-bean-name>CheckinCheckoutDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.CheckinCheckoutDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.coci.CheckinCheckoutDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>
@@ -1309,7 +1337,20 @@
          <value>#{CCProperties}</value>
       </managed-property>
    </managed-bean>
-
+	
+   <managed-bean>
+      <description>The bean for the Update File Screen.</description>
+      <managed-bean-name>CCUpdateFileDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.CCUpdateFileDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+   </managed-bean>
+	
    <managed-bean>
       <description>
          The bean that holds manage content rules state
@@ -1333,14 +1374,39 @@
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that holds delete content rules state
+      </description>
+      <managed-bean-name>DeleteRuleDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.rules.DeleteRuleDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ruleService</property-name>
+         <value>#{RuleService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
       <description>
          Backing bean used by the document details dialog
       </description>
-      <managed-bean-name>DocumentDetailsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.DocumentDetailsBean</managed-bean-class>
+      <managed-bean-name>DocumentDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.DocumentDetailsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>
@@ -1394,10 +1460,44 @@
 
    <managed-bean>
       <description>
+         Backing bean used by the document details dialog
+      </description>
+      <managed-bean-name>DocumentLinkDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.DocumentLinkDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+     
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+     <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Backing bean used by the Space details dialog
       </description>
-      <managed-bean-name>SpaceDetailsBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.SpaceDetailsBean</managed-bean-class>
+      <managed-bean-name>SpaceDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.spaces.SpaceDetailsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>
@@ -1424,6 +1524,140 @@
          <value>#{CopyService}</value>
       </managed-property>
       <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
+         Backing bean used by the SpaceLink details dialog
+      </description>
+      <managed-bean-name>SpaceLinkDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.SpaceLinkDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Backing bean used by the forum details dialog
+      </description>
+      <managed-bean-name>ForumDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.forums.ForumDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+     
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+     <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Backing bean used by the forums details dialog
+      </description>
+      <managed-bean-name>ForumsDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.forums.ForumsDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+     <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         Backing bean used by the topic details dialog
+      </description>
+      <managed-bean-name>TopicDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.forums.TopicDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>copyService</property-name>
+         <value>#{CopyService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>ownableService</property-name>
+         <value>#{OwnableService}</value>
+      </managed-property>
+     
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+     <managed-property>
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
       </managed-property>
@@ -1483,7 +1717,7 @@
    <managed-bean>
       <description>Backing bean used for the Export dialog</description>
       <managed-bean-name>ExportDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ExportDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.admin.ExportDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>
@@ -1502,7 +1736,7 @@
    <managed-bean>
       <description>Backing bean used for the Import dialog</description>
       <managed-bean-name>ImportDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ImportBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.admin.ImportDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>browseBean</property-name>
@@ -1532,7 +1766,7 @@
          Backing bean used for the low-level Node Browser
       </description>
       <managed-bean-name>AdminNodeBrowseBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.AdminNodeBrowseBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.admin.AdminNodeBrowseBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -1998,7 +2232,7 @@
          The bean that holds state for the Manage Deleted Items screen.
       </description>
       <managed-bean-name>TrashcanDialogProperty</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.TrashcanDialogProperty</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.trashcan.TrashcanDialogProperty</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeArchiveService</property-name>
@@ -2011,7 +2245,7 @@
          The bean that holds state for the Manage Deleted Items screen.
       </description>
       <managed-bean-name>TrashcanDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.TrashcanDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.trashcan.TrashcanDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -2028,6 +2262,10 @@
       <managed-property>
          <property-name>property</property-name>
          <value>#{TrashcanDialogProperty}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
 
@@ -2483,7 +2721,7 @@
    <managed-bean>
       <description>Backing bean used for the Web Client Config Admin Console</description>
       <managed-bean-name>ConfigAdminConsoleBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.ConfigAdminConsoleBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.admin.ConfigAdminConsoleBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>configAdminInterpreter</property-name>
@@ -2564,7 +2802,7 @@
          The bean that backs up the User Preferences page
       </description>
       <managed-bean-name>UserPreferencesBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.UserPreferencesBean</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.users.UserPreferencesBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>multilingualContentService</property-name>
@@ -3463,6 +3701,31 @@
 
    <managed-bean>
       <description>
+         Backing bean used by the WebSite details dialog
+      </description>
+      <managed-bean-name>WebSiteDetailsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.WebSiteDetailsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>permissionService</property-name>
+         <value>#{PermissionService}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          The bean that backs up the Edit AVM File Properties Dialog
       </description>
       <managed-bean-name>EditFilePropertiesDialog</managed-bean-name>
@@ -4320,9 +4583,9 @@
       <description>
         The bean that backs up the view of the Versioned Properties
       </description>
-      <managed-bean-name>VersionedDocumentDetailsBean</managed-bean-name>
+      <managed-bean-name>VersionedDocumentDetailsDialog</managed-bean-name>
       <managed-bean-class>
-            org.alfresco.web.bean.VersionedDocumentDetailsBean
+            org.alfresco.web.bean.content.VersionedDocumentDetailsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4627,7 +4890,7 @@
       </description>
       <managed-bean-name>AdminConsoleDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.AdminConsoleDialog
+         org.alfresco.web.bean.admin.AdminConsoleDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
    </managed-bean>
@@ -4657,7 +4920,7 @@
       </description>
       <managed-bean-name>EditCategoryDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.EditCategoryDialog
+         org.alfresco.web.bean.categories.EditCategoryDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4665,8 +4928,8 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>properties</property-name>
-         <value>#{CategoriesProperties}</value>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
 
@@ -4676,7 +4939,7 @@
       </description>
       <managed-bean-name>DeleteCategoryDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.DeleteCategoryDialog
+         org.alfresco.web.bean.categories.DeleteCategoryDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4684,8 +4947,8 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>properties</property-name>
-         <value>#{CategoriesProperties}</value>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
 
@@ -4693,7 +4956,7 @@
       <description>The bean for the New Category screen.</description>
       <managed-bean-name>CreateCategoryDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CreateCategoryDialog
+         org.alfresco.web.bean.categories.CreateCategoryDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4701,8 +4964,8 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>properties</property-name>
-         <value>#{CategoriesProperties}</value>
+         <property-name>categoryService</property-name>
+         <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
 
@@ -4710,7 +4973,7 @@
       <description>The bean for Apply Doc Template Screen.</description>
       <managed-bean-name>ApplyDocTemplateDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.ApplyDocTemplateDialog
+         org.alfresco.web.bean.spaces.ApplyDocTemplateDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4727,7 +4990,7 @@
       <description>The bean for Apply RSS Template Screen.</description>
       <managed-bean-name>ApplyRssTemplateDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.ApplyRssTemplateDialog
+         org.alfresco.web.bean.spaces.ApplyRssTemplateDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4744,7 +5007,7 @@
       <description>The bean for Apply Space Template Screen.</description>
       <managed-bean-name>ApplySpaceTemplateDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.ApplySpaceTemplateDialog
+         org.alfresco.web.bean.spaces.ApplySpaceTemplateDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4761,7 +5024,7 @@
       <description>The bean for Edit Simple Workflow Screen.</description>
       <managed-bean-name>EditSimpleWorkflowDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.EditSimpleWorkflowDialog
+         org.alfresco.web.bean.content.EditSimpleWorkflowDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4776,9 +5039,9 @@
 
    <managed-bean>
       <description>The bean for Edit Simple Space Workflow Screen.</description>
-      <managed-bean-name>EditSpaceSimpleWorkflowDialog</managed-bean-name>
+      <managed-bean-name>EditSimpleWorkflowDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.EditSpaceSimpleWorkflowDialog
+         org.alfresco.web.bean.spaces.EditSimpleWorkflowDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4822,7 +5085,7 @@
          Bean that manages the deleting of trashitem.
       </description>
       <managed-bean-name>TrashcanDeleteItemDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.TrashcanDeleteItemDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.trashcan.TrashcanDeleteItemDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -4847,7 +5110,7 @@
          Bean that manages the deleting of all trashitems.
       </description>
       <managed-bean-name>TrashcanDeleteAllItemsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.TrashcanDeleteAllItemsDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.trashcan.TrashcanDeleteAllItemsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -4872,7 +5135,7 @@
          Bean that manages the deleting of listed trashitems.
       </description>
       <managed-bean-name>TrashcanDeleteListedItemsDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.TrashcanDeleteListedItemsDialog</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.trashcan.TrashcanDeleteListedItemsDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>
@@ -4896,7 +5159,7 @@
       <description>The bean for the Item Details Screen.</description>
       <managed-bean-name>TrashcanItemDetailsDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.TrashcanItemDetailsDialog
+         org.alfresco.web.bean.trashcan.TrashcanItemDetailsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4925,7 +5188,7 @@
       <description>The bean for the Recover Item Screen.</description>
       <managed-bean-name>TrashcanRecoverItemDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.TrashcanRecoverItemDialog
+         org.alfresco.web.bean.trashcan.TrashcanRecoverItemDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4950,7 +5213,7 @@
       <description>The bean for the Recover All Items Screen.</description>
       <managed-bean-name>TrashcanRecoverAllItemsDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.TrashcanRecoverAllItemsDialog
+         org.alfresco.web.bean.trashcan.TrashcanRecoverAllItemsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -4975,7 +5238,7 @@
       <description>The bean for the Recover Listed Items Screen.</description>
       <managed-bean-name>TrashcanRecoverListedItemsDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.TrashcanRecoverListedItemsDialog
+         org.alfresco.web.bean.trashcan.TrashcanRecoverListedItemsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5022,7 +5285,7 @@
       <description>The bean for the Recovery Report Screen.</description>
       <managed-bean-name>TrashcanRecoveryReportDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.TrashcanRecoveryReportDialog
+         org.alfresco.web.bean.trashcan.TrashcanRecoveryReportDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5047,7 +5310,7 @@
       <description>The bean for the Edit Html Inline Screen.</description>
       <managed-bean-name>CCEditHtmlInlineDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCEditHtmlInlineDialog
+         org.alfresco.web.bean.coci.CCEditHtmlInlineDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5060,7 +5323,7 @@
       <description>The bean for the Edit Text Inline Screen.</description>
       <managed-bean-name>CCEditTextInlineDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCEditTextInlineDialog
+         org.alfresco.web.bean.coci.CCEditTextInlineDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5073,7 +5336,7 @@
       <description>The bean for the Checkout File Screen.</description>
       <managed-bean-name>CCCheckoutFileDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCCheckoutFileDialog
+         org.alfresco.web.bean.coci.CCCheckoutFileDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5098,7 +5361,7 @@
       <description>The bean for the Checkout File Link Screen.</description>
       <managed-bean-name>CCCheckoutFileLinkDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCCheckoutFileLinkDialog
+         org.alfresco.web.bean.coci.CCCheckoutFileLinkDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5123,7 +5386,7 @@
       <description>The bean for the Edit File Screen.</description>
       <managed-bean-name>CCEditFileDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCEditFileDialog
+         org.alfresco.web.bean.coci.CCEditFileDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5136,7 +5399,7 @@
       <description>The bean for the Undo Checkout File Screen.</description>
       <managed-bean-name>CCUndoCheckoutFileDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCUndoCheckoutFileDialog
+         org.alfresco.web.bean.coci.CCUndoCheckoutFileDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5149,7 +5412,20 @@
       <description>The bean for the Working Copy Missing Screen.</description>
       <managed-bean-name>CCWorkingCopyMissingDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.CCWorkingCopyMissingDialog
+         org.alfresco.web.bean.coci.CCWorkingCopyMissingDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>The bean for the Checkin File Screen.</description>
+      <managed-bean-name>CCCheckinFileDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.CCCheckinFileDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5162,7 +5438,7 @@
       <description>The bean for the Edit Search Screen.</description>
       <managed-bean-name>EditSearchDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.EditSearchDialog
+         org.alfresco.web.bean.search.EditSearchDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5191,7 +5467,7 @@
       <description>The bean for the Save Search Screen.</description>
       <managed-bean-name>SaveSearchDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.SaveSearchDialog
+         org.alfresco.web.bean.search.SaveSearchDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
@@ -5257,7 +5533,7 @@
       <description>The bean for the Save Search Screen.</description>
       <managed-bean-name>ShowSystemInfoDialog</managed-bean-name>
       <managed-bean-class>
-         org.alfresco.web.bean.ShowSystemInfoDialog
+         org.alfresco.web.bean.admin.ShowSystemInfoDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>

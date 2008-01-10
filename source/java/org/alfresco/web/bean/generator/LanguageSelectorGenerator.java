@@ -32,7 +32,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.UserPreferencesBean;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;

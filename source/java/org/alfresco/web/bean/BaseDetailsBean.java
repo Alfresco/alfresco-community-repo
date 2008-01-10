@@ -50,6 +50,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
@@ -63,7 +64,7 @@ import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
  * 
  * @author Kevin Roast
  */
-public abstract class BaseDetailsBean
+public abstract class BaseDetailsBean extends BaseDialogBean
 {
    private static final String MSG_SUCCESS_OWNERSHIP = "success_ownership";
 

@@ -26,9 +26,10 @@ package org.alfresco.web.bean.wcm;
 
 import java.util.List;
 
-import org.alfresco.web.app.servlet.DownloadContentServlet;
+import javax.faces.context.FacesContext;
+
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Backing bean for Folder Details page.
@@ -71,5 +72,32 @@ public class FolderDetailsBean extends AVMDetailsBean
    protected List<AVMNode> getNodes()
    {
       return (List)this.avmBrowseBean.getFolders();
+   }
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+   
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "close");
+   }
+   
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "details_of") + " '" + getName() + "'";
+   }
+   
+   public String getCurrentItemId()
+   {
+      return getAvmNode().getId();
+   }
+
+   public String getOutcome()
+   {
+      return "dialog:close:dialog:showFolderDetails";
    }
 }

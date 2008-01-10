@@ -68,7 +68,7 @@ public class GettingStartedBean
     public String addContent()
     {
         this.navigationBean.setCurrentNodeId(getHomeSpaceId());
-        return "addContent";
+        return "dialog:addContent";
     }
     
     private String getHomeSpaceId()

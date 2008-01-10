@@ -59,6 +59,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -70,7 +71,7 @@ import org.alfresco.web.ui.repo.WebResources;
 /**
  * @author Kevin Roast
  */
-public abstract class UserMembersBean implements IContextListener
+public abstract class UserMembersBean extends BaseDialogBean implements IContextListener
 {
    private static final String MSG_SUCCESS_INHERIT_NOT = "success_not_inherit_permissions";
    private static final String MSG_SUCCESS_INHERIT = "success_inherit_permissions";
@@ -458,9 +459,10 @@ public abstract class UserMembersBean implements IContextListener
    /**
     * Action called to Close the dialog
     */
-   public void close(ActionEvent event)
+   public String cancel()
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
+      return super.cancel();
    }
    
    /**

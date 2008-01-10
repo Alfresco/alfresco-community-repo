@@ -162,7 +162,7 @@
             <evaluator>org.alfresco.web.action.evaluator.WCMStagingReadonlyEvaluator</evaluator>
             <label-id>add_content</label-id>
             <image>/images/icons/add.gif</image>
-            <action>addAvmContent</action>
+            <action>dialog:addAvmContent</action>
             <action-listener>#{AddAvmContentDialog.start}</action-listener>
          </action>
          

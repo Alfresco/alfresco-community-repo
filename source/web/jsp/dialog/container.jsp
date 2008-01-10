@@ -147,12 +147,12 @@
                                     <a:panel id="nav-panel" rendered="#{DialogManager.navigationVisible}">
                                        <td style="padding-left: 10px; white-space: nowrap;" valign="middle">
                                           <a:actionLink id="act-prev" value="#{msg.previous_item}" verticalAlign="-8px" image="/images/icons/nav_prev.gif" 
-                                                        showLink="false" actionListener="#{DialogManager.bean.previousItem}">
+                                                        showLink="false" actionListener="#{DialogManager.bean.previousItem}" action="#{DialogManager.bean.getOutcome}">
                                              <f:param name="id" value="#{DialogManager.bean.currentItemId}" />
                                           </a:actionLink>
                                           <img src="<%=request.getContextPath()%>/images/icons/nav_file.gif" width="24" height="24" align="absmiddle" />
                                           <a:actionLink id="act-next" value="#{msg.next_item}" verticalAlign="-8px" image="/images/icons/nav_next.gif" 
-                                                        showLink="false" actionListener="#{DialogManager.bean.nextItem}">
+                                                        showLink="false" actionListener="#{DialogManager.bean.nextItem}" action="#{DialogManager.bean.getOutcome}">
                                              <f:param name="id" value="#{DialogManager.bean.currentItemId}" />
                                           </a:actionLink>
                                        </td>

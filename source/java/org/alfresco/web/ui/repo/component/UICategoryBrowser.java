@@ -41,7 +41,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.CategoryBrowserBean;
 import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.SearchContext;
+import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.bean.ajax.CategoryBrowserPluginBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;

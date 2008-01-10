@@ -28,7 +28,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.UserPreferencesBean;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.repository.Node;
 
 /**

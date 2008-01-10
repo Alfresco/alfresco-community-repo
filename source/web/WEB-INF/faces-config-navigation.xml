@@ -46,36 +46,20 @@
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
-         <from-outcome>showDocDetails</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>showMLContainerDetails</from-outcome>
          <to-view-id>/jsp/ml/ml-container-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>showVersionedDetails</from-outcome>
-         <to-view-id>/jsp/dialog/versioned-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>showSpaceDetails</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
+         <to-view-id>/jsp/content/versioned-details.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>dashboard</from-outcome>
          <to-view-id>/jsp/browse/dashboard.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>addContent</from-outcome>
-         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>addTranslation</from-outcome>
          <to-view-id>/jsp/ml/add-translation-dialog.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>import</from-outcome>
-         <to-view-id>/jsp/dialog/import.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
          <from-outcome>manageCategories</from-outcome>
@@ -90,16 +74,8 @@
          <to-view-id>/jsp/groups/groups.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>showSystemInfo</from-outcome>
-         <to-view-id>/jsp/dialog/system-info.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>showNodeBrowser</from-outcome>
          <to-view-id>/jsp/admin/store-browser.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>export</from-outcome>
-         <to-view-id>/jsp/dialog/export.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -108,7 +84,7 @@
       <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
          <from-outcome>advSearch</from-outcome>
-         <to-view-id>/jsp/dialog/advanced-search.jsp</to-view-id>
+         <to-view-id>/jsp/search/advanced-search.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -142,36 +118,8 @@
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>
       <navigation-case>
-         <from-outcome>addContent</from-outcome>
-         <to-view-id>/jsp/content/add-content-dialog.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>checkinFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkin-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>undoCheckoutFile</from-outcome>
          <to-view-id>/jsp/dialog/undocheckout-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>updateFile</from-outcome>
-         <to-view-id>/jsp/dialog/update-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editFile</from-outcome>
-         <to-view-id>/jsp/dialog/edit-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editHtmlInline</from-outcome>
-         <to-view-id>/jsp/dialog/edit-html-inline.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editTextInline</from-outcome>
-         <to-view-id>/jsp/dialog/edit-text-inline.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -180,26 +128,6 @@
       <from-view-id>/jsp/browse/browse.jsp</from-view-id>
       <!-- showDocDetails and showSpaceDetails moved to /jsp/* above -->
       <!-- edit, update, checkout actions moved to /jsp/* above -->
-      <navigation-case>
-         <from-outcome>manageInvitedUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageContentUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageRules</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previewContent</from-outcome>
-         <to-view-id>/jsp/dialog/preview-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previewSpace</from-outcome>
-         <to-view-id>/jsp/dialog/preview-space.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>startDiscussion</from-outcome>
          <to-view-id>/jsp/forums/create-topic.jsp</to-view-id>
@@ -211,14 +139,6 @@
       <navigation-case>
          <from-outcome>showTopic</from-outcome>
          <to-view-id>/jsp/forums/topic.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>saveNewSearch</from-outcome>
-         <to-view-id>/jsp/dialog/save-search.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>saveEditSearch</from-outcome>
-         <to-view-id>/jsp/dialog/edit-search.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -234,61 +154,9 @@
    <navigation-rule>
       <from-view-id>/jsp/admin/admin-console.jsp</from-view-id>
    </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-file.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-
-   <navigation-rule>
-      <from-view-id>/jsp/ml/*</from-view-id>
-      <navigation-case>
-         <from-outcome>addTranslation</from-outcome>
-         <to-view-id>/jsp/ml/add-translation-dialog.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-text-inline.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-html-inline.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>checkoutFile</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
+ 
    <navigation-rule>
       <from-view-id>/jsp/dialog/space-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>manageInvitedUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageRules</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>applyTemplate</from-outcome>
-         <to-view-id>/jsp/dialog/apply-space-template.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>applyRSSTemplate</from-outcome>
-         <to-view-id>/jsp/dialog/apply-rss-template.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previewSpace</from-outcome>
-         <to-view-id>/jsp/dialog/preview-space.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>showForum</from-outcome>
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
@@ -296,82 +164,6 @@
       <navigation-case>
          <from-outcome>editCategories</from-outcome>
          <to-view-id>/jsp/dialog/edit-space-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editSimpleWorkflow</from-outcome>
-         <to-view-id>/jsp/dialog/edit-space-simple-workflow.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/*</from-view-id>
-         <navigation-case>
-         <from-outcome>manageInvitedUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/document-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>editSimpleWorkflow</from-outcome>
-         <to-view-id>/jsp/dialog/edit-simple-workflow.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>editCategories</from-outcome>
-         <to-view-id>/jsp/dialog/edit-category.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>previewContent</from-outcome>
-         <to-view-id>/jsp/dialog/preview-file.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>showForum</from-outcome>
-         <to-view-id>/jsp/forums/forum.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageContentUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>applyTemplate</from-outcome>
-         <to-view-id>/jsp/dialog/apply-doc-template.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-simple-workflow.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-space-simple-workflow.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-category.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finish</from-outcome>
-         <to-view-id>/jsp/dialog/document-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -384,69 +176,6 @@
       <navigation-case>
          <from-outcome>finish</from-outcome>
          <to-view-id>/jsp/dialog/space-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/rules.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>deleteRule</from-outcome>
-         <to-view-id>/jsp/dialog/delete-rule.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/delete-rule.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>manageRules</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>browse</from-outcome>
-         <to-view-id>/jsp/dialog/rules.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- File Link object details page navigation -->
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/filelink-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>editLinkProperties</from-outcome>
-         <to-view-id>/jsp/dialog/edit-link-properties.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageContentUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- Space Link object details page navigation -->
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/spacelink-details.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>editLinkProperties</from-outcome>
-         <to-view-id>/jsp/dialog/edit-link-properties.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>manageContentUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-content-users.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- Edit Link object properties page navigation -->
-   <navigation-rule>
-      <from-view-id>/jsp/dialog/edit-link-properties.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>cancelEdit</from-outcome>
-         <to-view-id>/jsp/dialog/filelink-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>finishEdit</from-outcome>
-         <to-view-id>/jsp/dialog/filelink-details.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -527,14 +256,6 @@
    <navigation-rule>
       <from-view-id>/jsp/wizard/invite-users/*</from-view-id>
       <navigation-case>
-         <from-outcome>invite</from-outcome>
-         <to-view-id>/jsp/wizard/invite-users/invite.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>notify</from-outcome>
-         <to-view-id>/jsp/wizard/invite-users/notify.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>cancel</from-outcome>
          <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
@@ -580,10 +301,6 @@
    
    <navigation-rule>
       <from-view-id>/jsp/users/users.jsp</from-view-id>
-      <navigation-case>
-         <from-outcome>createUser</from-outcome>
-         <to-view-id>/jsp/wizard/new-user/person-properties.jsp</to-view-id>
-      </navigation-case>
       <navigation-case>
          <from-outcome>editUser</from-outcome>
          <to-view-id>/jsp/wizard/new-user/person-properties.jsp</to-view-id>
@@ -805,10 +522,6 @@
          <from-outcome>showTopicDetails</from-outcome>
          <to-view-id>/jsp/forums/topic-details.jsp</to-view-id>
       </navigation-case>
-      <navigation-case>
-         <from-outcome>manageInvitedUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
-      </navigation-case>
    </navigation-rule>
    
    <!-- Manage Deleted Items screen action outcomes -->
@@ -865,12 +578,8 @@
          <to-view-id>/jsp/forums/forum.jsp</to-view-id>
       </navigation-case>
       <navigation-case>
-         <from-outcome>checkoutFileLink</from-outcome>
-         <to-view-id>/jsp/dialog/checkout-file-link.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
          <from-outcome>workingCopyMissing</from-outcome>
-         <to-view-id>/jsp/dialog/working-copy-missing.jsp</to-view-id>
+         <to-view-id>/jsp/coci/working-copy-missing.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    
@@ -883,14 +592,6 @@
       <navigation-case>
          <from-outcome>browseSandbox</from-outcome>
          <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>importContent</from-outcome>
-         <to-view-id>/jsp/wcm/import-content-dialog.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>addAvmContent</from-outcome>
-         <to-view-id>/jsp/wcm/add-content-dialog.jsp</to-view-id>
       </navigation-case>
 <!--
       <navigation-case>
@@ -936,15 +637,6 @@
       <navigation-case>
          <from-outcome>category-browse</from-outcome>
          <to-view-id>/jsp/browse/category-browse.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   <!-- Project screen action outcomes -->
-   <navigation-rule>
-      <from-view-id>/jsp/projects/*</from-view-id>
-      <navigation-case>
-         <from-outcome>manageInvitedUsers</from-outcome>
-         <to-view-id>/jsp/roles/manage-invited-users.jsp</to-view-id>
       </navigation-case>
    </navigation-rule>
    

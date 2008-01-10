@@ -39,4 +39,6 @@ public interface NavigationSupport
    public void nextItem(ActionEvent event);
    
    public void previousItem(ActionEvent event);
+   
+   public String getOutcome();
 }

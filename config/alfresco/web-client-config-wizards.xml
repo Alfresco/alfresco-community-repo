@@ -113,13 +113,13 @@
                  title-id="invite_title" description-id="invite_desc"
                  icon="/images/icons/users_large.gif">
             <step name="invite" title-id="invite_step_1" description-id="invite_step1_desc">
-               <page path="/jsp/wizard/invite-users/invite.jsp"
+               <page path="/jsp/users/invite-users-wizard/invite.jsp"
                      title-id="invite_step1_title"
                      description-id="invite_step1_desc"
                      instruction-id="default_instruction" />
             </step>
             <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
-               <page path="/jsp/wizard/invite-users/notify.jsp"
+               <page path="/jsp/users/invite-users-wizard/notify.jsp"
                      title-id="invite_step2_title"
                      description-id="invite_step2_desc"
                      instruction-id="default_instruction" />
@@ -143,7 +143,7 @@
                      instruction-id="default_instruction" />
             </step>
             <step name="notify" title-id="invite_step_2" description-id="invite_step2_desc">
-               <page path="/jsp/wizard/invite-users/notify.jsp"
+               <page path="/jsp/users/invite-users-wizard/notify.jsp"
                      title-id="invite_step2_title"
                      description-id="invite_step2_desc"
                      instruction-id="default_instruction" />
@@ -661,16 +661,17 @@
                      instruction-id="new_edition_finish_instruction" />
             </step>
          </wizard>
-         	<wizard name="createUser"
-				managed-bean="CreateUserWizard"
-				title-id="new_user_title"
-				description-id="new_user_desc"
-				icon="/images/icons/new_user_large.gif">
+         
+         <wizard name="createUser"
+   				managed-bean="CreateUserWizard"
+   				title-id="new_user_title"
+   				description-id="new_user_desc"
+   				icon="/images/icons/new_user_large.gif">
 				<step name="person-properties"
 					title-id="person_properties"
 					description-id="new_user_step1_desc">
 					<page
-						path="/jsp/users/person-properties.jsp"
+						path="/jsp/users/new-user-wizard/person-properties.jsp"
 						title-id="new_user_step1_title"
 						description-id="new_user_step1_desc"
 						instruction-id="default_instruction" />
@@ -678,7 +679,7 @@
 				<step name="user-properties" title-id="user_properties"
 					description-id="new_user_step2_desc">
 					<page
-						path="/jsp/users/new-user-properties.jsp"
+						path="/jsp/users/new-user-wizard/new-user-properties.jsp"
 						title-id="new_user_step2_title"
 						description-id="new_user_step2_desc"
 						instruction-id="default_instruction" />
@@ -692,15 +693,15 @@
 			</wizard>
 
 			<wizard name="editUser"
-				managed-bean="EditUserWizard"
-				title-id="new_user_title_edit"
-				description-id="new_user_desc_edit"
-				icon="/images/icons/edituser_large.gif">
+   				managed-bean="EditUserWizard"
+   				title-id="new_user_title_edit"
+   				description-id="new_user_desc_edit"
+   				icon="/images/icons/edituser_large.gif">
 				<step name="person-properties"
 					title-id="person_properties"
 					description-id="new_user_step1_desc">
 					<page
-						path="/jsp/users/person-properties.jsp"
+						path="/jsp/users/new-user-wizard/person-properties.jsp"
 						title-id="new_user_step1_title"
 						description-id="new_user_step1_desc"
 						instruction-id="default_instruction" />
@@ -708,7 +709,7 @@
 				<step name="user-properties" title-id="user_properties"
 					description-id="new_user_step2_desc">
 					<page
-						path="/jsp/users/edit-user-properties.jsp"
+						path="/jsp/users/new-user-wizard/edit-user-properties.jsp"
 						title-id="new_user_step2_title"
 						description-id="new_user_step2_desc"
 						instruction-id="default_instruction" />

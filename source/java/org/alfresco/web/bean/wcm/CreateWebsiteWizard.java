@@ -66,7 +66,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
-import org.alfresco.web.bean.wizard.InviteUsersWizard.UserGroupRole;
+import org.alfresco.web.bean.wizard.BaseInviteUsersWizard.UserGroupRole;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;

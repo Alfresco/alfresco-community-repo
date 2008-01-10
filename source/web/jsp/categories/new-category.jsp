@@ -61,7 +61,7 @@
          <td></f:verbatim><h:outputText value="#{msg.name}" /><f:verbatim>:</td>
          <td>
             </f:verbatim>
-            <h:inputText id="name" value="#{CategoriesProperties.name}"
+            <h:inputText id="name" value="#{DialogManager.bean.name}"
                          size="35" maxlength="1024" onkeyup="javascript:checkButtonState();"
                          onchange="javascript:checkButtonState();" />
             <f:verbatim>&nbsp;*
@@ -71,7 +71,7 @@
          <td></f:verbatim><h:outputText value="#{msg.description}" /><f:verbatim>:</td>
          <td>
             </f:verbatim>
-            <h:inputText value="#{CategoriesProperties.description}" size="35"
+            <h:inputText value="#{DialogManager.bean.description}" size="35"
                          maxlength="1024" />
             <f:verbatim>
          </td>

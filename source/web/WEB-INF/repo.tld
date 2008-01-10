@@ -680,6 +680,42 @@
    </tag>
    
    <tag>
+      <name>upload</name>
+      <tag-class>org.alfresco.web.ui.common.tag.UploadInputTag</tag-class>
+      <body-content>JSP</body-content>
+      <description>
+         Component for uploading files in the dialog framework. It use 
+         dynamically created hidden iframes to upload files.
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>false</rtexprvalue>
+         <type>java.lang.String</type>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>
+            This property points to name of the uploaded file.
+         </description>
+      </attribute>
+      
+       <attribute>
+         <name>framework</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>
+            This attribute describes framework type. 
+            It can takes "dialog" or "wizard" values.
+         </description>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>spaceSelector</name>
       <tag-class>org.alfresco.web.ui.repo.tag.SpaceSelectorTag</tag-class>
       <body-content>JSP</body-content>

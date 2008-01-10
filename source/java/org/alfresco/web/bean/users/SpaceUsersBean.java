@@ -24,6 +24,11 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.text.MessageFormat;
+
+import javax.faces.context.FacesContext;
+
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -33,11 +38,46 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class SpaceUsersBean extends UserMembersBean
 {
+   private final static String MSG_MANAGE_INVITED_USERS = "manage_invited_users";
+   private final static String MSG_SPACE_OWNER = "space_owner";
+   private final static String MSG_CLOSE= "close";
+   
    /**
     * @return The space to work against
     */
    public Node getNode()
    {
       return this.browseBean.getActionSpace();
+   }
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return null;
+   }
+   
+   @Override
+   public Object getActionsContext()
+   {
+      return getNode();
+   }
+   
+   @Override
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MANAGE_INVITED_USERS) + " '" + browseBean.getActionSpace().getName() + "'";
+   }
+   
+   @Override
+   public String getContainerSubTitle()
+   {
+      String pattern = Application.getMessage(FacesContext.getCurrentInstance(), MSG_SPACE_OWNER);
+      return MessageFormat.format(pattern, getOwner());
+   }
+   
+   @Override
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
    }
 }

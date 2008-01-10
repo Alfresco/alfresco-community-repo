@@ -67,12 +67,15 @@ import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.content.DocumentDetailsDialog;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.QNameNodeMap;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
@@ -1567,7 +1570,7 @@ public class BrowseBean implements IContextListener
       NodeRef translation =  new NodeRef(Repository.getStoreRef(), id);
 
       // remember the bean from wich the action comes
-      DocumentDetailsBean docDetails = (DocumentDetailsBean)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("DocumentDetailsBean");
+      DocumentDetailsDialog docDetails = (DocumentDetailsDialog)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("DocumentDetailsDialog");
       docDetails.setTranslationDocument(new Node(translation));
 
       // set the ml container as the current document
@@ -1614,9 +1617,9 @@ public class BrowseBean implements IContextListener
                listener.created(node, node.getType());
             }
 
-            // get hold of the DocumentDetailsBean and reset it
-            DocumentDetailsBean docDetails = (DocumentDetailsBean)FacesContext.getCurrentInstance().
-               getExternalContext().getSessionMap().get("DocumentDetailsBean");
+            // get hold of the DocumentDetailsDialog and reset it
+            DocumentDetailsDialog docDetails = (DocumentDetailsDialog)FacesContext.getCurrentInstance().
+               getExternalContext().getSessionMap().get("DocumentDetailsDialog");
             if (docDetails != null)
             {
                docDetails.reset();

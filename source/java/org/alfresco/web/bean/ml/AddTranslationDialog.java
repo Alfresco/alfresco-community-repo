@@ -32,7 +32,8 @@ import javax.faces.model.SelectItem;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.UserPreferencesBean;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.content.AddContentDialog;
 
 /**
@@ -42,6 +43,8 @@ import org.alfresco.web.bean.content.AddContentDialog;
  */
 public class AddTranslationDialog extends AddContentDialog
 {
+   private static final String MSG_OK = "ok";
+   
    private MultilingualContentService multilingualContentService;
    private UserPreferencesBean userPreferencesBean;
 
@@ -81,7 +84,7 @@ public class AddTranslationDialog extends AddContentDialog
       // add a new translation
       multilingualContentService.addTranslation(this.createdNode, this.mlTranslation, I18NUtil.parseLocale(this.language));
 
-      return "browse";
+      return "dialog:close:browse";
    }
 
    @Override
@@ -92,7 +95,7 @@ public class AddTranslationDialog extends AddContentDialog
       return getDefaultFinishOutcome();
    }
 
-   public boolean finishButtonDisabled()
+   public boolean getFinishButtonDisabled()
    {
       return author == null || author.length() < 1 || language == null;
    }
@@ -155,5 +158,12 @@ public class AddTranslationDialog extends AddContentDialog
    public void setUserPreferencesBean(UserPreferencesBean userPreferencesBean)
    {
       this.userPreferencesBean = userPreferencesBean;
+   }
+   
+   @Override
+   public String getFinishButtonLabel()
+   {
+    
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
    }
 }

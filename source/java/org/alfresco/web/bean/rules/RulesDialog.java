@@ -49,10 +49,12 @@ import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.FilterViewSupport;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
@@ -63,54 +65,54 @@ import org.apache.commons.logging.LogFactory;
  *  
  * @author gavinc
  */
-public class RulesDialog extends BaseDialogBean implements IContextListener
+public class RulesDialog extends BaseDialogBean implements IContextListener, FilterViewSupport
 {
-   private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
    private static final String MSG_IGNORE_INHERTIED_RULES = "ignore_inherited_rules";
    private static final String MSG_INCLUDE_INHERITED_RULES = "include_inherited_rules";
    private static final String LOCAL = "local";
    private static final String INHERITED = "inherited";
+   private final static String MSG_CLOSE = "close";
    
-   private static final String MSG_DELETE_RULE = "delete_rule";
-   private static final String MSG_YES = "yes";
-   private static final String MSG_NO = "no";
+
    
    private static Log logger = LogFactory.getLog(RulesDialog.class);
    
-   private String viewMode = INHERITED;
-   protected BrowseBean browseBean;
+   private String filterModeMode = INHERITED;
+   
    protected RuleService ruleService;
    private List<WrappedRule> rules;
    private Rule currentRule;
    private UIRichList richList;
    private ActionService actionService;
-   private NodeService nodeService;
+   
    
    /**
     * Default constructor
     */
    public RulesDialog()
    {
+      super();
       UIContextService.getInstance(FacesContext.getCurrentInstance()).registerBean(this);
    }
    
-   /**
-    * Returns the current view mode the list of rules is in
-    * 
-    * @return The current view mode
-    */
-   public String getViewMode()
-   {
-      return this.viewMode;
-   }
-   
+     
    /**
     * @return The space to work against
     */
    public Node getSpace()
    {
       return this.browseBean.getActionSpace();
+   }
+   
+   /**
+    * Returns the current rule 
+    * 
+    * @return The current rule
+    */
+   public Rule getCurrentRule()
+   {
+      return this.currentRule;
    }
    
    /**
@@ -122,7 +124,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
    {
       boolean includeInherited = true;
       
-      if (this.viewMode.equals(LOCAL))
+      if (this.filterModeMode.equals(LOCAL))
       {
          includeInherited = false;
       }
@@ -187,7 +189,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
          
          // Set the include inherited parameter to match the current filter value
          boolean executeInherited = true;
-         if (LOCAL.equals(this.getViewMode()) == true)
+         if (LOCAL.equals(this.getFilterMode()) == true)
          {
             executeInherited = false;
          }
@@ -260,87 +262,24 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
       }
    }
    
-   /**
-    * Returns the current rule 
-    * 
-    * @return The current rule
-    */
-   public Rule getCurrentRule()
-   {
-      return this.currentRule;
-   }
    
     @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      if (this.currentRule != null)
-      {
-         try
-         {
-            String ruleTitle = this.currentRule.getTitle();
-            
-            this.ruleService.removeRule(getSpace().getNodeRef(),
-                  this.currentRule);
-            
-            // clear the current rule
-            this.currentRule = null;
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Deleted rule '" + ruleTitle + "'");
-         }
-         catch (Throwable err)
-         {
-            Utils.addErrorMessage(Application.getMessage(
-                  FacesContext.getCurrentInstance(), MSG_ERROR_DELETE_RULE) + err.getMessage(), err);
-         }
-      }
-      else
-      {
-         logger.warn("WARNING: deleteOK called without a current Rule!");
-      }
-      
-      return outcome;
+      return null;
    }
    
-   @Override
-   public String getContainerTitle()
+  @Override
+   public void restored()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DELETE_RULE) + " '" + currentRule.getTitle() + "'";
+      super.restored();
+      contextUpdated();
    }
    
-   @Override
+  @Override
    public String getCancelButtonLabel()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_NO);
-   }
-   
-   @Override
-   public boolean getFinishButtonDisabled()
-   {
-      return false;
-   }
-   
-   @Override
-   public String getFinishButtonLabel()
-   {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_YES);
-   }
-   
-   /**
-    * Change the current view mode based on user selection
-    * 
-    * @param event      ActionEvent
-    */
-   public void viewModeChanged(ActionEvent event)
-   {
-      UIModeList viewList = (UIModeList)event.getComponent();
-      this.viewMode = viewList.getValue().toString();
-      
-      // force the list to be re-queried when the page is refreshed
-      if (this.richList != null)
-      {
-         this.richList.setValue(null);
-      }
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CLOSE);
    }
 
    /**
@@ -363,13 +302,6 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
       return this.richList;
    }
    
-   /**
-    * @param browseBean The BrowseBean to set.
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
    
    /**
     * @param ruleService Sets the rule service to use
@@ -389,15 +321,6 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
       this.actionService = actionService;
    }
    
-   /**
-    * Set the node service to use
-    * 
-    * @param nodeService    the node service
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
 
    
    // ------------------------------------------------------------------------------
@@ -530,4 +453,49 @@ public class RulesDialog extends BaseDialogBean implements IContextListener
          return this.modifiedDate;
       }
    }
+
+   public void filterModeChanged(ActionEvent event)
+   {
+      UIModeList viewList = (UIModeList)event.getComponent();
+      this.filterModeMode = viewList.getValue().toString();
+      
+      // force the list to be re-queried when the page is refreshed
+      if (this.richList != null)
+      {
+         this.richList.setValue(null);
+      }
+   }
+
+   public List<UIListItem> getFilterItems()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      List<UIListItem> items = new ArrayList<UIListItem>(2);
+      
+      UIListItem item1 = new UIListItem();
+      item1.setValue(INHERITED);
+      item1.setLabel(Application.getMessage(context, INHERITED));
+      items.add(item1);
+      
+      UIListItem item2 = new UIListItem();
+      item2.setValue(LOCAL);
+      item2.setLabel(Application.getMessage(context, LOCAL));
+      items.add(item2);
+      
+      return items;
+   }
+
+   public String getFilterMode()
+   {
+      return filterModeMode;
+   }
+
+   public void setFilterMode(String filterMode)
+   {
+      this.filterModeMode = filterMode;
+      
+      // clear datalist cache ready to change results based on filter setting
+      contextUpdated();
+
+   }
+   
 }

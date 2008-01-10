@@ -49,19 +49,22 @@ import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.ChangeViewSupport;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
  */
-public class UsersDialog extends BaseDialogBean implements IContextListener
+public class UsersDialog extends BaseDialogBean implements IContextListener, ChangeViewSupport
 {
    private static Log    logger = LogFactory.getLog(UsersDialog.class);
    
@@ -71,8 +74,14 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
    private static final String ERROR_DELETE = "error_delete_user";
    private static final String ERROR_USER_DELETE = "error_delete_user_object";
    
-   private static final String DEFAULT_OUTCOME = "manageUsers";
+   private static final String DEFAULT_OUTCOME = "dialog:manageUsers";
    private static final String DIALOG_CLOSE = "dialog:close";
+   
+   private static final String VIEW_DETAILS = "user_details";
+   private static final String LABEL_VIEW_DETAILS = "user_details";
+   
+   /** RichList view mode */
+   protected String viewMode = VIEW_DETAILS;
 
    protected UsersBeanProperties properties;
    private List<Node> users = Collections.<Node>emptyList();
@@ -423,13 +432,58 @@ public class UsersDialog extends BaseDialogBean implements IContextListener
       return null;
    }
    
-   public String close()
+   @Override
+   public String cancel()
    {
       contextUpdated();
       
-      return DIALOG_CLOSE;
+      return super.cancel();
    }
    
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "close");
+   }
+   
+   @Override
+   public Object getActionsContext()
+   {
+      return this;
+   }
+   
+   public List<UIListItem> getViewItems()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      List<UIListItem> items = new ArrayList<UIListItem>(1);
+      
+      UIListItem item1 = new UIListItem();
+      item1.setValue(VIEW_DETAILS);
+      item1.setLabel(Application.getMessage(context, LABEL_VIEW_DETAILS));
+      items.add(item1);
+      
+      return items;
+   }
+
+
+   public String getViewMode()
+   {
+      return this.viewMode;
+   }
+
+
+   public void setViewMode(String viewMode)
+   {
+      this.viewMode = viewMode;
+   }
+
+
+   public void viewModeChanged(ActionEvent event)
+   {
+      UIModeList viewList = (UIModeList)event.getComponent();
+      
+      // update view mode from user selection
+      setViewMode(viewList.getValue().toString());
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation

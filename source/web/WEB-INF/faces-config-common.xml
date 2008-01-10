@@ -149,6 +149,11 @@
       <component-class>org.alfresco.web.ui.common.component.UISelectList</component-class>
    </component>
    
+   <component>
+      <component-type>org.alfresco.faces.UploadInput</component-type>
+      <component-class>org.alfresco.web.ui.common.component.UploadInput</component-class>
+   </component>
+   
    
    <!-- ==================== CONVERTERS ==================== -->
    <converter>

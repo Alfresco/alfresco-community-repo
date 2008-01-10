@@ -684,7 +684,7 @@ public class WebClientConfigTest extends BaseTest
       
       // make sure the info on the dialog is correct
       assertEquals("name", "spaceDetails", dialog.getName());
-      assertEquals("page", "/jsp/dialog/space-details.jsp", dialog.getPage());
+      assertEquals("page", "/jsp/spaces/space-details.jsp", dialog.getPage());
       assertEquals("managed-bean", "SpaceDetailsDialog", dialog.getManagedBean());
       assertEquals("icon", "/images/icons/create_space_large.gif", dialog.getIcon());
       assertEquals("title", "Space Details Dialog", dialog.getTitle());

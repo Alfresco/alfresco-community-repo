@@ -38,7 +38,7 @@ public final class FileUploadBean
 
    public static String getKey(final String id)
    {
-	return (id == null 
+	return ((id == null || id.length() == 0) 
 		? FILE_UPLOAD_BEAN_NAME 
 		: FILE_UPLOAD_BEAN_NAME + "-" + id);
    }

@@ -163,7 +163,7 @@
    
    <filter-mapping>
       <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/dialog/system-info.jsp</url-pattern>
+      <url-pattern>/faces/jsp/admin/system-info.jsp</url-pattern>
    </filter-mapping>
 
    <listener>
@@ -315,10 +315,12 @@
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
    
+   <!--
    <servlet>
       <servlet-name>pageRendererServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.PageRendererServlet</servlet-class>
    </servlet>
+   -->
 
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -480,10 +482,12 @@
       <url-pattern>/workflowdefinitionimage/*</url-pattern>
    </servlet-mapping>
    
+   <!--
    <servlet-mapping>
       <servlet-name>pageRendererServlet</servlet-name>
       <url-pattern>/page/*</url-pattern>
    </servlet-mapping>
+   -->
 
    <session-config>
       <session-timeout>60</session-timeout>

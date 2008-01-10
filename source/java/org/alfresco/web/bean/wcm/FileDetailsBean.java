@@ -228,4 +228,33 @@ public class FileDetailsBean extends AVMDetailsBean
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
    }
+
+
+   @Override
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "close");
+   }
+   
+   public String getContainerTitle()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), "details_of") + " '" + getName() + "'";
+   }
+   
+   public String getCurrentItemId()
+   {
+      return getAvmNode().getId();
+   }
+
+
+   public String getOutcome()
+   {
+      return "dialog:close:dialog:showFileDetails";
+   }
 }

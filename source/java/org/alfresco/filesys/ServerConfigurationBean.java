@@ -79,6 +79,7 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigLookupContext;
 import org.alfresco.config.ConfigService;
+import org.alfresco.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfoFactory;
 import org.alfresco.filesys.alfresco.DesktopAction;
@@ -2300,6 +2301,17 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
           //  Initialize the share mapper
           
           secConfig.setShareMapper(mapperClass, mapperElem);   
+        }
+        else
+        {
+      	  // Check if the tenant service is enabled
+      	  
+      	  if ( m_tenantService != null && m_tenantService.isEnabled())
+      	  {
+      		  // Initialize the multi-tenancy share mapper
+      		  
+              secConfig.setShareMapper("org.alfresco.filesys.alfresco.MultiTenantShareMapper", new GenericConfigElement("shareMapper"));   
+      	  }
         }
         
         // Check if any domain mappings have been specified

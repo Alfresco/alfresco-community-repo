@@ -90,27 +90,27 @@
 					<webpath>http://${localname}:8080/alfresco/</webpath>
 				</global>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.EchoDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.EchoDesktopAction</class>
 					<name>Echo</name>
 			        <filename>__AlfrescoEcho.exe</filename>
 				</action>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.URLDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.URLDesktopAction</class>
 					<name>URL</name>
 			        <filename>__AlfrescoURL.exe</filename>
 				</action>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.CmdLineDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.CmdLineDesktopAction</class>
 					<name>CmdLine</name>
 			        <filename>__AlfrescoCmd.exe</filename>
 				</action>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.CheckInOutDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.CheckInOutDesktopAction</class>
 					<name>CheckInOut</name>
 			        <filename>__AlfrescoCheckInOut.exe</filename>
 				</action>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.JavaScriptDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.JavaScriptDesktopAction</class>
 					<name>JavaScript</name>
 					<filename>__AlfrescoScript.exe</filename>
 					<script>alfresco/desktop/dumpRequest.js</script>
@@ -118,7 +118,7 @@
 					<preprocess>confirm, copyToTarget</preprocess>
 				</action>
 				<action>
-					<class>org.alfresco.filesys.smb.server.repo.desk.JavaScriptDesktopAction</class>
+					<class>org.alfresco.filesys.repo.desk.JavaScriptDesktopAction</class>
 					<name>JavaScriptURL</name>
 					<filename>__AlfrescoDetails.exe</filename>
 					<script>alfresco/desktop/showDetails.js</script>

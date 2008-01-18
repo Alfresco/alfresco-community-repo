@@ -194,7 +194,7 @@ var OfficeMyTasks =
       var wrkDescription=$('wrkDescription').value;
       
       OfficeAddin.showStatusText("Starting workflow...", "ajax_anim.gif", false);
-      var actionURL = commandURL + "?a=workflow&d=" + Doc;
+      var actionURL = commandURL + "?a=workflow&n=" + Doc;
       actionURL += "&wt=" + wrkType;
       actionURL += "&at=" + wrkAssignTo;
       // Date supplied?

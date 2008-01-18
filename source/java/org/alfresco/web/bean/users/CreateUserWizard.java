@@ -758,12 +758,20 @@ public class CreateUserWizard extends BaseWizardBean
                 if (logger.isDebugEnabled())
                     logger.debug("Created User Authentication instance for username: " + this.userName);
                 
-                putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
+                if ((this.sizeQuota != null) && (this.sizeQuota < 0L))
+                {
+                    Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, UsersDialog.ERROR_NEGATIVE_QUOTA), this.sizeQuota));
+                    outcome = null;
+                }
+                else
+                {
+                	putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
+                }
             }
             else
             {
-                outcome = null;
                 Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
+                outcome = null;
             }
             invalidateUserList();
         }
@@ -792,11 +800,19 @@ public class CreateUserWizard extends BaseWizardBean
     
     protected void putSizeQuotaProperty(String userName, Long quota, String quotaUnits)
     {
-       if ((quota != null) && (quota > 0))
+       if (quota != null)
        {
-          quota = convertToBytes(quota, quotaUnits);
+    	  if (quota >= 0L)
+    	  {
+    		  quota = convertToBytes(quota, quotaUnits);
+    	  }
+    	  else
+    	  {
+    		  // ignore negative quota
+    		  return;
+    	  }
        }
-
+       
        this.contentUsageService.setUserQuota(userName, (quota == null ? -1 : quota));
     }
     

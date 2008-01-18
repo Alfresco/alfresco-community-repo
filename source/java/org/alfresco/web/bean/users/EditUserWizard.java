@@ -205,14 +205,26 @@ public class EditUserWizard extends CreateUserWizard
             // TODO: RESET HomeSpace Ref found in top-level navigation bar!
             // NOTE: not need cos only admin can do this?
             
-            putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
-            
+            if ((this.sizeQuota != null) && (this.sizeQuota < 0L))
+            {
+                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, UsersDialog.ERROR_NEGATIVE_QUOTA), this.sizeQuota));
+                outcome = null;
+            }
+            else
+            {
+            	putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
+            }
         }
         catch (Throwable e)
         {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), ERROR), e.getMessage()), e);
             outcome = null;
         }
+        
+        if (outcome == null) {
+            this.isFinished = false;
+        }
+        
         return outcome;
     }
 }

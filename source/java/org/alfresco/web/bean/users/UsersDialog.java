@@ -71,6 +71,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
    public static String BEAN_NAME = "UsersDialog";
 
    public static final String ERROR_PASSWORD_MATCH = "error_password_match";
+   public static final String ERROR_NEGATIVE_QUOTA = "error_negative_quota";
    private static final String ERROR_DELETE = "error_delete_user";
    private static final String ERROR_USER_DELETE = "error_delete_user_object";
    
@@ -128,30 +129,32 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
       return getUsers().size();
    }
    
-   public long getUsersTotalUsage()
+   public Long getUsersTotalUsage()
    {
-       long totalUsage = 0L;
+       Long totalUsage = null;
        List<Node> users = getUsers();
        for(Node user : users)
        {
            Long sizeLatest = (Long)properties.getUserUsage((String)user.getProperties().get("userName"));
-           if (sizeLatest != null)
+           if ((sizeLatest != null) && (sizeLatest != -1L))
            {
+        	  if (totalUsage == null) { totalUsage = 0L; }
               totalUsage += sizeLatest;
            }
        }
        return totalUsage;
    }
    
-   public long getUsersTotalQuota()
+   public Long getUsersTotalQuota()
    {
-       long totalQuota = 0L;
+       Long totalQuota = null;
        List<Node> users = getUsers();
        for(Node user : users)
        {
            Long sizeCurrent = (Long)user.getProperties().get("sizeQuota");
-           if (sizeCurrent != null)
+           if ((sizeCurrent != null) && (sizeCurrent != -1L))
            {
+        	   if (totalQuota == null) { totalQuota = 0L; }
                totalQuota += sizeCurrent;
            }
        }

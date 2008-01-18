@@ -78,25 +78,5 @@
       </property>
            
    </bean>
-   
-   <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
-      <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="namespaceDAO" ref="namespaceDAO"/>
-      <property name="nodeService" ref="NodeService"/> 
-      <property name="contentService" ref="contentService"/>
-      <property name="policyComponent" ref="policyComponent"/>
-      <property name="workflowService" ref="WorkflowService"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="namespaceService" ref="namespaceService"/>
-      <property name="tenantService" ref="tenantService"/>
-      <property name="tenantDeployerService" ref="tenantAdminService"/>
-        
-      <property name="storeUrls">
-            <list>
-                <value>${spaces.store}</value>
-                <value>${spaces.archive.store}</value>
-            </list>
-      </property>
-    </bean>
-    
+
 </beans>

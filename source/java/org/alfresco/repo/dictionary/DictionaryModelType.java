@@ -265,7 +265,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         // Register interest in the onCreateNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                ContentModel.TYPE_DICTIONARY_MODEL, 
+                this, 
                 new JavaBehaviour(this, "onCreateNode"));
         
         // Create the transaction listener

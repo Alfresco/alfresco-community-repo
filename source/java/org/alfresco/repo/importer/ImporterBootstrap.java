@@ -53,14 +53,12 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -79,6 +77,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public static final String VIEW_MESSAGES_PROPERTY = "messages";
     public static final String VIEW_LOCATION_VIEW = "location";
     public static final String VIEW_ENCODING = "encoding";
+    public static final String VIEW_UUID_BINDING = "uuidBinding";
     
     // Logger
     private static final Log logger = LogFactory.getLog(ImporterBootstrap.class);
@@ -317,10 +316,13 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         }
         if (storeRef == null)
         {
-            throw new ImporterException("Store URL must be provided");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No Store URL - bootstrap import ignored");
+            }
+            return;
         }
 
-        
         UserTransaction userTransaction = transactionService.getUserTransaction();
         Authentication authentication = authenticationComponent.getCurrentAuthentication();
         
@@ -409,6 +411,19 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                             ResourceBundle bundle = ResourceBundle.getBundle(messages, bindingLocale);
                             binding.setResourceBundle(bundle);
                         }
+                        
+                        String uuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
+                        if (uuidBinding != null && uuidBinding.length() > 0)
+                        {
+                            try
+                            {
+                            	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, uuidBinding));
+                            }
+                            catch(IllegalArgumentException e)
+                            {
+                                throw new ImporterException("The value " + uuidBinding + " is an invalid uuidBinding");
+                            }
+                        }                         
 
                         // Now import...
                         ImporterProgress importProgress = null;
@@ -522,6 +537,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         private static final String IMPORT_LOCATION_NODEREF = "bootstrap.location.noderef";
         private static final String IMPORT_LOCATION_PATH = "bootstrap.location.path";
         
+        // by default, use create new strategy for bootstrap import
+        private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW_WITH_UUID;
         
         /**
          * Set Import Configuration
@@ -602,8 +619,17 @@ public class ImporterBootstrap extends AbstractLifecycleBean
          */
         public UUID_BINDING getUUIDBinding()
         {
-            // always use create new strategy for bootstrap import
-            return UUID_BINDING.CREATE_NEW_WITH_UUID;
+        	return uuidBinding;
+        }
+
+        /**
+         * Allow bootstrap to override default Node UUID Binding
+         * 
+         * @param uuidBinding UUID_BINDING
+         */
+        private void setUUIDBinding(UUID_BINDING uuidBinding)
+        {
+        	this.uuidBinding = uuidBinding;
         }
 
         /*

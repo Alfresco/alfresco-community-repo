@@ -148,6 +148,10 @@
         </property>
     </bean>
 
+    <bean id="spacesModelsBootstrap" parent="storeImporter">
+    	<!-- NOOP for fresh bootstrap (will skip store creation) - provides ordering when performing a repo restore (bootstrap import) -->
+    </bean>
+    
     <bean id="spacesBootstrap" parent="spacesStoreImporter">
         <property name="bootstrapViews">
             <list>

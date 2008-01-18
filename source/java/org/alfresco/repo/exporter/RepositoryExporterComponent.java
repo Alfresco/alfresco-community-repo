@@ -68,6 +68,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
 {
     private static final String STOREREF_KEY = "storeRef";
     private static final String PACKAGENAME_KEY = "packageName";
+    private static final String INCLUDED_PATHS = "includedPaths";
     
     // component dependencies
     private ExporterService exporterService;
@@ -290,10 +291,15 @@ public class RepositoryExporterComponent implements RepositoryExporterService
                 storePackageName = storeRef.getIdentifier();
             }
             String completePackageName = (packageName == null) ? storePackageName : packageName + "_" + storePackageName;
+            
+            // retrieve included paths (optional)
+            // note: the default exporter will currently include parents and children, relative to the path (to support bootstrap import of Dynamic Models)
+            String includedPathsStr = (String)store.get(INCLUDED_PATHS);
+            String[] includedPaths = (includedPathsStr != null ? includedPathsStr.split(",\\s*") : null);
 
             // now export
             // NOTE: For now, do not provide exporter progress
-            ExporterCrawlerParameters exportParameters = getExportParameters(storeRef);
+            ExporterCrawlerParameters exportParameters = getExportParameters(storeRef, includedPaths);
             ExportHandleType exportHandle = exportStore.exportStore(exportParameters, completePackageName, null);
             exportHandles.add(exportHandle);
         }
@@ -308,7 +314,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
      * @param storeRef  store reference to export
      * @return  the parameters for exporting the complete store
      */
-    private ExporterCrawlerParameters getExportParameters(StoreRef storeRef)
+    private ExporterCrawlerParameters getExportParameters(StoreRef storeRef, String[] includedPaths)
     {
         ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
         parameters.setExportFrom(new Location(storeRef));
@@ -318,6 +324,7 @@ public class RepositoryExporterComponent implements RepositoryExporterService
         parameters.setCrawlAssociations(true);
         parameters.setCrawlNullProperties(true);
         parameters.setExcludeNamespaceURIs(new String[] {});
+        parameters.setIncludedPaths(includedPaths);
         parameters.setReferenceType(ReferenceType.NODEREF);
         return parameters;
     }

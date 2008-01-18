@@ -153,6 +153,11 @@
                 </props>
                 <props>
                     <prop key="storeRef">${spaces.store}</prop>
+                    <prop key="packageName">models</prop>
+                    <prop key="includedPaths">/app:company_home/app:dictionary/app:models</prop>
+                </props>
+                <props>
+                    <prop key="storeRef">${spaces.store}</prop>
                     <prop key="packageName">spaces</prop>
                 </props>
                 <props>

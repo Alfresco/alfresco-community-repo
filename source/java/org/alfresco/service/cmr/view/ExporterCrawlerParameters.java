@@ -45,7 +45,7 @@ public class ExporterCrawlerParameters
     private boolean crawlNullProperties = true;
     private ReferenceType referenceType = ReferenceType.PATHREF;
     private String[] excludeNamespaceURIs = new String[] { NamespaceService.REPOSITORY_VIEW_1_0_URI };
-
+    private String[] includedPaths = null;
     
     /**
      * Crawl and export child nodes
@@ -165,6 +165,26 @@ public class ExporterCrawlerParameters
     public void setExcludeNamespaceURIs(String[] excludeNamespaceURIs)
     {
         this.excludeNamespaceURIs = excludeNamespaceURIs;
+    }
+    
+    /**
+     * Gets the list of included paths to explicitly include in the Export
+     * 
+     * @return  the list of included paths
+     */    
+    public String[] getIncludedPaths()
+    {
+        return includedPaths;
+    }
+
+    /**
+     * Sets the list of included paths to explicitly include in the Export
+     * 
+     * @param includedPaths
+     */
+    public void setIncludedPaths(String[] includedPaths)
+    {
+        this.includedPaths = includedPaths;
     }
 
     /**

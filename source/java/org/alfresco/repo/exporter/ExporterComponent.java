@@ -361,6 +361,16 @@ public class ExporterComponent
             {
                 return;
             }
+            
+            // explicitly included ?
+            if (parameters.getIncludedPaths() != null)
+            {
+            	String nodePathPrefixString = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
+            	if (! (isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
+    			{
+    				return;
+    			}
+            }
 
             // export node as reference to node, or as the actual node
             if (exportAsRef)
@@ -739,6 +749,22 @@ public class ExporterComponent
             }
             return false;
         }
+        
+        private boolean isIncludedPath(String[] includedPaths, String path)
+        {
+            for (String includePath : includedPaths)
+            {
+                // note: allow parents or children - e.g. if included path is /a/b/c then /, /a, /a/b, /a/b/c, /a/b/c/d, /a/b/c/d/e are all included         	 
+                if (includePath.startsWith(path) || path.startsWith(includePath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
+		
         
         /**
          * Is the aspect unexportable?

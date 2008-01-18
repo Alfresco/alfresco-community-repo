@@ -56,12 +56,26 @@
         </property>
     </bean>
 
+    <bean id="spacesModelsBootstrap" parent="spacesStoreImporter">
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path"></prop>
+                    <prop key="location">alfresco/extension/restore/export_models.acp</prop>
+                </props>
+            </list>
+        </property>
+        <property name="log"><value>true</value></property>
+    </bean>
+    
     <bean id="spacesBootstrap" parent="spacesStoreImporter">
+        <property name="useExistingStore"><value>true</value></property>
         <property name="bootstrapViews">
             <list>
                 <props>
                     <prop key="path">/</prop>
                     <prop key="location">alfresco/extension/restore/export_spaces.acp</prop>
+                    <prop key="uuidBinding">UPDATE_EXISTING</prop>
                 </props>
             </list>
         </property>

@@ -19,7 +19,7 @@ function tagActions(action, nodeId, tagName)
          {
             resultString = "Tag added";
             resultCode = true;
-            newTag.nodeRef.toString();
+            newTagNodeRef = newTag.nodeRef.toString();
          }
          else
          {

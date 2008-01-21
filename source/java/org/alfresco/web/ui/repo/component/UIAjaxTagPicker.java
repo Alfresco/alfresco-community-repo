@@ -112,12 +112,17 @@ public class UIAjaxTagPicker extends BaseAjaxItemPicker
       submitted = (List<NodeRef>)getSubmittedValue();
       if (submitted == null)
       {
-         submitted = (List<NodeRef>)getValue();
-      }
-      // special case to submit empty lists on multi-select values
-      else if (submitted.equals("empty"))
-      {
-         submitted = null;
+         Object objSubmitted = getValue();
+         // special case to submit empty lists on multi-select values
+         if ((objSubmitted != null) && (objSubmitted.toString().equals("empty")))
+         {
+            submitted = null;
+            this.setValue(null);
+         }
+         else
+         {
+            submitted = (List<NodeRef>)getValue();
+         }
       }
 
       if (submitted != null)

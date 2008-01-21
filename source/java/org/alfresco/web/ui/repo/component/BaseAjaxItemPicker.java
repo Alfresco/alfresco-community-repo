@@ -140,7 +140,11 @@ public abstract class BaseAjaxItemPicker extends UIInput
       Map requestMap = context.getExternalContext().getRequestParameterMap();
       String fieldId = getHiddenFieldName();
       String value = (String)requestMap.get(fieldId);
-      if (value != null && value.length() != 0)
+      if (value.equals("empty"))
+      {
+         this.setSubmittedValue(new String("empty"));
+      }
+      else if (value != null && value.length() != 0)
       {
          if (getSingleSelect() == true)
          {

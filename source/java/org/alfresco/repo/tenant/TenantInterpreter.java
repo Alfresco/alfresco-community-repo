@@ -25,6 +25,7 @@
 package org.alfresco.repo.tenant;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -208,8 +209,8 @@ public class TenantInterpreter extends BaseInterpreter
             
             out.print(executeCommand("createWithoutWorkflows " + createTenantArgs));
             out.print(executeCommand("bootstrapWorkflows " + newTenant));       
-        }   
-        
+        } 
+
         else if (command[0].equals("createWithoutWorkflows"))
         {
             if ((command.length != 3) && (command.length != 4))
@@ -228,8 +229,8 @@ public class TenantInterpreter extends BaseInterpreter
             tenantAdminService.createTenant(newTenant, tenantAdminRawPassword, rootContentStoreDir);
             
             out.println("created tenant: " + newTenant);      
-        }   
-
+        }
+        
         else if (command[0].equals("bootstrapWorkflows"))
         {
             if (command.length != 2)
@@ -251,6 +252,43 @@ public class TenantInterpreter extends BaseInterpreter
             
             out.println("bootstrap workflows deployed for tenant: " + newTenant);        
         }   
+        
+        else if (command[0].equals("import"))
+        {
+            if ((command.length != 3) && (command.length != 4))
+            {
+                return "Syntax Error, try 'help'.\n";
+            }
+            
+            String newTenant = new String(command[1]).toLowerCase();       
+            File directorySource = new File(command[2]);
+            
+            String rootContentStoreDir = null;
+            if (command.length == 4)
+            {
+                rootContentStoreDir = new String(command[3]);
+            }
+            
+            tenantAdminService.importTenant(newTenant, directorySource, rootContentStoreDir);
+            
+            out.println("imported tenant: " + newTenant);
+            out.print(executeCommand("bootstrapWorkflows " + newTenant));
+        }  
+        
+        else if (command[0].equals("export"))
+        {
+            if (command.length != 3)
+            {
+                return "Syntax Error, try 'help'.\n";
+            }
+            
+            String tenant = new String(command[1]).toLowerCase();      
+            File directoryDestination = new File(command[2]);
+            
+            tenantAdminService.exportTenant(tenant, directoryDestination);
+            
+            out.println("exported tenant: " + tenant);      
+        }
         
         // TODO - not fully working yet
         else if (command[0].equals("delete"))

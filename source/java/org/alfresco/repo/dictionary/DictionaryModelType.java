@@ -473,7 +473,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                                 if ((existingValue != null) && (existingValue.booleanValue() == true))
                                                 {
                                                 	String name = (String)nodeService.getProperty(existingNodeRef, ContentModel.PROP_NAME);
-                                                    throw new AlfrescoRuntimeException("Cannot activate '"+modelDefinition.getName()+"' - existing active model: " + name);
+                                                	
+                                                	// for MT import, model may have been activated by DictionaryRepositoryBootstrap
+                                                	if (logger.isDebugEnabled())
+                                                	{
+                                                		logger.debug("Re-activating '"+modelDefinition.getName()+"' - existing active model: " + name);
+                                                	}
+                                                    //throw new AlfrescoRuntimeException("Cannot activate '"+modelDefinition.getName()+"' - existing active model: " + name);
                                                 }
                                         	}
                                         }

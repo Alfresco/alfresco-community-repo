@@ -171,7 +171,7 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
         undeploy(nodeRef);
     }
     
-    private void deploy(NodeRef nodeRef)
+    public void deploy(NodeRef nodeRef)
     {
         // Ignore if the node is a working copy 
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)

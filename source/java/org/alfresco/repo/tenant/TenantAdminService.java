@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -39,6 +40,10 @@ public interface TenantAdminService extends TenantDeployerService
     public void createTenant(String tenantDomain, char[] adminRawPassword);
 
     public void createTenant(String tenantDomain, char[] adminRawPassword, String rootContentStoreDir);
+    
+    public void exportTenant(String tenantDomain, File directoryDestination);
+    
+    public void importTenant(String tenantDomain, File directorySource, String rootContentStoreDir);
     
     public boolean existsTenant(String tenantDomain);
     

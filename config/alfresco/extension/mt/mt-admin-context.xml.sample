@@ -22,6 +22,12 @@
       <property name="passwordEncoder" ref="passwordEncoder"/>
       <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
       <property name="workflowService" ref="WorkflowService"/>
+      <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
+      
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="workflowDefinitionType" ref="workflowDefinitionType"/>
+      <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
       
    </bean>
                 

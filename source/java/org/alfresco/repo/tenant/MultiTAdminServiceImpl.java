@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -45,17 +46,23 @@ import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.repo.content.TenantRoutingFileContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
+import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.workflow.WorkflowDefinitionType;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ParameterCheck;
@@ -85,6 +92,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private PasswordEncoder passwordEncoder;
     private TenantRoutingFileContentStore tenantFileContentStore;
     private WorkflowService workflowService;
+    private RepositoryExporterService repositoryExporterService;
+    private NamespaceService namespaceService;
+    private SearchService searchService;
+    private RepositoryLocation repoWorkflowDefsLocation;
+    private WorkflowDefinitionType workflowDefinitionType;
     
 
     protected final static String REGEX_VALID_TENANT_NAME = "^[a-zA-Z0-9]([a-zA-Z0-9]|.[a-zA-Z0-9])*$"; // note: must also be a valid filename
@@ -139,6 +151,32 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         this.workflowService = workflowService;
     }
     
+    public void setRepositoryExporterService(RepositoryExporterService repositoryExporterService)
+    {
+        this.repositoryExporterService = repositoryExporterService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+    
+    public void setRepositoryWorkflowDefsLocations(RepositoryLocation repoWorkflowDefsLocation)
+    {
+        this.repoWorkflowDefsLocation = repoWorkflowDefsLocation;
+    }
+    
+    public void setWorkflowDefinitionType(WorkflowDefinitionType workflowDefinitionType)
+    {
+        this.workflowDefinitionType = workflowDefinitionType;
+    }
+    
+    
     public static final String PROTOCOL_STORE_USER = "user";
     public static final String PROTOCOL_STORE_WORKSPACE = "workspace";
     public static final String PROTOCOL_STORE_SYSTEM = "system";
@@ -154,6 +192,9 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private static final String TENANT_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
     
     private static final String ADMIN_BASENAME = TenantService.ADMIN_BASENAME;
+    
+    public final static String CRITERIA_ALL = "/*"; // immediate children only
+    public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
 
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
 
@@ -275,11 +316,20 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             tenantFileContentStore.init();
                             
                             // create tenant-specific stores
-                            bootstrapUserTenantStore(tenantDomain, tenantAdminRawPassword);
-                            bootstrapSystemTenantStore(tenantDomain);
-                            bootstrapVersionTenantStore(tenantDomain);
-                            bootstrapSpacesArchiveTenantStore(tenantDomain);
-                            bootstrapSpacesTenantStore(tenantDomain);
+                            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
+                            bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
+                            
+                            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
+                            bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
+
+                            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
+                            bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+
+                            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
+                            bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
+                            
+                            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+                            bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);                           
                             
                             // notify listeners that tenant has been created & hence enabled
                             for (TenantDeployer tenantDeployer : tenantDeployers)
@@ -293,6 +343,82 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         }
 
         logger.info("Tenant created: " + tenantDomain);
+    }
+    
+    /**
+     * Export tenant - equivalent to the tenant admin running a 'complete repo' export from the Web Client Admin
+     */
+    public void exportTenant(final String tenantDomain, final File directoryDestination)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {           
+                    	repositoryExporterService.export(directoryDestination, tenantDomain);
+                        return null;
+                    }                               
+                }, getTenantAdminUser(tenantDomain));
+        
+        logger.info("Tenant exported: " + tenantDomain);
+    }
+    
+    /**
+     * Create tenant by restoring from a complete repository export. This is equivalent to a bootstrap import using restore-context.xml.
+     */
+    public void importTenant(final String tenantDomain, final File directorySource, String rootContentStoreDir)
+    {             
+       // Check that all the passed values are not null
+        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        
+        if (! Pattern.matches(REGEX_VALID_TENANT_NAME, tenantDomain))
+        {
+            throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must match " + REGEX_VALID_TENANT_NAME + ")");
+        }
+        
+        if (existsTenant(tenantDomain))
+        {
+            throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
+        }
+        else
+        {                      
+            authenticationComponent.setSystemUserAsCurrentUser();
+
+            if (rootContentStoreDir == null)
+            {
+                rootContentStoreDir = tenantFileContentStore.getDefaultRootDir();
+            }
+            
+            // init - need to enable tenant (including tenant service) before stores bootstrap
+            Tenant tenant = new Tenant(tenantDomain, true, rootContentStoreDir);
+            putTenantAttributes(tenantDomain, tenant);          
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    {
+                        public Object doWork()
+                        {           
+                            dictionaryComponent.init();
+                            tenantFileContentStore.init();
+                            
+                            // import tenant-specific stores
+                            importBootstrapUserTenantStore(tenantDomain, directorySource);
+                            importBootstrapSystemTenantStore(tenantDomain, directorySource);
+                            importBootstrapVersionTenantStore(tenantDomain, directorySource);
+                            importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
+                            importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
+                            importBootstrapSpacesTenantStore(tenantDomain, directorySource);
+                            
+                            // notify listeners that tenant has been created & hence enabled
+                            for (TenantDeployer tenantDeployer : tenantDeployers)
+                            {
+                                tenantDeployer.onEnableTenant();
+                            }
+                            
+                            return null;
+                        }                               
+                    }, getTenantAdminUser(tenantDomain));
+        }
+
+        logger.info("Tenant imported: " + tenantDomain);
     }
     
     public boolean existsTenant(String tenantDomain)
@@ -477,6 +603,21 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             throw new AlfrescoRuntimeException("Failed to find workflow process def: " + resourceClasspath);
         }               
         
+        // in case of import, also deploy any custom workflow definitions defined in the repo
+        // TODO refactor/review repository bootstrap order of undeployed workflow definitions
+        
+        StoreRef storeRef = repoWorkflowDefsLocation.getStoreRef();
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoWorkflowDefsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfWorkflowDefinitionType+"]", null, namespaceService, false);
+
+        if (nodeRefs.size() > 0)
+        {
+            for (NodeRef nodeRef : nodeRefs)
+            {
+            	workflowDefinitionType.deploy(nodeRef);
+			}
+	    }
+        
         logger.info("Tenant workflows bootstrapped: " + tenantService.getCurrentUserDomain());
     }
     
@@ -585,33 +726,28 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         
         return tenants; // list of tenants or empty list     
     }
-     
-    private void bootstrapUserTenantStore(String tenantDomain, char[] tenantAdminRawPassword)
+
+    private void importBootstrapSystemTenantStore(String tenantDomain, File directorySource)
     {     
-        // Bootstrap Tenant-Specific User Store
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_USER, tenantService.getName(STORE_BASE_ID_USER, tenantDomain));
+        // Import Bootstrap (restore) Tenant-Specific Version Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_system.acp");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
-        userImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-    
-        // override admin username property
-        String salt = null; // GUID.generate();
-        Properties props = userImporterBootstrap.getConfiguration();
-        
-        props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
-        props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), salt));
-        
-        userImporterBootstrap.bootstrap();
-        
-        logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
+        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
+        systemImporterBootstrap.setBootstrapViews(bootstrapViews);
+        systemImporterBootstrap.setLog(true);
+
+        bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
     }
     
-    private void bootstrapSystemTenantStore(String tenantDomain)
+    private void bootstrapSystemTenantStore(ImporterBootstrap systemImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific System Store
         StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_SYSTEM, tenantService.getName(STORE_BASE_ID_SYSTEM, tenantDomain));
-        
-        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
         systemImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override default property (workspace://SpacesStore)        
@@ -624,12 +760,65 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }
     
-    private void bootstrapVersionTenantStore(String tenantDomain)
+    private void importBootstrapUserTenantStore(String tenantDomain, File directorySource)
+    {     
+        // Import Bootstrap (restore) Tenant-Specific User Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_users.acp");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
+        
+        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
+        userImporterBootstrap.setBootstrapViews(bootstrapViews);
+        userImporterBootstrap.setLog(true);
+
+        bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, null);
+    }
+    
+    private void bootstrapUserTenantStore(ImporterBootstrap userImporterBootstrap, String tenantDomain, char[] tenantAdminRawPassword)
+    {     
+        // Bootstrap Tenant-Specific User Store
+        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_USER, tenantService.getName(STORE_BASE_ID_USER, tenantDomain));
+        userImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+    
+        // override admin username property
+        Properties props = userImporterBootstrap.getConfiguration();       
+        props.put("alfresco_user_store.adminusername", getTenantAdminUser(tenantDomain));
+        
+        if (tenantAdminRawPassword != null)
+        {
+            String salt = null; // GUID.generate();
+        	props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), salt));
+        }
+        
+        userImporterBootstrap.bootstrap();
+        
+        logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
+    }
+
+    private void importBootstrapVersionTenantStore(String tenantDomain, File directorySource)
+    {     
+        // Import Bootstrap (restore) Tenant-Specific Version Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_versions.acp");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
+        
+        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
+        versionImporterBootstrap.setBootstrapViews(bootstrapViews);
+        versionImporterBootstrap.setLog(true);
+
+        bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+    }
+    
+    private void bootstrapVersionTenantStore(ImporterBootstrap versionImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Version Store
         StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_WORKSPACE, tenantService.getName(STORE_BASE_ID_VERSION, tenantDomain));
-        
-        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
         versionImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         versionImporterBootstrap.bootstrap();
@@ -637,12 +826,27 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }
     
-    private void bootstrapSpacesArchiveTenantStore(String tenantDomain)
-    {
-        // Bootstrap Tenant-Specific Spaces Store 
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_ARCHIVE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain));
+    private void importBootstrapSpacesArchiveTenantStore(String tenantDomain, File directorySource)
+    {     
+        // Import Bootstrap (restore) Tenant-Specific Spaces Archive Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_spaces_archive.acp");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
         
         ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
+        spacesArchiveImporterBootstrap.setBootstrapViews(bootstrapViews);
+        spacesArchiveImporterBootstrap.setLog(true);
+
+        bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
+    }
+    
+    private void bootstrapSpacesArchiveTenantStore(ImporterBootstrap spacesArchiveImporterBootstrap, String tenantDomain)
+    {
+        // Bootstrap Tenant-Specific Spaces Archive Store 
+        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_ARCHIVE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain));
         spacesArchiveImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override default property (archive://SpacesStore)       
@@ -655,12 +859,47 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }
 
-    private void bootstrapSpacesTenantStore(String tenantDomain)
+    private void importBootstrapSpacesModelsTenantStore(String tenantDomain, File directorySource)
+    {     
+        // Import Bootstrap (restore) Tenant-Specific Spaces Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_models.acp");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
+        
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+        spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
+        spacesImporterBootstrap.setLog(true);
+
+        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
+    }
+    
+    private void importBootstrapSpacesTenantStore(String tenantDomain, File directorySource)
+    {     
+        // Import Bootstrap (restore) Tenant-Specific Spaces Store
+        Properties bootstrapView = new Properties();
+        bootstrapView.put("path", "/");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_spaces.acp");
+        bootstrapView.put("uuidBinding", "UPDATE_EXISTING");
+
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
+        
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+        spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
+        spacesImporterBootstrap.setLog(true);
+        
+        spacesImporterBootstrap.setUseExistingStore(true);
+
+        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
+    }
+    
+    private void bootstrapSpacesTenantStore(ImporterBootstrap spacesImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Spaces Store    
         StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_WORKSPACE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain));
-        
-        final ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
         spacesImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override admin username property

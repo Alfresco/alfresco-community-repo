@@ -498,29 +498,40 @@ public class ImporterBootstrap extends AbstractLifecycleBean
      */
     private File getFile(String view)
     {
-        // Get input stream
-        InputStream viewStream = getClass().getClassLoader().getResourceAsStream(view);
-        if (viewStream == null)
+    	// Try as a file location
+        File file = new File(view);
+        if ((file != null) && (file.exists()))
         {
-            throw new ImporterException("Could not find view file " + view);
+        	return file;
         }
-        
-        // Create output stream
-        File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
-        try
+        else
         {
-            FileOutputStream os = new FileOutputStream(tempFile);
-            FileCopyUtils.copy(viewStream, os);
+            // Try as a classpath location
+        	
+	        // Get input stream
+	        InputStream viewStream = getClass().getClassLoader().getResourceAsStream(view);
+	        if (viewStream == null)
+	        {
+	            throw new ImporterException("Could not find view file " + view);
+	        }
+	        
+	        // Create output stream
+	        File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
+	        try
+	        {
+	            FileOutputStream os = new FileOutputStream(tempFile);
+	            FileCopyUtils.copy(viewStream, os);
+	        }
+	        catch (FileNotFoundException e)
+	        {
+	            throw new ImporterException("Could not import view " + view, e);
+	        }
+	        catch (IOException e)
+	        {
+	            throw new ImporterException("Could not import view " + view, e);
+	        }
+	        return tempFile;
         }
-        catch (FileNotFoundException e)
-        {
-            throw new ImporterException("Could not import view " + view, e);
-        }
-        catch (IOException e)
-        {
-            throw new ImporterException("Could not import view " + view, e);
-        }
-        return tempFile;
     }
     
     

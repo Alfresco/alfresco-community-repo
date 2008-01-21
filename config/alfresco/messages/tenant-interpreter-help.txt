@@ -32,7 +32,7 @@ ok> show tenant <tenant domain>
 
 ok> create <tenant domain> <tenant admin password> [<root contentstore dir>]
 
-    Create tenant. By default the tenant will be enabled. It will have an admin
+    Create empty tenant. By default the tenant will be enabled. It will have an admin
     user called "admin@<tenant domain>" with supplied admin password. All users
     that the admin creates, will login using "<username>@<tenant domain>". 
     The root of the contentstore directory can be optionally specified, otherwise 
@@ -42,17 +42,7 @@ ok> create <tenant domain> <tenant admin password> [<root contentstore dir>]
     Examples:  create zzz.com l3tm31n /usr/tenantstores/zzz
                create yyy.zzz.com g00dby3 /usr/tenantstores/yyy.zzz
                create myorg h3ll0
-               
-ok> createWithoutWorkflows <tenant domain> <tenant admin password> [<root contentstore dir>]
 
-    Same as create, except the default workflows will not be bootstrapped.
-    
-ok> bootstrapWorkflows <tenant domain>
-
-    Bootstrap the default workflows.
-    
-    Examples:  bootstrapWorkflows yyy.zzz.com
-    
 ok> changeAdminPassword <tenant domain> <tenant admin password>
 
     Useful if the tenant's admin (admin@<tenant domain>) has forgotten their password.
@@ -70,6 +60,31 @@ ok> disable <tenant domain>
     Disable tenant so that is inactive. Existing logins will fail on next usage.
     
     Example:   enable yyy.zzz.com
+    
+ok> delete <tenant domain>
+
+	BETA - Delete tenant. 
+	
+	Note: This currently requires a server restart to clear the index threads. Also
+	tenant index directories should be deleted manually.
+	
+	Example:   delete yyy.zzz.com
+    
+ok> export <tenant domain> <destination directory>
+
+    Export tenant to given destination directory. Export filenames will be suffixed with '<tenant domain>_'.
+    
+    Example:   export yyy.zzz.com /usr/exportdir
+    
+ok> import <tenant domain> <source directory> [<root contentstore dir>]
+
+	BETA - create tenant by importing the tenant files from the given source directory. The import filenames must
+	be suffixed with '<tenant domain>_'.
+	
+	Note: If importing into a previously deleted tenant then the server must be stopped after the delete
+	(and tenant indexes manually deleted) before restarting and performing the import.
+	
+	Example:   import yyy.zzz.com /usr/exportdir /usr/tenantstores/yyy.zzz
 
 ##
 ##  end

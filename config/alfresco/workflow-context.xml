@@ -109,6 +109,15 @@
    <!-- Workflow Patch Deployer -->
    <bean id="workflowPatchDeployer" parent="workflowDeployer" singleton="false"/>
    
+   <!-- Deploy any additional workflows definitions from repo (used by MT import) -->
+   <!-- note: needs to match bootstrap-context.xml locations ( customWorkflowDefsSpace.xml) -->
+   <bean id="customWorkflowDefsRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overriden here -->
+        <property name="path">
+            <value>/app:company_home/app:dictionary/app:workflow_defs</value>
+        </property>
+   </bean>
+   
    <!--  Workflow Definition Type (bpm:workflowDefinition) -->
    <bean id="workflowDefinitionType" class="org.alfresco.repo.workflow.WorkflowDefinitionType" init-method="init">
       <property name="nodeService" ref="NodeService"/> 

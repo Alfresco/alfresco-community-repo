@@ -27,12 +27,12 @@
                   <webpath>http://${localname}:8080/alfresco/</webpath>
                </global>
                <action>
-                  <class>org.alfresco.filesys.smb.server.repo.desk.CheckInOutDesktopAction</class>
+                  <class>org.alfresco.filesys.repo.desk.CheckInOutDesktopAction</class>
                   <name>CheckInOut</name>
                   <filename>__CheckInOut.exe</filename>
                </action>
                <action>
-                  <class>org.alfresco.filesys.smb.server.repo.desk.JavaScriptDesktopAction</class>
+                  <class>org.alfresco.filesys.repo.desk.JavaScriptDesktopAction</class>
                   <name>JavaScriptURL</name>
                   <filename>__ShowDetails.exe</filename>
                   <script>alfresco/desktop/showDetails.js</script>

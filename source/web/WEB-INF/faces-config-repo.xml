@@ -224,6 +224,11 @@
       <component-class>org.alfresco.web.ui.repo.component.UIAjaxFilePicker</component-class>
    </component>
 
+   <component>
+      <component-type>org.alfresco.faces.AjaxTagPicker</component-type>
+      <component-class>org.alfresco.web.ui.repo.component.UIAjaxTagPicker</component-class>
+   </component>
+   
 
    <!-- ==================== CONVERTERS ==================== -->
    <component>

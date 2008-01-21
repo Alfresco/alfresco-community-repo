@@ -4329,6 +4329,15 @@
 
    <managed-bean>
       <description>
+         Bean that generates an ajax tag picker component
+      </description>
+      <managed-bean-name>AjaxTagPickerGenerator</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.generator.AjaxTagPickerGenerator</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          Bean that generates an association component
       </description>
       <managed-bean-name>AssociationGenerator</managed-bean-name>

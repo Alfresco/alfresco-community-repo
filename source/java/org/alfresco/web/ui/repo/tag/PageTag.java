@@ -70,7 +70,8 @@ public class PageTag extends TagSupport
       // pop-up panel helper objects
       "/scripts/ajax/summary-info.js",
       // ajax pickers
-      "/scripts/ajax/picker.js"
+      "/scripts/ajax/picker.js",
+      "/scripts/ajax/tagger.js"
    };
    
    private final static String[] CSS = 

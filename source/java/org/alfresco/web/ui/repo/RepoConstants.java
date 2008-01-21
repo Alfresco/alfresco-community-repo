@@ -51,6 +51,7 @@ public final class RepoConstants
    public static final String ALFRESCO_FACES_BOOLEAN_CONVERTER    = "org.alfresco.faces.BooleanLabelConverter";
    public static final String ALFRESCO_FACES_MLTEXT_RENDERER      = "org.alfresco.faces.MultilingualText";
    public static final String ALFRESCO_FACES_MLTEXTAREA_RENDERER  = "org.alfresco.faces.MultilingualTextArea";
+   public static final String ALFRESCO_FACES_AJAX_TAG_PICKER      = "org.alfresco.faces.AjaxTagPicker";
    
    public static final String GENERATOR_LABEL = "LabelGenerator";
    public static final String GENERATOR_TEXT_FIELD = "TextFieldGenerator";

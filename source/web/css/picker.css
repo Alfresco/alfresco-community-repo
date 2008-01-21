@@ -99,6 +99,11 @@ div.pickerAjaxWait
    border-bottom: 1px solid #b2b2b2;
 }
 
+.pickerNavControls a img, .pickerNavControls input
+{
+   outline: none;
+}
+
 img.pickerActionButton
 {
    margin-left: 2px;
@@ -106,6 +111,7 @@ img.pickerActionButton
 
 div.pickerResultsRow
 {
+   clear: left;
    padding: 4px;
    height: auto;
 }
@@ -177,6 +183,13 @@ div.pickerNavBreadcrumbPanel
    display: none;
 }
 
+.pickerNavBreadcrumbText
+{
+	float: left;
+	height: 16px;
+   padding: 3px 0px;
+}
+
 div.pickerNavBreadcrumbItem
 {
    padding: 2px;
@@ -193,4 +206,47 @@ div.pickerNavBreadcrumbItem
 .pickerNavUp img
 {
    vertical-align: -4px;
+}
+
+.pickerNavAddTag
+{
+   float: right;
+}
+
+.pickerAddTagIcon
+{
+   background: url("../images/office/new_tag.gif") no-repeat;
+   float: left;
+   height: 16px;
+   width: 16px;
+   margin: 2px 4px;
+}
+
+.pickerAddTagLinkContainer
+{
+   height: 16px;
+   margin: 3px 0px;
+}
+
+.pickerAddTagFormContainer
+{
+   display: none;
+}
+
+.pickerAddTagBox
+{
+   border: 1px solid #cccccc;
+   height: 16px;
+   margin: 0px;
+   padding: 1px;
+   color: #0073e6;
+   font-family: tahoma, sans-serif;
+   font-size: 12px;
+}
+
+.pickerAddTagImage
+{
+   cursor: pointer;
+   margin: 0px 0px -2px;
+   outline: none;
 }

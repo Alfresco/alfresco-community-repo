@@ -61,15 +61,15 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public abstract class BaseAjaxItemPicker extends UIInput
 {
-   private static final String MSG_GO_UP = "go_up";
-   private static final String MSG_OK = "ok";
-   private static final String MSG_CANCEL = "cancel";
+   protected static final String MSG_GO_UP = "go_up";
+   protected static final String MSG_OK = "ok";
+   protected static final String MSG_CANCEL = "cancel";
 
-   private static final String ID_ID = "id";
-   private static final String ID_NAME = "name";
-   private static final String ID_ICON = "icon";
+   protected static final String ID_ID = "id";
+   protected static final String ID_NAME = "name";
+   protected static final String ID_ICON = "icon";
 
-   private static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
+   protected static final String FOLDER_IMAGE_PREFIX = "/images/icons/";
    
    /** label to be displayed before an item is selected */
    protected String label = null;
@@ -407,6 +407,10 @@ public abstract class BaseAjaxItemPicker extends UIInput
       {
          this.label = (String)vb.getValue(getFacesContext());
       }
+      else
+      {
+         this.label = "";
+      }
       
       return this.label;
    }
@@ -420,7 +424,7 @@ public abstract class BaseAjaxItemPicker extends UIInput
    }
    
    /**
-    * @return Returns the initial selecttion.
+    * @return Returns the initial selection.
     */
    public String getInitialSelection()
    {

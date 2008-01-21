@@ -209,6 +209,78 @@ public class PickerBean
     * The 16x16 pixel folder icon path is output as the 'icon' property for each child folder. 
     */
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
+   public void getTagNodes() throws Exception
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      
+      UserTransaction tx = null;
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+         tx.begin();
+         
+         Collection<ChildAssociationRef> childRefs;
+         NodeRef parentRef = null;
+         Map params = fc.getExternalContext().getRequestParameterMap();
+         String strParentRef = (String)params.get(ID_PARENT);
+         if (strParentRef == null || strParentRef.length() == 0)
+         {
+            childRefs = this.categoryService.getRootCategories(
+               Repository.getStoreRef(),
+               ContentModel.ASPECT_TAGGABLE);
+         }
+         else
+         {
+            parentRef = new NodeRef(strParentRef);
+            childRefs = this.categoryService.getChildren(
+                  parentRef,
+                  CategoryService.Mode.SUB_CATEGORIES,
+                  CategoryService.Depth.IMMEDIATE);
+         }
+         
+         JSONWriter out = new JSONWriter(fc.getResponseWriter());
+         out.startObject();
+         out.startValue(ID_PARENT);
+         out.startObject();
+         if (parentRef == null)
+         {
+            out.writeNullValue(ID_ID);
+            out.writeValue(ID_NAME, "Tags");
+            out.writeValue(ID_ISROOT, true);
+            out.writeValue(ID_SELECTABLE, false);
+         }
+         else
+         {
+            out.writeValue(ID_ID, strParentRef);
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
+         }
+         out.endObject();
+         out.endValue();
+         out.startValue(ID_CHILDREN);
+         out.startArray();
+         for (ChildAssociationRef ref : childRefs)
+         {
+            NodeRef nodeRef = ref.getChildRef();
+            out.startObject();
+            out.writeValue(ID_ID, nodeRef.toString());
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, nodeRef));
+            out.endObject();
+         }
+         out.endArray();
+         out.endValue();
+         out.endObject();
+         
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage("PickerBean exception in getTagNodes()", err);
+         fc.getResponseWriter().write("ERROR: " + err.getMessage());
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+   }
+   
+   @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)
    public void getFolderNodes() throws Exception
    {
       FacesContext fc = FacesContext.getCurrentInstance();

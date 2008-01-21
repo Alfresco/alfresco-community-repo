@@ -43,15 +43,7 @@ var OfficeDocDetails =
    
    setupTags: function()
    {
-      var tags = $$('#panelTags .tagName');
-      
-      tags.each(function(tag, i)
-      {
-         tag.addEvent('click', function(e)
-         {
-            window.location.href = window.serviceContextPath + "/office/tags?p=" + window.queryObject.p + "&tag=" + encodeURI(tag.innerHTML);
-         });
-      });
+      // Placeholder
    },
 
    showAddTagForm: function()

@@ -77,7 +77,7 @@
                         <td>
    <#if d.properties.categories?exists>
       <#list d.properties.categories as category>
-                           ${companyhome.nodeByReference[category].name};
+                           ${category.name}<#if category != d.properties.categories?last>,</#if>
       </#list>
    <#else>
                            None.
@@ -115,7 +115,7 @@
          <form id="addTagForm" action="#" onsubmit="return OfficeDocDetails.addTag('${d.id}', this.tag.value);">
             <fieldset class="addTagFieldset">
                <input id="addTagBox" name="tag" type="text" />
-               <input class="addTagImage" type="image" src="${url.context}/images/office/action_successful.gif" onclick="return (document.addTagForm.tag.value.length > 0);" />
+               <input class="addTagImage" type="image" src="${url.context}/images/office/action_successful.gif" onclick="return ($('addTagBox').value.length > 0);" />
                <input class="addTagImage" type="image" src="${url.context}/images/office/action_failed.gif" onclick="return OfficeDocDetails.hideAddTagForm();" />
             </fieldset>
          </form>

@@ -137,6 +137,10 @@ public interface ContentModel
     static final QName ASSOC_CATEGORIES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "categories");
     static final QName ASSOC_SUBCATEGORIES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subcategories");
 
+    // tags - a subsection of categories
+    static final QName ASPECT_TAGGABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "taggable");
+    static final QName PROP_TAGS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "taggable");
+    
     // lock aspect
     public final static QName ASPECT_LOCKABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lockable");
     public final static QName PROP_LOCK_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lockOwner");

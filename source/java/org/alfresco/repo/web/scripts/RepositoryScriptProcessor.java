@@ -174,7 +174,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
         @Override
         public String toString()
         {
-        	return content.getPath();
+        	return content.getPathDescription();
         }
     }
 

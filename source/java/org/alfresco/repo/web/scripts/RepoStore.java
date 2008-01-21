@@ -673,7 +673,15 @@ public class RepoStore implements Store
          */
 		public String getPath()
 		{
-            return repoStore + "/" + baseDir + "/" + path;
+            return repoStore + baseDir + "/" + path;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.alfresco.web.scripts.ScriptContent#getPathDescription()
+		 */
+		public String getPathDescription()
+		{
+		    return "/" + path + " (in repository store " + repoStore.toString() + baseDir + ")";
 		}
     }
 

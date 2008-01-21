@@ -93,7 +93,10 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
         {
             authenticationService.createAuthentication(USER_NAME, PWD.toCharArray());
         }
-                 
+             
+        // Authenticate - as admin
+        authenticationService.authenticate(USER_NAME, PWD.toCharArray());
+        
         // Store test messages in repo
         String pattern = "classpath*:" + BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME + "*";
         
@@ -109,9 +112,6 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
                 addMessageResource(rootNodeRef, filename, resources[i].getInputStream());                
             }
         }
-        
-        // Authenticate
-        authenticationService.authenticate(USER_NAME, PWD.toCharArray());
     }
     
     private void addMessageResource(NodeRef rootNodeRef, String name, InputStream resourceStream) throws Exception

@@ -323,29 +323,14 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     
                     for (NodeRef messageResource : nodeRefs)
                     {
-                        String name = (String) nodeService.getProperty(
+                        String resourceName = (String) nodeService.getProperty(
                                 messageResource, ContentModel.PROP_NAME);
-    
-                        // convert resource file name to a resource bundle basename
-                        // e.g. either 'workflow_fr_FR.properties' or 'workflow.properties' should be converted to 'workflow'
-                        // note: this assumes that the baseName itself does not contain underscore !
-                        int idx = name.indexOf("_");
-                        if (idx > 0)
+                        
+                        String bundleBaseName = messageService.getBaseBundleName(resourceName);
+                        
+                        if (!resourceBundleBaseNames.contains(bundleBaseName))
                         {
-                            name = name.substring(0, idx - 1);
-                        }
-                        else
-                        {                       
-	                        int idx1 = name.indexOf(".");
-	                        if (idx1 > 0)
-	                        {
-	                            name = name.substring(0, idx1);
-	                        }
-                        }
-    
-                        if (!resourceBundleBaseNames.contains(name))
-                        {
-                            resourceBundleBaseNames.add(name);
+                            resourceBundleBaseNames.add(bundleBaseName);
                         }
                     }
     

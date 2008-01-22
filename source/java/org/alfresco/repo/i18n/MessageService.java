@@ -153,4 +153,7 @@ public interface MessageService extends TenantDeployer
      * @param messageDeployer
      */
     public void register(MessageDeployer messageDeployer);
+    
+    public String getBaseBundleName(String resourceName);
+    
 }

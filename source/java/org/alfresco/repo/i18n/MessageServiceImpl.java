@@ -925,4 +925,28 @@ public class MessageServiceImpl implements MessageService
             }
         }
     }
+    
+    public String getBaseBundleName(String resourceName)
+    {
+        // convert resource file name to a resource bundle basename
+        // e.g. either 'workflow_fr_FR.properties' or 'workflow.properties' should be converted to 'workflow'
+        // note: this assumes that the baseName itself does not contain underscore !
+    	
+    	String bundleBaseName = resourceName;
+        int idx = resourceName.indexOf("_");
+        if (idx > 0)
+        {
+        	bundleBaseName = resourceName.substring(0, idx - 1);
+        }
+        else
+        {                       
+            int idx1 = resourceName.indexOf(".");
+            if (idx1 > 0)
+            {
+            	bundleBaseName = resourceName.substring(0, idx1);
+            }
+        }
+        
+        return bundleBaseName;
+    }
 }

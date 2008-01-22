@@ -729,18 +729,27 @@ public class RepoAdminServiceImpl implements RepoAdminService
              
             List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoMessagesLocation.getPath()+CRITERIA_ALL, null, namespaceService, false);
                     
+            boolean found = false;
             for (NodeRef nodeRef : nodeRefs)
             {
-                String customLabelName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String resourceName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 
-                if (customLabelName.startsWith(bundleBaseName))
+                if (bundleBaseName.equals(messageService.getBaseBundleName(resourceName)))
                 {
                     // remove message resource file from the repository
-                    nodeService.deleteNode(nodeRef); 
+                    nodeService.deleteNode(nodeRef);
+                    found = true; // continue to undeploy any others
                 }               
             }           
-            
-            logger.info("Message resources undeployed: " + bundleBaseName);
+
+            if (found)
+            {          
+                logger.info("Message resources undeployed: " + bundleBaseName);
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Could not find message resource bundle " + repoBundlePath);
+            }
         }
         catch (Throwable t)
         {
@@ -771,9 +780,9 @@ public class RepoAdminServiceImpl implements RepoAdminService
             boolean found = false;
             for (NodeRef nodeRef : nodeRefs)
             {
-                String customLabelName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String resourceName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 
-                if (customLabelName.startsWith(bundleBaseName))
+                if (bundleBaseName.equals(messageService.getBaseBundleName(resourceName)))
                 {
                     found = true;
                     break;
@@ -807,7 +816,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         if (bundleBaseName.indexOf("_") != -1)
         {
-            // currently limited due to parser in DictionaryRepositoryBootstrap
+            // currently limited due to parser in MessageServiceImpl.getBaseBundleName
             throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '_' (underscore)");  
         }
         

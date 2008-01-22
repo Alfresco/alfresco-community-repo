@@ -375,10 +375,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
-        if ((value != null) && (value == true))
+        if (nodeService.getType(nodeRef).equals(ContentModel.TYPE_DICTIONARY_MODEL))
         {
-            queueModel(nodeRef);
+	        Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+	        if ((value != null) && (value == true))
+	        {
+	            queueModel(nodeRef);
+	        }
         }
     }
     

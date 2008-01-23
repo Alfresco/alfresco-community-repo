@@ -47,7 +47,7 @@
     <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
       <property name="namespaceDAO" ref="namespaceDAO"/>
-      <property name="nodeService" ref="NodeService"/> 
+      <property name="nodeService" ref="nodeService"/>
       <property name="contentService" ref="contentService"/>
       <property name="policyComponent" ref="policyComponent"/>
       <property name="workflowService" ref="WorkflowService"/>

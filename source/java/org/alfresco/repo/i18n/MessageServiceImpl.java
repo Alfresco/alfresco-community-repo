@@ -936,7 +936,7 @@ public class MessageServiceImpl implements MessageService
         int idx = resourceName.indexOf("_");
         if (idx > 0)
         {
-        	bundleBaseName = resourceName.substring(0, idx - 1);
+        	bundleBaseName = resourceName.substring(0, idx);
         }
         else
         {                       

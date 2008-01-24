@@ -24,23 +24,34 @@
  */
 package org.alfresco.repo.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.view.ImporterException;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
@@ -75,7 +86,14 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private List<String> models = new ArrayList<String>();
     private List<String> resourceBundles = new ArrayList<String>();
     private TenantService tenantService;
+    
+    private NodeService nodeService;
+    private NamespaceService namespaceService;
+    private SearchService searchService;
+    private RepositoryLocation repoWorkflowDefsLocation;
 
+    public final static String CRITERIA_ALL = "/*"; // immediate children only
+    public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
     
     /**
      * Set whether we write or not
@@ -172,6 +190,28 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     {
         return this.workflowDefinitions;
     }
+    
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    public void setRepositoryWorkflowDefsLocations(RepositoryLocation repoWorkflowDefsLocation)
+    {
+        this.repoWorkflowDefsLocation = repoWorkflowDefsLocation;
+    }
+    
         
     /**
      * Deploy the Workflow Definitions
@@ -258,6 +298,22 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     }
                 }
             }
+            
+            // deploy workflow definitions from repository (if any)
+            if (repoWorkflowDefsLocation != null)
+            {
+                StoreRef storeRef = repoWorkflowDefsLocation.getStoreRef();
+                NodeRef rootNode = nodeService.getRootNode(storeRef);
+                List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoWorkflowDefsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfWorkflowDefinitionType+"]", null, namespaceService, false);
+
+                if (nodeRefs.size() > 0)
+                {
+                    for (NodeRef nodeRef : nodeRefs)
+                    {
+                    	deploy(nodeRef, false);
+        			}
+        	    }
+            }
                 
             userTransaction.commit();
         }
@@ -276,6 +332,94 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         }
     }
 
+    public void deploy(NodeRef nodeRef, boolean redeploy)
+    {
+        // Ignore if the node is a working copy 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {
+            Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
+            if ((value != null) && (value.booleanValue() == true))
+            {            
+            	 if (!redeploy && workflowService.isDefinitionDeployed(nodeRef))
+                 {
+                     if (logger.isDebugEnabled())
+                     {
+                         logger.debug("Workflow deployer: Definition '" + nodeRef + "' already deployed");
+                     }
+                 }
+                 else
+                 {
+                	 // deploy / re-deploy
+                     WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
+                     if (logger.isInfoEnabled())
+                     {
+                         logger.info("Workflow deployer: Deployed process definition '" + deployment.definition.title + "' (version " + deployment.definition.version + ") from '" + nodeRef + "' with " + deployment.problems.length + " problems");
+                     }
+	                 if (deployment != null)
+	                 {
+	                	 WorkflowDefinition def = deployment.definition;
+	                    
+	                	 // Update the meta data for the model
+	                	 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+						
+	                	 props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
+						
+	                	 // TODO - ability to return and handle deployment problems / warnings
+	                	 if (deployment.problems.length > 0)
+	                	 {
+	                		 for (String problem : deployment.problems)
+	                		 {
+	                			 logger.warn(problem);
+	                		 }
+	                	 }
+						
+	                	 nodeService.setProperties(nodeRef, props);
+	                }
+	            }
+            }
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+            	logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
+            }
+        }
+    }
+    
+    public void undeploy(NodeRef nodeRef)
+    {
+        // Ignore if the node is a working copy 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {
+            String defName = (String)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
+            if (defName != null)
+            {
+                // Undeploy the workflow definition - all versions in JBPM
+                List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
+                for (WorkflowDefinition def: defs)
+                {
+                	if (logger.isInfoEnabled())
+                    {
+                		logger.info("Undeploying workflow '" + defName + "' ...");
+                    }
+                    workflowService.undeployDefinition(def.getId());
+                	if (logger.isInfoEnabled())
+                    {
+                		logger.info("... undeployed '" + def.getId() + "' v" + def.getVersion());
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+            	logger.debug("Workflow deployer: Definition '" + nodeRef + "' not undeployed since it is a working copy");
+            }
+        }
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {

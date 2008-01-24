@@ -302,6 +302,7 @@
                <value>alfresco/workflow/wcm-workflow-messages</value>
 			</list>
 		</property>
+		<property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
 	</bean>
 
     <!-- Bootstrap any extensions -->

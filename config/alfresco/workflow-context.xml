@@ -14,7 +14,10 @@
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
       <property name="allowWrite">
       	<value>${server.transaction.allow-writes}</value>
-      </property>      
+      </property>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
@@ -109,8 +112,8 @@
    <!-- Workflow Patch Deployer -->
    <bean id="workflowPatchDeployer" parent="workflowDeployer" singleton="false"/>
    
-   <!-- Deploy any additional workflows definitions from repo (used by MT import) -->
-   <!-- note: needs to match bootstrap-context.xml locations ( customWorkflowDefsSpace.xml) -->
+   <!-- Deploy any additional workflows definitions from repo -->
+   <!-- note: needs to match bootstrap-context.xml locations (customWorkflowDefsSpace.xml) -->
    <bean id="customWorkflowDefsRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
         <!-- other properties will be defaulted, but can be overriden here -->
         <property name="path">
@@ -120,9 +123,8 @@
    
    <!--  Workflow Definition Type (bpm:workflowDefinition) -->
    <bean id="workflowDefinitionType" class="org.alfresco.repo.workflow.WorkflowDefinitionType" init-method="init">
-      <property name="nodeService" ref="NodeService"/> 
       <property name="policyComponent" ref="policyComponent"/>
-      <property name="workflowService" ref="WorkflowService"/>
+      <property name="workflowDeployer" ref="workflowBootstrap"/>
    </bean>
    
 </beans>

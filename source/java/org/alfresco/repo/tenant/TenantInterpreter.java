@@ -239,16 +239,8 @@ public class TenantInterpreter extends BaseInterpreter
             }
             
             String newTenant = new String(command[1]).toLowerCase();
-
-            String tenantAdminUsername = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, newTenant);
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-                            tenantAdminService.bootstrapWorkflows();
-                            return null;
-                        }
-                    }, tenantAdminUsername);
+            
+            tenantAdminService.bootstrapWorkflows(newTenant);
             
             out.println("bootstrap workflows deployed for tenant: " + newTenant);        
         }   

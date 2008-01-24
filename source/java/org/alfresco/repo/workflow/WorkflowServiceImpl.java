@@ -143,7 +143,23 @@ public class WorkflowServiceImpl implements WorkflowService
         
         return deployment;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isDefinitionDeployed(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isDefinitionDeployed(NodeRef workflowDefinition)
+    {
+        if (! nodeService.getType(workflowDefinition).equals(WorkflowModel.TYPE_WORKFLOW_DEF))
+        {
+            throw new WorkflowException("Node " + workflowDefinition + " is not of type 'bpm:workflowDefinition'");
+        }
+        
+        String engineId = (String)nodeService.getProperty(workflowDefinition, WorkflowModel.PROP_WORKFLOW_DEF_ENGINE_ID);
+        ContentReader contentReader = contentService.getReader(workflowDefinition, ContentModel.PROP_CONTENT);
 
+        return isDefinitionDeployed(engineId, contentReader.getContentInputStream(), contentReader.getMimetype());
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#isDefinitionDeployed(java.lang.String, java.io.InputStream, java.lang.String)
      */

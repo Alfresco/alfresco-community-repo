@@ -78,6 +78,18 @@ public interface WorkflowService
      * Note: the notion of "already deployed" may differ between bpm engines. For example,
      *       different versions of the same process may be considered equal.
      *       
+     * @param  workflowDefinition  the content object containing the definition
+     * @return  true => already deployed
+     */
+    @Auditable(parameters = {"definitionContent"})
+    public boolean isDefinitionDeployed(NodeRef workflowDefinition);
+    
+    /**
+     * Is the specified Workflow Definition already deployed?
+     * 
+     * Note: the notion of "already deployed" may differ between bpm engines. For example,
+     *       different versions of the same process may be considered equal.
+     *       
      * @param  engineId  the bpm engine id
      * @param  workflowDefinition  the definition to check
      * @param  mimetype  the mimetype of the definition

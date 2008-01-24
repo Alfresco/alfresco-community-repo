@@ -47,7 +47,7 @@ public interface TenantAdminService extends TenantDeployerService
     
     public boolean existsTenant(String tenantDomain);
     
-    public void bootstrapWorkflows();
+    public void bootstrapWorkflows(String tenantDomain);
     
     public void deleteTenant(String tenantDomain);
     

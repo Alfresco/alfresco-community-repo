@@ -25,7 +25,6 @@
 package org.alfresco.repo.tenant;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -46,30 +45,24 @@ import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.repo.content.TenantRoutingFileContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
-import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.workflow.WorkflowDefinitionType;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.ClassPathResource;
 
 /**
  * MT Admin Service Implementation.
@@ -93,10 +86,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private TenantRoutingFileContentStore tenantFileContentStore;
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
-    private NamespaceService namespaceService;
-    private SearchService searchService;
-    private RepositoryLocation repoWorkflowDefsLocation;
-    private WorkflowDefinitionType workflowDefinitionType;
+    private WorkflowDeployer workflowDeployer;
     
 
     protected final static String REGEX_VALID_TENANT_NAME = "^[a-zA-Z0-9]([a-zA-Z0-9]|.[a-zA-Z0-9])*$"; // note: must also be a valid filename
@@ -156,24 +146,9 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         this.repositoryExporterService = repositoryExporterService;
     }
     
-    public void setNamespaceService(NamespaceService namespaceService)
+    public void setWorkflowDeployer(WorkflowDeployer workflowDeployer)
     {
-        this.namespaceService = namespaceService;
-    }
-    
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-    
-    public void setRepositoryWorkflowDefsLocations(RepositoryLocation repoWorkflowDefsLocation)
-    {
-        this.repoWorkflowDefsLocation = repoWorkflowDefsLocation;
-    }
-    
-    public void setWorkflowDefinitionType(WorkflowDefinitionType workflowDefinitionType)
-    {
-        this.workflowDefinitionType = workflowDefinitionType;
+        this.workflowDeployer = workflowDeployer;
     }
     
     
@@ -192,9 +167,6 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private static final String TENANT_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
     
     private static final String ADMIN_BASENAME = TenantService.ADMIN_BASENAME;
-    
-    public final static String CRITERIA_ALL = "/*"; // immediate children only
-    public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
 
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
 
@@ -577,48 +549,18 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         return new Tenant(tenantDomain, isEnabledTenant(tenantDomain), getRootContentStoreDir(tenantDomain));
     }
         
-    public void bootstrapWorkflows()
+    public void bootstrapWorkflows(String tenantDomain)
     {
-        // use this to deploy standard workflow process defs to the JBPM engine
-        WorkflowDeployer workflowBootstrap = (WorkflowDeployer)getApplicationContext().getBean("workflowBootstrap");
-        
-        String resourceClasspath = null;
-
-        // Workflow process definitions
-        try
-        {
-            List<Properties> workflowDefs = workflowBootstrap.getWorkflowDefinitions();
-            if (workflowDefs != null)
-            {              
-                for (Properties workflowDefProps : workflowDefs)
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
-                    resourceClasspath = workflowDefProps.getProperty(WorkflowDeployer.LOCATION);
-                    ClassPathResource resource = new ClassPathResource(resourceClasspath);
-                    workflowService.deployDefinition(workflowDefProps.getProperty(WorkflowDeployer.ENGINE_ID), resource.getInputStream(), workflowDefProps.getProperty(WorkflowDeployer.MIMETYPE));
-                }   
-            }
-        } 
-        catch (IOException ioe)
-        {
-            throw new AlfrescoRuntimeException("Failed to find workflow process def: " + resourceClasspath);
-        }               
+                    public Object doWork()
+                    {
+                        workflowDeployer.init();
+                        return null;
+                    }
+                }, getTenantAdminUser(tenantDomain));
         
-        // in case of import, also deploy any custom workflow definitions defined in the repo
-        // TODO refactor/review repository bootstrap order of undeployed workflow definitions
-        
-        StoreRef storeRef = repoWorkflowDefsLocation.getStoreRef();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoWorkflowDefsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfWorkflowDefinitionType+"]", null, namespaceService, false);
-
-        if (nodeRefs.size() > 0)
-        {
-            for (NodeRef nodeRef : nodeRefs)
-            {
-            	workflowDefinitionType.deploy(nodeRef);
-			}
-	    }
-        
-        logger.info("Tenant workflows bootstrapped: " + tenantService.getCurrentUserDomain());
+        logger.info("Tenant workflows bootstrapped: " + tenantDomain);
     }
     
     /**

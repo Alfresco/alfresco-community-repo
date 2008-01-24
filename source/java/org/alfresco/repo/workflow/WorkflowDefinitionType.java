@@ -25,23 +25,15 @@
 package org.alfresco.repo.workflow;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowDeployment;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Workflow Definition type behaviour.
@@ -52,29 +44,11 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
                                             NodeServicePolicies.OnUpdatePropertiesPolicy,
                                             NodeServicePolicies.BeforeDeleteNodePolicy
 {
-    // logger
-    private static Log logger = LogFactory.getLog(WorkflowDefinitionType.class);
-    
-    /** The node service */
-    private NodeService nodeService;
-    
     /** The policy component */
     private PolicyComponent policyComponent;
-    
-    /** The workflow service */
-    private WorkflowService workflowService;
 
-
-    
-    /**
-     * Set the node service
-     * 
-     * @param nodeService       the node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+    /** The workflow deployer / undeployer */
+    private WorkflowDeployer workflowDeployer;
     
     /**
      * Set the policy component
@@ -87,15 +61,14 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
     }
     
     /**
-     * Set the workflow service
+     * Set the workflow deployer / undeployer
      *
-     * @param workflowService   the workflow service
+     * @param workflowDeployer   the workflow deployer / undeployer
      */
-    public void setWorkflowService(WorkflowService workflowService)
+    public void setWorkflowDeployer(WorkflowDeployer workflowDeployer)
     {
-        this.workflowService = workflowService;
+        this.workflowDeployer = workflowDeployer;
     }
-    
     
     /**
      * The initialise method     
@@ -128,7 +101,7 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        deploy(nodeRef);
+    	workflowDeployer.deploy(nodeRef, true);
     }
     
     /**
@@ -151,78 +124,23 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
         {
             if (afterValue.booleanValue() == true)
             {
-                deploy(nodeRef);
+            	workflowDeployer.deploy(nodeRef, true);
             }
             else
             {
-                undeploy(nodeRef);
+            	workflowDeployer.undeploy(nodeRef);
             }
         }
         else if (afterValue == null && beforeValue != null)
         {
             // Undeploy the definition since the value has been cleared
-            undeploy(nodeRef);
+        	workflowDeployer.undeploy(nodeRef);
         }
 
     }
     
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        undeploy(nodeRef);
-    }
-    
-    public void deploy(NodeRef nodeRef)
-    {
-        // Ignore if the node is a working copy 
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
-        {
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
-            if ((value != null) && (value.booleanValue() == true))
-            {            
-                // deploy / re-deploy
-                WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
-                
-                if (deployment != null)
-                {
-                    WorkflowDefinition def = deployment.definition;
-                    
-                    // Update the meta data for the model
-                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                    
-                    props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
-                    
-                    // TODO - ability to return and handle deployment problems / warnings
-                    if (deployment.problems.length > 0)
-                    {
-                        for (String problem : deployment.problems)
-                        {
-                            logger.warn(problem);
-                        }
-                    }
-        
-                    nodeService.setProperties(nodeRef, props);
-                }
-            }
-        }
-    }
-    
-    private void undeploy(NodeRef nodeRef)
-    {
-        // Ignore if the node is a working copy 
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
-        {
-            String defName = (String)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_NAME);
-            if (defName != null)
-            {
-                // Undeploy the workflow definition - all versions in JBPM
-                List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
-                for (WorkflowDefinition def: defs)
-                {
-                    logger.info("Undeploying workflow '" + defName + "' ...");
-                    workflowService.undeployDefinition(def.getId());
-                    logger.info("... undeployed '" + def.getId() + "' v" + def.getVersion());
-                }
-            }
-        }
+    	workflowDeployer.undeploy(nodeRef);
     }
 }

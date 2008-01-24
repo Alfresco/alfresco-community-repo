@@ -27,7 +27,7 @@ function tagActions(action, nodeId, tagName)
          }
       }
 
-      // Adding the tag to a node?
+      // Adding/removing the tag to/from a node?
       if ((nodeId != "") && (nodeId != null))
       {
          var node = search.findNode("workspace://SpacesStore/" + nodeId);
@@ -98,17 +98,9 @@ function tagActions(action, nodeId, tagName)
                   // Removed tag?
                   if (oldTags.length > tags.length)
                   {
-                     if (tags.length == 0)
-                     {
-                        node.addAspect("cm:taggable");
-                     }
-                     else
-                     {
-                        tagsArray = new Array();
-                        tagsArray["cm:taggable"] = tags;
-                        node.addAspect("cm:taggable", tagsArray);
-                     }
-                  
+                     tagsArray = new Array();
+                     tagsArray["cm:taggable"] = tags;
+                     node.addAspect("cm:taggable", tagsArray);
                      resultString = "Tag removed";
                      resultCode = true;
                   }

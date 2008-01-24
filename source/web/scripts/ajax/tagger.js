@@ -503,7 +503,6 @@ var AlfTagger = new Class(
       {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
-         async: false,
          onComplete: function(r)
          {
             if (r.startsWith("ERROR:") == false)
@@ -572,7 +571,6 @@ var AlfTagger = new Class(
       {
          method: 'post',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
-         async: false,
          onComplete: function(r)
          {
             // Pull out the nodeRef of the tag

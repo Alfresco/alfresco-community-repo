@@ -492,7 +492,6 @@ var AlfPicker = new Class(
                (this.requestAttributes!=null ? ("&" + this.requestAttributes) : ""),
       {
          method: 'get',
-         async: false,
          onComplete: function(r)
          {
             if (r.startsWith("ERROR:") == false)

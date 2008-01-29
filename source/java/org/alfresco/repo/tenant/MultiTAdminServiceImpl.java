@@ -88,9 +88,37 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private RepositoryExporterService repositoryExporterService;
     private WorkflowDeployer workflowDeployer;
     
+    /*
+     * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
+     * They may also map onto domains and hence should allow valid FQDN.
+     *
+     *       The following PCRE-style
+     *       regex defines a valid label within a FQDN:
+     *
+     *          ^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$
+     *
+     *       Less formally:
+     *
+     *          o  Case insensitive
+     *          o  First/last character:  alphanumeric
+     *          o  Interior characters:   alphanumeric plus hyphen
+     *          o  Minimum length:        2  characters
+     *          o  Maximum length:        63 characters
+     *
+     *       The FQDN (fully qualified domain name) has the following constraints:
+     *
+     *          o  Maximum 255 characters (***)
+     *          o  Must contain at least one alpha
+     *          
+     *  Note: (***) Due to various internal restrictions (such as store identifier) we restrict tenant ids to 75 characters.
+     */
 
-    protected final static String REGEX_VALID_TENANT_NAME = "^[a-zA-Z0-9]([a-zA-Z0-9]|.[a-zA-Z0-9])*$"; // note: must also be a valid filename
+    protected final static String REGEX_VALID_DNS_LABEL = "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$";
     
+    protected final static String REGEX_CONTAINS_ALPHA = "^(.*)[a-zA-Z](.*)$";
+    
+    protected final static int MAX_LEN = 75;
+    	
     public void setNodeService(DbNodeServiceImpl dbNodeService)
     {
         this.nodeService = dbNodeService;
@@ -258,10 +286,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
         
-        if (! Pattern.matches(REGEX_VALID_TENANT_NAME, tenantDomain))
-        {
-            throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must match " + REGEX_VALID_TENANT_NAME + ")");
-        }
+        validateTenantName(tenantDomain);
         
         if (existsTenant(tenantDomain))
         {
@@ -342,10 +367,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
        // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
-        if (! Pattern.matches(REGEX_VALID_TENANT_NAME, tenantDomain))
-        {
-            throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must match " + REGEX_VALID_TENANT_NAME + ")");
-        }
+        validateTenantName(tenantDomain);
         
         if (existsTenant(tenantDomain))
         {
@@ -1057,6 +1079,38 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         else
         {
             throw new AlfrescoRuntimeException("No such tenant " + tenantDomain);
+        }
+    }
+    
+    private void validateTenantName(String tenantDomain)
+    {
+        if (tenantDomain.length() > MAX_LEN)
+        {
+        	throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must be less than " + MAX_LEN + " characters)");
+        }
+        
+        if (! Pattern.matches(REGEX_CONTAINS_ALPHA, tenantDomain))
+        {
+        	throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must contain at least one alpha character)");
+        }
+        
+        String[] dnsLabels = tenantDomain.split("\\.");
+        if (dnsLabels.length != 0)
+        {
+	        for (int i = 0; i < dnsLabels.length; i++)
+	        {
+		        if (! Pattern.matches(REGEX_VALID_DNS_LABEL, dnsLabels[i]))
+		        {
+		        	throw new IllegalArgumentException(dnsLabels[i] + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
+		        }
+	        }
+        }
+        else
+        {
+	        if (! Pattern.matches(REGEX_VALID_DNS_LABEL, tenantDomain))
+	        {
+	        	throw new IllegalArgumentException(tenantDomain + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
+	        }
         }
     }
     

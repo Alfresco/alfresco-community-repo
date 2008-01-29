@@ -470,7 +470,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ChildAssoc oldAssoc = nodeDaoService.getPrimaryParentAssoc(nodeToMove);
         ChildAssociationRef oldAssocRef = oldAssoc.getChildAssocRef();
         
-        boolean movingStore = !nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef());
+        // AR-2023, need to push down
+        boolean movingStore = !tenantService.getName(nodeToMoveRef.getStoreRef()).equals(tenantService.getName(newParentRef.getStoreRef()));
         
         // data needed for policy invocation
         QName nodeToMoveTypeQName = nodeToMove.getTypeQName();

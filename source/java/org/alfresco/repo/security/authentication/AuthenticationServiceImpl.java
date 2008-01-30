@@ -174,12 +174,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
 
     public boolean isCurrentUserTheSystemUser()
     {
-        String userName = getCurrentUserName();
-        if ((userName != null) && userName.equals(authenticationComponent.getSystemUserName()))
-        {
-            return true;
-        }
-        return false;
+        return authenticationComponent.isSystemUserName(getCurrentUserName());
     }
 
     public void authenticateAsGuest() throws AuthenticationException

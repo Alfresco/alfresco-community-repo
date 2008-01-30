@@ -69,6 +69,12 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="tenantDeployerService">
+            <ref bean="tenantAdminService" />
+        </property>
     </bean>
     
     <!-- Example patches -->

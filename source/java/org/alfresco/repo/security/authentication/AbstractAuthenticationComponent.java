@@ -190,7 +190,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Set the system user as the current user.
+     * Set the system user as the current user
+     * note: for MT, will set to default domain only
      * 
      * @return Authentication
      */
@@ -201,6 +202,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     /**
      * Get the name of the system user
+     * note: for MT, will get system for default domain only
      * 
      * @return String
      */
@@ -208,10 +210,22 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         return AuthenticationUtil.SYSTEM_USER_NAME;
     }
+    
+    /**
+     * Is this the system user ?
+     *
+     * @return boolean
+	 */
+    public boolean isSystemUserName(String userName)
+    {
+    	return ((userName != null) && tenantService.getBaseNameUser(userName).equals(getSystemUserName()));
+    }
 
     /**
      * Get the name of the Guest User
      * note: for MT, will get guest for default domain only
+     * 
+     * @return String
      */
     public String getGuestUserName()
     {

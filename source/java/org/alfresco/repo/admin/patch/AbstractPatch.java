@@ -33,6 +33,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.Tenant;
+import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -70,6 +74,7 @@ public abstract class AbstractPatch implements Patch
     private List<Patch> dependsOn;
     /** flag indicating if the patch was successfully applied */
     private boolean applied;
+    private boolean applyToTenants = true; // by default, apply to each tenant, if tenant service is enabled
     /** the service to register ourselves with */
     private PatchService patchService;
     /** used to ensure a unique transaction per execution */
@@ -82,6 +87,11 @@ public abstract class AbstractPatch implements Patch
     protected SearchService searchService;
     /** support service */
     protected AuthenticationComponent authenticationComponent;
+    /** support service */
+    protected TenantService tenantService;
+    /** support service */
+    protected TenantDeployerService tenantDeployerService;
+    
 
     public AbstractPatch()
     {
@@ -152,6 +162,16 @@ public abstract class AbstractPatch implements Patch
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
     }
 
     /**
@@ -293,6 +313,11 @@ public abstract class AbstractPatch implements Patch
             throw new PatchException(ERR_PROPERTY_NOT_SET, name, this);
         }
     }
+    
+    public void setApplyToTenants(boolean applyToTenants)
+    {
+        this.applyToTenants = applyToTenants;
+    }
 
     /**
      * Check that the schema version properties have been set appropriately.
@@ -354,8 +379,30 @@ public abstract class AbstractPatch implements Patch
                             IntegrityChecker.setWarnInTransaction();
 
                             String report = applyInternal();
-                            // done
-                            return report;
+                            
+                        	if ((tenantService != null) && (tenantDeployerService != null) &&
+                        		tenantService.isEnabled() && applyToTenants)
+                            {
+                            	List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
+                                for (Tenant tenant : tenants)
+                                {          
+                                	String tenantDomain = tenant.getTenantDomain();
+                                	String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
+                                    {
+                                		public String doWork() throws Exception
+                                        {
+                                			return applyInternal();
+                                        }
+                                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                                	
+                                	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
+                                }
+                                
+                                return report;
+                            }
+
+	                        // done
+	                        return report;
                         }
                     };
                     return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork);

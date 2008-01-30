@@ -304,9 +304,24 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     {
         return AuthenticationUtil.SYSTEM_USER_NAME;
     }
+    
+    /**
+     * If any implementation supports System then System is allowed
+     */
+    public boolean isSystemUserName(String userName)
+    {
+        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
+        {
+            if (authComponent.isSystemUserName(userName))
+            {
+                return true;
+            }
+        }
+        return false; 	
+    }
 
     /**
-     * If any implementation supoprts guest then huest is allowed
+     * If any implementation supports guest then guest is allowed
      */
     public boolean guestUserAuthenticationAllowed()
     {

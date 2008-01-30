@@ -96,6 +96,10 @@ public interface AuthenticationComponent
      */
     public String getSystemUserName();
     
+    /**
+     * True if this is the System user ?
+     */
+    public boolean isSystemUserName(String userName);
     
     /**
      * Get the name of the guest user

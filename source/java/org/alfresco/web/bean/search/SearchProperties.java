@@ -34,9 +34,9 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ExpiringValueCache;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.AdvancedSearchConfigElement;
 

@@ -31,13 +31,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ExpiringValueCache;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;

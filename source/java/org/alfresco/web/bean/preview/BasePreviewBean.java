@@ -32,7 +32,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.ExpiringValueCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;

@@ -33,7 +33,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class ScriptLogger extends BaseProcessorExtension
 {
-    private static final Log    logger = LogFactory.getLog(ScriptLogger.class);
+    private static final Log logger = LogFactory.getLog(ScriptLogger.class);
+    private static final SystemOut systemOut = new SystemOut();
     
     public boolean isLoggingEnabled()
     {
@@ -44,4 +45,18 @@ public final class ScriptLogger extends BaseProcessorExtension
     {
         logger.debug(str);
     }
+
+    public SystemOut getSystem()
+    {
+        return systemOut;
+    }
+    
+    public static class SystemOut
+    {
+        public void out(String str)
+        {
+            System.out.println(str);
+        }
+    }
+
 }

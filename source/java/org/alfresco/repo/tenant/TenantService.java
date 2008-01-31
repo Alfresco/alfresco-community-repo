@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -52,6 +53,8 @@ public interface TenantService
     
     public StoreRef getName(StoreRef storeRef);
     
+    public ChildAssociationRef getName(ChildAssociationRef childAssocRef);
+    
     public StoreRef getName(String username, StoreRef storeRef);
     
     public QName getName(NodeRef inNodeRef, QName name);
@@ -63,6 +66,8 @@ public interface TenantService
     public NodeRef getBaseName(NodeRef nodeRef);
     
     public StoreRef getBaseName(StoreRef storeRef);
+    
+    public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef);
     
     public String getBaseName(String name);
     

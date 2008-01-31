@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -89,6 +90,19 @@ public class MultiTServiceImpl implements TenantService
         ParameterCheck.mandatory("StoreRef", storeRef);
         
         return new StoreRef(storeRef.getProtocol(), getName(storeRef.getIdentifier()));
+    }
+    
+    public ChildAssociationRef getName(ChildAssociationRef childAssocRef)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("ChildAssocRef", childAssocRef);
+        
+        return new ChildAssociationRef(childAssocRef.getTypeQName(),
+                getName(childAssocRef.getParentRef()),
+                childAssocRef.getQName(),
+                getName(childAssocRef.getChildRef()),
+                childAssocRef.isPrimary(), 
+                childAssocRef.getNthSibling());
     }
     
     public StoreRef getName(String username, StoreRef storeRef)
@@ -226,6 +240,19 @@ public class MultiTServiceImpl implements TenantService
         
         return new StoreRef(storeRef.getProtocol(), getBaseName(storeRef.getIdentifier()));
     } 
+    
+    public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("ChildAssocRef", childAssocRef);
+        
+        return new ChildAssociationRef(childAssocRef.getTypeQName(),
+                getBaseName(childAssocRef.getParentRef()),
+                childAssocRef.getQName(),
+                getBaseName(childAssocRef.getChildRef()),
+                childAssocRef.isPrimary(), 
+                childAssocRef.getNthSibling());
+    }
     
     public String getBaseName(String name)
     {  

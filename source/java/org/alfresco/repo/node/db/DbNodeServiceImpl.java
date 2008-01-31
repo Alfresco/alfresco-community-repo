@@ -759,7 +759,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeDeleteNode(nodeRef);
         
         // get the primary parent-child relationship before it is gone
-        ChildAssociationRef childAssocRef = getPrimaryParent(nodeRef);
+        ChildAssociationRef childAssocRef = tenantService.getName(getPrimaryParent(nodeRef)); //note: tenant-specific for re-indexing
         // get type and aspect QNames as they will be unavailable after the delete
         QName nodeTypeQName = node.getTypeQName();
         Set<QName> nodeAspectQNames = node.getAspects();
@@ -1255,13 +1255,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 // no match - ignore
                 continue;
             }
-            ChildAssociationRef childAssocRef = new ChildAssociationRef(
-                    assoc.getChildAssocRef().getTypeQName(),
-                    tenantService.getBaseName(assoc.getChildAssocRef().getParentRef()),
-                    assoc.getChildAssocRef().getQName(),
-                    tenantService.getBaseName(assoc.getChildAssocRef().getChildRef()),
-                    assoc.getChildAssocRef().isPrimary(),
-                    assoc.getChildAssocRef().getNthSibling());     
+            ChildAssociationRef childAssocRef = tenantService.getBaseName(assoc.getChildAssocRef());  
             results.add(childAssocRef);
         }
         // done
@@ -1357,12 +1351,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
-            assocRef = new ChildAssociationRef(assoc.getChildAssocRef().getTypeQName(),
-                                               tenantService.getBaseName(assoc.getChildAssocRef().getParentRef()),
-                                               assoc.getChildAssocRef().getQName(),
-                                               tenantService.getBaseName(assoc.getChildAssocRef().getChildRef()),
-                                               assoc.getChildAssocRef().isPrimary(), 
-                                               assoc.getChildAssocRef().getNthSibling());
+            assocRef = tenantService.getBaseName(assoc.getChildAssocRef());
         }
         return assocRef;
     }

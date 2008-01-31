@@ -101,7 +101,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
    
     public void init()
     {
-        String tenantDomain = "";
+        String tenantDomain = TenantService.DEFAULT_DOMAIN;
         String rootDir = defaultRootDirectory;
         
         Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());

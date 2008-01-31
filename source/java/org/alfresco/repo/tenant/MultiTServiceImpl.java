@@ -485,9 +485,12 @@ public class MultiTServiceImpl implements TenantService
     {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("baseUsername", baseUsername);
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
-        if (! tenantDomain.equals(DEFAULT_DOMAIN))
+        if ((tenantDomain == null) || (tenantDomain.equals(DEFAULT_DOMAIN)))
+        {
+        	return baseUsername;
+        }
+        else
         {
             if (baseUsername.contains(SEPARATOR))
             {
@@ -500,10 +503,6 @@ public class MultiTServiceImpl implements TenantService
             }
             
             return baseUsername + SEPARATOR + tenantDomain;
-        }
-        else
-        {
-            return baseUsername;
         }
     }
     

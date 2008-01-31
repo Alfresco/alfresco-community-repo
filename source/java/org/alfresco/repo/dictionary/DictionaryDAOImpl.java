@@ -188,17 +188,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
 		{
 			logger.debug("Resetting dictionary ...");
 		}
-		    
-		String userName;
-		if (tenantDomain == "")
-		{
-			userName = AuthenticationUtil.getSystemUserName();
-		}
-		else
-		{
-			userName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
-		}
-		   
+        
 		AuthenticationUtil.runAs(new RunAsWork<Object>()
 		{
 			public Object doWork()
@@ -208,7 +198,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
 		       
 		       return null;
 			}                               
-		}, userName);
+		}, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
 		
 		if (logger.isDebugEnabled()) 
 		{

@@ -815,17 +815,7 @@ public class MessageServiceImpl implements MessageService
         {
             logger.debug("Resetting messages ...");
         }
-       
-        String userName;
-        if (tenantDomain == "")
-        {
-            userName = AuthenticationUtil.getSystemUserName();
-        }
-        else
-        {
-            userName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
-        }
-       
+        
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork()
@@ -840,7 +830,7 @@ public class MessageServiceImpl implements MessageService
                
                 return null;
             }                               
-        }, userName);
+        }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
     
         if (logger.isDebugEnabled()) 
         {

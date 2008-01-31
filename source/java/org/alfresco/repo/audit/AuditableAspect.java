@@ -222,7 +222,11 @@ public class AuditableAspect
         String currentUserName = authenticationService.getCurrentUserName();
         if (currentUserName != null)
         {
-           return currentUserName;
+            if (tenantService.isEnabled() && authenticationService.isCurrentUserTheSystemUser())
+            {
+            	return tenantService.getBaseNameUser(currentUserName);
+        	}
+            return currentUserName;
         }
         return USERNAME_UNKNOWN;
     }

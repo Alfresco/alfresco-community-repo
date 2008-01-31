@@ -224,26 +224,23 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             int enabledCount = 0;
             int disabledCount = 0;
             
-            if (tenants != null)
-            {
-                for (Tenant tenant : tenants)
-                {                    
-                    if (tenant.isEnabled())
-                    {
-                        // this will also call tenant deployers registered so far ...
-                        enableTenant(tenant.getTenantDomain(), true);
-                        enabledCount++;
-                    }
-                    else
-                    {
-                        // explicitly disable, without calling disableTenant callback
-                        disableTenant(tenant.getTenantDomain(), false);
-                        disabledCount++;
-                    }
-                } 
-                
-                tenantService.register(this); // callback to refresh tenantStatus cache
-            }
+            for (Tenant tenant : tenants)
+            {                    
+                if (tenant.isEnabled())
+                {
+                    // this will also call tenant deployers registered so far ...
+                    enableTenant(tenant.getTenantDomain(), true);
+                    enabledCount++;
+                }
+                else
+                {
+                    // explicitly disable, without calling disableTenant callback
+                    disableTenant(tenant.getTenantDomain(), false);
+                    disabledCount++;
+                }
+            } 
+            
+            tenantService.register(this); // callback to refresh tenantStatus cache
             
             userTransaction.commit();
             
@@ -336,7 +333,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             
                             return null;
                         }                               
-                    }, getTenantAdminUser(tenantDomain));
+                    }, getSystemUser(tenantDomain));
         }
 
         logger.info("Tenant created: " + tenantDomain);
@@ -354,7 +351,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                     	repositoryExporterService.export(directoryDestination, tenantDomain);
                         return null;
                     }                               
-                }, getTenantAdminUser(tenantDomain));
+                }, getSystemUser(tenantDomain));
         
         logger.info("Tenant exported: " + tenantDomain);
     }
@@ -409,7 +406,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             
                             return null;
                         }                               
-                    }, getTenantAdminUser(tenantDomain));
+                    }, getSystemUser(tenantDomain));
         }
 
         logger.info("Tenant imported: " + tenantDomain);
@@ -489,7 +486,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             }
                             return null;
                         }
-                    }, getTenantAdminUser(tenantDomain));
+                    }, getSystemUser(tenantDomain));
         }
         
         logger.info("Tenant enabled: " + tenantDomain);
@@ -520,7 +517,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             }
                             return null;
                         }
-                    }, getTenantAdminUser(tenantDomain));
+                    }, getSystemUser(tenantDomain));
         }
         
         // update tenant attributes / tenant cache - need to disable after notifying listeners (else they cannot disable) 
@@ -580,7 +577,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                         workflowDeployer.init();
                         return null;
                     }
-                }, getTenantAdminUser(tenantDomain));
+                }, getSystemUser(tenantDomain));
         
         logger.info("Tenant workflows bootstrapped: " + tenantDomain);
     }
@@ -598,8 +595,6 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         {                        
             try 
             {
-                final String tenantAdminUser = getTenantAdminUser(tenantDomain);
-                
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
                     public Object doWork()
@@ -633,8 +628,9 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                        
                         return null;
                     }
-                }, tenantAdminUser);
+                }, getSystemUser(tenantDomain));
                 
+                final String tenantAdminUser = getTenantAdminUser(tenantDomain);
                 
                 // delete tenant-specific stores
                 nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES)));
@@ -655,7 +651,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                         }
                         return null;
                     }
-                }, tenantAdminUser);
+                }, getSystemUser(tenantDomain));
                 
                 // remove tenant
                 attributeService.removeAttribute(TENANTS_ATTRIBUTE_PATH, tenantDomain);
@@ -911,46 +907,43 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                            
             String currentUser = AuthenticationUtil.getCurrentUserName();
             
-            if (tenants != null)
+            try 
             {
-                try 
-                {
-                    for (Tenant tenant : tenants)
-                    { 
-                        if (tenant.isEnabled()) 
-                        {
-                            try
-                            {     
-                                // switch to admin in order to deploy within context of tenant domain
-                                // assumes each tenant has default "admin" user                       
-                                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                                {
-                                    public Object doWork()
-                                    {            
-                                        // init the service within tenant context
-                                        deployer.init();
-                                        return null;
-                                    }                               
-                                }, getTenantAdminUser(tenant.getTenantDomain()));
-                            
-                            }       
-                            catch (Throwable e)
+                for (Tenant tenant : tenants)
+                { 
+                    if (tenant.isEnabled()) 
+                    {
+                        try
+                        {     
+                            // switch to admin in order to deploy within context of tenant domain
+                            // assumes each tenant has default "admin" user                       
+                            AuthenticationUtil.runAs(new RunAsWork<Object>()
                             {
-                                logger.error("Deployment failed" + e);
-                                
-                                StringWriter stringWriter = new StringWriter();
-                                e.printStackTrace(new PrintWriter(stringWriter));
-                                logger.error(stringWriter.toString());
-                                
-                                // tenant deploy failure should not necessarily affect other tenants
-                            }
+                                public Object doWork()
+                                {            
+                                    // init the service within tenant context
+                                    deployer.init();
+                                    return null;
+                                }                               
+                            }, getSystemUser(tenant.getTenantDomain()));
+                        
+                        }       
+                        catch (Throwable e)
+                        {
+                            logger.error("Deployment failed" + e);
+                            
+                            StringWriter stringWriter = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stringWriter));
+                            logger.error(stringWriter.toString());
+                            
+                            // tenant deploy failure should not necessarily affect other tenants
                         }
                     }
                 }
-                finally
-                {    
-                    if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
-                }
+            }
+            finally
+            {    
+                if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
             }
         }
     }
@@ -988,46 +981,43 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                            
             String currentUser = AuthenticationUtil.getCurrentUserName();
             
-            if (tenants != null)
+            try 
             {
-                try 
-                {
-                    for (Tenant tenant : tenants)
-                    { 
-                        if (tenant.isEnabled()) 
+                for (Tenant tenant : tenants)
+                { 
+                    if (tenant.isEnabled()) 
+                    {
+                        try
                         {
-                            try
+                            // switch to admin in order to deploy within context of tenant domain
+                            // assumes each tenant has default "admin" user
+                            AuthenticationUtil.runAs(new RunAsWork<Object>()
                             {
-                                // switch to admin in order to deploy within context of tenant domain
-                                // assumes each tenant has default "admin" user
-                                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                                {
-                                    public Object doWork()
-                                    {            
-                                        // destroy the service within tenant context
-                                        deployer.destroy();
-                                        return null;
-                                    }                               
-                                }, getTenantAdminUser(tenant.getTenantDomain()));
+                                public Object doWork()
+                                {            
+                                    // destroy the service within tenant context
+                                    deployer.destroy();
+                                    return null;
+                                }                               
+                            }, getSystemUser(tenant.getTenantDomain()));
+                        
+                        }       
+                        catch (Throwable e)
+                        {
+                            logger.error("Undeployment failed" + e);
                             
-                            }       
-                            catch (Throwable e)
-                            {
-                                logger.error("Undeployment failed" + e);
-                                
-                                StringWriter stringWriter = new StringWriter();
-                                e.printStackTrace(new PrintWriter(stringWriter));
-                                logger.error(stringWriter.toString());
-                                
-                                // tenant undeploy failure should not necessarily affect other tenants
-                            }
+                            StringWriter stringWriter = new StringWriter();
+                            e.printStackTrace(new PrintWriter(stringWriter));
+                            logger.error(stringWriter.toString());
+                            
+                            // tenant undeploy failure should not necessarily affect other tenants
                         }
                     }
                 }
-                finally
-                {    
-                    if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
-                }
+            }
+            finally
+            {    
+                if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
             }
         }
     }   
@@ -1114,13 +1104,18 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         }
     }
     
-    // local helper
+    // local helpers
+    
+    private String getSystemUser(String tenantDomain)
+    {
+        return tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
+    }
+    
     private String getTenantAdminUser(String tenantDomain)
     {
         return tenantService.getDomainUser(ADMIN_BASENAME, tenantDomain);
     }
-    
-    // local helper
+
     private String getTenantGuestUser(String tenantDomain)
     {
         return tenantService.getDomainUser(authenticationComponent.getGuestUserName(), tenantDomain);

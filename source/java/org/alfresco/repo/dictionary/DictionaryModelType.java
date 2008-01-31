@@ -584,36 +584,31 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         if (tenantService.isEnabled() && tenantService.isTenantUser() == false)  
         {
             // shared model - need to check all tenants (whether enabled or disabled) unless they have overridden
-            List<Tenant> tenants = tenantDeployerService.getAllTenants();
-              
-            if (tenants != null)
+            List<Tenant> tenants = tenantDeployerService.getAllTenants();              
+            for (Tenant tenant : tenants)
             {
-                for (Tenant tenant : tenants)
+                // validate model delete within context of tenant domain                    
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
-                    // switch to admin in order to validate model delete within context of tenant domain
-                    // assumes each tenant has default "admin" user                       
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    public Object doWork()
                     {
-                        public Object doWork()
+                        if (dictionaryDAO.isModelInherited(modelName))
                         {
-                            if (dictionaryDAO.isModelInherited(modelName))
-                            {
-                                validateModelDelete(modelName, true);
-                            }
-                            return null;
-                        }                               
-                    }, tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenant.getTenantDomain()));
-                }
+                            validateModelDelete(modelName, true);
+                        }
+                        return null;
+                    }                               
+                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
         }
     }
     
     private void validateModelDelete(QName modelName, boolean sharedModel)
     {
-        String tenantDomainCtx = "";   
+        String tenantDomain = TenantService.DEFAULT_DOMAIN;   
         if (sharedModel)
         {
-            tenantDomainCtx = " for tenant [" + tenantService.getCurrentUserDomain() + "]";
+            tenantDomain = " for tenant [" + tenantService.getCurrentUserDomain() + "]";
         }
         
         // check workflow namespace usage
@@ -625,7 +620,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             {
                 if (workflowNamespaceURI.equals(namespace.getUri()))
                 {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomainCtx + " - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
+                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
                 }
             }
         }
@@ -633,17 +628,17 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         // check for type usages
         for (TypeDefinition type : dictionaryDAO.getTypes(modelName))
         {
-        	validateClass(tenantDomainCtx, type);
+        	validateClass(tenantDomain, type);
         }
 
         // check for aspect usages
         for (AspectDefinition aspect : dictionaryDAO.getAspects(modelName))
         {
-        	validateClass(tenantDomainCtx, aspect);
+        	validateClass(tenantDomain, aspect);
         }
     }
     
-    private void validateClass(String tenantDomainCtx, ClassDefinition classDef)
+    private void validateClass(String tenantDomain, ClassDefinition classDef)
     {
     	QName className = classDef.getName();
         
@@ -661,7 +656,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             ResultSet rs = searchService.query(store, SearchService.LANGUAGE_LUCENE, classType+":\""+className+"\"");
             if (rs.length() > 0)
             {
-                throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomainCtx + " - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'" );
+                throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found " + rs.length() + " nodes in store " + store + " with " + classType + " '" + className + "'" );
             }
         }
         
@@ -673,7 +668,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
                 if (workflowTypeDef.getName().toString().equals(className))
                 {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomainCtx + " - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
+                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
                 }
             }
         }

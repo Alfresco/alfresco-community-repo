@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.web.app.servlet.HTTPProxy;
 import org.alfresco.web.config.OpenSearchConfigElement;
 import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.web.config.OpenSearchConfigElement.ProxyConfig;
@@ -47,6 +46,7 @@ import org.alfresco.web.scripts.FormatRegistry;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.alfresco.web.scripts.servlet.HTTPProxy;
 import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -314,5 +314,4 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         }
         return proxyUrl;
     }
-
 }

@@ -14,13 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- 
+
  * As a special exception to the terms and conditions of version 2.0 of
  * the GPL, you may redistribute this Program in connection with Free/Libre
  * and Open Source Software ("FLOSS") applications as described in Alfresco's
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" 
+ * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.coci;
 
@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -79,12 +80,12 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    public static final String MSG_ERROR_CHECKOUT = "error_checkout";
 
    public static final String FILE = "file";
-   
+
    protected CCProperties property;
 
    // ------------------------------------------------------------------------------
-   // Bean property getters and setters 
-   
+   // Bean property getters and setters
+
    /**
     * @param property the property to set
     */
@@ -92,7 +93,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    {
       this.property = property;
    }
-   
+
    /**
     * @param navigator The NavigationBean to set.
     */
@@ -100,7 +101,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    {
       this.navigator = navigator;
    }
-   
+
    /**
     * @return Returns the BrowseBean.
     */
@@ -108,7 +109,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    {
       return this.browseBean;
    }
-   
+
    /**
     * @param browseBean The BrowseBean to set.
     */
@@ -116,7 +117,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    {
       this.browseBean = browseBean;
    }
-   
+
    /**
     * @return Returns the NodeService.
     */
@@ -132,33 +133,33 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    {
       this.nodeService = nodeService;
    }
-   
+
    public boolean getFinishButtonDisabled()
    {
       return false;
    }
-   
+
    public String getFinishButtonLabel()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "check_in");
    }
-   
+
    public String getContainerTitle()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), "check_in") + " '" + this.property.getDocument().getName() + "'";
    }
-   
+
    /**
-    * Determines whether the document being checked in has 
+    * Determines whether the document being checked in has
     * the versionable aspect applied
-    * 
+    *
     * @return true if the versionable aspect is applied
     */
    public boolean isVersionable()
    {
       return property.getDocument().hasAspect(ContentModel.ASPECT_VERSIONABLE);
    }
-   
+
    /**
     * @return Returns the message to display when a file has been uploaded
     */
@@ -167,7 +168,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       String msg = Application.getMessage(FacesContext.getCurrentInstance(), "file_upload_success");
       return MessageFormat.format(msg, new Object[] {getFileName()});
    }
-   
+
    /**
     * @return Returns the name of the file
     */
@@ -183,7 +184,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          property.setFile(fileBean.getFile());
          property.setFileName(fileBean.getFileName());
       }
-      
+
       return property.getFileName();
    }
 
@@ -193,7 +194,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    public void setFileName(String fileName)
    {
       property.setFileName(fileName);
-      
+
       // we also need to keep the file upload bean in sync
       FacesContext ctx = FacesContext.getCurrentInstance();
       FileUploadBean fileBean = (FileUploadBean)ctx.getExternalContext().getSessionMap().
@@ -219,7 +220,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          fileBean.setFileName(null);
       }
    }
-   
+
    /**
     * Action handler called when the user wishes to remove an uploaded file
     */
@@ -230,15 +231,15 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       property.setFile(null);
       return null;
    }
-   
+
    // ------------------------------------------------------------------------------
    // Navigation action event handlers
-   
+
    /**
-    * Action event called by all actions that need to setup a Content Document context on the 
+    * Action event called by all actions that need to setup a Content Document context on the
     * CheckinCheckoutDialog before an action page/wizard is called. The context will be a Node in
     * setDocument() which can be retrieved on action pages via getDocument().
-    * 
+    *
     * @param event   ActionEvent
     */
    public void setupContentAction(ActionEvent event)
@@ -249,34 +250,34 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       if (id != null && id.length() != 0)
       {
          setupContentDocument(id);
-      } 
+      }
       else
       {
          property.setDocument(null);
       }
-      
+
       resetState();
    }
-   
+
    public void setupWorkflowContentAction(ActionEvent event)
    {
       // do the common processing
       setupContentAction(event);
-      
+
       // retrieve the id of the task
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       property.setWorkflowTaskId(params.get("taskId"));
-      
+
       property.setWorkflowAction(true);
-      
+
       if (logger.isDebugEnabled())
          logger.debug("Setup for workflow package action for task id: " + property.getWorkflowTaskId());
    }
-   
+
    /**
     * Setup a content document node context
-    * 
+    *
     * @param id GUID of the node to setup as the content document context
     * @return The Node
     */
@@ -286,23 +287,23 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          logger.debug("Setup for action, setting current document to: " + id);
 
       Node node = null;
-      
+
       try
       {
          // create the node ref, then our node representation
          NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
          node = new Node(ref);
-         
+
          // create content URL to the content download servlet with ID and expected filename
          // the myfile part will be ignored by the servlet but gives the browser a hint
          String url = DownloadContentServlet.generateDownloadURL(ref, node.getName());
          node.getProperties().put("url", url);
          node.getProperties().put("workingCopy", node.hasAspect(ContentModel.ASPECT_WORKING_COPY));
-         node.getProperties().put("fileType32", Utils.getFileTypeImage(node.getName(), false)); 
-         
+         node.getProperties().put("fileType32", Utils.getFileTypeImage(node.getName(), false));
+
          // remember the document
          property.setDocument(node);
-         
+
          // refresh the UI, calling this method now is fine as it basically makes sure certain
          // beans clear the state - so when we finish here other beans will have been reset
          UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
@@ -312,12 +313,12 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
       }
-      
+
       return node;
    }
-   
+
    /**
-    * Action handler called to calculate which editing screen to display based on the mimetype 
+    * Action handler called to calculate which editing screen to display based on the mimetype
     * of a document. If appropriate, the in-line editing screen will be shown.
     */
    public void editFile(ActionEvent event)
@@ -329,21 +330,21 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          boolean editingInline = false;
          Node node = setupContentDocument(id);
-         
+
          if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
             editingInline = true;
-            
+
             // editable form document
             FacesContext fc = FacesContext.getCurrentInstance();
             this.navigator.setupDispatchContext(node);
-            
+
             // TODO - rename editContent Wizard since it only deals with editing form content
             fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
          }
-         
+
          // detect the inline editing aspect to see which edit mode to use
-         else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
+         else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) &&
              node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
              ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
          {
@@ -353,7 +354,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
             {
                editingInline = true;
                String mimetype = reader.getMimetype();
-               
+
                // calculate which editor screen to display
                if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
                    MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
@@ -362,7 +363,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                {
                   // make content available to the text editing screen
                   property.setEditorOutput(reader.getContentString());
-                  
+
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
@@ -373,7 +374,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                   // make content available to the html editing screen
                   property.setDocumentContent(reader.getContentString());
                   property.setEditorOutput(null);
-                  
+
                   // navigate to appropriate screen
                   FacesContext fc = FacesContext.getCurrentInstance();
                   this.navigator.setupDispatchContext(node);
@@ -381,7 +382,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                }
             }
          }
-         
+
          if (editingInline == false)
          {
             // normal downloadable document
@@ -391,7 +392,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          }
       }
    }
-   
+
    /**
     * Action handler called to set the content of a node from an inline editing page.
     */
@@ -404,11 +405,11 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          {
             if (logger.isDebugEnabled())
                logger.debug("Trying to update content node Id: " + node.getId());
-            
+
             // get an updating writer that we can use to modify the content on the current node
             ContentWriter writer = property.getContentService().getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
             writer.putContent(property.getEditorOutput());
-            
+
             // clean up and clear action context
             resetState();
             property.setDocument(null);
@@ -428,14 +429,14 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       }
       return outcome;
    }
-   
+
    /**
     * Action to undo the checkout of a document just checked out from the checkout screen.
     */
    public String undoCheckout()
    {
       String outcome = null;
-      
+
       Node node = property.getWorkingDocument();
       if (node != null)
       {
@@ -443,9 +444,9 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          {
             // try to cancel checkout of the working copy
             this.property.getVersionOperationsService().cancelCheckout(node.getNodeRef());
-            
+
             resetState();
-            
+
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
@@ -458,16 +459,16 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          logger.warn("WARNING: undoCheckout called without a current WorkingDocument!");
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Action called upon completion of the Check In file page
     */
    public String checkinFileOK(final FacesContext context, String outcome)
    {
-      
+
       // NOTE: for checkin the document node _is_ the working document!
       final Node node = property.getDocument();
       if (node != null && (property.getCopyLocation().equals(CCProperties.COPYLOCATION_CURRENT) || (this.getFileName() != null && !this.getFileName().equals(""))))
@@ -481,7 +482,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Trying to checkin content node Id: " + node.getId());
-                  
+
                   // we can either checkin the content from the current working copy node
                   // which would have been previously updated by the user
                   String contentUrl;
@@ -520,22 +521,22 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                   {
                      props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
                   }
-                  
+
                   // perform the checkin
-                  property.getVersionOperationsService().checkin(node.getNodeRef(), 
+                  property.getVersionOperationsService().checkin(node.getNodeRef(),
                            props, contentUrl, property.getKeepCheckedOut());
                   return null;
                }
             };
             txnHelper.doInTransaction(callback);
-            
+
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
-            
+
             if (property.isWorkflowAction() == false)
             {
                outcome = outcome + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + "browse";
             }
-            
+
             // clear action context
             property.setDocument(null);
             resetState();
@@ -550,16 +551,16 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          logger.warn("WARNING: checkinFileOK called without a current Document!");
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Action called upon completion of the Update File page
     */
    public String updateFileOK(final FacesContext context, String outcome)
    {
-      
+
       // NOTE: for update the document node _is_ the working document!
       final Node node = property.getDocument();
       if (node != null && this.getFileName() != null)
@@ -573,24 +574,24 @@ public class CheckinCheckoutDialog extends BaseDialogBean
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Trying to update content node Id: " + node.getId());
-                  
+
                   // get an updating writer that we can use to modify the content on the current node
                   ContentWriter writer = property.getContentService().getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                  
+
                   // also update the mime type in case a different type of file is uploaded
                   String mimeType = Repository.getMimeTypeForFileName(context, property.getFileName());
                   writer.setMimetype(mimeType);
-                  
+
                   writer.putContent(property.getFile());
                   return null;
                }
             };
             txnHelper.doInTransaction(callback);
-            
+
             // clear action context
             property.setDocument(null);
             resetState();
-            
+
             outcome = AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME;
          }
          catch (Throwable err)
@@ -603,10 +604,10 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          logger.warn("WARNING: updateFileOK called without a current Document!");
       }
-      
+
       return outcome;
    }
-   
+
    /**
     * Deals with the cancel button being pressed on the check in file page
     */
@@ -620,11 +621,11 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       resetState();
       return outcome;
    }
-   
+
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      
+
       return null;
    }
 
@@ -638,7 +639,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       {
          property.getFile().delete();
       }
-      
+
       property.setFile(null);
       property.setFileName(null);
       property.setKeepCheckedOut(false);
@@ -648,7 +649,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       property.setSelectedSpaceId(null);
       property.setWorkflowAction(false);
       property.setWorkflowTaskId(null);
-      
+
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);

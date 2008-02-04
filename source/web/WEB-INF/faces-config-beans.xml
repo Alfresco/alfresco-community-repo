@@ -4,7 +4,7 @@
 <faces-config>
 
    <!-- ==================== MANAGED BEANS ==================== -->
-   
+
    <managed-bean>
       <description>
          The bean for the Delete Category screen.
@@ -43,7 +43,7 @@
          <value>#{DocumentDetailsDialog.translationDocument}</value>
       </managed-property>
    </managed-bean>
-  
+
    <managed-bean>
       <description>
          The bean that make a document multilingual
@@ -755,7 +755,7 @@
          <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Content Wizard
@@ -1135,7 +1135,7 @@
       <managed-property>
          <property-name>tenantService</property-name>
          <value>#{tenantService}</value>
-      </managed-property> 
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -1302,6 +1302,10 @@
       <managed-bean-class>org.alfresco.web.bean.coci.CCProperties</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
+         <property-name>versionQueryService</property-name>
+         <value>#{VersionService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>versionOperationsService</property-name>
          <value>#{CheckoutCheckinService}</value>
       </managed-property>
@@ -1337,7 +1341,7 @@
          <value>#{CCProperties}</value>
       </managed-property>
    </managed-bean>
-	
+
    <managed-bean>
       <description>The bean for the Update File Screen.</description>
       <managed-bean-name>CCUpdateFileDialog</managed-bean-name>
@@ -1350,7 +1354,7 @@
          <value>#{CCProperties}</value>
       </managed-property>
    </managed-bean>
-	
+
    <managed-bean>
       <description>
          The bean that holds manage content rules state
@@ -1379,7 +1383,7 @@
          <value>#{NavigationBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that holds delete content rules state
@@ -1481,7 +1485,7 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
-     
+
       <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
@@ -1561,7 +1565,7 @@
          <value>#{CopyService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the forum details dialog
@@ -1585,7 +1589,7 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
-     
+
       <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
@@ -1595,7 +1599,7 @@
          <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the forums details dialog
@@ -1628,7 +1632,7 @@
          <value>#{PermissionService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Backing bean used by the topic details dialog
@@ -1652,7 +1656,7 @@
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
-     
+
       <managed-property>
          <property-name>navigator</property-name>
          <value>#{NavigationBean}</value>
@@ -2539,7 +2543,7 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
-	  <managed-property>
+      <managed-property>
          <property-name>unprotectedNodeService</property-name>
          <value>#{nodeService}</value>
       </managed-property>
@@ -2717,7 +2721,7 @@
          <value>#{workflowInterpreter}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>Backing bean used for the Web Client Config Admin Console</description>
       <managed-bean-name>ConfigAdminConsoleBean</managed-bean-name>
@@ -2750,7 +2754,7 @@
          <value>#{tenantInterpreter}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Email Space Users Dialog
@@ -2828,7 +2832,7 @@
    </managed-bean>
 
    <!-- ==================== WCM BEANS ==================== -->
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create XML Content Type Wizard
@@ -2926,7 +2930,7 @@
          <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create XML Content Type Wizard (WCM)
@@ -3138,7 +3142,7 @@
          <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Edit Web Content Wizard
@@ -3463,7 +3467,7 @@
          <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Snapshot Sandbox Dialog
@@ -4144,7 +4148,7 @@
       </managed-property>
       -->
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean that generates a link component
@@ -4472,7 +4476,7 @@
       <managed-bean-class>org.alfresco.web.bean.ajax.PresenceProxyBean</managed-bean-class>
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          Bean backing the ajax requests for the ajax based picker components
@@ -4587,7 +4591,7 @@
       </managed-property>
    </managed-bean>
 
-     	<!-- This is the bean for managing the profiles of one IG -->
+         <!-- This is the bean for managing the profiles of one IG -->
     <managed-bean>
       <description>
         The bean that backs up the view of the Versioned Properties
@@ -4618,7 +4622,7 @@
          <value>#{ContentFilterLanguagesService}</value>
       </managed-property>
     </managed-bean>
-    
+
     <managed-bean>
       <description>
          The bean that backs up the New User Wizard
@@ -4718,7 +4722,7 @@
       <managed-property>
          <property-name>tenantService</property-name>
          <value>#{tenantService}</value>
-      </managed-property>     
+      </managed-property>
       <managed-property>
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
@@ -4922,7 +4926,7 @@
         <value>#{DictionaryService}</value>
      </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean for the Edit Category screen.
@@ -4994,7 +4998,7 @@
          <value>#{BrowseBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>The bean for Apply RSS Template Screen.</description>
       <managed-bean-name>ApplyRssTemplateDialog</managed-bean-name>
@@ -5062,7 +5066,7 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>The bean for Change Current User Password Screen.</description>
       <managed-bean-name>ChangeMyPasswordDialog</managed-bean-name>
@@ -5429,7 +5433,7 @@
          <value>#{CCProperties}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>The bean for the Checkin File Screen.</description>
       <managed-bean-name>CCCheckinFileDialog</managed-bean-name>
@@ -5442,7 +5446,20 @@
          <value>#{CCProperties}</value>
       </managed-property>
    </managed-bean>
-   
+
+   <managed-bean>
+      <description>The bean for the Done-Editing File Screen(New commit dialog).</description>
+      <managed-bean-name>CCDoneEditingDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.CCDoneEditingDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+   </managed-bean>
+
    <managed-bean>
       <description>The bean for the Edit Search Screen.</description>
       <managed-bean-name>EditSearchDialog</managed-bean-name>
@@ -5500,7 +5517,7 @@
          <value>#{SearchProperties}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <description>
          The bean that backs up the Create Project Dialog
@@ -5554,7 +5571,7 @@
          <value>#{AboutBean}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <managed-bean-name>CategoryBrowserPluginBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.ajax.CategoryBrowserPluginBean</managed-bean-class>
@@ -5568,7 +5585,7 @@
          <value>#{CategoryService}</value>
       </managed-property>
    </managed-bean>
-   
+
    <managed-bean>
       <managed-bean-name>CategoryBrowserBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.CategoryBrowserBean</managed-bean-class>
@@ -5578,5 +5595,5 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
-   
+
 </faces-config>

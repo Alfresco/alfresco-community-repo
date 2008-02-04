@@ -42,6 +42,14 @@
             </params>
          </action>
 
+  	     <!-- Edit document offline action -->
+         <action id="edit_doc_offline">
+            <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
+            <label-id>edit_doc_offline</label-id>
+            <image>/images/icons/edit_offline.gif</image>
+            <action>dialog:editOfflineDialog</action>
+         </action>
+
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
          <action id="edit_doc_http">
             <permissions>
@@ -908,6 +916,7 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
 
+            <action idref="edit_doc_offline" />
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
@@ -915,6 +924,7 @@
             <action idref="checkin_doc" />
             <action idref="details_doc" />
             <action idref="delete_doc" />
+            
 
             <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">

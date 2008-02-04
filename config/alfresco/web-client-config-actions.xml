@@ -126,6 +126,18 @@
             </params>
          </action>
 
+         <!-- Done-editing document -->
+         <action id="done_editing_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
+            <label-id>done_editing</label-id>
+            <image>/images/icons/done_editing.gif</image>
+            <action-listener>#{CCDoneEditingDialog.setupContentAction}</action-listener>
+            <action>dialog:doneEditingFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
          <!-- View document details -->
          <action id="details_doc">
             <label-id>view_details</label-id>
@@ -357,7 +369,7 @@
            <action>dialog:addContent</action>
            <action-listener>#{AddContentDialog.start}</action-listener>
          </action>
-         
+
          <!-- Create content -->
          <action id="create_content">
             <permissions>
@@ -390,7 +402,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Create XML content type (WCM) -->
          <action id="create_web_form">
             <evaluator>org.alfresco.web.action.evaluator.CreateWebFormEvaluator</evaluator>
@@ -453,7 +465,7 @@
             <image>/images/icons/create_website.gif</image>
             <action>wizard:createWebsite</action>
          </action>
-         
+
          <!-- Create Project -->
          <action id="create_project">
             <evaluator>org.alfresco.web.action.evaluator.CreateProjectEvaluator</evaluator>
@@ -519,7 +531,7 @@
             <action>dialog:recoverAllItems</action>
             <action-listener>#{TrashcanRecoverAllItemsDialog.setupListAction}</action-listener>
          </action>
-         
+
          <!-- Delete All Items  -->
          <action id="delete_all_items">
             <label-id>delete_all_items</label-id>
@@ -527,7 +539,7 @@
             <action>dialog:deleteAllItems</action>
             <action-listener>#{TrashcanDeleteAllItemsDialog.setupListAction}</action-listener>
          </action>
-         
+
           <!-- Create user action-->
          <action id="create_user">
             <label-id>create_user</label-id>
@@ -602,21 +614,21 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-		
-		 <!-- Invite Space user action-->
+
+         <!-- Invite Space user action-->
          <action id="ivite_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
             <action>wizard:inviteSpaceUsers</action>
          </action>
-			
-		<!-- Invite Content user action-->
+
+        <!-- Invite Content user action-->
          <action id="ivite_content_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
             <action>wizard:inviteContentUsers</action>
-         </action>	
-			
+         </action>
+
          <!-- Import into Space -->
          <action id="import_space">
             <permissions>
@@ -730,14 +742,14 @@
             <image>/images/icons/new_edition_icon.gif</image>
             <action>wizard:newEdition</action>
          </action>
-         
+
          <!-- Create rule action-->
          <action id="create_rule">
             <label-id>create_rule</label-id>
             <image>/images/icons/new_rule.gif</image>
             <action>wizard:createRule</action>
          </action>
-         
+
           <!-- ReApply Rules -->
          <action id="reapply-rules">
             <label-id>reapply_rules</label-id>
@@ -751,8 +763,8 @@
             <image>/images/icons/reapply_rules.gif</image>
             <action-listener>#{RulesDialog.ignoreInheritedRules}</action-listener>
          </action>
-         
-         
+
+
          <!-- Create a category -->
          <action id="add_category">
             <label-id>add_category</label-id>
@@ -763,7 +775,7 @@
                <param name="categoryRef">#{actionContext.categoryRef}</param>
             </params>
          </action>
-         
+
          <!-- Delete category -->
          <action id="delete_category">
             <label-id>delete_category</label-id>
@@ -774,7 +786,7 @@
                <param name="categoryRef">#{actionContext.nodeRef}</param>
             </params>
          </action>
-         
+
          <!-- Edit category -->
          <action id="edit_category">
             <label-id>edit_category</label-id>
@@ -785,7 +797,7 @@
                <param name="categoryRef">#{actionContext.nodeRef}</param>
             </params>
          </action>
-         
+
          <!-- Create a group -->
          <action id="create_group">
             <label-id>new_group</label-id>
@@ -797,7 +809,7 @@
                <param name="groupName">#{actionContext.groupName}</param>
             </params>
          </action>
-         
+
          <!-- Create a sub group -->
          <action id="create_sub_group">
             <label-id>new_sub_group</label-id>
@@ -809,7 +821,7 @@
                <param name="groupName">#{actionContext.groupName}</param>
             </params>
          </action>
-         
+
          <!-- Delete group -->
          <action id="delete_group">
             <label-id>delete_group</label-id>
@@ -822,7 +834,7 @@
                <param name="groupName">#{actionContext.groupName}</param>
             </params>
          </action>
-         
+
          <!-- Add a user to a group -->
          <action id="add_group_user">
             <label-id>add_user</label-id>
@@ -835,7 +847,7 @@
                <param name="groupName">#{actionContext.groupName}</param>
             </params>
          </action>
-         
+
          <!-- recover item action -->
          <action id="recover_item">
             <label-id>recover</label-id>
@@ -865,11 +877,11 @@
             <evaluator>org.alfresco.module.blogIntegration.ui.PostBlogEvaluator</evaluator>
             <label>Post To Blog</label>
             <image>/images/icons/edit_icon.gif</image>
-		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
-		      <params>
-		         <param name="id">#{actionContext.id}</param>
-         		<param name="action">post</param>
-      		</params>
+              <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+              <params>
+                 <param name="id">#{actionContext.id}</param>
+                 <param name="action">post</param>
+              </params>
          </action>
 
          <action id="updateBlog">
@@ -879,11 +891,11 @@
             <evaluator>org.alfresco.module.blogIntegration.ui.UpdateBlogEvaluator</evaluator>
             <label>Update Blog Post</label>
             <image>/images/icons/edit_icon.gif</image>
-		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
-		      <params>
-		         <param name="id">#{actionContext.id}</param>
-         		<param name="action">update</param>
-      		</params>
+              <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+              <params>
+                 <param name="id">#{actionContext.id}</param>
+                 <param name="action">update</param>
+              </params>
          </action>
 
          <action id="removeBlog">
@@ -893,11 +905,11 @@
             <evaluator>org.alfresco.module.blogIntegration.ui.UpdateBlogEvaluator</evaluator>
             <label>Remove Blog Post</label>
             <image>/images/icons/edit_icon.gif</image>
-		      <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
-		      <params>
-		         <param name="id">#{actionContext.id}</param>
-         		<param name="action">remove</param>
-      		</params>
+              <action-listener>#{org_alfresco_module_blogIntegration_BlogActionListener.executeScript}</action-listener>
+              <params>
+                 <param name="id">#{actionContext.id}</param>
+                 <param name="action">remove</param>
+              </params>
          </action>
 
          <!-- the 'action-group' elements define unique blocks of actions that reference the actions
@@ -910,7 +922,7 @@
              <style>white-space:nowrap</style>
              <action idref="add_adm_content" />
          </action-group>
-         
+
          <!-- Actions for a document in the Browse screen -->
          <action-group id="document_browse">
             <show-link>false</show-link>
@@ -922,9 +934,9 @@
             <action idref="edit_doc_cifs" />
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
+            <action idref="done_editing_doc" />
             <action idref="details_doc" />
             <action idref="delete_doc" />
-            
 
             <!-- Example action defined in-line rather than by reference
             <action id="example2_checkout_doc">
@@ -950,17 +962,17 @@
             <action idref="cut_node" />
             <action idref="copy_node" />
          </action-group>
-		
-		<!-- Action menu for Invite Space user in Manage invite users screen-->
+
+        <!-- Action menu for Invite Space user in Manage invite users screen-->
          <action-group id="invite_user_menu">
             <action idref="ivite_user"/>
          </action-group>
-         
+
          <!-- Action menu for Invite Content user in Manage invite users screen-->
          <action-group id="invite_content_user_menu">
             <action idref="ivite_content_user"/>
          </action-group>
-		
+
          <!-- Actions for a space in the Browse screen -->
          <action-group id="space_browse">
             <show-link>false</show-link>
@@ -982,7 +994,7 @@
          <action-group id="browse_create_menu">
             <action idref="create_content" />
             <action idref="create_form" />
-            <action idref="create_web_form" />      
+            <action idref="create_web_form" />
             <action idref="create_website_wizard" />
             <action idref="create_project" />
             <action idref="create_space" />
@@ -1099,61 +1111,61 @@
          <action-group id="group_actions">
             <action idref="create_group" />
          </action-group>
-         
+
          <action-group id="group_more_actions">
             <action idref="delete_group" />
             <action idref="add_group_user" />
          </action-group>
-         
+
          <action-group id="group_inline_actions">
             <action idref="create_sub_group" />
             <action idref="add_group_user" />
             <action idref="delete_group" />
          </action-group>
-         
+
          <action-group id="deleteditem_actions">
             <style-class>inlineAction</style-class>
             <action idref="recover_item" />
             <action idref="delete_item" />
          </action-group>
-         
+
          <!-- Actions for the manage categories dialog -->
          <action-group id="category_actions">
             <action idref="add_category" />
          </action-group>
-         
+
          <action-group id="category_more_actions">
             <action idref="edit_category" />
             <action idref="delete_category" />
          </action-group>
-         
+
          <action-group id="category_inline_actions">
             <action idref="edit_category" />
             <action idref="delete_category" />
          </action-group>
-         
+
          <!-- Action menu for Create rule in Space details screen-->
          <action-group id="create_rule_menu">
             <action idref="create_rule"/>
-         </action-group> 
-         
+         </action-group>
+
          <!-- Actions Menu for Manage Rules screen -->
          <action-group id="rules_actions_menu">
             <action idref="reapply-rules" />
             <action idref="ignore-inherited-rules" />
          </action-group>
-         
+
           <!-- Actions Menu for Manage Deleted Items screen -->
          <action-group id="manage_deleted_items_menu">
             <action idref="recover_all_items" />
             <action idref="delete_all_items" />
          </action-group>
-         
+
           <!-- Action menu for Create user-->
          <action-group id="create_user_menu">
             <action idref="create_user"/>
          </action-group>
-         
+
       </actions>
    </config>
 

@@ -302,7 +302,7 @@
 
    <servlet>
       <servlet-name>proxyServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.HTTPProxyServlet</servlet-class>
+      <servlet-class>org.alfresco.web.scripts.servlet.HTTPProxyServlet</servlet-class>
    </servlet>
             
    <servlet>

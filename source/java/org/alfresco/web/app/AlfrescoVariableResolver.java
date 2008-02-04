@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.faces.context.FacesContext;
 import javax.faces.el.EvaluationException;
 import javax.faces.el.VariableResolver;
@@ -38,7 +41,7 @@ import org.springframework.web.jsf.DelegatingVariableResolver;
  * JSF VariableResolver that first delegates to the Spring JSF variable 
  * resolver. The sole purpose of this variable resolver is to look out
  * for the <code>Container</code> variable. If this variable is encountered
- * the current viewId is examined. If the current viewId matches the 
+ * the current viewId is examined. If the current viewId matches a 
  * configured dialog or wizard container the appropriate manager object is
  * returned i.e. DialogManager or WizardManager.
  * 
@@ -56,8 +59,8 @@ import org.springframework.web.jsf.DelegatingVariableResolver;
  */
 public class AlfrescoVariableResolver extends DelegatingVariableResolver
 {
-   protected String dialogContainer = null;
-   protected String wizardContainer = null;
+   protected List<String> dialogContainers = null;
+   protected List<String> wizardContainers = null;
    
    private static final String CONTAINER = "Container";
    
@@ -79,7 +82,7 @@ public class AlfrescoVariableResolver extends DelegatingVariableResolver
     * This implementation will first delegate to the Spring variable resolver.
     * If the variable is not found by the Spring resolver and the variable name
     * is <code>Container</code> the current viewId is examined.
-    * If the current viewId matches the configured dialog or wizard container 
+    * If the current viewId matches a configured dialog or wizard container 
     * the appropriate manager object is returned i.e. DialogManager or WizardManager.
     * 
     * @param context FacesContext
@@ -98,15 +101,15 @@ public class AlfrescoVariableResolver extends DelegatingVariableResolver
             // get the current view id and the configured dialog and wizard 
             // container pages
             String viewId = context.getViewRoot().getViewId();
-            String dialogContainer = getDialogContainer(context);
-            String wizardContainer = getWizardContainer(context);
+            List<String> dialogContainers = getDialogContainers(context);
+            List<String> wizardContainers = getWizardContainers(context);
             
             // see if we are currently in a wizard or a dialog
-            if (viewId.equals(dialogContainer))
+            if (dialogContainers.contains(viewId))
             {
                variable = Application.getDialogManager();
             }
-            else if (viewId.equals(wizardContainer))
+            else if (wizardContainers.contains(viewId))
             {
                variable = Application.getWizardManager();   
             }
@@ -122,46 +125,52 @@ public class AlfrescoVariableResolver extends DelegatingVariableResolver
    }
    
    /**
-    * Retrieves the configured dialog container page
+    * Retrieves the list of configured dialog container pages
     * 
     * @param context FacesContext
-    * @return The container page
+    * @return The container pages
     */
-   protected String getDialogContainer(FacesContext context)
+   protected List<String> getDialogContainers(FacesContext context)
    {
-	  if ((this.dialogContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+	   if ((this.dialogContainers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
+	      this.dialogContainers = new ArrayList<String>(2);
+	      
          ConfigService configSvc = Application.getConfigService(context);
          Config globalConfig = configSvc.getGlobalConfig();
          
          if (globalConfig != null)
          {
-            this.dialogContainer = globalConfig.getConfigElement("dialog-container").getValue();
+            this.dialogContainers.add(globalConfig.getConfigElement("dialog-container").getValue());
+            this.dialogContainers.add(globalConfig.getConfigElement("plain-dialog-container").getValue());
          }
       }
       
-      return this.dialogContainer;
+      return this.dialogContainers;
    }
    
    /**
-    * Retrieves the configured wizard container page
+    * Retrieves the list of configured wizard container pages
     * 
     * @param context FacesContext
     * @return The container page
     */
-   protected String getWizardContainer(FacesContext context)
+   protected List<String> getWizardContainers(FacesContext context)
    {
-	  if ((this.wizardContainer == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+	   if ((this.wizardContainers == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
+	      this.wizardContainers = new ArrayList<String>(2);
+	      
          ConfigService configSvc = Application.getConfigService(context);
          Config globalConfig = configSvc.getGlobalConfig();
          
          if (globalConfig != null)
          {
-            this.wizardContainer = globalConfig.getConfigElement("wizard-container").getValue();
+            this.wizardContainers.add(globalConfig.getConfigElement("wizard-container").getValue());
+            this.wizardContainers.add(globalConfig.getConfigElement("plain-wizard-container").getValue());
          }
       }
       
-      return this.wizardContainer;
+      return this.wizardContainers;
    }
 }

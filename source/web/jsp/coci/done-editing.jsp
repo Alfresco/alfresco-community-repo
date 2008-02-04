@@ -50,9 +50,9 @@
                </tr>
                <tr>
                   <td> </f:verbatim>
-                     <h:selectOneRadio value="#{CCProperties.minorChange}">
-                        <f:selectItem itemValue="true" itemLabel="#{msg.minor_changes} (#{DialogManager.bean.minorNewVersionLabel})" />
-                        <f:selectItem itemValue="false" itemLabel="#{msg.major_changes} (#{DialogManager.bean.majorNewVersionLabel})" />
+                     <h:selectOneRadio value="#{CCProperties.minorChange}" layout="pageDirection" required="true" rendered="#{DialogManager.bean.versionable}">
+                        <f:selectItem itemValue="#{true}" itemLabel="#{msg.minor_changes} (#{DialogManager.bean.minorNewVersionLabel})" />
+                        <f:selectItem itemValue="#{false}" itemLabel="#{msg.major_changes} (#{DialogManager.bean.majorNewVersionLabel})" />
                      </h:selectOneRadio> <f:verbatim>
                      </span> <br/>
                   </td>
@@ -68,7 +68,7 @@
                   </span></td>
                </tr>
                <tr>
-                  <td class="paddingRow"></td>
+                  <td class="paddingRow"> </td>
                </tr>
             </table> </f:verbatim>
          </a:booleanEvaluator>

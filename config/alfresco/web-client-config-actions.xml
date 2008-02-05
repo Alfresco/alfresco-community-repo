@@ -129,6 +129,18 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
+         
+         <!-- Cancel editing document -->
+         <action id="cancelediting_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
+            <label-id>cancel_editing</label-id>
+            <image>/images/icons/cancel_editing.gif</image>
+            <action-listener>#{CancelEditingDialog.setupContentAction}</action-listener>
+            <action>dialog:cancelEditing</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
 
          <!-- Done-editing document -->
          <action id="done_editing_doc">
@@ -978,6 +990,7 @@
             <action idref="preview_doc" />
             <action idref="update_doc" />
             <action idref="cancelcheckout_doc" />
+            <action idref="cancelediting_doc" />
             <action idref="approve_doc" />
             <action idref="reject_doc" />
             <action idref="cut_node" />

@@ -5466,6 +5466,20 @@
    </managed-bean>
 
    <managed-bean>
+      <description>The bean for the Cancel Editing File Screen.</description>
+      <managed-bean-name>CancelEditingDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.CancelEditingDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+   </managed-bean>
+
+
+   <managed-bean>
       <description>The bean for the Working Copy Missing Screen.</description>
       <managed-bean-name>CCWorkingCopyMissingDialog</managed-bean-name>
       <managed-bean-class>

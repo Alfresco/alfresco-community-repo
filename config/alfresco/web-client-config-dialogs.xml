@@ -350,6 +350,11 @@
                  icon="/images/icons/cancel_checkout_large.gif" title-id="undo_checkout_for"
                  description-id="undocheckoutfile_description" />
 
+         <dialog name="cancelEditing" page="/jsp/coci/cancel-editing-file.jsp" managed-bean="CancelEditingDialog"
+                 icon="/images/icons/cancel_editing_large.gif" title-id="cancel_editing_for"
+                 description-id="cancel_editing_file_description" />
+
+
          <dialog name="checkoutFile" page="/jsp/coci/checkout-file.jsp" managed-bean="CCCheckoutFileDialog"
                  icon="/images/icons/check_out_large.gif" title-id="check_out"
                   description-id="checkoutfile_description" />

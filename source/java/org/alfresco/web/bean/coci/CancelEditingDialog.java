@@ -43,7 +43,8 @@ public class CancelEditingDialog extends CheckinCheckoutDialog
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
-        return undoCheckoutFile(context, outcome);
+        undoCheckoutFile(context, outcome);
+        return "dialog:close[2]";
     }
 
     @Override

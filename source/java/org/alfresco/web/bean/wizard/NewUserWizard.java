@@ -492,7 +492,7 @@ public class NewUserWizard extends AbstractWizardBean
             if (tenantService.isEnabled())
             {         
                 String currentDomain = tenantService.getCurrentUserDomain();
-                if (currentDomain != null)
+                if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
                 {
                     if (! tenantService.isTenantUser(this.userName))
                     {

@@ -864,7 +864,7 @@ public class CreateUserWizard extends BaseWizardBean
     protected void checkTenantUserName()
     {
         String currentDomain = tenantService.getCurrentUserDomain();
-        if (currentDomain != null)
+        if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             if (! tenantService.isTenantUser(this.userName))
             {

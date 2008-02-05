@@ -40,7 +40,7 @@ import org.quartz.JobExecutionException;
  */
 public class UserUsageBootstrapJob implements Job
 {
-    private static final String KEY_COMPONENT = "userUsageBootstrapComponent";
+    public static final String KEY_COMPONENT = "userUsageTrackingComponent";
     
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
@@ -50,7 +50,7 @@ public class UserUsageBootstrapJob implements Job
         {
             throw new JobExecutionException("Missing job data: " + KEY_COMPONENT);
         }
-        // perform the content usage calculations
-        usageComponent.execute();
+        // perform the content usage bootstrap
+        usageComponent.bootstrap();
     }
 }

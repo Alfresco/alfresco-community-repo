@@ -50,6 +50,8 @@ import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.usage.UserUsageBootstrapJob;
+import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -870,6 +872,10 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         props.put("alfresco_user_store.guestusername", getTenantGuestUser(tenantDomain));
    
         spacesImporterBootstrap.bootstrap();
+        
+        // calculate any missing usages
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)getApplicationContext().getBean(UserUsageBootstrapJob.KEY_COMPONENT);
+        userUsageTrackingComponent.bootstrapInternal();
        
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }

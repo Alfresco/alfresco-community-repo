@@ -85,11 +85,11 @@ public class UsageServiceImpl implements UsageService
     {
         Set<Node> nodes = usageDeltaDao.getUsageDeltaNodes();
         
-        // convert nodes to nodeRefs
+        // convert nodes to nodeRefs (tenant-specific)
         Set<NodeRef> results = new HashSet<NodeRef>(nodes.size());
         for (Node node : nodes)
         {
-            results.add(tenantService.getBaseName(node.getNodeRef()));
+            results.add(node.getNodeRef());
         }
         return results;
     }

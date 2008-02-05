@@ -33,6 +33,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,6 +64,7 @@ public class ContentUsageImpl implements ContentUsageService,
     private PolicyComponent policyComponent;
     private UsageService usageService;
     private AuthenticationComponent authenticationComponent;
+    private TenantService tenantService;
     
     private boolean enabled = true;
     
@@ -91,6 +93,11 @@ public class ContentUsageImpl implements ContentUsageService,
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public void setEnabled(boolean enabled)
@@ -144,7 +151,7 @@ public class ContentUsageImpl implements ContentUsageService,
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (stores.contains(nodeRef.getStoreRef().toString()))
+        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             // Get content size
             
@@ -180,7 +187,7 @@ public class ContentUsageImpl implements ContentUsageService,
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (stores.contains(nodeRef.getStoreRef().toString()))
+        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             // Check for change in content size
             
@@ -273,7 +280,7 @@ public class ContentUsageImpl implements ContentUsageService,
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {   
-        if (stores.contains(nodeRef.getStoreRef().toString()))
+        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             // TODO use data dictionary to get content property
             ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);

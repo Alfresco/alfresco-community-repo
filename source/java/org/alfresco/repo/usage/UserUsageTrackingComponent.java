@@ -33,6 +33,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.Tenant;
+import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -58,8 +62,6 @@ public class UserUsageTrackingComponent
     
     private static boolean busy = false;
     
-    private boolean bootstrap = false;
-    
     private NodeDaoService nodeDaoService;
     private TransactionServiceImpl transactionService;
     private ContentUsageImpl contentUsageImpl;
@@ -67,6 +69,8 @@ public class UserUsageTrackingComponent
     private PersonService personService;
     private NodeService nodeService;   
     private UsageService usageService;
+    private TenantDeployerService tenantDeployerService;
+    private TenantService tenantService;
     
     private boolean enabled = true;
     
@@ -86,11 +90,6 @@ public class UserUsageTrackingComponent
         this.contentUsageImpl = contentUsageImpl;
     }
     
-    public void setBootstrap(boolean bootstrap)
-    {
-        this.bootstrap = bootstrap;
-    }
-    
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
@@ -106,159 +105,164 @@ public class UserUsageTrackingComponent
         this.usageService = usageService;
     }
     
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
+    }
+   
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }
-    
-    
+      
     public void execute()
     {
-        try
+        if (enabled == true)
         {
-            if (! busy && ! enabled)
-            {
-                busy = true;
-                
-                // disabled - remove all usages
-                if (bootstrap == true)
-                {
-                    if (logger.isDebugEnabled()) 
-                    {
-                        logger.debug("Disabled - clear usages for all users ...");
-                    }
-
-                    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                    
-                    // wrap to make the request in a transaction
-                    RetryingTransactionCallback<Integer> clearAllUsages = new RetryingTransactionCallback<Integer>()
-                    {
-                        public Integer execute() throws Throwable
-                        {
-                            Set<NodeRef> allPeople = personService.getAllPeople();
-                            
-                            for (NodeRef personNodeRef : allPeople)
-                            {
-                                nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
-                                usageService.deleteDeltas(personNodeRef);
-                            }
-                            return allPeople.size();
-                        }
-                    };
-                    // execute in txn
-                    int count = txnHelper.doInTransaction(clearAllUsages, false);
-         
-                    if (logger.isDebugEnabled()) 
-                    {
-                        logger.debug("... cleared usages for " + count + " users");
-                    }
-                }
-            }
-            else if (! busy && enabled)
-            {
-                busy = true;
-
-                if (bootstrap == true)
-                {
-                    if (logger.isDebugEnabled()) 
-                    {
-                        logger.debug("Enabled - calculate missing usages ...");
-                    }
-
-                    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                    
-                    // wrap to make the request in a transaction
-                    RetryingTransactionCallback<Set<String>> getAllPeople = new RetryingTransactionCallback<Set<String>>()
-                    {
-                        public Set<String> execute() throws Throwable
-                        {
-                            Set<NodeRef> allPeople = personService.getAllPeople();
-                            Set<String> userNames = new HashSet<String>();
-                            
-                            for (NodeRef personNodeRef : allPeople)
-                            {
-                                Long currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
-                                if (currentUsage == null)
-                                {
-                                    String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-                                    userNames.add(userName);
-                                }
-                            }
-                            return userNames;
-                        }
-                    };
-                    // execute in READ-ONLY txn
-                    final Set<String> userNames = txnHelper.doInTransaction(getAllPeople, true);
-                    
-                    for (String userName : userNames)
-                    {
-                        recalculateUsage(userName);
-                    }
-         
-                    if (logger.isDebugEnabled()) 
-                    {
-                        logger.debug("... calculated missing usages for " + userNames.size() + " users");
-                    }
-                }
-                else
-                {
-                    // Collapse usage deltas (if a person has initial usage set)
-                    final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                    
-                    // wrap to make the request in a transaction and run as System user
-                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-                            return txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                            {
-                                public Object execute() throws Throwable
-                                {
-                                    // Get distinct candidates
-                                    Set<NodeRef> usageNodeRefs = usageService.getUsageDeltaNodes();
-                                    
-                                    for(NodeRef usageNodeRef : usageNodeRefs)
-                                    {                            
-                                        QName nodeType = nodeService.getType(usageNodeRef);
-                                        
-                                        if (nodeType.equals(ContentModel.TYPE_PERSON))
-                                        {
-                                            NodeRef personNodeRef = usageNodeRef;
-                                            String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-                                            
-                                            long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
-                                            if (currentUsage != -1)
-                                            {
-                                                // collapse the usage deltas
-                                                currentUsage = contentUsageImpl.getUserUsage(userName);                                 
-                                                usageService.deleteDeltas(personNodeRef);
-                                                contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
-                                                
-                                                if (logger.isDebugEnabled()) 
-                                                {
-                                                    logger.debug("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (logger.isWarnEnabled())
-                                                {
-                                                    logger.warn("Initial usage for user has not yet been calculated: " + userName);
-                                                }
-                                            }
-                                        }
-                                    }  
-                                    return null;
-                                }
-                            });
-                        }
-                    }, AuthenticationUtil.getSystemUserName());
-                }
-            }
+        	if (! busy)
+        	{
+        		try
+        		{
+            		busy = true;      
+            		
+            		// collapse usages - note: for MT environment, will collapse for all tenants
+            		collapseUsages();
+	            }
+	            finally
+	            {
+	                busy = false;
+	            }
+        	}
         }
-        finally
+	}
+    
+    // called once on startup
+    public void bootstrap()
+    {
+    	// default domain
+    	bootstrapInternal(); 
+		
+		if (tenantService.isEnabled())
+		{
+			List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
+            for (Tenant tenant : tenants)
+            {          
+            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+            		public Object doWork() throws Exception
+                    {
+            			bootstrapInternal();
+            			return null;
+                    }
+                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+            }
+		}
+    }
+    
+    public void bootstrapInternal()
+    {
+    	if (! busy)
+    	{
+    		try
+    		{
+    			busy = true;
+    		
+            	if (enabled)
+            	{
+            		// enabled - calculate missing usages
+            		calculateMissingUsages();
+            	}
+            	else
+            	{
+            		// disabled - remove all usages
+                	clearAllUsages();
+            	}
+            }
+            finally
+            {
+                busy = false;
+            }
+    	}
+    }
+    
+    public void clearAllUsages()
+    {
+        if (logger.isDebugEnabled()) 
         {
-            busy = false;
+            logger.debug("Disabled - clear usages for all users ...");
+        }
+
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        // wrap to make the request in a transaction
+        RetryingTransactionCallback<Integer> clearAllUsages = new RetryingTransactionCallback<Integer>()
+        {
+            public Integer execute() throws Throwable
+            {
+                Set<NodeRef> allPeople = personService.getAllPeople();
+                
+                for (NodeRef personNodeRef : allPeople)
+                {
+                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
+                    usageService.deleteDeltas(personNodeRef);
+                }
+                return allPeople.size();
+            }
+        };
+        // execute in txn
+        int count = txnHelper.doInTransaction(clearAllUsages, false);
+
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("... cleared usages for " + count + " users");
+        }   	
+    }
+    
+    public void calculateMissingUsages()
+    {
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("Enabled - calculate missing usages ...");
+        }
+
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        // wrap to make the request in a transaction
+        RetryingTransactionCallback<Set<String>> getAllPeople = new RetryingTransactionCallback<Set<String>>()
+        {
+            public Set<String> execute() throws Throwable
+            {
+                Set<NodeRef> allPeople = personService.getAllPeople();
+                Set<String> userNames = new HashSet<String>();
+                
+                for (NodeRef personNodeRef : allPeople)
+                {
+                    Long currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
+                    if (currentUsage == null)
+                    {
+                        String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                        userNames.add(userName);
+                    }
+                }
+                return userNames;
+            }
+        };
+        // execute in READ-ONLY txn
+        final Set<String> userNames = txnHelper.doInTransaction(getAllPeople, true);
+        
+        for (String userName : userNames)
+        {
+            recalculateUsage(userName);
+        }
+
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("... calculated missing usages for " + userNames.size() + " users");
         }
     }
 
@@ -323,22 +327,81 @@ public class UserUsageTrackingComponent
         // execute in READ-ONLY txn
         final Long currentUsage = txnHelper.doInTransaction(calculatePersonCurrentUsage, true);
         
-        // wrap to make the request in a transaction and run as System user
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        // wrap to make the request in a transaction
+        RetryingTransactionCallback<Object> updatePersonCurrentUsage = new RetryingTransactionCallback<Object>()
         {
-            public Object doWork() throws Exception
+            public Object execute() throws Throwable
             {
-                return txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                {
-                    public Object execute() throws Throwable
-                    {
-                        NodeRef personNodeRef = personService.getPerson(userName);
-                        contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
-                        usageService.deleteDeltas(personNodeRef);
-                        return null;
-                    }
-                });
+                NodeRef personNodeRef = personService.getPerson(userName);
+                contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
+                usageService.deleteDeltas(personNodeRef);
+                return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        };
+        
+        // execute in txn
+        txnHelper.doInTransaction(updatePersonCurrentUsage, false);
+    }
+    
+    /**
+     * Collapse usages - note: for MT environment, will collapse all tenants
+     */
+    private void collapseUsages()
+    {
+        // Collapse usage deltas (if a person has initial usage set)
+        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        // wrap to make the request in a transaction
+        RetryingTransactionCallback<Object> collapseUsages = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // Get distinct candidates
+                Set<NodeRef> usageNodeRefs = usageService.getUsageDeltaNodes();
+                
+                for(final NodeRef usageNodeRef : usageNodeRefs)
+                {                            
+                	AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    {
+                		public Object doWork() throws Exception
+                        {
+                            QName nodeType = nodeService.getType(usageNodeRef);
+                            
+                            if (nodeType.equals(ContentModel.TYPE_PERSON))
+                            {
+                                NodeRef personNodeRef = usageNodeRef;
+                                String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                                
+                                long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
+                                if (currentUsage != -1)
+                                {
+                                    // collapse the usage deltas
+                                    currentUsage = contentUsageImpl.getUserUsage(userName);                                 
+                                    usageService.deleteDeltas(personNodeRef);
+                                    contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
+                                    
+                                    if (logger.isDebugEnabled()) 
+                                    {
+                                        logger.debug("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
+                                    }
+                                }
+                                else
+                                {
+                                    if (logger.isWarnEnabled())
+                                    {
+                                        logger.warn("Initial usage for user has not yet been calculated: " + userName);
+                                    }
+                                }
+                            }
+                			return null;
+                        }
+                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
+                }  
+                return null;
+            }
+        };
+        
+    	// execute in txn
+    	txnHelper.doInTransaction(collapseUsages, false);
     }
 }

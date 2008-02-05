@@ -34,7 +34,7 @@ import org.quartz.JobExecutionException;
  */
 public class UserUsageCollapseJob implements Job
 {
-    private static final String KEY_COMPONENT = "userUsageCollapseComponent";
+    private static final String KEY_COMPONENT = "userUsageTrackingComponent";
     
     public void execute(JobExecutionContext context) throws JobExecutionException
     {

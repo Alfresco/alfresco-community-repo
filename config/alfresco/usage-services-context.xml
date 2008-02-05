@@ -5,15 +5,9 @@
 <beans>
 
    <bean id="usageService" class="org.alfresco.repo.usage.UsageServiceImpl">
-      <property name="usageDeltaDao">
-         <ref bean="usageDeltaDao"/>
-      </property>
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoService" />
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService"/>
-      </property>    
+      <property name="usageDeltaDao" ref="usageDeltaDao"/>
+      <property name="nodeDaoService" ref="nodeDaoService"/>
+      <property name="tenantService" ref="tenantService"/>   
    </bean>
    
    <bean id="contentUsageImpl" class="org.alfresco.repo.usage.ContentUsageImpl" init-method="init">
@@ -22,6 +16,7 @@
       <property name="policyComponent" ref="policyComponent"/>
       <property name="usageService" ref="usageService"/>
       <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="tenantService" ref="tenantService"/>
       <property name="enabled">
          <value>${system.usages.enabled}</value>
       </property>

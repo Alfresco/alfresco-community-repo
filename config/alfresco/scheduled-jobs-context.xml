@@ -233,7 +233,7 @@
     </bean>
     
     
-    <bean id="userUsageCollapseComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
+    <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
         <property name="nodeDaoService">
         	<ref bean="nodeDaoService"/>
         </property>
@@ -252,35 +252,14 @@
         <property name="usageService">
             <ref bean="usageService"/>
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="tenantDeployerService">
+            <ref bean="tenantAdminService" />
+        </property>        
         <property name="enabled">
             <value>${system.usages.enabled}</value>
-        </property>
-    </bean>
-    
-    <bean id="userUsageBootstrapComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="contentUsageImpl">
-            <ref bean="contentUsageImpl"/>
-        </property>
-        <property name="personService">
-            <ref bean="personService"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="usageService">
-            <ref bean="usageService"/>
-        </property>
-        <property name="enabled">
-            <value>${system.usages.enabled}</value>
-        </property>
-        <property name="bootstrap">
-            <value>true</value>
         </property>
     </bean>
     
@@ -293,8 +272,8 @@
                 </property>
                <property name="jobDataAsMap">
 	               <map>
-		               	<entry key="userUsageCollapseComponent">
-		                    <ref bean="userUsageCollapseComponent" />
+		               	<entry key="userUsageTrackingComponent">
+		                    <ref bean="userUsageTrackingComponent" />
 		                </entry>
 		           </map>
 	           </property>
@@ -326,8 +305,8 @@
                 </property>
                <property name="jobDataAsMap">
                    <map>
-                        <entry key="userUsageBootstrapComponent">
-                            <ref bean="userUsageBootstrapComponent" />
+                        <entry key="userUsageTrackingComponent">
+                            <ref bean="userUsageTrackingComponent" />
                         </entry>
                    </map>
                </property>

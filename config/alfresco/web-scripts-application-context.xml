@@ -113,6 +113,7 @@
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
       <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
+      <property name="configService" ref="web.config" />
    </bean>
 
 

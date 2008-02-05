@@ -352,7 +352,12 @@
 
          <dialog name="checkoutFile" page="/jsp/coci/checkout-file.jsp" managed-bean="CCCheckoutFileDialog"
                  icon="/images/icons/check_out_large.gif" title-id="check_out"
-                  description-id="checkoutfile_description" />
+                 description-id="checkoutfile_description" />
+                  
+         <dialog name="editOfflineDialog" page="/jsp/coci/edit-offline-file.jsp" managed-bean="EditOfflineDialog"
+        		 icon="/images/icons/edit_offline_large.GIF" title-id="edit_doc_offline"
+        		 show-ok-button="false"/>                 
+
 
          <dialog name="editFile" page="/jsp/content/edit-file.jsp" managed-bean="CCEditFileDialog"
                  icon="/images/icons/edit_large.gif" title-id="edit"

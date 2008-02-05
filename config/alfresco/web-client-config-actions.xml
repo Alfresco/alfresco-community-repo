@@ -48,6 +48,10 @@
             <label-id>edit_doc_offline</label-id>
             <image>/images/icons/edit_offline.gif</image>
             <action>dialog:editOfflineDialog</action>
+            <action-listener>#{EditOfflineDialog.setupContentAction}</action-listener>
+            <params>
+            	<param name="id">#{actionContext.id}</param>
+            </params>
          </action>
 
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->

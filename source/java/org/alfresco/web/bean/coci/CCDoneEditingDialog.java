@@ -21,7 +21,8 @@ public class CCDoneEditingDialog extends CheckinCheckoutDialog
 {
 
     private final static String MSG_DONE = "done";
-    private final static String MSG_TITLE = "done_editing_title";
+    private final static String MSG_TITLE_VERSIONABLE = "done_editing_title_versionable";
+    private final static String MSG_TITLE_NOT_VERSIONABLE = "done_editing_title_not_versionable";
 
     /**
      * @return Returns label for new version with major changes
@@ -58,7 +59,14 @@ public class CCDoneEditingDialog extends CheckinCheckoutDialog
     @Override
     public String getContainerTitle()
     {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_TITLE) + " '" + property.getDocument().getName() + "'";
+        if (property.getDocument().hasAspect(ContentModel.ASPECT_VERSIONABLE))
+        {
+            return Application.getMessage(FacesContext.getCurrentInstance(), MSG_TITLE_VERSIONABLE) + " '" + property.getDocument().getName() + "'";
+        }
+        else
+        {
+            return Application.getMessage(FacesContext.getCurrentInstance(), MSG_TITLE_NOT_VERSIONABLE) + " '" + property.getDocument().getName() + "'";
+        }
     }
 
     @Override

@@ -32,25 +32,48 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8"%>
 <%@ page isELIgnored="false"%>
 
+<%@page import="org.alfresco.web.ui.common.PanelGenerator"%>
+
+<a:booleanEvaluator value="#{!DialogManager.bean.versionable}">
+<f:verbatim>
+<table cellspacing="0" cellpadding="3" border="0" width="100%">
+    <tr>
+        <td width="100%" valign="top">
+            <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                <td valign=top style="padding-top:2px" width=20></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/><f:verbatim></td>
+                <td class="mainSubText"> </f:verbatim>
+                    <h:outputText value="#{msg.done_editing}?" /> <f:verbatim>
+                    </td>
+                </tr>
+                </table>
+            <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+        </td>
+    </tr>
+</table>
+</f:verbatim>
+</a:booleanEvaluator>
+
+<a:booleanEvaluator value="#{DialogManager.bean.versionable}">
 <f:verbatim>
    <table cellspacing="0" cellpadding="0" border="0" width="100%">
       <tr>
-         <td> </f:verbatim>
-         <a:booleanEvaluator value="#{DialogManager.bean.versionable}"> <f:verbatim>
+         <td>
             <table cellpadding="2" cellspacing="2" border="0" width="100%">
                <tr>
                   <td class="wizardSectionHeading"> </f:verbatim>
-                     <h:outputText value="#{msg.version_info}" /> <f:verbatim>
+                     <h:outputText value="#{msg.version_info}" rendered="#{DialogManager.bean.versionable}" /> <f:verbatim>
                   </td>
                </tr>
                <tr>
                   <td> </f:verbatim>
-                     <h:outputText value="#{msg.new_version_has}" escape="false" /> <f:verbatim>
+                     <h:outputText value="#{msg.new_version_has}" escape="false" rendered="#{DialogManager.bean.versionable}" /> <f:verbatim>
                   </td>
                </tr>
                <tr>
                   <td> </f:verbatim>
-                     <h:selectOneRadio value="#{CCProperties.minorChange}" layout="pageDirection" required="true" rendered="#{DialogManager.bean.versionable}">
+                     <h:selectOneRadio value="#{CCProperties.minorChange}" layout="pageDirection" rendered="#{DialogManager.bean.versionable}" >
                         <f:selectItem itemValue="#{true}" itemLabel="#{msg.minor_changes} (#{DialogManager.bean.minorNewVersionLabel})" />
                         <f:selectItem itemValue="#{false}" itemLabel="#{msg.major_changes} (#{DialogManager.bean.majorNewVersionLabel})" />
                      </h:selectOneRadio> <f:verbatim>
@@ -59,34 +82,20 @@
                </tr>
                <tr>
                   <td> </f:verbatim>
-                     <h:outputText value="#{msg.version_notes}" /> <f:verbatim>
+                     <h:outputText value="#{msg.version_notes}" rendered="#{DialogManager.bean.versionable}" /> <f:verbatim>
                   </td>
                </tr>
                <tr>
                   <td> </f:verbatim>
-                  <h:inputTextarea value="#{CCProperties.versionNotes}" rows="4" cols="50" /> <f:verbatim>
+                  <h:inputTextarea value="#{CCProperties.versionNotes}" rows="4" cols="50" rendered="#{DialogManager.bean.versionable}" /> <f:verbatim>
                   </span></td>
                </tr>
                <tr>
                   <td class="paddingRow"> </td>
                </tr>
-            </table> </f:verbatim>
-         </a:booleanEvaluator>
-         <a:booleanEvaluator value="#{!DialogManager.bean.versionable}"> <f:verbatim>
-            <table cellpadding="2" cellspacing="2" border="0" width="100%">
-               <tr>
-                  <td class="wizardSectionHeading"> </f:verbatim>
-                     <h:outputText value="#{msg.not_versionable}" /> <f:verbatim>
-                  </td>
-               </tr>
-               <tr>
-                  <td> </f:verbatim>
-                     <h:outputText value="#{msg.check_in}?" escape="false" /> <f:verbatim>
-                  </td>
-               </tr>
-            </table> </f:verbatim>
-         </a:booleanEvaluator> <f:verbatim>
+            </table>
          </td>
       </tr>
    </table>
 </f:verbatim>
+</a:booleanEvaluator>

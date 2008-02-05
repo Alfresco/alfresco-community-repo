@@ -225,6 +225,22 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
+         
+         <!-- Upload new version of document-->
+         <action id="upload_new_version">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.UpdateDocEvaluator</evaluator>
+            <label-id>upload_new_version</label-id>
+            <image>/images/icons/update.gif</image>
+            <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
+            <action>dialog:uploadVersion</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
 
          <!-- 'Approve' workflow step for document -->
          <action id="approve_doc">
@@ -928,6 +944,7 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
 
+			<action idref="upload_new_version" />
             <action idref="edit_doc_offline" />
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />

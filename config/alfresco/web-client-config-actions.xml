@@ -235,9 +235,9 @@
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.UpdateDocEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.UploadNewVersionEvaluator</evaluator>
             <label-id>upload_new_version</label-id>
-            <image>/images/icons/update.gif</image>
+            <image>/images/icons/upload_new_version.gif</image>
             <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
             <action>dialog:uploadVersion</action>
             <params>

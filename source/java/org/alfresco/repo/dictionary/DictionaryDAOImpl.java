@@ -334,10 +334,10 @@ public class DictionaryDAOImpl implements DictionaryDAO
     private List<CompiledModel> getModelsForUri(String uri)
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             // get non-tenant models (if any)
-            List<CompiledModel> models = getUriToModels("").get(uri);
+            List<CompiledModel> models = getUriToModels(TenantService.DEFAULT_DOMAIN).get(uri);
             
             List<CompiledModel> filteredModels = new ArrayList<CompiledModel>();
             if (models != null)
@@ -374,7 +374,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             return models;
         }
 
-        List<CompiledModel> models = getUriToModels("").get(uri);
+        List<CompiledModel> models = getUriToModels(TenantService.DEFAULT_DOMAIN).get(uri);
         if (models == null)
         {
             models = Collections.emptyList(); 
@@ -390,7 +390,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /* package */ CompiledModel getCompiledModel(QName modelName)
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             // get tenant-specific model (if any)
             CompiledModel model = getCompiledModels(tenantDomain).get(modelName);
@@ -402,7 +402,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
 
         // get non-tenant model (if any)
-        CompiledModel model = getCompiledModels("").get(modelName);
+        CompiledModel model = getCompiledModels(TenantService.DEFAULT_DOMAIN).get(modelName);
         if (model == null)
         {
             throw new DictionaryException("d_dictionary.model.err.no_model", modelName);
@@ -436,7 +436,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public DataTypeDefinition getDataType(Class javaClass)
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             // get tenant models (if any)                
             for (CompiledModel model : getCompiledModels(tenantDomain).values())
@@ -449,7 +449,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             }          
         
             // get non-tenant models (if any)
-            for (CompiledModel model : getCompiledModels("").values())
+            for (CompiledModel model : getCompiledModels(TenantService.DEFAULT_DOMAIN).values())
             {    
                 DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
                 if (dataTypeDef != null)
@@ -462,7 +462,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         else
         {
-            for (CompiledModel model : getCompiledModels("").values())
+            for (CompiledModel model : getCompiledModels(TenantService.DEFAULT_DOMAIN).values())
             {    
                 DataTypeDefinition dataTypeDef = model.getDataType(javaClass);
                 if (dataTypeDef != null)
@@ -702,7 +702,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public boolean isModelInherited(QName modelName)
     {    
         String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             // get tenant-specific model (if any)
             CompiledModel model = getCompiledModels(tenantDomain).get(modelName);
@@ -714,13 +714,13 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
 
         // get non-tenant model (if any)
-        CompiledModel model = getCompiledModels("").get(modelName);
+        CompiledModel model = getCompiledModels(TenantService.DEFAULT_DOMAIN).get(modelName);
         if (model == null)
         {
             throw new DictionaryException("d_dictionary.model.err.no_model", modelName);
         }
         
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             return true;
         }
@@ -733,7 +733,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     private Map<QName,CompiledModel> getCompiledModels() 
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain != "")
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
             // return all tenant-specific models and all inherited (non-overridden) models
             Map<QName, CompiledModel> filteredModels = new HashMap<QName, CompiledModel>();
@@ -742,7 +742,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             Map<QName,CompiledModel> tenantModels = getCompiledModels(tenantDomain);
             
             // get non-tenant models - these will include core/system models and any additional custom models (which are implicitly available to all tenants)
-            Map<QName,CompiledModel> nontenantModels = getCompiledModels("");
+            Map<QName,CompiledModel> nontenantModels = getCompiledModels(TenantService.DEFAULT_DOMAIN);
 
             // check for overrides
             filteredModels.putAll(nontenantModels);
@@ -766,7 +766,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         else
         {
             // return all (non-tenant) models
-            return getCompiledModels("");
+            return getCompiledModels(TenantService.DEFAULT_DOMAIN);
         } 
     }
 

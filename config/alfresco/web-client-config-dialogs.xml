@@ -352,8 +352,8 @@
 
          <dialog name="checkoutFile" page="/jsp/coci/checkout-file.jsp" managed-bean="CCCheckoutFileDialog"
                  icon="/images/icons/check_out_large.gif" title-id="check_out"
-                 description-id="checkoutfile_description" />
-                  
+                  description-id="checkoutfile_description" />
+
          <dialog name="editOfflineDialog" page="/jsp/coci/edit-offline-file.jsp" managed-bean="EditOfflineDialog"
         		 icon="/images/icons/edit_offline_large.GIF" title-id="edit_doc_offline"
         		 show-ok-button="false"/>                 
@@ -557,7 +557,7 @@
                  actions-config-id="invite_content_user_menu" error-message-id="empty_message"/>
 		
 		<dialog name="uploadVersion" page="/jsp/content/upload-new-version.jsp" managed-bean="UploadNewVersionDialog"
-                 icon="/images/icons/update_large.gif" title-id="upload_new_version_of" />
+                 icon="/images/icons/upload_new_version_large.gif" title-id="upload_new_version_of" />
                  
       </dialogs>
    </config>

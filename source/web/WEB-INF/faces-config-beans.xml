@@ -1318,6 +1318,29 @@
          <value>#{WorkflowService}</value>
       </managed-property>
    </managed-bean>
+   
+   <managed-bean>
+      <description>The bean that help with edit offline procedure.</description>
+      <managed-bean-name>EditOfflineDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.content.EditOfflineDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>         
+   </managed-bean>
 
    <managed-bean>
       <description>The bean that backs up the Checkin and Checkout pages.</description>

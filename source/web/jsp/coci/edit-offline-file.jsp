@@ -48,7 +48,7 @@
 	
 	<h:graphicImage url="/images/icons/Help_icon.gif" alt="#{msg.help}"/><f:verbatim>&nbsp;&nbsp;</f:verbatim>	
 	<h:outputText value="#{msg.offline_help}"/><f:verbatim>&nbsp;</f:verbatim> 		
-	<a:actionLink style="text-decoration: underline;" value="#{msg.click_here}" href="http://wiki.alfresco.com/wiki/Main_Page"/>
+	<a:actionLink style="text-decoration: underline;" value="#{msg.click_here}" target="_blank" href="http://wiki.alfresco.com/wiki/Main_Page"/>
 	
 <f:verbatim>	
 <br/>

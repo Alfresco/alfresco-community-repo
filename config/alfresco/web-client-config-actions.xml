@@ -42,7 +42,7 @@
             </params>
          </action>
 
-  	     <!-- Edit document offline action -->
+           <!-- Edit document offline action -->
          <action id="edit_doc_offline">
             <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
             <label-id>edit_doc_offline</label-id>
@@ -50,7 +50,7 @@
             <action>dialog:editOfflineDialog</action>
             <action-listener>#{EditOfflineDialog.setupContentAction}</action-listener>
             <params>
-            	<param name="id">#{actionContext.id}</param>
+                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
 
@@ -241,7 +241,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
          <!-- Upload new version of document-->
          <action id="upload_new_version">
             <permissions>
@@ -256,7 +256,7 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
-         
+
 
          <!-- 'Approve' workflow step for document -->
          <action id="approve_doc">
@@ -960,7 +960,7 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
 
-			<action idref="upload_new_version" />
+            <action idref="upload_new_version" />
             <action idref="edit_doc_offline" />
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
@@ -1052,9 +1052,13 @@
 
          <!-- Actions Menu for Document Details screen -->
          <action-group id="doc_details_actions">
+            <action idref="upload_new_version" />
+            <action idref="edit_doc_offline" />
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
+            <action idref="done_editing_doc" />
             <action idref="cancelcheckout_doc" />
+            <action idref="cancelediting_doc" />
             <action idref="approve_doc_details" />
             <action idref="reject_doc_details" />
             <action idref="edit_doc_http" />

@@ -1,25 +1,40 @@
-package org.alfresco.web.bean.coci;
+/*
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.StringTokenizer;
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.web.bean.coci;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 
-public class UploadNewVersionDialog extends CheckinCheckoutDialog
+public class UploadNewVersionDialog extends CCDoneEditingDialog
 {
 
-    private final static String MSG_DONE = "done";
     private final static String MSG_UPLOAD_NEW_VERSION = "upload_new_version";
     private final static String MSG_OF = "of";
 
-    private boolean finishedEditing;
+    private boolean finishedEditing = false;
 
     public void setFinishedEditing(boolean finished)
     {
@@ -31,55 +46,12 @@ public class UploadNewVersionDialog extends CheckinCheckoutDialog
         return finishedEditing;
     }
 
-    /**
-     * @return Returns label for new version with major changes
-     */
-    public String getMajorNewVersionLabel()
-    {
-        String label = getCurrentVersionLabel();
-        StringTokenizer st = new StringTokenizer(label, ".");
-        return (Integer.valueOf(st.nextToken()) + 1) + ".0";
-    }
-
-    /**
-     * @return Returns label for new version with minor changes
-     */
-    public String getMinorNewVersionLabel()
-    {
-        String label = getCurrentVersionLabel();
-        StringTokenizer st = new StringTokenizer(label, ".");
-        return st.nextToken() + "." + (Integer.valueOf(st.nextToken()) + 1);
-    }
-
-    /**
-     * @return version label for source node for working copy.
-     */
-    private String getCurrentVersionLabel()
-    {
-        NodeRef workingCopyNodeRef = property.getDocument().getNodeRef();
-        if (this.nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
-        {
-            Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
-            NodeRef nodeRef = (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
-
-            Version curVersion = property.getVersionQueryService().getCurrentVersion(nodeRef);
-            return curVersion.getVersionLabel();
-        }
-
-        return null;
-    }
-
     @Override
     public boolean getFinishButtonDisabled()
     {
         return property.getFile() == null;
     }
 
-    @Override
-    public String getFinishButtonLabel()
-    {
-        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DONE);
-    }
 
     @Override
     public String getContainerTitle()
@@ -93,6 +65,13 @@ public class UploadNewVersionDialog extends CheckinCheckoutDialog
     {
         property.setKeepCheckedOut(!finishedEditing);
         return checkinFileOK(context, outcome);
+    }
+    
+    @Override
+    public void resetState()
+    {
+        super.resetState();
+        finishedEditing = false;
     }
 
 }

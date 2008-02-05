@@ -77,10 +77,6 @@ if (fileUploaded)
                <h:column id="upload_empty" rendered="#{empty DialogManager.bean.fileName}">
                   <r:upload id="uploader" value="#{DialogManager.bean.fileName}" framework="dialog"/>
                </h:column>
-               <h:column id="upload_not_empty" rendered="#{!empty DialogManager.bean.fileName}">
-                  <h:outputText id="upload_name" value="#{DialogManager.bean.fileName}" style="padding-right:8px"/>
-                  <a:actionLink id="upload_remove" image="/images/icons/delete.gif" value="#{msg.remove}" action="#{DialogManager.bean.removeUploadedFile}" showLink="false"/>
-               </h:column>
             </h:panelGrid>
             <f:verbatim>
          </td>
@@ -91,7 +87,11 @@ if (fileUploaded)
    <tr>
       <td>
       </f:verbatim>
-         <a:booleanEvaluator value="#{DialogManager.bean.versionable && !empty DialogManager.bean.fileName}" > 
+         <%
+      if (fileUploaded)
+      {
+   %>
+         <a:booleanEvaluator value="#{DialogManager.bean.versionable}" > 
 	        <f:verbatim>
             <table cellpadding="2" cellspacing="2" border="0" width="100%">
                <tr>
@@ -106,11 +106,12 @@ if (fileUploaded)
                </tr>
                <tr>
                   <td> </f:verbatim>
-                     <h:selectOneRadio id="vvvv"  value="#{CCProperties.minorChange}" required="true" layout="pageDirection" rendered="#{DialogManager.bean.versionable && !empty DialogManager.bean.fileName}">
+                     <h:selectOneRadio id="vvvv"  value="#{CCProperties.minorChange}" required="true" layout="pageDirection" rendered="#{DialogManager.bean.versionable}">
                         <f:selectItem itemValue="#{true}" itemLabel="#{msg.minor_changes} (#{DialogManager.bean.minorNewVersionLabel})" />
                         <f:selectItem itemValue="#{false}" itemLabel="#{msg.major_changes} (#{DialogManager.bean.majorNewVersionLabel})" />
                      </h:selectOneRadio> 
                      <h:message for="vvvv"></h:message>
+
                      <f:verbatim>
                      </span> <br/>
                   </td>
@@ -130,13 +131,14 @@ if (fileUploaded)
                </tr>
             </table> </f:verbatim>
          </a:booleanEvaluator>
+      
       		 
       		<f:verbatim>
       </td>
       
-   </tr>
+   </tr> 
    </f:verbatim>
-      <a:booleanEvaluator value="#{!empty DialogManager.bean.fileName}">
+      
          <f:verbatim>
          <tr>
       	   <td class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.other_options}" /><f:verbatim></td>
@@ -149,7 +151,10 @@ if (fileUploaded)
    	  	   </td>
    	     </tr>
    	     </f:verbatim>
-   	  </a:booleanEvaluator>
+   	  
+   	      <% 
+      }
+          %>
    	  <f:verbatim>
 </table>
 </f:verbatim>

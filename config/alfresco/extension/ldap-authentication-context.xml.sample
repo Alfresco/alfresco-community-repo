@@ -33,7 +33,9 @@
     
     -->
     
-    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl">
+    <bean id="authenticationComponent"
+          class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl" 
+          parent="authenticationComponentBase">
         <property name="LDAPInitialDirContextFactory">
             <ref bean="ldapInitialDirContextFactory"/>
         </property>

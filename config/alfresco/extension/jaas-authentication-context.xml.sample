@@ -6,8 +6,9 @@
 
     <!-- Jass authentication - most of the config goes somewhere else       -->
        
-    <bean id="authenticationComponent" 
-                 class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent">
+    <bean id="authenticationComponent"
+          class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent"
+          parent="authenticationComponentBase">
         <property name="realm">
             <value>DEFAULT.REALM</value>
         </property>

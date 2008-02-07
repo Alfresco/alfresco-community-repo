@@ -148,7 +148,16 @@
         </property>
     </bean>
 
-    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl">
+    <!-- Parent bean for beans derived from AbstractAuthenticationComponent -->
+    <bean id="authenticationComponentBase" abstract="true">
+       <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+    </bean>
+   
+    <bean id="authenticationComponent"
+          class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl" 
+          parent="authenticationComponentBase">
         <property name="authenticationDao">
             <ref bean="authenticationDao" />
         </property>
@@ -158,9 +167,6 @@
         <property name="allowGuestLogin">
             <value>true</value>
         </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
     </bean>
 
 
@@ -169,7 +175,9 @@
     <!-- It should never go to the login screen  so this is not required          -->
 
     <!--
-    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl">
+    <bean id="authenticationComponent"
+          class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl"
+          parent="authenticationComponentBase">
         <property name="accept">
             <value>true</value>
         </property>

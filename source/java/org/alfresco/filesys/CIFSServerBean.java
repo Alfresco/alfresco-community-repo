@@ -87,7 +87,7 @@ public class CIFSServerBean extends AbstractLifecycleBean
      */
     public boolean isStarted()
     {
-        return (m_filesysConfig != null && m_filesysConfig.isServerRunning( "CIFS"));
+        return (!serverList.isEmpty() && m_filesysConfig.isServerRunning( "CIFS"));
     }
 
     /**
@@ -138,7 +138,12 @@ public class CIFSServerBean extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
-            m_filesysConfig = null;
+        	for (NetworkServer server : serverList)
+            {
+        		getConfiguration().removeServer(server.getProtocolName());
+            }
+        	
+            serverList.clear();
             throw new AlfrescoRuntimeException("Failed to start CIFS Server", e);
         }
         // success
@@ -171,10 +176,9 @@ public class CIFSServerBean extends AbstractLifecycleBean
             getConfiguration().removeServer(server.getProtocolName());
         }
         
-        // Clear the server list and configuration
+        // Clear the server list
         
         serverList.clear();
-        m_filesysConfig = null;
     }
 
     /**
@@ -277,6 +281,9 @@ public class CIFSServerBean extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         stopServer();
+        
+        // Clear the configuration
+        m_filesysConfig = null;
     }
 
 }

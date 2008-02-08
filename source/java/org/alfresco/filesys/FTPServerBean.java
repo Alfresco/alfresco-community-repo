@@ -85,7 +85,7 @@ public class FTPServerBean extends AbstractLifecycleBean
      */
     public boolean isStarted()
     {
-        return (filesysConfig != null && filesysConfig.isServerRunning("FTP"));
+        return (ftpServer != null && filesysConfig.isServerRunning("FTP"));
     }
 
     /**
@@ -123,7 +123,7 @@ public class FTPServerBean extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
-            filesysConfig = null;
+        	ftpServer = null;
             throw new AlfrescoRuntimeException("Failed to start FTP Server", e);
         }
         // success
@@ -156,10 +156,6 @@ public class FTPServerBean extends AbstractLifecycleBean
             getConfiguration().removeServer(ftpServer.getProtocolName());
             ftpServer = null;
         }
-        
-        // Clear the configuration
-        
-        filesysConfig = null;
     }
 
     /**
@@ -261,6 +257,9 @@ public class FTPServerBean extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         stopServer();
+        
+        // Clear the configuration
+        filesysConfig = null;
     }
     
 }

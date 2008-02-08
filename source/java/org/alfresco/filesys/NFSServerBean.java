@@ -91,7 +91,7 @@ public class NFSServerBean extends AbstractLifecycleBean
      */
     public boolean isStarted()
     {
-        return (m_filesysConfig != null && m_filesysConfig.isServerRunning( "NFS"));
+        return (!m_serverList.isEmpty() && m_filesysConfig.isServerRunning( "NFS"));
     }
 
     /**
@@ -142,7 +142,12 @@ public class NFSServerBean extends AbstractLifecycleBean
         }
         catch (Throwable e)
         {
-            m_filesysConfig = null;
+        	for (NetworkServer server : m_serverList)
+            {
+        		getConfiguration().removeServer(server.getProtocolName());
+            }
+            
+        	m_serverList.clear();
             throw new AlfrescoRuntimeException("Failed to start NFS Server", e);
         }
     }
@@ -177,10 +182,9 @@ public class NFSServerBean extends AbstractLifecycleBean
             getConfiguration().removeServer(server.getProtocolName());
         }
         
-        // Clear the server list and configuration
+        // Clear the server list
         
         m_serverList.clear();
-        m_filesysConfig = null;
     }
 
     /**
@@ -283,5 +287,8 @@ public class NFSServerBean extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         stopServer();
+        
+        // Clear the configuration
+        m_filesysConfig = null;
     }
 }

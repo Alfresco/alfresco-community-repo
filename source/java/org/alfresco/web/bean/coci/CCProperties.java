@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.web.bean.coci;
@@ -29,7 +29,6 @@ import java.io.File;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.bean.repository.Node;
 
@@ -38,9 +37,6 @@ public class CCProperties
 
     /** The VersionOperationsService to be used by the bean */
     protected CheckOutCheckInService versionOperationsService;
-
-    /** The VersionQueryService to be used by the bean */
-    protected VersionService versionQueryService;
 
     /** The ContentService to be used by the bean */
     protected ContentService contentService;
@@ -68,11 +64,11 @@ public class CCProperties
     private boolean isWorkflowAction = false;
     private String workflowTaskId;
     private NodeRef selectedSpaceId = null;
-
+    
     /** constants for copy location selection */
     public static final String COPYLOCATION_CURRENT = "current";
     public static final String COPYLOCATION_OTHER = "other";
-
+    
     private String versionNotes = "";
     private String copyLocation = COPYLOCATION_CURRENT;
 
@@ -91,23 +87,6 @@ public class CCProperties
     public void setVersionOperationsService(CheckOutCheckInService versionOperationsService)
     {
         this.versionOperationsService = versionOperationsService;
-    }
-
-    /**
-     * @return Returns the VersionQueryService.
-     */
-    public VersionService getVersionQueryService()
-    {
-        return this.versionQueryService;
-    }
-
-    /**
-     * @param versionQueryService
-     *            The VersionQueryService to set.
-     */
-    public void setVersionQueryService(VersionService versionQueryService)
-    {
-        this.versionQueryService = versionQueryService;
     }
 
     /**
@@ -326,7 +305,7 @@ public class CCProperties
     {
         this.workflowTaskId = workflowTaskId;
     }
-
+    
     /**
      * @return Returns the version history notes.
      */
@@ -343,7 +322,7 @@ public class CCProperties
     {
         this.versionNotes = versionNotes;
     }
-
+    
     /**
      * @return Returns the copy location. Either the current or other space.
      */
@@ -351,7 +330,7 @@ public class CCProperties
     {
         if (this.getFileName() == null || this.getFileName().length() == 0)
         {
-             return this.copyLocation;
+        	 return this.copyLocation;
         }
         else
         {

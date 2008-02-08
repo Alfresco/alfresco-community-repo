@@ -3403,6 +3403,10 @@
          <property-name>formsService</property-name>
          <value>#{FormsService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

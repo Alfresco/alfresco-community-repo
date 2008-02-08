@@ -61,6 +61,12 @@ import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -75,6 +81,7 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
@@ -113,6 +120,7 @@ public class AVMBrowseBean implements IContextListener
    private static final String MSG_CREATED_ON = "store_created_on";
    private static final String MSG_CREATED_BY = "store_created_by";
    private static final String MSG_WORKING_USERS = "store_working_users";
+   private static final String MSG_SEARCH_FORM_CONTENT = "search_form_content";
 
    /** Component id the status messages are tied too */
    static final String COMPONENT_SANDBOXESPANEL = "sandboxes-panel";
@@ -184,6 +192,11 @@ public class AVMBrowseBean implements IContextListener
    private String pageSizeFoldersStr;
    private String pageSizeFilesStr;
    
+   /** search query string */
+   private String websiteQuery;
+   
+   private SearchContext searchContext = null;
+   
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;
    
@@ -204,6 +217,10 @@ public class AVMBrowseBean implements IContextListener
 
    /** The FormsService reference */
    protected FormsService formsService;
+   
+   /** The SearchService reference */
+   protected SearchService searchService;
+   
    
    /**
     * Default Constructor
@@ -250,6 +267,14 @@ public class AVMBrowseBean implements IContextListener
    public void setWorkflowService(WorkflowService service)
    {
       workflowService = service;
+   }
+   
+   /**
+    * @param searchService The Searcher to set.
+    */
+   public void setSearchService(SearchService searchService)
+   {
+      this.searchService = searchService;
    }
    
    /**
@@ -641,6 +666,22 @@ public class AVMBrowseBean implements IContextListener
    {
       this.snapshotDateFilter = snapshotDateFilter;
    }
+   
+   /**
+    * @return the website search query string
+    */
+   public String getWebsiteQuery()
+   {
+       return this.websiteQuery;
+   }
+
+   /**
+    * @param websiteQuery   The website search query string
+    */
+   public void setWebsiteQuery(String websiteQuery)
+   {
+       this.websiteQuery = websiteQuery;
+   }
 
    /**
     * @return icon image for the appropriate sandbox type
@@ -740,6 +781,9 @@ public class AVMBrowseBean implements IContextListener
          this.currentPathNode = null; 
       }
       
+      // clear the search context as we have navigated to a folder path
+      this.searchContext = null;
+      
       // update UI state ready for screen refresh
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
@@ -823,13 +867,28 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @return the Search Context object for the current website project
+    */
+   public SearchContext getSearchContext()
+   {
+      return this.searchContext;
+   }
+
+   /**
     * @return Map of avm node objects representing the folders with the current website space
     */
    public List<Map> getFolders()
    {
       if (this.folders == null)
       {
-         getNodes();
+         if (this.searchContext == null)
+         {
+            buildDirectoryNodes();
+         }
+         else
+         {
+            buildSearchNodes();
+         }
       }
       return this.folders;
    }
@@ -841,7 +900,14 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.files == null)
       {
-         getNodes();
+         if (this.searchContext == null)
+         {
+            buildDirectoryNodes();
+         }
+         else
+         {
+            buildSearchNodes();
+         }
       }
       return this.files;
    }
@@ -849,7 +915,7 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Build the lists of files and folders within the current browsing path in a website space
     */
-   private void getNodes()
+   private void buildDirectoryNodes()
    {
       UserTransaction tx = null;
       try
@@ -865,26 +931,8 @@ public class AVMBrowseBean implements IContextListener
          {
             AVMNodeDescriptor avmRef = nodes.get(name);
             
-            // build the client representation of the AVM node
-            AVMNode node = new AVMNode(avmRef);
-            String path = avmRef.getPath();
-            
-            // properties specific to folders or files
-            if (avmRef.isDirectory())
-            {
-               node.getProperties().put("smallIcon", BrowseBean.SPACE_SMALL_DEFAULT);
-               this.folders.add(node);
-            }
-            else
-            {
-               node.getProperties().put("fileType16", Utils.getFileTypeImage(name, true));
-               node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
-                     AVMNodeConverter.ToNodeRef(-1, path), name));
-               this.files.add(node);
-            }
-            
-            // common properties
-            node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
+            // build and add the client representation of the AVM node
+            addAVMNodeResult(avmRef);
          }
          
          // commit the transaction
@@ -898,6 +946,133 @@ public class AVMBrowseBean implements IContextListener
          this.files = Collections.<Map>emptyList();
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
+   }
+   
+   /**
+    * Build the lists of files and folders from the current search context in a website space
+    */
+   private void buildSearchNodes()
+   {
+      String query = this.searchContext.buildQuery(getMinimumSearchLength());
+      if (query == null)
+      {
+         // failed to build a valid query, the user probably did not enter the
+         // minimum text required to construct a valid search
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(),
+               BrowseBean.MSG_SEARCH_MINIMUM), new Object[] {getMinimumSearchLength()}));
+         this.folders = Collections.<Map>emptyList();
+         this.files = Collections.<Map>emptyList();
+         return;
+      }
+
+      UserTransaction tx = null;
+      ResultSet results = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         // build up the search parameters
+         SearchParameters sp = new SearchParameters();
+         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+         sp.setQuery(query);
+         // add the Staging Store for this website - it is the only searchable store for now
+         sp.addStore(new StoreRef(StoreRef.PROTOCOL_AVM, getStagingStore()));
+         
+         // limit search results size as configured
+         int searchLimit = Application.getClientConfig(context).getSearchMaxResults();
+         if (searchLimit > 0)
+         {
+            sp.setLimitBy(LimitBy.FINAL_SIZE);
+            sp.setLimit(searchLimit);
+         }
+         
+         results = this.searchService.query(sp);
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Search results returned: " + results.length());
+         
+         // filter hidden folders above the web app
+         boolean isStagingStore = getIsStagingStore();
+         int sandboxPathLength = AVMUtil.getSandboxPath(getCurrentPath()).length();
+         
+         this.files = new ArrayList<Map>(results.length());
+         this.folders = new ArrayList<Map>(results.length());
+         for (ResultSetRow row : results)
+         {
+            NodeRef nodeRef = row.getNodeRef();
+            
+            // Modify the path to point to the current user sandbox - this change is performed so
+            // that any action permission evaluators will correctly resolve for the current user.
+            // Therefore deleted node will be filtered out by the lookup() call, but some text based
+            // results may be incorrect - however a note is provided in the search UI to indicate this.
+            String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+            if (isStagingStore == false)
+            {
+               path = getSandbox() + ':' + AVMUtil.getStoreRelativePath(path);
+            }
+            if (path.length() > sandboxPathLength)
+            {
+               AVMNodeDescriptor avmRef = this.avmService.lookup(-1, path);
+               if (avmRef != null)
+               {
+                  AVMNode node = addAVMNodeResult(avmRef);
+                  
+                  // add extra properties for search results lists
+                  node.addPropertyResolver("displayPath", AVMNode.RESOLVER_DISPLAY_PATH);
+                  node.addPropertyResolver("parentPath", AVMNode.RESOLVER_PARENT_PATH);
+               }
+            }
+         }
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         this.folders = Collections.<Map>emptyList();
+         this.files = Collections.<Map>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+      finally
+      {
+         if (results != null)
+         {
+            results.close();
+         }
+      }
+   }
+   
+   /**
+    * Add an AVM node result to the list of files/folders to display. Applies various
+    * client pseudo properties resolver objects used for list display columns.
+    */
+   private AVMNode addAVMNodeResult(AVMNodeDescriptor avmRef)
+   {
+      // build the client representation of the AVM node
+      AVMNode node = new AVMNode(avmRef);
+      
+      // properties specific to folders or files
+      if (avmRef.isDirectory())
+      {
+         node.getProperties().put("smallIcon", BrowseBean.SPACE_SMALL_DEFAULT);
+         this.folders.add(node);
+      }
+      else
+      {
+         node.getProperties().put("fileType16", Utils.getFileTypeImage(avmRef.getName(), true));
+         node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
+               AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), avmRef.getName()));
+         this.files.add(node);
+      }
+      
+      // common properties
+      node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
+      
+      return node;
    }
    
    /**
@@ -916,6 +1091,14 @@ public class AVMBrowseBean implements IContextListener
    public boolean getAllItemsAction()
    {
       return this.allItemsAction;
+   }
+   
+   /**
+    * @return true if the current sandbox is a Staging store, false otherwise
+    */
+   public boolean getIsStagingStore()
+   {
+      return (this.sandbox != null && this.sandbox.indexOf(AVMUtil.STORE_SEPARATOR) == -1);
    }
    
    
@@ -996,6 +1179,8 @@ public class AVMBrowseBean implements IContextListener
          setAvmActionNode(null);
          this.allItemsAction = false;
       }
+      
+      this.websiteQuery = null;
    }
    
    /**
@@ -1005,14 +1190,14 @@ public class AVMBrowseBean implements IContextListener
     * 
     * @param event   ActionEvent
     */
-   public void setupContentAction(final ActionEvent event)
+   public void setupContentAction(ActionEvent event)
    {
-      final UIActionLink link = (UIActionLink)event.getComponent();
-      final Map<String, String> params = link.getParameterMap();
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
       this.setupContentAction(params.get("id"), true);
    }
    
-   /*package*/ void setupContentAction(final String path, final boolean refresh)
+   /*package*/ void setupContentAction(String path, boolean refresh)
    {
       if (logger.isDebugEnabled())
          logger.debug("Setup content action for path: " + path);
@@ -1025,9 +1210,9 @@ public class AVMBrowseBean implements IContextListener
       {
          // calculate username and store name from specified path
          String storeName = AVMUtil.getStoreName(path);
-         final String storeId = AVMUtil.getStoreId(storeName);
-         final String webapp = AVMUtil.getWebapp(path);
-         final String username = AVMUtil.getUserName(storeName);
+         String storeId = AVMUtil.getStoreId(storeName);
+         String webapp = AVMUtil.getWebapp(path);
+         String username = AVMUtil.getUserName(storeName);
          if (username == null)
          {
             storeName = (AVMUtil.isPreviewStore(storeName)
@@ -1063,10 +1248,10 @@ public class AVMBrowseBean implements IContextListener
     * Action handler called to calculate which editing screen to display based on the mimetype
     * of a document. If appropriate, the in-line editing screen will be shown.
     */
-   public void setupEditAction(final ActionEvent event)
+   public void setupEditAction(ActionEvent event)
    {
-      final UIActionLink link = (UIActionLink)event.getComponent();
-      final Map<String, String> params = link.getParameterMap();
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
       this.setupEditAction(params.get("id"));
    }
    
@@ -1074,7 +1259,7 @@ public class AVMBrowseBean implements IContextListener
     * Action handler called to calculate which editing screen to display based on the mimetype
     * of a document. If appropriate, the in-line editing screen will be shown.
     */
-   public void setupEditAction(final String path)
+   public void setupEditAction(String path)
    {
       this.setupContentAction(path, true);
       
@@ -1137,7 +1322,7 @@ public class AVMBrowseBean implements IContextListener
          
       logger.debug("outcome " + outcome + " for path " + path);
          
-      final FacesContext fc = FacesContext.getCurrentInstance();
+      FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
    }
    
@@ -1306,7 +1491,7 @@ public class AVMBrowseBean implements IContextListener
    /**
     * Create web content from a specific Form via the User Sandbox 'Available Forms' panel
     */
-   public void createFormContent(final ActionEvent event)
+   public void createFormContent(ActionEvent event)
    {
       // setup the correct sandbox for the create action
       this.setupSandboxAction(event);
@@ -1315,6 +1500,31 @@ public class AVMBrowseBean implements IContextListener
       Application.getWizardManager().setupParameters(event);
       final FacesContext fc = FacesContext.getCurrentInstance();
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:createWebContent");
+   }
+   
+   /**
+    * Perform a canned search for previously generated Form content 
+    */
+   public void searchFormContent(ActionEvent event)
+   {
+      // setup the correct sandbox for the canned search
+      this.setupSandboxAction(event);
+      
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String formName = params.get(UIUserSandboxes.PARAM_FORM_NAME);
+      
+      StringBuilder query = new StringBuilder(256);
+      query.append("+ASPECT:\"").append(WCMAppModel.ASPECT_FORM_INSTANCE_DATA).append("\"");
+      query.append(" -ASPECT:\"").append(WCMAppModel.ASPECT_RENDITION).append("\"");
+      query.append(" +@").append(Repository.escapeQName(WCMAppModel.PROP_PARENT_FORM_NAME))
+           .append(":\"").append(formName).append("\"");
+      FormSearchContext searchContext = new FormSearchContext();
+      searchContext.setCannedQuery(query.toString(), formName);
+      
+      // set the search context - when the view is refreshed, this will be detected and
+      // the search results mode of the AVM Browse screen will be displayed 
+      this.searchContext = searchContext;
    }
    
    /**
@@ -1432,6 +1642,34 @@ public class AVMBrowseBean implements IContextListener
       }
    }
    
+   /**
+    * Perform a lucene search of the website
+    */
+   public void searchWebsite(ActionEvent event)
+   {
+      if (this.websiteQuery != null && this.websiteQuery.length() != 0)
+      {
+         SearchContext searchContext = new SearchContext();
+         
+         searchContext.setText(this.websiteQuery);
+         
+         // set the search context - when the view is refreshed, this will be detected and
+         // the search results mode of the AVM Browse screen will be displayed 
+         this.searchContext = searchContext;
+         
+         resetFileFolderLists();
+      }
+   }
+   
+   /**
+    * Action called to Close the search dialog by returning to the last viewed path
+    */
+   public void closeSearch(ActionEvent event)
+   {
+      this.searchContext = null;
+      resetFileFolderLists();
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Private helpers
@@ -1481,11 +1719,22 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * Update the breadcrumb with the clicked Group location
+    * Update the breadcrumb with the clicked Folder path location
     */
    private void updateUILocation(String path)
    {
-      this.location.add(new AVMBreadcrumbHandler(path));
+      // fully update the entire breadcrumb path - i.e. do not append as may
+      // have navigated from deeper sub-folder (search results)
+      int sandboxPathLength = AVMUtil.getSandboxPath(path).length();
+      String currentPath = path;
+      this.location.clear();
+      while (currentPath.length() != sandboxPathLength)
+      {
+         this.location.add(new AVMBreadcrumbHandler(currentPath));
+         currentPath = AVMNodeConverter.SplitBase(currentPath)[0];
+      }
+      Collections.reverse(this.location);
+      
       setCurrentPath(path);
    }
    
@@ -1499,6 +1748,14 @@ public class AVMBrowseBean implements IContextListener
       return params.get("id");
    }
    
+   /**
+    * @return Returns the minimum length of a valid search string.
+    */
+   public static int getMinimumSearchLength()
+   {
+      return Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMinimum();
+   }
+   
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation 
@@ -1507,6 +1764,14 @@ public class AVMBrowseBean implements IContextListener
     * @see org.alfresco.web.app.context.IContextListener#contextUpdated()
     */
    public void contextUpdated()
+   {
+      resetFileFolderLists();
+      
+      // clear webapp listing as we may have returned from the Create Webapp dialog
+      this.webapps = null;
+   }
+
+   private void resetFileFolderLists()
    {
       if (this.foldersRichList != null)
       {
@@ -1519,9 +1784,6 @@ public class AVMBrowseBean implements IContextListener
       
       this.files = null;
       this.folders = null;
-      
-      // clear webapp listing as we may have returned from the Create Webapp dialog
-      this.webapps = null;
    }
    
    /**
@@ -1583,6 +1845,37 @@ public class AVMBrowseBean implements IContextListener
          {
             return path.substring(path.lastIndexOf('/') + 1);
          }
+      }
+   }
+   
+   /**
+    * Wrap SearchContext to allow prebuilt canned Form query to be apply as search context
+    */
+   public class FormSearchContext extends SearchContext
+   {
+      private String cannedQuery = null;
+      private String formName;
+      
+      public void setCannedQuery(String q, String formName)
+      {
+         this.cannedQuery = q;
+         this.formName = formName;
+      }
+      
+      @Override
+      public String buildQuery(int minimum)
+      {
+         return (this.cannedQuery == null ? super.buildQuery(minimum) : this.cannedQuery);
+      }
+
+      @Override
+      public String getText()
+      {
+         return (this.cannedQuery == null ?
+                     super.getText() :
+                     MessageFormat.format(
+                           Application.getMessage(FacesContext.getCurrentInstance(), MSG_SEARCH_FORM_CONTENT),
+                           this.formName));
       }
    }
 }

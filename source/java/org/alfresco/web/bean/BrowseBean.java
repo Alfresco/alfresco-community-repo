@@ -269,10 +269,9 @@ public class BrowseBean implements IContextListener
    /**
     * @return Returns the minimum length of a valid search string.
     */
-   public int getMinimumSearchLength()
+   public static int getMinimumSearchLength()
    {
-      return Application.getClientConfig(FacesContext.getCurrentInstance()).
-            getSearchMinimum();
+      return Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMinimum();
    }
 
    /**
@@ -641,6 +640,7 @@ public class BrowseBean implements IContextListener
       // nothing to do
    }
 
+   
    // ------------------------------------------------------------------------------
    // NodeEventListener listeners
 
@@ -903,14 +903,15 @@ public class BrowseBean implements IContextListener
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
 
-         // Limit search to the first 100 matches
+         // build up the search parameters
          SearchParameters sp = new SearchParameters();
          sp.setLanguage(SearchService.LANGUAGE_LUCENE);
          sp.setQuery(query);
          sp.addStore(Repository.getStoreRef());
 
+         // limit search results size as configured
          int searchLimit = Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMaxResults();
-         if(searchLimit > 0)
+         if (searchLimit > 0)
          {
             sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setLimit(searchLimit);
@@ -1972,6 +1973,8 @@ public class BrowseBean implements IContextListener
    // ------------------------------------------------------------------------------
    // Private data
 
+   private static Log logger = LogFactory.getLog(BrowseBean.class);
+   
    /** Browse screen view ID */
    public static final String BROWSE_VIEW_ID    = "/jsp/browse/browse.jsp";
    public static final String CATEGORY_VIEW_ID  = "/jsp/browse/category-browse.jsp";
@@ -1984,9 +1987,7 @@ public class BrowseBean implements IContextListener
 
    /** I18N messages */
    private static final String MSG_DELETE_COMPANYROOT = "delete_companyroot_confirm";
-   private static final String MSG_SEARCH_MINIMUM     = "search_minimum";
-
-   private static Log    logger = LogFactory.getLog(BrowseBean.class);
+   public static final String MSG_SEARCH_MINIMUM      = "search_minimum";
 
    /** The NodeService to be used by the bean */
    protected NodeService nodeService;

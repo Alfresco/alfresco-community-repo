@@ -57,7 +57,6 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class AVMNode extends Node implements Map<String, Object>
 {
-
    public final static NodePropertyResolver RESOLVER_PREVIEW_URL =
       new NodePropertyResolver()
       {
@@ -125,7 +124,37 @@ public class AVMNode extends Node implements Map<String, Object>
             }
          }
       };
+   
+   public final static NodePropertyResolver RESOLVER_DISPLAY_PATH =
+      new NodePropertyResolver()
+      {
+         public Object get(final Node node)
+         {
+            if (! (node instanceof AVMNode))
+            {
+               return null;
+            }
+            
+            // the display path is the parent path to the node
+            String parentPath = AVMNodeConverter.SplitBase(node.getPath())[0];
+            return AVMUtil.getSandboxRelativePath(parentPath);
+         }
+      };
 
+   public final static NodePropertyResolver RESOLVER_PARENT_PATH =
+      new NodePropertyResolver()
+      {
+         public Object get(final Node node)
+         {
+            if (! (node instanceof AVMNode))
+            {
+               return null;
+            }
+            
+            return AVMNodeConverter.SplitBase(node.getPath())[0];
+         }
+      };
+   
    private final AVMNodeDescriptor avmRef;
    private LayeringDescriptor layeringDesc;
    private final int version;

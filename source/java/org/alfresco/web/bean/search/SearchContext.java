@@ -64,7 +64,7 @@ import org.dom4j.io.XMLWriter;
  * 
  * @author Kevin Roast
  */
-public final class SearchContext implements Serializable
+public class SearchContext implements Serializable
 {
    private static final long serialVersionUID = 6730844584074229969L;
    

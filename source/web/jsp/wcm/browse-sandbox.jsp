@@ -38,15 +38,20 @@
 <script type="text/javascript">
    function applySizeFolders(e)
    {
-      return applySize(e, 'folders-apply');
+      return submitAction(e, 'folders-apply');
    }
    
    function applySizeFiles(e)
    {
-      return applySize(e, 'files-apply');
+      return submitAction(e, 'files-apply');
    }
    
-   function applySize(e, field)
+   function searchWebsite(e)
+   {
+      return submitAction(e, 'search-apply');
+   }
+   
+   function submitAction(e, field)
    {
       var keycode;
       if (window.event) keycode = window.event.keyCode;
@@ -99,32 +104,52 @@
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
                      <table cellspacing=4 cellpadding=0 width=100%>
                         <tr>
-                           <td width=32>
-                              <h:graphicImage id="space-logo" url="#{AVMBrowseBean.icon}" width="32" height="32" />
-                           </td>
-                           <td>
-                              <%-- Summary --%>
-                              <div class="mainTitle"><h:outputText value="#{AVMBrowseBean.sandboxTitle}" id="msg2" /></div>
-                              <div class="mainSubText"><h:outputText value="#{msg.sandbox_info}" id="msg3" /></div>
-                              <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
-                           </td>
-                           <td style="white-space:nowrap">
-                              <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" />
-                           </td>
-                           <r:permissionEvaluator value="#{AVMBrowseBean.currentPathNode}" allow="CreateChildren" id="eval1">
-                           <td style="padding-left:4px;white-space:nowrap" width=120>
-                              <%-- Create actions menu --%>
-                              <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.currentPathNode}" />
-                              </a:menu>
-                           </td>
-                           </r:permissionEvaluator>
-                           <%-- More actions menu --%>
-                           <%-- <td style="padding-left:4px" width=80>
-                              <a:menu id="actionsMenu" itemSpacing="4" label="#{msg.more_actions}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
-                                 <r:actions id="acts_more" value="avm_more_menu" context="#{AVMBrowseBean.currentPathNode}" />
-                              </a:menu>
-                           </td>--%>
+                           
+                           <%-- actions for browse mode --%>
+                           <a:panel id="browse-actions" rendered="#{AVMBrowseBean.searchContext == null}">
+                              <td width=32>
+                                 <h:graphicImage id="website-logo" url="#{AVMBrowseBean.icon}" width="32" height="32" />
+                              </td>
+                              <td>
+                                 <%-- Summary --%>
+                                 <div class="mainTitle"><h:outputText value="#{AVMBrowseBean.sandboxTitle}" id="msg2" /></div>
+                                 <div class="mainSubText"><h:outputText value="#{msg.sandbox_info}" id="msg3" /></div>
+                                 <div class="mainSubText"><h:outputText value="#{NavigationBean.nodeProperties.description}" id="msg4" /></div>
+                              </td>
+                              <td style="white-space:nowrap">
+                                 <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" id="act-prev" />
+                              </td>
+                              <r:permissionEvaluator value="#{AVMBrowseBean.currentPathNode}" allow="CreateChildren" id="eval1">
+                              <td style="padding-left:4px;white-space:nowrap" width=120>
+                                 <%-- Create actions menu --%>
+                                 <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                    <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.currentPathNode}" />
+                                 </a:menu>
+                              </td>
+                              </r:permissionEvaluator>
+                           </a:panel>
+                           
+                           <%-- actions for search results mode --%>
+                           <a:panel id="search-actions" rendered="#{AVMBrowseBean.searchContext != null}">
+                              <td width=32>
+                                 <img src="<%=request.getContextPath()%>/images/icons/search_results_large.gif" width=32 height=32>
+                              </td>
+                              <td>
+                                 <%-- Summary --%>
+                                 <div class="mainTitle"><h:outputText value="#{msg.search_results}" id="msg5" /></div>
+                                 <div class="mainSubText"><h:outputFormat value="#{msg.search_detail}" id="msg6"><f:param value="#{AVMBrowseBean.searchContext.text}" id="param1" /></h:outputFormat></div>
+                                 <h:panelGroup id="sandbox-info" rendered="#{!AVMBrowseBean.isStagingStore}">
+                                    <div class="mainSubText">
+                                       <h:graphicImage url="/images/icons/info_icon.gif" id="img-info" width="16" height="16" style="padding-right:3px;vertical-align:middle" />
+                                       <h:outputText value="#{msg.search_sandbox_warn}" id="msg7" style="font-weight:bold" />
+                                    </div>
+                                 </h:panelGroup>
+                              </td>
+                              <td style="padding-right:4px" align=right>
+                                 <%-- Close Search action --%>
+                                 <a:actionLink value="#{msg.close_search}" image="/images/icons/action.gif" style="white-space:nowrap" actionListener="#{AVMBrowseBean.closeSearch}" id="act-close" />
+                              </td>
+                           </a:panel>
                         </tr>
                      </table>
                      
@@ -153,7 +178,12 @@
                <tr>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding-left:8px;padding-top:4px;padding-bottom:4px">
-                     <a:breadcrumb value="#{AVMBrowseBean.location}" styleClass="title" />
+                     <div style="float:left"><a:breadcrumb value="#{AVMBrowseBean.location}" styleClass="title" /></div>
+                     <div style="float:right;padding-right:4px">
+                        <h:outputText value="#{msg.search_website}:" id="txt-search" />
+                        <h:inputText id="web-search" value="#{AVMBrowseBean.websiteQuery}" style="margin-left:4px;margin-right:4px;width:120px" maxlength="1024" onkeyup="return searchWebsite(event);" />
+                        <a:actionLink id="search-apply" value="#{msg.go}" image="/images/icons/search_icon.gif" showLink="false" actionListener="#{AVMBrowseBean.searchWebsite}" />
+                     </div>
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>
@@ -180,9 +210,9 @@
                               value="#{AVMBrowseBean.folders}" var="r">
                            
                            <%-- Primary column with folder name --%>
-                           <a:column primary="true" width="200" style="padding:2px;text-align:left">
+                           <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">
                               <f:facet name="header">
-                                 <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+                                 <a:sortLink id="col1-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                               </f:facet>
                               <f:facet name="small-icon">
                                  <a:actionLink id="col1-act1" value="#{r.name}" image="/images/icons/#{r.smallIcon}.gif" actionListener="#{AVMBrowseBean.clickFolder}" showLink="false">
@@ -192,7 +222,17 @@
                               <a:actionLink id="col1-act2" value="#{r.name}" actionListener="#{AVMBrowseBean.clickFolder}">
                                  <f:param name="id" value="#{r.id}" />
                               </a:actionLink>
-                              <w:avmLockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
+                              <w:avmLockIcon id="col1-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           </a:column>
+                           
+                           <%-- Path column for search results mode --%>
+                           <a:column id="col2" style="text-align:left" rendered="#{AVMBrowseBean.searchContext != null}">
+                              <f:facet name="header">
+                                 <a:sortLink id="col2-sort" label="#{msg.path}" value="id" styleClass="header"/>
+                              </f:facet>
+                              <a:actionLink id="col2-act1" value="#{r.displayPath}" actionListener="#{AVMBrowseBean.clickFolder}">
+                                 <f:param name="id" value="#{r.parentPath}" />
+                              </a:actionLink>
                            </a:column>
                            
                            <%-- Creator column --%>
@@ -281,6 +321,16 @@
                               </f:facet>
                               <a:actionLink id="col10-act2" value="#{r.name}" href="#{r.url}" target="new" />
                               <w:avmLockIcon id="col10-lock" value="#{r.nodeRef}" align="absmiddle" />
+                           </a:column>
+                           
+                           <%-- Path column for search results mode --%>
+                           <a:column id="col11" style="text-align:left" rendered="#{AVMBrowseBean.searchContext != null}">
+                              <f:facet name="header">
+                                 <a:sortLink id="col11-sort" label="#{msg.path}" value="id" styleClass="header"/>
+                              </f:facet>
+                              <a:actionLink id="col11-act1" value="#{r.displayPath}" actionListener="#{AVMBrowseBean.clickFolder}">
+                                 <f:param name="id" value="#{r.parentPath}" />
+                              </a:actionLink>
                            </a:column>
                            
                            <%-- Size column --%>

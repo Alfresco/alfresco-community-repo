@@ -99,6 +99,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
 {
    private static Log logger = LogFactory.getLog(UIUserSandboxes.class);
    
+   private static final String ACT_FIND_FORM_CONTENT = "find_form_content";
    private static final String ACT_CREATE_FORM_CONTENT = "create_form_content";
    private static final String ACT_SANDBOX_REVERTSELECTED = "sandbox_revertselected";
    private static final String ACT_SANDBOX_SUBMITSELECTED = "sandbox_submitselected";
@@ -869,32 +870,59 @@ public class UIUserSandboxes extends SelfRenderingComponent
             out.write("</td><td>");
             String desc = (String)f.getDescription();
             out.write(desc != null ? desc : "");
-            out.write("</td><td><nobr>");
+            out.write("</td><td>");
+            
+            // set the form-id into the request scope for actions data binding
+            requestMap.put(REQUEST_FORM_REF, f);
+            
             // actions
             UIActionLink action = findAction(ACT_CREATE_FORM_CONTENT, userStorePrefix);
             if (action == null)
             {
                // create content action passes the ID of the Form to uses
-               Map<String, String> params = new HashMap<String, String>(3, 1.0f);
+               Map<String, String> params = new HashMap<String, String>(4, 1.0f);
                // setup a data-binding param for the Form ID
                params.put(PARAM_FORM_NAME, "#{" + REQUEST_FORM_REF + ".name}");
                params.put("username", username);
                params.put("store", userStorePrefix);
-               action = createAction(fc, 
-                                     userStorePrefix, 
-                                     username, 
+               action = createAction(fc,
+                                     userStorePrefix,
+                                     username,
                                      ACT_CREATE_FORM_CONTENT,
-                                     "/images/icons/new_content.gif", 
-                                     "#{AVMBrowseBean.createFormContent}", 
-                                     null, 
-                                     null, 
+                                     "/images/icons/new_content.gif",
+                                     "#{AVMBrowseBean.createFormContent}",
+                                     null,
+                                     null,
                                      params);
             }
-            // set the form-id into the request scope for data binding
-            requestMap.put(REQUEST_FORM_REF, f);
             Utils.encodeRecursive(fc, action);
+            
+            out.write("&nbsp;&nbsp;");
+            
+            action = findAction(ACT_FIND_FORM_CONTENT, userStorePrefix);
+            if (action == null)
+            {
+               // create content action passes the ID of the Form to uses
+               Map<String, String> params = new HashMap<String, String>(4, 1.0f);
+               // setup a data-binding param for the Form ID
+               params.put(PARAM_FORM_NAME, "#{" + REQUEST_FORM_REF + ".name}");
+               params.put("username", username);
+               params.put("store", userStorePrefix);
+               action = createAction(fc,
+                                     userStorePrefix,
+                                     username,
+                                     ACT_FIND_FORM_CONTENT,
+                                     "/images/icons/search_icon.gif",
+                                     "#{AVMBrowseBean.searchFormContent}",
+                                     "browseSandbox",
+                                     null,
+                                     params);
+            }
+            Utils.encodeRecursive(fc, action);
+            
             requestMap.remove(REQUEST_FORM_REF);
-            out.write("</nobr></td></tr>");
+            
+            out.write("</td></tr>");
          }
          
          out.write("</table>");

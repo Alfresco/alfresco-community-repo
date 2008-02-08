@@ -41,7 +41,7 @@ public interface AVMNode
      * @param ancestor The ancestor to set.
      */
     public void setAncestor(AVMNode ancestor);
-    
+
     /**
      * Change the ancestor of a node.
      * @param ancestor The ancestor node that should be set.
@@ -114,26 +114,26 @@ public interface AVMNode
      * @return The descriptor for this node.
      */
     public AVMNodeDescriptor getDescriptor(String parentPath, String name, String parentIndirection, int parentIndirectionVersion);
-    
+
     /**
      * Get the object id.
      * @return The object id.
      */
     public long getId();
-    
+
     /**
      * Get the newnews.
      * @return Whether the node is new.
      */
     public boolean getIsNew();
-    
+
     /**
      * Get a string representation for debugging.
      * @param lPath The Lookup.
      * @return A String representation.
      */
     public String toString(Lookup lPath);
-    
+
     /**
      * Set whether this node to be a root of a AVMStore
      * @param isRoot
@@ -145,91 +145,91 @@ public interface AVMNode
      * @return Whether this node is a root.
      */
     public boolean getIsRoot();
-    
+
     /**
      * Update the modification time of this node.
      */
     public void updateModTime();
-    
+
     /**
      * Set a property.
      * @param name The name of the property.
      * @param value The value to set.
      */
     public void setProperty(QName name, PropertyValue value);
-    
+
     /**
      * Set a collection of properties on this node.
      * @param properties The Map of QNames to PropertyValues.
      */
     public void setProperties(Map<QName, PropertyValue> properties);
-    
+
     /**
      * Get a property by name.
      * @param name The name of the property to get.
      * @return A PropertyValue
      */
     public PropertyValue getProperty(QName name);
-    
+
     /**
      * Get all the properties associated with this node.
      * @return A Map of QNames to PropertyValues.
      */
     public Map<QName, PropertyValue> getProperties();
-    
+
     /**
      * Delete a property from this node.
      * @param name The name of the property.
      */
     public void deleteProperty(QName name);
-    
+
     /**
      * Delete all properties from this node.
      */
     public void deleteProperties();
-    
+
     /**
      * Set an ACL on this node.
      * @param acl The ACL to set.
      */
     public void setAcl(DbAccessControlList acl);
-    
+
     /**
      * Get the ACL on this node.
      * @return The ACL on this node.
      */
     public DbAccessControlList getAcl();
-    
+
     /**
      * Set the store that we are new in.
      * @param store The store we are new in.
      */
     public void setStoreNew(AVMStore store);
-    
+
     /**
      * Get the possibly null store that we're new in.
      * @return The store that we're new in.
      */
     public AVMStore getStoreNew();
-    
+
     /**
      * Copy metadata from another node.
      * @param other The other node.
      */
     public void copyMetaDataFrom(AVMNode other);
-    
+
     /**
      * Get the GUID associated with this version.
      * @return The GUID.
      */
     public String getGuid();
-    
+
     /**
      * Set the GUID associated with this version.
      * @param guid
      */
     public void setGuid(String guid);
-    
+
     /**
      * Get the Aspects that this node has.
      * @return A Set of Aspects names.
@@ -241,4 +241,10 @@ public interface AVMNode
      * @param properties The properties to add.
      */
     public void addProperties(Map<QName, PropertyValue> properties);
+
+    /**
+     * Get the Basic Attributes on this node.
+     * @return
+     */
+    public BasicAttributes getBasicAttributes();
 }

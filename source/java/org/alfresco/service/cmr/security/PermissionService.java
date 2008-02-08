@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.service.cmr.security;
@@ -35,7 +35,7 @@ import org.apache.axis.wsdl.symbolTable.Parameters;
 
 /**
  * The public API for a permission service The implementation may be changed in the application configuration
- * 
+ *
  * @author Andy Hind
  */
 @PublicService
@@ -149,9 +149,13 @@ public interface PermissionService
 
     public static final String CANCEL_CHECK_OUT = "CancelCheckOut";
 
+    public static final String ASPECTS = "Aspects";
+
+    public static final String PROPERTIES = "Properties";
+
     /**
      * Get the Owner Authority
-     * 
+     *
      * @return the owner authority
      */
     @Auditable
@@ -159,7 +163,7 @@ public interface PermissionService
 
     /**
      * Get the All Authorities
-     * 
+     *
      * @return the All authorities
      */
     @Auditable
@@ -167,7 +171,7 @@ public interface PermissionService
 
     /**
      * Get the All Permission
-     * 
+     *
      * @return the All permission
      */
     @Auditable
@@ -175,7 +179,7 @@ public interface PermissionService
 
     /**
      * Get all the AccessPermissions that are granted/denied to the current authentication for the given node
-     * 
+     *
      * @param nodeRef -
      *            the reference to the node
      * @return the set of allowed permissions
@@ -185,7 +189,7 @@ public interface PermissionService
 
     /**
      * Get all the AccessPermissions that are set for anyone for the given node
-     * 
+     *
      * @param nodeRef -
      *            the reference to the node
      * @return the set of allowed permissions
@@ -195,7 +199,7 @@ public interface PermissionService
 
     /**
      * Get the permissions that can be set for a given node
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -204,7 +208,7 @@ public interface PermissionService
 
     /**
      * Get the permissions that can be set for a given type
-     * 
+     *
      * @param type
      * @return - set of permissions
      */
@@ -214,7 +218,7 @@ public interface PermissionService
     /**
      * Check that the given authentication has a particular permission for the given node. (The default behaviour is to
      * inherit permissions)
-     * 
+     *
      * @param nodeRef
      * @param permission
      * @return - access status
@@ -223,8 +227,18 @@ public interface PermissionService
     public AccessStatus hasPermission(NodeRef nodeRef, String permission);
 
     /**
+     * Check if a permission is allowed on an acl.
+     * @param aclID
+     * @param owner
+     * @param permission
+     * @return
+     */
+    @Auditable(parameters = { "aclID", "context", "permission" })
+    public AccessStatus hasPermission(Long aclID, Map<String, Object> context, String permission);
+
+    /**
      * Delete all the permission assigned to the node
-     * 
+     *
      * @param nodeRef
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = { "nodeRef" })
@@ -232,7 +246,7 @@ public interface PermissionService
 
     /**
      * Delete all permission for the given authority.
-     * 
+     *
      * @param nodeRef
      * @param authority
      *            (if null then this will match all authorities)
@@ -248,7 +262,7 @@ public interface PermissionService
      * <li> entries for all authorities that have a specific permission (if the authority is null); and
      * <li> all permissions set for the node (if both the permission and authority are null).
      * </ol>
-     * 
+     *
      * @param nodeRef
      *            the node that the entry applies to
      * @param authority
@@ -261,7 +275,7 @@ public interface PermissionService
 
     /**
      * Set a specific permission on a node.
-     * 
+     *
      * @param nodeRef
      * @param authority
      * @param permission
@@ -272,7 +286,7 @@ public interface PermissionService
 
     /**
      * Set the global inheritance behaviour for permissions on a node.
-     * 
+     *
      * @param nodeRef
      * @param inheritParentPermissions
      */
@@ -281,7 +295,7 @@ public interface PermissionService
 
     /**
      * Return the global inheritance behaviour for permissions on a node.
-     * 
+     *
      * @param nodeRef
      * @return inheritParentPermissions
      */
@@ -290,7 +304,7 @@ public interface PermissionService
 
     /**
      * Get all permissions set for the current user.
-     * 
+     *
      * @return - A map of noderefs to permissions set
      */
     @Auditable
@@ -298,7 +312,7 @@ public interface PermissionService
 
     /**
      * Get all the permissions set for the given authority
-     * 
+     *
      * @param authority
      * @return - A map of noderefs to permissions set
      */
@@ -307,7 +321,7 @@ public interface PermissionService
 
     /**
      * Find all the nodes where the current user has explicitly been assigned the specified permission.
-     * 
+     *
      * @param permission -
      *            the permission to find
      * @param allow
@@ -324,7 +338,7 @@ public interface PermissionService
 
     /**
      * Find all the nodes where the current user has explicitly been assigned the specified permission.
-     * 
+     *
      * @param permission -
      *            the permission to find
      * @param allow

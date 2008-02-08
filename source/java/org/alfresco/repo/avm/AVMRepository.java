@@ -26,6 +26,7 @@ package org.alfresco.repo.avm;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.SortedMap;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
@@ -51,10 +53,15 @@ import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * This or AVMStore are
@@ -107,6 +114,10 @@ public class AVMRepository
     private AVMStorePropertyDAO fAVMStorePropertyDAO;
 
     private ChildEntryDAO fChildEntryDAO;
+
+    private PermissionService fPermissionService;
+
+    private ApplicationContext fContext;
 
     // A bunch of TransactionListeners that do work for this.
 
@@ -224,6 +235,11 @@ public class AVMRepository
         fChildEntryDAO = dao;
     }
 
+    public void setPermissionService(PermissionService service)
+    {
+        fPermissionService = service;
+    }
+
     /**
      * Create a file.
      * @param path The path to the containing directory.
@@ -318,6 +334,10 @@ public class AVMRepository
         {
             throw new AVMWrongTypeException("Not a directory.");
         }
+        if (!can(node, PermissionService.CREATE_CHILDREN))
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + parent);
+        }
         // We need the store to do anything so...
         String [] pathParts = SplitPath(parent.getPath());
         AVMStore store = getAVMStoreByName(pathParts[0]);
@@ -338,6 +358,8 @@ public class AVMRepository
             child = new PlainDirectoryNodeImpl(store);
         }
         dir.putChild(name, child);
+        DbAccessControlList acl = dir.getAcl();
+        child.setAcl(acl != null ? acl.getCopy() : null);
         fLookupCache.onWrite(pathParts[0]);
         AVMNodeDescriptor desc = child.getDescriptor(parent.getPath(), name, parent.getIndirection(), parent.getIndirectionVersion());
         return desc;
@@ -480,6 +502,10 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
+            if (!can(dirNode, PermissionService.ADD_CHILDREN))
+            {
+                throw new AccessDeniedException("Not permitted to add children: " + dstPath);
+            }
             AVMNode srcNode = sPath.getCurrentNode();
             AVMNode dstNode = null;
             // We do different things depending on what kind of thing we're
@@ -507,6 +533,8 @@ public class AVMRepository
             dstNode.setAncestor(srcNode);
             dirNode.putChild(name, dstNode);
             dirNode.updateModTime();
+            DbAccessControlList acl = srcNode.getAcl();
+            dstNode.setAcl(acl != null ? acl.getCopy() : null);
             String beginingPath = AVMNodeConverter.NormalizePath(srcPath);
             String finalPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
             finalPath = AVMNodeConverter.NormalizePath(finalPath);
@@ -641,6 +669,10 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             srcDir = (DirectoryNode)sPath.getCurrentNode();
+            if (!can(srcDir, PermissionService.DELETE_CHILDREN) || !can(srcDir, PermissionService.ADD_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to read or write: " + srcPath);
+            }
             Pair<AVMNode, Boolean> temp = srcDir.lookupChild(sPath, srcName, false);
             srcNode = (temp == null) ? null : temp.getFirst();
             if (srcNode == null)
@@ -668,6 +700,10 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
+            if (!can(dstDir, PermissionService.ADD_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to write: " + dstPath);
+            }
             Pair<AVMNode, Boolean> temp = dstDir.lookupChild(dPath, dstName, true);
             AVMNode child = (temp == null) ? null : temp.getFirst();
             if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
@@ -864,6 +900,11 @@ public class AVMRepository
         }
         fLookupCache.onDelete(name);
         AVMNode root = store.getRoot();
+        // TODO Probably a special PermissionService.PURGE is needed.
+        if (!can(root, PermissionService.DELETE_CHILDREN))
+        {
+            throw new AccessDeniedException("Not allowed to purge: " + name);
+        }
         root.setIsRoot(false);
         List<VersionRoot> vRoots = fVersionRootDAO.getAllInAVMStore(store);
         for (VersionRoot vr : vRoots)
@@ -933,6 +974,10 @@ public class AVMRepository
         if (!(node instanceof FileNode))
         {
             throw new AVMWrongTypeException(desc + " is not a File.");
+        }
+        if (!can(node, PermissionService.READ_CONTENT))
+        {
+            throw new AccessDeniedException("Not allowed to read content: " + desc);
         }
         FileNode file = (FileNode)node;
         ContentData data = file.getContentData(null);
@@ -1011,6 +1056,10 @@ public class AVMRepository
         {
             throw new AVMBadArgumentException("Invalid Node.");
         }
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            throw new AccessDeniedException("Not allowed to read children: " + dir);
+        }
         if (node.getType() == AVMNodeType.PLAIN_DIRECTORY)
         {
             return getListing(dir, includeDeleted);
@@ -1042,6 +1091,10 @@ public class AVMRepository
                     node.getType() != AVMNodeType.PLAIN_DIRECTORY)
             {
                 throw new AVMWrongTypeException("Not a directory.");
+            }
+            if (!can(node, PermissionService.READ_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to read children: " + dir);
             }
             DirectoryNode dirNode = (DirectoryNode)node;
             SortedMap<String, AVMNodeDescriptor> listing = dirNode.getListing(dir, includeDeleted);
@@ -1305,6 +1358,10 @@ public class AVMRepository
                 throw new AVMWrongTypeException("Not a directory.");
             }
             DirectoryNode dirNode = (DirectoryNode)node;
+            if (!can(dirNode, PermissionService.READ_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to read children: " + dir);
+            }
             return dirNode.lookupChild(dir, name, includeDeleted);
         }
         finally
@@ -1323,7 +1380,7 @@ public class AVMRepository
         AVMNode node = fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
-            throw new AVMNotFoundException("Not found: " + desc.getPath());
+            throw new AVMNotFoundException("Not found: " + desc);
         }
         List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
         List<String> components = new ArrayList<String>();
@@ -1389,6 +1446,10 @@ public class AVMRepository
      */
     private void recursiveGetVersionPaths(AVMNode node, List<String> components, List<String> paths, DirectoryNode root, String storeName)
     {
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            return;
+        }
         if (node.equals(root))
         {
             paths.add(this.makePath(components, storeName));
@@ -1422,7 +1483,7 @@ public class AVMRepository
         AVMNode node = fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
-            throw new AVMNotFoundException("Not found: " + desc.getPath());
+            throw new AVMNotFoundException("Not found: " + desc);
         }
         List<Pair<Integer, String>> paths = new ArrayList<Pair<Integer, String>>();
         List<String> components = new ArrayList<String>();
@@ -1439,6 +1500,10 @@ public class AVMRepository
     private void recursiveGetPaths(AVMNode node, List<String> components,
                                    List<Pair<Integer, String>> paths)
     {
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            return;
+        }
         if (node.getIsRoot())
         {
             AVMStore store = fAVMStoreDAO.getByRoot(node);
@@ -1472,6 +1537,10 @@ public class AVMRepository
      */
     private Pair<Integer, String> recursiveGetAPath(AVMNode node, List<String> components)
     {
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            return null;
+        }
         if (node.getIsRoot())
         {
             AVMStore store = fAVMStoreDAO.getByRoot(node);
@@ -1510,6 +1579,10 @@ public class AVMRepository
     private void recursiveGetHeadPaths(AVMNode node, List<String> components,
                                        List<Pair<Integer, String>> paths)
     {
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            return;
+        }
         if (node.getIsRoot())
         {
             AVMStore store = fAVMStoreDAO.getByRoot(node);
@@ -1541,6 +1614,10 @@ public class AVMRepository
                                               List<Pair<Integer, String>> paths, DirectoryNode root,
                                               String storeName)
     {
+        if (!can(node, PermissionService.READ_CHILDREN))
+        {
+            return;
+        }
         if (node.equals(root))
         {
             addPath(components, -1, storeName, paths);
@@ -1627,6 +1704,10 @@ public class AVMRepository
             if (lookup == null)
             {
                 throw new AVMNotFoundException("Path not found.");
+            }
+            if (!can(lookup.getCurrentNode(), PermissionService.READ_PROPERTIES))
+            {
+                throw new AccessDeniedException("Not allowed to read properties: " + path);
             }
             return new LayeringDescriptor(!lookup.getDirectlyContained(),
                     lookup.getAVMStore().getDescriptor(),
@@ -1752,6 +1833,10 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Not found.");
         }
+        if (!can(node, PermissionService.READ_PROPERTIES))
+        {
+            throw new AccessDeniedException("Not allowed to read properties: " + desc);
+        }
         if (count < 0)
         {
             count = Integer.MAX_VALUE;
@@ -1761,6 +1846,10 @@ public class AVMRepository
         {
             node = node.getAncestor();
             if (node == null)
+            {
+                break;
+            }
+            if (!can(node, PermissionService.READ_PROPERTIES))
             {
                 break;
             }
@@ -2022,7 +2111,7 @@ public class AVMRepository
     }
 
     /**
-     * Queries all AVM stores for properties with keys that matcha given pattern.
+     * Queries all AVM stores for properties with keys that match a given pattern.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return A List of Pairs of Store name, Map.Entry.
      */
@@ -2102,6 +2191,16 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found.");
         }
+        if (!can(lNode, PermissionService.READ_PROPERTIES))
+        {
+            throw new AccessDeniedException("Not allowed to read properties: " + left);
+        }
+        if (!can(rNode, PermissionService.READ_PROPERTIES))
+        {
+            throw new AccessDeniedException("Not allowed to read properties: " + right);
+        }
+        // TODO Short changing the permissions checking here. I'm not sure
+        // if that's OK.
         List<AVMNode> leftHistory = new ArrayList<AVMNode>();
         List<AVMNode> rightHistory = new ArrayList<AVMNode>();
         while (lNode != null || rNode != null)
@@ -2429,6 +2528,7 @@ public class AVMRepository
         }
     }
 
+
     /**
      * This is the danger version of link. It must be called on
      * a copied and unsnapshotted directory.  It blithely inserts
@@ -2448,6 +2548,10 @@ public class AVMRepository
         if (!dir.getIsNew())
         {
             throw new AVMException("Directory has not already been copied.");
+        }
+        if (!can(dir, PermissionService.ADD_CHILDREN))
+        {
+            throw new AccessDeniedException("Not allowed to write: " + parent);
         }
         dir.link(name, child);
     }
@@ -2479,6 +2583,10 @@ public class AVMRepository
             if (!(node instanceof LayeredDirectoryNode))
             {
                 throw new AVMWrongTypeException("Not a Layered Directory.");
+            }
+            if (!can(node, PermissionService.DELETE_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to write in: " + path);
             }
             LayeredDirectoryNode dir = (LayeredDirectoryNode)node;
             dir.flatten(name);
@@ -2661,7 +2769,7 @@ public class AVMRepository
         AVMNode node = fAVMNodeDAO.getByID(desc.getId());
         if (node == null)
         {
-            throw new AVMNotFoundException("Not found: " + desc.getPath());
+            throw new AVMNotFoundException("Not found: " + desc);
         }
         List<String> paths = new ArrayList<String>();
         List<String> components = new ArrayList<String>();
@@ -2678,6 +2786,10 @@ public class AVMRepository
     private void recursiveGetStoreVersionPaths(String storeName, AVMNode node, int version, List<String> components,
                                                List<String> paths)
     {
+        if (!can(node, PermissionService.READ))
+        {
+            return;
+        }
         if (node.getIsRoot())
         {
             VersionRoot versionRoot = fVersionRootDAO.getByRoot(node);
@@ -2707,6 +2819,10 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found: " + desc);
         }
+        if (!can(node, PermissionService.READ_PROPERTIES))
+        {
+            throw new AccessDeniedException("Not allowed to read properties: " + desc);
+        }
         return node.getProperties();
     }
 
@@ -2716,6 +2832,10 @@ public class AVMRepository
         if (node == null)
         {
             throw new AVMNotFoundException("Node not found: " + desc);
+        }
+        if (!can(node, PermissionService.READ_CONTENT))
+        {
+            throw new AccessDeniedException("Not allowed to read: " + desc);
         }
         if (node.getType() == AVMNodeType.PLAIN_FILE)
         {
@@ -2732,7 +2852,40 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found: " + desc);
         }
+        if (!can(node, PermissionService.READ_PROPERTIES))
+        {
+            throw new AccessDeniedException("Not allowed to read properties: " + desc);
+        }
         Set<QName> aspects = node.getAspects();
         return aspects;
+    }
+
+    /**
+     * Evaluate permission on a node.
+     * I've got a bad feeling about this...
+     * @param node
+     * @param permission
+     * @return
+     */
+    public boolean can(AVMNode node, String permission)
+    {
+        DbAccessControlList acl = node.getAcl();
+        if (acl == null)
+        {
+            return true;
+        }
+        Map<String, Object> context = new HashMap<String, Object>(4);
+        context.put(PermissionService.OWNER_AUTHORITY, node.getBasicAttributes().getOwner());
+        context.put(PermissionService.ASPECTS, node.getAspects());
+        Map<QName, PropertyValue> props = node.getProperties();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
+        for (Map.Entry<QName, PropertyValue> entry : props.entrySet())
+        {
+            properties.put(entry.getKey(), entry.getValue().getValue(entry.getKey()));
+        }
+        context.put(PermissionService.PROPERTIES, properties);
+        // TODO put node type in there to.
+        return fPermissionService.hasPermission(acl.getId(), context, permission)
+            == AccessStatus.ALLOWED;
     }
 }

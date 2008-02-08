@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.security.permissions.impl;
@@ -64,7 +64,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions
  * persistence.
- * 
+ *
  * @author andyh
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
@@ -174,7 +174,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Set the permissions access cache.
-     * 
+     *
      * @param accessCache
      *            a transactionally safe cache
      */
@@ -396,6 +396,16 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return status;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String, java.lang.String)
+     */
+    public AccessStatus hasPermission(Long aclID, Map<String, Object> context,
+                                      String permission)
+    {
+        // TODO Implement.
+        return AccessStatus.ALLOWED;
+    }
+
     enum CacheType
     {
         HAS_PERMISSION, SINGLE_PERMISSION, SINGLE_PERMISSION_GLOBAL;
@@ -417,7 +427,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Get the authorisations for the currently authenticated user
-     * 
+     *
      * @param auth
      * @return
      */
@@ -602,7 +612,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Support class to test the permission on a node.
-     * 
+     *
      * @author Andy Hind
      */
     private class NodeTest
@@ -675,7 +685,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * External hook point
-         * 
+         *
          * @param authorisations
          * @param nodeRef
          * @return
@@ -688,7 +698,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Internal hook point for recursion
-         * 
+         *
          * @param authorisations
          * @param nodeRef
          * @param denied
@@ -716,7 +726,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                     if (checkGlobalPermissions(authorisations) || checkRequired(authorisations, nodeRef, locallyDenied))
                     {
                         // No need to do the recursive test as it has been found
-                        recursiveOut = null;
                         if (recursiveIn != null)
                         {
                             recursiveIn.setValue(true);
@@ -934,7 +943,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Check if we have a global permission
-         * 
+         *
          * @param authorisations
          * @return
          */
@@ -952,7 +961,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Get the list of permissions denied for this node.
-         * 
+         *
          * @param nodeRef
          * @return
          */
@@ -1002,7 +1011,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Check that a given authentication is available on a node
-         * 
+         *
          * @param authorisations
          * @param nodeRef
          * @param denied
@@ -1032,7 +1041,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Is a permission granted
-         * 
+         *
          * @param pe -
          *            the permissions entry to consider
          * @param granters -
@@ -1106,7 +1115,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Helper class to store a pair of objects which may be null
-     * 
+     *
      * @author Andy Hind
      */
     private static class Pair<A, B>

@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.security.permissions.noop;
@@ -41,12 +41,12 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Dummy implementation of Permissions Service
- *  
+ *
  */
 public class PermissionServiceNOOPImpl
     implements PermissionServiceSPI
 {
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.security.permissions.PermissionService#getOwnerAuthority()
      */
@@ -69,8 +69,8 @@ public class PermissionServiceNOOPImpl
     public String getAllPermission()
     {
         return ALL_PERMISSIONS;
-    }    
-    
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.security.permissions.PermissionService#getPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -140,7 +140,7 @@ public class PermissionServiceNOOPImpl
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
     }
-    
+
     /* (non-Javadoc)
     * @see org.alfresco.service.cmr.security.PermissionService#getInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef)
     */
@@ -152,24 +152,24 @@ public class PermissionServiceNOOPImpl
 
    public void clearPermission(NodeRef nodeRef, String authority)
     {
-        
+
     }
 
     // SPI
-    
+
     public void deletePermission(PermissionEntry permissionEntry)
     {
-        
+
     }
 
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
-        
+
     }
 
     public void deletePermissions(String recipient)
     {
-        
+
     }
 
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
@@ -215,6 +215,15 @@ public class PermissionServiceNOOPImpl
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
     {
         throw new UnsupportedOperationException();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String, java.lang.String)
+     */
+    public AccessStatus hasPermission(Long aclID, Map<String, Object> context,
+                                      String permission)
+    {
+        return AccessStatus.ALLOWED;
     }
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)

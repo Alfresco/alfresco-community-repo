@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,7 +109,10 @@ public class LookupCache
         else
         {
             VersionRoot vRoot = AVMDAOs.Instance().fVersionRootDAO.getByVersionID(store, version);
-            dir = vRoot.getRoot();
+            if (vRoot != null)
+            {
+                dir = vRoot.getRoot();
+            }
 //            dir = fAVMNodeDAO.getAVMStoreRoot(store, version);
         }
         if (dir == null)
@@ -127,6 +132,10 @@ public class LookupCache
         // before the end.
         for (int i = 0; i < path.size() - 1; i++)
         {
+            if (!AVMRepository.GetInstance().can(dir, PermissionService.READ_CHILDREN))
+            {
+                throw new AccessDeniedException("Not allowed to read children: " + path.get(i));
+            }
             Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(i), includeDeleted);
             if (child == null)
             {
@@ -142,6 +151,10 @@ public class LookupCache
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
+        if (!AVMRepository.GetInstance().can(dir, PermissionService.READ_CHILDREN))
+        {
+            throw new AccessDeniedException("Not allowed to read children: " + path.get(path.size() - 1));
+        }
         Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(path.size() - 1),
                                         includeDeleted);
         if (child == null)

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.clt;
 
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
-import org.alfresco.repo.remote.ClientTicketHolderGlobal;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.remote.RepoRemote;
@@ -25,13 +24,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * This is the base class for AVM clts.
  * @author britt
  */
-public abstract class CltBase 
+public abstract class CltBase
 {
     /**
      * The instance of the remote interface.
      */
     protected AVMRemote fAVMRemote;
-    
+
     /**
      * The instance of the remote sync service interface.
      */
@@ -41,31 +40,31 @@ public abstract class CltBase
      * The instance of the remote repo interface.
      */
     protected RepoRemote fRepoRemote;
-    
+
     /**
      * The ApplicationContext.
      */
     protected ConfigurableApplicationContext fContext;
-    
+
     /**
      * The Authentication Service.
      */
     protected AuthenticationService fAuthenticationService;
-    
+
     /**
      * The usage string.
      */
     private String fUsage;
-    
+
     /**
      * Construct a new one. This takes care of instantiating
      * the application context and grabs references to the
-     * services. 
+     * services.
      * @param args The program arguments.
      */
     protected CltBase()
     {
-        fContext = new ClassPathXmlApplicationContext("alfresco/clt-context.xml");
+        fContext = new ClassPathXmlApplicationContext("clt-context.xml");
         fAVMRemote = (AVMRemote)fContext.getBean("avmRemote");
         fAVMSyncService = (AVMSyncService)fContext.getBean("avmSyncService");
         fRepoRemote = (RepoRemote)fContext.getBean("repoRemote");
@@ -74,19 +73,19 @@ public abstract class CltBase
         String ticket = fAuthenticationService.getCurrentTicket();
         ((ClientTicketHolder)fContext.getBean("clientTicketHolder")).setTicket(ticket);
     }
-    
+
     /**
-     * All clts go through this call. This parses the arguments, exits if 
+     * All clts go through this call. This parses the arguments, exits if
      * there are any errors and then passes the broken flags and arguments
      * to the run method of the derived clt.
      * @param args The raw command line arguments.
      * @param flagDefs The definition of what flags to accept and their
      * arities.
      * @param minArgs The minimum number of actual arguments expected.
-     * @param usageMessage The message that should be printed if there is a 
+     * @param usageMessage The message that should be printed if there is a
      * syntax error.
      */
-    public void exec(String [] args, 
+    public void exec(String [] args,
                      Object [] flagDefs,
                      int minArgs,
                      String usageMessage)
@@ -144,7 +143,7 @@ public abstract class CltBase
         // Cleanup.
         fContext.close();
     }
-    
+
     /**
      * Handle syntax error by exiting.
      */
@@ -154,7 +153,7 @@ public abstract class CltBase
         fContext.close();
         System.exit(1);
     }
-    
+
     /**
      * Utility to split an AVM path into a parent path and a
      * base name.
@@ -189,7 +188,7 @@ public abstract class CltBase
         String [] ret = { parent, name };
         return ret;
     }
-    
+
     protected void copyStream(InputStream in, OutputStream out)
     {
         try
@@ -210,7 +209,7 @@ public abstract class CltBase
             System.exit(1);
         }
     }
-    
+
     protected Pair<String, Integer> splitPathVersion(String pathVersion)
     {
         int index = pathVersion.lastIndexOf('@');
@@ -222,6 +221,6 @@ public abstract class CltBase
         int version = Integer.parseInt(pathVersion.substring(index + 1));
         return new Pair<String, Integer>(path, version);
     }
-    
+
     protected abstract void run(Map<String, List<String>> flags, List<String> args);
 }

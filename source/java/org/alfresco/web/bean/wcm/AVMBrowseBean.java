@@ -843,27 +843,27 @@ public class AVMBrowseBean implements IContextListener
       //       expression in a 'rendered' attribute, we therefore cache the result
       //       on a per request basis
       
-      List<ChildAssociationRef> deployReportRefs = null;
+      List<ChildAssociationRef> deployAttempts = null;
       
       FacesContext context = FacesContext.getCurrentInstance();
       Map request = context.getExternalContext().getRequestMap();
       if (request.get(REQUEST_BEEN_DEPLOYED_KEY) == null)
       {
-         // see if there are any deployment reports for the site
+         // see if there are any deployment attempts for the site
          NodeRef webProjectRef = this.getWebsite().getNodeRef();
-         deployReportRefs = this.nodeService.getChildAssocs(webProjectRef, 
-                  WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
+         deployAttempts = this.nodeService.getChildAssocs(webProjectRef, 
+                  WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, RegexQNamePattern.MATCH_ALL);
          
          // add a placeholder object in the request so we don't evaluate this again for this request
          request.put(REQUEST_BEEN_DEPLOYED_KEY, Boolean.TRUE);
-         request.put(REQUEST_BEEN_DEPLOYED_RESULT, deployReportRefs);
+         request.put(REQUEST_BEEN_DEPLOYED_RESULT, deployAttempts);
       }
       else
       {
-         deployReportRefs = (List<ChildAssociationRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
+         deployAttempts = (List<ChildAssociationRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
       }
       
-      return (deployReportRefs != null && deployReportRefs.size() > 0);
+      return (deployAttempts != null && deployAttempts.size() > 0);
    }
    
    /**

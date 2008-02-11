@@ -26,7 +26,6 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +36,11 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -140,6 +141,8 @@ public class UIDeployWebsite extends UIInput
             throw new IllegalArgumentException("The web project must be specified.");
          }
          
+         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+         
          // add some before the panels
          out.write("\n<div style='padding-top:4px;'></div>\n");
       
@@ -172,13 +175,14 @@ public class UIDeployWebsite extends UIInput
                   if (logger.isDebugEnabled())
                      logger.debug("Found deployment monitor: " + monitor);
 
-                  renderServer(context, out, monitor.getTargetServer(), false, true, id);
+                  renderServer(context, out, nodeService, monitor.getTargetServer(), false, true, id);
                }
             }
          }
          else
          {
             // get a list of the servers that have been successfully deployed to 
+            /*
             NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
             int deployingVersion = this.getSnapshotVersion();
             List<String> serversAlreadyDeployed = new ArrayList<String>();
@@ -207,21 +211,18 @@ public class UIDeployWebsite extends UIInput
                   }
                }
             }
+            */
             
-            // get the list of servers for the user to select from
-            List<String> servers = (List<String>)nodeService.getProperty(webProject, 
-                     WCMAppModel.PROP_DEPLOYTO);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Servers available: " + servers + ", servers already deployed: " + 
-                        serversAlreadyDeployed);
-
-            // render the list of servers, only pre-select those that have not been 
-            // deployed successfully
-            for (String server : servers)
+            // get the servers available to deploy to
+            List<ChildAssociationRef> deployServerRefs = nodeService.getChildAssocs(
+                     webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : deployServerRefs)
             {
-               boolean preSelected = !serversAlreadyDeployed.contains(server);
-               renderServer(context, out, server, preSelected, false, null);
+               NodeRef server = ref.getChildRef();
+               
+               // TODO: determine if the server has already been successfully deployed to
+
+               renderServer(context, out, nodeService, server, true, false, null);
             }
          }
          
@@ -428,10 +429,18 @@ public class UIDeployWebsite extends UIInput
       out.write("</script>\n");
    }
    
-   private void renderServer(FacesContext context, ResponseWriter out, String server, 
-            boolean selected, boolean monitoring, String monitorId) throws IOException
+   private void renderServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server, boolean selected, boolean monitoring, String monitorId) 
+            throws IOException
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
+      
+      Map<QName, Serializable> props = nodeService.getProperties(server);
+      String serverName = (String)props.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
+      if (serverName == null || serverName.length() == 0)
+      {
+         serverName = AVMDeploySnapshotAction.calculateServerUri(props);
+      }
       
       out.write("<table cellspacing='0' cellpadding='0' border='0' width='100%'>");
       out.write("<tr><td width='10'><img src='");
@@ -455,7 +464,7 @@ public class UIDeployWebsite extends UIInput
          out.write("<input type='checkbox' name='");
          out.write(this.getClientId(context));
          out.write("' value='");
-         out.write(server);
+         out.write(server.toString());
          out.write("'");
          if (selected)
          {
@@ -477,7 +486,7 @@ public class UIDeployWebsite extends UIInput
       out.write(contextPath);
       out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x; width: 100%;'>");
       out.write("<div class='deployPanelServerName'>");
-      out.write(server);
+      out.write(serverName);
       out.write("</div>");
       if (monitoring)
       {

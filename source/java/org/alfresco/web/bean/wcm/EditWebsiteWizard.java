@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +84,6 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
       this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEPLOYTO, (Serializable)this.deployTo);
       this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
       // clear the existing settings for forms, template and workflows - then the existing methods

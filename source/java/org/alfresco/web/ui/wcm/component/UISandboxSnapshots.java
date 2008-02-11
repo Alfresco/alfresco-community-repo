@@ -42,6 +42,8 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -205,7 +207,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             {
                final Calendar c = Calendar.getInstance();
                c.setTime(toDate);
-               c.set(Calendar.HOUR, 0);
+               c.set(Calendar.HOUR_OF_DAY, 0);
                c.set(Calendar.MINUTE, 0);
                c.set(Calendar.SECOND, 0);
                fromDate = c.getTime();
@@ -229,15 +231,15 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          boolean showDeployAction = false;
          NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(sandbox);
          NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
-         List<String> deployToServers = (List<String>)nodeService.getProperty(webProjectRef, 
-               WCMAppModel.PROP_DEPLOYTO);
+         List<ChildAssociationRef> deployToServers = nodeService.getChildAssocs(
+                     webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
          if (deployToServers != null && deployToServers.size() > 0)
          {
             showDeployAction = true;
          }
          
          // determine the deployment status for the website
-         determineDeploymentStatus(context, webProjectRef, sandbox, nodeService);
+         determineDeploymentStatus(context, webProjectRef, sandbox, nodeService, avmService);
          
          Map requestMap = context.getExternalContext().getRequestMap();
          for (int i=versions.size() - 1; i >= 0; i--) // reverse order
@@ -378,6 +380,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
     * 
     * @return UIActionLink component if found, else null if not created yet
     */
+   @SuppressWarnings("unchecked")
    private UIActionLink findAction(String name, String sandbox)
    {
       UIActionLink action = null;
@@ -411,6 +414,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
     * 
     * @return UIActionLink child component
     */
+   @SuppressWarnings("unchecked")
    private UIActionLink createAction(FacesContext fc, String sandbox, String name, String icon,
          String actionListener, String outcome, String url, Map<String, String> params)
    {
@@ -478,86 +482,88 @@ public class UISandboxSnapshots extends SelfRenderingComponent
       return control;
    }
    
+   @SuppressWarnings("unchecked")
    private void determineDeploymentStatus(FacesContext context, NodeRef webProjectRef, 
-         String sandbox, NodeService nodeService)
+         String sandbox, NodeService nodeService, AVMService avmService)
    {
-      // work out what status to show against which snapshot
-      List<String> selectedServers = (List<String>)nodeService.getProperty(webProjectRef, 
-               WCMAppModel.PROP_SELECTEDDEPLOYTO);
-      Integer ver = (Integer)nodeService.getProperty(webProjectRef, 
-               WCMAppModel.PROP_SELECTEDDEPLOYVERSION);               
-      if (ver != null)
+      // if the store property holding the last deployment id is non null a 
+      // deployment has been attempted
+      PropertyValue val = avmService.getStoreProperty(sandbox, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+      String attemptId = null;
+      
+      if (val != null)
       {
-         this.deployAttemptVersion = ver.intValue();
-      }
-               
-      if (selectedServers != null && selectedServers.size() > 0)
-      {
-         // if the 'selecteddeployto' property is set a deployment has been attempted
-         List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                  webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
+         attemptId = val.getStringValue();
          
-         List<String> deployedServers = new ArrayList<String>();
-         
-         boolean oneOrMoreFailed = false;
-         boolean allFailed = true;
-         for (ChildAssociationRef ref : deployReportRefs)
+         // get the latest deployment attempt
+         NodeRef attempt = AVMUtil.findDeploymentAttempt(attemptId);
+         if (attempt != null)
          {
-            NodeRef report = ref.getChildRef();
-
-            // get the name of the server and the deploy outcome
-            String serverName = (String)nodeService.getProperty(report, 
-                     WCMAppModel.PROP_DEPLOYSERVER);
-            Boolean successful = (Boolean)nodeService.getProperty(report, 
-                     WCMAppModel.PROP_DEPLOYSUCCESSFUL);
-            
-            deployedServers.add(serverName);
-            if (successful != null)
+            // retrieve the snapshot deployed
+            Integer ver = (Integer)nodeService.getProperty(attempt, 
+                     WCMAppModel.PROP_DEPLOYATTEMPTVERSION);
+            if (ver != null)
             {
-               if (successful.booleanValue())
+               this.deployAttemptVersion = ver.intValue();
+            }
+            
+            // determine if all required reports are present
+            List<String> selectedServers = (List<String>)nodeService.getProperty(
+                     attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS);
+            int numServersSelected = 0;
+            if (selectedServers != null)
+            {
+               numServersSelected = selectedServers.size();
+               
+               List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
+                     attempt, WCMAppModel.ASSOC_DEPLOYMENTREPORTS, RegexQNamePattern.MATCH_ALL);
+               
+               if (deployReportRefs.size() >= numServersSelected)
                {
-                  allFailed = false;
+                  // the number of expected reports are present, determine the status
+                  boolean oneOrMoreFailed = false;
+                  boolean allFailed = true;
+                  for (ChildAssociationRef ref : deployReportRefs)
+                  {
+                     NodeRef report = ref.getChildRef();
+         
+                     // get the deploy outcome
+                     Boolean successful = (Boolean)nodeService.getProperty(report, 
+                              WCMAppModel.PROP_DEPLOYSUCCESSFUL);
+                     
+                     if (successful != null)
+                     {
+                        if (successful.booleanValue())
+                        {
+                           allFailed = false;
+                        }
+                        else
+                        {
+                           oneOrMoreFailed = true;
+                        }
+                     }
+                  }
+                  
+                  // get the right status string
+                  if (allFailed)
+                  {
+                     this.deployStatus = Application.getMessage(context, "deploy_status_failed");
+                  }
+                  else if (oneOrMoreFailed)
+                  {
+                     this.deployStatus = Application.getMessage(context, "deploy_status_partial");
+                  }
+                  else
+                  {
+                     this.deployStatus = Application.getMessage(context, "deploy_status_live");
+                  }
                }
                else
                {
-                  oneOrMoreFailed = true;
+                  // not all expected reports are present yet, still in progress
+                  this.deployStatus = Application.getMessage(context, "deploy_status_in_progress");
                }
             }
-         }
-         
-         // now we have a list of servers that were deployed see if all
-         // the selected servers have a report, if not it means a deployment
-         // is in progress. If all servers reports are present then 
-         // determine the status by the outcomes of from all the reports.
-         boolean allPresent = true;
-         for (String selectedServer : selectedServers)
-         {
-            if (deployedServers.contains(selectedServer) == false)
-            {
-               allPresent = false;
-               break;
-            }
-         }
-         
-         if (allPresent)
-         {
-            // get the right status string
-            if (allFailed)
-            {
-               this.deployStatus = Application.getMessage(context, "deploy_status_failed");
-            }
-            else if (oneOrMoreFailed)
-            {
-               this.deployStatus = Application.getMessage(context, "deploy_status_partial");
-            }
-            else
-            {
-               this.deployStatus = Application.getMessage(context, "deploy_status_live");
-            }
-         }
-         else
-         {
-            this.deployStatus = Application.getMessage(context, "deploy_status_in_progress");
          }
       }
    }

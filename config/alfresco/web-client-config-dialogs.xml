@@ -276,6 +276,7 @@
                  
          <dialog name="viewDeploymentReport" page="/jsp/wcm/deployment-report.jsp" 
                  managed-bean="ViewDeploymentReportDialog"
+                 title-id="deployment_report_title"
                  icon="/images/icons/deployment_report_large.gif"  
                  description-id="deployment_report_desc" show-ok-button="false" />
                  

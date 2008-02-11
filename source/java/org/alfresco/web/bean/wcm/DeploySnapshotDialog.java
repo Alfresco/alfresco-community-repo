@@ -26,6 +26,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,15 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,10 +58,12 @@ public class DeploySnapshotDialog extends BaseDialogBean
 {
    protected int versionToDeploy;
    protected String[] deployTo;
+   protected String stagingStore;
    protected NodeRef websiteRef;
    protected NodeRef webProjectRef;
    
    protected AVMBrowseBean avmBrowseBean;
+   protected AVMService avmService;
    protected ActionService actionService;
    
    private static final Log logger = LogFactory.getLog(DeploySnapshotDialog.class);
@@ -74,8 +81,9 @@ public class DeploySnapshotDialog extends BaseDialogBean
       this.versionToDeploy = Integer.parseInt(parameters.get("version"));
       this.avmBrowseBean.getDeploymentMonitorIds().clear();
       this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
-      String stagingStore = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
-      this.websiteRef = AVMNodeConverter.ToNodeRef(this.versionToDeploy, stagingStore);
+      this.stagingStore = this.avmBrowseBean.getStagingStore();
+      String storeRoot = AVMUtil.buildSandboxRootPath(this.stagingStore);
+      this.websiteRef = AVMNodeConverter.ToNodeRef(this.versionToDeploy, storeRoot);
       
       if (logger.isDebugEnabled())
          logger.debug("Initialising dialog to deploy version " + this.versionToDeploy + 
@@ -86,93 +94,81 @@ public class DeploySnapshotDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // put all the selected servers to deploy to into a list
-      List<String> selectedDeployTo = new ArrayList<String>();
-      if (this.deployTo != null)
-      {
-         for (int x = 0; x < this.deployTo.length; x++)
-         {
-            selectedDeployTo.add(this.deployTo[x].trim());
-         }
-      }
-      
       if (logger.isDebugEnabled())
-         logger.debug("Executing deployment of " + this.websiteRef.toString() + 
-                  " to servers: " + selectedDeployTo);
+         logger.debug("Requesting deployment of: " + this.websiteRef.toString());
       
-      if (selectedDeployTo.size() > 0)
+      if (this.deployTo != null && this.deployTo.length > 0)
       {
-         // TODO: move any existing deployment reports to a node representing the
-         //       snapshot, we can then keep a history of deployment attempts on a 
-         //       per snapshot basis.
-         
          NodeRef webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
-         List<String> allDeployToServers = (List<String>)nodeService.getProperty(webProjectRef, 
-                     WCMAppModel.PROP_DEPLOYTO);
-         List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                  webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : deployReportRefs)
-         {
-            NodeRef report = ref.getChildRef();
-            
-            String server = (String)this.nodeService.getProperty(report, WCMAppModel.PROP_DEPLOYSERVER);
-            
-            int version = -1;
-            Serializable snapshotObj = nodeService.getProperty(report, WCMAppModel.PROP_DEPLOYVERSION);
-            if (snapshotObj != null && snapshotObj instanceof Integer)
-            {
-               version = (Integer)snapshotObj;
-            }
-            
-            if ((version == this.versionToDeploy && selectedDeployTo.contains(server)) ||
-                (version != this.versionToDeploy) || (allDeployToServers.contains(server) == false))
-            {
-               // cascade delete will take care of child-child relationships
-               this.nodeService.removeChild(webProjectRef, report);
-            
-               if (logger.isDebugEnabled())
-                  logger.debug("Removed exisiting deployment report for server: " + server);
-            }
-         }
+         List<String> selectedDeployToNames = new ArrayList<String>();
          
-         // update the selecteddeployto property with list of servers selected
-         this.nodeService.setProperty(webProjectRef, WCMAppModel.PROP_SELECTEDDEPLOYTO, 
-                  (Serializable)selectedDeployTo);
-         // update the selecteddeployversion property with the selected snapshot version
-         this.nodeService.setProperty(webProjectRef, WCMAppModel.PROP_SELECTEDDEPLOYVERSION, 
-                  this.versionToDeploy);
+         // create a deploymentattempt node to represent this deployment
+         String attemptId = GUID.generate();
+         Map<QName, Serializable> props = new HashMap<QName, Serializable>(8, 1.0f);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTID, attemptId);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTTYPE, WCMAppModel.CONSTRAINT_LIVESERVER);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTSTORE, this.stagingStore);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTVERSION, this.versionToDeploy);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTTIME, new Date());
+         NodeRef attempt = this.nodeService.createNode(webProjectRef, 
+               WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
+               WCMAppModel.TYPE_DEPLOYMENTATTEMPT, props).getChildRef();
          
          // execute a deploy action for each of the selected remote servers asynchronously
-         for (String targetServer : selectedDeployTo)
+         for (String targetServer : this.deployTo)
          {
             if (targetServer.length() > 0)
             {
-               // create a deployment monitor object, store in the session, 
-               // add to avm browse bean and pass to action
-               DeploymentMonitor monitor = new DeploymentMonitor(
-                        this.websiteRef, targetServer, versionToDeploy);
-               context.getExternalContext().getSessionMap().put(monitor.getId(), monitor);
-               this.avmBrowseBean.getDeploymentMonitorIds().add(monitor.getId());
-               
-               // create the action
-               Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-               args.put(AVMDeploySnapshotAction.PARAM_WEBSITE, webProjectRef);
-               args.put(AVMDeploySnapshotAction.PARAM_TARGET_SERVER, targetServer);
-               args.put(AVMDeploySnapshotAction.PARAM_DEFAULT_RMI_PORT, 
-                        AVMUtil.getRemoteRMIRegistryPort());
-               args.put(AVMDeploySnapshotAction.PARAM_DEFAULT_RECEIVER_RMI_PORT, 
-                        AVMUtil.getRemoteReceiverRMIPort());
-               args.put(AVMDeploySnapshotAction.PARAM_REMOTE_USERNAME, 
-                        AVMUtil.getRemoteDeploymentUsername());
-               args.put(AVMDeploySnapshotAction.PARAM_REMOTE_PASSWORD, 
-                        AVMUtil.getRemoteDeploymentPassword());
-               args.put(AVMDeploySnapshotAction.PARAM_CALLBACK, monitor);
-               args.put(AVMDeploySnapshotAction.PARAM_DELAY,
-                        AVMUtil.getRemoteDeploymentDelay());
-               Action action = this.actionService.createAction(AVMDeploySnapshotAction.NAME, args);
-               this.actionService.executeAction(action, this.websiteRef, false, true);
+               NodeRef serverRef = new NodeRef(targetServer);
+               if (nodeService.exists(serverRef))
+               {
+                  // get all properties of the target server
+                  Map<QName, Serializable> serverProps = nodeService.getProperties(serverRef);
+                  
+                  String serverUri = AVMDeploySnapshotAction.calculateServerUri(serverProps);
+                  String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
+                  if (serverName == null || serverName.length() == 0)
+                  {
+                     serverName = serverUri;
+                  }
+                  
+                  if (logger.isDebugEnabled())
+                     logger.debug("Issuing deployment request for: " + serverName);
+                  
+                  // remember the servers deployed to
+                  selectedDeployToNames.add(serverName);
+                  
+                  // create a deployment monitor object, store in the session, 
+                  // add to avm browse bean and pass to action
+                  DeploymentMonitor monitor = new DeploymentMonitor(
+                           this.websiteRef, serverRef, versionToDeploy, serverName, attemptId);
+                  context.getExternalContext().getSessionMap().put(monitor.getId(), monitor);
+                  this.avmBrowseBean.getDeploymentMonitorIds().add(monitor.getId());
+                  
+                  // create and execute the action asynchronously
+                  Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+                  args.put(AVMDeploySnapshotAction.PARAM_WEBSITE, webProjectRef);
+                  args.put(AVMDeploySnapshotAction.PARAM_SERVER, serverRef);
+                  args.put(AVMDeploySnapshotAction.PARAM_ATTEMPT, attempt);
+                  args.put(AVMDeploySnapshotAction.PARAM_CALLBACK, monitor);
+                  Action action = this.actionService.createAction(AVMDeploySnapshotAction.NAME, args);
+                  this.actionService.executeAction(action, this.websiteRef, false, true);
+               }
+               else if (logger.isWarnEnabled())
+               {
+                  logger.warn("target server '" + targetServer + "' was ignored as it no longer exists!");
+               }
             }
          }
+         
+         // now we know the list of selected servers set the property on the attempt node
+         this.nodeService.setProperty(attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS, 
+                  (Serializable)selectedDeployToNames);
+         
+         // set the deploymentattempid property on the store this deployment was for
+         this.avmService.deleteStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         this.avmService.setStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID, 
+                  new PropertyValue(DataTypeDefinition.TEXT, attemptId));
          
          // close this dialog and immediately open the monitorDeployment dialog
          return "dialog:monitorDeployment";
@@ -199,11 +195,19 @@ public class DeploySnapshotDialog extends BaseDialogBean
    // Bean getters and setters
    
    /**
-    * @param avmBrowseBean    The AVM BrowseBean to set
+    * @param avmBrowseBean The AVM BrowseBean to set
     */
    public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
    {
       this.avmBrowseBean = avmBrowseBean;
+   }
+   
+   /**
+    * @param avmService The AVMService to set.
+    */
+   public void setAvmService(AVMService avmService)
+   {
+      this.avmService = avmService;
    }
    
    /**

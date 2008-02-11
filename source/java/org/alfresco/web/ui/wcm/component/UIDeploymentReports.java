@@ -36,6 +36,9 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -44,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
@@ -117,22 +121,47 @@ public class UIDeploymentReports extends SelfRenderingComponent
          if (logger.isDebugEnabled())
             logger.debug("Rendering deployment reports for: " + webProject.toString());
          
-         // render the supporting JavaScript
-         renderScript(context, out);
-         
-         // iterate through each deployment report
          NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
          ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-         List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                  this.webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : deployReportRefs)
+         AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+         
+         String store = (String)nodeService.getProperty(webProject, WCMAppModel.PROP_AVMSTORE);
+         PropertyValue val = avmService.getStoreProperty(store, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         String attemptId = null;
+         
+         if (val != null)
          {
-            // render each report
-            renderReport(context, out, ref.getChildRef(), nodeService, contentService);
+            attemptId = val.getStringValue();
          }
          
-         // add some padding after the panels
-         out.write("\n<div style='padding-top:8px;'></div>\n");
+         if (attemptId == null || attemptId.length() == 0)
+         {
+            throw new IllegalStateException("Failed to retrieve deployment attempt id");
+         }
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Retrieving deployment reports for attempt id: " + attemptId);
+         
+         // get the deploymentattempt object
+         NodeRef attempt = AVMUtil.findDeploymentAttempt(attemptId);
+         
+         if (attempt != null)
+         {
+            // render the supporting JavaScript
+            renderScript(context, out);
+            
+            // iterate through each deployment report
+            List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
+                     attempt, WCMAppModel.ASSOC_DEPLOYMENTREPORTS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : deployReportRefs)
+            {
+               // render each report
+               renderReport(context, out, ref.getChildRef(), nodeService, contentService);
+            }
+            
+            // add some padding after the panels
+            out.write("\n<div style='padding-top:8px;'></div>\n");
+         }
          
          tx.commit();
       }

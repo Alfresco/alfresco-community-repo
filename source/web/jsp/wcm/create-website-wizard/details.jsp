@@ -146,29 +146,6 @@
    </tr>
    <tr>
       <td></td>
-      <td valign="top">
-         </f:verbatim>
-         <h:outputText value="#{msg.website_deployto}:"/>
-         <f:verbatim>
-      </td>
-      <td>
-         </f:verbatim>
-         <h:inputText id="server" value="#{WizardManager.bean.deployTo}" size="45" maxlength="256">
-            <a:convertMultiValue />
-         </h:inputText>
-         <h:graphicImage id="deploy-to-help-img"
-		    value="/images/icons/Help_icon.gif" style="cursor:help; padding-left: 4px; vertical-align: -4px;"
-		    onclick="javascript:toggleDeployToHelp()" />
-         <f:verbatim>
-         <div id="deploy-to-help" class="summary infoText statusInfoText" style="display:none; padding:5px;">
-         </f:verbatim>
-            <h:outputText id="deploy-top-help-text" value="#{WizardManager.bean.deployToHelp}" escape="false" />
-         <f:verbatim>
-         </div>
-      </td>
-   </tr>
-   <tr>
-      <td></td>
       <td>
          </f:verbatim>
          <h:outputText value="#{msg.title}:" />

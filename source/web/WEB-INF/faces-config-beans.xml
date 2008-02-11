@@ -4045,6 +4045,10 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
       <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>actionService</property-name>
          <value>#{ActionService}</value>
       </managed-property>

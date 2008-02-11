@@ -290,58 +290,6 @@ public final class AVMUtil
    }
    
    /**
-    * Returns the username to connect as on the remote machine being deployed to
-    * <p>
-    * This value is read from the &lt;wcm&gt; config section in
-    * web-client-config-wcm.xml
-    * </p>
-    * 
-    * @return Username for remote machine
-    */
-   public static String getRemoteDeploymentUsername()
-   {
-      String username = "admin";
-      
-      ConfigElement deploymentConfig = getDeploymentConfig();
-      if (deploymentConfig != null)
-      {
-         ConfigElement elem = deploymentConfig.getChild("remote-username");
-         if (elem != null)
-         {
-            username = elem.getValue();
-         }
-      }
-      
-      return username;
-   }
-   
-   /**
-    * Returns the password to use on the remote machine being deployed to
-    * <p>
-    * This value is read from the &lt;wcm&gt; config section in
-    * web-client-config-wcm.xml
-    * </p>
-    * 
-    * @return Password for remote machine
-    */
-   public static String getRemoteDeploymentPassword()
-   {
-      String password = "admin";
-      
-      ConfigElement deploymentConfig = getDeploymentConfig();
-      if (deploymentConfig != null)
-      {
-         ConfigElement elem = deploymentConfig.getChild("remote-password");
-         if (elem != null)
-         {
-            password = elem.getValue();
-         }
-      }
-      
-      return password;
-   }
-   
-   /**
     * Returns the number of seconds between each call back to the server to
     * obtain the latest status of an in progress deployment.
     * <p>
@@ -378,123 +326,6 @@ public final class AVMUtil
       }
       
       return pollFreq;
-   }
-   
-   /**
-    * Returns the default RMI registry port to use when one is not supplied
-    * for target Alfresco deployment servers.
-    * <p>
-    * This value is read from the &lt;wcm&gt; config section in
-    * web-client-config-wcm.xml
-    * </p>
-    * 
-    * @return The remote RMI registry port to use for deployments.
-    *         The default is 50500.
-    */
-   public static int getRemoteRMIRegistryPort()
-   {
-      int rmiPort = 50500;
-      
-      ConfigElement deploymentConfig = getDeploymentConfig();
-      if (deploymentConfig != null)
-      {
-         ConfigElement elem = deploymentConfig.getChild("remote-rmi-port");
-         if (elem != null)
-         {
-            try
-            {
-               int value = Integer.parseInt(elem.getValue());
-               if (value > 0)
-               {
-                  rmiPort = value;
-               }
-            }
-            catch (NumberFormatException nfe)
-            {
-               // do nothing, just use the default
-            }
-         }
-      }
-      
-      return rmiPort;
-   }
-   
-   /**
-    * Returns the default RMI port to use when one is not supplied
-    * for target deployment receivers.
-    * <p>
-    * This value is read from the &lt;wcm&gt; config section in
-    * web-client-config-wcm.xml
-    * </p>
-    * 
-    * @return The deployment receiver RMI port to use for deployments.
-    *         The default is 44100.
-    */
-   public static int getRemoteReceiverRMIPort()
-   {
-      int rmiPort = 44100;
-      
-      ConfigElement deploymentConfig = getDeploymentConfig();
-      if (deploymentConfig != null)
-      {
-         ConfigElement elem = deploymentConfig.getChild("receiver-rmi-port");
-         if (elem != null)
-         {
-            try
-            {
-               int value = Integer.parseInt(elem.getValue());
-               if (value > 0)
-               {
-                  rmiPort = value;
-               }
-            }
-            catch (NumberFormatException nfe)
-            {
-               // do nothing, just use the default
-            }
-         }
-      }
-      
-      return rmiPort;
-   }
-   
-   /**
-    * Returns the delay (in seconds) to apply to the start of a deployment
-    * operation (mainly for demo and testing purposes).
-    * <p>
-    * This value is read from the &lt;wcm&gt; config section in
-    * web-client-config-wcm.xml
-    * </p>
-    * 
-    * @return The delay to use at the start of a deployment.
-    *         The default is 30.
-    */
-   public static int getRemoteDeploymentDelay()
-   {
-      int delay = 30;
-      
-      ConfigElement deploymentConfig = getDeploymentConfig();
-      if (deploymentConfig != null)
-      {
-         ConfigElement elem = deploymentConfig.getChild("delay");
-         if (elem != null)
-         {
-            try
-            {
-               int value = Integer.parseInt(elem.getValue());
-               if (value > 0)
-               {
-                  delay = value;
-               }
-            }
-            catch (NumberFormatException nfe)
-            {
-               // do nothing, just use the default
-            }
-         }
-      }
-      
-      return delay;
    }
    
    /**
@@ -977,6 +808,44 @@ public final class AVMUtil
       }
       
       return webProjectNode;
+   }
+   
+   /**
+    * Retrieves the NodeRef of the deploymentattempt node with the given id
+    * 
+    * @param attemptId The deployattemptid of the node to be found
+    * @return The NodeRef of the deploymentattempt node or null if not found
+    */
+   public static NodeRef findDeploymentAttempt(String attemptId)
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
+      
+      // construct the query
+      String query = "@wca\\:deployattemptid:\"" + attemptId + "\"";
+      
+      NodeRef attempt = null;
+      ResultSet results = null;
+      try
+      {
+         // execute the query
+         results = searchService.query(Repository.getStoreRef(), 
+               SearchService.LANGUAGE_LUCENE, query);
+         
+         if (results.length() == 1)
+         {
+            attempt = results.getNodeRef(0);
+         }
+      }
+      finally
+      {
+         if (results != null)
+         {
+            results.close();
+         }
+      }
+      
+      return attempt;
    }
 
    /**

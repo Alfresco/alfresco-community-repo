@@ -509,6 +509,24 @@
     	<property name="publicAction">
     	    <value>false</value>
     	</property>
+      <property name="defaultRemoteUsername">
+         <value>admin</value>
+      </property>
+      <property name="defaultRemotePassword">
+         <value>admin</value>
+      </property>
+      <property name="defaultAlfrescoRmiPort">
+         <value>50500</value>
+      </property>
+      <property name="defaultReceiverRmiPort">
+         <value>44100</value>
+      </property>
+      <property name="defaultTargetName">
+         <value>default</value>
+      </property>
+      <property name="delay">
+         <value>30</value>
+      </property>
     </bean>
     
     <bean id="count-children" class="org.alfresco.repo.action.executer.CountChildrenActionExecuter" parent="action-executer">

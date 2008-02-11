@@ -1212,4 +1212,21 @@
         </property>
     </bean>
     
+    <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.DeploymentMigrationPatch" parent="basePatch" >
+        <property name="id"><value>patch.deploymentMigration</value></property>
+        <property name="description"><value>patch.deploymentMigration.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>116</value></property>
+        <property name="targetSchema"><value>117</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+    </bean>
+    
 </beans>

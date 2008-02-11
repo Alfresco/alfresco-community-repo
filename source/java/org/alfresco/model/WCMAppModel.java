@@ -43,6 +43,8 @@ public interface WCMAppModel
     static final QName ASSOC_WEBUSER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webuser");
     static final QName ASSOC_WEBFORM = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webform");
     static final QName ASSOC_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
+    static final QName ASSOC_DEPLOYMENTSERVER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentserver");
+    static final QName ASSOC_DEPLOYMENTATTEMPT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentattempt");
     static final QName ASSOC_DEPLOYMENTREPORT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentreport");
     
     // AVM web user reference
@@ -68,6 +70,35 @@ public interface WCMAppModel
     // AVM web workflow defaults
     static final QName TYPE_WEBWORKFLOWDEFAULTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webworkflowdefaults");
     
+    // AVM website deployment server
+    static final String CONSTRAINT_ALFDEPLOY = "alfresco";
+    static final String CONSTRAINT_FILEDEPLOY = "file";
+    static final String CONSTRAINT_LIVESERVER = "live";
+    static final String CONSTRAINT_TESTSERVER = "test";
+    static final QName TYPE_DEPLOYMENTSERVER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentserver");
+    static final QName PROP_DEPLOYTYPE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploytype");
+    static final QName PROP_DEPLOYSERVERTYPE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertype");
+    static final QName PROP_DEPLOYSERVERHOST = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverhost");
+    static final QName PROP_DEPLOYSERVERPORT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverport");
+    static final QName PROP_DEPLOYSERVERNAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservername");
+    static final QName PROP_DEPLOYSERVERUSERNAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverusername");
+    static final QName PROP_DEPLOYSERVERPASSWORD = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverpassword");
+    static final QName PROP_DEPLOYSERVERURL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverurl");
+    static final QName PROP_DEPLOYSERVERTARGET = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertarget");
+    static final QName PROP_DEPLOYSOURCEPATH = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysourcepath");
+    static final QName PROP_DEPLOYSERVERALLOCATEDTO = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverallocatedto");
+    static final QName PROP_DEPLOYONAPPROVAL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployonapproval");
+    
+    // AVM website deployment attempt
+    static final QName TYPE_DEPLOYMENTATTEMPT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentattempt");
+    static final QName PROP_DEPLOYATTEMPTID = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattemptid");
+    static final QName PROP_DEPLOYATTEMPTTYPE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattempttype");
+    static final QName PROP_DEPLOYATTEMPTSTORE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattemptstore");
+    static final QName PROP_DEPLOYATTEMPTVERSION = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattemptversion");
+    static final QName PROP_DEPLOYATTEMPTSERVERS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattemptservers");
+    static final QName PROP_DEPLOYATTEMPTTIME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployattempttime");
+    static final QName ASSOC_DEPLOYMENTREPORTS = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentreports");
+    
     // AVM website deployment report
     static final QName TYPE_DEPLOYMENTREPORT = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploymentreport");
     static final QName PROP_DEPLOYSERVER = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserver");
@@ -76,6 +107,11 @@ public interface WCMAppModel
     static final QName PROP_DEPLOYFAILEDREASON = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployfailedreason");
     static final QName PROP_DEPLOYSTARTTIME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploystarttime");
     static final QName PROP_DEPLOYENDTIME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployendtime");
+    static final QName PROP_DEPLOYSERVERNAMEUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservernameused");
+    static final QName PROP_DEPLOYSERVERUSERNAMEUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverusernameused");
+    static final QName PROP_DEPLOYSERVERTARGETUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertargetused");
+    static final QName PROP_DEPLOYSOURCEPATHUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysourcepathused");
+    static final QName PROP_DEPLOYSERVERURLUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverurlused");
     
     // AVM webapp aspect
     static final QName ASPECT_WEBAPP = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "webapp");

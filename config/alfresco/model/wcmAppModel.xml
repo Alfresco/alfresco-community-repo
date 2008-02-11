@@ -16,6 +16,25 @@
       <namespace uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
    </namespaces>
    
+   <constraints>
+      <constraint name="wca:deploytypes" type="LIST">
+         <parameter name="allowedValues">
+            <list>
+               <value>alfresco</value>
+               <value>file</value>
+            </list>
+         </parameter>
+      </constraint>
+      
+      <constraint name="wca:deployservertypes" type="LIST">
+         <parameter name="allowedValues">
+            <list>
+               <value>live</value>
+               <value>test</value>
+            </list>
+         </parameter>
+      </constraint>
+   </constraints>
    
    <types>
    
@@ -37,6 +56,7 @@
                <title>Default Webapp</title>
                <type>d:text</type>
             </property>
+            <!-- the following properties are deprecated as of v2.2 -->
             <property name="wca:deployto">
                <title>Deploy To</title>
                <type>d:text</type>
@@ -51,6 +71,7 @@
                <title>Snapshot Version Selected For Deployment</title>
                <type>d:int</type>
             </property>
+            <!-- end of deprecation -->
             <property name="wca:issource">
                <title>Used as a template website</title>
                <type>d:boolean</type>
@@ -90,6 +111,7 @@
                   <many>true</many>
                </target>
             </child-association>
+            <!-- the following association is deprecated as of v2.2 -->
             <child-association name="wca:deploymentreport">
                <source>
                   <mandatory>false</mandatory>
@@ -97,6 +119,29 @@
                </source>
                <target>
                   <class>wca:deploymentreport</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <!-- end of deprecation -->
+            <child-association name="wca:deploymentserver">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:deploymentserver</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+            <child-association name="wca:deploymentattempt">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:deploymentattempt</class>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
@@ -158,29 +203,29 @@
             </child-association>
          </associations>
          <mandatory-aspects>
-				<aspect>cm:titled</aspect>
-				<aspect>wca:outputpathpattern</aspect>
-			</mandatory-aspects>
+            <aspect>cm:titled</aspect>
+            <aspect>wca:outputpathpattern</aspect>
+         </mandatory-aspects>
       </type>
       
       <type name="wca:webformtemplate">
          <title>Website Web Form Template</title>
          <parent>sys:base</parent>
-			<properties>
+         <properties>
             <property name="wca:baserenderingenginetemplatename">
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
          <mandatory-aspects>
-				<aspect>wca:outputpathpattern</aspect>
-			</mandatory-aspects>
+            <aspect>wca:outputpathpattern</aspect>
+         </mandatory-aspects>
       </type>
       
       <type name="wca:workflowdefaults">
          <title>Workflow Defaults</title>
          <parent>sys:base</parent>
-			<properties>
+         <properties>
             <property name="wca:workflowname">
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>
@@ -197,13 +242,13 @@
          <title>Web Workflow Defaults</title>
          <parent>wca:workflowdefaults</parent>
          <mandatory-aspects>
-				<aspect>wca:filenamepattern</aspect>
-			</mandatory-aspects>
+            <aspect>wca:filenamepattern</aspect>
+         </mandatory-aspects>
       </type>
       
       <type name="wca:renditionproperties">
          <title>Properties for renditions</title>
-	      <parent>sys:base</parent>
+         <parent>sys:base</parent>
          <properties>
             <property name="wca:mimetypeforrendition">
                <title>Mimetype for generated assets</title>
@@ -212,13 +257,145 @@
             </property>
          </properties>
          <mandatory-aspects>
-	         <aspect>wca:outputpathpattern</aspect>
+            <aspect>wca:outputpathpattern</aspect>
          </mandatory-aspects>
       </type>
 
       <type name="wca:formfolder">
          <title>XForms Capture Form Folder</title>
-	      <parent>cm:folder</parent>
+         <parent>cm:folder</parent>
+      </type>
+      
+      <type name="wca:deploymentserver">
+         <title>Website Deployment Server</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="wca:deploytype">
+               <title>Deployment Type</title>
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="wca:deploytypes" />
+               </constraints>
+            </property>
+            <property name="wca:deployservertype">
+               <title>Deployment Server Type</title>
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="wca:deployservertypes" />
+               </constraints>
+            </property>
+            <property name="wca:deployserverhost">
+               <title>Host</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="wca:deployserverport">
+               <title>Port</title>
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="wca:deployservername">
+               <title>Display Name</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverusername">
+               <title>Username</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverpassword">
+               <title>Password</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverurl">
+               <title>Runtime URL</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployservertarget">
+               <title>Deploy Target</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deploysourcepath">
+               <title>Source Path</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverallocatedto">
+               <title>Allocated To</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployonapproval">
+               <title>Deploy On Approval</title>
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="wca:deploymentattempt">
+         <title>Website Deployment Attempt</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="wca:deployattemptid">
+               <title>Deploy Attempt ID</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="wca:deployattempttype">
+               <title>Attempt Type</title>
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="wca:deployservertypes" />
+               </constraints>
+            </property>
+            <property name="wca:deployattemptstore">
+               <title>Attempt Type</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="wca:deployattemptversion">
+               <title>Snapshot Version Deployed</title>
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="wca:deployattemptservers">
+               <title>Servers Deployed To</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="wca:deployattempttime">
+               <title>Time Of Deploy Attempt</title>
+               <type>d:datetime</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <child-association name="wca:deploymentreports">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>wca:deploymentreport</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
       </type>
       
       <type name="wca:deploymentreport">
@@ -254,11 +431,31 @@
                <title>Failure Reason</title>
                <type>d:text</type>
             </property>
+            <property name="wca:deployservernameused">
+               <title>Server Display Name</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverusernameused">
+               <title>Username Used</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployservertargetused">
+               <title>Target Used</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deploysourcepathused">
+               <title>Source Path Used</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployserverurlused">
+               <title>Source Path Used</title>
+               <type>d:text</type>
+            </property>
          </properties>
       </type>
-	</types>
+   </types>
 
-	<aspects>
+   <aspects>
       
       <aspect name="wca:webapp">
          <title>Webapp</title>
@@ -282,7 +479,7 @@
          </properties>
       </aspect>
       
-   	<!-- An XForms capture form aspect. -->
+      <!-- An XForms capture form aspect. -->
       <aspect name="wca:form">
          <title>XForms Form</title>
          <properties>
@@ -372,11 +569,11 @@
               <mandatory>false</mandatory>
             </property>
 
-         	<property name="wca:renditions">
+            <property name="wca:renditions">
                <title>Renditions of this form instance data</title>
                <type>d:text</type>
                <multiple>true</multiple>
-         	</property>
+            </property>
          </properties>
       </aspect>
 

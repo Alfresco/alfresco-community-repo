@@ -311,6 +311,12 @@
         eternal="true"
         overflowToDisk="true"
         />
+    <cache
+        name="org.alfresco.cache.sysAdminCache"
+        maxElementsInMemory="10"
+        eternal="true"
+        overflowToDisk="false"
+        />
         
         
     <!-- Web Client Config (tenant-based) -->

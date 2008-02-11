@@ -25,8 +25,10 @@
 package org.alfresco.repo.security.authentication;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class AuthenticationServiceImpl implements AuthenticationService
@@ -45,9 +47,19 @@ public class AuthenticationServiceImpl implements AuthenticationService
     
     private boolean allowsUserPasswordChange = true;
     
+    // SysAdmin cache - used to cluster certain JMX operations
+    private SimpleCache<String, Object> sysAdminCache;
+    private final static String KEY_SYSADMIN_ALLOWED_USERS = "sysAdminCache.authAllowedUsers";
+
+    
     public AuthenticationServiceImpl()
     {
         super();
+    }
+    
+    public void setSysAdminCache(SimpleCache<String, Object> sysAdminCache)
+    {
+        this.sysAdminCache = sysAdminCache;
     }
 
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
@@ -105,13 +117,20 @@ public class AuthenticationServiceImpl implements AuthenticationService
         authenticationDao.setEnabled(userName, enabled);
     }
 
+    @SuppressWarnings("unchecked")
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         try
         {
-           // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
-           clearCurrentSecurityContext();
-           authenticationComponent.authenticate(userName, password);
+            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
+            clearCurrentSecurityContext();
+        	List<String> allowedUsers = (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
+           
+        	if ((allowedUsers != null) && (! allowedUsers.contains(userName)))
+			{
+				throw new AuthenticationException("Username not allowed: " + userName);
+			}
+		    authenticationComponent.authenticate(userName, password);
         }
         catch(AuthenticationException ae)
         {
@@ -119,6 +138,8 @@ public class AuthenticationServiceImpl implements AuthenticationService
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
+        
+        ticketComponent.getCurrentTicket(userName); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public boolean authenticationExists(String userName)
@@ -135,11 +156,32 @@ public class AuthenticationServiceImpl implements AuthenticationService
     {
         ticketComponent.invalidateTicketByUser(userName);
     }
+    
+    public Set<String> getUsersWithTickets(boolean nonExpiredOnly)
+    {
+    	return ticketComponent.getUsersWithTickets(nonExpiredOnly);
+    }
+    
+    public void setAllowedUsers(List<String> allowedUsers)
+    {
+    	sysAdminCache.put(KEY_SYSADMIN_ALLOWED_USERS, allowedUsers);
+    }
 
     public void invalidateTicket(String ticket) throws AuthenticationException
     {
         ticketComponent.invalidateTicketById(ticket);
     }
+    
+    public int countTickets(boolean nonExpiredOnly)
+    {
+    	return ticketComponent.countTickets(nonExpiredOnly);
+    }
+    
+    public int invalidateTickets(boolean expiredOnly)
+    {
+    	return ticketComponent.invalidateTickets(expiredOnly);
+    }
+    
 
     public void validate(String ticket) throws AuthenticationException
     {

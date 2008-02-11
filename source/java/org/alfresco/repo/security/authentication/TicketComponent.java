@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.util.Set;
+
 
 /**
  * Manage authentication tickets
@@ -89,6 +91,34 @@ public interface TicketComponent
      * @param userName
      */
     public void invalidateTicketByUser(String userName);
+      
+	/**
+	 * Count tickets
+	 * 
+	 * This may be higher than the user count, since a user can have more than one ticket/session
+	 *
+	 * @param nonExpiredOnly  true for non expired tickets, false for all (including expired) tickets
+	 * @return int number of tickets
+	 */
+    public int countTickets(boolean nonExpiredOnly);
+    
+	/**
+	 * Get set of users with tickets
+	 * 
+	 * This may be lower than the ticket count, since a user can have more than one ticket/session
+	 *
+	 * @param nonExpiredOnly  true for non expired tickets, false for all (including expired) tickets
+	 * @return Set<String>   set of users with (one or more) tickets
+	 */
+    public Set<String> getUsersWithTickets(boolean nonExpiredOnly);
+
+	/**
+	 * Invalidate tickets
+	 * 
+	 * @param expiredOnly  true for EXPIRED tickets, false for ALL (including non-expired) tickets
+	 * @return int  count of invalidated tickets
+	 */
+    public int invalidateTickets(boolean expiredOnly);
     
     /**
      * Get the authority for the given ticket

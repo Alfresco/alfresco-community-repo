@@ -144,6 +144,76 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
         ticketsCache.remove(key);
     }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.TicketComponent#getUsersWithTickets(boolean)
+     */
+    public Set<String> getUsersWithTickets(boolean nonExpiredOnly) 
+    {
+    	Set<String> users = new HashSet<String>();
+    	for (String key : ticketsCache.getKeys())
+        {
+    		Ticket ticket = ticketsCache.get(key);
+    		if ((nonExpiredOnly == false) || (! ticket.hasExpired()))
+    		{
+    			users.add(ticket.getUserName());
+    		}
+        }
+    	return users;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.TicketComponent#countTickets(boolean)
+     */
+    public int countTickets(boolean nonExpiredOnly)
+    {
+    	if (nonExpiredOnly)
+    	{
+    		int count = 0;
+    		for (String key : ticketsCache.getKeys())
+            {
+    			Ticket ticket = ticketsCache.get(key);
+    			if (! ticket.hasExpired())
+    			{
+    				count++;
+    			}
+            }
+    		return count;
+    	}
+    	else
+    	{
+    		return ticketsCache.getKeys().size();
+    	}
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.TicketComponent#invalidateTickets(boolean)
+     */
+    public int invalidateTickets(boolean expiredOnly)
+    {
+    	int count = 0;
+    	if (! expiredOnly)
+    	{
+    		count = ticketsCache.getKeys().size();
+    		ticketsCache.clear();
+    	}
+    	else
+    	{
+	    	for (String key : ticketsCache.getKeys())
+	        {
+	    		Ticket ticket = ticketsCache.get(key);
+	    		if (ticket.hasExpired())
+	    		{
+	    			count++;
+	    			ticketsCache.remove(key);
+	    		}
+	        }
+    	}
+    	return count;
+    }
 
     public void invalidateTicketByUser(String userName)
     {

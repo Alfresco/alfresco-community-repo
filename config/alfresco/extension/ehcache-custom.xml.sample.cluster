@@ -509,8 +509,24 @@
                                 replicateUpdatesViaCopy = true,
                                 replicateAsynchronously = false"/>
     </cache>
+    
+    <!-- note: updates via copy rather than invalidation -->
+    <cache
+        name="org.alfresco.cache.sysAdminCache"
+        maxElementsInMemory="10"
+        eternal="true"
+        overflowToDisk="false">
 
-        
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = true,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+
     <!-- Web Client Config (tenant-based) -->
         
     <cache 

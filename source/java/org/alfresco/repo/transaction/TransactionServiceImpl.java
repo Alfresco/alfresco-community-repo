@@ -26,6 +26,7 @@ package org.alfresco.repo.transaction;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.SpringAwareUserTransaction;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -39,8 +40,12 @@ import org.springframework.transaction.TransactionDefinition;
 public class TransactionServiceImpl implements TransactionService
 {
     private PlatformTransactionManager transactionManager;
-    private boolean readOnly = false;
     private int maxRetries = 20;
+    
+    // SysAdmin cache - used to cluster certain JMX operations
+    private SimpleCache<String, Object> sysAdminCache;
+    private final static String KEY_SYSADMIN_ALLOW_WRITE = "sysAdminCache.txAllowWrite";
+    
     
     /**
      * Set the transaction manager to use
@@ -51,6 +56,11 @@ public class TransactionServiceImpl implements TransactionService
     {
         this.transactionManager = transactionManager;
     }
+    
+    public void setSysAdminCache(SimpleCache<String, Object> sysAdminCache)
+    {
+        this.sysAdminCache = sysAdminCache;
+    }
 
     /**
      * Set the read-only mode for all generated transactions.
@@ -59,12 +69,13 @@ public class TransactionServiceImpl implements TransactionService
      */
     public void setAllowWrite(boolean allowWrite)
     {
-        this.readOnly = !allowWrite;
+    	sysAdminCache.put(KEY_SYSADMIN_ALLOW_WRITE, allowWrite);
     }
     
     public boolean isReadOnly()
     {
-        return readOnly;
+    	Boolean allowWrite = (Boolean)sysAdminCache.get(KEY_SYSADMIN_ALLOW_WRITE);
+    	return (allowWrite == null ? false : ! allowWrite);
     }
     
     /**
@@ -85,7 +96,7 @@ public class TransactionServiceImpl implements TransactionService
     {
         SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
                 transactionManager,
-                this.readOnly,
+                isReadOnly(),
                 TransactionDefinition.ISOLATION_DEFAULT,
                 TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
@@ -99,7 +110,7 @@ public class TransactionServiceImpl implements TransactionService
     {
         SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
                 transactionManager,
-                (readOnly | this.readOnly),
+                (readOnly | isReadOnly()),
                 TransactionDefinition.ISOLATION_DEFAULT,
                 TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
@@ -113,7 +124,7 @@ public class TransactionServiceImpl implements TransactionService
     {
         SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
                 transactionManager,
-                this.readOnly,
+                isReadOnly(),
                 TransactionDefinition.ISOLATION_DEFAULT,
                 TransactionDefinition.PROPAGATION_REQUIRES_NEW,
                 TransactionDefinition.TIMEOUT_DEFAULT);
@@ -127,7 +138,7 @@ public class TransactionServiceImpl implements TransactionService
     {
         SpringAwareUserTransaction txn = new SpringAwareUserTransaction(
                 transactionManager,
-                (readOnly | this.readOnly),
+                (readOnly | isReadOnly()),
                 TransactionDefinition.ISOLATION_DEFAULT,
                 TransactionDefinition.PROPAGATION_REQUIRES_NEW,
                 TransactionDefinition.TIMEOUT_DEFAULT);
@@ -142,7 +153,7 @@ public class TransactionServiceImpl implements TransactionService
         RetryingTransactionHelper helper = new RetryingTransactionHelper();
         helper.setMaxRetries(maxRetries);
         helper.setTransactionService(this);
-        helper.setReadOnly(readOnly);
+        helper.setReadOnly(isReadOnly());
         return helper;
     }
 }

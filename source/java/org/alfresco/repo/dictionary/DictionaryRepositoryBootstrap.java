@@ -37,7 +37,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -80,9 +79,6 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
 
     /** The node service */
     private NodeService nodeService;
-
-    /** The tenant service */
-    private TenantService tenantService;
     
     /** The tenant deployer service */
     private TenantDeployerService tenantDeployerService;
@@ -134,16 +130,6 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    /**
-     * Set the tenant service
-     * 
-     * @param tenantService     the tenant service
-     */
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
     
     /**
@@ -415,7 +401,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }                               
         }, AuthenticationUtil.getSystemUserName());
                
-        if (tenantService.isEnabled())
+        if (tenantDeployerService.isEnabled())
         {
             tenantDeployerService.deployTenants(this, logger);
         }
@@ -438,7 +424,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }                               
         }, AuthenticationUtil.getSystemUserName());
         
-        if (tenantService.isEnabled())
+        if (tenantDeployerService.isEnabled())
         {
             tenantDeployerService.undeployTenants(this, logger);
         }
@@ -465,7 +451,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         // register with Message Service to allow (re-)init
         messageService.register(this);
         
-        if (tenantService.isEnabled())
+        if (tenantDeployerService.isEnabled())
         {
             // register dictionary repository bootstrap
             tenantDeployerService.register(this);
@@ -480,7 +466,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      */
     protected void unregister()
     {
-        if (tenantService.isEnabled())
+        if (tenantDeployerService.isEnabled())
         {
             // register dictionary repository bootstrap
             tenantDeployerService.unregister(this);

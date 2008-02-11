@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,28 +24,20 @@
  */
 package org.alfresco.repo.tenant;
 
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-
-
 /**
- * Tenant Deployer Service interface.
+ * Tenant Base Service interface.
  * <p>
- * This interface allows components to register with the Tenant Deployer Service.
- * Components can then deploy and undeploy tenants during bootstrap and shutdown.
+ * Common for TenantService and TenantDeployerService
  *
  */
 
-public interface TenantDeployerService extends TenantBaseService
+public interface TenantBaseService
 {    
-    public void deployTenants(final TenantDeployer deployer, Log logger);
+    public String getCurrentUserDomain();
     
-    public void undeployTenants(final TenantDeployer deployer, Log logger);
-
-    public void register(TenantDeployer tenantDeployer);
+    public String getDomainUser(String baseUsername, String tenantDomain);
     
-    public void unregister(TenantDeployer tenantDeployer);
-    
-    public List<Tenant> getAllTenants();
+    public String getDomain(String name);
+ 
+    public boolean isEnabled();
 }

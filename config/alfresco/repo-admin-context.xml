@@ -62,7 +62,6 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="messageService" ref="messageService"/>
-      <property name="tenantService" ref="tenantService"/>
       <property name="tenantDeployerService" ref="tenantAdminService"/>
          
       <property name="repositoryModelsLocations">

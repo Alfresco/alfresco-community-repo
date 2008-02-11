@@ -1012,12 +1012,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             tenantDeployers.remove(deployer);
         }
     }
-    
-    public boolean isEnabled()
-    {
-        return tenantService.isEnabled();
-    }
-    
+     
     public void resetCache(String tenantDomain)
     {
         if (existsTenant(tenantDomain))
@@ -1096,6 +1091,28 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
 	        	throw new IllegalArgumentException(tenantDomain + " is not a valid DNS label (must match " + REGEX_VALID_DNS_LABEL + ")");
 	        }
         }
+    }
+    
+    // tenant deployer services delegated to tenant service
+    
+    public boolean isEnabled()
+    {
+        return tenantService.isEnabled();
+    }
+    
+    public String getCurrentUserDomain()
+    {
+        return tenantService.getCurrentUserDomain();
+    }
+
+    public String getDomainUser(String baseUsername, String tenantDomain)
+    {
+        return tenantService.getDomainUser(baseUsername, tenantDomain);
+    }
+    
+    public String getDomain(String name)
+    {
+    	return tenantService.getDomain(name);
     }
     
     // local helpers

@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
  * This interface provides methods to support either ST or MT implementations.
  *
  */
-public interface TenantService
+public interface TenantService extends TenantBaseService
 {
     public static final String SEPARATOR = "@";
     
@@ -88,14 +88,6 @@ public interface TenantService
     public boolean isTenantName(String name);
 
     public String getUserDomain(String username);
-    
-    public String getCurrentUserDomain();
-    
-    public String getDomain(String name);
-    
-    public String getDomainUser(String baseUsername, String tenantDomain);
 
     public Tenant getTenant(String tenantDomain);
- 
-    public boolean isEnabled();
 }

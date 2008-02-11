@@ -59,4 +59,24 @@ public class SingleTDeployerServiceImpl implements TenantDeployerService
     {
         return new ArrayList<Tenant>(0); // empty list
     }
+    
+    public String getCurrentUserDomain()
+    {
+        return TenantService.DEFAULT_DOMAIN;
+    }
+    
+    public String getDomainUser(String baseUsername, String tenantDomain)
+    {
+        return baseUsername;
+    }
+    
+    public String getDomain(String name)
+    {
+        return TenantService.DEFAULT_DOMAIN;
+    }
+
+    public boolean isEnabled()
+    {
+        return false;
+    }
 }

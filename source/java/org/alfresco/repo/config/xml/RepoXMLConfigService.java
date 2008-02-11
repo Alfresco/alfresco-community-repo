@@ -46,7 +46,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,7 +70,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
     private TenantDeployerService tenantDeployerService;
-    private TenantService tenantService;
     
     // Internal caches that are clusterable
     private SimpleCache<String, ConfigImpl> globalConfigCache;   
@@ -95,12 +93,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     {
         this.tenantDeployerService = tenantDeployerService;
     }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-    
 
     public void setGlobalConfigCache(SimpleCache<String, ConfigImpl> globalConfigCache)
     {
@@ -200,7 +192,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             }                               
         }, AuthenticationUtil.getSystemUserName());
         
-        if (tenantService.isEnabled() && (tenantDeployerService != null))
+        if ((tenantDeployerService != null) && (tenantDeployerService.isEnabled()))
         {
             tenantDeployerService.deployTenants(this, logger);            
             tenantDeployerService.register(this);
@@ -220,7 +212,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             }                               
         }, AuthenticationUtil.getSystemUserName());
         
-        if (tenantService.isEnabled() && (tenantDeployerService != null))
+        if ((tenantDeployerService != null) && (tenantDeployerService.isEnabled()))
         {
             tenantDeployerService.undeployTenants(this, logger);           
             tenantDeployerService.unregister(this);
@@ -595,6 +587,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     // local helper - returns tenant domain (or empty string if default non-tenant)
     private String getTenantDomain()
     {
-        return tenantService.getCurrentUserDomain();
+        return tenantDeployerService.getCurrentUserDomain();
     }
 }

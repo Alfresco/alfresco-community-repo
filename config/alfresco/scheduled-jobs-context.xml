@@ -252,9 +252,6 @@
         <property name="usageService">
             <ref bean="usageService"/>
         </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
         <property name="tenantDeployerService">
             <ref bean="tenantAdminService" />
         </property>        

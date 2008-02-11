@@ -36,7 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantDeployerService;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -70,7 +69,6 @@ public class UserUsageTrackingComponent
     private NodeService nodeService;   
     private UsageService usageService;
     private TenantDeployerService tenantDeployerService;
-    private TenantService tenantService;
     
     private boolean enabled = true;
     
@@ -109,11 +107,6 @@ public class UserUsageTrackingComponent
     {
         this.tenantDeployerService = tenantDeployerService;
     }
-   
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
     
     public void setEnabled(boolean enabled)
     {
@@ -147,7 +140,7 @@ public class UserUsageTrackingComponent
     	// default domain
     	bootstrapInternal(); 
 		
-		if (tenantService.isEnabled())
+		if (tenantDeployerService.isEnabled())
 		{
 			List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
             for (Tenant tenant : tenants)
@@ -159,7 +152,7 @@ public class UserUsageTrackingComponent
             			bootstrapInternal();
             			return null;
                     }
-                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
 		}
     }
@@ -395,7 +388,7 @@ public class UserUsageTrackingComponent
                             }
                 			return null;
                         }
-                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
+                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDeployerService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
                 }  
                 return null;
             }

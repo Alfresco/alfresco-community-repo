@@ -36,7 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantDeployerService;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -87,8 +86,6 @@ public abstract class AbstractPatch implements Patch
     protected SearchService searchService;
     /** support service */
     protected AuthenticationComponent authenticationComponent;
-    /** support service */
-    protected TenantService tenantService;
     /** support service */
     protected TenantDeployerService tenantDeployerService;
     
@@ -162,11 +159,6 @@ public abstract class AbstractPatch implements Patch
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
     
     public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
@@ -380,8 +372,7 @@ public abstract class AbstractPatch implements Patch
 
                             String report = applyInternal();
                             
-                        	if ((tenantService != null) && (tenantDeployerService != null) &&
-                        		tenantService.isEnabled() && applyToTenants)
+                        	if ((tenantDeployerService != null) && tenantDeployerService.isEnabled() && applyToTenants)
                             {
                             	List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
                                 for (Tenant tenant : tenants)
@@ -393,7 +384,7 @@ public abstract class AbstractPatch implements Patch
                                         {
                                 			return applyInternal();
                                         }
-                                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
                                 	
                                 	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
                                 }

@@ -280,63 +280,43 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
      * @see TenantAdminService.createTenant()
      */
     public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword, String rootContentStoreDir)
-    {             
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+    {
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
         
-        validateTenantName(tenantDomain);
-        
-        if (existsTenant(tenantDomain))
-        {
-            throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
-        }
-        else
-        {                      
-            authenticationComponent.setSystemUserAsCurrentUser();
+        initTenant(tenantDomain, rootContentStoreDir);
 
-            if (rootContentStoreDir == null)
-            {
-                rootContentStoreDir = tenantFileContentStore.getDefaultRootDir();
-            }
-            
-            // init - need to enable tenant (including tenant service) before stores bootstrap
-            Tenant tenant = new Tenant(tenantDomain, true, rootContentStoreDir);
-            putTenantAttributes(tenantDomain, tenant);          
-            
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork()
-                        {           
-                            dictionaryComponent.init();
-                            tenantFileContentStore.init();
-                            
-                            // create tenant-specific stores
-                            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
-                            bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
-                            
-                            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
-                            bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {           
+                        dictionaryComponent.init();
+                        tenantFileContentStore.init();
+                        
+                        // create tenant-specific stores
+                        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
+                        bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
+                        
+                        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
+                        bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
 
-                            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
-                            bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+                        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
+                        bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
 
-                            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
-                            bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
-                            
-                            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
-                            bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);                           
-                            
-                            // notify listeners that tenant has been created & hence enabled
-                            for (TenantDeployer tenantDeployer : tenantDeployers)
-                            {
-                                tenantDeployer.onEnableTenant();
-                            }
-                            
-                            return null;
-                        }                               
-                    }, getSystemUser(tenantDomain));
-        }
+                        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
+                        bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
+                        
+                        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+                        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);                           
+                        
+                        // notify listeners that tenant has been created & hence enabled
+                        for (TenantDeployer tenantDeployer : tenantDeployers)
+                        {
+                            tenantDeployer.onEnableTenant();
+                        }
+                        
+                        return null;
+                    }                               
+                }, getSystemUser(tenantDomain));
 
         logger.info("Tenant created: " + tenantDomain);
     }
@@ -363,53 +343,32 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
      */
     public void importTenant(final String tenantDomain, final File directorySource, String rootContentStoreDir)
     {             
-       // Check that all the passed values are not null
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        initTenant(tenantDomain, rootContentStoreDir);      
         
-        validateTenantName(tenantDomain);
-        
-        if (existsTenant(tenantDomain))
-        {
-            throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
-        }
-        else
-        {                      
-            authenticationComponent.setSystemUserAsCurrentUser();
-
-            if (rootContentStoreDir == null)
-            {
-                rootContentStoreDir = tenantFileContentStore.getDefaultRootDir();
-            }
-            
-            // init - need to enable tenant (including tenant service) before stores bootstrap
-            Tenant tenant = new Tenant(tenantDomain, true, rootContentStoreDir);
-            putTenantAttributes(tenantDomain, tenant);          
-            
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork()
-                        {           
-                            dictionaryComponent.init();
-                            tenantFileContentStore.init();
-                            
-                            // import tenant-specific stores
-                            importBootstrapUserTenantStore(tenantDomain, directorySource);
-                            importBootstrapSystemTenantStore(tenantDomain, directorySource);
-                            importBootstrapVersionTenantStore(tenantDomain, directorySource);
-                            importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
-                            importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
-                            importBootstrapSpacesTenantStore(tenantDomain, directorySource);
-                            
-                            // notify listeners that tenant has been created & hence enabled
-                            for (TenantDeployer tenantDeployer : tenantDeployers)
-                            {
-                                tenantDeployer.onEnableTenant();
-                            }
-                            
-                            return null;
-                        }                               
-                    }, getSystemUser(tenantDomain));
-        }
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {           
+                        dictionaryComponent.init();
+                        tenantFileContentStore.init();
+                        
+                        // import tenant-specific stores
+                        importBootstrapUserTenantStore(tenantDomain, directorySource);
+                        importBootstrapSystemTenantStore(tenantDomain, directorySource);
+                        importBootstrapVersionTenantStore(tenantDomain, directorySource);
+                        importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
+                        importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
+                        importBootstrapSpacesTenantStore(tenantDomain, directorySource);
+                        
+                        // notify listeners that tenant has been created & hence enabled
+                        for (TenantDeployer tenantDeployer : tenantDeployers)
+                        {
+                            tenantDeployer.onEnableTenant();
+                        }
+                        
+                        return null;
+                    }                               
+                }, getSystemUser(tenantDomain));
 
         logger.info("Tenant imported: " + tenantDomain);
     }
@@ -1078,8 +1037,37 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         }
     }
     
+    private void initTenant(String tenantDomain, String rootContentStoreDir)
+    {
+    	validateTenantName(tenantDomain);
+    	
+        if (existsTenant(tenantDomain))
+        {
+            throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
+        }  
+        
+        if (rootContentStoreDir == null)
+        {
+            rootContentStoreDir = tenantFileContentStore.getDefaultRootDir();
+        }
+        else
+        {
+        	File tenantRootDir = new File(rootContentStoreDir);
+        	if ((tenantRootDir.exists()) && (tenantRootDir.list().length != 0))
+        	{
+        		throw new AlfrescoRuntimeException("Tenant root directory is not empty: " + rootContentStoreDir);
+        	}
+        }
+        
+        // init - need to enable tenant (including tenant service) before stores bootstrap
+        Tenant tenant = new Tenant(tenantDomain, true, rootContentStoreDir);
+        putTenantAttributes(tenantDomain, tenant);  
+    }
+    
     private void validateTenantName(String tenantDomain)
     {
+        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        
         if (tenantDomain.length() > MAX_LEN)
         {
         	throw new IllegalArgumentException(tenantDomain + " is not a valid tenant name (must be less than " + MAX_LEN + " characters)");

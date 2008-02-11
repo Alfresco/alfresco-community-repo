@@ -24,13 +24,16 @@
  */
 package org.alfresco.repo.admin;
 
-
+/**
+ * Repository Server Management
+ *
+ * Note: The attributes/operations below can be clustered (ie. when configured all servers in the cluster will be affected)
+ * 
+ */
 public interface RepoServerMgmtMBean
 {
 	/**
 	 * Set whether Repository allows writes or not
-	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
 	 * 
 	 * @param readOnly  true is READONLY, false is WRITEABLE
 	 */
@@ -38,8 +41,6 @@ public interface RepoServerMgmtMBean
 	
 	/**
 	 * Does the Repository allows writes or not ?
-	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
 	 * 
 	 * @return boolean  true is READONLY, false is WRITEABLE
 	 */
@@ -50,8 +51,6 @@ public interface RepoServerMgmtMBean
 	 * 
 	 * This may be higher than the user count, since a user can have more than one ticket/session
 	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
-	 * 
 	 * @return int  number of non-expired tickets
 	 */
 	public int getTicketCountNonExpired();
@@ -60,8 +59,6 @@ public interface RepoServerMgmtMBean
 	 * Get count of all tickets
 	 * 
 	 * This may be higher than the user count, since a user can have more than one ticket/session
-	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
 	 * 
 	 * @return int  number of tickets (non-expired and expired)
 	 */
@@ -72,8 +69,6 @@ public interface RepoServerMgmtMBean
 	 * 
 	 * This may be lower than the ticket count, since a user can have more than one ticket/session
 	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
-	 * 
 	 * @return int  number of non-expired users
 	 */
 	public int getUserCountNonExpired();
@@ -83,16 +78,12 @@ public interface RepoServerMgmtMBean
 	 * 
 	 * This may be lower than the ticket count, since a user can have more than one ticket/session
 	 * 
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
-	 * 
 	 * @return int  number of users (non-expired and expired)
 	 */
 	public int getUserCountAll();
 	
 	/**
 	 * Get set of unique non-expired usernames
-	 *
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
 	 * 
 	 * @return String[] array of non-expired usernames
 	 */
@@ -101,16 +92,12 @@ public interface RepoServerMgmtMBean
 	/**
 	 * Get set of all unique usernames
 	 *
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
-	 *
 	 * @return String[] array of all usernames (non-expired and expired)
 	 */
 	public String[] listUserNamesAll();
 	
 	/**
 	 * Invalidate expired tickets
-	 *
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
 	 * 
 	 * @return int  count of expired invalidated tickets
 	 */
@@ -126,14 +113,56 @@ public interface RepoServerMgmtMBean
 	public int invalidateTicketsAll();
 	
 	/**
+	 * Invalidate given users tickets
+	 */
+	public void invalidateUser(String username);
+	
+	/**
 	 * Set whether Repository allows single user mode or not
 	 * 
 	 * If single user mode is set then all tickets will be invalidated first before allowing the
-	 * named user to login (with one or more sessions)
+	 * named user to login (with one or more sessions) assuming maxUsers is not set to 0
 	 *
-	 * Note: This operation can be clustered (ie. all servers in the cluster will be affected)
+	 * Note: This can also be configured at startup. Refer to repository property (server.singleuseronly.name).
 	 * 
 	 * @param String  allowed username (eg. 'admin') or null to unset (ie. allow all users)
 	 */
-	public void allowSingleUserOnly(String allowedUsername);
+	public void setSingleUserOnly(String allowedUsername);
+	
+	/**
+	 * If Repository is in single user mode then return the name of the allowed user else return null
+	 * 
+	 * @param String  allowed username (eg. 'admin') or null (ie. allow all users)
+	 */
+	public String getSingleUserOnly();
+	
+	/**
+	 * Set limit for max users and/or prevent further logins
+	 * 
+	 * If number of non-expired logins is greater or equal to the limit then further logins will be prevented
+	 * otherwise valid login attempt will be permitted, unless the system is in single-user mode.
+	 * 
+	 * Note:
+	 * 
+	 * Max users = 0 prevents further logins (will also prevent single-user mode login)
+	 * Max users = -1 allow logins (without a max limit)
+	 * 
+	 * Note: This can also be configured at startup. Refer to repository property (server.maxusers).
+	 * 
+	 * @param maxUsers
+	 */
+	public void setMaxUsers(int maxUsers);
+	
+	/**
+	 * Get limit for max users
+	 * 
+	 * If number of non-expired logins is greater or equal to the limit then further logins will be prevented
+	 * otherwise valid login attempt will be permitted. However, single-user mode will take precedence.
+	 * 
+	 * Max users = 0 prevents further logins
+	 * Max users = -1 allow logins (without a max limit)
+	 * 
+	 * @param int  maxUsers
+	 */
+	public int getMaxUsers();
 }

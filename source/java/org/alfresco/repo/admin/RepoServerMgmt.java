@@ -27,7 +27,10 @@ package org.alfresco.repo.admin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationServiceImpl;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.license.LicenseService;
@@ -47,6 +50,8 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	private TransactionServiceImpl transactionService;
 	private AuthenticationServiceImpl authenticationService;
 	
+	// property key should be the same as the one in core-services-context.xml (to allow repo to start in multi-user mode even if the property is not set)
+	private final static String PROPERTY_KEY_SINGLE_USER_ONLY = "${server.singleuseronly.name}";
 	
 	public void setTransactionService(TransactionServiceImpl transactionService) 
 	{
@@ -71,13 +76,13 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	{  
 		if (readOnly && isReadOnly())
 		{
-			log.info("Alfresco Repository is already READONLY");
+			log.info("Alfresco is already read-only");
 			return;
 		}
 		
 		if (!readOnly && !isReadOnly())
 		{
-			log.info("Alfresco Repository is already WRITABLE");
+			log.info("Alfresco is already read-write");
 			return;
 		}
 		
@@ -100,11 +105,11 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 		
 		if (readOnly)
 		{
-			log.info("Alfresco Repository set to READONLY");
+			log.info("Alfresco set to be read-only");
 		}
 		else
 		{
-			log.info("Alfresco Repository set to WRITABLE");
+			log.info("Alfresco set to be read-write");
 		}
 	}
 	
@@ -118,7 +123,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	}
 	
 	// Note: implementing counts as managed attributes (without params) means that
-	// certain JMX consoles can create graphs
+	// certain JMX consoles can monitor
 
 	/*
 	 * (non-Javadoc)
@@ -165,7 +170,8 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	public String[] listUserNamesNonExpired()
 	{
 		Set<String> userSet = authenticationService.getUsersWithTickets(true);
-		return userSet.toArray(new String[0]);
+		SortedSet<String> sorted = new TreeSet<String>(userSet);
+		return sorted.toArray(new String[0]);
 	}
 	
 	/*
@@ -175,7 +181,8 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	public String[] listUserNamesAll()
 	{
 		Set<String> userSet = authenticationService.getUsersWithTickets(false);
-		return userSet.toArray(new String[0]);
+		SortedSet<String> sorted = new TreeSet<String>(userSet);
+		return sorted.toArray(new String[0]);
 	}
 	
 	/*
@@ -184,7 +191,9 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	 */
 	public int invalidateTicketsExpired()
 	{  
-		return authenticationService.invalidateTickets(true);
+		int count = authenticationService.invalidateTickets(true);
+		log.info("Expired tickets invalidated: " + count);
+		return count;
 	}
 	
 	/*
@@ -193,24 +202,132 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	 */
 	public int invalidateTicketsAll()
 	{  
-		return authenticationService.invalidateTickets(false);
+		int count = authenticationService.invalidateTickets(false);
+		log.info("All tickets invalidated: " + count);
+		return count;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.alfresco.mbeans.RepoServerMgmtMBean#allowSingleUserOnly(java.lang.String)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#invalidateUser(java.lang.String)
 	 */
-	public void allowSingleUserOnly(String allowedUsername)
+	public void invalidateUser(String username)
 	{  
+		authenticationService.invalidateUserSession(username);
+		log.info("User invalidated: " + username);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setSingleUserOnly(java.lang.String)
+	 */
+	public void setSingleUserOnly(String allowedUsername)
+	{  
+		int maxUsers = getMaxUsers();
+		
 		List<String> allowedUsers = null;
-		if (allowedUsername != null)
+		if ((allowedUsername != null) && (! allowedUsername.equals("")))
 		{
-			allowedUsers = new ArrayList<String>(0);
-			allowedUsers.add(allowedUsername);
-			
-			invalidateTicketsAll();
+			if (! allowedUsername.equals(PROPERTY_KEY_SINGLE_USER_ONLY))
+			{
+				allowedUsers = new ArrayList<String>(0);
+				allowedUsers.add(allowedUsername);
+				
+				invalidateTicketsAll();
+				
+				if (maxUsers != 0)
+				{
+					log.info("Alfresco set to allow single-user (" + allowedUsername + ") logins");
+				}
+				else
+				{
+					log.info("Alfresco set to allow single-user (" + allowedUsername + ") logins - although further logins are currently prevented (limit = 0)");
+				}
+			}
+		}
+		else
+		{
+			if (maxUsers == -1)
+			{
+				log.info("Alfresco set to allow logins (no limit set)");
+			}
+			else if (maxUsers == 0)
+			{
+				log.info("Alfresco set to allow logins - although further logins are currently prevented (limit = 0)");
+			}
+			else if (maxUsers != 0)
+			{
+				log.info("Alfresco set to allow logins (limit = " + maxUsers + ")");
+			}
 		}
 		
 		authenticationService.setAllowedUsers(allowedUsers);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#getSingleUserOnly()
+	 */
+	public String getSingleUserOnly()
+	{  
+		List<String> allowedUsers = authenticationService.getAllowedUsers();
+		if (allowedUsers != null)
+		{
+			if (allowedUsers.size() > 1)
+			{
+				throw new AlfrescoRuntimeException("Unexpected: more than one user allowed");
+			}
+			if (allowedUsers.size() == 1)
+			{
+				return allowedUsers.get(0);
+			}
+		}
+		return null;		
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setMaxUsers(int)
+	 */
+	public void setMaxUsers(int maxUsers)
+	{
+		authenticationService.setMaxUsers(maxUsers);	
+		
+		String singleUserOnlyName = getSingleUserOnly();
+		if (maxUsers == -1)
+		{
+			if ((singleUserOnlyName != null) && (! singleUserOnlyName.equals("")))
+			{
+				log.info("Alfresco set to allow logins (no limit set) - although currently restricted to single-user (" + singleUserOnlyName + ")");
+			}
+			else
+			{
+				log.info("Alfresco set to allow logins (no limit set)");
+			}
+		}
+		else if (maxUsers == 0)
+		{
+			log.info("Alfresco set to prevent further logins (limit = 0)");
+		}
+		else
+		{
+			if ((singleUserOnlyName != null) && (! singleUserOnlyName.equals("")))
+			{
+				log.info("Alfresco set to allow logins (limit = " + maxUsers + ") - although currently restricted to single-user (" + singleUserOnlyName + ")");
+			}
+			else
+			{
+				log.info("Alfresco set to allow logins (limit = " + maxUsers + ")");
+			}
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#getMaxUsers()
+	 */
+	public int getMaxUsers()
+	{  
+		return authenticationService.getMaxUsers();
 	}
 }

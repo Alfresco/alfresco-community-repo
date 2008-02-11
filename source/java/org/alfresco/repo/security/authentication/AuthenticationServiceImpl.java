@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 
 public class AuthenticationServiceImpl implements AuthenticationService
 {
@@ -49,7 +50,8 @@ public class AuthenticationServiceImpl implements AuthenticationService
     
     // SysAdmin cache - used to cluster certain JMX operations
     private SimpleCache<String, Object> sysAdminCache;
-    private final static String KEY_SYSADMIN_ALLOWED_USERS = "sysAdminCache.authAllowedUsers";
+    private final static String KEY_SYSADMIN_ALLOWED_USERS = "sysAdminCache.authAllowedUsers"; // List<String>
+    private final static String KEY_SYSADMIN_MAX_USERS = "sysAdminCache.authMaxUsers"; // Integer
 
     
     public AuthenticationServiceImpl()
@@ -130,7 +132,15 @@ public class AuthenticationServiceImpl implements AuthenticationService
 			{
 				throw new AuthenticationException("Username not allowed: " + userName);
 			}
-		    authenticationComponent.authenticate(userName, password);
+        	
+        	Integer maxUsers = (Integer)sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
+        	
+        	if ((maxUsers != null) && (maxUsers != -1) && (ticketComponent.getUsersWithTickets(true).size() >= maxUsers))
+        	{
+        		throw new AuthenticationException("Max users exceeded: " + maxUsers);
+        	}
+        	
+        	authenticationComponent.authenticate(userName, password);
         }
         catch(AuthenticationException ae)
         {
@@ -165,6 +175,24 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public void setAllowedUsers(List<String> allowedUsers)
     {
     	sysAdminCache.put(KEY_SYSADMIN_ALLOWED_USERS, allowedUsers);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getAllowedUsers()
+    {
+    	return (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
+    }
+    
+    public void setMaxUsers(int maxUsers)
+    {
+    	sysAdminCache.put(KEY_SYSADMIN_MAX_USERS, new Integer(maxUsers));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public int getMaxUsers()
+    {
+    	Integer maxUsers = (Integer)sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
+    	return (maxUsers == null ? -1 : maxUsers.intValue());
     }
 
     public void invalidateTicket(String ticket) throws AuthenticationException
@@ -219,8 +247,16 @@ public class AuthenticationServiceImpl implements AuthenticationService
         return authenticationComponent.isSystemUserName(getCurrentUserName());
     }
 
+    @SuppressWarnings("unchecked")
     public void authenticateAsGuest() throws AuthenticationException
     {
+    	List<String> allowedUsers = (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
+        
+    	if ((allowedUsers != null) && (! allowedUsers.contains(PermissionService.GUEST_AUTHORITY)))
+		{
+			throw new AuthenticationException("Guest authentication is not allowed");
+		}
+
         authenticationComponent.setGuestUserAsCurrentUser();
         ticketComponent.clearCurrentTicket();
     }

@@ -135,6 +135,8 @@
     <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">       
         <property name="transactionService"><ref bean="transactionService"/></property>
         <property name="authenticationService"><ref bean="authenticationService"/></property>
+        <property name="maxUsers"><value>${server.maxusers}</value></property>
+        <property name="singleUserOnly"><value>${server.singleuseronly.name}</value></property>
     </bean>
     
 

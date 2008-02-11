@@ -212,7 +212,6 @@
          <ref bean="webClientConfigSource" />
       </constructor-arg>
       
-      <property name="tenantService" ref="tenantService"/>
       <property name="tenantDeployerService" ref="tenantAdminService"/>  
       <property name="transactionService" ref="transactionComponent"/>
       <property name="authenticationComponent" ref="authenticationComponent"/>

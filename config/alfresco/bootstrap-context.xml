@@ -94,7 +94,7 @@
     <bean id="systemInfoBootstrap" parent="systemInfoImporter">
     </bean>
 
-    <bean id="userBootstrap" parent="userStoreImporter">
+    <bean id="userBootstrap" parent="userStoreImporter" singleton="false">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -117,7 +117,7 @@
         </property>
     </bean>
 
-    <bean id="systemBootstrap" parent="systemStoreImporter">
+    <bean id="systemBootstrap" parent="systemStoreImporter" singleton="false">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -132,7 +132,7 @@
         </property>
     </bean>
 
-    <bean id="versionBootstrap" parent="versionStoreImporter">
+    <bean id="versionBootstrap" parent="versionStoreImporter" singleton="false">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -143,7 +143,7 @@
         </property>
     </bean>
 
-    <bean id="spacesArchiveBootstrap" parent="spacesArchiveStoreImporter">
+    <bean id="spacesArchiveBootstrap" parent="spacesArchiveStoreImporter" singleton="false">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -154,11 +154,11 @@
         </property>
     </bean>
 
-    <bean id="spacesModelsBootstrap" parent="storeImporter">
+    <bean id="spacesModelsBootstrap" parent="storeImporter" singleton="false">
     	<!-- NOOP for fresh bootstrap (will skip store creation) - provides ordering when performing a repo restore (bootstrap import) -->
     </bean>
     
-    <bean id="spacesBootstrap" parent="spacesStoreImporter">
+    <bean id="spacesBootstrap" parent="spacesStoreImporter" singleton="false">
         <property name="bootstrapViews">
             <list>
                 <props>

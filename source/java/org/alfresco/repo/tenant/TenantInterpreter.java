@@ -199,26 +199,6 @@ public class TenantInterpreter extends BaseInterpreter
             }
             
             String newTenant = new String(command[1]).toLowerCase();
-            String tenantAdminRawPassword = new String(command[2]);
-
-            String createTenantArgs = newTenant + " " + tenantAdminRawPassword;
-            if (command.length == 4)
-            {
-                createTenantArgs = createTenantArgs + " " + new String(command[3]);
-            } 
-            
-            out.print(executeCommand("createWithoutWorkflows " + createTenantArgs));
-            out.print(executeCommand("bootstrapWorkflows " + newTenant));       
-        } 
-
-        else if (command[0].equals("createWithoutWorkflows"))
-        {
-            if ((command.length != 3) && (command.length != 4))
-            {
-                return "Syntax Error, try 'help'.\n";
-            }
-            
-            String newTenant = new String(command[1]).toLowerCase();
             char[] tenantAdminRawPassword = new String(command[2]).toCharArray();
             String rootContentStoreDir = null;
             if (command.length == 4)
@@ -230,20 +210,6 @@ public class TenantInterpreter extends BaseInterpreter
             
             out.println("created tenant: " + newTenant);      
         }
-        
-        else if (command[0].equals("bootstrapWorkflows"))
-        {
-            if (command.length != 2)
-            {
-                return "Syntax Error, try 'help'.\n";
-            }
-            
-            String newTenant = new String(command[1]).toLowerCase();
-            
-            tenantAdminService.bootstrapWorkflows(newTenant);
-            
-            out.println("bootstrap workflows deployed for tenant: " + newTenant);        
-        }   
         
         else if (command[0].equals("import"))
         {
@@ -264,7 +230,6 @@ public class TenantInterpreter extends BaseInterpreter
             tenantAdminService.importTenant(newTenant, directorySource, rootContentStoreDir);
             
             out.println("imported tenant: " + newTenant);
-            out.print(executeCommand("bootstrapWorkflows " + newTenant));
         }  
         
         else if (command[0].equals("export"))

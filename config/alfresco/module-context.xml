@@ -12,6 +12,7 @@
       <property name="descriptorService" ref="DescriptorService" />
       <property name="authenticationComponent" ref="AuthenticationComponent" />
       <property name="registryService" ref="RegistryService" />
+      <property name="tenantDeployerService" ref="tenantAdminService" />
    </bean>
 
    <!-- Parent bean for beans derived from AbstractModuleComponent -->
@@ -19,6 +20,7 @@
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="authenticationComponent" ref="AuthenticationComponent" />
       <property name="moduleService" ref="ModuleService" />
+      <property name="tenantDeployerService" ref="tenantAdminService" />
    </bean>
 
    <!-- Import of installed modules -->

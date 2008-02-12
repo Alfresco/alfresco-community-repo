@@ -23,8 +23,8 @@
       <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
       <property name="workflowService" ref="WorkflowService"/>
       <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
-      
       <property name="workflowDeployer" ref="workflowBootstrap"/>
+      <property name="moduleService" ref="moduleService"/>
       
    </bean>
                 

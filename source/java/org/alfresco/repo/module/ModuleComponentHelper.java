@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,13 +33,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.Tenant;
+import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDependency;
@@ -89,6 +92,7 @@ public class ModuleComponentHelper
     private AuthenticationComponent authenticationComponent;
     private RegistryService registryService;
     private ModuleService moduleService;
+    private TenantDeployerService tenantDeployerService;
     private Map<String, Map<String, ModuleComponent>> componentsByNameByModule;
 
     /** Default constructor */
@@ -135,6 +139,11 @@ public class ModuleComponentHelper
     public void setModuleService(ModuleService moduleService)
     {
         this.moduleService = moduleService;
+    }
+    
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
     }
 
     /**
@@ -197,47 +206,123 @@ public class ModuleComponentHelper
         PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
         PropertyCheck.mandatory(this, "registryService", registryService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
+        PropertyCheck.mandatory(this, "tenantDeployerService", tenantDeployerService);
         /*
          * Ensure transactionality and the correct authentication
          */
-        // Get the current authentication
-        Authentication authentication = authenticationComponent.getCurrentAuthentication();
-        try
+        
+        // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
+        final String tenantDomainCtx = tenantDeployerService.getCurrentUserDomain();
+        
+    	AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            TransactionService transactionService = serviceRegistry.getTransactionService();
-            authenticationComponent.setSystemUserAsCurrentUser();
-            // Get all the modules
-            List<ModuleDetails> modules = moduleService.getAllModules();
-            loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
-            // Process each module in turn.  Ordering is not important.
-            final Set<ModuleComponent> executedComponents = new HashSet<ModuleComponent>(10);
-            final Set<String> startedModules = new HashSet<String>(2);
-            for (final ModuleDetails module : modules)
+    		public Object doWork() throws Exception
             {
-                RetryingTransactionCallback<Object> startModuleWork = new RetryingTransactionCallback<Object>()
-                {
-                    public Object execute() throws Exception
-                    {
-                        startModule(module, startedModules, executedComponents);
-                        return null;
-                    }
-                };
-                transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork);
+	    		try
+	    		{
+		            TransactionService transactionService = serviceRegistry.getTransactionService();
+		
+		            // Get all the modules
+		            List<ModuleDetails> modules = moduleService.getAllModules();
+		            loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
+		            
+		            // Process each module in turn.  Ordering is not important.
+		            final Map<String, Set<ModuleComponent>> mapExecutedComponents = new HashMap<String, Set<ModuleComponent>>(1);
+		            final Map<String, Set<String>> mapStartedModules = new HashMap<String, Set<String>>(1);
+		            
+		            mapExecutedComponents.put(tenantDomainCtx, new HashSet<ModuleComponent>(10));
+		            mapStartedModules.put(tenantDomainCtx, new HashSet<String>(2));
+		            
+		            final List<Tenant> tenants;
+		            if (tenantDeployerService.isEnabled() && (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN)))
+		            {
+		            	tenants = tenantDeployerService.getAllTenants();
+		            	for (Tenant tenant : tenants)
+		                {
+		                    mapExecutedComponents.put(tenant.getTenantDomain(), new HashSet<ModuleComponent>(10));
+		                    mapStartedModules.put(tenant.getTenantDomain(), new HashSet<String>(2));
+		                }
+		            }
+		            else
+		            {
+		            	tenants = null;
+		            }
+		            
+		            for (final ModuleDetails module : modules)
+		            {
+		                RetryingTransactionCallback<Object> startModuleWork = new RetryingTransactionCallback<Object>()
+		                {
+		                    public Object execute() throws Exception
+		                    {
+		                        startModule(module, mapStartedModules.get(tenantDomainCtx), mapExecutedComponents.get(tenantDomainCtx));
+		                        
+		                        if (tenants != null)
+		                        {
+		                            for (Tenant tenant : tenants)
+		                            {
+		                            	final String tenantDomain = tenant.getTenantDomain();
+		                            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                                {
+		                            		public Object doWork() throws Exception
+		                                    {
+		                            			startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
+		                            			return null;
+		                                    }
+		                                }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                            }
+		                        }
+		                        
+		                        return null;
+		                    }
+		                };
+		                transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork);
+		            }
+		            
+		            // Check for missing modules.
+		            checkForMissingModules();
+		            
+		            if (tenants != null)
+		            {
+		                for (Tenant tenant : tenants)
+		                {
+		                	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                    {
+		                		public Object doWork() throws Exception
+		                        {
+		                		    checkForMissingModules();
+		                			return null;
+		                        }
+		                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+		                }
+		            }
+		            
+		            // Check that all components where executed, or considered for execution
+		            checkForOrphanComponents(mapExecutedComponents.get(tenantDomainCtx));
+		            
+		            if (tenants != null)
+		            {
+		                for (Tenant tenant : tenants)
+		                {
+		                	final String tenantDomain = tenant.getTenantDomain();
+		                	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                    {
+		                		public Object doWork() throws Exception
+		                        {
+		                			checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
+		                			return null;
+		                        }
+		                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                }
+		            }
+		        }
+		        catch (Throwable e)
+		        {
+		            throw new AlfrescoRuntimeException("Failed to start modules", e);
+		        }
+		        
+		        return null;
             }
-            
-            // Check for missing modules.
-            checkForMissingModules();
-            
-            // Check that all components where executed, or considered for execution
-            checkForOrphanComponents(executedComponents);
-
-            // Restore the original authentication
-            authenticationComponent.setCurrentAuthentication(authentication);
-        }
-        catch (Throwable e)
-        {
-            throw new AlfrescoRuntimeException("Failed to start modules", e);
-        }
+        }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomainCtx));
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,7 @@ import java.util.Properties;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
@@ -112,6 +113,11 @@ public class ModuleServiceImpl implements ModuleService
     public void setRegistryService(RegistryService registryService)
     {
         this.moduleComponentHelper.setRegistryService(registryService);
+    }
+    
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.moduleComponentHelper.setTenantDeployerService(tenantDeployerService);
     }
     
     /**

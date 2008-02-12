@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,8 +46,6 @@ public interface TenantAdminService extends TenantDeployerService
     public void importTenant(String tenantDomain, File directorySource, String rootContentStoreDir);
     
     public boolean existsTenant(String tenantDomain);
-    
-    public void bootstrapWorkflows(String tenantDomain);
     
     public void deleteTenant(String tenantDomain);
     

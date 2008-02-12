@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,6 +55,7 @@ import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -62,6 +63,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -89,6 +91,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
     private WorkflowDeployer workflowDeployer;
+    private ModuleService moduleService;
     
     /*
      * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
@@ -181,6 +184,10 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         this.workflowDeployer = workflowDeployer;
     }
     
+    public void setModuleService(ModuleService moduleService)
+    {
+        this.moduleService = moduleService;
+    }
     
     public static final String PROTOCOL_STORE_USER = "user";
     public static final String PROTOCOL_STORE_WORKSPACE = "workspace";
@@ -201,9 +208,28 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
 
     
+    protected void checkProperties()
+    {
+        PropertyCheck.mandatory(this, "NodeService", nodeService);
+        PropertyCheck.mandatory(this, "DictionaryComponent", dictionaryComponent);
+        PropertyCheck.mandatory(this, "RepoAdminService", repoAdminService);
+        PropertyCheck.mandatory(this, "TransactionService", transactionService);
+        PropertyCheck.mandatory(this, "TenantService", tenantService);
+        PropertyCheck.mandatory(this, "AttributeService", attributeService);
+        PropertyCheck.mandatory(this, "PasswordEncoder", passwordEncoder);
+        PropertyCheck.mandatory(this, "TenantFileContentStore", tenantFileContentStore);
+        PropertyCheck.mandatory(this, "WorkflowService", workflowService);
+        PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
+        PropertyCheck.mandatory(this, "WorkflowDeployer", workflowDeployer);
+        
+        PropertyCheck.mandatory(this, "ModuleService - see updated alfresco/extension/mt/mt-admin-context.xml.sample", moduleService);
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+    	checkProperties();
+    	
         // initialise the tenant admin service and status of tenants (using attribute service)
         // note: this requires that the repository schema has already been initialised
         
@@ -314,6 +340,12 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                             tenantDeployer.onEnableTenant();
                         }
                         
+                        // bootstrap workflows
+                        workflowDeployer.init();
+                        
+                        // bootstrap modules (if any)
+                        moduleService.startModules();
+                        
                         return null;
                     }                               
                 }, getSystemUser(tenantDomain));
@@ -365,6 +397,12 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                         {
                             tenantDeployer.onEnableTenant();
                         }
+                        
+                        // bootstrap workflows
+                        workflowDeployer.init();
+                        
+                        // bootstrap modules (if any)
+                        moduleService.startModules();
                         
                         return null;
                     }                               
@@ -527,20 +565,6 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     public Tenant getTenant(String tenantDomain)
     {
         return new Tenant(tenantDomain, isEnabledTenant(tenantDomain), getRootContentStoreDir(tenantDomain));
-    }
-        
-    public void bootstrapWorkflows(String tenantDomain)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork()
-                    {
-                        workflowDeployer.init();
-                        return null;
-                    }
-                }, getSystemUser(tenantDomain));
-        
-        logger.info("Tenant workflows bootstrapped: " + tenantDomain);
     }
     
     /**

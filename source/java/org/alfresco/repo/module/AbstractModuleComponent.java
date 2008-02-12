@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,11 +25,14 @@
 package org.alfresco.repo.module;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
@@ -56,6 +59,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     protected ServiceRegistry serviceRegistry;
     protected AuthenticationComponent authenticationComponent;
     protected ModuleService moduleService;
+    private TenantDeployerService tenantDeployerService;
     
     private String moduleId;
     private String name;
@@ -66,7 +70,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     private List<ModuleComponent> dependsOn;
     /** Defaults to <tt>true</tt> */
     private boolean executeOnceOnly;
-    private boolean executed;
+    private Map<String, Boolean> executed;
 
     public AbstractModuleComponent()
     {
@@ -75,7 +79,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         appliesToVersion = VersionNumber.VERSION_BIG;
         dependsOn = new ArrayList<ModuleComponent>(0);
         executeOnceOnly = true;
-        executed = false;
+        executed = new HashMap<String, Boolean>(1);
     }
     
     /**
@@ -152,6 +156,11 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+    
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
     }
 
     /**
@@ -332,7 +341,13 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     public final synchronized void execute()
     {
         // ensure that this has not been executed already
-        if (executed)
+    	String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+    	if (! executed.containsKey(tenantDomain))
+    	{
+    		executed.put(tenantDomain, false);
+    	}
+    	
+        if (executed.get(tenantDomain))
         {
             throw AlfrescoRuntimeException.create(ERR_ALREADY_EXECUTED, moduleId, name);
         }
@@ -350,7 +365,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         finally
         {
             // There are no second chances
-            executed = true;
+        	executed.put(tenantDomain, true);
         }
     }
 }

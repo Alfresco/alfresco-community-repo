@@ -35,7 +35,9 @@ import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationDisallowedException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationMaxUsersException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -313,6 +315,14 @@ public class LoginBean
                }
             }
          }
+         catch (AuthenticationDisallowedException aerr)
+         {
+        	 Utils.addErrorMessage(Application.getMessage(fc, MSG_ERROR_LOGIN_DISALLOWED));
+         }  
+         catch (AuthenticationMaxUsersException aerr)
+         {
+        	 Utils.addErrorMessage(Application.getMessage(fc, MSG_ERROR_LOGIN_MAXUSERS));
+         }           
          catch (AuthenticationException aerr)
          {
             Utils.addErrorMessage(Application.getMessage(fc, MSG_ERROR_UNKNOWN_USER));
@@ -392,6 +402,8 @@ public class LoginBean
    /** I18N messages */
    private static final String MSG_ERROR_MISSING = "error_login_missing";
    private static final String MSG_ERROR_UNKNOWN_USER = "error_login_user";
+   private static final String MSG_ERROR_LOGIN_DISALLOWED = "error_login_disallowed";
+   private static final String MSG_ERROR_LOGIN_MAXUSERS = "error_login_maxusers";
    private static final String MSG_USERNAME_CHARS = "login_err_username_chars";
    private static final String MSG_USERNAME_LENGTH = "login_err_username_length";
    private static final String MSG_PASSWORD_CHARS = "login_err_password_chars";

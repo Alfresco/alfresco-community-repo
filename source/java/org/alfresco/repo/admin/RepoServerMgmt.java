@@ -31,6 +31,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.repo.security.authentication.AuthenticationServiceImpl;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.license.LicenseService;
@@ -49,6 +50,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	
 	private TransactionServiceImpl transactionService;
 	private AuthenticationServiceImpl authenticationService;
+	private LinkValidationService linkValidationService;
 	
 	// property key should be the same as the one in core-services-context.xml (to allow repo to start in multi-user mode even if the property is not set)
 	private final static String PROPERTY_KEY_SINGLE_USER_ONLY = "${server.singleuseronly.name}";
@@ -61,6 +63,11 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	public void setAuthenticationService(AuthenticationServiceImpl authenticationService) 
 	{
 		this.authenticationService = authenticationService;
+	}
+	
+	public void setLinkValidationService(LinkValidationService linkValidationService) 
+	{
+		this.linkValidationService = linkValidationService;
 	}
 	
 	public void setApplicationContext(ApplicationContext ctx)
@@ -76,13 +83,13 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	{  
 		if (readOnly && isReadOnly())
 		{
-			log.info("Alfresco is already read-only");
+			log.warn("Alfresco is already read-only");
 			return;
 		}
 		
 		if (!readOnly && !isReadOnly())
 		{
-			log.info("Alfresco is already read-write");
+			log.warn("Alfresco is already read-write");
 			return;
 		}
 		
@@ -105,7 +112,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 		
 		if (readOnly)
 		{
-			log.info("Alfresco set to be read-only");
+			log.warn("Alfresco set to be read-only");
 		}
 		else
 		{
@@ -237,11 +244,11 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 				
 				if (maxUsers != 0)
 				{
-					log.info("Alfresco set to allow single-user (" + allowedUsername + ") logins");
+					log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins only");
 				}
 				else
 				{
-					log.info("Alfresco set to allow single-user (" + allowedUsername + ") logins - although further logins are currently prevented (limit = 0)");
+					log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins - although further logins are currently prevented (limit = 0)");
 				}
 			}
 		}
@@ -253,7 +260,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 			}
 			else if (maxUsers == 0)
 			{
-				log.info("Alfresco set to allow logins - although further logins are currently prevented (limit = 0)");
+				log.warn("Alfresco set to allow logins - although further logins are currently prevented (limit = 0)");
 			}
 			else if (maxUsers != 0)
 			{
@@ -307,7 +314,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 		}
 		else if (maxUsers == 0)
 		{
-			log.info("Alfresco set to prevent further logins (limit = 0)");
+			log.warn("Alfresco set to prevent further logins (limit = 0)");
 		}
 		else
 		{
@@ -329,5 +336,31 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	public int getMaxUsers()
 	{  
 		return authenticationService.getMaxUsers();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setLinkValidationDisabled(boolean)
+	 */
+	public void setLinkValidationDisabled(boolean disable)
+	{
+		linkValidationService.setLinkValidationDisabled(disable);
+		if (disable)
+		{
+			log.warn("Link validation disabled");
+		}
+		else
+		{
+			log.info("Link validation enabled");
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.repo.admin.RepoServerMgmtMBean#isLinkValidationDisabled()
+	 */
+	public boolean isLinkValidationDisabled()
+	{  
+		return linkValidationService.isLinkValidationDisabled();
 	}
 }

@@ -165,4 +165,18 @@ public interface RepoServerMgmtMBean
 	 * @param int  maxUsers
 	 */
 	public int getMaxUsers();
+	
+	/**
+	 * Disable or re-enable link validation
+	 * 
+	 * @param disable  true = disable, false = re-enable
+	 */
+	public void setLinkValidationDisabled(boolean disable);
+	
+	/**
+	 * Is link validation disabled ?
+	 * 
+	 * @param boolean  true = disabled, false = enabled
+	 */
+	public boolean isLinkValidationDisabled();
 }

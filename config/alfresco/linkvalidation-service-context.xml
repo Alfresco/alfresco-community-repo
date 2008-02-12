@@ -252,6 +252,9 @@
         <property name="purgeStoreTxnListener">
             <ref bean="purgeStoreTxnListener"/>
         </property>
+        <property name="sysAdminCache">
+            <ref bean="sysAdminCache"/>
+        </property>
 
         <!-- Poll interval to check getLatestSnapshotID (in milliseconds).  -->
         <!-- Note:  If pollInterval is 0, link validation is disabled.      -->

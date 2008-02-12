@@ -130,14 +130,14 @@ public class AuthenticationServiceImpl implements AuthenticationService
            
         	if ((allowedUsers != null) && (! allowedUsers.contains(userName)))
 			{
-				throw new AuthenticationException("Username not allowed: " + userName);
+				throw new AuthenticationDisallowedException("Username not allowed: " + userName);
 			}
         	
         	Integer maxUsers = (Integer)sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
         	
         	if ((maxUsers != null) && (maxUsers != -1) && (ticketComponent.getUsersWithTickets(true).size() >= maxUsers))
         	{
-        		throw new AuthenticationException("Max users exceeded: " + maxUsers);
+        		throw new AuthenticationMaxUsersException("Max users exceeded: " + maxUsers);
         	}
         	
         	authenticationComponent.authenticate(userName, password);

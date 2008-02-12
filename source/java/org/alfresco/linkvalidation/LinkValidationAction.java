@@ -28,6 +28,7 @@ package org.alfresco.linkvalidation;
 import java.util.List;
 
 import org.alfresco.config.JNDIConstants;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -162,6 +163,12 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         LinkValidationReport report = null;
         try
         {
+        	if (this.linkValidationService.isLinkValidationDisabled())
+        	{
+        		logger.warn("Link validation (action) not performed - currently disabled by system administrator");
+        		throw new AlfrescoRuntimeException("Link validation not performed - currently disabled by the system administrator");
+        	}
+        	
             // determine which API to call depending on whether there is a destination webapp present 
             if (destWebappPath != null)
             {

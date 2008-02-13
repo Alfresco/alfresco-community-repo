@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.admin.registry.RegistryService;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -84,6 +85,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
     };
     
     private RegistryService registryService;
+    private TenantDeployerService tenantDeployerService;
     private DescriptorService descriptorService;
     private DummyModuleService moduleService;
     private ModuleComponentHelper helper;
@@ -95,6 +97,8 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         super.setUp();
         
         registryService = (RegistryService) ctx.getBean("RegistryService");
+        tenantDeployerService = (TenantDeployerService) ctx.getBean("tenantAdminService");
+        
         descriptorService = serviceRegistry.getDescriptorService();
         
         moduleService = new DummyModuleService();
@@ -104,6 +108,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         helper.setRegistryService(registryService);
         helper.setServiceRegistry(serviceRegistry);
         helper.setDescriptorService(descriptorService);
+        helper.setTenantDeployerService(tenantDeployerService);
         
         // Register the components
         components = new DummyModuleComponent[3][3];    // i,j
@@ -119,6 +124,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
                 component.setServiceRegistry(serviceRegistry);
                 component.setAuthenticationComponent(authenticationComponent);
                 component.setModuleService(moduleService);
+                component.setTenantDeployerService(tenantDeployerService);
                 // Don't initialize the component as that will do the registration.  We do it manually.
                 helper.registerComponent(component);
                 // Add to array
@@ -141,8 +147,14 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         moduleService.setCurrentVersion(moduleVersion);
         // Start them
         helper.startModules();
+        
+        int tenantCount = 0;
+        if (tenantDeployerService.isEnabled())
+        {
+        	tenantCount = tenantDeployerService.getAllTenants().size();
+        }
         // Check
-        assertEquals("Incorrent number of executions (version " + moduleVersion + ")", expectedCount, executed);
+        assertEquals("Incorrent number of executions (version " + moduleVersion + ")", expectedCount+(expectedCount*tenantCount), executed);
     }
     
     public void testStartComponentsV00()
@@ -254,6 +266,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
             super.setServiceRegistry(serviceRegistry);
             super.setAuthenticationComponent(authenticationComponent);
             super.setModuleService(moduleService);
+            super.setTenantDeployerService(tenantDeployerService);
             
             super.setModuleId(moduleId);
             super.setName(name);

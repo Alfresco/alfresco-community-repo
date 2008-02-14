@@ -58,13 +58,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.NavigationBean.NavigationBreadcrumbHandler;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -410,6 +414,56 @@ public final class Repository
       }
       
       return buf.toString();
+   }
+   
+   /**
+    * Sets up the breadcrumb location representation for the given node in
+    * the given list.
+    * 
+    * @param context FacesContext
+    * @param navBean NavigationBean instance
+    * @param location The location list to setup
+    * @param node The Node being navigated to
+    */
+   public static void setupBreadcrumbLocation(FacesContext context, 
+            NavigationBean navBean, List<IBreadcrumbHandler> location, NodeRef node)
+   {
+      // make the sure the given list is empty
+      location.clear();
+      
+      // get required services
+      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+      PermissionService permsService = Repository.getServiceRegistry(context).getPermissionService();
+      
+      // add the given node to start
+      String nodeName = Repository.getNameForNode(nodeService, node);
+      location.add(navBean.new NavigationBreadcrumbHandler(node, nodeName));
+      
+      // get the given node's parent node
+      NodeRef parent = nodeService.getPrimaryParent(node).getParentRef();
+      while (parent != null)
+      {
+         // check the user can read the parent node
+         if (permsService.hasPermission(parent, PermissionService.READ) == AccessStatus.ALLOWED)
+         {
+            // get the grand parent so we can check for the root node
+            NodeRef grandParent = nodeService.getPrimaryParent(parent).getParentRef();
+            
+            if (grandParent != null)
+            {
+               // current node is not the root node so add it to the breadcrumb
+               String parentName = Repository.getNameForNode(nodeService, parent);
+               location.add(0, navBean.new NavigationBreadcrumbHandler(parent, parentName));
+            }
+            
+            parent = grandParent;
+         }
+         else
+         {
+            // the user does not have Read permission above this point so stop!
+            break;
+         }
+      }
    }
 
    /**

@@ -85,11 +85,14 @@
          <!-- minimum length for username and password -->
          <username-min-length>2</username-min-length>
          <password-min-length>3</password-min-length>
-		  
-		  <!-- Domain suffix appended to the CIFS URL host name -->
-          <!--
-  		  <cifs-url-suffix>.alfresco.org<cifs-url-suffix>
-	      -->
+
+         <!-- Domain suffix appended to the CIFS URL host name -->
+         <!--
+         <cifs-url-suffix>.alfresco.org<cifs-url-suffix>
+         -->
+         
+         <!-- Breadcrumb mode, can be either 'path' or 'location' -->
+         <breadcrumb-mode>path</breadcrumb-mode>
       </client>
    </config>
 

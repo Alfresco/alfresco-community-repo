@@ -295,6 +295,9 @@ public class NavigationBean
          setLocation(elements);
          setCurrentNodeId(companyHome.getId());
          
+         if (s_logger.isDebugEnabled())
+            s_logger.debug("Created breadcrumb for companyhome: " + elements);
+         
          // inform registered beans that the current area has changed
          UIContextService.getInstance(FacesContext.getCurrentInstance()).areaChanged();
          
@@ -309,8 +312,23 @@ public class NavigationBean
          List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
          String homeSpaceId = Application.getCurrentUser(context).getHomeSpaceId();
          NodeRef homeSpaceRef = new NodeRef(Repository.getStoreRef(), homeSpaceId);
-         String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
-         elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
+         
+         if (this.clientConfig.getBreadcrumbMode().equals(ClientConfigElement.BREADCRUMB_LOCATION))
+         {
+            Repository.setupBreadcrumbLocation(context, this, elements, homeSpaceRef);
+            
+            if (s_logger.isDebugEnabled())
+               s_logger.debug("Created breadcrumb location for userhome: " + elements);
+         }
+         else
+         {
+            String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
+            elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
+            
+            if (s_logger.isDebugEnabled())
+               s_logger.debug("Created breadcrumb path for userhome: " + elements);
+         }
+         
          setLocation(elements);
          setCurrentNodeId(homeSpaceRef.getId());
          
@@ -327,7 +345,22 @@ public class NavigationBean
       {
          List<IBreadcrumbHandler> elements = new ArrayList<IBreadcrumbHandler>(1);
          Node guestHome = getGuestHomeNode();
-         elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
+         
+         if (this.clientConfig.getBreadcrumbMode().equals(ClientConfigElement.BREADCRUMB_LOCATION))
+         {
+            Repository.setupBreadcrumbLocation(context, this, elements, guestHome.getNodeRef());
+            
+            if (s_logger.isDebugEnabled())
+               s_logger.debug("Created breadcrumb location for guesthome: " + elements);
+         }
+         else
+         {
+            elements.add(new NavigationBreadcrumbHandler(guestHome.getNodeRef(), guestHome.getName()));
+            
+            if (s_logger.isDebugEnabled())
+               s_logger.debug("Created breadcrumb path for guesthome: " + elements);
+         }
+         
          setLocation(elements);
          setCurrentNodeId(guestHome.getId());
          
@@ -366,6 +399,10 @@ public class NavigationBean
                   return Application.getMessage(FacesContext.getCurrentInstance(), MSG_MYALFRESCO);
                };
             });
+         
+         if (s_logger.isDebugEnabled())
+            s_logger.debug("Created breadcrumb for myalfresco: " + elements);
+         
          setLocation(elements);
          
          // inform registered beans that the current area has changed
@@ -932,6 +969,9 @@ public class NavigationBean
          
          // setup the dispatch context
          setupDispatchContext(new Node(ref));
+         
+         // inform any listeners that the current space has changed
+         UIContextService.getInstance(FacesContext.getCurrentInstance()).spaceChanged();
          
          if (fc.getViewRoot().getViewId().equals(BrowseBean.BROWSE_VIEW_ID))
          {

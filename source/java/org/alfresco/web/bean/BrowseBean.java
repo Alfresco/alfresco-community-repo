@@ -76,6 +76,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.users.UserPreferencesBean;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.ViewsConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
@@ -1660,10 +1661,10 @@ public class BrowseBean implements IContextListener
    {
       List<IBreadcrumbHandler> location = navigator.getLocation();
       IBreadcrumbHandler handler = location.get(location.size() - 1);
-      if (handler instanceof BrowseBreadcrumbHandler)
+      if (handler instanceof IRepoBreadcrumbHandler)
       {
          // see if the current breadcrumb location is our node
-         if ( ((BrowseBreadcrumbHandler)handler).getNodeRef().equals(node.getNodeRef()) == true )
+         if ( ((IRepoBreadcrumbHandler)handler).getNodeRef().equals(node.getNodeRef()) == true )
          {
             location.remove(location.size() - 1);
 
@@ -1671,16 +1672,22 @@ public class BrowseBean implements IContextListener
             if (location.size() != 0)
             {
                handler = location.get(location.size() - 1);
-               if (handler instanceof BrowseBreadcrumbHandler)
+               
+               if (handler instanceof IRepoBreadcrumbHandler)
                {
                   // change the current node Id
-                  navigator.setCurrentNodeId(((BrowseBreadcrumbHandler)handler).getNodeRef().getId());
+                  navigator.setCurrentNodeId(((IRepoBreadcrumbHandler)handler).getNodeRef().getId());
                }
                else
                {
-                  // TODO: shouldn't do this - but for now the user home dir is the root!
-                  navigator.setCurrentNodeId(Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());
+                  // if we don't have access to the NodeRef to go to next then go to the home space
+                  navigator.processToolbarLocation(NavigationBean.LOCATION_HOME, false);
                }
+            }
+            else
+            {
+               // if there is no breadcrumb left go to the user's home space
+               navigator.processToolbarLocation(NavigationBean.LOCATION_HOME, false);
             }
          }
       }
@@ -1827,8 +1834,26 @@ public class BrowseBean implements IContextListener
          // add new node to the end of the existing breadcrumb
          if (foundNode == false)
          {
-            String name = Repository.getNameForNode(this.nodeService, ref);
-            location.add(new BrowseBreadcrumbHandler(ref, name));
+            FacesContext context = FacesContext.getCurrentInstance(); 
+            String breadcrumbMode = Application.getClientConfig(context).getBreadcrumbMode();
+            
+            if (ClientConfigElement.BREADCRUMB_LOCATION.equals(breadcrumbMode))
+            {
+               // if the breadcrumb is in "location" mode set the breadcrumb
+               // to the full path to the node
+               
+               // TODO: check the end of the current breadcrumb, if the given
+               //       node is a child then we can shortcut the build of the
+               //       whole path.
+               
+               Repository.setupBreadcrumbLocation(context, this.navigator, location, ref);
+            }
+            else
+            {
+               // if the breadcrum is in "path" mode just add the given item to the end
+               String name = Repository.getNameForNode(this.nodeService, ref);
+               location.add(new BrowseBreadcrumbHandler(ref, name));
+            }
          }
       }
       else
@@ -1837,6 +1862,9 @@ public class BrowseBean implements IContextListener
          String name = Repository.getNameForNode(this.nodeService, ref);
          location.add(new BrowseBreadcrumbHandler(ref, name));
       }
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Updated breadcrumb: " + location);
 
       // set the current node Id ready for page refresh
       this.navigator.setCurrentNodeId(ref.getId());

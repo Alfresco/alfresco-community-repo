@@ -48,6 +48,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private static Log logger = LogFactory.getLog(ClientConfigElement.class);
    
    public static final String CONFIG_ELEMENT_ID = "client";
+   public static final String BREADCRUMB_PATH = "path";
+   public static final String BREADCRUMB_LOCATION = "location";
    
    private static final String DEFAULT_FROM_ADDRESS = "alfresco@alfresco.org";
    
@@ -74,6 +76,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private List<QName> simpleSearchAdditionalAttributes = null;
    private int minUsernameLength = 2;
    private int minPasswordLength = 3;
+   private String breadcrumbMode = BREADCRUMB_PATH;
    private String cifsURLSuffix;
    
    /**
@@ -236,7 +239,13 @@ public class ClientConfigElement extends ConfigElementAdapter
       if ( newElement.getCifsURLSuffix() != null &&
     	   newElement.getCifsURLSuffix().equals(combinedElement.getCifsURLSuffix()) == false)
       {
-    	  combinedElement.setCifsURLSuffix(newElement.getCifsURLSuffix());
+    	   combinedElement.setCifsURLSuffix(newElement.getCifsURLSuffix());
+      }
+      
+      if (newElement.getBreadcrumbMode() != null &&
+          newElement.getBreadcrumbMode().equals(combinedElement.getBreadcrumbMode()) == false)
+      {
+         combinedElement.setBreadcrumbMode(newElement.getBreadcrumbMode());
       }
       
       return combinedElement;
@@ -629,6 +638,30 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setMinPasswordLength(int minPasswordLength)
    {
       this.minPasswordLength = minPasswordLength;
+   }
+   
+   /**
+    * Get the breadcrumb mode
+    * 
+    * @return String
+    */
+   public final String getBreadcrumbMode()
+   {
+      return breadcrumbMode;
+   }
+   
+   /**
+    * Set the breadcrumb mode
+    * 
+    * @param mode String
+    */
+   void setBreadcrumbMode(String mode)
+   {
+      // make sure it's being set to a valid option
+      if (BREADCRUMB_PATH.equals(mode) || BREADCRUMB_LOCATION.equals(mode))
+      {
+         breadcrumbMode = mode;
+      }
    }
    
    /**

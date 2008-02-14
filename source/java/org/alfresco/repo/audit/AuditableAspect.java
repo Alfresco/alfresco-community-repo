@@ -167,8 +167,8 @@ public class AuditableAspect
             // Set the updated property values (but do not cascade to update audit behaviour)
             onUpdateAudit.disable();
             
-            // note: special MT case - need to run in context of user's domain ... although checkForLock requires System
-            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getCurrentUserDomain()));
+            // note: in MT case, this will run in System context of user's domain ... checkForLock requires System
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
         }
         finally
         {
@@ -201,8 +201,8 @@ public class AuditableAspect
             
             // Set the updated property values
             
-            // note: special MT case - need to run in context of user's domain ... although checkForLock requires System
-            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getCurrentUserDomain()));
+            // note: in MT case, this will run in System context of user's domain ... checkForLock requires System
+            AuthenticationUtil.runAs(new SetAuditProperties(nodeService, nodeRef, properties), AuthenticationUtil.getSystemUserName());
             
             if (logger.isDebugEnabled())
                 logger.debug("Auditable node " + nodeRef + " updated [modified=" + now + ";modifier=" + modifier + "]");

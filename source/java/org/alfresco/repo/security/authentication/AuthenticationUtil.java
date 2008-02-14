@@ -53,12 +53,22 @@ public abstract class AuthenticationUtil
     }
 
     public static final String SYSTEM_USER_NAME = "System";
+    
+    private static boolean mtEnabled = false;
 
     private AuthenticationUtil()
     {
         super();
     }
 
+    public static void setMtEnabled(boolean mtEnabled)
+    {
+    	if (! AuthenticationUtil.mtEnabled)
+    	{
+    		AuthenticationUtil.mtEnabled = mtEnabled;
+    	}
+    }
+    
     public static Authentication setCurrentUser(String userName)
     {
         return setCurrentUser(userName, getDefaultUserDetails(userName));
@@ -177,11 +187,18 @@ public abstract class AuthenticationUtil
     public static void logNDC(String userName)
     {
         NDC.remove();
-
-        int idx = userName.indexOf(TenantService.SEPARATOR);
-        if ((idx != -1) && (idx < (userName.length()-1)))
-        {            
-            NDC.push("Tenant:"+userName.substring(idx+1)+" User:"+userName.substring(0,idx));
+        
+        if (mtEnabled == true)
+        {
+            int idx = userName.indexOf(TenantService.SEPARATOR);
+            if ((idx != -1) && (idx < (userName.length()-1)))
+            {
+                NDC.push("Tenant:"+userName.substring(idx+1)+" User:"+userName.substring(0,idx));
+            }
+            else
+            {
+                NDC.push("User:"+userName);
+            }
         }
         else
         {
@@ -278,6 +295,7 @@ public abstract class AuthenticationUtil
     {
         ContextHolder.setContext(null);
         InMemoryTicketComponentImpl.clearCurrentSecurityContext();
+        NDC.remove();
     }
 
     /**
@@ -295,6 +313,18 @@ public abstract class AuthenticationUtil
         R result = null;
         try
         {
+            if ((currentUser != null) && (mtEnabled == true))
+            {
+                int idx = currentUser.indexOf(TenantService.SEPARATOR);
+            if ((idx != -1) && (idx < (currentUser.length()-1)))
+            {
+                    if (uid.equals(AuthenticationUtil.getSystemUserName()))
+                    {
+                        uid = uid + TenantService.SEPARATOR + currentUser.substring(idx+1);
+                    }
+                }
+            }
+            
             AuthenticationUtil.setCurrentUser(uid);
             result = runAsWork.doWork();
             return result;

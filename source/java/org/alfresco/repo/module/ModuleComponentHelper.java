@@ -210,10 +210,6 @@ public class ModuleComponentHelper
         /*
          * Ensure transactionality and the correct authentication
          */
-        
-        // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
-        final String tenantDomainCtx = tenantDeployerService.getCurrentUserDomain();
-        
     	AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
     		public Object doWork() throws Exception
@@ -229,6 +225,9 @@ public class ModuleComponentHelper
 		            // Process each module in turn.  Ordering is not important.
 		            final Map<String, Set<ModuleComponent>> mapExecutedComponents = new HashMap<String, Set<ModuleComponent>>(1);
 		            final Map<String, Set<String>> mapStartedModules = new HashMap<String, Set<String>>(1);
+
+		            // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
+		            final String tenantDomainCtx = tenantDeployerService.getCurrentUserDomain();
 		            
 		            mapExecutedComponents.put(tenantDomainCtx, new HashSet<ModuleComponent>(10));
 		            mapStartedModules.put(tenantDomainCtx, new HashSet<String>(2));
@@ -322,7 +321,7 @@ public class ModuleComponentHelper
 		        
 		        return null;
             }
-        }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomainCtx));
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**

@@ -228,8 +228,10 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-    	checkProperties();
-    	
+        checkProperties();
+        
+        AuthenticationUtil.setMtEnabled(true);
+        
         // initialise the tenant admin service and status of tenants (using attribute service)
         // note: this requires that the repository schema has already been initialised
         

@@ -37,6 +37,7 @@
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="SearchService" />
       <property name="permissionService" ref="PermissionService" />
+      <property name="tenantDeployerService" ref="tenantAdminService" />
    </bean>
 
    <bean name="webscripts.store.repo.extension" parent="webscripts.repostore">
@@ -83,6 +84,7 @@
       <property name="personService" ref="personService" />
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="searchService" />
+      <property name="tenantDeployerService" ref="tenantAdminService" />
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
@@ -115,6 +117,7 @@
       <property name="descriptorService" ref="DescriptorService" />
       <property name="searchPath" ref="webscripts.searchpath" />
       <property name="configService" ref="web.config" />
+      <property name="tenantDeployerService" ref="tenantAdminService" />
    </bean>
 
 

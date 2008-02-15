@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -43,6 +45,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.AbstractRuntimeContainer;
 import org.alfresco.web.scripts.Authenticator;
 import org.alfresco.web.scripts.Description;
+import org.alfresco.web.scripts.Registry;
 import org.alfresco.web.scripts.ServerModel;
 import org.alfresco.web.scripts.WebScript;
 import org.alfresco.web.scripts.WebScriptException;
@@ -59,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author davidc
  */
-public class RepositoryContainer extends AbstractRuntimeContainer
+public class RepositoryContainer extends AbstractRuntimeContainer implements TenantDeployer
 {
     // Logger
     protected static final Log logger = LogFactory.getLog(RepositoryContainer.class);
@@ -71,6 +74,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private AuthorityService authorityService;
     private PermissionService permissionService;
     private DescriptorService descriptorService;
+    private TenantDeployerService tenantDeployerService;
+    
+    private Map<String, Registry> tenantRegistries = new HashMap<String, Registry>(0);
 
     /**
      * @param repository
@@ -118,6 +124,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+    
+    /**
+     * @param tenantDeployerService
+     */
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
     }
     
     /* (non-Javadoc)
@@ -192,7 +206,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         
         if (required == RequiredAuthentication.none)
         {
-            AuthenticationUtil.clearCurrentSecurityContext();
+            // MT-context will pre-authenticate (see MTWebScriptAuthenticationFilter)
+            if (! AuthenticationUtil.isMtEnabled())
+            {
+                // TODO revisit - cleared here, in-lieu of WebClient clear
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
             transactionedExecute(script, scriptReq, scriptRes);
         }
         else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
@@ -291,5 +310,71 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             }
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRegistry()
+     */
+    @Override
+    public Registry getRegistry()
+    {
+    	if (tenantDeployerService.isEnabled())
+    	{
+    	    String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+    	    Registry registry = tenantRegistries.get(tenantDomain);
+    	    if (registry == null)
+    	    {
+    	        init();
+    	        registry = tenantRegistries.get(tenantDomain);
+    	    }
+    	    return registry;
+    	}
+    	else
+    	{
+    		return super.getRegistry();
+    	}
+    }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset()
+     */
+    @Override
+    public void reset() 
+    {
+        tenantDeployerService.register(this);
+        super.reset();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
+     */
+    public void onEnableTenant()
+    {
+        init();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
+     */
+    public void onDisableTenant()
+    {
+        destroy();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#init()
+     */
+    public void init()
+    {
+        Registry registry = super.getRegistry().cloneEmpty();
+        tenantRegistries.put(tenantDeployerService.getCurrentUserDomain(), registry);
+        registry.reset();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
+     */
+    public void destroy()
+    {
+        tenantRegistries.remove(tenantDeployerService.getCurrentUserDomain());
+    }
 }

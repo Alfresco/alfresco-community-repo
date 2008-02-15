@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,12 +25,17 @@
 package org.alfresco.repo.web.scripts;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -56,7 +61,7 @@ import org.springframework.context.ApplicationListener;
  * 
  * @author davidc
  */
-public class Repository implements ApplicationContextAware, ApplicationListener
+public class Repository implements ApplicationContextAware, ApplicationListener, TenantDeployer
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
@@ -67,11 +72,12 @@ public class Repository implements ApplicationContextAware, ApplicationListener
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private PersonService personService;
+    private TenantDeployerService tenantDeployerService;
     
     // company home
     private StoreRef companyHomeStore;
     private String companyHomePath;
-    private NodeRef companyHome;
+    private Map<String, NodeRef> companyHomeRefs;
     
     
     /**
@@ -151,6 +157,16 @@ public class Repository implements ApplicationContextAware, ApplicationListener
     {
         this.personService = personService;
     }
+    
+    /**
+     * Sets the tenant deployer service
+     * 
+     * @param tenantDeployerService
+     */
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
+    }
 
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -190,20 +206,14 @@ public class Repository implements ApplicationContextAware, ApplicationListener
      */
     protected void initContext()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @SuppressWarnings("synthetic-access")
-            public Object execute() throws Exception
-            {
-                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
-                if (refs.size() != 1)
-                {
-                    throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
-                }
-                companyHome = refs.get(0);
-                return null;
-            }
-        });
+        tenantDeployerService.register(this);
+        
+    	if (companyHomeRefs == null)
+    	{
+    		companyHomeRefs = new HashMap<String, NodeRef>(1);
+    	}
+    	
+        getCompanyHome();
     }
     
 
@@ -224,7 +234,32 @@ public class Repository implements ApplicationContextAware, ApplicationListener
      */
     public NodeRef getCompanyHome()
     {
-        return companyHome;
+        String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+        NodeRef companyHomeRef = companyHomeRefs.get(tenantDomain);
+        if (companyHomeRef == null)
+        {		
+        	companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+	        {
+		        public NodeRef doWork() throws Exception
+		        {
+    	            return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+    	    	    {
+    	                public NodeRef execute() throws Exception
+    	    		    {		        	
+		                    List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
+		                    if (refs.size() != 1)
+		                    {
+		                        throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+		                    }
+		                    return refs.get(0);
+		                }
+		            });
+		        }
+	        }, AuthenticationUtil.getSystemUserName());
+	        
+        	companyHomeRefs.put(tenantDomain, companyHomeRef);
+        }
+        return companyHomeRef;
     }
 
     /**
@@ -329,4 +364,35 @@ public class Repository implements ApplicationContextAware, ApplicationListener
         return nodeRef;
     }    
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
+     */
+    public void onEnableTenant()
+    {
+        init();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
+     */
+    public void onDisableTenant()
+    {
+        destroy();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#init()
+     */
+    public void init()
+    {
+        initContext();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
+     */
+    public void destroy()
+    {
+        companyHomeRefs.remove(tenantDeployerService.getCurrentUserDomain());
+    }
 }

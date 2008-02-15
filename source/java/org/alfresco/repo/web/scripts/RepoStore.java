@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,11 +31,15 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -65,13 +69,12 @@ import freemarker.cache.TemplateLoader;
  * 
  * @author davidc
  */
-public class RepoStore implements Store
+public class RepoStore implements Store, TenantDeployer
 {
     protected boolean mustExist = false;
     protected StoreRef repoStore;
     protected String repoPath;
-    protected NodeRef baseNodeRef;
-    protected String baseDir;
+    protected Map<String, NodeRef> baseNodeRefs;
 
     // dependencies
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -81,6 +84,8 @@ public class RepoStore implements Store
     protected FileFolderService fileService;
     protected NamespaceService namespaceService;
     protected PermissionService permissionService;
+    
+    private TenantDeployerService tenantDeployerService;
 
     
     /**
@@ -138,6 +143,14 @@ public class RepoStore implements Store
     {
         this.permissionService = permissionService;
     }
+    
+    /**
+     * Sets the tenant deployer service
+     */
+    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    {
+        this.tenantDeployerService = tenantDeployerService;
+    }
 
     /**
      * Sets whether the repo store must exist
@@ -169,33 +182,65 @@ public class RepoStore implements Store
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Store#init()
+     * @see org.alfresco.repo.tenant.TenantDeployer#init()
      */
     public void init()
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        if (baseNodeRefs == null)
         {
-            public Object doWork() throws Exception
+    		baseNodeRefs = new HashMap<String, NodeRef>(1);
+    	}
+    	
+        getBaseNodeRef();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
+     */
+    public void destroy()
+    {
+        baseNodeRefs.remove(tenantDeployerService.getCurrentUserDomain());
+    }
+    
+    private NodeRef getBaseNodeRef()
+    {
+        String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+        NodeRef baseNodeRef = baseNodeRefs.get(tenantDomain);
+        if (baseNodeRef == null)
+        {
+            baseNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+            	public NodeRef doWork() throws Exception
                 {
-                    public Object execute() throws Exception
-                    {
-                        String query = "PATH:\"" + repoPath + "\"";
-                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                        if (resultSet.length() == 1)
+    	            return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+    	            {
+                        public NodeRef execute() throws Exception
                         {
-                            baseNodeRef = resultSet.getNodeRef(0);
-                            baseDir = getPath(baseNodeRef);
+                            String query = "PATH:\"" + repoPath + "\"";
+                            ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                            if (resultSet.length() == 1)
+                            {
+                                return resultSet.getNodeRef(0);
+                            }
+                            else if (mustExist)
+                            {
+                                throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
+                            }
+                            return null;
                         }
-                        else if (mustExist)
-                        {
-                            throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
-                        }
-                        return null;
-                    }
-                });
-            }
-        }, AuthenticationUtil.getSystemUserName());
+                    });
+                }
+    	    }, AuthenticationUtil.getSystemUserName());
+    		
+    		// TODO clear on deleteTenant
+    		baseNodeRefs.put(tenantDomain, baseNodeRef);
+    	}
+    	return baseNodeRef;
+    }
+    
+    private String getBaseDir()
+    {
+    	return getPath(getBaseNodeRef());
     }
 
     /* (non-Javadoc)
@@ -203,7 +248,7 @@ public class RepoStore implements Store
      */
     public boolean exists()
     {
-        return (baseNodeRef != null);
+        return (getBaseNodeRef() != null);
     }
     
     /* (non-Javadoc)
@@ -239,7 +284,7 @@ public class RepoStore implements Store
         {
             String[] pathElements = documentPath.split("/");
             List<String> pathElementsList = Arrays.asList(pathElements);
-            FileInfo file = fileService.resolveNamePath(baseNodeRef, pathElementsList);
+            FileInfo file = fileService.resolveNamePath(getBaseNodeRef(), pathElementsList);
             node = file.getNodeRef();
         }
         catch (FileNotFoundException e)
@@ -262,7 +307,7 @@ public class RepoStore implements Store
                 {
                     public String[] execute() throws Exception
                     {
-                        int baseDirLength = baseDir.length() +1;
+                        int baseDirLength = getBaseDir().length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         String scriptPath = script.getDescription().getScriptPath();
                         NodeRef scriptNodeRef = findNodeRef(scriptPath);
@@ -305,7 +350,7 @@ public class RepoStore implements Store
                 {
                     public String[] execute() throws Exception
                     {
-                        int baseDirLength = baseDir.length() +1;
+                        int baseDirLength = getBaseDir().length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         
                         String query = "+PATH:\"" + repoPath + "//*\" +QNAME:*.desc.xml";
@@ -391,7 +436,7 @@ public class RepoStore implements Store
         List<String> folderElementsList = Arrays.asList(folderElements);
         
         // create folder
-        FileInfo pathInfo = fileService.makeFolders(baseNodeRef, folderElementsList, ContentModel.TYPE_FOLDER);
+        FileInfo pathInfo = fileService.makeFolders(getBaseNodeRef(), folderElementsList, ContentModel.TYPE_FOLDER);
 
         // create file
         String fileName = pathElements[pathElements.length -1];
@@ -419,6 +464,23 @@ public class RepoStore implements Store
     {
         return new RepoScriptLoader();
     }        
+    
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
+     */
+    public void onEnableTenant()
+    {
+        init();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
+     */
+    public void onDisableTenant()
+    {
+        destroy();
+    }
     
     /**
      * Repository path based template loader
@@ -673,7 +735,7 @@ public class RepoStore implements Store
          */
 		public String getPath()
 		{
-            return repoStore + baseDir + "/" + path;
+            return repoStore + getBaseDir() + "/" + path;
 		}
 		
 		/* (non-Javadoc)
@@ -681,7 +743,7 @@ public class RepoStore implements Store
 		 */
 		public String getPathDescription()
 		{
-		    return "/" + path + " (in repository store " + repoStore.toString() + baseDir + ")";
+		    return "/" + path + " (in repository store " + repoStore.toString() + getBaseDir() + ")";
 		}
     }
 

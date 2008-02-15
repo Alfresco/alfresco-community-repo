@@ -107,6 +107,24 @@
       <filter-name>Admin Authentication Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
    </filter>
+   
+   <filter>
+      <filter-name>MT WebScript Basic Authentication Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.MTWebScriptAuthenticationFilter</filter-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.basic</param-value>
+      </init-param>
+   </filter>
+   
+   <filter>
+      <filter-name>MT WebScript WC Authentication Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.MTWebScriptAuthenticationFilter</filter-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.webclient</param-value>
+      </init-param>
+   </filter>
 
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
@@ -165,6 +183,21 @@
       <filter-name>Admin Authentication Filter</filter-name>
       <url-pattern>/faces/jsp/admin/system-info.jsp</url-pattern>
    </filter-mapping>
+   
+   
+   <!-- for MT-context, force auth prior to WebScript binding
+        for ST-context, pass through (or can explicitly comment out) -->
+        
+   <filter-mapping>
+      <filter-name>MT WebScript Basic Authentication Filter</filter-name>
+      <servlet-name>apiServlet</servlet-name>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>MT WebScript WC Authentication Filter</filter-name>
+      <servlet-name>wcapiServlet</servlet-name>
+   </filter-mapping>
+   
 
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>

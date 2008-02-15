@@ -24,21 +24,25 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import java.io.Serializable;
+
 
 /**
  * Workflow Definition Data Object
  *  
  * @author davidc
  */
-public class WorkflowDefinition
+public class WorkflowDefinition implements Serializable
 {
-   //XXarielb these should most likely all be private
+   private static final long serialVersionUID = -4320345925926816927L;
+//XXarielb these should most likely all be private
    public final String id;
    public final String name;
    public final String version;
    public final String title;
    public final String description;
-   public final WorkflowTaskDefinition startTaskDefinition;
+   
+   transient private final WorkflowTaskDefinition startTaskDefinition;
 
    public WorkflowDefinition(final String id,
                              final String name,
@@ -97,6 +101,6 @@ public class WorkflowDefinition
      */
     public String toString()
     {
-        return "WorkflowDefinition[id=" + id + ",name=" + name + ",version=" + version + ",title=" + title + ",startTask=" + ((startTaskDefinition == null) ? "undefined" : startTaskDefinition.toString()) + "]";
+        return "WorkflowDefinition[id=" + id + ",name=" + name + ",version=" + version + ",title=" + title + ",startTask=" + ((getStartTaskDefinition() == null) ? "undefined" : getStartTaskDefinition().toString()) + "]";
     }
 }

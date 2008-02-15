@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,8 +37,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author davidc
  */
-public class WorkflowInstance
+public class WorkflowInstance implements Serializable
 {
+    private static final long serialVersionUID = 4221926809419223452L;
+
     /** Workflow Instance unique id */
     public String id;
 

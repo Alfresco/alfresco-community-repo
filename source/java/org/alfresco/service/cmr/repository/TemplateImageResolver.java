@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.io.Serializable;
+
 /**
  * Interface contract for the conversion of file name to a fully qualified icon image path for use by
  * templating and scripting engines executing within the repository context.
@@ -33,7 +35,7 @@ package org.alfresco.service.cmr.repository;
  * 
  * @author Kevin Roast
  */
-public interface TemplateImageResolver
+public interface TemplateImageResolver extends Serializable
 {
     /**
      * Resolve the qualified icon image path for the specified filename 

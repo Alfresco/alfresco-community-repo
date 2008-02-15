@@ -41,6 +41,8 @@ import java.util.Set;
 public class DynamicNamespacePrefixResolver implements NamespaceService
 {
 
+    private static final long serialVersionUID = -7721089444629137409L;
+
     /**
      * The delegate
      */

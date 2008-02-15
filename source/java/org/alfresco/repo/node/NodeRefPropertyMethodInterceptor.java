@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -60,9 +61,9 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
 
     private boolean filterOnSet = true;
 
-    private DictionaryService dictionaryService;
+    transient private DictionaryService dictionaryService;
 
-    private NodeService nodeService;
+    transient private NodeService nodeService;
 
     public boolean isFilterOnGet()
     {
@@ -88,10 +89,28 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    private DictionaryService getDictionaryService()
+    {
+        if (dictionaryService == null)
+        {
+            dictionaryService = (DictionaryService) ApplicationContextHelper.getApplicationContext().getBean("dictionaryService");
+        }
+        return dictionaryService;
+    }
 
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    private NodeService getNodeService()
+    {
+        if (nodeService == null)
+        {
+            nodeService = (NodeService) ApplicationContextHelper.getApplicationContext().getBean("mlAwareNodeService");
+        }
+        return nodeService;
     }
 
     @SuppressWarnings("unchecked")
@@ -278,7 +297,7 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
      */
     private Serializable getValue(QName propertyQName, Serializable inboundValue)
     {
-        PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
+        PropertyDefinition propertyDef = this.getDictionaryService().getProperty(propertyQName);
         if (propertyDef == null)
         {
             return inboundValue;
@@ -303,12 +322,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                             try
                             {
                                 NodeRef test = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, value);
-                                if (nodeService.exists(test))
+                                if (getNodeService().exists(test))
                                 {
                                     if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
                                     {
-                                        QName type = nodeService.getType(test);
-                                        if (dictionaryService.isSubClass(type, ContentModel.TYPE_CATEGORY))
+                                        QName type = getNodeService().getType(test);
+                                        if (getDictionaryService().isSubClass(type, ContentModel.TYPE_CATEGORY))
                                         {
                                             out.add(test);
                                         }
@@ -338,12 +357,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                         try
                         {
                             NodeRef test = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, inboundValue);
-                            if (nodeService.exists(test))
+                            if (getNodeService().exists(test))
                             {
                                 if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
                                 {
-                                    QName type = nodeService.getType(test);
-                                    if (dictionaryService.isSubClass(type, ContentModel.TYPE_CATEGORY))
+                                    QName type = getNodeService().getType(test);
+                                    if (getDictionaryService().isSubClass(type, ContentModel.TYPE_CATEGORY))
                                     {
                                         return test;
                                     }

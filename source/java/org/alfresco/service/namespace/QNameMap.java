@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.namespace;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +41,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class QNameMap<K,V> implements Map, Cloneable
+public class QNameMap<K,V> implements Map, Cloneable, Serializable
 {
+    private static final long serialVersionUID = 2077228225832792605L;
+    
     protected static Log logger = LogFactory.getLog(QNameMap.class);
     protected Map<String, Object> contents = new HashMap<String, Object>(16, 1.0f);
     protected NamespacePrefixResolver resolver = null;
@@ -60,6 +63,19 @@ public class QNameMap<K,V> implements Map, Cloneable
         this.resolver = resolver;
     }
     
+    
+    
+    /**
+     * Constructor for Serialization mechanism
+     * 
+     */
+    protected QNameMap()
+    {
+        super();
+    }
+
+
+
     /**
      * @see java.util.Map#size()
      */

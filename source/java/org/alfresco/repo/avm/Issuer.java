@@ -73,6 +73,21 @@ public class Issuer
      */
     public void initialize()
     {
+        getNextId();
+    }
+    
+    /**
+     * Issue the next number.
+     * @return A serial number.
+     */
+    public synchronized long issue()
+    {
+        
+        return getNextId();
+    }
+    
+    private long getNextId()
+    {
         class TxnWork implements RetryingTransactionCallback<Long>
         {
             public Long execute() throws Exception
@@ -89,14 +104,6 @@ public class Issuer
         {
             fNext = result + 1L;
         }
-    }
-    
-    /**
-     * Issue the next number.
-     * @return A serial number.
-     */
-    public synchronized long issue()
-    {
-        return fNext++;
+        return fNext;
     }
 }

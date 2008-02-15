@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class JCRNamespacePrefixResolver implements NamespaceService
 {
+    private static final long serialVersionUID = -2451839324143403283L;
+
     // delegate
     private NamespacePrefixResolver delegate;
 

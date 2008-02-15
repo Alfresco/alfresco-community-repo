@@ -24,6 +24,7 @@
  */
 package org.alfresco.service.namespace;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.service.Auditable;
@@ -36,7 +37,7 @@ import org.alfresco.service.PublicService;
  * @author David Caruana
  */
 @PublicService
-public interface NamespacePrefixResolver
+public interface NamespacePrefixResolver extends Serializable
 {
     /**
      * Gets the namespace URI registered for the given prefix

@@ -140,25 +140,28 @@ public abstract class BaseAjaxItemPicker extends UIInput
       Map requestMap = context.getExternalContext().getRequestParameterMap();
       String fieldId = getHiddenFieldName();
       String value = (String)requestMap.get(fieldId);
-      if (value.equals("empty"))
+      if (value != null)
       {
-         this.setSubmittedValue(new String("empty"));
-      }
-      else if (value != null && value.length() != 0)
-      {
-         if (getSingleSelect() == true)
+         if (value.equals("empty"))
          {
-            NodeRef ref = new NodeRef(value);
-            this.setSubmittedValue(ref);
+            this.setSubmittedValue(new String("empty"));
          }
-         else
+         else if (value.length() != 0)
          {
-            List<NodeRef> refs = new ArrayList<NodeRef>(5);
-            for (StringTokenizer t = new StringTokenizer(value, ","); t.hasMoreTokens(); /**/)
+            if (getSingleSelect() == true)
             {
-               refs.add(new NodeRef(t.nextToken()));
+               NodeRef ref = new NodeRef(value);
+               this.setSubmittedValue(ref);
             }
-            this.setSubmittedValue(refs);
+            else
+            {
+               List<NodeRef> refs = new ArrayList<NodeRef>(5);
+               for (StringTokenizer t = new StringTokenizer(value, ","); t.hasMoreTokens(); /**/)
+               {
+                  refs.add(new NodeRef(t.nextToken()));
+               }
+               this.setSubmittedValue(refs);
+            }
          }
       }
    }

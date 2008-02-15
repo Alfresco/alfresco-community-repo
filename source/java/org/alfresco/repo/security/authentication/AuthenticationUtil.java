@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,6 +67,11 @@ public abstract class AuthenticationUtil
     	{
     		AuthenticationUtil.mtEnabled = mtEnabled;
     	}
+    }
+    
+    public static boolean isMtEnabled()
+    {
+        return AuthenticationUtil.mtEnabled;
     }
     
     public static Authentication setCurrentUser(String userName)
@@ -188,7 +193,7 @@ public abstract class AuthenticationUtil
     {
         NDC.remove();
         
-        if (mtEnabled == true)
+        if (isMtEnabled())
         {
             int idx = userName.indexOf(TenantService.SEPARATOR);
             if ((idx != -1) && (idx < (userName.length()-1)))
@@ -313,7 +318,7 @@ public abstract class AuthenticationUtil
         R result = null;
         try
         {
-            if ((currentUser != null) && (mtEnabled == true))
+            if ((currentUser != null) && (isMtEnabled()))
             {
                 int idx = currentUser.indexOf(TenantService.SEPARATOR);
             if ((idx != -1) && (idx < (currentUser.length()-1)))

@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.forms.Form;
@@ -77,12 +78,12 @@ public class RegenerateRenditionsWizard
 
    private final static Log LOGGER = LogFactory.getLog(RegenerateRenditionsWizard.class); 
 
-   private AVMLockingService avmLockingService;
-   private AVMService avmService;
-   private AVMSyncService avmSyncService;
-   private ContentService contentService;
-   private SearchService searchService;
-   private FormsService formsService;
+   transient private AVMLockingService avmLockingService;
+   transient private AVMService avmService;
+   transient private AVMSyncService avmSyncService;
+   transient private SearchService searchService;
+   transient private FormsService formsService;
+   
    private WebProject selectedWebProject;
    private String[] selectedForms;
    private String[] selectedRenderingEngineTemplates;
@@ -108,7 +109,7 @@ public class RegenerateRenditionsWizard
          }
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("updating " + diffList.size() + " renditions in staging");
-         this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
+         getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
          String description = null;
          final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
          if (this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
@@ -126,7 +127,7 @@ public class RegenerateRenditionsWizard
             description = MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_description_scope_web_project"),
                                                this.selectedWebProject.getName());
          }
-         this.avmService.createSnapshot(this.selectedWebProject.getStoreId(),
+         getAvmService().createSnapshot(this.selectedWebProject.getStoreId(),
                                         MessageFormat.format(bundle.getString("regenerate_renditions_snapshot_short_description"), 
                                                              diffList.size()),
                                         description);
@@ -183,7 +184,7 @@ public class RegenerateRenditionsWizard
       {
          final String stagingStoreName = this.selectedWebProject.getStoreId();
          final String previewStoreName = AVMUtil.getCorrespondingPreviewStoreName(stagingStoreName);
-         this.avmSyncService.resetLayer(AVMUtil.buildStoreRootPath(previewStoreName));
+         getAvmSyncService().resetLayer(AVMUtil.buildStoreRootPath(previewStoreName));
       }
       return super.cancel();
    }
@@ -358,21 +359,22 @@ public class RegenerateRenditionsWizard
 
    // ------------------------------------------------------------------------------
    // Service Injection
-   
-   /**
-    * @param contentService The contentService to set.
-    */
-   public void setContentService(final ContentService contentService)
-   {
-      this.contentService = contentService;
-   }
-   
+
    /**
     * @param avmService       The AVMService to set.
     */
    public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   private AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
    }
 
    /**
@@ -383,12 +385,30 @@ public class RegenerateRenditionsWizard
       this.avmLockingService = avmLockingService;
    }
 
+   private AVMLockingService getAvmLockingService()
+   {
+      if (this.avmLockingService == null)
+      {
+         this.avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
+      }
+      return this.avmLockingService;
+   }
+
    /**
     * @param avmSyncService       The AVMSyncService to set.
     */
    public void setAvmSyncService(final AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
+   }
+
+   private AVMSyncService getAvmSyncService()
+   {
+      if (this.avmSyncService == null)
+      {
+         this.avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return this.avmSyncService;
    }
 
    /**
@@ -399,12 +419,30 @@ public class RegenerateRenditionsWizard
       this.searchService = searchService;
    }
 
+   protected SearchService getSearchService()
+   {
+      if (this.searchService == null)
+      {
+         this.searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return this.searchService;
+   }
+
    /**
     * @param formsService    The FormsService to set.
     */
    public void setFormsService(final FormsService formsService)
    {
       this.formsService = formsService;
+   }
+   
+   private FormsService getFormsService()
+   {
+      if (this.formsService == null)
+      {
+         this.formsService = (FormsService)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return this.formsService;
    }
    
    // ------------------------------------------------------------------------------
@@ -425,13 +463,13 @@ public class RegenerateRenditionsWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
-      final ResultSet rs = this.searchService.query(sp);
+      final ResultSet rs = getSearchService().query(sp);
       final List<FormInstanceData> result = new ArrayList<FormInstanceData>(rs.length());
       for (final ResultSetRow row : rs)
       {
          final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
          final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         result.add(this.formsService.getFormInstanceData(-1, previewAvmPath));
+         result.add(getFormsService().getFormInstanceData(-1, previewAvmPath));
       }
       return result;
    }
@@ -449,13 +487,13 @@ public class RegenerateRenditionsWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
-      final ResultSet rs = this.searchService.query(sp);
+      final ResultSet rs = getSearchService().query(sp);
       final List<Rendition> result = new ArrayList<Rendition>(rs.length()); 
       for (final ResultSetRow row : rs)
       {
          final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
          final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         result.add(this.formsService.getRendition(-1, previewAvmPath));
+         result.add(getFormsService().getRendition(-1, previewAvmPath));
       }
       return result;
    }
@@ -464,7 +502,7 @@ public class RegenerateRenditionsWizard
    {
       final String stagingStoreName = this.selectedWebProject.getStoreId();
       final String previewStoreName = AVMUtil.getCorrespondingPreviewStoreName(stagingStoreName);
-      this.avmSyncService.resetLayer(AVMUtil.buildStoreRootPath(previewStoreName));
+      getAvmSyncService().resetLayer(AVMUtil.buildStoreRootPath(previewStoreName));
 
       final SearchParameters sp = new SearchParameters();
       final StoreRef storeRef = AVMNodeConverter.ToStoreRef(this.selectedWebProject.getStagingStore());
@@ -529,7 +567,7 @@ public class RegenerateRenditionsWizard
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
-      final ResultSet rs = this.searchService.query(sp);
+      final ResultSet rs = getSearchService().query(sp);
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("received " + rs.length() + " results");
 
@@ -541,7 +579,7 @@ public class RegenerateRenditionsWizard
          if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
              this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
          {
-            final FormInstanceData fid = this.formsService.getFormInstanceData(-1, previewAvmPath);
+            final FormInstanceData fid = getFormsService().getFormInstanceData(-1, previewAvmPath);
             try
             {
                final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
@@ -560,7 +598,7 @@ public class RegenerateRenditionsWizard
                   }
                   if (rr.getRendition() != null)
                   {
-                     this.avmLockingService.removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
+                     getAvmLockingService().removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
                                                        AVMUtil.getStoreRelativePath(rr.getRendition().getPath()));
                   }
                }
@@ -574,7 +612,7 @@ public class RegenerateRenditionsWizard
          }
          else
          {
-            final Rendition r = this.formsService.getRendition(-1, previewAvmPath);
+            final Rendition r = getFormsService().getRendition(-1, previewAvmPath);
             try
             {
                r.regenerate();

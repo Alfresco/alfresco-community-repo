@@ -43,6 +43,8 @@ import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
  */
 public class DeleteForumDialog extends DeleteSpaceDialog
 {
+   private static final long serialVersionUID = -4246549059188399460L;
+   
    protected boolean reDisplayForums;
 
    // ------------------------------------------------------------------------------
@@ -62,7 +64,7 @@ public class DeleteForumDialog extends DeleteSpaceDialog
    {
       // find out what the parent type of the node being deleted 
       Node node = this.browseBean.getActionSpace();
-      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+      ChildAssociationRef assoc = this.getNodeService().getPrimaryParent(node.getNodeRef());
       if (assoc != null)
       {
          // get the parent node
@@ -74,13 +76,13 @@ public class DeleteForumDialog extends DeleteSpaceDialog
          {
             // if the association type is the 'discussion' association we
             // need to remove the discussable aspect from the parent node
-            this.nodeService.removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
+            this.getNodeService().removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
          }
          
          // if the parent type is a forum space then we need the dialog to go
          // back to the forums view otherwise it will use the default of 'browse',
          // this happens when a forum being used to discuss a node is deleted.
-         QName parentType = this.nodeService.getType(parent);
+         QName parentType = this.getNodeService().getType(parent);
          if (parentType.equals(ForumModel.TYPE_FORUMS))
          {
             this.reDisplayForums = true;

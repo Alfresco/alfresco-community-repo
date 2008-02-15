@@ -25,6 +25,8 @@
 package org.alfresco.web.bean;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Map;
 
@@ -58,11 +60,13 @@ import org.apache.commons.logging.LogFactory;
  * fields and action event fired in response to the Login button being pressed.
  * 
  * @author Kevin Roast
- */
-public class LoginBean
+ */ 
+public class LoginBean implements Serializable
 {
    // ------------------------------------------------------------------------------
    // Managed bean properties
+
+   private static final long serialVersionUID = 7417882503323795282L;
 
    /**
     * @param authenticationService      The AuthenticationService to set.
@@ -70,6 +74,13 @@ public class LoginBean
    public void setAuthenticationService(AuthenticationService authenticationService)
    {
       this.authenticationService = authenticationService;
+   }
+   
+   protected AuthenticationService getAuthenticationService()
+   {
+      if (authenticationService == null)
+         authenticationService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
+      return authenticationService;
    }
 
    /**
@@ -79,6 +90,13 @@ public class LoginBean
    {
       this.personService = personService;
    }
+   
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      return personService;
+   }
 
    /**
     * @param nodeService                The nodeService to set.
@@ -86,6 +104,13 @@ public class LoginBean
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      return nodeService;
    }
 
    /**
@@ -247,10 +272,10 @@ public class LoginBean
             
             // Authenticate via the authentication service, then save the details of user in an object
             // in the session - this is used by the servlet filter etc. on each page to check for login
-            this.authenticationService.authenticate(this.username, this.password.toCharArray());
+            this.getAuthenticationService().authenticate(this.username, this.password.toCharArray());
             
             // Set the user name as stored by the back end 
-            this.username = this.authenticationService.getCurrentUserName();
+            this.username = this.getAuthenticationService().getCurrentUserName();
             
             // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
             session.remove(AuthenticationHelper.SESSION_INVALIDATED);
@@ -258,13 +283,13 @@ public class LoginBean
             // setup User object and Home space ID
             User user = new User(
                     this.username,
-                  this.authenticationService.getCurrentTicket(),
-                  personService.getPerson(this.username));
+                  this.getAuthenticationService().getCurrentTicket(),
+                  getPersonService().getPerson(this.username));
             
-            NodeRef homeSpaceRef = (NodeRef) this.nodeService.getProperty(personService.getPerson(this.username), ContentModel.PROP_HOMEFOLDER);
+            NodeRef homeSpaceRef = (NodeRef) this.getNodeService().getProperty(getPersonService().getPerson(this.username), ContentModel.PROP_HOMEFOLDER);
             
             // check that the home space node exists - else user cannot login
-            if (this.nodeService.exists(homeSpaceRef) == false)
+            if (this.getNodeService().exists(homeSpaceRef) == false)
             {
                throw new InvalidNodeRefException(homeSpaceRef);
             }
@@ -366,8 +391,8 @@ public class LoginBean
          if (user != null)
          {
             // invalidate ticket and clear the Security context for this thread
-            authenticationService.invalidateTicket(user.getTicket());
-            authenticationService.clearCurrentSecurityContext();
+            getAuthenticationService().invalidateTicket(user.getTicket());
+            getAuthenticationService().clearCurrentSecurityContext();
          }
          // remove all objects from our session by hand
          // we do this as invalidating the Portal session would invalidate all other portlets!
@@ -420,13 +445,13 @@ public class LoginBean
    private String password = null;
 
    /** PersonService bean reference */
-   protected PersonService personService;
+   private transient PersonService personService;
    
    /** AuthenticationService bean reference */
-   protected AuthenticationService authenticationService;
+   private transient AuthenticationService authenticationService;
 
    /** NodeService bean reference */
-   protected NodeService nodeService;
+   private transient NodeService nodeService;
 
    /** The BrowseBean reference */
    protected BrowseBean browseBean;
@@ -436,4 +461,6 @@ public class LoginBean
    
    /** The user preferences bean reference */
    protected UserPreferencesBean preferences;
+
+
 }

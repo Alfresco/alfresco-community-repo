@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -37,8 +38,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class LinkValidationProgressBean
+public class LinkValidationProgressBean implements Serializable
 {
+   private static final long serialVersionUID = -6250162468103556028L;
+
    private AVMBrowseBean avmBrowseBean;
    
    private static Log logger = LogFactory.getLog(LinkValidationProgressBean.class);

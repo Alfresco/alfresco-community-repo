@@ -37,6 +37,8 @@ import org.alfresco.web.bean.wizard.BaseInviteUsersWizard;
  */
 public class InviteSpaceUsersWizard extends BaseInviteUsersWizard
 {
+   private static final long serialVersionUID = -1584891656721183347L;
+   
    /** Cache of available folder permissions */
    Set<String> folderPermissions = null;
    
@@ -45,7 +47,7 @@ public class InviteSpaceUsersWizard extends BaseInviteUsersWizard
    {
       if (this.folderPermissions == null)
       {
-         this.folderPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_FOLDER);
+         this.folderPermissions = getPermissionService().getSettablePermissions(ContentModel.TYPE_FOLDER);
       }
        
       return this.folderPermissions;

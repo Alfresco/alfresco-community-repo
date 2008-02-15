@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,10 @@ import org.alfresco.util.ParameterCheck;
  * 
  * @author gavinc
  */
-public class SidebarConfigElement extends ConfigElementAdapter
+public class SidebarConfigElement extends ConfigElementAdapter implements Serializable
 {
+   private static final long serialVersionUID = -251308123183340915L;
+
    public static final String CONFIG_ELEMENT_ID = "sidebar";
    
    private String defaultPlugin;
@@ -158,8 +161,10 @@ public class SidebarConfigElement extends ConfigElementAdapter
     * 
     * @author gavinc
     */
-   public static class SidebarPluginConfig
+   public static class SidebarPluginConfig implements Serializable
    {
+      private static final long serialVersionUID = 1400852211128756652L;
+      
       protected String id;
       protected String page;
       protected String actionsConfigId;

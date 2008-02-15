@@ -42,6 +42,8 @@ public class CreateForumsDialog extends CreateSpaceDialog
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   private static final long serialVersionUID = 4371868975654509241L;
+
    @Override
    public void init(Map<String, String> parameters)
    {

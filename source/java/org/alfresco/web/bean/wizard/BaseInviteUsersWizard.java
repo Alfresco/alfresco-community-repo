@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean.wizard;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +69,8 @@ import org.springframework.mail.javamail.JavaMailSender;
  */
 public abstract class BaseInviteUsersWizard extends BaseWizardBean
 {
+   private static final long serialVersionUID = -5145813383038390250L;
+   
    /** I18N message strings */
    protected static final String MSG_USERROLES = "invite_users_summary";
    private static final String MSG_USERS  = "users";
@@ -79,25 +84,25 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    private static final String NOTIFY_NO = "no";
    
    /** NamespaceService bean reference */
-   protected NamespaceService namespaceService;
+   transient private NamespaceService namespaceService;
    
    /** JavaMailSender bean reference */
-   protected JavaMailSender mailSender;
+   transient private JavaMailSender mailSender;
    
    /** AuthorityService bean reference */
-   protected AuthorityService authorityService;
+   transient private AuthorityService authorityService;
    
    /** PermissionService bean reference */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    /** personService bean reference */
-   protected PersonService personService;
+   transient private PersonService personService;
    
    /** Helper providing template based mailing facilities */
    protected TemplateMailHelperBean mailHelper;
    
    /** datamodel for table of roles for users */
-   protected DataModel userRolesDataModel = null;
+   transient private DataModel userRolesDataModel = null;
    
    /** list of user/group role wrapper objects */
    protected List<UserGroupRole> userGroupRoles = null;
@@ -126,6 +131,15 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       this.namespaceService = namespaceService;
    }
    
+   protected NamespaceService getNamespaceService()
+   {
+      if (namespaceService == null)
+      {
+         namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      }
+      return namespaceService;
+   }
+   
    /**
     * @param mailSender          The JavaMailSender to set.
     */
@@ -142,6 +156,15 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       this.permissionService = permissionService;
    }
    
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
+   
    /**
     * @param personService   The PersonService to set.
     */
@@ -150,12 +173,30 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       this.personService = personService;
    }
    
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
+   }
+   
    /**
     * @param authorityService    The authorityService to set.
     */
    public void setAuthorityService(AuthorityService authorityService)
    {
       this.authorityService = authorityService;
+   }
+   
+   protected AuthorityService getAuthorityService()
+   {
+      if (authorityService == null)
+      {
+         authorityService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authorityService;
    }
 
    /**
@@ -170,7 +211,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       userGroupRoles = new ArrayList<UserGroupRole>(8);
       mailHelper = new TemplateMailHelperBean();
       mailHelper.setMailSender(mailSender);
-      mailHelper.setNodeService(nodeService);
+      mailHelper.setNodeService(getNodeService());
    }
 
    /**
@@ -180,7 +221,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       User user = Application.getCurrentUser(context);
-      String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
+      String from = (String)this.getNodeService().getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
       if (from == null || from.length() == 0)
       {
          // if the user does not have an email address get the default one from the config service
@@ -202,7 +243,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          {
             if (userGroupRole.getRole().equals(permission))
             {
-               this.permissionService.setPermission(
+               this.getPermissionService().setPermission(
                      nodeRef,
                      authority,
                      permission,
@@ -218,22 +259,22 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             AuthorityType authType = AuthorityType.getAuthorityType(authority);
             if (authType.equals(AuthorityType.USER))
             {
-               if (this.personService.personExists(authority) == true)
+               if (this.getPersonService().personExists(authority) == true)
                {
                   this.mailHelper.notifyUser(
-                        this.personService.getPerson(authority), nodeRef, from, userGroupRole.getRole());
+                        this.getPersonService().getPerson(authority), nodeRef, from, userGroupRole.getRole());
                }
             }
             else if (authType.equals(AuthorityType.GROUP))
             {
                // else notify all members of the group
-               Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+               Set<String> users = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
                for (String userAuth : users)
                {
-                  if (this.personService.personExists(userAuth) == true)
+                  if (this.getPersonService().personExists(userAuth) == true)
                   {
                      this.mailHelper.notifyUser(
-                           this.personService.getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
+                           this.getPersonService().getPerson(userAuth), nodeRef, from, userGroupRole.getRole());
                   }
                }
             }
@@ -302,21 +343,21 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          if (filterIndex == 0)
          {
             // build xpath to match available User/Person objects
-            NodeRef peopleRef = personService.getPeopleContainer();
+            NodeRef peopleRef = getPersonService().getPeopleContainer();
             
             // Use lucene search to retrieve user details
             String lucene = "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:firstName:*" + contains + "* " +
                             "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:lastName:*" + contains + "* ";
-            ResultSet resultSet = searchService.query(peopleRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, lucene);            
+            ResultSet resultSet = getSearchService().query(peopleRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, lucene);            
             List<NodeRef> nodes = resultSet.getNodeRefs();            
             
             items = new SelectItem[nodes.size()];
             for (int index=0; index<nodes.size(); index++)
             {
                NodeRef personRef = nodes.get(index);
-               String firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-               String lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
-               String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+               String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+               String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+               String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
                SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
                items[index] = item;
             }
@@ -324,8 +365,8 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          else
          {
             // groups - simple text based match on name
-            Set<String> groups = authorityService.getAllAuthorities(AuthorityType.GROUP);
-            groups.addAll(authorityService.getAllAuthorities(AuthorityType.EVERYONE));
+            Set<String> groups = getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
+            groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
             
             List<SelectItem> results = new ArrayList<SelectItem>(groups.size());
             String containsLower = contains.toLowerCase();
@@ -409,7 +450,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          AuthorityType authType = AuthorityType.getAuthorityType(authority);
          if (authType == AuthorityType.GUEST || authType == AuthorityType.USER)
          {
-            if (authType == AuthorityType.GUEST || this.personService.personExists(authority) == true)
+            if (authType == AuthorityType.GUEST || getPersonService().personExists(authority) == true)
             {
                // found a User authority
                label.append(buildLabelForUserAuthorityRole(authority, role));
@@ -430,7 +471,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
     */
    public void removeSelection(ActionEvent event)
    {
-      UserGroupRole wrapper = (UserGroupRole)this.userRolesDataModel.getRowData();
+      UserGroupRole wrapper = (UserGroupRole)getUserRolesDataModel().getRowData();
       if (wrapper != null)
       {
          this.userGroupRoles.remove(wrapper);
@@ -499,11 +540,11 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          // prepare automatic text for email and display
          StringBuilder buf = new StringBuilder(256);
          
-         String personName = Application.getCurrentUser(context).getFullName(this.nodeService);
+         String personName = Application.getCurrentUser(context).getFullName(this.getNodeService());
          String msgInvitedTo = Application.getMessage(context, MSG_INVITED_TO);
          Node node = this.getNode();
-         String path = this.nodeService.getPath(node.getNodeRef()).toDisplayPath(
-                 this.nodeService, this.permissionService);
+         String path = this.getNodeService().getPath(node.getNodeRef()).toDisplayPath(
+                 this.getNodeService(), getPermissionService());
          buf.append(MessageFormat.format(msgInvitedTo, new Object[] {
                path + '/' + node.getName(),
                personName}) );
@@ -551,9 +592,9 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    public String buildLabelForUserAuthorityRole(String authority, String role)
    {
       // found a User authority
-      NodeRef ref = this.personService.getPerson(authority);
-      String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-      String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+      NodeRef ref = this.getPersonService().getPerson(authority);
+      String firstName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+      String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
       
       StringBuilder buf = new StringBuilder(100);
       buf.append(firstName)
@@ -601,12 +642,22 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             new String[] {buf.toString()});
    }
    
+   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+   {
+      in.defaultReadObject();
+
+      this.userRolesDataModel = new ListDataModel();
+      this.userRolesDataModel.setWrappedData(this.userGroupRoles);
+
+   }
    
    /**
     * Simple wrapper class to represent a user/group and a role combination
     */
-   public static class UserGroupRole
+   public static class UserGroupRole implements Serializable
    {
+      private static final long serialVersionUID = -3200146057437311225L;
+      
       public UserGroupRole(String authority, String role, String label)
       {
          this.authority = authority;

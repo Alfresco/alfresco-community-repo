@@ -79,7 +79,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    // the NodeRef of the node created during finish
    protected NodeRef createdNode;
    protected List<SelectItem> objectTypes;
-   protected ContentService contentService;
+   transient private ContentService contentService;
    
    protected static Log logger = LogFactory.getLog(BaseContentWizard.class);
    
@@ -322,11 +322,11 @@ public abstract class BaseContentWizard extends BaseWizardBean
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
                   if (idQName != null)
                   {
-                     TypeDefinition typeDef = this.dictionaryService.getType(idQName);
+                     TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
                      
                      if (typeDef != null)
                      {
-                        if (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+                        if (this.getDictionaryService().isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                         {
                            // try and get the display label from config
                            String label = Utils.getDisplayLabel(context, child);
@@ -390,6 +390,15 @@ public abstract class BaseContentWizard extends BaseWizardBean
       this.contentService = contentService;
    }
    
+   protected ContentService getContentService()
+   {
+      if (contentService == null)
+      {
+         contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+      return contentService;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods
@@ -407,14 +416,14 @@ public abstract class BaseContentWizard extends BaseWizardBean
       String nodeId = this.navigator.getCurrentNodeId();
       if (nodeId == null)
       {
-         containerNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+         containerNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
       }
       else
       {
          containerNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
       }
       
-      FileInfo fileInfo = this.fileFolderService.create(
+      FileInfo fileInfo = this.getFileFolderService().create(
             containerNodeRef,
             this.fileName,
             Repository.resolveToQName(this.objectType));
@@ -423,7 +432,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       // set the author aspect
       Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
       authorProps.put(ContentModel.PROP_AUTHOR, this.author);
-      this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+      this.getNodeService().addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Created file node for file: " + this.fileName);
@@ -432,7 +441,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.title);
       titledProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.getNodeService().addAspect(fileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Added titled aspect with properties: " + titledProps);
@@ -442,14 +451,14 @@ public abstract class BaseContentWizard extends BaseWizardBean
       {
          Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
          editProps.put(ApplicationModel.PROP_EDITINLINE, this.inlineEdit);
-         this.nodeService.addAspect(fileNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
+         this.getNodeService().addAspect(fileNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
          
          if (logger.isDebugEnabled())
             logger.debug("Added inlineeditable aspect with properties: " + editProps);
       }
       
       // get a writer for the content and put the file
-      ContentWriter writer = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = getContentService().getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
       // set the mimetype and encoding
       writer.setMimetype(this.mimeType);
       writer.setEncoding(getEncoding());

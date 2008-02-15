@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class IsSubTypeHandler extends BaseConditionHandler
 {
+   private static final long serialVersionUID = 906340104511402964L;
+   
    protected static final String PROP_MODEL_TYPE = "modeltype";
    
    public String getJSPPath()

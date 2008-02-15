@@ -18,45 +18,28 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngineTemplate;
-import org.alfresco.web.forms.Rendition;
-import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 
 /**
  * Bean backing the edit pages for a AVM node content.
@@ -66,6 +49,8 @@ import org.w3c.dom.Document;
  */
 public class AVMEditBean extends BaseDialogBean
 {
+   private static final long serialVersionUID = -6662866123545412556L;
+
    private static final Log LOGGER = LogFactory.getLog(AVMEditBean.class);
    
    private static final String MSG_ERROR_UPDATE = "error_update";
@@ -75,9 +60,9 @@ public class AVMEditBean extends BaseDialogBean
    private File file = null;
    private String fileName = null;
 
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   protected FormsService formsService;
+   transient private FormsService formsService;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -88,6 +73,15 @@ public class AVMEditBean extends BaseDialogBean
    public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
 
    /**
@@ -105,6 +99,16 @@ public class AVMEditBean extends BaseDialogBean
    {
       this.formsService = formsService;
    }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
 
    /**
     * @return Returns the current AVM node context.
@@ -180,7 +184,7 @@ public class AVMEditBean extends BaseDialogBean
             tx.begin();
             
             // get an updating writer that we can use to modify the content on the current node
-            final ContentWriter writer = this.avmService.getContentWriter(node.getPath());
+            final ContentWriter writer = this.getAvmService().getContentWriter(node.getPath());
             
             // also update the mime type in case a different type of file is uploaded
             String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);
@@ -189,7 +193,7 @@ public class AVMEditBean extends BaseDialogBean
             
             // commit the transaction
             tx.commit();
-            if (this.avmService.hasAspect(-1, node.getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+            if (this.getAvmService().hasAspect(-1, node.getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
             {
                this.regenerateRenditions();
             }
@@ -253,7 +257,7 @@ public class AVMEditBean extends BaseDialogBean
       throws FormNotFoundException
    {
       final String avmPath = this.getAvmNode().getPath();
-      final FormInstanceData fid = this.formsService.getFormInstanceData(-1, avmPath);
+      final FormInstanceData fid = this.getFormsService().getFormInstanceData(-1, avmPath);
       final List<FormInstanceData.RegenerateResult> result = fid.regenerateRenditions();
       for (FormInstanceData.RegenerateResult rr : result)
       {

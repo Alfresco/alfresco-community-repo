@@ -46,6 +46,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class CutNodeEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 5162681242056158214L;
+
    public boolean evaluate(Node node)
    {
 

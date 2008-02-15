@@ -87,14 +87,14 @@ public class ApplyRssTemplateDialog extends BaseDialogBean
                 // apply the feedsource aspect if required
                 if (getNode().hasAspect(ApplicationModel.ASPECT_FEEDSOURCE) == false)
                 {
-                    this.nodeService.addAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE, null);
+                    this.getNodeService().addAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE, null);
                 }
 
                 // get the selected template Id from the Template Picker
                 NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.rssTemplate);
 
                 // set the template NodeRef into the templatable aspect property
-                this.nodeService.setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, templateRef);
+                this.getNodeService().setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, templateRef);
 
                 // reset node details for next refresh of details page
                 getNode().reset();

@@ -353,7 +353,7 @@ public class DeleteCategoryDialog extends BaseDialogBean
                                 List<NodeRef> list = new ArrayList<NodeRef>(getMembers().size());
 
                                 NodeRef member = childRef.getChildRef();
-                                Collection<NodeRef> categories = (Collection<NodeRef>) nodeService.getProperty(member, ContentModel.PROP_CATEGORIES);
+                                Collection<NodeRef> categories = (Collection<NodeRef>)getNodeService().getProperty(member, ContentModel.PROP_CATEGORIES);
 
                                 for (NodeRef category : categories)
                                 {
@@ -364,7 +364,7 @@ public class DeleteCategoryDialog extends BaseDialogBean
                                 }
 
                                 // persist the list back to the repository
-                                nodeService.setProperty(member, ContentModel.PROP_CATEGORIES, (Serializable) list);
+                                getNodeService().setProperty(member, ContentModel.PROP_CATEGORIES, (Serializable) list);
                             }
                         }
                         return categoryNodeRef;

@@ -43,6 +43,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class DiscussionCopyEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -4080878553011296677L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

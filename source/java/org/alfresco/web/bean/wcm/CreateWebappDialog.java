@@ -43,6 +43,8 @@ public class CreateWebappDialog extends CreateFolderDialog
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
+   private static final long serialVersionUID = -3883601909422422829L;
+   
    protected String path;
 
    /**
@@ -53,21 +55,21 @@ public class CreateWebappDialog extends CreateFolderDialog
    {
       final String stagingStore = this.avmBrowseBean.getStagingStore();
       final String parent = AVMUtil.buildSandboxRootPath( stagingStore );
-      this.avmService.createDirectory(parent, this.name);
+      this.getAvmService().createDirectory(parent, this.name);
       
       this.path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
-      this.avmService.addAspect(this.path, ApplicationModel.ASPECT_UIFACETS);
-      this.avmService.addAspect(this.path, WCMAppModel.ASPECT_WEBAPP);
+      this.getAvmService().addAspect(this.path, ApplicationModel.ASPECT_UIFACETS);
+      this.getAvmService().addAspect(this.path, WCMAppModel.ASPECT_WEBAPP);
       if (this.description != null && this.description.length() != 0)
       {
-         this.avmService.setNodeProperty(path, 
+         this.getAvmService().setNodeProperty(path, 
                                          ContentModel.PROP_DESCRIPTION, 
                                          new PropertyValue(DataTypeDefinition.TEXT,
                                                            this.description));
       }
 
       // Snapshot the store with the empty webapp
-      this.avmService.createSnapshot(stagingStore, null, null);
+      this.getAvmService().createSnapshot(stagingStore, null, null);
 
       return outcome;
    }

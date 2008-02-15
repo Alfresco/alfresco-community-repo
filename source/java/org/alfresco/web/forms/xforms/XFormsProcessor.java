@@ -17,35 +17,39 @@
  */
 package org.alfresco.web.forms.xforms;
 
-import java.io.*;
+import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.TreeSet;
+
 import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.chiba.xml.ns.NamespaceConstants;
+import org.chiba.xml.xforms.exception.XFormsException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.web.util.JavaScriptUtils;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.chiba.xml.ns.NamespaceConstants;
-import org.chiba.xml.xforms.exception.XFormsException;
 
-public class XFormsProcessor
-   implements FormProcessor
+public class XFormsProcessor implements FormProcessor
 {
 
    private static final Log LOGGER = LogFactory.getLog(XFormsProcessor.class); 
@@ -116,7 +120,7 @@ public class XFormsProcessor
       final FacesContext fc = FacesContext.getCurrentInstance();
       //make the XFormsBean available for this session
       final XFormsBean xforms = (XFormsBean)
-         FacesHelper.getManagedBean(fc, "XFormsBean");
+         FacesHelper.getManagedBean(fc, XFormsBean.BEAN_NAME);
       final Session result = 
          xforms.createSession(instanceDataDocument, formInstanceDataName, form);
       this.process(result, out);
@@ -133,9 +137,9 @@ public class XFormsProcessor
       final FacesContext fc = FacesContext.getCurrentInstance();
       //make the XFormsBean available for this session
       final XFormsBean xforms = (XFormsBean)
-         FacesHelper.getManagedBean(fc, "XFormsBean");
+         FacesHelper.getManagedBean(fc, XFormsBean.BEAN_NAME);
       final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)
-         FacesHelper.getManagedBean(fc, "AVMBrowseBean");
+         FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
       try
       {
          xforms.setXFormsSession((XFormsBean.XFormsSession)session);

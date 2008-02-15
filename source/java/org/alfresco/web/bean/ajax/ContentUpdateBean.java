@@ -67,8 +67,10 @@ import org.w3c.dom.Node;
  * 
  * @author Mike Hatfield
  */
-public class ContentUpdateBean
+public class ContentUpdateBean implements Serializable
 {
+   private static final long serialVersionUID = -7209326198823950952L;
+   
    private static Log logger = LogFactory.getLog(ContentUpdateBean.class);
    
    /**

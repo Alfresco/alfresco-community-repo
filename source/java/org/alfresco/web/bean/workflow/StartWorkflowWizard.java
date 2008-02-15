@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -73,12 +74,18 @@ import org.apache.commons.logging.LogFactory;
  */
 public class StartWorkflowWizard extends BaseWizardBean
 {
+   private static final long serialVersionUID = -4370844066621902880L;
+   
    protected String selectedWorkflow;
    protected String previouslySelectedWorkflow;
-   protected List<SelectItem> availableWorkflows;
-   protected Map<String, WorkflowDefinition> workflows;
+   
+   transient protected List<SelectItem> availableWorkflows;
+   transient private Map<String, WorkflowDefinition> workflows;
+   
    protected Map<String, String> wcmWorkflows;
-   protected WorkflowService workflowService;
+   
+   transient private WorkflowService workflowService;
+   
    protected Node startTaskNode;
    protected List<Node> resources;
    protected List<String> packageItemsToAdd;
@@ -87,7 +94,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    protected boolean isItemBeingAdded = false;
    protected boolean nextButtonDisabled = false;
    
-   protected NodeService unprotectedNodeService;
+   transient private NodeService unprotectedNodeService;
    
    private static final Log logger = LogFactory.getLog(StartWorkflowWizard.class);
    
@@ -96,9 +103,27 @@ public class StartWorkflowWizard extends BaseWizardBean
        this.unprotectedNodeService = unprotectedNodeService;
    }
    
+   protected NodeService getUnprotectedNodeService()
+   {
+      if (this.unprotectedNodeService == null)
+      {
+         this.unprotectedNodeService = (NodeService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "nodeService");
+      }
+      return this.unprotectedNodeService;
+   }
+   
+   protected Map<String, WorkflowDefinition> getWorkflows()
+   {
+      if (this.workflows == null)
+      {
+         initializeWorkflows();
+      }
+      return this.workflows;
+   }
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
-   
+
    @Override
    public void init(Map<String, String> parameters)
    {
@@ -128,10 +153,10 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
          // create the node ref for the item and determine its type
          NodeRef itemToWorkflow = new NodeRef(Repository.getStoreRef(), itemToWorkflowId);
-         QName type = this.nodeService.getType(itemToWorkflow);
+         QName type = this.getNodeService().getType(itemToWorkflow);
 
-         if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-             this.dictionaryService.isSubClass(type, ApplicationModel.TYPE_FILELINK))
+         if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || 
+             this.getDictionaryService().isSubClass(type, ApplicationModel.TYPE_FILELINK))
          {
             this.packageItemsToAdd.add(itemToWorkflow.toString());
          }
@@ -161,15 +186,15 @@ public class StartWorkflowWizard extends BaseWizardBean
          logger.debug("Starting workflow with parameters: " + params);
       
       // create a workflow package for the attached items and add them
-      NodeRef workflowPackage = this.workflowService.createPackage(null);
+      NodeRef workflowPackage = this.getWorkflowService().createPackage(null);
       params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
          
       for (String addedItem : this.packageItemsToAdd)
       {
         NodeRef addedNodeRef = new NodeRef(addedItem);
-        this.unprotectedNodeService.addChild(workflowPackage, addedNodeRef, 
+        this.getUnprotectedNodeService().addChild(workflowPackage, addedNodeRef, 
               ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-              QName.createValidLocalName((String)this.nodeService.getProperty(
+              QName.createValidLocalName((String)this.getNodeService().getProperty(
                     addedNodeRef, ContentModel.PROP_NAME))));
       }
       
@@ -181,11 +206,11 @@ public class StartWorkflowWizard extends BaseWizardBean
       }
       
       // start the workflow to get access to the start task
-      WorkflowPath path = this.workflowService.startWorkflow(this.selectedWorkflow, params);
+      WorkflowPath path = this.getWorkflowService().startWorkflow(this.selectedWorkflow, params);
       if (path != null)
       {
          // extract the start task
-         List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
+         List<WorkflowTask> tasks = this.getWorkflowService().getTasksForWorkflowPath(path.id);
          if (tasks.size() == 1)
          {
             WorkflowTask startTask = tasks.get(0);
@@ -197,7 +222,7 @@ public class StartWorkflowWizard extends BaseWizardBean
             {
                // end the start task to trigger the first 'proper'
                // task in the workflow
-               this.workflowService.endTask(startTask.id, null);
+               this.getWorkflowService().endTask(startTask.id, null);
             }
          }
       
@@ -220,19 +245,19 @@ public class StartWorkflowWizard extends BaseWizardBean
          // definition and create a transient node to allow the property
          // sheet to collect the required data.
          
-         WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
+         WorkflowDefinition flowDef = this.getWorkflows().get(this.selectedWorkflow);
          
          if (logger.isDebugEnabled())
             logger.debug("Selected workflow: "+ flowDef);
 
-         WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+         WorkflowTaskDefinition taskDef = flowDef.getStartTaskDefinition();
          if (taskDef != null)
          {
             if (logger.isDebugEnabled())
                logger.debug("Start task definition: " + taskDef);
             
             // create an instance of a task from the data dictionary
-            this.startTaskNode = TransientNode.createNew(dictionaryService, taskDef.metadata,
+            this.startTaskNode = TransientNode.createNew(getDictionaryService(), taskDef.metadata,
                   "task_" + System.currentTimeMillis(), null);
          }
          
@@ -275,7 +300,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       if ("choose-workflow".equals(stepName) == false && this.selectedWorkflow != null)
       {
          String titlePattern = bundle.getString("start_named_workflow_wizard");
-         WorkflowDefinition workflowDef = this.workflows.get(this.selectedWorkflow);
+         WorkflowDefinition workflowDef = this.getWorkflows().get(this.selectedWorkflow);
          wizTitle = MessageFormat.format(titlePattern, new Object[] {workflowDef.title});
       }
       else
@@ -450,8 +475,8 @@ public class StartWorkflowWizard extends BaseWizardBean
    {
       String actionGroup = null;
       
-      WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
-      WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+      WorkflowDefinition flowDef = this.getWorkflows().get(this.selectedWorkflow);
+      WorkflowTaskDefinition taskDef = flowDef.getStartTaskDefinition();
       if (taskDef != null)
       {
          PropertyDefinition propDef = taskDef.metadata.getProperties().get(
@@ -474,8 +499,8 @@ public class StartWorkflowWizard extends BaseWizardBean
    {
       String actionGroup = null;
       
-      WorkflowDefinition flowDef = this.workflows.get(this.selectedWorkflow);
-      WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+      WorkflowDefinition flowDef = this.getWorkflows().get(this.selectedWorkflow);
+      WorkflowTaskDefinition taskDef = flowDef.getStartTaskDefinition();
       if (taskDef != null)
       {
          PropertyDefinition propDef = taskDef.metadata.getProperties().get(
@@ -523,12 +548,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       return (workflows.size() > 0);
    }
    
-   /**
-    * Returns a list of workflows that can be started.
-    * 
-    * @return List of SelectItem objects representing the workflows
-    */
-   public List<SelectItem> getStartableWorkflows()
+   private void initializeWorkflows()
    {
       // NOTE: we don't cache the list of startable workflows as they could get
       //       updated, in which case we need the latest instance id, they could
@@ -541,7 +561,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       // the list as these workflows are specific to WCM functionality and AVM stores
       Map<String, String> configuredWcmWorkflows = this.getWCMWorkflows();
       
-      List<WorkflowDefinition> workflowDefs =  this.workflowService.getDefinitions();
+      List<WorkflowDefinition> workflowDefs =  this.getWorkflowService().getDefinitions();
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          String name = workflowDef.name;
@@ -568,7 +588,19 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
          this.nextButtonDisabled = true;
       }
-      
+   }
+   
+   /**
+    * Returns a list of workflows that can be started.
+    * 
+    * @return List of SelectItem objects representing the workflows
+    */
+   public List<SelectItem> getStartableWorkflows()
+   {
+      if (availableWorkflows == null)
+      {
+         initializeWorkflows();
+      }
       return availableWorkflows;
    }
 
@@ -582,7 +614,7 @@ public class StartWorkflowWizard extends BaseWizardBean
        String url = null;
        if (selectedWorkflow != null)
        {
-           WorkflowDefinition def = workflows.get(selectedWorkflow);
+           WorkflowDefinition def = getWorkflows().get(selectedWorkflow);
            url = "/workflowdefinitionimage/" + def.id; 
        }
        return url; 
@@ -608,10 +640,10 @@ public class StartWorkflowWizard extends BaseWizardBean
          for (String newItem : this.packageItemsToAdd)
          {
             NodeRef nodeRef = new NodeRef(newItem);
-            if (this.nodeService.exists(nodeRef))
+            if (this.getNodeService().exists(nodeRef))
             {
                // create our Node representation
-               MapNode node = new MapNode(nodeRef, this.nodeService, true);
+               MapNode node = new MapNode(nodeRef, this.getNodeService(), true);
                this.browseBean.setupCommonBindingProperties(node);
                
                // add property resolvers to show path information
@@ -651,9 +683,19 @@ public class StartWorkflowWizard extends BaseWizardBean
       this.workflowService = workflowService;
    }
    
+   
+   protected WorkflowService getWorkflowService()
+   {
+      if (this.workflowService == null)
+      {
+         this.workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return this.workflowService;
+   }
+
    // ------------------------------------------------------------------------------
    // Helper methods
-   
+  
    /**
     * Resets the rich list
     */

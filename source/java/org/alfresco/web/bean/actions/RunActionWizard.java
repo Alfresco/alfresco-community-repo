@@ -48,10 +48,12 @@ import org.alfresco.web.ui.common.Utils;
 /**
  * Bean implementation for the "Run Action" wizard.
  * 
- * @author gavinc
+ * @author gavinc 
  */
 public class RunActionWizard extends BaseActionWizard
 {
+   private static final long serialVersionUID = 975435581009378899L;
+   
    protected boolean checkinActionPresent = false;
    
    // ------------------------------------------------------------------------------
@@ -91,12 +93,12 @@ public class RunActionWizard extends BaseActionWizard
          }
          
          // add the action to the rule
-         Action action = this.actionService.createAction(actionName);
+         Action action = this.getActionService().createAction(actionName);
          action.setParameterValues(repoActionParams);
          
          // execute the action on the current document node
          NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.parameters.get("id"));
-         this.actionService.executeAction(action, nodeRef);
+         this.getActionService().executeAction(action, nodeRef);
       }
 
       return outcome;
@@ -108,7 +110,7 @@ public class RunActionWizard extends BaseActionWizard
       if (this.actions == null)
       {
          NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), this.parameters.get("id"));
-         List<ActionDefinition> ruleActions = this.actionService.getActionDefinitions(nodeRef);
+         List<ActionDefinition> ruleActions = this.getActionService().getActionDefinitions(nodeRef);
          this.actions = new ArrayList<SelectItem>();
          for (ActionDefinition ruleActionDef : ruleActions)
          {

@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class HasAspectHandler extends BaseConditionHandler
 {
+   private static final long serialVersionUID = 7365950247553882237L;
+   
    protected static final String PROP_ASPECT = "aspect";
    
    public String getJSPPath()

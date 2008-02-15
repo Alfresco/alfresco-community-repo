@@ -40,6 +40,8 @@ import org.alfresco.web.bean.dialog.IDialogBean;
  */
 public class ChangeExpirationDateDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 7052061252811577796L;
+   
    private String path;
    private Date expirationDate;
    private Map<String, Date> expirationDates;

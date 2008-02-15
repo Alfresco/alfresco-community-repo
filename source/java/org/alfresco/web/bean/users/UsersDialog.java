@@ -66,6 +66,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UsersDialog extends BaseDialogBean implements IContextListener, ChangeViewSupport
 {
+   private static final long serialVersionUID = 7613786955971599967L;
+
    private static Log    logger = LogFactory.getLog(UsersDialog.class);
    
    public static String BEAN_NAME = "UsersDialog";

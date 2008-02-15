@@ -92,7 +92,7 @@ public class SaveSearchDialog extends AdvancedSearchDialog
                         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
                         props.put(ContentModel.PROP_NAME, properties.getSearchName());
                         props.put(ContentModel.PROP_DESCRIPTION, properties.getSearchDescription());
-                        ChildAssociationRef childRef = nodeService.createNode(searchesRefFinal, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.ALFRESCO_URI, QName
+                        ChildAssociationRef childRef = getNodeService().createNode(searchesRefFinal, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.ALFRESCO_URI, QName
                                 .createValidLocalName(properties.getSearchName())), ContentModel.TYPE_CONTENT, props);
 
                         ContentService contentService = Repository.getServiceRegistry(context).getContentService();

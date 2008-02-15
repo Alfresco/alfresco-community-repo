@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.content.AddContentDialog;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Add/upload content dialog for AVM browse screens.
@@ -47,10 +48,12 @@ import org.alfresco.web.bean.content.AddContentDialog;
  */
 public class AddAvmContentDialog extends AddContentDialog
 {
+   private static final long serialVersionUID = 4019639621892035132L;
+
    private static final String MSG_OK = "ok";
-   
+
    /** The AVMService bean reference */
-   protected AVMService avmService;
+   transient private AVMService avmService;
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
@@ -65,6 +68,15 @@ public class AddAvmContentDialog extends AddContentDialog
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingAwareService();
+      }
+      return avmService;
    }
    
    /**
@@ -87,7 +99,7 @@ public class AddAvmContentDialog extends AddContentDialog
       String parent = this.avmBrowseBean.getCurrentPath();
       
       // create the file
-      this.avmService.createFile(parent, this.fileName);
+      this.getAvmService().createFile(parent, this.fileName);
       this.path = parent + '/' + this.fileName;
       NodeRef fileNodeRef = AVMNodeConverter.ToNodeRef(-1, this.path);
       
@@ -98,10 +110,10 @@ public class AddAvmContentDialog extends AddContentDialog
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.title);
       titledProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.getNodeService().addAspect(fileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
       
       // get a writer for the content and put the file
-      ContentWriter writer = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = getContentService().getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
       writer.setMimetype(this.mimeType);
       writer.setEncoding(this.encoding);
       if (fileContent != null)

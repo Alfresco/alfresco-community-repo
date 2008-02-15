@@ -41,6 +41,8 @@ public class DeletePostDialog extends DeleteContentDialog
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
+   private static final long serialVersionUID = 6804626884508461423L;
+
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {

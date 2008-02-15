@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.util.VirtServerUtils;
 
 /**
@@ -53,10 +54,12 @@ import org.alfresco.util.VirtServerUtils;
  */
 public class RevertSelectedDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -8432152646736206685L;
+
    private static final String MSG_REVERTSELECTED_SUCCESS = "revertselected_success";
    
    protected AVMBrowseBean avmBrowseBean;
-   protected ActionService actionService;
+   transient private ActionService actionService;
 
    // The virtualization server might need to be notified 
    // because one or more of the files reverted could alter 
@@ -82,7 +85,15 @@ public class RevertSelectedDialog extends BaseDialogBean
       this.actionService = actionService;
    }
    
-   
+   protected ActionService getActionService()
+   {
+      if (this.actionService == null)
+      {
+         this.actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
+   }
+
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
     */
@@ -114,8 +125,8 @@ public class RevertSelectedDialog extends BaseDialogBean
       
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-      Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-      this.actionService.executeAction(action, null);    // dummy action ref, list passed as action arg
+      Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
+      this.getActionService().executeAction(action, null);    // dummy action ref, list passed as action arg
       
       String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_REVERTSELECTED_SUCCESS), this.avmBrowseBean.getUsername());

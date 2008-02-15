@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.content.AddContentDialog;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Dialog bean to upload a new document and to add it to an existing MLContainer.
@@ -42,10 +43,11 @@ import org.alfresco.web.bean.content.AddContentDialog;
  * @author yanipig
  */
 public class AddTranslationDialog extends AddContentDialog
-{
+{   
+   private static final long serialVersionUID = 5588241907778464543L;
    private static final String MSG_OK = "ok";
    
-   private MultilingualContentService multilingualContentService;
+   transient private MultilingualContentService multilingualContentService;
    private UserPreferencesBean userPreferencesBean;
 
    // the multilingual container where to add this translation
@@ -82,7 +84,7 @@ public class AddTranslationDialog extends AddContentDialog
       outcome = super.finishImpl(context, outcome);
 
       // add a new translation
-      multilingualContentService.addTranslation(this.createdNode, this.mlTranslation, I18NUtil.parseLocale(this.language));
+      getMultilingualContentService().addTranslation(this.createdNode, this.mlTranslation, I18NUtil.parseLocale(this.language));
 
       return "dialog:close:browse";
    }
@@ -142,6 +144,10 @@ public class AddTranslationDialog extends AddContentDialog
 
    public MultilingualContentService getMultilingualContentService()
    {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
       return multilingualContentService;
    }
 
@@ -163,7 +169,6 @@ public class AddTranslationDialog extends AddContentDialog
    @Override
    public String getFinishButtonLabel()
    {
-    
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
    }
 }

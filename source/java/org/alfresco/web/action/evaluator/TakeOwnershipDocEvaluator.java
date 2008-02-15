@@ -33,6 +33,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class TakeOwnershipDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 3966463533922521230L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

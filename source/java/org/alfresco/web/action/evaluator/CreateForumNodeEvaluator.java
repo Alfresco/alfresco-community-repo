@@ -34,6 +34,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class CreateForumNodeEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -5132048668011887505L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,9 +43,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteFolderDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 4188977806570877462L;
+
    private static final Log logger = LogFactory.getLog(DeleteFolderDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
    
    
@@ -64,6 +67,15 @@ public class DeleteFolderDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -80,7 +92,7 @@ public class DeleteFolderDialog extends BaseDialogBean
             logger.debug("Trying to delete AVM node: " + node.getPath());
          
          // delete the node
-         this.avmService.removeNode(
+         this.getAvmService().removeNode(
                node.getPath().substring(0, node.getPath().lastIndexOf('/')),
                node.getPath().substring(node.getPath().lastIndexOf('/') + 1));         
       }

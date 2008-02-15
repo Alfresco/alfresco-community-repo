@@ -34,6 +34,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class ApproveNonDraftDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -277600395385704689L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

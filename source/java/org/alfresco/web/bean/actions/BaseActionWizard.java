@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.actions;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -79,10 +81,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected static final String PROP_ACTION_SUMMARY = "actionSummary";
    protected static final String NO_PARAMS_MARKER = "noParamsMarker"; 
 
-   protected ActionService actionService;
-   protected MimetypeService mimetypeService;
-   protected PersonService personService;
-   protected AuthorityService authorityService;
+   transient private ActionService actionService;
+   transient private MimetypeService mimetypeService;
+   transient private PersonService personService;
+   transient private AuthorityService authorityService;
    
    protected List<SelectItem> actions;
    protected List<SelectItem> transformers;
@@ -96,8 +98,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected List<SelectItem> objectTypes;
    protected List<RecipientWrapper> emailRecipients;
    
-   protected DataModel allActionsDataModel;
-   protected DataModel emailRecipientsDataModel;
+   transient protected DataModel allActionsDataModel;
+   transient protected DataModel emailRecipientsDataModel;
    
    protected boolean editingAction;
    protected String action;
@@ -216,7 +218,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
       if (this.actions == null)
       {
-         List<ActionDefinition> ruleActions = this.actionService.getActionDefinitions();
+         List<ActionDefinition> ruleActions = this.getActionService().getActionDefinitions();
          this.actions = new ArrayList<SelectItem>();
          for (ActionDefinition ruleActionDef : ruleActions)
          {
@@ -389,15 +391,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
                for (ConfigElement child : typesCfg.getChildren())
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
-                  TypeDefinition typeDef = this.dictionaryService.getType(idQName);
+                  TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
                   
                   // make sure the type is a subtype of content or folder but not 
                   // the content or folder type itself
                   if (typeDef != null &&
                       typeDef.getName().equals(ContentModel.TYPE_CONTENT) == false &&
                       typeDef.getName().equals(ContentModel.TYPE_FOLDER) == false &&
-                      (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT) ||
-                      this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER)))
+                      (this.getDictionaryService().isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT) ||
+                      this.getDictionaryService().isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER)))
                   {
                      // try and get the display label from config
                      String label = Utils.getDisplayLabel(context, child);
@@ -450,8 +452,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
       {
          List<Node> userNodes = Repository.getUsers(
                FacesContext.getCurrentInstance(),
-               this.nodeService,
-               this.searchService);
+               this.getNodeService(),
+               this.getSearchService());
          this.users = new ArrayList<SelectItem>();
          for (Node user : userNodes)
          {
@@ -487,7 +489,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             if (transformersCfg != null)
             {
                FacesContext context = FacesContext.getCurrentInstance();
-               Map<String, String> mimeTypes = this.mimetypeService.getDisplaysByMimetype();
+               Map<String, String> mimeTypes = this.getMimetypeService().getDisplaysByMimetype();
                this.transformers = new ArrayList<SelectItem>();
                for (ConfigElement child : transformersCfg.getChildren())
                {
@@ -540,7 +542,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             if (transformersCfg != null)
             {
                FacesContext context = FacesContext.getCurrentInstance();
-               Map<String, String> mimeTypes = this.mimetypeService.getDisplaysByMimetype();
+               Map<String, String> mimeTypes = this.getMimetypeService().getDisplaysByMimetype();
                this.imageTransformers = new ArrayList<SelectItem>();
                for (ConfigElement child : transformersCfg.getChildren())
                {
@@ -618,7 +620,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       else
       {
          // just add the action to the list and use the title as the summary
-         ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
+         ActionDefinition actionDef = this.getActionService().getActionDefinition(this.action);
          actionProps.put(PROP_ACTION_SUMMARY, actionDef.getTitle());
          // add the no params marker so we can disable the edit action
          actionProps.put(NO_PARAMS_MARKER, "no-params");
@@ -822,6 +824,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
      this.actionService = actionService;
    }
    
+   protected ActionService getActionService()
+   {
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
+   }
+
    /**
     * Sets the mimetype service
     * 
@@ -832,12 +843,30 @@ public abstract class BaseActionWizard extends BaseWizardBean
       this.mimetypeService = mimetypeService;
    }
    
+   protected MimetypeService getMimetypeService()
+   {
+      if (mimetypeService == null)
+      {
+         mimetypeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMimetypeService();
+      }
+      return mimetypeService;
+   }
+   
    /**
     * @param personService      The personService to set.
     */
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
    
    /**
@@ -848,6 +877,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
       this.authorityService = authorityService;
    }
    
+   protected AuthorityService getAuthorityService()
+   {
+      if (authorityService == null)
+      {
+         authorityService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authorityService;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Helper methods
@@ -856,10 +894,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
        String label = authority;
        
-       if (this.personService.personExists(authority))
+       if (this.getPersonService().personExists(authority))
        {
           // create the node ref, then our node representation
-          NodeRef ref = personService.getPerson(authority);
+          NodeRef ref = getPersonService().getPerson(authority);
           Node node = new Node(ref);
           
           // setup convience function for current user full name
@@ -986,7 +1024,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
             // if there wasn't a client based label try and get it from the dictionary
             if (label == null)
             {
-               AspectDefinition aspectDef = this.dictionaryService.getAspect(idQName);
+               AspectDefinition aspectDef = this.getDictionaryService().getAspect(idQName);
                if (aspectDef != null)
                {
                   label = aspectDef.getTitle();
@@ -1014,8 +1052,10 @@ public abstract class BaseActionWizard extends BaseWizardBean
    /**
     * Simple wrapper class for email recipient fields
     */
-   public static class RecipientWrapper
+   public static class RecipientWrapper implements Serializable
    {
+      private static final long serialVersionUID = -3331836277440957711L;
+      
       public RecipientWrapper(String name, String authority)
       {
          this.name = name;
@@ -1051,5 +1091,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
       
       private String name;
       private String authority;
+   }
+   
+   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+   {
+      in.defaultReadObject();
+
+      this.allActionsDataModel = new ListDataModel();
+      this.allActionsDataModel.setWrappedData(this.allActionsProperties);
+      this.emailRecipientsDataModel = new ListDataModel();
+      this.emailRecipientsDataModel.setWrappedData(this.emailRecipients);
    }
 }

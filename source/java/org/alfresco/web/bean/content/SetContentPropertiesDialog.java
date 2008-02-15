@@ -33,6 +33,8 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
  */
 public class SetContentPropertiesDialog extends EditContentPropertiesDialog
 {
+   private static final long serialVersionUID = -7705362669371767349L;
+
    @Override
    protected String getDefaultCancelOutcome()
    {

@@ -25,6 +25,7 @@ package org.alfresco.web.forms.xforms;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,7 +54,7 @@ import org.w3c.dom.ls.*;
  *
  * @author $Author: unl $
  */
-public class Schema2XForms
+public class Schema2XForms implements Serializable
 {
 
    /////////////////////////////////////////////////////////////////////////////

@@ -157,7 +157,7 @@ public class CreateCategoryDialog extends BaseDialogBean
                     // apply the titled aspect - for description
                     Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
                     titledProps.put(ContentModel.PROP_DESCRIPTION, getDescription());
-                    nodeService.addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
+                    getNodeService().addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
                     return null;
                 }
             };

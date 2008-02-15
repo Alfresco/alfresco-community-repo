@@ -47,6 +47,8 @@ import org.alfresco.web.bean.wcm.AVMBrowseBean;
  */
 public class AVMClipboardItem extends AbstractClipboardItem
 {
+   private static final long serialVersionUID = 2550867083821268131L;
+   
    private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";
    private static final String WORKSPACE_PASTE_VIEW_ID = "/jsp/browse/browse.jsp";
    

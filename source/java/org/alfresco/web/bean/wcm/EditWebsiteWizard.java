@@ -46,6 +46,8 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   private static final long serialVersionUID = -4856350244207566218L;
+
    /**
     * Initialises the wizard
     */
@@ -81,10 +83,10 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
       
       // apply the name, title and description props
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
-      this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
+      getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
+      getNodeService().setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
+      getNodeService().setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
+      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
       // clear the existing settings for forms, template and workflows - then the existing methods
       // can be used to apply the modified and previous settings from scratch
@@ -95,11 +97,11 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       {
          String stagingStore = AVMUtil.buildStagingStoreName(this.dnsName);
          String webappPath = AVMUtil.buildStoreWebappPath(stagingStore, this.webapp);
-         if (this.avmService.lookup(-1, webappPath) == null)
+         if (getAvmService().lookup(-1, webappPath) == null)
          {
-            this.avmService.createDirectory(AVMUtil.buildSandboxRootPath(stagingStore), this.webapp);
+            getAvmService().createDirectory(AVMUtil.buildSandboxRootPath(stagingStore), this.webapp);
          }
-         this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, this.webapp);
+         getNodeService().setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, this.webapp);
       }
       
       // TODO: allow change of dns name - via store rename functionality
@@ -117,19 +119,19 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
     */
    private void clearWebProjectModel(NodeRef nodeRef)
    {
-      List<ChildAssociationRef> webFormRefs = nodeService.getChildAssocs(
+      List<ChildAssociationRef> webFormRefs = getNodeService().getChildAssocs(
                nodeRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : webFormRefs)
       {
          // cascade delete will take case of child-child relationships
-         this.nodeService.removeChild(nodeRef, ref.getChildRef());
+         getNodeService().removeChild(nodeRef, ref.getChildRef());
       }
       
-      List<ChildAssociationRef> wfRefs = nodeService.getChildAssocs(
+      List<ChildAssociationRef> wfRefs = getNodeService().getChildAssocs(
                nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : wfRefs)
       {
-         this.nodeService.removeChild(nodeRef, ref.getChildRef());
+         getNodeService().removeChild(nodeRef, ref.getChildRef());
       }
    }
 }

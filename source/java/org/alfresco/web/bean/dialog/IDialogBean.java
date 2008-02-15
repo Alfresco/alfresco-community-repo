@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.dialog;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
  * 
  * @author gavinc
  */
-public interface IDialogBean
+public interface IDialogBean extends Serializable
 {
    /**
     * Initialises the dialog bean

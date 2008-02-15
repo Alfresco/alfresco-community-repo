@@ -66,7 +66,7 @@ public class DocumentLinkDetailsDialog extends BaseDetailsBean implements Naviga
       if (ApplicationModel.TYPE_FILELINK.equals(document.getType()))
       {
          NodeRef destRef = (NodeRef)document.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef))
+         if (getNodeService().exists(destRef))
          {
             document = new Node(destRef);
          }
@@ -198,7 +198,8 @@ public class DocumentLinkDetailsDialog extends BaseDetailsBean implements Naviga
 
    public String getContainerSubTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + getDocument().getNodePath().toDisplayPath(nodeService, permissionService);
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + 
+             getDocument().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
    }
 
    public String getContainerTitle()

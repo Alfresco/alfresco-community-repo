@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.wizard;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -69,6 +71,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NewUserWizard extends AbstractWizardBean
 {
+   private static final long serialVersionUID = -4608152661068880638L;
+
    private static Log    logger = LogFactory.getLog(NewUserWizard.class);
 
    private static final String WIZARD_TITLE_NEW_ID = "new_user_title";
@@ -94,22 +98,22 @@ public class NewUserWizard extends AbstractWizardBean
    private NodeRef homeSpaceLocation = null;
 
    /** AuthenticationService bean reference */
-   private AuthenticationService authenticationService;
+   transient private AuthenticationService authenticationService;
 
    /** NamespaceService bean reference */
-   private NamespaceService namespaceService;
+   transient private NamespaceService namespaceService;
 
    /** PermissionService bean reference */
-   private PermissionService permissionService;
+   transient private PermissionService permissionService;
 
    /** PersonService bean reference */
-   private PersonService personService;
+   transient private PersonService personService;
    
    /** TenantService bean reference */
    private TenantService tenantService;
 
    /** OwnableService bean reference */
-   private OwnableService ownableService;
+   transient private OwnableService ownableService;
 
    /** action context */
    private Node person = null;
@@ -128,6 +132,15 @@ public class NewUserWizard extends AbstractWizardBean
    {
       this.authenticationService = authenticationService;
    }
+   
+   private AuthenticationService getAuthenticationService()
+   {
+      if (authenticationService == null)
+      {
+         authenticationService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
+      }
+      return authenticationService;
+   }
 
    /**
     * @param namespaceService       The namespaceService to set.
@@ -135,6 +148,15 @@ public class NewUserWizard extends AbstractWizardBean
    public void setNamespaceService(NamespaceService namespaceService)
    {
       this.namespaceService = namespaceService;
+   }
+   
+   private NamespaceService getNamespaceService()
+   {
+      if (namespaceService == null)
+      {
+         namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      }
+      return namespaceService;
    }
 
    /**
@@ -144,6 +166,15 @@ public class NewUserWizard extends AbstractWizardBean
    {
       this.permissionService = permissionService;
    }
+   
+   private PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
 
    /**
     * @param personService          The person service.
@@ -151,6 +182,15 @@ public class NewUserWizard extends AbstractWizardBean
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   private PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
 
    /**
@@ -161,6 +201,15 @@ public class NewUserWizard extends AbstractWizardBean
       this.ownableService = ownableService;
    }
    
+   private OwnableService getOwnableService()
+   {
+      if (ownableService == null)
+      {
+         ownableService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getOwnableService();
+      }
+      return ownableService;
+   }
+
    /**
     * @param tenantService         The tenantService to set.
     */
@@ -208,14 +257,14 @@ public class NewUserWizard extends AbstractWizardBean
       this.homeSpaceLocation = null; // default to Company root space
       this.homeSpaceName = ""; // default to none set below root
       NodeRef homeFolderRef = (NodeRef) props.get("homeFolder");
-      if (this.nodeService.exists(homeFolderRef) == true)
+      if (this.getNodeService().exists(homeFolderRef) == true)
       {
-         ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(homeFolderRef);
+         ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(homeFolderRef);
          NodeRef parentRef = childAssocRef.getParentRef();
-         if (this.nodeService.getRootNode(Repository.getStoreRef()).equals(parentRef) == false)
+         if (this.getNodeService().getRootNode(Repository.getStoreRef()).equals(parentRef) == false)
          {
             this.homeSpaceLocation = parentRef;
-            this.homeSpaceName = Repository.getNameForNode(nodeService, homeFolderRef);
+            this.homeSpaceName = Repository.getNameForNode(getNodeService(), homeFolderRef);
          }
          else
          {
@@ -400,20 +449,20 @@ public class NewUserWizard extends AbstractWizardBean
             // update the existing node in the repository
             NodeRef nodeRef = getPerson().getNodeRef();
             
-            Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
+            Map<QName, Serializable> props = this.getNodeService().getProperties(nodeRef);
             props.put(ContentModel.PROP_USERNAME, this.userName);
             props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
             props.put(ContentModel.PROP_LASTNAME, this.lastName);
             
             // calculate whether we need to move the old home space or create new
             NodeRef newHomeFolderRef;
-            NodeRef oldHomeFolderRef = (NodeRef)this.nodeService.getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
+            NodeRef oldHomeFolderRef = (NodeRef)this.getNodeService().getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
             boolean moveHomeSpace = false;
             boolean renameHomeSpace = false;
-            if (oldHomeFolderRef != null && this.nodeService.exists(oldHomeFolderRef) == true)
+            if (oldHomeFolderRef != null && this.getNodeService().exists(oldHomeFolderRef) == true)
             {
                // the original home folder ref exists so may need moving if it has been changed
-               ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(oldHomeFolderRef);
+               ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(oldHomeFolderRef);
                NodeRef currentHomeSpaceLocation = childAssocRef.getParentRef();
                if (this.homeSpaceName.length() != 0)
                {
@@ -425,7 +474,7 @@ public class NewUserWizard extends AbstractWizardBean
                      moveHomeSpace = true;
                   }
                   
-                  String oldHomeSpaceName = Repository.getNameForNode(nodeService, oldHomeFolderRef);
+                  String oldHomeSpaceName = Repository.getNameForNode(getNodeService(), oldHomeFolderRef);
                   if (oldHomeSpaceName.equals(this.homeSpaceName) == false &&
                       oldHomeFolderRef.equals(this.homeSpaceLocation) == false &&
                       oldHomeFolderRef.equals(this.defaultHomeSpaceRef) == false)
@@ -464,25 +513,25 @@ public class NewUserWizard extends AbstractWizardBean
                // either move, rename or both required
                if (moveHomeSpace == true)
                {
-                  this.nodeService.moveNode(
+                  this.getNodeService().moveNode(
                         oldHomeFolderRef,
                         this.homeSpaceLocation,
                         ContentModel.ASSOC_CONTAINS,
-                        this.nodeService.getPrimaryParent(oldHomeFolderRef).getQName());
+                        this.getNodeService().getPrimaryParent(oldHomeFolderRef).getQName());
                }
                newHomeFolderRef = oldHomeFolderRef;   // ref ID doesn't change
                
                if (renameHomeSpace == true)
                {
                   // change HomeSpace node name
-                  this.nodeService.setProperty(newHomeFolderRef, ContentModel.PROP_NAME, this.homeSpaceName);
+                  this.getNodeService().setProperty(newHomeFolderRef, ContentModel.PROP_NAME, this.homeSpaceName);
                }
             }
             
             props.put(ContentModel.PROP_HOMEFOLDER, newHomeFolderRef);
             props.put(ContentModel.PROP_EMAIL, this.email);
             props.put(ContentModel.PROP_ORGID, this.companyId);
-            this.nodeService.setProperties(nodeRef, props);
+            this.getNodeService().setProperties(nodeRef, props);
             
             // TODO: RESET HomeSpace Ref found in top-level navigation bar!
             // NOTE: not need cos only admin can do this?
@@ -543,15 +592,15 @@ public class NewUserWizard extends AbstractWizardBean
                props.put(ContentModel.PROP_ORGID, this.companyId);
                
                // create the node to represent the Person
-               NodeRef newPerson = this.personService.createPerson(props);
+               NodeRef newPerson = this.getPersonService().createPerson(props);
                
                // ensure the user can access their own Person object
-               this.permissionService.setPermission(newPerson, this.userName, permissionService.getAllPermission(), true);
+               this.getPermissionService().setPermission(newPerson, this.userName, getPermissionService().getAllPermission(), true);
                
                if (logger.isDebugEnabled()) logger.debug("Created Person node for username: " + this.userName);
                
                // create the ACEGI Authentication instance for the new user
-               this.authenticationService.createAuthentication(this.userName, this.password.toCharArray());
+               this.getAuthenticationService().createAuthentication(this.userName, this.password.toCharArray());
                
                if (logger.isDebugEnabled()) logger.debug("Created User Authentication instance for username: " + this.userName);
             }
@@ -588,7 +637,7 @@ public class NewUserWizard extends AbstractWizardBean
       String homeSpaceLabel = this.homeSpaceName;
       if (this.homeSpaceName.length() == 0 && this.homeSpaceLocation != null)
       {
-         homeSpaceLabel = Repository.getNameForNode(this.nodeService, this.homeSpaceLocation);
+         homeSpaceLabel = Repository.getNameForNode(this.getNodeService(), this.homeSpaceLocation);
       }
 
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
@@ -888,12 +937,12 @@ public class NewUserWizard extends AbstractWizardBean
 
    private NodeRef getDefaultHomeSpace()
    {
-      if ((this.defaultHomeSpaceRef == null) || !nodeService.exists(this.defaultHomeSpaceRef))
+      if ((this.defaultHomeSpaceRef == null) || !getNodeService().exists(this.defaultHomeSpaceRef))
       {
          String defaultHomeSpacePath = Application.getClientConfig(FacesContext.getCurrentInstance()).getDefaultHomeSpacePath();
          
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         List<NodeRef> nodes = this.searchService.selectNodes(rootNodeRef, defaultHomeSpacePath, null, this.namespaceService,
+         NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+         List<NodeRef> nodes = this.getSearchService().selectNodes(rootNodeRef, defaultHomeSpacePath, null, this.getNamespaceService(),
                false);
          
          if (nodes.size() == 0)
@@ -932,10 +981,10 @@ public class NewUserWizard extends AbstractWizardBean
          // check for existance of home space with same name - return immediately
          // if it exists or throw an exception an give user chance to enter another name
          // TODO: this might be better replaced with an XPath query!
-         List<ChildAssociationRef> children = this.nodeService.getChildAssocs(parentRef);
+         List<ChildAssociationRef> children = this.getNodeService().getChildAssocs(parentRef);
          for (ChildAssociationRef ref : children)
          {
-            String childNodeName = (String) this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
+            String childNodeName = (String) this.getNodeService().getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
             if (spaceName.equals(childNodeName))
             {
                if (error)
@@ -952,13 +1001,13 @@ public class NewUserWizard extends AbstractWizardBean
          // space does not exist already, create a new Space under it with
          // the specified name
          String qname = QName.createValidLocalName(spaceName);
-         ChildAssociationRef assocRef = this.nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS,
+         ChildAssociationRef assocRef = this.getNodeService().createNode(parentRef, ContentModel.ASSOC_CONTAINS,
                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, qname), ContentModel.TYPE_FOLDER);
          
          NodeRef nodeRef = assocRef.getChildRef();
          
          // set the name property on the node
-         this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, spaceName);
+         this.getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, spaceName);
          
          if (logger.isDebugEnabled()) logger.debug("Created Home Space for with name: " + spaceName);
          
@@ -966,7 +1015,7 @@ public class NewUserWizard extends AbstractWizardBean
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
          uiFacetsProps.put(ApplicationModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
          uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
-         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          setupHomeSpacePermissions(nodeRef);
          
@@ -986,22 +1035,22 @@ public class NewUserWizard extends AbstractWizardBean
    {
       // Admin Authority has full permissions by default (automatic - set in the permission config)
       // give full permissions to the new user
-      this.permissionService.setPermission(homeSpaceRef, this.userName, permissionService.getAllPermission(), true);
+      this.getPermissionService().setPermission(homeSpaceRef, this.userName, getPermissionService().getAllPermission(), true);
       
       // by default other users will only have GUEST access to the space contents
       // or whatever is configured as the default in the web-client-xml config
       String permission = getDefaultPermission();
       if (permission != null && permission.length() != 0)
       {
-         this.permissionService.setPermission(homeSpaceRef, permissionService.getAllAuthorities(), permission, true);
+         this.getPermissionService().setPermission(homeSpaceRef, getPermissionService().getAllAuthorities(), permission, true);
       }
       
       // the new user is the OWNER of their own space and always has full permissions
-      this.ownableService.setOwner(homeSpaceRef, this.userName);
-      this.permissionService.setPermission(homeSpaceRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
+      this.getOwnableService().setOwner(homeSpaceRef, this.userName);
+      this.getPermissionService().setPermission(homeSpaceRef, getPermissionService().getOwnerAuthority(), getPermissionService().getAllPermission(), true);
       
       // now detach (if we did this first we could not set any permissions!)
-      this.permissionService.setInheritParentPermissions(homeSpaceRef, false);
+      this.getPermissionService().setInheritParentPermissions(homeSpaceRef, false);
    }
    
    /**
@@ -1017,4 +1066,5 @@ public class NewUserWizard extends AbstractWizardBean
    {
       UIContextService.getInstance(FacesContext.getCurrentInstance()).notifyBeans();
    }
+   
 }

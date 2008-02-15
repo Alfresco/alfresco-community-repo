@@ -33,6 +33,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class UnlockDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -7056759932698306087L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

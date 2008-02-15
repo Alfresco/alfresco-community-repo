@@ -45,6 +45,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ClientConfigElement extends ConfigElementAdapter
 {
+   private static final long serialVersionUID = 825650925215057110L;
+
    private static Log logger = LogFactory.getLog(ClientConfigElement.class);
    
    public static final String CONFIG_ELEMENT_ID = "client";

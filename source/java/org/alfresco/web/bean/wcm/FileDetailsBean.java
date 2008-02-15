@@ -57,8 +57,10 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
  */
 public class FileDetailsBean extends AVMDetailsBean
 {
+   private static final long serialVersionUID = -3263315503769148385L;
+   
    /** Action service bean reference */
-   private ActionService actionService;
+   transient private ActionService actionService;
    
    
    // ------------------------------------------------------------------------------
@@ -85,6 +87,15 @@ public class FileDetailsBean extends AVMDetailsBean
    public void setActionService(ActionService actionService)
    {
       this.actionService = actionService;
+   }
+   
+   private ActionService getActionService()
+   {
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
    }
    
    /**
@@ -157,7 +168,7 @@ public class FileDetailsBean extends AVMDetailsBean
    public List<Map<String, Object>> getVersionHistory()
    {
       AVMNode avmNode = getAvmNode();
-      List<AVMNodeDescriptor> history = this.avmService.getHistory(avmNode.getDescriptor(), -1);
+      List<AVMNodeDescriptor> history = this.getAvmService().getHistory(avmNode.getDescriptor(), -1);
       List<Map<String, Object>> wrappers = new ArrayList<Map<String, Object>>(history.size());
       for (AVMNodeDescriptor record : history)
       {
@@ -166,7 +177,7 @@ public class FileDetailsBean extends AVMDetailsBean
          wrapper.put("version", record.getVersionID());
          wrapper.put("strVersion", Integer.toString(record.getVersionID()));
          wrapper.put("modifiedDate", new Date(record.getModDate()));
-         Pair<Integer, String> path = this.avmService.getAPath(record);
+         Pair<Integer, String> path = this.getAvmService().getAPath(record);
          if (path != null)
          {
             wrapper.put("url", DownloadContentServlet.generateBrowserURL(
@@ -196,7 +207,7 @@ public class FileDetailsBean extends AVMDetailsBean
          tx.begin();
          
          Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-         List<AVMNodeDescriptor> history = this.avmService.getHistory(getAvmNode().getDescriptor(), -1);
+         List<AVMNodeDescriptor> history = this.getAvmService().getHistory(getAvmNode().getDescriptor(), -1);
          // the history list should contain the version ID we are looking for
          for (AVMNodeDescriptor record : history)
          {
@@ -204,16 +215,16 @@ public class FileDetailsBean extends AVMDetailsBean
             {
                // the action expects the HEAD revision as the noderef and
                // the to-revert param as the previous version to revert to
-               Action action = this.actionService.createAction(AVMRevertToVersionAction.NAME, args);
+               Action action = this.getActionService().createAction(AVMRevertToVersionAction.NAME, args);
                args.put(AVMRevertToVersionAction.TOREVERT, record);
-               this.actionService.executeAction(action, getAvmNode().getNodeRef());
+               this.getActionService().executeAction(action, getAvmNode().getNodeRef());
                
                // clear the version history list after a revert ready for refresh
                UIRichList versionList = (UIRichList)link.findComponent("version-history-list");
                versionList.setValue(null);
                
                // reset the action node reference as the version ID has changed
-               avmBrowseBean.setAvmActionNode(new AVMNode(avmService.lookup(-1, getAvmNode().getPath())));
+               avmBrowseBean.setAvmActionNode(new AVMNode(getAvmService().lookup(-1, getAvmNode().getPath())));
                break;
             }
          }

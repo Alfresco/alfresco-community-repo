@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +43,6 @@ import javax.faces.model.ListDataModel;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -81,22 +81,22 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    private static final String OUTCOME_FINISH = "finish";
 
    /** NodeService bean reference */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
 
    /** SearchService bean reference */
-   protected SearchService searchService;
+   transient private SearchService searchService;
    
    /** PermissionService bean reference */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    /** PersonService bean reference */
-   protected PersonService personService;
+   transient private PersonService personService;
    
    /** BrowseBean bean refernce */
    protected BrowseBean browseBean;
    
    /** OwnableService bean reference */
-   protected OwnableService ownableService;
+   transient private OwnableService ownableService;
    
    /** Component reference for Users RichList control */
    private UIRichList usersRichList;
@@ -108,7 +108,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    private String personName = null;
    
    /** datamodel for table of roles for current person */
-   private DataModel personRolesDataModel = null;
+   private transient DataModel personRolesDataModel = null;
    
    /** roles for current person */
    private List<PermissionWrapper> personRoles = null;
@@ -144,6 +144,15 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    {
       this.nodeService = nodeService;
    }
+   
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
 
    /**
     * @param searchService      The search service
@@ -151,6 +160,15 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   protected SearchService getSearchService()
+   {
+      if (searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
    }
    
    /**
@@ -161,6 +179,15 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       this.permissionService = permissionService;
    }
    
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
+   
    /**
     * @param ownableService         The ownableService to set.
     */
@@ -169,12 +196,30 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       this.ownableService = ownableService;
    }
    
+   protected OwnableService getOwnableService()
+   {
+      if (ownableService == null)
+      {
+         ownableService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getOwnableService();
+      }
+      return ownableService;
+   }
+   
    /**
     * @param personService             The personService to set.
     */
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
    
    /**
@@ -263,7 +308,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
     */
    public boolean isInheritPermissions()
    {
-      return this.permissionService.getInheritParentPermissions(getNode().getNodeRef());
+      return this.getPermissionService().getInheritParentPermissions(getNode().getNodeRef());
    }
 
    /**
@@ -279,7 +324,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
     */
    public String getOwner()
    {
-      return this.ownableService.getOwner(getNode().getNodeRef());
+      return this.getOwnableService().getOwner(getNode().getNodeRef());
    }
    
    /**
@@ -301,7 +346,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          // for any authentication instance (user/group).
          // Then combine them into a single list for each authentication found. 
          Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(8, 1.0f);
-         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getNode().getNodeRef());
+         Set<AccessPermission> permissions = getPermissionService().getAllSetPermissions(getNode().getNodeRef());
          for (AccessPermission permission : permissions)
          {
             // we are only interested in Allow and not groups/owner etc.
@@ -332,9 +377,9 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          {
             // check if we are dealing with a person (User Authority)
             if (AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST ||
-                personService.personExists(authority))
+                  getPersonService().personExists(authority))
             {
-               NodeRef nodeRef = personService.getPerson(authority);
+               NodeRef nodeRef = getPersonService().getPerson(authority);
                if (nodeRef != null)
                {
                   // create our Node representation
@@ -482,10 +527,10 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       {
          try
          {
-            if (this.personService.personExists(authority))
+            if (this.getPersonService().personExists(authority))
             {
                // create the node ref, then our node representation
-               NodeRef ref = personService.getPerson(authority);
+               NodeRef ref = getPersonService().getPerson(authority);
                Node node = new Node(ref);
                
                // setup convience function for current user full name
@@ -499,7 +544,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             
             // setup roles for this Authority
             List<PermissionWrapper> userPermissions = new ArrayList<PermissionWrapper>(4);
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(getNode().getNodeRef());
+            Set<AccessPermission> permissions = getPermissionService().getAllSetPermissions(getNode().getNodeRef());
             if (permissions != null)
             {
                for (AccessPermission permission : permissions)
@@ -546,7 +591,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       {
          // change the value to the new selected value
          boolean inheritPermissions = (Boolean)event.getNewValue();
-         this.permissionService.setInheritParentPermissions(getNode().getNodeRef(), inheritPermissions);
+         this.getPermissionService().setInheritParentPermissions(getNode().getNodeRef(), inheritPermissions);
          
          // inform the user that the change occured
          FacesContext context = FacesContext.getCurrentInstance();
@@ -563,7 +608,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          // see if the user still has permissions to the node, if not, we need
          // to go back to the root of the current "area" by simulating the user
          // pressing the top level navigation button i.e. My Home
-         if (this.permissionService.hasPermission(getNode().getNodeRef(), 
+         if (this.getPermissionService().hasPermission(getNode().getNodeRef(), 
              PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
          {
             FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
@@ -625,7 +670,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
     */
    public void removeRole(ActionEvent event)
    {
-      PermissionWrapper wrapper = (PermissionWrapper)this.personRolesDataModel.getRowData();
+      PermissionWrapper wrapper = (PermissionWrapper)getPersonRolesDataModel().getRowData();
       if (wrapper != null)
       {
          this.personRoles.remove(wrapper);
@@ -656,10 +701,10 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             // clear the currently set permissions for this user
             // and add each of the new permissions in turn
             NodeRef nodeRef = getNode().getNodeRef();
-            this.permissionService.clearPermission(nodeRef, getPersonAuthority());
+            this.getPermissionService().clearPermission(nodeRef, getPersonAuthority());
             for (PermissionWrapper wrapper : personRoles)
             {
-               this.permissionService.setPermission(
+               this.getPermissionService().setPermission(
                      nodeRef,
                      getPersonAuthority(),
                      wrapper.getPermission(),
@@ -699,7 +744,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          if (getPersonAuthority() != null)
          {
             // clear permissions for the specified Authority
-            this.permissionService.clearPermission(getNode().getNodeRef(), getPersonAuthority());
+            this.getPermissionService().clearPermission(getNode().getNodeRef(), getPersonAuthority());
          }
          
          // commit the transaction
@@ -716,7 +761,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       // see if the user still has permissions to the node, if not, we need
       // to go back to the root of the current "area" by simulating the user
       // pressing the top level navigation button i.e. My Home
-      if (this.permissionService.hasPermission(getNode().getNodeRef(), 
+      if (this.getPermissionService().hasPermission(getNode().getNodeRef(), 
           PermissionService.CHANGE_PERMISSIONS) == AccessStatus.DENIED)
       {
          NavigationBean nb = (NavigationBean)FacesHelper.getManagedBean(
@@ -753,8 +798,10 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    /**
     * Wrapper class for list data model to display current roles for user
     */
-   public static class PermissionWrapper
+   public static class PermissionWrapper implements Serializable
    {
+      private static final long serialVersionUID = 953727068432918977L;
+      
       public PermissionWrapper(String permission, String label)
       {
          this.permission = permission;
@@ -774,4 +821,5 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       private String label;
       private String permission;
    }
+   
 }

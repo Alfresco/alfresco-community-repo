@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wizard;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -36,8 +37,10 @@ import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
  * 
  * @author gavinc
  */
-public final class WizardState
+public final class WizardState implements Serializable
 {
+   private static final long serialVersionUID = -6816474382767569256L;
+   
    private int currentStep = 1;
    private PageConfig currentPageCfg;
    private WizardConfig config;

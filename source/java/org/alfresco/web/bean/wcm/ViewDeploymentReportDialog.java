@@ -41,6 +41,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ViewDeploymentReportDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -8054466371051782132L;
+   
    protected NodeRef webProjectRef;
    protected Integer deployedVersion;
    

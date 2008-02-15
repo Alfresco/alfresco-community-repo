@@ -73,6 +73,8 @@ import org.alfresco.web.ui.common.component.UIModeList;
  */
 public class TrashcanDialog extends BaseDialogBean implements IContextListener
 {
+   private static final long serialVersionUID = -7783683979079046969L;
+
    protected TrashcanDialogProperty property;
    
    private static final String MSG_DELETED_ITEMS_FOR = "deleted_items_for";
@@ -211,7 +213,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
             sp.setQuery(query);
             sp.addStore(getArchiveRootRef().getStoreRef());     // the Archived Node store
             
-            results = searchService.query(sp);
+            results = getSearchService().query(sp);
             itemNodes = new ArrayList<Node>(results.length());
          }
          
@@ -221,11 +223,11 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
             {
                NodeRef nodeRef = row.getNodeRef();
                
-               if (nodeService.exists(nodeRef))
+               if (getNodeService().exists(nodeRef))
                {
-                  QName type = nodeService.getType(nodeRef);
+                  QName type = getNodeService().getType(nodeRef);
                   
-                  MapNode node = new MapNode(nodeRef, nodeService, false);
+                  MapNode node = new MapNode(nodeRef, getNodeService(), false);
                   
                   node.addPropertyResolver("locationPath", resolverLocationPath);
                   node.addPropertyResolver("displayPath", resolverDisplayPath);
@@ -233,8 +235,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
                   node.addPropertyResolver("deletedBy", resolverDeletedBy);
                   node.addPropertyResolver("isFolder", resolverIsFolder);
                   
-                  if (dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
-                      dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                  if (getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
+                      getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
                      node.addPropertyResolver("typeIcon", this.resolverSmallIcon);
                   }
@@ -270,12 +272,14 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverLocationPath = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -2501720368642759082L;
+      
       public Object get(Node node)
       {
          ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         if (nodeService.exists(childRef.getParentRef()))
+         if (getNodeService().exists(childRef.getParentRef()))
          {
-            return nodeService.getPath(childRef.getParentRef());
+            return getNodeService().getPath(childRef.getParentRef());
          }
          else
          {
@@ -286,12 +290,14 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverDisplayPath = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = 9178556770343499694L;
+      
       public Object get(Node node)
       {
          ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-         if (nodeService.exists(childRef.getParentRef()))
+         if (getNodeService().exists(childRef.getParentRef()))
          {
-            return Repository.getDisplayPath(nodeService.getPath(childRef.getParentRef()), true);
+            return Repository.getDisplayPath(getNodeService().getPath(childRef.getParentRef()), true);
          }
          else
          {
@@ -302,6 +308,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverFileType16 = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = 7462526266770371703L;
+      
       public Object get(Node node)
       {
          return Utils.getFileTypeImage(node.getName(), true);
@@ -310,6 +318,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverSmallIcon = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = 5528945140207247127L;
+
       @SuppressWarnings("unchecked")
       public Object get(Node node)
       {
@@ -321,6 +331,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverFileType32 = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -5681639025578263060L;
+      
       public Object get(Node node)
       {
          return Utils.getFileTypeImage(node.getName(), false);
@@ -329,6 +341,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverLargeIcon = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -8334570770580388654L;
+      
       @SuppressWarnings("unchecked")
       public Object get(Node node)
       {
@@ -340,6 +354,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverMimetype = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -5892550146037635522L;
+      
       public Object get(Node node)
       {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -349,6 +365,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverSize = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -191591211947393578L;
+      
       public Object get(Node node)
       {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -358,6 +376,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverEncoding = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -1594354572323978873L;
+      
       public Object get(Node node)
       {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
@@ -367,6 +387,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverDeletedDate = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = 3240286507786251191L;
+      
       public Object get(Node node)
       {
          return node.getProperties().get(ContentModel.PROP_ARCHIVED_DATE);
@@ -375,6 +397,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverDeletedBy = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -8678755146743606599L;
+      
       public Object get(Node node)
       {
          return node.getProperties().get(ContentModel.PROP_ARCHIVED_BY);
@@ -383,9 +407,11 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private NodePropertyResolver resolverIsFolder = new NodePropertyResolver()
    {
+      private static final long serialVersionUID = -9181535522349485509L;
+      
       public Object get(Node node)
       {
-         return dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER);
+         return getDictionaryService().isSubClass(node.getType(), ContentModel.TYPE_FOLDER);
       }
    };
    
@@ -457,8 +483,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
             node.addPropertyResolver("size", resolverSize);
             node.addPropertyResolver("encoding", resolverEncoding);
             
-            if (dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER) == true && 
-                dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false)
+            if (getDictionaryService().isSubClass(node.getType(), ContentModel.TYPE_FOLDER) == true && 
+                getDictionaryService().isSubClass(node.getType(), ContentModel.TYPE_SYSTEM_FOLDER) == false)
             {
                node.addPropertyResolver("icon", this.resolverLargeIcon);
             }
@@ -716,7 +742,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          // listed item rows
          buf.append("<tr><td width=16>");
          String img;
-         if (dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER))
+         if (getDictionaryService().isSubClass(node.getType(), ContentModel.TYPE_FOLDER))
          {
             String icon = (String)node.getProperties().get("app:icon");
             img = "/images/icons/" + (icon != null ? icon + "-16.gif" : BrowseBean.SPACE_SMALL_DEFAULT + ".gif");
@@ -761,14 +787,14 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
             if (archivedPath)
             {
                ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-               if (nodeService.exists(childRef.getParentRef()))
+               if (getNodeService().exists(childRef.getParentRef()))
                {
-                  buf.append(Repository.getNamePath(nodeService, nodeService.getPath(childRef.getParentRef()), null, "/", null));
+                  buf.append(Repository.getNamePath(getNodeService(), getNodeService().getPath(childRef.getParentRef()), null, "/", null));
                }
             }
             else
             {
-               buf.append(Repository.getNamePath(nodeService, nodeService.getPath(node.getNodeRef()), null, "/", null));
+               buf.append(Repository.getNamePath(getNodeService(), getNodeService().getPath(node.getNodeRef()), null, "/", null));
             }
             buf.append("</td>");
          }

@@ -38,6 +38,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class StartWorkflowEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 3110333488835027710L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

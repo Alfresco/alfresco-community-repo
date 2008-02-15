@@ -47,6 +47,8 @@ public class EditPostDialog extends CreatePostDialog
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   private static final long serialVersionUID = 7925794441178897699L;
+
    @Override
    public void init(Map<String, String> parameters)
    {
@@ -55,7 +57,7 @@ public class EditPostDialog extends CreatePostDialog
       // we need to remove the <br> tags and replace with carriage returns
       // and then setup the content member variable
       Node currentDocument = this.browseBean.getDocument();
-      ContentReader reader = this.contentService.getReader(currentDocument.getNodeRef(), 
+      ContentReader reader = this.getContentService().getReader(currentDocument.getNodeRef(), 
             ContentModel.PROP_CONTENT);
       
       if (reader != null)
@@ -80,15 +82,15 @@ public class EditPostDialog extends CreatePostDialog
       // check that the name of this post does not contain the :
       // character (used in previous versions), if it does rename
       // the post.
-      String name = (String)this.nodeService.getProperty(
+      String name = (String)this.getNodeService().getProperty(
             postNode, ContentModel.PROP_NAME);
       if (name.indexOf(":") != -1)
       {
          String newName = name.replace(':', '-');
-         this.fileFolderService.rename(postNode, newName);
+         this.getFileFolderService().rename(postNode, newName);
       }
                
-      ContentWriter writer = this.contentService.getWriter(postNode, 
+      ContentWriter writer = this.getContentService().getWriter(postNode, 
             ContentModel.PROP_CONTENT, true);
       if (writer != null)
       {

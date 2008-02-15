@@ -24,10 +24,12 @@
  */
 package org.alfresco.web.ui.common.component.data;
 
+import java.io.Serializable;
+
 /**
  * @author kevinr
  */
-public interface IGridDataModel
+public interface IGridDataModel extends Serializable
 {
    /**
     * Get a row object for the specified row index

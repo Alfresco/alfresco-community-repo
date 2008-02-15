@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +37,10 @@ import org.alfresco.config.element.ConfigElementAdapter;
  * 
  * @author Gavin Cornwell
  */
-public class AdvancedSearchConfigElement extends ConfigElementAdapter
+public class AdvancedSearchConfigElement extends ConfigElementAdapter implements Serializable
 {
+   private static final long serialVersionUID = -6427054671579839728L;
+
    public static final String CONFIG_ELEMENT_ID = "advanced-search";
    
    private List<String> contentTypes = null;

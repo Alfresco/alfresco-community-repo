@@ -38,6 +38,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class SpaceUsersBean extends UserMembersBean
 {
+   private static final long serialVersionUID = -4847219834289259559L;
+
    private final static String MSG_MANAGE_INVITED_USERS = "manage_invited_users";
    private final static String MSG_SPACE_OWNER = "space_owner";
    private final static String MSG_CLOSE= "close";

@@ -41,13 +41,11 @@ import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
-import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.dialog.FilterViewSupport;
 import org.alfresco.web.bean.repository.Node;
@@ -67,6 +65,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RulesDialog extends BaseDialogBean implements IContextListener, FilterViewSupport
 {
+   private static final long serialVersionUID = -1255494344597331464L;
+   
    private static final String MSG_REAPPLY_RULES_SUCCESS = "reapply_rules_success";
    private static final String MSG_IGNORE_INHERTIED_RULES = "ignore_inherited_rules";
    private static final String MSG_INCLUDE_INHERITED_RULES = "include_inherited_rules";
@@ -80,11 +80,11 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    
    private String filterModeMode = INHERITED;
    
-   protected RuleService ruleService;
+   transient private RuleService ruleService;
    private List<WrappedRule> rules;
    private Rule currentRule;
    private UIRichList richList;
-   private ActionService actionService;
+   transient private ActionService actionService;
    
    
    /**
@@ -130,15 +130,15 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
       }
 
       // get the rules from the repository
-      List<Rule> repoRules = this.ruleService.getRules(getSpace().getNodeRef(), includeInherited);
+      List<Rule> repoRules = this.getRuleService().getRules(getSpace().getNodeRef(), includeInherited);
       this.rules = new ArrayList<WrappedRule>(repoRules.size());
       
       // wrap them all passing the current space
       for (Rule rule : repoRules)
       {
-         Date createdDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_CREATED);
-         Date modifiedDate = (Date)this.nodeService.getProperty(rule.getNodeRef(), ContentModel.PROP_MODIFIED);
-         boolean isLocal = getSpace().getNodeRef().equals(this.ruleService.getOwningNodeRef(rule));        
+         Date createdDate = (Date)this.getNodeService().getProperty(rule.getNodeRef(), ContentModel.PROP_CREATED);
+         Date modifiedDate = (Date)this.getNodeService().getProperty(rule.getNodeRef(), ContentModel.PROP_MODIFIED);
+         boolean isLocal = getSpace().getNodeRef().equals(this.getRuleService().getOwningNodeRef(rule));        
          
          WrappedRule wrapped = new WrappedRule(rule, isLocal, createdDate, modifiedDate);
          this.rules.add(wrapped);
@@ -162,7 +162,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
          if (logger.isDebugEnabled())
             logger.debug("Rule clicked, it's id is: " + id);
          
-         this.currentRule = this.ruleService.getRule(new NodeRef(id));
+         this.currentRule = this.getRuleService().getRule(new NodeRef(id));
          
          // refresh list
          contextUpdated();
@@ -185,7 +185,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
          tx.begin();
          
          // Create the the apply rules action
-         Action action = this.actionService.createAction(ExecuteAllRulesActionExecuter.NAME);
+         Action action = this.getActionService().createAction(ExecuteAllRulesActionExecuter.NAME);
          
          // Set the include inherited parameter to match the current filter value
          boolean executeInherited = true;
@@ -196,7 +196,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
          action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, executeInherited);
          
          // Execute the action
-         this.actionService.executeAction(action, this.getSpace().getNodeRef());
+         this.getActionService().executeAction(action, this.getSpace().getNodeRef());
          
          // TODO how do I get the message here ...
          String msg = Application.getMessage(fc, MSG_REAPPLY_RULES_SUCCESS);
@@ -226,7 +226,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
       FacesContext fc = FacesContext.getCurrentInstance();
       String result = Application.getMessage(fc, MSG_IGNORE_INHERTIED_RULES);
       
-      if (this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+      if (this.getNodeService().hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
       {
          result = Application.getMessage(fc, MSG_INCLUDE_INHERITED_RULES);
       }
@@ -235,7 +235,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    
    public boolean getIgnoreInheritedRules()
    {
-      return this.nodeService.hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+      return this.getNodeService().hasAspect(this.getSpace().getNodeRef(), RuleModel.ASPECT_IGNORE_INHERITED_RULES);
    }
    
    /**
@@ -246,13 +246,13 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    public void ignoreInheritedRules(ActionEvent event)
    {
       NodeRef nodeRef = this.getSpace().getNodeRef();
-      if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
+      if (this.getNodeService().hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == true)
       {
-         this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
+         this.getNodeService().removeAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES);
       }
       else
       {
-         this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+         this.getNodeService().addAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
       }
       
       // force the list to be re-queried when the page is refreshed
@@ -311,6 +311,15 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
       this.ruleService = ruleService;
    }
    
+   protected RuleService getRuleService()
+   {
+      if (ruleService == null)
+      {
+         ruleService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRuleService();
+      }
+      return ruleService;
+   }
+   
    /**
     * Set the action service to use
     * 
@@ -321,7 +330,14 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
       this.actionService = actionService;
    }
    
-
+   private ActionService getActionService()
+   {
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
+   }
    
    // ------------------------------------------------------------------------------
    // IContextListener implementation

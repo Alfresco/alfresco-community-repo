@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,12 +43,14 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SnapshotSandboxDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -7325435181889945320L;
+
    private static final Log logger = LogFactory.getLog(SnapshotSandboxDialog.class);
    
    private static final String MSG_SNAPSHOT_FAILURE = "snapshot_failure";
    private static final String MSG_SNAPSHOT_SUCCESS = "snapshot_success";
 
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
    
    private String label;
@@ -70,6 +73,15 @@ public class SnapshotSandboxDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
+   }
+
    /**
     * @return Returns the snapshot description.
     */
@@ -121,8 +133,8 @@ public class SnapshotSandboxDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // find the previous version - to see if a snapshot was acutally performed
-      int oldVersion = this.avmService.getLatestSnapshotID(this.avmBrowseBean.getSandbox());
-      int version = this.avmService.createSnapshot(
+      int oldVersion = this.getAvmService().getLatestSnapshotID(this.avmBrowseBean.getSandbox());
+      int version = this.getAvmService().createSnapshot(
             this.avmBrowseBean.getSandbox(), this.label, this.description)
             .get(this.avmBrowseBean.getSandbox());
       if (version > oldVersion)

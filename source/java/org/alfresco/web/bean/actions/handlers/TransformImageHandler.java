@@ -49,6 +49,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class TransformImageHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 7729555214101161605L;
+   
    protected static final String PROP_IMAGE_TRANSFORMER = "imageTransformer";
    protected static final String PROP_TRANSFORM_OPTIONS = "transformOptions";
    

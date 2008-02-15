@@ -34,11 +34,9 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
@@ -56,6 +54,8 @@ import org.alfresco.web.ui.common.Utils.URLMode;
  */
 public class LinkPropertiesDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -167326851073011187L;
+   
    private Node editableNode;
    
    public Map<String, Object> getProperties()
@@ -106,7 +106,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
    {
       NodeRef destRef = (NodeRef)this.editableNode.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
       return Repository.getNamePath(
-            this.nodeService, this.nodeService.getPath(destRef), null, "/", null);
+            this.getNodeService(), this.getNodeService().getPath(destRef), null, "/", null);
    }
    
    /**
@@ -139,7 +139,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
          NodeRef nodeRef = this.editableNode.getNodeRef();
          Map<String, Object> props = this.editableNode.getProperties();
          
-         Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+         Map<QName, Serializable> properties = this.getNodeService().getProperties(nodeRef);
          
          // we need to put all the properties from the editable bag back into 
          // the format expected by the repository
@@ -150,7 +150,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
          if (title != null || description != null)
          {
             // add the aspect to be sure it's present
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+            getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
             // other props will get added later in setProperties()
          }
          
@@ -168,7 +168,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
             if ((propValue != null) && (propValue instanceof String) && 
                 (propValue.toString().length() == 0))
             {
-               PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+               PropertyDefinition propDef = this.getDictionaryService().getProperty(qname);
                if (propDef != null)
                {
                   if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
@@ -185,7 +185,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
          }
          
          // send the properties back to the repository
-         this.nodeService.setProperties(nodeRef, properties);
+         this.getNodeService().setProperties(nodeRef, properties);
          
          // reset any document held by the browse bean as it's just been updated
          // if this is a space link then it doesn't matter anyway

@@ -23,16 +23,19 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.*;
-import java.util.regex.Pattern;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
-
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.model.ContentModel;
@@ -44,47 +47,39 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
-
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.FileCopyUtils;
-
-import org.w3c.dom.*;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
-import org.w3c.dom.events.EventTarget;
-import org.w3c.dom.ls.*;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Bean for interacting with the file picker widget using ajax requests.
  */
-public class FilePickerBean
+public class FilePickerBean implements Serializable
 {
+   private static final long serialVersionUID = -8301307105698624196L;
+   
    private static final Log LOGGER = LogFactory.getLog(FilePickerBean.class);
    private final Set<NodeRef> uploads = new HashSet<NodeRef>();
 
    private AVMBrowseBean avmBrowseBean;
-   private AVMService avmService;
-   private NamespaceService namespaceService;
+   transient private AVMService avmService;
+   transient private NamespaceService namespaceService;
 
    public FilePickerBean()
    {
@@ -115,6 +110,15 @@ public class FilePickerBean
    {
       this.avmService = avmService;
    }
+   
+   private AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
 
    /**
     * @param namespaceService the namespaceService to set.
@@ -122,6 +126,15 @@ public class FilePickerBean
    public void setNamespaceService(final NamespaceService namespaceService)
    {
       this.namespaceService = namespaceService;
+   }
+   
+   private NamespaceService getNamespaceService()
+   {
+      if (namespaceService == null)
+      {
+         namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      }
+      return namespaceService;
    }
 
    /**
@@ -165,7 +178,7 @@ public class FilePickerBean
       result.appendChild(filePickerDataElement);
 
 
-      final AVMNodeDescriptor currentNode = this.avmService.lookup(-1, currentPath);
+      final AVMNodeDescriptor currentNode = this.getAvmService().lookup(-1, currentPath);
       if (currentNode == null)
       {
          currentPath = AVMUtil.getWebappRelativePath(currentPath);
@@ -193,11 +206,11 @@ public class FilePickerBean
       filePickerDataElement.appendChild(e);
 
       for (final Map.Entry<String, AVMNodeDescriptor> entry : 
-              this.avmService.getDirectoryListing(-1, currentPath).entrySet())
+              this.getAvmService().getDirectoryListing(-1, currentPath).entrySet())
       {
          if (!entry.getValue().isDirectory() && filterMimetypes.length != 0)
          {
-            final String contentMimetype = this.avmService.getContentDataForRead(entry.getValue()).getMimetype();
+            final String contentMimetype = this.getAvmService().getContentDataForRead(entry.getValue()).getMimetype();
             boolean matched = false;
             for (final Pattern p : filterMimetypes)
             {
@@ -319,14 +332,14 @@ public class FilePickerBean
       try
       {
          FileCopyUtils.copy(fileInputStream, 
-                            this.avmService.createFile(currentPath, filename));
+                            this.getAvmService().createFile(currentPath, filename));
          final Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(1, 1.0f);
          props.put(ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, filename));
 //         props.put(ContentModel.PROP_DESCRIPTION, 
 //                   new PropertyValue(DataTypeDefinition.TEXT,
 //                                     "Uploaded for form " + this.xformsSession.getForm().getName()));
-         this.avmService.setNodeProperties(currentPath + "/" + filename, props);
-         this.avmService.addAspect(currentPath + "/" + filename, ContentModel.ASPECT_TITLED); 
+         this.getAvmService().setNodeProperties(currentPath + "/" + filename, props);
+         this.getAvmService().addAspect(currentPath + "/" + filename, ContentModel.ASPECT_TITLED); 
          
          this.uploads.add(AVMNodeConverter.ToNodeRef(-1, currentPath + "/" + filename));
          returnPage = returnPage.replace("${_FILE_TYPE_IMAGE}",
@@ -377,7 +390,7 @@ public class FilePickerBean
       {
          for (int i = 0; i < selectableTypes.length; i++)
          {
-            result[i] = QName.resolveToQName(this.namespaceService, selectableTypes[i]);
+            result[i] = QName.resolveToQName(this.getNamespaceService(), selectableTypes[i]);
          }
       }
       return result;

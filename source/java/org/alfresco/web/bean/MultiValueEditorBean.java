@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,8 +37,10 @@ import java.util.Map;
  * 
  * @author gavinc
  */
-public class MultiValueEditorBean
+public class MultiValueEditorBean implements Serializable
 {
+   private static final long serialVersionUID = -5180578793877515158L;
+   
    private Map<String, Object> lastItemsAdded = new HashMap<String, Object>(10);
    
    public Map<String, Object> getLastItemsAdded()

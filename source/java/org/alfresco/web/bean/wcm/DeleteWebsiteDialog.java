@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
 
 /**
@@ -43,7 +44,9 @@ import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
  */
 public class DeleteWebsiteDialog extends DeleteSpaceDialog
 {
-   protected AVMService avmService;
+   private static final long serialVersionUID = -3598950865168230942L;
+   
+   transient private AVMService avmService;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -54,6 +57,15 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
    
    
@@ -100,11 +112,11 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
             AVMUtil.removeAllVServerWebapps(path, true);
             
             // get the list of users who have a sandbox in the website
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+            List<ChildAssociationRef> userInfoRefs = getNodeService().getChildAssocs(
                   websiteNode.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
-               String username = (String)nodeService.getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
+               String username = (String)getNodeService().getProperty(ref.getChildRef(), WCMAppModel.PROP_WEBUSERNAME);
 
                // delete the preview store for this user
                deleteStore(AVMUtil.buildUserPreviewStoreName(storeRoot, username));
@@ -131,9 +143,9 @@ public class DeleteWebsiteDialog extends DeleteSpaceDialog
    private void deleteStore(String store)
    {
       // check it exists before we try to remove it
-      if (this.avmService.getStore(store) != null)
+      if (this.getAvmService().getStore(store) != null)
       {
-         this.avmService.purgeStore(store);
+         this.getAvmService().purgeStore(store);
       }
    }
    

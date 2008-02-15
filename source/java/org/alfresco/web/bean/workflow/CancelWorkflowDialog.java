@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,8 +44,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CancelWorkflowDialog extends BaseDialogBean
 {
-   protected WorkflowInstance workflowInstance;
-   protected WorkflowService workflowService;
+   private static final long serialVersionUID = -7875582893750792200L;
+   
+   transient private WorkflowInstance workflowInstance;
+   transient private WorkflowService workflowService;
    
    private static final Log logger = LogFactory.getLog(CancelWorkflowDialog.class);   
 
@@ -63,7 +66,7 @@ public class CancelWorkflowDialog extends BaseDialogBean
          throw new IllegalArgumentException("Cancel workflow dialog called without workflow instance id");
       }
       
-      this.workflowInstance = workflowService.getWorkflowById(workflowInstanceId);
+      this.workflowInstance = getWorkflowService().getWorkflowById(workflowInstanceId);
       if (this.workflowInstance == null)
       {
          throw new IllegalArgumentException("Failed to find workflow instance for id: " + workflowInstanceId);
@@ -75,13 +78,13 @@ public class CancelWorkflowDialog extends BaseDialogBean
          throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Cancelling workflow with id: " + this.workflowInstance.id);
+         logger.debug("Cancelling workflow with id: " + this.getWorkflowInstance().id);
       
       // cancel the workflow
-      this.workflowService.cancelWorkflow(this.workflowInstance.id);
+      this.getWorkflowService().cancelWorkflow(this.getWorkflowInstance().id);
       
       if (logger.isDebugEnabled())
-         logger.debug("Cancelled workflow with id: " + this.workflowInstance.id);
+         logger.debug("Cancelled workflow with id: " + this.getWorkflowInstance().id);
       
       return outcome;
    }
@@ -123,10 +126,10 @@ public class CancelWorkflowDialog extends BaseDialogBean
       String confirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
                "cancel_workflow_confirm");
       
-      String workflowLabel = this.workflowInstance.definition.title;
-      if (this.workflowInstance.description != null && this.workflowInstance.description.length() > 0)
+      String workflowLabel = this.getWorkflowInstance().definition.title;
+      if (this.getWorkflowInstance().description != null && this.getWorkflowInstance().description.length() > 0)
       {
-         workflowLabel = workflowLabel + " (" + this.workflowInstance.description + ")";
+         workflowLabel = workflowLabel + " (" + this.getWorkflowInstance().description + ")";
       }
       
       return MessageFormat.format(confirmMsg, new Object[] {workflowLabel});
@@ -139,6 +142,10 @@ public class CancelWorkflowDialog extends BaseDialogBean
     */
    public WorkflowService getWorkflowService()
    {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
       return workflowService;
    }
 
@@ -151,4 +158,24 @@ public class CancelWorkflowDialog extends BaseDialogBean
    {
       this.workflowService = workflowService;
    }
+   
+   protected WorkflowInstance getWorkflowInstance()
+   {
+      if (workflowInstance == null)
+      {
+         String workflowInstanceId = this.parameters.get("workflow-instance-id");
+         if (workflowInstanceId == null || workflowInstanceId.length() == 0)
+         {
+            throw new IllegalArgumentException("Cancel workflow dialog called without workflow instance id");
+         }
+
+         this.workflowInstance = getWorkflowService().getWorkflowById(workflowInstanceId);
+         if (this.workflowInstance == null)
+         {
+            throw new IllegalArgumentException("Failed to find workflow instance for id: " + workflowInstanceId);
+         }
+      }
+      return workflowInstance;
+   }
+
 }

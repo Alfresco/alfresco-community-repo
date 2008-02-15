@@ -61,7 +61,7 @@ public class UIRecentSpacesShelfItem extends UIShelfItem
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.value = values[1];
-      this.navigateActionListener = (MethodBinding)values[2];
+      this.navigateActionListener = (MethodBinding) restoreAttachedState(context, values[2]);
    }
    
    /**
@@ -73,7 +73,7 @@ public class UIRecentSpacesShelfItem extends UIShelfItem
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.value;
-      values[2] = this.navigateActionListener;
+      values[2] = saveAttachedState(context, this.navigateActionListener);
       
       return (values);
    }

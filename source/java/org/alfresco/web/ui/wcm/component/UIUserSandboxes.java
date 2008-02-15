@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,8 +96,10 @@ import org.springframework.web.jsf.FacesContextUtils;
  * 
  * @author Kevin Roast
  */
-public class UIUserSandboxes extends SelfRenderingComponent
+public class UIUserSandboxes extends SelfRenderingComponent implements Serializable
 {
+   private static final long serialVersionUID = 362170364310941059L;
+
    private static Log logger = LogFactory.getLog(UIUserSandboxes.class);
    
    private static final String ACT_FIND_FORM_CONTENT = "find_form_content";
@@ -161,7 +164,7 @@ public class UIUserSandboxes extends SelfRenderingComponent
    private String webapp;
    
    /** cached converter instance */
-   private ByteSizeConverter sizeConverter = null;
+   transient private ByteSizeConverter sizeConverter = null;
    
    /** set of exanded user panels */
    private Set<String> expandedPanels = new HashSet<String>();

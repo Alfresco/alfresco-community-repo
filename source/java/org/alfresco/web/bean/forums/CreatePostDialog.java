@@ -44,6 +44,8 @@ public class CreatePostDialog extends CreateContentWizard
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   private static final long serialVersionUID = -2859329677883776068L;
+
    @Override
    public void init(Map<String, String> parameters)
    {

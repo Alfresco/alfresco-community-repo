@@ -35,6 +35,8 @@ import org.alfresco.web.bean.wcm.AVMUtil;
  */
 public class WCMStagingReadonlyEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 2588681368739253602L;
+
    /**
     * @return true if the item is not locked by another user
     */

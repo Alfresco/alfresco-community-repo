@@ -32,6 +32,8 @@ package org.alfresco.web.bean.wcm;
  */
 public class SubmitConfigureWorkflowDialog extends FormWorkflowDialog
 {
+   private static final long serialVersionUID = 3828466420354771233L;
+   
    protected SubmitDialog submitDialog;
 
    

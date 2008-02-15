@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.action;
 
+import java.io.Serializable;
+
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -36,7 +38,7 @@ import org.alfresco.web.bean.repository.Node;
  * 
  * @author Kevin Roast
  */
-public interface ActionEvaluator
+public interface ActionEvaluator extends Serializable
 {
    /**
     * The evaluator should decide if the action precondition is valid based on the appropriate

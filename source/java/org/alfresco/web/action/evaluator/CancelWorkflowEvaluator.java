@@ -45,6 +45,8 @@ import org.alfresco.web.bean.repository.User;
  */
 public class CancelWorkflowEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 7663087149225546333L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

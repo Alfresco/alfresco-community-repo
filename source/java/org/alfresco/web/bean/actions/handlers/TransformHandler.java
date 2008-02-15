@@ -48,6 +48,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class TransformHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -1224311673192351639L;
+   
    protected static final String PROP_TRANSFORMER = "transformer";
    
    public String getJSPPath()

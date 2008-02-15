@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.dialog;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,10 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  * 
  * @author gavinc
  */
-public final class DialogManager
+public final class DialogManager implements Serializable
 {
+   private static final long serialVersionUID = -8690844273074627353L;
+
    public final static String BEAN_NAME = "DialogManager";
    
    private DialogState currentDialogState;

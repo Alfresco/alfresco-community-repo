@@ -84,6 +84,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
+   private static final long serialVersionUID = 6480869380508635173L;
+
    private static final String MSG_USERROLES = "create_website_summary_users";
    
    private static final String COMPONENT_FORMLIST = "form-list";
@@ -116,18 +118,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected boolean isSource;
    protected boolean showAllSourceProjects;
    
-   protected AVMService avmService;
-   protected WorkflowService workflowService;
-   protected PersonService personService;
-   protected AVMLockingService avmLockingService;
-   protected FormsService formsService;
+   transient private AVMService avmService;
+   transient private WorkflowService workflowService;
+   transient private PersonService personService;
+   transient private AVMLockingService avmLockingService;
+   transient private FormsService formsService;
    
    /** set true when an option in the Create From screen is changed - this is used as an
        indicator to reload the wizard data model from the selected source web project */
    private boolean createFromValueChanged;
    
    /** datamodel for table of selected forms */
-   protected DataModel formsDataModel = null;
+   transient private DataModel formsDataModel = null;
    
    /** transient list of form UIListItem objects */
    protected List<UIListItem> formsList = null;
@@ -139,10 +141,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected FormWrapper actionForm = null;
    
    /** datamodel for table of selected workflows */
-   protected DataModel workflowsDataModel = null;
+   transient private DataModel workflowsDataModel = null;
    
    /** transient list of workflow UIListItem objects */
-   protected List<UIListItem> workflowsList = null;
+   transient private List<UIListItem> workflowsList = null;
    
    /** list of workflow wrapper objects */
    protected List<WorkflowWrapper> workflows = null;
@@ -202,7 +204,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // create the website space in the correct parent folder
       final NodeRef websiteParent = WebProject.getWebsitesFolder();
       
-      FileInfo fileInfo = this.fileFolderService.create(
+      FileInfo fileInfo = this.getFileFolderService().create(
             websiteParent,
             this.name,
             WCMAppModel.TYPE_AVMWEBFOLDER);
@@ -219,14 +221,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       uiFacetsProps.put(ApplicationModel.PROP_ICON, AVMUtil.SPACE_ICON_WEBSITE);
       uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
       uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+      getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
       
       // use as template source flag
-      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
+      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
       // set the default webapp name for the project
       String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
-      this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, webapp);
+      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, webapp);
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -245,7 +247,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
              (this.sourceWebProject != null && this.sourceWebProject.length != 0))
          {
             NodeRef sourceNodeRef = new NodeRef(this.sourceWebProject[0]);
-            branchStoreId = (String)this.nodeService.getProperty(sourceNodeRef, WCMAppModel.PROP_AVMSTORE);
+            branchStoreId = (String)getNodeService().getProperty(sourceNodeRef, WCMAppModel.PROP_AVMSTORE);
          }
          
          // create the AVM staging store to represent the newly created location website
@@ -262,7 +264,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          }
          
          // set the property on the node to reference the root AVM store
-         this.nodeService.setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
+         getNodeService().setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
          
          // persist the forms, templates, workflows and workflow defaults to the model for this web project
          saveWebProjectModel(nodeRef);
@@ -271,12 +273,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.navigator.setCurrentNodeId(websiteParent.getId());
          
          // inform the locking service about this new instance
-         this.avmLockingService.addWebProject(avmStore);
+         this.getAvmLockingService().addWebProject(avmStore);
          
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
 
          // Snapshot the store with the empty webapp
-         this.avmService.createSnapshot( avmStore, null, null);
+         getAvmService().createSnapshot( avmStore, null, null);
       }
       return outcome;
    }
@@ -322,7 +324,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          // create web form with name as per the name of the form object in the DD
          props.put(WCMAppModel.PROP_FORMNAME, form.getName());
-         NodeRef formRef = this.nodeService.createNode(nodeRef,
+         NodeRef formRef = getNodeService().createNode(nodeRef,
                                                        WCMAppModel.ASSOC_WEBFORM,
                                                        WCMAppModel.ASSOC_WEBFORM,
                                                        WCMAppModel.TYPE_WEBFORM,
@@ -332,14 +334,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
          props.clear();
          props.put(ContentModel.PROP_TITLE, form.getTitle());
          props.put(ContentModel.PROP_DESCRIPTION, form.getDescription());
-         this.nodeService.addAspect(formRef, ContentModel.ASPECT_TITLED, props);
+         getNodeService().addAspect(formRef, ContentModel.ASPECT_TITLED, props);
          
          // add filename pattern aspect if a filename pattern has been applied
          if (form.getOutputPathPattern() != null)
          {
             props.clear();
             props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, form.getOutputPathPattern());
-            this.nodeService.addAspect(formRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+            getNodeService().addAspect(formRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
          }
          
          // associate to workflow defaults if any are present
@@ -348,7 +350,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             WorkflowWrapper workflow = form.getWorkflow();
             props.clear();
             props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
-            NodeRef workflowRef = this.nodeService.createNode(formRef,
+            NodeRef workflowRef = getNodeService().createNode(formRef,
                                                               WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
                                                               WCMAppModel.ASSOC_WORKFLOWDEFAULTS,
                                                               WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
@@ -367,7 +369,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             props.clear();
             props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
                       template.getRenderingEngineTemplate().getName());
-            NodeRef templateRef = this.nodeService.createNode(formRef,
+            NodeRef templateRef = getNodeService().createNode(formRef,
                                                               WCMAppModel.ASSOC_WEBFORMTEMPLATE,
                                                               WCMAppModel.ASSOC_WEBFORMTEMPLATE,
                                                               WCMAppModel.TYPE_WEBFORMTEMPLATE,
@@ -378,7 +380,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
             {
                props.clear();
                props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, template.getOutputPathPattern());
-               this.nodeService.addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+               getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
             }
          }
       }
@@ -388,7 +390,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          props.clear();
          props.put(WCMAppModel.PROP_WORKFLOW_NAME, workflow.getName());
-         NodeRef workflowRef = this.nodeService.createNode(nodeRef,
+         NodeRef workflowRef = getNodeService().createNode(nodeRef,
                                                            WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
                                                            WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS,
                                                            WCMAppModel.TYPE_WEBWORKFLOWDEFAULTS,
@@ -405,7 +407,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             props.clear();
             props.put(WCMAppModel.PROP_FILENAMEPATTERN, workflow.getFilenamePattern());
-            this.nodeService.addAspect(workflowRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
+            getNodeService().addAspect(workflowRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
          }
       }
    }
@@ -424,7 +426,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // simple properties are optionally loaded
       if (loadProperties)
       {
-         Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
+         Map<QName, Serializable> props = getNodeService().getProperties(nodeRef);
          this.name = (String)props.get(ContentModel.PROP_NAME);
          this.title = (String)props.get(ContentModel.PROP_TITLE);
          this.description = (String)props.get(ContentModel.PROP_DESCRIPTION);
@@ -443,65 +445,65 @@ public class CreateWebsiteWizard extends BaseWizardBean
          wiz.reset();
          
          // load the users assigned to the web project
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+         List<ChildAssociationRef> userInfoRefs = getNodeService().getChildAssocs(
                nodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userRef = ref.getChildRef();
-            String username = (String)this.nodeService.getProperty(userRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)this.nodeService.getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
+            String username = (String)getNodeService().getProperty(userRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)getNodeService().getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
             wiz.addAuthorityWithRole(username, userrole);
          }
       }
       
       // load the form templates
-      List<ChildAssociationRef> webFormRefs = this.nodeService.getChildAssocs(
+      List<ChildAssociationRef> webFormRefs = getNodeService().getChildAssocs(
             nodeRef, WCMAppModel.ASSOC_WEBFORM, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : webFormRefs)
       {
          NodeRef formRef = ref.getChildRef();
          
-         String name = (String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_FORMNAME);
+         String name = (String)getNodeService().getProperty(formRef, WCMAppModel.PROP_FORMNAME);
          try
          {
-            Form formImpl = this.formsService.getWebForm(name);
+            Form formImpl = getFormsService().getWebForm(name);
             FormWrapper form = new FormWrapper(formImpl);
-            form.setTitle((String)this.nodeService.getProperty(formRef, ContentModel.PROP_TITLE));
-            form.setDescription((String)this.nodeService.getProperty(formRef, ContentModel.PROP_DESCRIPTION));
-            form.setOutputPathPattern((String)this.nodeService.getProperty(formRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN));
+            form.setTitle((String)getNodeService().getProperty(formRef, ContentModel.PROP_TITLE));
+            form.setDescription((String)getNodeService().getProperty(formRef, ContentModel.PROP_DESCRIPTION));
+            form.setOutputPathPattern((String)getNodeService().getProperty(formRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN));
             
             // the single workflow attached to the form 
-            List<ChildAssociationRef> workflowRefs = this.nodeService.getChildAssocs(
+            List<ChildAssociationRef> workflowRefs = getNodeService().getChildAssocs(
                formRef, WCMAppModel.ASSOC_WORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
             if (workflowRefs.size() == 1)
             {
                NodeRef wfRef = workflowRefs.get(0).getChildRef();
-               String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-               WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
+               String wfName = (String)getNodeService().getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
+               WorkflowDefinition wfDef = getWorkflowService().getDefinitionByName(wfName);
                if (wfDef != null)
                {
                   WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
                   wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
-                  if (wfDef.startTaskDefinition != null)
+                  if (wfDef.getStartTaskDefinition() != null)
                   {
-                     wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());
+                     wfWrapper.setType(wfDef.getStartTaskDefinition().metadata.getName());
                   }
                   form.setWorkflow(wfWrapper);
                }
             }
             
             // the templates attached to the form
-            List<ChildAssociationRef> templateRefs = this.nodeService.getChildAssocs(
+            List<ChildAssociationRef> templateRefs = getNodeService().getChildAssocs(
                formRef, WCMAppModel.ASSOC_WEBFORMTEMPLATE, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef tChildRef : templateRefs)
             {
                NodeRef templateRef = tChildRef.getChildRef();
-               String renderingEngineTemplateName = (String)this.nodeService.getProperty(
+               String renderingEngineTemplateName = (String)getNodeService().getProperty(
                      templateRef, WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME);
                RenderingEngineTemplate ret = formImpl.getRenderingEngineTemplate(renderingEngineTemplateName);
                if (ret != null)
                {
-                  String outputPathPattern = (String)this.nodeService.getProperty(
+                  String outputPathPattern = (String)getNodeService().getProperty(
                         templateRef, WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
                   form.addTemplate(new PresentationTemplate(ret, outputPathPattern));
                }
@@ -519,22 +521,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       
       // load the workflows associated with the website
-      List<ChildAssociationRef> workflowRefs = this.nodeService.getChildAssocs(
+      List<ChildAssociationRef> workflowRefs = getNodeService().getChildAssocs(
             nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef wChildRef : workflowRefs)
       {
          NodeRef wfRef = wChildRef.getChildRef();
-         String wfName = (String)this.nodeService.getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
+         String wfName = (String)getNodeService().getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
          WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
          if (wfDef != null)
          {
             WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());
             wfWrapper.setParams((Map<QName, Serializable>)AVMWorkflowUtil.deserializeWorkflowParams(wfRef));
-            wfWrapper.setFilenamePattern((String)this.nodeService.getProperty(wfRef, 
+            wfWrapper.setFilenamePattern((String)getNodeService().getProperty(wfRef, 
                                                                               WCMAppModel.PROP_FILENAMEPATTERN));
-            if (wfDef.startTaskDefinition != null)
+            if (wfDef.getStartTaskDefinition() != null)
             {
-               wfWrapper.setType(wfDef.startTaskDefinition.metadata.getName());
+               wfWrapper.setType(wfDef.getStartTaskDefinition().metadata.getName());
             }
             this.workflows.add(wfWrapper);
          }
@@ -553,12 +555,30 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+   
    /**
     * @param workflowService  The WorkflowService to set.
     */
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+   
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
    }
 
    /**
@@ -569,12 +589,30 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.personService = personService;
    }
    
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
+   }
+   
    /**
     * @param avmLockingService The AVMLockingService to set
     */
    public void setAvmLockingService(AVMLockingService avmLockingService)
    {
       this.avmLockingService = avmLockingService;
+   }
+   
+   protected AVMLockingService getAvmLockingService()
+   {
+      if (avmLockingService == null)
+      {
+         avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
+      }
+      return avmLockingService;
    }
 
    /**
@@ -584,6 +622,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       this.formsService = formsService;
    }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
 
    
    // ------------------------------------------------------------------------------
@@ -746,7 +794,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
           (this.sourceWebProject != null && this.sourceWebProject.length != 0))
       {
          NodeRef sourceNodeRef = new NodeRef(this.sourceWebProject[0]);
-         name = (String)this.nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+         name = (String)getNodeService().getProperty(sourceNodeRef, ContentModel.PROP_NAME);
       }
       return name;
    }
@@ -792,14 +840,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
          try
          {
             // execute the query
-            results = searchService.query(Repository.getStoreRef(), 
+            results = getSearchService().query(Repository.getStoreRef(), 
                                           SearchService.LANGUAGE_LUCENE, query.toString());
             webProjects = new ArrayList<UIListItem>(results.length());
             for (ResultSetRow row : results)
             {
                NodeRef ref = row.getNodeRef();
-               String name = (String)this.nodeService.getProperty(ref, ContentModel.PROP_NAME);
-               String desc = (String)this.nodeService.getProperty(ref, ContentModel.PROP_DESCRIPTION);
+               String name = (String)getNodeService().getProperty(ref, ContentModel.PROP_NAME);
+               String desc = (String)getNodeService().getProperty(ref, ContentModel.PROP_DESCRIPTION);
                UIListItem item = new UIListItem();
                item.setLabel(name);
                item.setDescription(desc);
@@ -981,7 +1029,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public List<UIListItem> getFormsList()
    {
-      Collection<Form> forms = this.formsService.getWebForms();
+      Collection<Form> forms = this.getFormsService().getWebForms();
       List<UIListItem> items = new ArrayList<UIListItem>(forms.size());
       for (Form form : forms)
       {
@@ -1018,7 +1066,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public void removeForm(ActionEvent event)
    {
-      FormWrapper wrapper = (FormWrapper)this.formsDataModel.getRowData();
+      FormWrapper wrapper = (FormWrapper)this.getFormsDataModel().getRowData();
       if (wrapper != null)
       {
          this.forms.remove(wrapper);
@@ -1030,7 +1078,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public void setupFormAction(ActionEvent event)
    {
-      setActionForm( (FormWrapper)this.formsDataModel.getRowData() );
+      setActionForm( (FormWrapper)this.getFormsDataModel().getRowData() );
    }
    
    /**
@@ -1146,7 +1194,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       int index = selectList.getRowIndex();
       if (index != -1)
       {
-         WorkflowDefinition workflow = (WorkflowDefinition)this.workflowsList.get(index).getValue();
+         WorkflowDefinition workflow = (WorkflowDefinition)this.getWorkflowList().get(index).getValue();
          this.workflows.add(new WorkflowWrapper(
                workflow.getName(), workflow.getTitle(), workflow.getDescription(), MATCH_DEFAULT));
       }
@@ -1157,7 +1205,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public void removeWorkflow(ActionEvent event)
    {
-      WorkflowWrapper wrapper = (WorkflowWrapper)this.workflowsDataModel.getRowData();
+      WorkflowWrapper wrapper = (WorkflowWrapper)this.getWorkflowsDataModel().getRowData();
       if (wrapper != null)
       {
          this.workflows.remove(wrapper);
@@ -1184,8 +1232,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * Wrapper class for a configurable template Form instance
     */
-   public static class FormWrapper
+   public static class FormWrapper implements Serializable
    {
+      private static final long serialVersionUID = -1452145043222643362L;
+      
       private Form form;
       private String title;
       private String description;
@@ -1317,8 +1367,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /**
     * Class to represent a single configured Presentation Template instance
     */
-   public static class PresentationTemplate
+   public static class PresentationTemplate implements Serializable
    {
+      private static final long serialVersionUID = 5148139895329524483L;
+      
       private RenderingEngineTemplate ret;
       private String title;
       private String description;
@@ -1385,6 +1437,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public static class WorkflowWrapper implements WorkflowConfiguration
    {
+      private static final long serialVersionUID = -5570490335442743685L;
+      
       private String name;
       private String title;
       private String description;
@@ -1481,8 +1535,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
 
 
-   public class UserWrapper
+   public class UserWrapper implements Serializable
    {
+      private static final long serialVersionUID = 6546685548198253273L;
+      
       private final String name, role;
       
       public UserWrapper(final String authority, final String role)
@@ -1491,12 +1547,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
          if (AuthorityType.getAuthorityType(authority) == AuthorityType.USER ||
              AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST)
          {
-            final NodeRef ref = 
-               CreateWebsiteWizard.this.personService.getPerson(authority);
-            final String firstName = (String)
-               CreateWebsiteWizard.this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-            final String lastName = (String)
-               CreateWebsiteWizard.this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+            NodeRef ref = getPersonService().getPerson(authority);
+            String firstName = (String)getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+            String lastName = (String)getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
             this.name = firstName + (lastName != null ? " " + lastName : "");
          }
          else

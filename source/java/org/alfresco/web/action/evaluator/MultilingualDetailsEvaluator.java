@@ -36,6 +36,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class MultilingualDetailsEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 1154993208046462796L;
+
    public boolean evaluate(Node node)
    {
       return (node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) == true);

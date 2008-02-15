@@ -24,11 +24,15 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
+
 /**
 *  Provides information about a sandbox created by SandboxFactory.
 */
-public final class SandboxInfo
+public final class SandboxInfo implements Serializable
 {
+    private static final long serialVersionUID = 3615436375385857404L;
+    
     String [] store_names_;
     public SandboxInfo(String [] store_names)
     {

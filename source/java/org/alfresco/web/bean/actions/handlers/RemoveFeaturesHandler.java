@@ -45,6 +45,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class RemoveFeaturesHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 8725616196918341435L;
+   
    protected static final String PROP_ASPECT = "aspect";
    
    public String getJSPPath()

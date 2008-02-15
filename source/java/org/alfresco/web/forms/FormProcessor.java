@@ -25,7 +25,7 @@ package org.alfresco.web.forms;
 
 import java.io.Serializable;
 import java.io.Writer;
-import org.alfresco.service.cmr.repository.NodeRef;
+
 import org.w3c.dom.Document;
 
 /**
@@ -42,7 +42,7 @@ public interface FormProcessor
     * An abstraction layer around the xml content which allows
     * for reseting the xml content being collected by the input method.
     */
-   public interface Session
+   public interface Session extends Serializable
    {
 
       /** Returns the set of file uploaded during the session. */
@@ -69,6 +69,8 @@ public interface FormProcessor
    public static class ProcessingException
       extends Exception
    {
+
+      private static final long serialVersionUID = -1067792684180745503L;
 
       public ProcessingException(final String msg)
       {

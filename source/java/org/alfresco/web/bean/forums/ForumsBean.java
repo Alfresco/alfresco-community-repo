@@ -85,25 +85,27 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ForumsBean implements IContextListener
 {
+   private static final long serialVersionUID = 7066410060288061436L;
+   
    private static Log logger = LogFactory.getLog(ForumsBean.class);
    private static final String PAGE_NAME_FORUMS = "forums";
    private static final String PAGE_NAME_FORUM = "forum";
    private static final String PAGE_NAME_TOPIC = "topic"; 
    
    /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** The ContentService to be used by the bean */
-   protected ContentService contentService;
+   transient private ContentService contentService;
    
    /** The DictionaryService bean reference */
-   protected DictionaryService dictionaryService;
+   transient private DictionaryService dictionaryService;
    
    /** The SearchService bean reference. */
-   protected SearchService searchService;
+   transient private SearchService searchService;
    
    /** The NamespaceService bean reference. */
-   protected NamespaceService namespaceService;
+   transient private NamespaceService namespaceService;
    
    /** The browse bean */
    protected BrowseBean browseBean;
@@ -168,6 +170,15 @@ public class ForumsBean implements IContextListener
       this.nodeService = nodeService;
    }
    
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
    /**
     * Sets the content service to use
     * 
@@ -176,6 +187,15 @@ public class ForumsBean implements IContextListener
    public void setContentService(ContentService contentService)
    {
       this.contentService = contentService;
+   }
+   
+   protected ContentService getContentService()
+   {
+      if (contentService == null)
+      {
+         contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+      return contentService;
    }
 
    /**
@@ -186,12 +206,30 @@ public class ForumsBean implements IContextListener
       this.dictionaryService = dictionaryService;
    }
    
+   protected DictionaryService getDictionaryService()
+   {
+      if (dictionaryService == null)
+      {
+         dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return dictionaryService;
+   }
+   
    /**
     * @param searchService The SearchService to set.
     */
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   protected SearchService getSearchService()
+   {
+      if (searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
    }
 
    /**
@@ -200,6 +238,15 @@ public class ForumsBean implements IContextListener
    public void setNamespaceService(NamespaceService namespaceService)
    {
       this.namespaceService = namespaceService;
+   }
+   
+   protected NamespaceService getNamespaceService()
+   {
+      if (namespaceService == null)
+      {
+         namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      }
+      return namespaceService;
    }
 
    /**
@@ -440,7 +487,7 @@ public class ForumsBean implements IContextListener
          if (parentNodeId == null)
          {
             // no specific parent node specified - use the root node
-            parentRef = this.nodeService.getRootNode(Repository.getStoreRef());
+            parentRef = this.getNodeService().getRootNode(Repository.getStoreRef());
          }
          else
          {
@@ -448,7 +495,7 @@ public class ForumsBean implements IContextListener
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
          
-         List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentRef,
+         List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(parentRef,
                ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
          this.forums = new ArrayList<Node>(childRefs.size());
          this.topics = new ArrayList<Node>(childRefs.size());
@@ -459,44 +506,44 @@ public class ForumsBean implements IContextListener
             // create our Node representation from the NodeRef
             NodeRef nodeRef = ref.getChildRef();
             
-            if (this.nodeService.exists(nodeRef))
+            if (this.getNodeService().exists(nodeRef))
             {
                // find it's type so we can see if it's a node we are interested in
-               QName type = this.nodeService.getType(nodeRef);
+               QName type = this.getNodeService().getType(nodeRef);
                
                // make sure the type is defined in the data dictionary
-               TypeDefinition typeDef = this.dictionaryService.getType(type);
+               TypeDefinition typeDef = this.getDictionaryService().getType(type);
                
                if (typeDef != null)
                {
                   // extract forums, forum, topic and post types
                   
-                  if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                  if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
-                     if (this.dictionaryService.isSubClass(type, ForumModel.TYPE_FORUMS) || 
-                         this.dictionaryService.isSubClass(type, ForumModel.TYPE_FORUM)) 
+                     if (this.getDictionaryService().isSubClass(type, ForumModel.TYPE_FORUMS) || 
+                         this.getDictionaryService().isSubClass(type, ForumModel.TYPE_FORUM)) 
                      {
                         // create our Node representation
-                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        MapNode node = new MapNode(nodeRef, this.getNodeService(), true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
                         node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
                         
                         this.forums.add(node);
                      }
-                     if (this.dictionaryService.isSubClass(type, ForumModel.TYPE_TOPIC)) 
+                     if (this.getDictionaryService().isSubClass(type, ForumModel.TYPE_TOPIC)) 
                      {
                         // create our Node representation
-                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        MapNode node = new MapNode(nodeRef, this.getNodeService(), true);
                         node.addPropertyResolver("icon", this.browseBean.resolverSpaceIcon);
                         node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
                         node.addPropertyResolver("replies", this.resolverReplies);
                         
                         this.topics.add(node);
                      }
-                     else if (this.dictionaryService.isSubClass(type, ForumModel.TYPE_POST))
+                     else if (this.getDictionaryService().isSubClass(type, ForumModel.TYPE_POST))
                      {
                         // create our Node representation
-                        MapNode node = new MapNode(nodeRef, this.nodeService, true);
+                        MapNode node = new MapNode(nodeRef, this.getNodeService(), true);
                         
                         this.browseBean.setupCommonBindingProperties(node);
                         node.addPropertyResolver("smallIcon", this.browseBean.resolverSmallIcon);
@@ -561,7 +608,7 @@ public class ForumsBean implements IContextListener
          
          FacesContext context = FacesContext.getCurrentInstance();
          Node replyToNode = this.browseBean.getDocument();
-         boolean isReplyPost = this.nodeService.hasAspect(replyToNode.getNodeRef(),
+         boolean isReplyPost = this.getNodeService().hasAspect(replyToNode.getNodeRef(),
                ContentModel.ASPECT_REFERENCING);
          String contextPath = context.getExternalContext().getRequestContextPath();
          String colour = isReplyPost ? "yellow" : "orange";
@@ -765,13 +812,13 @@ public class ForumsBean implements IContextListener
       
       NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), id);
          
-      if (this.nodeService.hasAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE) == false)
+      if (this.getNodeService().hasAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE) == false)
       {
          throw new AlfrescoRuntimeException("discuss called for an object that does not have a discussion!");
       }
       
       // as the node has the discussable aspect there must be a discussions child assoc
-      List<ChildAssociationRef> children = this.nodeService.getChildAssocs(nodeRef, 
+      List<ChildAssociationRef> children = this.getNodeService().getChildAssocs(nodeRef, 
             ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL);
       
       // there should only be one child, retrieve it if there is
@@ -795,15 +842,17 @@ public class ForumsBean implements IContextListener
    // Property Resolvers
    
    public NodePropertyResolver resolverReplies = new NodePropertyResolver() {
+      private static final long serialVersionUID = -4800772273246202885L;
+
       public Object get(Node node) 
       {
          // query for the number of posts within the given node
          String repliesXPath = "./*[(subtypeOf('" + ForumModel.TYPE_POST + "'))]";         
-         List<NodeRef> replies = searchService.selectNodes(
+         List<NodeRef> replies = getSearchService().selectNodes(
                 node.getNodeRef(),
                 repliesXPath,
                 new QueryParameterDefinition[] {},
-                namespaceService,
+                getNamespaceService(),
                 false);
          
          // reduce the count by 1 as one of the posts will be the initial post
@@ -819,6 +868,8 @@ public class ForumsBean implements IContextListener
    };
    
    public NodePropertyResolver resolverContent = new NodePropertyResolver() {
+      private static final long serialVersionUID = -2575377410105460440L;
+
       public Object get(Node node) 
       {
          String content = null;
@@ -826,7 +877,7 @@ public class ForumsBean implements IContextListener
          // get the content property from the node and retrieve the 
          // full content as a string (obviously should only be used
          // for small amounts of content)
-         ContentReader reader = contentService.getReader(node.getNodeRef(), 
+         ContentReader reader = getContentService().getReader(node.getNodeRef(), 
                ContentModel.PROP_CONTENT);
          
          if (reader != null)
@@ -839,13 +890,15 @@ public class ForumsBean implements IContextListener
    };
    
    public NodePropertyResolver resolverReplyTo = new NodePropertyResolver() {
+      private static final long serialVersionUID = 2614901755220899360L;
+
       public Object get(Node node) 
       {
          // determine if this node is a reply to another post, if so find
          // the creator of the original poster
          String replyTo = null;
          
-         List<AssociationRef> assocs = nodeService.getTargetAssocs(node.getNodeRef(),
+         List<AssociationRef> assocs = getNodeService().getTargetAssocs(node.getNodeRef(),
                ContentModel.ASSOC_REFERENCES);
          
          // there should only be one association, if there is more than one
@@ -928,7 +981,7 @@ public class ForumsBean implements IContextListener
    {
       // get the content of the article being replied to
       String replyContent = "";
-      ContentReader reader = this.contentService.getReader(replyToNode.getNodeRef(), 
+      ContentReader reader = this.getContentService().getReader(replyToNode.getNodeRef(), 
             ContentModel.PROP_CONTENT);  
       if (reader != null)
       {
@@ -959,6 +1012,8 @@ public class ForumsBean implements IContextListener
     */
    public static class TopicBubbleViewRenderer implements IRichListRenderer
    {
+      private static final long serialVersionUID = -6641033880549363822L;
+      
       public static final String VIEWMODEID = "bubble";
       
       public String getViewModeID()

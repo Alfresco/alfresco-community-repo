@@ -61,9 +61,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ManageChangeRequestTaskDialog extends ManageTaskDialog
 {
+   private static final long serialVersionUID = -236829535702107101L;
+   
    protected boolean doResubmitNow = false;
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMLockingService avmLockingService;
+   transient private AVMLockingService avmLockingService;
    
    private final static Log logger = LogFactory.getLog(ManageChangeRequestTaskDialog.class);
    
@@ -103,7 +105,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       String outcome = getDefaultFinishOutcome();
       
       if (logger.isDebugEnabled())
-         logger.debug("Transitioning change request task: " + this.task.id);
+         logger.debug("Transitioning change request task: " + this.getWorkflowTask().id);
       
       FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
@@ -122,20 +124,20 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
          
          // update the task with the updated parameters and resources
-         this.workflowService.updateTask(this.task.id, params, null, null);
+         this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
          
          // get the list of nodes that have expired (comparing workflow store to
          // the users main store)
          List<String> submitPaths = new ArrayList<String>();
          List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>();
          Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage);
-         AVMNodeDescriptor pkgDesc = this.avmService.lookup(pkgPath.getFirst(), pkgPath.getSecond());
+         AVMNodeDescriptor pkgDesc = this.getAvmService().lookup(pkgPath.getFirst(), pkgPath.getSecond());
          String targetPath = pkgDesc.getIndirection();
-         List<AVMDifference> diffs = this.avmSyncService.compare(pkgPath.getFirst(), 
+         List<AVMDifference> diffs = this.getAvmSyncService().compare(pkgPath.getFirst(), 
                   pkgPath.getSecond(), -1, targetPath, null);
          
          // update the users main store with the changes from the workflow store
-         this.avmSyncService.update(diffs, null, false, false, true, true, null, null);
+         this.getAvmSyncService().update(diffs, null, false, false, true, true, null, null);
          
          // move locks
          for (AVMDifference diff : diffs)
@@ -144,11 +146,11 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
             String destPath = diff.getDestinationPath();
             
             // move the lock for this path from the user workflow sandbox to the users main store
-            AVMLock lock = this.avmLockingService.getLock(AVMUtil.getStoreId(sourcePath), 
+            AVMLock lock = this.getAvmLockingService().getLock(AVMUtil.getStoreId(sourcePath), 
                      AVMUtil.getStoreRelativePath(sourcePath));
             if (lock != null)
             {
-               this.avmLockingService.modifyLock(AVMUtil.getStoreId(sourcePath), 
+               this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(sourcePath), 
                         AVMUtil.getStoreRelativePath(sourcePath), null,
                         AVMUtil.getStoreName(destPath), lock.getOwners(),
                         newLockOwners);
@@ -156,7 +158,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
                if (logger.isDebugEnabled())
                {
                   logger.debug("Moved lock: " + lock + " to: " + 
-                           this.avmLockingService.getLock(AVMUtil.getStoreId(destPath), 
+                           this.getAvmLockingService().getLock(AVMUtil.getStoreId(destPath), 
                                     AVMUtil.getStoreRelativePath(destPath)));
                }
             }
@@ -169,7 +171,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
             {
                String destPath = diff.getDestinationPath();
                
-               AVMNodeDescriptor node = this.avmService.lookup(diff.getDestinationVersion(), 
+               AVMNodeDescriptor node = this.getAvmService().lookup(diff.getDestinationVersion(), 
                         destPath, true);
                if (node != null)
                {
@@ -182,7 +184,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          }
          
          // signal the default transition to the workflow task
-         this.workflowService.endTask(this.task.id, null);
+         this.getWorkflowService().endTask(this.getWorkflowTask().id, null);
          
          // commit the changes
          tx.commit();
@@ -238,6 +240,15 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
    // ------------------------------------------------------------------------------
    // Helper methods
    
+   protected AVMLockingService getAvmLockingService()
+   {
+      if (this.avmLockingService == null)
+      {
+         this.avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
+      }
+      return this.avmLockingService;
+   }
+
    /**
     * Submits all the expired items immediately after the task is completed
     * by launching the submit dialog with the expired items set as the modified
@@ -256,11 +267,11 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
 
       // get hold of the node ref that represents the web project the expired items
       // belong to and get the name of the users main store
-      NodeRef userStoreNodeRef = (NodeRef)this.nodeService.getProperty(
+      NodeRef userStoreNodeRef = (NodeRef)this.getNodeService().getProperty(
                this.workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
       String userStoreAvmPath = AVMNodeConverter.ToAVMVersionPath(userStoreNodeRef).getSecond();
       String userStoreName = AVMUtil.getStoreName(userStoreAvmPath);
-      String stagingStoreName = this.avmService.getStoreProperty(userStoreName, 
+      String stagingStoreName = this.getAvmService().getStoreProperty(userStoreName, 
                SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
       NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStoreName);
       

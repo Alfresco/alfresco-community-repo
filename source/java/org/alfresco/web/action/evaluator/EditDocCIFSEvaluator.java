@@ -41,6 +41,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class EditDocCIFSEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -8988276140748731926L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

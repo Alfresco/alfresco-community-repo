@@ -49,6 +49,8 @@ import org.alfresco.web.ui.common.component.description.UIDescription;
  */
 public class DashboardWizard extends BaseWizardBean
 {
+   private static final long serialVersionUID = 2544040677742418309L;
+
    private static final String COMPONENT_COLUMNDASHLETS = "column-dashlets";
 
    private static final String COMPONENT_ALLDASHLETS = "all-dashlets";

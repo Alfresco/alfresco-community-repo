@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.content.CreateContentWizard;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
@@ -68,6 +69,8 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
+import org.alfresco.web.forms.FormProcessor;
+import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.XMLUtil;
@@ -84,29 +87,43 @@ import org.w3c.dom.Document;
  */
 public class CreateWebContentWizard extends CreateContentWizard
 {
+   private static final long serialVersionUID = -4090370304405270047L;
+
    private static final Log LOGGER = LogFactory.getLog(CreateWebContentWizard.class);
-   
+
    protected String content = null;
-   protected transient List<SelectItem> createMimeTypes;
-   protected transient List<SelectItem> formChoices;
+   transient private List<SelectItem> createMimeTypes;
+   transient private List<SelectItem> formChoices;
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
+   protected FormProcessor.Session formProcessorSession = null;
+   transient private Document instanceDataDocument = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
 
-   protected AVMLockingService avmLockingService;
-   protected AVMService avmService;
-   protected AVMSyncService avmSyncService;
+   transient private AVMLockingService avmLockingService;
+   transient private AVMService avmService;
+   transient private AVMSyncService avmSyncService;
    protected AVMBrowseBean avmBrowseBean;
    protected FilePickerBean filePickerBean;
+   transient private FormsService formsService;
 
    /**
-    * @param avmService       The AVMService to set.
+    * @param avmService The AVMService to set.
     */
    public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
+   }
+
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingAwareService();
+      }
+      return avmService;
    }
 
    /**
@@ -117,16 +134,34 @@ public class CreateWebContentWizard extends CreateContentWizard
       this.avmLockingService = avmLockingService;
    }
 
+   protected AVMLockingService getAvmLockingService()
+   {
+      if (avmLockingService == null)
+      {
+         avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
+      }
+      return avmLockingService;
+   }
+
    /**
-    * @param avmSyncService       The AVMSyncService to set.
+    * @param avmSyncService The AVMSyncService to set.
     */
    public void setAvmSyncService(final AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
    }
    
+   protected AVMSyncService getAvmSyncService()
+   {
+      if (avmSyncService == null)
+      {
+         avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return avmSyncService;
+   }
+
    /**
-    * @param avmBrowseBean    The AVMBrowseBean to set.
+    * @param avmBrowseBean The AVMBrowseBean to set.
     */
    public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
    {
@@ -134,21 +169,38 @@ public class CreateWebContentWizard extends CreateContentWizard
    }
 
    /**
-    * @param filePickerBean    The FilePickerBean to set.
+    * @param filePickerBean The FilePickerBean to set.
     */
    public void setFilePickerBean(final FilePickerBean filePickerBean)
    {
       this.filePickerBean = filePickerBean;
    }
-  
+
+   /**
+    * @param formsService The FormsService to set.
+    */
+   public void setFormsService(final FormsService formsService)
+   {
+      this.formsService = formsService;
+   }
+
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
-   
+
    @Override
    public void init(Map<String, String> parameters)
    {
       super.init(parameters);
-      
+
       this.content = null;
       this.inlineEdit = true;
       this.formName = null;
@@ -181,7 +233,7 @@ public class CreateWebContentWizard extends CreateContentWizard
             Utils.addErrorMessage(fnfe.getMessage(), fnfe);
          }
       }
-      
+
       // reset the preview layer
       String storeName = AVMUtil.getStoreName(this.avmBrowseBean.getCurrentPath());
       storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
@@ -197,7 +249,7 @@ public class CreateWebContentWizard extends CreateContentWizard
                LOGGER.debug("reseting layer " + path);
             
             // call the actual implementation
-            avmSyncService.resetLayer(path);
+            getAvmSyncService().resetLayer(path);
             return null;
          }
       };
@@ -264,14 +316,14 @@ public class CreateWebContentWizard extends CreateContentWizard
                   if (LOGGER.isDebugEnabled())
                      LOGGER.debug("clearing form instance data: " + formInstanceData.getPath());
                   
-                  avmService.removeNode(formInstanceData.getPath());
+                  getAvmService().removeNode(formInstanceData.getPath());
                }
                
                if (renditions != null)
                {
                   for (Rendition r : renditions)
                   {
-                     avmService.removeNode(r.getPath());
+                     getAvmService().removeNode(r.getPath());
                   }
                }
                
@@ -303,27 +355,20 @@ public class CreateWebContentWizard extends CreateContentWizard
       {
          this.saveContent();
       }
-            
+      
       final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
-      final List<AVMDifference> diffList = 
-         new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
-      diffList.add(new AVMDifference(-1, this.createdPath, 
-                                     -1, AVMUtil.getCorrespondingPathInMainStore(this.createdPath),
-                                     AVMDifference.NEWER));
+      final List<AVMDifference> diffList = new ArrayList<AVMDifference>(1 + this.renditions.size() + uploadedFiles.length);
+      diffList.add(new AVMDifference(-1, this.createdPath, -1, AVMUtil.getCorrespondingPathInMainStore(this.createdPath), AVMDifference.NEWER));
       for (Rendition rendition : this.renditions)
       {
          final String path = rendition.getPath();
-         diffList.add(new AVMDifference(-1, path, 
-                                        -1, AVMUtil.getCorrespondingPathInMainStore(path),
-                                        AVMDifference.NEWER));
+         diffList.add(new AVMDifference(-1, path, -1, AVMUtil.getCorrespondingPathInMainStore(path), AVMDifference.NEWER));
       }
 
       for (NodeRef uploadedFile : uploadedFiles)
       {
          final String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-         diffList.add(new AVMDifference(-1, path,
-                                        -1, AVMUtil.getCorrespondingPathInMainStore(path),
-                                        AVMDifference.NEWER));
+         diffList.add(new AVMDifference(-1, path, -1, AVMUtil.getCorrespondingPathInMainStore(path), AVMDifference.NEWER));
       }
 
       if (LOGGER.isDebugEnabled())
@@ -333,50 +378,36 @@ public class CreateWebContentWizard extends CreateContentWizard
             LOGGER.debug("updating main store with " + diff.getSourcePath());
          }
       }
-      this.avmSyncService.update(diffList, null, true, true, true, true, null, null);
+      this.getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
       for (final AVMDifference diff : diffList)
       {
          final String path = diff.getDestinationPath();
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("modifying lock on " + path + 
-                         ".  chaging store from " + 
-                         this.avmLockingService.getLock(AVMUtil.getStoreId(path), 
-                                                        AVMUtil.getStoreRelativePath(path)).getStore() +
-                         " to " + AVMUtil.getStoreName(path));
+            LOGGER.debug("modifying lock on " + path + ".  chaging store from "
+                  + this.getAvmLockingService().getLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path)).getStore() + " to " + AVMUtil.getStoreName(path));
          }
-         this.avmLockingService.modifyLock(AVMUtil.getStoreId(path), 
-                                           AVMUtil.getStoreRelativePath(path),
-                                           null,
-                                           AVMUtil.getStoreName(path),
-                                           null,
-                                           null);
+         this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path), null, AVMUtil.getStoreName(path), null, null);
       }
       if (this.startWorkflow)
       {
-         final List<AVMNodeDescriptor> submitNodes = 
-            new ArrayList<AVMNodeDescriptor>(1 + 
-                                             this.getUploadedFiles().size() +
-                                             this.getRenditions().size());
+         final List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>(1 + this.getUploadedFiles().size() + this.getRenditions().size());
          for (final AVMDifference d : diffList)
          {
-            submitNodes.add(this.avmService.lookup(-1, d.getDestinationPath()));
+            submitNodes.add(getAvmService().lookup(-1, d.getDestinationPath()));
          }
          this.avmBrowseBean.setNodesForSubmit(submitNodes);
          final Map<String, String> dialogParams = new HashMap<String, String>(1);
-         dialogParams.put(SubmitDialog.PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN, 
-                          Boolean.TRUE.toString());
+         dialogParams.put(SubmitDialog.PARAM_LOAD_SELECTED_NODES_FROM_BROWSE_BEAN, Boolean.TRUE.toString());
          Application.getDialogManager().setupParameters(dialogParams);
-         outcome = (outcome + 
-                    AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
-                    AlfrescoNavigationHandler.DIALOG_PREFIX + "submitSandboxItems");
+         outcome = (outcome + AlfrescoNavigationHandler.OUTCOME_SEPARATOR + AlfrescoNavigationHandler.DIALOG_PREFIX + "submitSandboxItems");
       }
       if (this.formProcessorSession != null)
       {
          this.formProcessorSession.destroy();
       }
       this.filePickerBean.clearUploadedFiles();
-      
+
       // return the default outcome
       return outcome;
    }
@@ -391,38 +422,36 @@ public class CreateWebContentWizard extends CreateContentWizard
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
+         this.formInstanceData = getFormsService().getFormInstanceData(-1, this.createdPath);
          this.renditions = this.formInstanceData.getRenditions();
          if (LOGGER.isDebugEnabled())
-            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + 
-                         " and " + this.renditions.size() + " to main store");
+            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + " and " + this.renditions.size() + " to main store");
       }
 
       return outcome;
    }
-   
+
    @Override
    public boolean getNextButtonDisabled()
    {
       // TODO: Allow the next button state to be configured so that
-      //       wizard implementations don't have to worry about 
-      //       checking step numbers
-      
+      // wizard implementations don't have to worry about
+      // checking step numbers
+
       boolean disabled = false;
       if ("details".equals(Application.getWizardManager().getCurrentStepName()))
       {
          disabled = (this.fileName == null || this.fileName.length() == 0);
       }
-      
+
       return disabled;
    }
-   
+
    /**
     * Save the specified content using the currently set wizard attributes
     */
    @SuppressWarnings("unchecked")
-   protected void saveContent() 
-      throws Exception
+   protected void saveContent() throws Exception
    {
       // get the parent path of the location to save the content
       String fileName = this.getFileName();
@@ -430,17 +459,12 @@ public class CreateWebContentWizard extends CreateContentWizard
          LOGGER.debug("saving file content to " + fileName);
 
       final String cwd = AVMUtil.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
-      final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) 
-                         ? this.getForm()
-                         : null);
+      final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) ? this.getForm() : null);
       String path = cwd;
       if (form != null)
       {
-         path = form.getOutputPathForFormInstanceData(this.instanceDataDocument,
-                                                      fileName,
-                                                      cwd, 
-                                                      this.avmBrowseBean.getWebapp());
-         this.content = XMLUtil.toString(this.instanceDataDocument, false);
+         path = form.getOutputPathForFormInstanceData(this.getInstanceDataDocument(), fileName, cwd, this.avmBrowseBean.getWebapp());
+         this.content = XMLUtil.toString(this.getInstanceDataDocument(), false);
          final String[] sb = AVMNodeConverter.SplitBase(path);
          path = sb[0];
          fileName = sb[1];
@@ -457,9 +481,7 @@ public class CreateWebContentWizard extends CreateContentWizard
       // put the content of the file into the AVM store
       try
       {
-         avmService.createFile(path, 
-                               fileName, 
-                               new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
+         getAvmService().createFile(path, fileName, new ByteArrayInputStream((this.content == null ? "" : this.content).getBytes("UTF-8")));
       }
       catch (AVMExistsException avmee)
       {
@@ -467,24 +489,24 @@ public class CreateWebContentWizard extends CreateContentWizard
          msg = MessageFormat.format(msg, fileName);
          throw new AlfrescoRuntimeException(msg, avmee);
       }
-      
+
       // remember the created path
       this.createdPath = AVMNodeConverter.ExtendAVMPath(path, fileName);
-      
+
       // add titled aspect for the read/edit properties screens
       final NodeRef formInstanceDataNodeRef = AVMNodeConverter.ToNodeRef(-1, this.createdPath);
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
       props.put(ContentModel.PROP_TITLE, fileName);
-      this.nodeService.addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, props);
+      this.getNodeService().addAspect(formInstanceDataNodeRef, ContentModel.ASPECT_TITLED, props);
       
       if (form != null)
       {
          props.clear();
          props.put(WCMAppModel.PROP_PARENT_FORM_NAME, form.getName());
          props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, cwd);
-         this.nodeService.addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
+         this.getNodeService().addAspect(formInstanceDataNodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
 
-         this.formInstanceData = this.formsService.getFormInstanceData(formInstanceDataNodeRef);
+         this.formInstanceData = getFormsService().getFormInstanceData(formInstanceDataNodeRef);
          this.renditions = new LinkedList<Rendition>();
          for (RenderingEngineTemplate ret : form.getRenderingEngineTemplates())
          {
@@ -518,22 +540,18 @@ public class CreateWebContentWizard extends CreateContentWizard
          this.renditions = Collections.EMPTY_LIST;
       }
    }
-   
-   
+
    // ------------------------------------------------------------------------------
    // Bean Getters and Setters
-   
+
    /** Overrides in order to strip an xml extension if the user entered it */
    @Override
    public String getFileName()
    {
       final String result = super.getFileName();
-      return (result != null &&
-              MimetypeMap.MIMETYPE_XML.equals(this.mimeType) &&
-              this.getFormName() != null &&
-              "xml".equals(FilenameUtils.getExtension(result).toLowerCase())
-              ? FilenameUtils.removeExtension(result)
-              : result);
+      return (result != null && MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.getFormName() != null && "xml".equals(FilenameUtils.getExtension(result).toLowerCase()) ? FilenameUtils
+            .removeExtension(result)
+            : result);
    }
 
    /**
@@ -543,7 +561,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       return this.content;
    }
-   
+
    /**
     * @param content The content to edit (should be clear initially)
     */
@@ -565,14 +583,14 @@ public class CreateWebContentWizard extends CreateContentWizard
          {
             this.formChoices.add(new SelectItem(f.getName(), f.getTitle()));
          }
-         
+
          final QuickSort sorter = new QuickSort(this.formChoices, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
          sorter.sort();
-         
+
       }
       return this.formChoices;
    }
-   
+
    /**
     * @return Returns a list of mime types to allow the user to select from
     */
@@ -581,10 +599,10 @@ public class CreateWebContentWizard extends CreateContentWizard
       if ((this.createMimeTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
          final FacesContext context = FacesContext.getCurrentInstance();
-         
+
          // add the well known object type to start with
          this.createMimeTypes = new ArrayList<SelectItem>(5);
-         
+
          // add the configured create mime types to the list
          final ConfigService svc = Application.getConfigService(context);
          final Config wizardCfg = svc.getConfig("Content Wizards");
@@ -604,9 +622,7 @@ public class CreateWebContentWizard extends CreateContentWizard
                for (ConfigElement child : typesCfg.getChildren())
                {
                   final String currentMimeType = child.getAttribute("name");
-                  if (currentMimeType == null ||
-                      (MimetypeMap.MIMETYPE_XML.equals(currentMimeType) &&
-                       this.getFormChoices().size() == 0))
+                  if (currentMimeType == null || (MimetypeMap.MIMETYPE_XML.equals(currentMimeType) && this.getFormChoices().size() == 0))
                   {
                      continue;
                   }
@@ -614,28 +630,40 @@ public class CreateWebContentWizard extends CreateContentWizard
                   final String label = this.getSummaryMimeType(currentMimeType);
                   this.createMimeTypes.add(new SelectItem(currentMimeType, label));
                }
-               
+
                // make sure the list is sorted by the label
                final QuickSort sorter = new QuickSort(this.objectTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
                sorter.sort();
             }
          }
       }
-      
+
       return this.createMimeTypes;
    }
 
-   public Form getForm()
-      throws FormNotFoundException
-   {
-      return (this.getFormName() != null 
-              ? this.avmBrowseBean.getWebProject().getForm(this.getFormName())
-              : null);
-   }
-   
    /**
-    * @return Returns the wrapper instance data for feeding the xml
-    * content to the form processor.
+    * @return the current seleted form's name or <tt>null</tt>.
+    */
+   public String getFormName()
+   {
+      return this.formName;
+   }
+
+   public Form getForm() throws FormNotFoundException
+   {
+      return (this.getFormName() != null ? this.avmBrowseBean.getWebProject().getForm(this.getFormName()) : null);
+   }
+
+   /**
+    * @param form Sets the currently selected form
+    */
+   public void setFormName(final String formName)
+   {
+      this.formName = formName;
+   }
+
+   /**
+    * @return Returns the wrapper instance data for feeding the xml content to the form processor.
     */
    public Document getInstanceDataDocument()
    {
@@ -644,9 +672,7 @@ public class CreateWebContentWizard extends CreateContentWizard
          final String content = this.getContent();
          try
          {
-            this.instanceDataDocument = (content != null 
-                                         ? XMLUtil.parse(content) 
-                                         : XMLUtil.newDocument());
+            this.instanceDataDocument = (content != null ? XMLUtil.parse(content) : XMLUtil.newDocument());
          }
          catch (Exception e)
          {
@@ -671,7 +697,7 @@ public class CreateWebContentWizard extends CreateContentWizard
       }
       return items;
    }
-      
+
    /**
     * Returns the generated form instance data.
     */
@@ -679,7 +705,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       return this.formInstanceData;
    }
-   
+
    /**
     * Returns the generated renditions
     */
@@ -687,7 +713,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       return this.renditions;
    }
-   
+
    /**
     * Returns the files uploaded using the form
     */
@@ -700,17 +726,15 @@ public class CreateWebContentWizard extends CreateContentWizard
       }
 
       final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
-      final List<UIListItem> result = 
-         new ArrayList<UIListItem>(uploadedFiles.length);
+      final List<UIListItem> result = new ArrayList<UIListItem>(uploadedFiles.length);
 
       for (NodeRef nodeRef : uploadedFiles)
       {
          final UIListItem item = new UIListItem();
-         final String name = (String)
-            this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+         final String name = (String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME);
          item.setValue(name);
-         item.setLabel((String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
-         item.setDescription((String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+         item.setLabel((String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE));
+         item.setDescription((String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
          item.setImage(Utils.getFileTypeImage(name, false));
          result.add(item);
       }
@@ -718,8 +742,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    }
 
    /**
-    * Returns the number of submittable files which is the total number of
-    * uploaded files, renditions, and the form instance data.
+    * Returns the number of submittable files which is the total number of uploaded files, renditions, and the form instance data.
     */
    public int getNumberOfSubmittableFiles()
    {
@@ -752,43 +775,30 @@ public class CreateWebContentWizard extends CreateContentWizard
    }
 
    /**
-    * Provides the url to the preview sandbox containing the asset currently
-    * being edited.
+    * Provides the url to the preview sandbox containing the asset currently being edited.
     */
    public String getPreviewSandboxUrl()
    {
-      return AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), 
-                                    this.avmBrowseBean.getWebapp());
+      return AVMUtil.buildWebappUrl(AVMUtil.getCorrespondingPreviewStoreName(this.avmBrowseBean.getSandbox()), this.avmBrowseBean.getWebapp());
    }
-   
+
    public String getSummary()
    {
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
-      
+
       // TODO: show first few lines of content here?
-      return this.buildSummary(
-            new String[] 
-            {
-               bundle.getString("file_name"), 
-               bundle.getString("type"), 
-               bundle.getString("content_type")
-            },
-            new String[] 
-            {
-               this.getFileName(), 
-               this.getSummaryObjectType(), 
-               this.getSummaryMimeType(this.mimeType)
-            });
+      return this.buildSummary(new String[] { bundle.getString("file_name"), bundle.getString("type"), bundle.getString("content_type") }, new String[] { this.getFileName(),
+            this.getSummaryObjectType(), this.getSummaryMimeType(this.mimeType) });
    }
 
    public boolean getEditMode()
    {
       return false;
    }
-   
+
    // ------------------------------------------------------------------------------
    // Action event handlers
-   
+
    /**
     * Create content type value changed by the user
     */

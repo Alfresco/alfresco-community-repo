@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class LinkCategoryHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -5956987738674149920L;
+   
    protected static final String PROP_CATEGORY = "category";
    
    public String getJSPPath()

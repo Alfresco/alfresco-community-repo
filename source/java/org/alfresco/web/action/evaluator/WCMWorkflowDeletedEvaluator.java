@@ -41,6 +41,8 @@ import org.alfresco.web.bean.wcm.AVMUtil;
  */
 public class WCMWorkflowDeletedEvaluator extends WCMLockEvaluator
 {
+   private static final long serialVersionUID = -4341942166433855200L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

@@ -25,15 +25,18 @@
 package org.alfresco.web.bean;
 
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Bean to hold the results of a file upload
  * 
  * @author gavinc
  */
-public final class FileUploadBean
+public final class FileUploadBean implements Serializable
 {
 
+   private static final long serialVersionUID = 7667383955924957544L;
+   
    public static final String FILE_UPLOAD_BEAN_NAME = "alfresco.UploadBean";
 
    public static String getKey(final String id)

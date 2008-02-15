@@ -51,8 +51,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class MySpacesBean
+public class MySpacesBean implements Serializable
 {
+   private static final long serialVersionUID = -5684182834188359483L;
+   
    private static Log logger = LogFactory.getLog(MySpacesBean.class);
    
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)

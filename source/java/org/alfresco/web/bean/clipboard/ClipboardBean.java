@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +52,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class ClipboardBean
+public class ClipboardBean implements Serializable
 {
+   private static final long serialVersionUID = -6299320341615099651L;
+
    private static Log logger = LogFactory.getLog(ClipboardBean.class);
    
    /** I18N messages */

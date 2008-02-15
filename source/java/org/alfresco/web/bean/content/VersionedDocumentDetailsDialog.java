@@ -64,14 +64,16 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  *
  * @author Yanick Pignot
  */
-public class VersionedDocumentDetailsDialog
+public class VersionedDocumentDetailsDialog implements Serializable
 {
-	/** Dependencies */
-	protected VersionService versionService;
-    protected EditionService editionService;
-    protected NodeService nodeService;
-    protected MultilingualContentService multilingualContentService;
-    protected ContentFilterLanguagesService contentFilterLanguagesService;
+    private static final long serialVersionUID = 1575175076564595262L;
+   
+    /** Dependencies */
+	 transient private VersionService versionService;
+	 transient private EditionService editionService;
+	 transient private NodeService nodeService;
+	 transient private MultilingualContentService multilingualContentService;
+	 transient private ContentFilterLanguagesService contentFilterLanguagesService;
 
     private static final Comparator VERSION_LABEL_COMPARATOR = new VersionLabelComparator();
 
@@ -130,7 +132,7 @@ public class VersionedDocumentDetailsDialog
     	   NodeRef currentNodeRef = new NodeRef(Repository.getStoreRef(), id);
 
     	   // the threatment is different if the node is a translation or a mlContainer
-    	   if(nodeService.getType(currentNodeRef).equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
+    	   if(getNodeService().getType(currentNodeRef).equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
     	   {
                //  test if the lang parameter is valid
                ParameterCheck.mandatoryString("The lang of the node", lang);
@@ -140,7 +142,7 @@ public class VersionedDocumentDetailsDialog
                versionLabel = cleanVersionLabel(versionLabel);
 
                // set the edition information of the mlContainer of the selected translation version
-               this.editionHistory  = editionService.getEditions(currentNodeRef);
+               this.editionHistory  = getEditionService().getEditions(currentNodeRef);
                this.documentEdition = editionHistory.getVersion(versionLabel);
 
                // set the version to display
@@ -151,7 +153,7 @@ public class VersionedDocumentDetailsDialog
                fromPreviousEditon = false;
 
                // set the version history
-               this.versionHistory = versionService.getVersionHistory(currentNodeRef);
+               this.versionHistory = getVersionService().getVersionHistory(currentNodeRef);
                // set the version to display
                this.documentVersion = getBrowsingVersionForDocument(currentNodeRef, versionLabel);
     	   }
@@ -242,7 +244,7 @@ public class VersionedDocumentDetailsDialog
     public List getTranslations()
     {
        // get the version of the mlContainer and its translations
-       List<VersionHistory> translationsList = editionService.getVersionedTranslations(this.documentEdition);
+       List<VersionHistory> translationsList = getEditionService().getVersionedTranslations(this.documentEdition);
 
        Map<Locale, NodeRef> translationNodeRef;
 
@@ -250,7 +252,7 @@ public class VersionedDocumentDetailsDialog
        if(translationsList.size() == 0)
        {
            // the selection edition is the current: use the multilingual content service
-           translationNodeRef = multilingualContentService.getTranslations(this.documentEdition.getVersionedNodeRef());
+           translationNodeRef = getMultilingualContentService().getTranslations(this.documentEdition.getVersionedNodeRef());
        }
        else
        {
@@ -270,7 +272,7 @@ public class VersionedDocumentDetailsDialog
                if(lastVersion != null)
                {
                    NodeRef versionNodeRef = lastVersion.getFrozenStateNodeRef();
-                   Locale locale = (Locale) nodeService.getProperty(versionNodeRef, ContentModel.PROP_LOCALE);
+                   Locale locale = (Locale) getNodeService().getProperty(versionNodeRef, ContentModel.PROP_LOCALE);
                    translationNodeRef.put(locale, versionNodeRef);
                }
            }
@@ -289,14 +291,14 @@ public class VersionedDocumentDetailsDialog
 
            String lgge = (locale != null) ?
                  // convert the locale into new ISO codes
-                 contentFilterLanguagesService.convertToNewISOCode(locale.getLanguage()).toUpperCase()
+                 getContentFilterLanguagesService().convertToNewISOCode(locale.getLanguage()).toUpperCase()
                  : null;
 
-           mapNode.put("name", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+           mapNode.put("name", getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
            mapNode.put("language", lgge);
            mapNode.put("url", DownloadContentServlet.generateBrowserURL(nodeRef, mapNode.getName()));
 
-           mapNode.put("notEmpty", new Boolean(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION)));
+           mapNode.put("notEmpty", new Boolean(!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION)));
 
            // add the client side version to the list
            translations.add(mapNode);
@@ -390,7 +392,7 @@ public class VersionedDocumentDetailsDialog
    */
    public String getName()
    {
-      String name  = (String) nodeService.getProperty(getFrozenStateNodeRef(), ContentModel.PROP_NAME);
+      String name  = (String)getNodeService().getProperty(getFrozenStateNodeRef(), ContentModel.PROP_NAME);
       return name;
    }
 
@@ -405,7 +407,7 @@ public class VersionedDocumentDetailsDialog
 
    public boolean isEmptyTranslation()
    {
-       return nodeService.hasAspect(getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+       return getNodeService().hasAspect(getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
    }
 
    /**
@@ -443,7 +445,7 @@ public class VersionedDocumentDetailsDialog
     */
    private Version getBrowsingVersionForDocument(NodeRef document, String versionLabel)
    {
-	   return this.versionService.getVersionHistory(document).getVersion(versionLabel);
+	   return this.getVersionService().getVersionHistory(document).getVersion(versionLabel);
    }
 
    /**
@@ -451,10 +453,10 @@ public class VersionedDocumentDetailsDialog
     */
    private Version getBrowsingCurrentVersionForMLContainer(NodeRef document, String lang)
    {
-	   NodeRef translation = multilingualContentService.getTranslationForLocale(document, I18NUtil.parseLocale(lang));
-	   this.versionHistory = versionService.getVersionHistory(translation);
+	   NodeRef translation = getMultilingualContentService().getTranslationForLocale(document, I18NUtil.parseLocale(lang));
+	   this.versionHistory = getVersionService().getVersionHistory(translation);
 
-	   return versionService.getCurrentVersion(translation);
+	   return getVersionService().getCurrentVersion(translation);
    }
 
    /**
@@ -464,7 +466,7 @@ public class VersionedDocumentDetailsDialog
    private Version getBrowsingVersionForMLContainer(NodeRef document, String editionLabel, String lang)
    {
        // get the list of translations of the given edition of the mlContainer
-	   List<VersionHistory> translations = editionService.getVersionedTranslations(this.documentEdition);
+	   List<VersionHistory> translations = getEditionService().getVersionedTranslations(this.documentEdition);
 
 	   // if translation size == 0, the edition is the current edition and the translations are not yet attached.
 	   if(translations.size() == 0)
@@ -488,7 +490,7 @@ public class VersionedDocumentDetailsDialog
 
 			   if(lastVersion != null)
 			   {
-				   Map<QName, Serializable> properties = editionService.getVersionedMetadatas(lastVersion);
+				   Map<QName, Serializable> properties = getEditionService().getVersionedMetadatas(lastVersion);
 				   Locale locale = (Locale) properties.get(ContentModel.PROP_LOCALE);
 
 				   if(locale.getLanguage().equalsIgnoreCase(lang))
@@ -512,6 +514,15 @@ public class VersionedDocumentDetailsDialog
    {
       this.versionService = versionService;
    }
+   
+   protected VersionService getVersionService()
+   {
+      if (versionService == null)
+      {
+         versionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVersionService();
+      }
+      return versionService;
+   }
 
    /**
     * @param editionService the Edition Service to set
@@ -519,6 +530,15 @@ public class VersionedDocumentDetailsDialog
    public void setEditionService(EditionService editionService)
    {
        this.editionService = editionService;
+   }
+   
+   protected EditionService getEditionService()
+   {
+      if (editionService == null)
+      {
+         editionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getEditionService();
+      }
+      return editionService;
    }
 
    /**
@@ -528,6 +548,15 @@ public class VersionedDocumentDetailsDialog
    {
        this.nodeService = nodeService;
    }
+   
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
 
    /**
     * @param contentFilterLanguagesService the Content Filter Languages Service to set
@@ -536,6 +565,15 @@ public class VersionedDocumentDetailsDialog
    {
       this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
+   
+   protected ContentFilterLanguagesService getContentFilterLanguagesService()
+   {
+      if (contentFilterLanguagesService == null)
+      {
+         contentFilterLanguagesService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentFilterLanguagesService();
+      }
+      return contentFilterLanguagesService;
+   }
 
    /**
     * @param Multilingual Content Service the Multilingual Content Service to set
@@ -543,5 +581,14 @@ public class VersionedDocumentDetailsDialog
    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
    {
       this.multilingualContentService = multilingualContentService;
+   }
+   
+   protected MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
    }
 }

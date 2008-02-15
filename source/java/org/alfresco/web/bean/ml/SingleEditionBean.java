@@ -1,5 +1,6 @@
 package org.alfresco.web.bean.ml;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.alfresco.web.bean.repository.MapNode;
@@ -10,10 +11,11 @@ import org.alfresco.web.bean.repository.MapNode;
  *
  * @author pignoya
  */
-public class SingleEditionBean
+public class SingleEditionBean implements Serializable
 {
+   private static final long serialVersionUID = 9145202732094403340L;
 
-    /** The edition in a list */
+   /** The edition in a list */
     private List<MapNode> edition = null;
 
     /** The translation list of the edition */

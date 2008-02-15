@@ -43,6 +43,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CompareMimeTypeHandler extends BaseConditionHandler
 {
+   private static final long serialVersionUID = 6421611697032505073L;
+   
    protected static final String PROP_MIMETYPE = "mimetype";
    
    public String getJSPPath()

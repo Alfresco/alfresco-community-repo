@@ -67,6 +67,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CategoriesDialog extends BaseDialogBean implements IContextListener, ChangeViewSupport
 {
+   private static final long serialVersionUID = -1254971127977205987L;
+
    public static final String KEY_CATEGORY = "category";
 	
    public static final String PARAM_CATEGORY_REF = "categoryRef";
@@ -78,7 +80,7 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    private static final String LABEL_VIEW_DETAILS = "category_details";
    private final static String MSG_CLOSE = "close";
    
-   protected CategoryService categoryService;
+   transient private CategoryService categoryService;
    
    /** Members of the linked items of a category */
    private Collection<ChildAssociationRef> members = null;
@@ -172,6 +174,11 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    
    public CategoryService getCategoryService()
    {
+       if (categoryService == null)
+       {
+           categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+       }
+       
        return categoryService;
    }
 
@@ -444,7 +451,7 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
     */
    private void updateUILocation(NodeRef ref)
    {
-      String name = Repository.getNameForNode(this.nodeService, ref);
+      String name = Repository.getNameForNode(getNodeService(), ref);
       getLocation().add(new CategoryBreadcrumbHandler(ref, name));
       this.setCurrentCategory(ref);
    }

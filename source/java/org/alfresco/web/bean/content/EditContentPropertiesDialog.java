@@ -54,6 +54,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class EditContentPropertiesDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -5681296528149487178L;
+   
    protected static final String TEMP_PROP_MIMETYPE = "mimetype";
    protected static final String TEMP_PROP_ENCODING = "encoding";
    
@@ -100,12 +102,12 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       String name = (String) editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
-         fileFolderService.rename(nodeRef, name);
+         getFileFolderService().rename(nodeRef, name);
       }
       
       // we need to put all the properties from the editable bag back into 
       // the format expected by the repository
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      Map<QName, Serializable> repoProps = this.getNodeService().getProperties(nodeRef);
       
       // Extract and deal with the special mimetype property for ContentData
       String mimetype = (String) editedProps.get(TEMP_PROP_MIMETYPE);
@@ -135,15 +137,15 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       }
       
       // add the "author" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
+      if (this.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
       {
-         this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
+         this.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
       }
       
       // add the "titled" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+      if (this.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
       {
-         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+         getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
       }
       
       // add the remaining properties
@@ -159,7 +161,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
          // check for empty strings when using number types, set to null in this case
          if (propValue instanceof String)
          {
-            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+            PropertyDefinition propDef = this.getDictionaryService().getProperty(qname);
             if (((String)propValue).length() == 0)
             {
                if (propDef != null)
@@ -184,7 +186,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       }
       
       // send the properties back to the repository
-      this.nodeService.setProperties(nodeRef, repoProps);
+      this.getNodeService().setProperties(nodeRef, repoProps);
       
       // we also need to persist any association changes that may have been made
       
@@ -194,7 +196,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       {
          for (AssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+            this.getNodeService().createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
       
@@ -204,7 +206,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       {
          for (AssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+            this.getNodeService().removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
       
@@ -214,7 +216,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       {
          for (ChildAssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
+            this.getNodeService().addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
          }
       }
       
@@ -224,7 +226,7 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       {
          for (ChildAssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
+            this.getNodeService().removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
       

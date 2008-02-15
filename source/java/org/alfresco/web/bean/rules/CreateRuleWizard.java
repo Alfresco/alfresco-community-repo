@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.rules;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,10 +70,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateRuleWizard extends BaseActionWizard
 {
+   private static final long serialVersionUID = 6197875728665281192L;
+   
    protected static final String PROP_CONDITION_NAME = "conditionName";
    protected static final String PROP_CONDITION_SUMMARY = "conditionSummary";
    
-   protected RuleService ruleService;
+   transient private RuleService ruleService;
    protected RulesDialog rulesDialog;
    
    private List<SelectItem> modelTypes;
@@ -83,7 +87,7 @@ public class CreateRuleWizard extends BaseActionWizard
    protected Map<String, Serializable> currentConditionProperties;
    protected List<Map<String, Serializable>> allConditionsProperties;
 
-   protected DataModel allConditionsDataModel;
+   transient protected DataModel allConditionsDataModel;
    
    protected String title;
    protected String description;
@@ -135,7 +139,7 @@ public class CreateRuleWizard extends BaseActionWizard
       outcome = setupRule(context, rule, outcome);
       
       // Save the rule
-      this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
+      this.getRuleService().saveRule(currentSpace.getNodeRef(), rule);
       
       if (logger.isDebugEnabled())
          logger.debug("Added rule '" + this.title + "'");
@@ -308,7 +312,7 @@ public class CreateRuleWizard extends BaseActionWizard
                   // if there wasn't a client based label try and get it from the dictionary
                   if (label == null)
                   {
-                     TypeDefinition typeDef = this.dictionaryService.getType(idQName);
+                     TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
                      if (typeDef != null)
                      {
                         label = typeDef.getTitle();
@@ -351,7 +355,7 @@ public class CreateRuleWizard extends BaseActionWizard
        {
            this.mimeTypes = new ArrayList<SelectItem>(50);
            
-           Map<String, String> mimeTypes = mimetypeService.getDisplaysByMimetype();
+           Map<String, String> mimeTypes = getMimetypeService().getDisplaysByMimetype();
            for (String mimeType : mimeTypes.keySet())
            {
               this.mimeTypes.add(new SelectItem(mimeType, mimeTypes.get(mimeType)));
@@ -372,7 +376,7 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       if (this.conditions == null)
       {
-         List<ActionConditionDefinition> ruleConditions = this.actionService.getActionConditionDefinitions();
+         List<ActionConditionDefinition> ruleConditions = this.getActionService().getActionConditionDefinitions();
          this.conditions = new ArrayList<SelectItem>(ruleConditions.size());
          for (ActionConditionDefinition ruleConditionDef : ruleConditions)
          {
@@ -400,7 +404,7 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       if (this.types == null)
       {
-         List<RuleType> ruleTypes = this.ruleService.getRuleTypes();
+         List<RuleType> ruleTypes = this.getRuleService().getRuleTypes();
          this.types = new ArrayList<SelectItem>(ruleTypes.size());
          for (RuleType ruleType : ruleTypes)
          {
@@ -564,7 +568,7 @@ public class CreateRuleWizard extends BaseActionWizard
       else
       {
          // just add the action to the list and use the title as the summary
-         ActionConditionDefinition conditionDef = this.actionService.
+         ActionConditionDefinition conditionDef = this.getActionService().
                getActionConditionDefinition(this.condition);
          condProps.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
          condProps.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
@@ -683,6 +687,15 @@ public class CreateRuleWizard extends BaseActionWizard
       this.ruleService = ruleService;
    }
    
+   protected RuleService getRuleService()
+   {
+      if (ruleService == null)
+      {
+         ruleService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRuleService();
+      }
+      return ruleService;
+   }
+   
    /**
     * Sets the rulesDialog instance to be used by the wizard in edit mode
     * 
@@ -714,7 +727,7 @@ public class CreateRuleWizard extends BaseActionWizard
       rule.setExecuteAsynchronously(this.runInBackground);
       rule.setRuleDisabled(this.ruleDisabled);
       
-      CompositeAction compositeAction = this.actionService.createCompositeAction();
+      CompositeAction compositeAction = this.getActionService().createCompositeAction();
       rule.setAction(compositeAction);
       
       // add all the conditions to the rule
@@ -732,7 +745,7 @@ public class CreateRuleWizard extends BaseActionWizard
          }
          
          // add the condition to the rule
-         ActionCondition condition = this.actionService.
+         ActionCondition condition = this.getActionService().
                createActionCondition(conditionName);
          condition.setParameterValues(repoCondParams);
          
@@ -760,7 +773,7 @@ public class CreateRuleWizard extends BaseActionWizard
          }
          
          // add the action to the rule
-         Action action = this.actionService.createAction(actionName);
+         Action action = this.getActionService().createAction(actionName);
          action.setParameterValues(repoActionParams);
          compositeAction.addAction(action);
       }
@@ -818,4 +831,13 @@ public class CreateRuleWizard extends BaseActionWizard
          }
       }
    }
+   
+   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+   {
+      in.defaultReadObject();
+
+      this.allConditionsDataModel = new ListDataModel();
+      this.allConditionsDataModel.setWrappedData(this.allConditionsProperties);
+   }
+
 }

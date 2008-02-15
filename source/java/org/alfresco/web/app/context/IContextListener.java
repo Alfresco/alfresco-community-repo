@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.app.context;
 
+import java.io.Serializable;
+
 /**
  * Interface used to allow Beans to register themselves as interested in UI context events.
  * <p>
@@ -36,7 +38,7 @@ package org.alfresco.web.app.context;
  * 
  * @author Kevin Roast
  */
-public interface IContextListener
+public interface IContextListener extends Serializable
 {
    /**
     * Method called by UIContextService.notifyBeans() to inform all registered beans that

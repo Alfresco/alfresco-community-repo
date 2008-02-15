@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.TemplateMailHelperBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
@@ -71,6 +72,8 @@ import org.springframework.mail.javamail.JavaMailSender;
  */
 public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextListener
 {
+   private static final long serialVersionUID = 7925542142116904285L;
+   
    private static final String PROP_DUPLICATE = "duplicate";
    private static final String PROP_PARENT = "parent";
    private static final String PROP_ID = "id";
@@ -83,10 +86,10 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
    private static final String PROP_USERNAME = "userName";
    
    /** Injected Bean references */
-   protected PermissionService permissionService;
-   protected PersonService personService;
-   protected AuthorityService authorityService;
-   protected JavaMailSender mailSender;
+   transient private PermissionService permissionService;
+   transient private PersonService personService;
+   transient private AuthorityService authorityService;
+   transient private JavaMailSender mailSender;
    
    /** Helper providing template based mailing facilities */
    protected TemplateMailHelperBean mailHelper;
@@ -114,8 +117,8 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       super.init(parameters);
       
       mailHelper = new TemplateMailHelperBean();
-      mailHelper.setMailSender(mailSender);
-      mailHelper.setNodeService(nodeService);
+      mailHelper.setMailSender(getMailSender());
+      mailHelper.setNodeService(getNodeService());
    }
    
    /**
@@ -129,7 +132,7 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       
       // calculate the 'from' email address
       User user = Application.getCurrentUser(context);
-      String from = (String)this.nodeService.getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
+      String from = (String)this.getNodeService().getProperty(user.getPerson(), ContentModel.PROP_EMAIL);
       if (from == null || from.length() == 0)
       {
          // if the user does not have an email address get the default one from the config service
@@ -148,12 +151,12 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
          AuthorityType authType = AuthorityType.getAuthorityType(authority);
          if (authType.equals(AuthorityType.USER))
          {
-            if (selected == true && this.personService.personExists(authority))
+            if (selected == true && this.getPersonService().personExists(authority))
             {
                if (mailedAuthorities.contains(authority) == false)
                {
                   this.mailHelper.notifyUser(
-                        this.personService.getPerson(authority), spaceRef, from, (String)node.get(PROP_ROLES));
+                        this.getPersonService().getPerson(authority), spaceRef, from, (String)node.get(PROP_ROLES));
                   mailedAuthorities.add(authority);
                }
             }
@@ -165,15 +168,15 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
             if (expanded == false && selected == true)
             {
                // notify all members of the group
-               Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+               Set<String> users = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
                for (String userAuth : users)
                {
-                  if (this.personService.personExists(userAuth) == true)
+                  if (this.getPersonService().personExists(userAuth) == true)
                   {
                      if (mailedAuthorities.contains(userAuth) == false)
                      {
                         this.mailHelper.notifyUser(
-                              this.personService.getPerson(userAuth), spaceRef, from, (String)node.get(PROP_ROLES));
+                              this.getPersonService().getPerson(userAuth), spaceRef, from, (String)node.get(PROP_ROLES));
                         mailedAuthorities.add(userAuth);
                      }
                   }
@@ -225,12 +228,30 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       this.permissionService = permissionService;
    }
    
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
+   
    /**
     * @param personService   The PersonService to set
     */
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
    
    /**
@@ -241,12 +262,30 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       this.mailSender = mailSender;
    }
    
+   protected JavaMailSender getMailSender()
+   {
+      if (mailSender == null)
+      {
+         mailSender = (JavaMailSender) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "mailService");
+      }
+      return mailSender;
+   }
+   
    /**
     * @param authorityService    The AuthorityService to set.
     */
    public void setAuthorityService(AuthorityService authorityService)
    {
       this.authorityService = authorityService;
+   }
+   
+   protected AuthorityService getAuthorityService()
+   {
+      if (authorityService == null)
+      {
+         authorityService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authorityService;
    }
    
    /**
@@ -285,7 +324,7 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
             NodeRef spaceRef = getSpace().getNodeRef();
             while (spaceRef != null)
             {
-               Set<AccessPermission> permissions = permissionService.getAllSetPermissions(spaceRef);
+               Set<AccessPermission> permissions = getPermissionService().getAllSetPermissions(spaceRef);
                for (AccessPermission permission : permissions)
                {
                   // we are only interested in Allow and not Guest/Everyone/owner
@@ -311,9 +350,9 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
                }
                
                // walk parent inheritance chain until root or no longer inherits
-               if (permissionService.getInheritParentPermissions(spaceRef))
+               if (getPermissionService().getInheritParentPermissions(spaceRef))
                {
-                  spaceRef = nodeService.getPrimaryParent(spaceRef).getParentRef();
+                  spaceRef = getNodeService().getPrimaryParent(spaceRef).getParentRef();
                }
                else
                {
@@ -426,7 +465,7 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
                      boolean selected = (Boolean)userGroup.get(PROP_SELECTED);
                      String currentAuthority =
                         Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
-                     Set<String> authorities = authorityService.getContainedAuthorities(
+                     Set<String> authorities = getAuthorityService().getContainedAuthorities(
                            null, pickerEvent.Authority, true);
                      for (String authority : authorities)
                      {
@@ -511,9 +550,9 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       Map node = null;
       
       if (AuthorityType.getAuthorityType(authority) == AuthorityType.GUEST ||
-          this.personService.personExists(authority))
+          this.getPersonService().personExists(authority))
       {
-         NodeRef nodeRef = this.personService.getPerson(authority);
+         NodeRef nodeRef = this.getPersonService().getPerson(authority);
          if (nodeRef != null)
          {
             // create our Node representation
@@ -569,4 +608,5 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       
       return node;
    }
+   
 }

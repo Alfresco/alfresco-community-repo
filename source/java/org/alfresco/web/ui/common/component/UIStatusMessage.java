@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.common.component;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -50,8 +51,11 @@ import org.alfresco.web.ui.common.WebResources;
 /**
  * @author Kevin Roast
  */
-public class UIStatusMessage extends SelfRenderingComponent
+public class UIStatusMessage extends SelfRenderingComponent implements Serializable
 {
+   private static final long serialVersionUID = -575221861760604440L;
+
+
    /**
     * Default Constructor 
     */

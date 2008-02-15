@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
@@ -63,13 +64,14 @@ import freemarker.ext.dom.NodeModel;
 import freemarker.template.SimpleDate;
 import freemarker.template.SimpleHash;
 
-public class FormImpl 
-    implements Form
+public class FormImpl implements Form
 {
+   private static final long serialVersionUID = 1L;
+   
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
    private final NodeRef folderNodeRef;
-   protected final FormsService formsService;
+   private transient FormsService formsService;
    private transient Map<String, RenderingEngineTemplate> renderingEngineTemplates;
 
    private final static LinkedList<FormProcessor> PROCESSORS = 
@@ -100,6 +102,15 @@ public class FormImpl
       this.formsService = formsService;
    }
 
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+   
    public String getName()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
@@ -340,7 +351,7 @@ public class FormImpl
             final NodeRef renditionPropertiesNodeRef = assoc2.getChildRef();
             
             final RenderingEngineTemplate ret = 
-               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef, this.formsService);
+               new RenderingEngineTemplateImpl(retNodeRef, renditionPropertiesNodeRef, this.getFormsService());
             LOGGER.debug("loaded rendering engine template " + ret);
             result.put(ret.getName(), ret);
          }

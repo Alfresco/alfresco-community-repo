@@ -39,6 +39,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class DeleteDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 5742287199692844685L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

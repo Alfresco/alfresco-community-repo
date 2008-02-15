@@ -41,6 +41,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateReplyDialog extends CreatePostDialog
 {
+   private static final long serialVersionUID = 8036934269090933533L;
+
    protected String replyContent = null;
    
    private static final Log logger = LogFactory.getLog(CreateReplyDialog.class);
@@ -66,8 +68,8 @@ public class CreateReplyDialog extends CreatePostDialog
       
       // setup the referencing aspect with the references association
       // between the new post and the one being replied to
-      this.nodeService.addAspect(this.createdNode, ContentModel.ASPECT_REFERENCING, null);
-      this.nodeService.createAssociation(this.createdNode, this.browseBean.getDocument().getNodeRef(), 
+      this.getNodeService().addAspect(this.createdNode, ContentModel.ASPECT_REFERENCING, null);
+      this.getNodeService().createAssociation(this.createdNode, this.browseBean.getDocument().getNodeRef(), 
             ContentModel.ASSOC_REFERENCES);
       
       if (logger.isDebugEnabled())

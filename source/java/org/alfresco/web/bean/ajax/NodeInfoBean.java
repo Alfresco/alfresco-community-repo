@@ -25,6 +25,8 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,9 +52,11 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class NodeInfoBean
+public class NodeInfoBean implements Serializable
 {
-   private NodeService nodeService;
+   private static final long serialVersionUID = 137294178658919187L;
+
+   transient private NodeService nodeService;
    
    private static final Log logger = LogFactory.getLog(NodeInfoBean.class);
    
@@ -80,7 +84,7 @@ public class NodeInfoBean
       if (strNodeRef != null && strNodeRef.length() != 0)
       {
          nodeRef = new NodeRef(strNodeRef);
-         if (this.nodeService.exists(nodeRef) == false)
+         if (this.getNodeService().exists(nodeRef) == false)
          {
             out.write("<span class='errorMessage'>Node could not be found in the repository!</span>");
             return;
@@ -100,6 +104,15 @@ public class NodeInfoBean
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   private NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
    }
    
    
@@ -143,4 +156,5 @@ public class NodeInfoBean
          return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
+ 
 }

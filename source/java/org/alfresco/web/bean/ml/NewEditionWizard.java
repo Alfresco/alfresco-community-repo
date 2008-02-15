@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.ml;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
@@ -53,6 +54,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
@@ -63,14 +65,16 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class NewEditionWizard extends BaseWizardBean
 {
+    private static final long serialVersionUID = 2078582486053536124L;
+    
     public static final String ID_MESSAGE_MINOR_CHANGE = "minor_change";
     public static final String ID_MESSAGE_MAJOR_CHANGE = "major_change";
 
-    protected EditionService editionService;
-    protected MultilingualContentService multilingualContentService;
-    protected ContentFilterLanguagesService contentFilterLanguagesService;
-    protected LockService lockService;
-    protected VersionService versionService;
+    transient private EditionService editionService;
+    transient private MultilingualContentService multilingualContentService;
+    transient private ContentFilterLanguagesService contentFilterLanguagesService;
+    transient private LockService lockService;
+    transient private VersionService versionService;
 
     protected NodeRef mlContainerToVersion;
 
@@ -157,7 +161,7 @@ public class NewEditionWizard extends BaseWizardBean
         }
 
         // create the edition and get the reference of the new starting translation
-        NodeRef newPivot = editionService.createEdition(startingElement, versionProperties);
+        NodeRef newPivot = getEditionService().createEdition(startingElement, versionProperties);
 
         // redirect the user at the 'modify translation properties' page if desire.
         if (otherProperties == true)
@@ -223,12 +227,12 @@ public class NewEditionWizard extends BaseWizardBean
     private void setStartingItem(String language)
     {
         // get the starting point translation with its locale
-        startingElement = multilingualContentService.getTranslationForLocale(mlContainerToVersion, I18NUtil.parseLocale(language));
+        startingElement = getMultilingualContentService().getTranslationForLocale(mlContainerToVersion, I18NUtil.parseLocale(language));
 
         // set the futur properties of the new starting element (only usefull for the summary step)
         setLanguage(language);
-        setTitle((String) nodeService.getProperty(startingElement, ContentModel.PROP_TITLE));
-        setAuthor((String) nodeService.getProperty(startingElement, ContentModel.PROP_AUTHOR));
+        setTitle((String) getNodeService().getProperty(startingElement, ContentModel.PROP_TITLE));
+        setAuthor((String) getNodeService().getProperty(startingElement, ContentModel.PROP_AUTHOR));
     }
 
     /**
@@ -252,30 +256,30 @@ public class NewEditionWizard extends BaseWizardBean
         this.selectableTranslations = new ArrayList<TranslationWrapper>();
 
         // get all translations of the mlContainer
-        Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(mlContainerToVersion);
+        Map<Locale, NodeRef> translations = getMultilingualContentService().getTranslations(mlContainerToVersion);
 
         // fill the data table rows list
         for(Map.Entry<Locale, NodeRef> entry : translations.entrySet())
         {
             NodeRef nodeRef = entry.getValue();
 
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            String langCode = ((Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE)).getLanguage();
-            String langText = contentFilterLanguagesService.getLabelByCode(langCode);
-            String lockOwner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
+            String name = (String) getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME);
+            String langCode = ((Locale) getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCALE)).getLanguage();
+            String langText = getContentFilterLanguagesService().getLabelByCode(langCode);
+            String lockOwner = (String) getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
 
             // create the row with the current translation
             TranslationWrapper wrapper = new TranslationWrapper(name, langCode, lockOwner, langText);
 
-            if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            if(!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 // add it to the selectable list if it is not empty
                 this.selectableTranslations.add(wrapper);
             }
 
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+            if(getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
-                LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+                LockStatus lockStatus = getLockService().getLockStatus(nodeRef);
                 if (lockStatus != LockStatus.NO_LOCK)
                 {
                     // if the node is locked, add it to the locked translation list
@@ -291,19 +295,19 @@ public class NewEditionWizard extends BaseWizardBean
         // set the mlContainer to version
         NodeRef currentNodeRef = this.browseBean.getDocument().getNodeRef();
 
-        if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(currentNodeRef)))
+        if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(getNodeService().getType(currentNodeRef)))
         {
             mlContainerToVersion = currentNodeRef;
         }
         else
         {
-            mlContainerToVersion = multilingualContentService.getTranslationContainer(currentNodeRef);
+            mlContainerToVersion = getMultilingualContentService().getTranslationContainer(currentNodeRef);
         }
 
         if(!skipFirstStep)
         {
             // init the pivot language (it will be selected by default)
-            selectedLanguage = ((Locale) nodeService.getProperty(mlContainerToVersion, ContentModel.PROP_LOCALE)).getLanguage();
+            selectedLanguage = ((Locale) getNodeService().getProperty(mlContainerToVersion, ContentModel.PROP_LOCALE)).getLanguage();
         }
     }
 
@@ -369,7 +373,7 @@ public class NewEditionWizard extends BaseWizardBean
      */
     public String getLanguage()
     {
-        return contentFilterLanguagesService.getLabelByCode(language);
+        return getContentFilterLanguagesService().getLabelByCode(language);
     }
 
 
@@ -420,7 +424,7 @@ public class NewEditionWizard extends BaseWizardBean
      */
     public String getVersionLabel()
     {
-        String label = versionService.getCurrentVersion(mlContainerToVersion).getVersionLabel();
+        String label = getVersionService().getCurrentVersion(mlContainerToVersion).getVersionLabel();
 
         String nextLabel = null;
 
@@ -490,15 +494,15 @@ public class NewEditionWizard extends BaseWizardBean
     {
         this.multilingualContentService = multilingualContentService;
     }
-
-
-    /**
-     * @param nodeService the Node Service to set
-     */
-    public void setNodeService(NodeService nodeService)
+    
+    protected MultilingualContentService getMultilingualContentService()
     {
-        this.nodeService = nodeService;
-    }
+        if (multilingualContentService == null)
+        {
+            multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+        }
+        return multilingualContentService;
+   }
 
     /**
      * @param contentFilterLanguagesService the Content Filter Languages Service to set
@@ -506,6 +510,15 @@ public class NewEditionWizard extends BaseWizardBean
     public void setContentFilterLanguagesService(ContentFilterLanguagesService contentFilterLanguagesService)
     {
         this.contentFilterLanguagesService = contentFilterLanguagesService;
+    }
+    
+    protected ContentFilterLanguagesService getContentFilterLanguagesService()
+    {
+        if (contentFilterLanguagesService == null)
+        {
+            contentFilterLanguagesService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentFilterLanguagesService();
+        }
+        return contentFilterLanguagesService;
     }
 
 
@@ -516,6 +529,15 @@ public class NewEditionWizard extends BaseWizardBean
     {
         this.lockService = lockService;
     }
+    
+    protected LockService getLockService()
+    {
+        if (lockService == null)
+        {
+            lockService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getLockService();
+        }
+        return lockService;
+   }
 
     /**
      * @param editionService the Edition Service to set
@@ -523,6 +545,15 @@ public class NewEditionWizard extends BaseWizardBean
     public void setEditionService(EditionService editionService)
     {
         this.editionService = editionService;
+    }
+    
+    protected EditionService getEditionService()
+    {
+        if (editionService == null)
+        {
+           editionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getEditionService();
+        }
+        return editionService;
     }
 
     /**
@@ -532,13 +563,24 @@ public class NewEditionWizard extends BaseWizardBean
     {
         this.versionService = versionService;
     }
+    
+    protected VersionService getVersionService()
+    {
+        if (versionService == null)
+        {
+            versionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVersionService();
+        }
+        return versionService;
+   }
 
 
     /**
      * Simple wrapper class to represent a translation in the data table
      */
-    public static class TranslationWrapper
+    public static class TranslationWrapper implements Serializable
     {
+        private static final long serialVersionUID = 5517785385414245587L;
+        
         private String language;
         private String name;
         private String checkedOutBy;

@@ -93,6 +93,8 @@ import org.w3c.dom.Document;
  */
 public class EditWebContentWizard extends CreateWebContentWizard
 {
+   private static final long serialVersionUID = 439996926303151006L;
+
    private static final Log LOGGER = LogFactory.getLog(EditWebContentWizard.class);
    
    private AVMNode avmNode;
@@ -115,8 +117,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
          LOGGER.debug("path is " + this.avmNode.getPath());
       }
       this.createdPath = AVMUtil.getCorrespondingPathInPreviewStore(this.avmNode.getPath());
-
-      this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
+      this.formInstanceData = this.getFormsService().getFormInstanceData(-1, this.createdPath);
       final WebProject webProject = new WebProject(this.createdPath);
       try
       {
@@ -127,8 +128,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          Utils.addErrorMessage(fnfe.getMessage(), fnfe);
       }
-
-      this.content = this.avmService.getContentReader(-1, this.createdPath).getContentString();
+      this.content = this.getAvmService().getContentReader(-1, this.createdPath).getContentString();
       this.fileName = this.formInstanceData.getName();
       this.mimeType = MimetypeMap.MIMETYPE_XML;
    }
@@ -153,13 +153,13 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          LOGGER.debug("saving " + this.createdPath);
       }
-      AVMLock lock = this.avmLockingService.getLock(AVMUtil.getStoreId(this.createdPath),
+      AVMLock lock = this.getAvmLockingService().getLock(AVMUtil.getStoreId(this.createdPath),
                                                     AVMUtil.getStoreRelativePath(this.createdPath));
       if (lock != null)
       {
          LOGGER.debug("transferring lock from " + lock.getStore() + 
                       " to " + AVMUtil.getStoreName(this.createdPath));
-         this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
+         this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(this.createdPath),
                                            AVMUtil.getStoreRelativePath(this.createdPath),
                                            null,
                                            AVMUtil.getStoreName(this.createdPath),
@@ -167,21 +167,21 @@ public class EditWebContentWizard extends CreateWebContentWizard
                                            null);
       }
 
-      final ContentWriter writer = this.avmService.getContentWriter(this.createdPath);
-      this.content = XMLUtil.toString(this.instanceDataDocument, false);
+      final ContentWriter writer = this.getAvmService().getContentWriter(this.createdPath);
+      this.content = XMLUtil.toString(this.getInstanceDataDocument(), false);
       writer.putContent(this.content);
 
       // XXXarielb might not need to do this reload
-      this.formInstanceData = this.formsService.getFormInstanceData(-1, this.createdPath);
+      this.formInstanceData = this.getFormsService().getFormInstanceData(-1, this.createdPath);
       for (final Rendition r : this.formInstanceData.getRenditions())
       {
-         lock = this.avmLockingService.getLock(AVMUtil.getStoreId(r.getPath()),
+         lock = this.getAvmLockingService().getLock(AVMUtil.getStoreId(r.getPath()),
                                                AVMUtil.getStoreRelativePath(r.getPath()));
          if (lock != null)
          {
             LOGGER.debug("transferring lock from " + lock.getStore() + 
                          " to " + AVMUtil.getStoreName(r.getPath()));
-            this.avmLockingService.modifyLock(AVMUtil.getStoreId(r.getPath()),
+            this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(r.getPath()),
                                               AVMUtil.getStoreRelativePath(r.getPath()),
                                               null,
                                               AVMUtil.getStoreName(r.getPath()),
@@ -205,7 +205,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
             this.renditions.add(r);
             LOGGER.debug("transferring lock for " + r.getPath() + 
                          " back to " + AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())));
-            this.avmLockingService.modifyLock(AVMUtil.getStoreId(r.getPath()),
+            this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(r.getPath()),
                                               AVMUtil.getStoreRelativePath(r.getPath()),
                                               null,
                                               AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())),
@@ -216,7 +216,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
       }
       LOGGER.debug("transferring form instance data lock back to " + 
                    AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)));
-      this.avmLockingService.modifyLock(AVMUtil.getStoreId(this.createdPath),
+      this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(this.createdPath),
                                         AVMUtil.getStoreRelativePath(this.createdPath),
                                         null,
                                         AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)),

@@ -68,13 +68,10 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMNode;
-import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -85,13 +82,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ManageTaskDialog extends BaseDialogBean
 {
-   protected WorkflowService workflowService;
-   protected AVMService avmService;
-   protected AVMSyncService avmSyncService;
+   private static final long serialVersionUID = -3209544870892993135L;
+   
+   transient private WorkflowService workflowService;
+   transient private AVMService avmService;
+   transient private AVMSyncService avmSyncService;
    protected Node taskNode;
-   protected WorkflowTask task;
-   protected WorkflowInstance workflowInstance;
-   protected WorkflowTransition[] transitions;
+   transient private WorkflowTask task;
+   transient private WorkflowInstance workflowInstance;
+   transient private WorkflowTransition[] transitions;
    protected NodeRef workflowPackage;
    protected List<Node> resources;
    protected TaskCompleteResolver completeResolver = new TaskCompleteResolver();
@@ -133,7 +132,7 @@ public class ManageTaskDialog extends BaseDialogBean
       
       // get the task details
       String taskId = this.parameters.get("id");
-      this.task = this.workflowService.getTaskById(taskId);
+      this.task = this.getWorkflowService().getTaskById(taskId);
       
       if (this.task != null)
       {
@@ -153,7 +152,7 @@ public class ManageTaskDialog extends BaseDialogBean
             LOGGER.debug("Task: " + this.task);
             LOGGER.debug("Trasient node: " + this.taskNode);
             Boolean isSystemPackage = (Boolean)
-               this.nodeService.getProperty(this.workflowPackage,
+               this.getNodeService().getProperty(this.workflowPackage,
                                             WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
             LOGGER.debug("Workflow package: " + this.workflowPackage + 
                          " system package: " + isSystemPackage);
@@ -180,7 +179,7 @@ public class ManageTaskDialog extends BaseDialogBean
          throws Exception
    {
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Saving task: " + this.task.id);
+         LOGGER.debug("Saving task: " + this.getWorkflowTask().id);
       
       // prepare the edited parameters for saving
       Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
@@ -190,7 +189,7 @@ public class ManageTaskDialog extends BaseDialogBean
       
       // update the task with the updated parameters and resources
       updateResources();
-      this.workflowService.updateTask(this.task.id, params, null, null);
+      this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
       
       return outcome;
    }
@@ -200,11 +199,11 @@ public class ManageTaskDialog extends BaseDialogBean
    {
       List<DialogButtonConfig> buttons = null;
 
-      if (this.task != null)
+      if (this.getWorkflowTask() != null)
       {
          // get the transitions available from this task and 
          // show them in the dialog as additional buttons
-         this.transitions = this.task.path.node.transitions;
+         this.transitions = this.getWorkflowTask().path.node.transitions;
          boolean isPooledTask = isPooledTask();
          
          if (isPooledTask || this.transitions != null)
@@ -256,13 +255,13 @@ public class ManageTaskDialog extends BaseDialogBean
    {
       String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "manage_task_title");
          
-      return titleStart + ": " + this.task.title;
+      return titleStart + ": " + this.getWorkflowTask().title;
    }
    
    @Override
    public String getContainerDescription()
    {
-      return this.task.description;
+      return this.getWorkflowTask().description;
    }
       
    // ------------------------------------------------------------------------------
@@ -274,7 +273,7 @@ public class ManageTaskDialog extends BaseDialogBean
       String outcome = getDefaultFinishOutcome();
       
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Taking ownership of task: " + this.task.id);
+         LOGGER.debug("Taking ownership of task: " + this.getWorkflowTask().id);
       
       FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
@@ -292,7 +291,7 @@ public class ManageTaskDialog extends BaseDialogBean
   
          // update the task with the updated parameters and resources
          updateResources();
-         this.workflowService.updateTask(this.task.id, params, null, null);
+         this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
      
          // commit the changes
          tx.commit();
@@ -314,7 +313,7 @@ public class ManageTaskDialog extends BaseDialogBean
       String outcome = getDefaultFinishOutcome();
       
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Returning ownership of task to pool: " + this.task.id);
+         LOGGER.debug("Returning ownership of task to pool: " + this.getWorkflowTask().id);
       
       FacesContext context = FacesContext.getCurrentInstance();
       UserTransaction tx = null;
@@ -330,7 +329,7 @@ public class ManageTaskDialog extends BaseDialogBean
   
          // update the task with the updated parameters and resources
          updateResources();
-         this.workflowService.updateTask(this.task.id, params, null, null);
+         this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
      
          // commit the changes
          tx.commit();
@@ -352,7 +351,7 @@ public class ManageTaskDialog extends BaseDialogBean
       String outcome = getDefaultFinishOutcome();
       
       if (LOGGER.isDebugEnabled())
-         LOGGER.debug("Transitioning task: " + this.task.id);
+         LOGGER.debug("Transitioning task: " + this.getWorkflowTask().id);
       
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
@@ -361,7 +360,7 @@ public class ManageTaskDialog extends BaseDialogBean
       Map reqParams = context.getExternalContext().getRequestParameterMap();
       
       String selectedTransition = null;
-      for (WorkflowTransition trans : this.transitions)
+      for (WorkflowTransition trans : this.getWorkflowTransitions())
       {
          Object result = reqParams.get(CLIENT_ID_PREFIX + FacesHelper.makeLegalId(trans.title));
          if (result != null)
@@ -387,10 +386,10 @@ public class ManageTaskDialog extends BaseDialogBean
         
          // update the task with the updated parameters and resources
          updateResources();
-         this.workflowService.updateTask(this.task.id, params, null, null);
+         this.getWorkflowService().updateTask(this.getWorkflowTask().id, params, null, null);
      
          // signal the selected transition to the workflow task
-         this.workflowService.endTask(this.task.id, selectedTransition);
+         this.getWorkflowService().endTask(this.getWorkflowTask().id, selectedTransition);
         
          // commit the changes
          tx.commit();
@@ -601,6 +600,10 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    public WorkflowInstance getWorkflowInstance()
    {
+      if (workflowInstance == null)
+      {
+         workflowInstance = getWorkflowTask().path.instance;
+      }
       return this.workflowInstance;
    } 
 
@@ -611,7 +614,7 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    public String getWorkflowDefinitionImageUrl()
    {
-       return "/workflowdefinitionimage/" + this.workflowInstance.definition.id;
+       return "/workflowdefinitionimage/" + this.getWorkflowInstance().definition.id;
    }
    
    /**
@@ -621,7 +624,7 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    public String getPackageActionGroup()
    {
-      return (String)this.task.properties.get(
+      return (String)this.getWorkflowTask().properties.get(
             WorkflowModel.PROP_PACKAGE_ACTION_GROUP);
    }
    
@@ -632,7 +635,7 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    public String getPackageItemActionGroup()
    {
-      return (String)this.task.properties.get(
+      return (String)this.getWorkflowTask().properties.get(
             WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP);
    }
    
@@ -657,16 +660,16 @@ public class ManageTaskDialog extends BaseDialogBean
 
             if (this.workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
             {
-               if (this.nodeService.exists(this.workflowPackage))
+               if (this.getNodeService().exists(this.workflowPackage))
                {
                   final NodeRef stagingNodeRef = (NodeRef)
-                     this.nodeService.getProperty(this.workflowPackage,
+                     this.getNodeService().getProperty(this.workflowPackage,
                                                  WCMModel.PROP_AVM_DIR_INDIRECTION);
                   final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
                   final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
                   if (LOGGER.isDebugEnabled())
                      LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-                  for (AVMDifference d : this.avmSyncService.compare(-1, packageAvmPath,
+                  for (AVMDifference d : this.getAvmSyncService().compare(-1, packageAvmPath,
                                                                      -1, stagingAvmPath,
                                                                      null))
                   {
@@ -675,7 +678,7 @@ public class ManageTaskDialog extends BaseDialogBean
                      if (d.getDifferenceCode() == AVMDifference.NEWER ||
                          d.getDifferenceCode() == AVMDifference.CONFLICT)
                      {
-                        this.addAVMNode(new AVMNode(this.avmService.lookup(d.getSourceVersion(),
+                        this.addAVMNode(new AVMNode(this.getAvmService().lookup(d.getSourceVersion(),
                                                                            d.getSourcePath(),
                                                                            true)));
                      }
@@ -685,7 +688,7 @@ public class ManageTaskDialog extends BaseDialogBean
             else
             {
                // get existing workflow package items
-               List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(
+               List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(
                   this.workflowPackage, ContentModel.ASSOC_CONTAINS, 
                   RegexQNamePattern.MATCH_ALL);   
             
@@ -694,7 +697,7 @@ public class ManageTaskDialog extends BaseDialogBean
                   // create our Node representation from the NodeRef
                   NodeRef nodeRef = ref.getChildRef();
                
-                  if (!this.nodeService.exists(nodeRef))
+                  if (!this.getNodeService().exists(nodeRef))
                   {
                      if (LOGGER.isDebugEnabled())
                         LOGGER.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
@@ -702,10 +705,10 @@ public class ManageTaskDialog extends BaseDialogBean
                   else
                   {
                      // find it's type so we can see if it's a node we are interested in
-                     QName type = this.nodeService.getType(nodeRef);
+                     QName type = this.getNodeService().getType(nodeRef);
                   
                      // make sure the type is defined in the data dictionary
-                     TypeDefinition typeDef = this.dictionaryService.getType(type);
+                     TypeDefinition typeDef = this.getDictionaryService().getType(type);
                   
                      if (typeDef == null)
                      {
@@ -717,7 +720,7 @@ public class ManageTaskDialog extends BaseDialogBean
                      {
                         // look for content nodes or links to content
                         // NOTE: folders within workflow packages are ignored for now
-                        if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                        if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || 
                             ApplicationModel.TYPE_FILELINK.equals(type))
                         {
                            // if the node is not in the removed list then add create the 
@@ -738,7 +741,7 @@ public class ManageTaskDialog extends BaseDialogBean
                for (String newItem : this.packageItemsToAdd)
                {
                   NodeRef nodeRef = new NodeRef(newItem);
-                  if (this.nodeService.exists(nodeRef))
+                  if (this.getNodeService().exists(nodeRef))
                   {
                      // we know the type is correct as this was added as a result of a query
                      // for all content items so just add the item to the resources list
@@ -765,7 +768,7 @@ public class ManageTaskDialog extends BaseDialogBean
       }
       else if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("Failed to find workflow package for task: " + this.task.id);
+         LOGGER.debug("Failed to find workflow package for task: " + this.getWorkflowTask().id);
       }
       
       return this.resources;
@@ -782,6 +785,15 @@ public class ManageTaskDialog extends BaseDialogBean
       this.workflowService = workflowService;
    }
    
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
+   }
+   
    /**
     * Sets the avm service to use
     * 
@@ -791,6 +803,15 @@ public class ManageTaskDialog extends BaseDialogBean
    public void setAvmService(final AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
 
    /**
@@ -804,12 +825,40 @@ public class ManageTaskDialog extends BaseDialogBean
       this.avmSyncService = avmSyncService;
    }
    
+   protected AVMSyncService getAvmSyncService()
+   {
+      if (avmSyncService == null)
+      {
+         avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return avmSyncService;
+   }
+   
+   protected WorkflowTask getWorkflowTask()
+   {
+      if (task == null)
+      {
+         String taskId = this.parameters.get("id");
+         task = this.getWorkflowService().getTaskById(taskId);
+      }
+      return task;
+   }
+   
+   protected WorkflowTransition[] getWorkflowTransitions()
+   {
+      if (transitions == null)
+      {
+         transitions = getWorkflowTask().path.node.transitions;
+      }
+      return transitions;
+   }
+   
    // ------------------------------------------------------------------------------
    // Helper methods
 
    protected void addAVMNode(final AVMNode node)
    {
-      node.getProperties().put("taskId", this.task.id);
+      node.getProperties().put("taskId", this.getWorkflowTask().id);
       node.addPropertyResolver("path", AVMNode.RESOLVER_SANDBOX_RELATIVE_PATH);
       node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
       node.addPropertyResolver("fileType16", AVMNode.RESOLVER_FILE_TYPE_16);
@@ -822,7 +871,7 @@ public class ManageTaskDialog extends BaseDialogBean
       if (node.isDirectory() && !node.getDescriptor().isDeleted())
       {
          for (final AVMNodeDescriptor d : 
-                 this.avmService.getDirectoryListingArray(node.getDescriptor(), true))
+                 this.getAvmService().getDirectoryListingArray(node.getDescriptor(), true))
          {
             this.addAVMNode(new AVMNode(d));
          }
@@ -832,7 +881,7 @@ public class ManageTaskDialog extends BaseDialogBean
    protected void createAndAddNode(NodeRef nodeRef)
    {
       // create our Node representation
-      MapNode node = new MapNode(nodeRef, this.nodeService, true);
+      MapNode node = new MapNode(nodeRef, this.getNodeService(), true);
       this.browseBean.setupCommonBindingProperties(node);
       
       // add property resolvers to show path information
@@ -843,7 +892,7 @@ public class ManageTaskDialog extends BaseDialogBean
 //      node.addPropertyResolver("completed", this.completeResolver);
       
       // add the id of the task being managed
-      node.getProperties().put("taskId", this.task.id);
+      node.getProperties().put("taskId", this.getWorkflowTask().id);
       
       this.resources.add(node);
    }
@@ -856,7 +905,7 @@ public class ManageTaskDialog extends BaseDialogBean
       {
          for (String removedItem : this.packageItemsToRemove)
          {
-            this.nodeService.removeChild(this.workflowPackage, new NodeRef(removedItem));
+            this.getNodeService().removeChild(this.workflowPackage, new NodeRef(removedItem));
          }
       }
       
@@ -867,9 +916,9 @@ public class ManageTaskDialog extends BaseDialogBean
          for (String addedItem : this.packageItemsToAdd)
          {
             NodeRef addedNodeRef = new NodeRef(addedItem);
-            this.nodeService.addChild(this.workflowPackage, addedNodeRef, 
+            this.getNodeService().addChild(this.workflowPackage, addedNodeRef, 
                   ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                  QName.createValidLocalName((String)this.nodeService.getProperty(
+                  QName.createValidLocalName((String)this.getNodeService().getProperty(
                         addedNodeRef, ContentModel.PROP_NAME))));
          }
       }
@@ -883,11 +932,13 @@ public class ManageTaskDialog extends BaseDialogBean
     */
    protected class TaskCompleteResolver implements NodePropertyResolver
    {
+      private static final long serialVersionUID = 5862037943275638314L;
+
       public Object get(Node node)
       {
          String result = Application.getMessage(FacesContext.getCurrentInstance(), "no");
          
-         List<NodeRef> completedItems = (List<NodeRef>)task.properties.get(
+         List<NodeRef> completedItems = (List<NodeRef>)getWorkflowTask().properties.get(
                WorkflowModel.PROP_COMPLETED_ITEMS);
          
          if (completedItems != null && completedItems.size() > 0 && 

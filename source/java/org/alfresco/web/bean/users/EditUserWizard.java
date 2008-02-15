@@ -92,14 +92,14 @@ public class EditUserWizard extends CreateUserWizard
         // calculate home space name and parent space Id from homeFolderId
         this.homeSpaceLocation = null; // default to Company root space
         NodeRef homeFolderRef = (NodeRef) props.get("homeFolder");
-        if (this.nodeService.exists(homeFolderRef) == true)
+        if (this.getNodeService().exists(homeFolderRef) == true)
         {
-            ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(homeFolderRef);
+            ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(homeFolderRef);
             NodeRef parentRef = childAssocRef.getParentRef();
-            if (this.nodeService.getRootNode(Repository.getStoreRef()).equals(parentRef) == false)
+            if (this.getNodeService().getRootNode(Repository.getStoreRef()).equals(parentRef) == false)
             {
                 this.homeSpaceLocation = parentRef;
-                this.homeSpaceName = Repository.getNameForNode(nodeService, homeFolderRef);
+                this.homeSpaceName = Repository.getNameForNode(getNodeService(), homeFolderRef);
             }
             else
             {
@@ -120,20 +120,20 @@ public class EditUserWizard extends CreateUserWizard
             // update the existing node in the repository
             NodeRef nodeRef = properties.getPerson().getNodeRef();
 
-            Map<QName, Serializable> props = this.nodeService.getProperties(nodeRef);
+            Map<QName, Serializable> props = this.getNodeService().getProperties(nodeRef);
             props.put(ContentModel.PROP_USERNAME, this.userName);
             props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
             props.put(ContentModel.PROP_LASTNAME, this.lastName);
 
             // calculate whether we need to move the old home space or create new
             NodeRef newHomeFolderRef;
-            NodeRef oldHomeFolderRef = (NodeRef) this.nodeService.getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
+            NodeRef oldHomeFolderRef = (NodeRef) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
             boolean moveHomeSpace = false;
             boolean renameHomeSpace = false;
-            if (oldHomeFolderRef != null && this.nodeService.exists(oldHomeFolderRef) == true)
+            if (oldHomeFolderRef != null && this.getNodeService().exists(oldHomeFolderRef) == true)
             {
                 // the original home folder ref exists so may need moving if it has been changed
-                ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(oldHomeFolderRef);
+                ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(oldHomeFolderRef);
                 NodeRef currentHomeSpaceLocation = childAssocRef.getParentRef();
                 if (this.homeSpaceName.length() != 0)
                 {
@@ -143,7 +143,7 @@ public class EditUserWizard extends CreateUserWizard
                         moveHomeSpace = true;
                     }
 
-                    String oldHomeSpaceName = Repository.getNameForNode(nodeService, oldHomeFolderRef);
+                    String oldHomeSpaceName = Repository.getNameForNode(getNodeService(), oldHomeFolderRef);
                     if (oldHomeSpaceName.equals(this.homeSpaceName) == false && oldHomeFolderRef.equals(this.homeSpaceLocation) == false)
                     {
                         renameHomeSpace = true;
@@ -180,15 +180,15 @@ public class EditUserWizard extends CreateUserWizard
                 // either move, rename or both required
                 if (moveHomeSpace == true)
                 {
-                    this.nodeService
-                            .moveNode(oldHomeFolderRef, this.homeSpaceLocation, ContentModel.ASSOC_CONTAINS, this.nodeService.getPrimaryParent(oldHomeFolderRef).getQName());
+                    this.getNodeService()
+                            .moveNode(oldHomeFolderRef, this.homeSpaceLocation, ContentModel.ASSOC_CONTAINS, this.getNodeService().getPrimaryParent(oldHomeFolderRef).getQName());
                 }
                 newHomeFolderRef = oldHomeFolderRef; // ref ID doesn't change
 
                 if (renameHomeSpace == true)
                 {
                     // change HomeSpace node name
-                    this.nodeService.setProperty(newHomeFolderRef, ContentModel.PROP_NAME, this.homeSpaceName);
+                    this.getNodeService().setProperty(newHomeFolderRef, ContentModel.PROP_NAME, this.homeSpaceName);
                 }
             }
 
@@ -200,7 +200,7 @@ public class EditUserWizard extends CreateUserWizard
             props.put(ContentModel.PROP_LOCATION, this.location);
             props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
             props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
-            this.nodeService.setProperties(nodeRef, props);
+            this.getNodeService().setProperties(nodeRef, props);
 
             // TODO: RESET HomeSpace Ref found in top-level navigation bar!
             // NOTE: not need cos only admin can do this?

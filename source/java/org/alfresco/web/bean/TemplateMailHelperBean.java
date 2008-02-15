@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Map;
 
@@ -39,6 +42,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet.URLHelper;
 import org.alfresco.web.bean.repository.Repository;
@@ -53,15 +57,17 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 /**
  * @author Kevin Roast
  */
-public class TemplateMailHelperBean
+public class TemplateMailHelperBean implements Serializable
 {
+   private static final long serialVersionUID = 9117248002321651339L;
+
    private static Log logger = LogFactory.getLog(TemplateMailHelperBean.class);
    
    /** JavaMailSender bean reference */
-   protected JavaMailSender mailSender;
+   transient private JavaMailSender mailSender;
    
    /** NodeService bean reference */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** dialog state */
    private String subject = null;
@@ -79,12 +85,30 @@ public class TemplateMailHelperBean
       this.mailSender = mailSender;
    }
    
+   protected JavaMailSender getMailSender()
+   {
+      if (mailSender == null)
+      {
+         mailSender = (JavaMailSender) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "mailService");
+      }
+      return mailSender;
+   }
+   
    /**
     * @param nodeService      The nodeService to set.
     */
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
    }
 
    /**
@@ -109,7 +133,7 @@ public class TemplateMailHelperBean
     */
    public void notifyUser(NodeRef person, NodeRef node, final String from, String roleText)
    {
-      final String to = (String)this.nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+      final String to = (String)this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
       
       if (to != null && to.length() != 0)
       {
@@ -151,7 +175,7 @@ public class TemplateMailHelperBean
          try
          {
             // Send the message
-            this.mailSender.send(mailPreparer);
+            this.getMailSender().send(mailPreparer);
          }
          catch (Throwable e)
          {
@@ -277,4 +301,5 @@ public class TemplateMailHelperBean
    {
       this.usingTemplate = usingTemplate;
    }
+   
 }

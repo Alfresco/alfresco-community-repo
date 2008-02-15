@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,8 +56,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class LinkValidationState
+public class LinkValidationState implements Serializable
 {
+   private static final long serialVersionUID = 3798453845183433843L;
+   
    private String store;
    private String webapp;
    private boolean checkBeenReRun = false;

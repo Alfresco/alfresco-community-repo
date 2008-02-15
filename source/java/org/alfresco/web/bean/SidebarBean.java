@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +43,10 @@ import org.alfresco.web.ui.common.component.UIModeList;
  * 
  * @author gavinc
  */
-public class SidebarBean
+public class SidebarBean implements Serializable
 {
+   private static final long serialVersionUID = -2613219657864672539L;
+   
    protected String activePlugin;
    protected List<UIListItem> plugins;
    protected SidebarConfigElement sidebarConfig;

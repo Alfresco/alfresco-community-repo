@@ -26,7 +26,6 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -36,7 +35,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -58,13 +56,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FormWorkflowDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -7858470945912453738L;
+
    private static final String MSG_ERROR_FILENAME_PATTERN = "error_filename_pattern";
 
    private static final Log logger = LogFactory.getLog(FormWorkflowDialog.class);
    
    private String filenamePattern;
    
-   protected WorkflowService workflowService;
+   transient private WorkflowService workflowService;
+   
    protected CreateWebsiteWizard websiteWizard;
    protected TransientNode workflowNode;
    
@@ -75,6 +76,15 @@ public class FormWorkflowDialog extends BaseDialogBean
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+   
+   protected WorkflowService getWorkflowService()
+   {
+      if (this.workflowService == null)
+      {
+         this.workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return this.workflowService;
    }
 
    /**
@@ -135,10 +145,10 @@ public class FormWorkflowDialog extends BaseDialogBean
       else
       {
          // no type found - init workflow node type based on workflow definition
-         WorkflowDefinition flowDef = this.workflowService.getDefinitionByName(workflow.getName());
+         WorkflowDefinition flowDef = this.getWorkflowService().getDefinitionByName(workflow.getName());
          if (flowDef != null)
          {
-            WorkflowTaskDefinition taskDef = flowDef.startTaskDefinition;
+            WorkflowTaskDefinition taskDef = flowDef.getStartTaskDefinition();
             if (taskDef != null)
             {
                // create an instance of a task from the data dictionary

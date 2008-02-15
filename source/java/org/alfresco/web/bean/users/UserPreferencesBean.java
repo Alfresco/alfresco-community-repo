@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +45,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.PreferencesService;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.LanguagesConfigElement;
 
 /**
@@ -51,8 +53,10 @@ import org.alfresco.web.config.LanguagesConfigElement;
  * 
  * @author Kevin Roast
  */
-public class UserPreferencesBean
+public class UserPreferencesBean implements Serializable
 {
+   private static final long serialVersionUID = -1262481849503163054L;
+
    private static final String PREF_STARTLOCATION = "start-location";
 
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
@@ -70,13 +74,13 @@ public class UserPreferencesBean
    private String contentFilterLanguage = null;
 
    /** the injected MultilingualContentService */
-   MultilingualContentService multilingualContentService;
+   transient private MultilingualContentService multilingualContentService;
 
    /** the injected ContentFilterLanguagesService */
-   ContentFilterLanguagesService contentFilterLanguagesService;
+   transient private ContentFilterLanguagesService contentFilterLanguagesService;
 
    /** the injected NodeService */
-   NodeService nodeService;
+   transient private NodeService nodeService;
 
    /**
     * @return the list of available languages
@@ -197,7 +201,7 @@ public class UserPreferencesBean
       ResourceBundle msg = Application.getBundle(fc);
 
       // get the list of filter languages 
-      List<String> languages = contentFilterLanguagesService.getFilterLanguages();
+      List<String> languages = getContentFilterLanguagesService().getFilterLanguages();
 
       // set the item selection list      
       SelectItem[] items = new SelectItem[(includeAllLanguages) ? languages.size() + 1 : languages.size()];
@@ -213,7 +217,7 @@ public class UserPreferencesBean
 
       for (String lang : languages)
       {
-         String label = contentFilterLanguagesService.getLabelByCode(lang);
+         String label = getContentFilterLanguagesService().getLabelByCode(lang);
          items[idx] = new SelectItem(lang, label);
          idx++;
       }
@@ -231,7 +235,7 @@ public class UserPreferencesBean
    public SelectItem[] getAvailablesContentFilterLanguages(NodeRef translation, boolean returnTranslationLanguage)
    {
       // get the list of missing translation of this node
-      List<Locale> missingLocales = multilingualContentService.getMissingTranslations(translation, returnTranslationLanguage);
+      List<Locale> missingLocales = getMultilingualContentService().getMissingTranslations(translation, returnTranslationLanguage);
 
       //    set the item selection list      
       SelectItem[] items = new SelectItem[missingLocales.size()];
@@ -239,7 +243,7 @@ public class UserPreferencesBean
 
       for(Locale locale : missingLocales)
       {
-         String label = contentFilterLanguagesService.getLabelByCode(locale.getLanguage());
+         String label = getContentFilterLanguagesService().getLabelByCode(locale.getLanguage());
 
          items[idx] = new SelectItem(
                locale.toString(),
@@ -347,6 +351,11 @@ public class UserPreferencesBean
     */
    public MultilingualContentService getMultilingualContentService() 
    {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      
       return multilingualContentService;
    }
 
@@ -364,6 +373,11 @@ public class UserPreferencesBean
     */
    public NodeService getNodeService() 
    {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      
       return nodeService;
    }
 
@@ -382,5 +396,17 @@ public class UserPreferencesBean
          ContentFilterLanguagesService contentFilterLanguagesService) 
    {
       this.contentFilterLanguagesService = contentFilterLanguagesService;
+   }
+   
+   /**
+    * @return the contentFilterLanguagesService
+    */
+   ContentFilterLanguagesService getContentFilterLanguagesService()
+   {
+      if (contentFilterLanguagesService == null)
+      {
+         contentFilterLanguagesService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentFilterLanguagesService();
+      }
+      return contentFilterLanguagesService;
    }
 }

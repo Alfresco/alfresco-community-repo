@@ -46,6 +46,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class MoveHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 2778547560606246126L;
+
    public String getJSPPath()
    {
       return getJSPPath(MoveActionExecuter.NAME);

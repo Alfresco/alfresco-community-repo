@@ -34,7 +34,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Kevin Roast
  */
-public interface WorkflowConfiguration
+public interface WorkflowConfiguration extends Serializable
 {
    /**
     * @return definition name of the workflow

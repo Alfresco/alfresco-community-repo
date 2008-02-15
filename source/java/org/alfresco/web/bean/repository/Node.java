@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +68,7 @@ public class Node implements Serializable
    protected Boolean workingCopyOwner = null;
    protected QNameNodeMap<String, Object> properties;
    protected boolean propsRetrieved = false;
-   protected ServiceRegistry services = null;
+   protected transient ServiceRegistry services = null;
    protected boolean childAssocsRetrieved = false;
    protected QNameNodeMap childAssociations;
    protected boolean assocsRetrieved = false;

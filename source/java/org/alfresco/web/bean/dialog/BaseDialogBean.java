@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.dialog;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +54,7 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author gavinc
  */
-public abstract class BaseDialogBean implements IDialogBean
+public abstract class BaseDialogBean implements IDialogBean, Serializable
 {
    protected Map<String, String> parameters;
    protected boolean isFinished = false;
@@ -61,11 +62,12 @@ public abstract class BaseDialogBean implements IDialogBean
    // services common to most dialogs
    protected BrowseBean browseBean;
    protected NavigationBean navigator;
-   protected NodeService nodeService;
-   protected FileFolderService fileFolderService;
-   protected SearchService searchService;
-   protected DictionaryService dictionaryService;
-   protected NamespaceService namespaceService;
+   
+   transient private NodeService nodeService;
+   transient private FileFolderService fileFolderService;
+   transient private SearchService searchService;
+   transient private DictionaryService dictionaryService;
+   transient private NamespaceService namespaceService;
    
    public void init(Map<String, String> parameters)
    {
@@ -241,12 +243,30 @@ public abstract class BaseDialogBean implements IDialogBean
       this.nodeService = nodeService;
    }
    
+   protected NodeService getNodeService()
+   {
+      if (this.nodeService == null)
+      {
+         this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return this.nodeService;
+   }
+   
    /**
     * @param fileFolderService used to manipulate folder/folder model nodes
     */
    public void setFileFolderService(FileFolderService fileFolderService)
    {
       this.fileFolderService = fileFolderService;
+   }
+   
+   protected FileFolderService getFileFolderService()
+   {
+      if (this.fileFolderService == null)
+      {
+         this.fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return this.fileFolderService;
    }
 
    /**
@@ -255,6 +275,15 @@ public abstract class BaseDialogBean implements IDialogBean
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   protected SearchService getSearchService()
+   {
+      if (this.searchService == null)
+      {
+         this.searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return this.searchService;
    }
    
    /**
@@ -267,12 +296,30 @@ public abstract class BaseDialogBean implements IDialogBean
       this.dictionaryService = dictionaryService;
    }
    
+   protected DictionaryService getDictionaryService()
+   {
+      if (this.dictionaryService == null)
+      {
+         this.dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return this.dictionaryService;
+   }
+   
    /**
     * @param namespaceService The NamespaceService
     */
    public void setNamespaceService(NamespaceService namespaceService)
    {
       this.namespaceService = namespaceService;
+   }
+   
+   protected NamespaceService getNamespaceService()
+   {
+      if (this.namespaceService == null)
+      {
+         this.namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      }
+      return this.namespaceService;
    }
    
    /**
@@ -354,4 +401,5 @@ public abstract class BaseDialogBean implements IDialogBean
             FacesContext.getCurrentInstance(), getErrorMessageId()), 
             exception.getMessage());
    }
+
 }

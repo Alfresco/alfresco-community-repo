@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -54,7 +56,7 @@ abstract class AbstractClipboardItem implements ClipboardItem
    /** Shallow search for nodes with a name pattern */
    private static final String XPATH_QUERY_NODE_MATCH = "./*[like(@cm:name, $cm:name, false)]";
    
-   private ServiceRegistry services = null;
+   transient private ServiceRegistry services = null;
    
    protected NodeRef ref;
    protected ClipboardStatus mode;
@@ -172,4 +174,5 @@ abstract class AbstractClipboardItem implements ClipboardItem
       
       return (nodeRefs.size() != 0);
    }
+   
 }

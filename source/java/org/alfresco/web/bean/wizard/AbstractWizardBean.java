@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.wizard;
 
+import java.io.Serializable;
+
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
@@ -34,6 +36,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public abstract class AbstractWizardBean
+public abstract class AbstractWizardBean implements Serializable
 {
    private static Log logger = LogFactory.getLog(AbstractWizardBean.class);
    
@@ -59,9 +62,9 @@ public abstract class AbstractWizardBean
    // common wizard properties
    protected int currentStep = 1;
    protected boolean editMode = false;
-   protected NodeService nodeService;
-   protected FileFolderService fileFolderService;
-   protected SearchService searchService;
+   transient private NodeService nodeService;
+   transient private FileFolderService fileFolderService;
+   transient private SearchService searchService;
    protected NavigationBean navigator;
    protected BrowseBean browseBean;
    
@@ -237,6 +240,10 @@ public abstract class AbstractWizardBean
     */
    public NodeService getNodeService()
    {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
       return this.nodeService;
    }
 
@@ -255,6 +262,15 @@ public abstract class AbstractWizardBean
    {
       this.fileFolderService = fileFolderService;
    }
+   
+   protected FileFolderService getFileFolderService()
+   {
+      if (fileFolderService == null)
+      {
+         fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return fileFolderService;
+   }
 
    /**
     * @param searchService the service used to find nodes
@@ -262,6 +278,15 @@ public abstract class AbstractWizardBean
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   protected SearchService getSearchService()
+   {
+      if (searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
    }
 
    /**

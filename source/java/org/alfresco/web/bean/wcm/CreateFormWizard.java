@@ -54,7 +54,9 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.FileUploadBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
@@ -82,8 +84,7 @@ import org.w3c.dom.Document;
  * 
  * @author arielb
  */
-public class CreateFormWizard 
-   extends BaseWizardBean
+public class CreateFormWizard extends BaseWizardBean
 {
 
    /////////////////////////////////////////////////////////////////////////////
@@ -94,6 +95,8 @@ public class CreateFormWizard
    public class RenderingEngineTemplateData
       implements Serializable
    {
+      private static final long serialVersionUID = -7786031074741795036L;
+      
       private final NodeRef nodeRef;
       private final File file;
       private final String name;
@@ -200,10 +203,10 @@ public class CreateFormWizard
    protected List<RenderingEngineTemplateData> renderingEngineTemplates = null;
    protected transient XSModel schema;
    protected String schemaFileName;
-   protected ContentService contentService;
-   protected MimetypeService mimetypeService;
-   protected WorkflowService workflowService;
-   protected FormsService formsService;
+   protected transient ContentService contentService;
+   protected transient MimetypeService mimetypeService;
+   protected transient WorkflowService workflowService;
+   protected transient FormsService formsService;
 
    private String schemaRootElementName = null;
    private String formName = null;
@@ -239,25 +242,25 @@ public class CreateFormWizard
       NodeRef contentFormsNodeRef = null;
       if (getIsWebForm() == true)
       {
-         contentFormsNodeRef = this.formsService.getWebContentFormsNodeRef();
+         contentFormsNodeRef = this.getFormsService().getWebContentFormsNodeRef();
       }
       else
       {
-         contentFormsNodeRef = this.formsService.getContentFormsNodeRef();
+         contentFormsNodeRef = this.getFormsService().getContentFormsNodeRef();
       }
         
       final FileInfo folderInfo = 
-         this.fileFolderService.create(contentFormsNodeRef,
+         this.getFileFolderService().create(contentFormsNodeRef,
                                        this.getFormName(),
                                        WCMAppModel.TYPE_FORMFOLDER);
       
       final FileInfo fileInfo = 
-         this.fileFolderService.create(folderInfo.getNodeRef(),
+         getFileFolderService().create(folderInfo.getNodeRef(),
                                        this.getSchemaFileName(),
                                        ContentModel.TYPE_CONTENT);
       
       // get a writer for the content and put the file
-      final ContentWriter writer = this.contentService.getWriter(fileInfo.getNodeRef(),
+      final ContentWriter writer = this.getContentService().getWriter(fileInfo.getNodeRef(),
                                                                  ContentModel.PROP_CONTENT,
                                                                  true);
       // set the mimetype and encoding
@@ -269,18 +272,18 @@ public class CreateFormWizard
       final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
       props.put(ContentModel.PROP_TITLE, this.getFormTitle());
       props.put(ContentModel.PROP_DESCRIPTION, this.getFormDescription());
-      this.nodeService.addAspect(folderInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
+      this.getNodeService().addAspect(folderInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
       
       props.clear();
       props.put(WCMAppModel.PROP_XML_SCHEMA, fileInfo.getNodeRef());
       props.put(WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME, 
                 this.getSchemaRootElementName());
-      this.nodeService.addAspect(folderInfo.getNodeRef(), WCMAppModel.ASPECT_FORM, props);
+      this.getNodeService().addAspect(folderInfo.getNodeRef(), WCMAppModel.ASPECT_FORM, props);
       if (this.applyDefaultWorkflow)
       {
          props.clear();
          props.put(WCMAppModel.PROP_WORKFLOW_NAME, this.getDefaultWorkflowName()[0]);
-         this.nodeService.createNode(folderInfo.getNodeRef(),
+         this.getNodeService().createNode(folderInfo.getNodeRef(),
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                      WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
@@ -290,7 +293,7 @@ public class CreateFormWizard
       props.clear();
       props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, 
                 this.getOutputPathPatternForFormInstanceData());
-      this.nodeService.addAspect(folderInfo.getNodeRef(),
+      this.getNodeService().addAspect(folderInfo.getNodeRef(),
                                  WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
       for (RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
@@ -308,13 +311,13 @@ public class CreateFormWizard
                       " to form " + this.getFormName());
       
       NodeRef renderingEngineTemplateNodeRef = 
-         this.fileFolderService.searchSimple(formNodeRef, retd.getName());
+         this.getFileFolderService().searchSimple(formNodeRef, retd.getName());
       final HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
       if (renderingEngineTemplateNodeRef == null)
       {
          try
          {
-            final FileInfo fileInfo = this.fileFolderService.create(formNodeRef,
+            final FileInfo fileInfo = this.getFileFolderService().create(formNodeRef,
                                                                     retd.getName(),
                                                                     ContentModel.TYPE_CONTENT);
             if (LOGGER.isDebugEnabled())
@@ -329,7 +332,7 @@ public class CreateFormWizard
          }
 
          // get a writer for the content and put the file
-         final ContentWriter writer = this.contentService.getWriter(renderingEngineTemplateNodeRef, 
+         final ContentWriter writer = this.getContentService().getWriter(renderingEngineTemplateNodeRef, 
                                                                     ContentModel.PROP_CONTENT, 
                                                                     true);
          // set the mimetype and encoding
@@ -338,14 +341,14 @@ public class CreateFormWizard
          writer.setEncoding("UTF-8");
          writer.putContent(retd.getFile());
 
-         this.nodeService.createAssociation(formNodeRef,
+         this.getNodeService().createAssociation(formNodeRef,
                                             renderingEngineTemplateNodeRef,
                                             WCMAppModel.ASSOC_RENDERING_ENGINE_TEMPLATES);
          props.clear();
          props.put(WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME, 
                    retd.getRenderingEngine().getName());
          props.put(WCMAppModel.PROP_FORM_SOURCE, formNodeRef);
-         this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+         this.getNodeService().addAspect(renderingEngineTemplateNodeRef, 
                                     WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE, 
                                     props);
 
@@ -353,7 +356,7 @@ public class CreateFormWizard
          props.clear();
          props.put(ContentModel.PROP_TITLE, retd.getTitle());
          props.put(ContentModel.PROP_DESCRIPTION, retd.getDescription());
-         this.nodeService.addAspect(renderingEngineTemplateNodeRef, 
+         this.getNodeService().addAspect(renderingEngineTemplateNodeRef, 
                                     ContentModel.ASPECT_TITLED, 
                                     props);
       }
@@ -364,7 +367,7 @@ public class CreateFormWizard
       props.put(WCMAppModel.PROP_MIMETYPE_FOR_RENDITION, 
                 retd.getMimetypeForRendition());
 
-      final NodeRef rpNodeRef = this.nodeService.createNode(renderingEngineTemplateNodeRef,
+      final NodeRef rpNodeRef = this.getNodeService().createNode(renderingEngineTemplateNodeRef,
                                                             WCMAppModel.ASSOC_RENDITION_PROPERTIES,
                                                             WCMAppModel.ASSOC_RENDITION_PROPERTIES,
                                                             WCMAppModel.TYPE_RENDITION_PROPERTIES,
@@ -372,7 +375,7 @@ public class CreateFormWizard
       props.clear();
       props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, 
                 retd.getOutputPathPatternForRendition());
-      this.nodeService.addAspect(rpNodeRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+      this.getNodeService().addAspect(rpNodeRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
    }
 
    @Override
@@ -519,7 +522,7 @@ public class CreateFormWizard
          if (this.outputPathPatternForRendition != null && 
              !this.outputPathPatternForRendition.endsWith(DEFAULT_EXTENSION_PATTERN))
          {
-            result = this.mimetypeService.guessMimetype(this.outputPathPatternForRendition);
+            result = this.getMimetypeService().guessMimetype(this.outputPathPatternForRendition);
          }
          if (result == null)
          {
@@ -598,7 +601,7 @@ public class CreateFormWizard
    public void removeSelectedRenderingEngineTemplate(final ActionEvent event)
    {
       final RenderingEngineTemplateData wrapper = (RenderingEngineTemplateData)
-         this.renderingEngineTemplatesDataModel.getRowData();
+         this.getRenderingEngineTemplatesDataModel().getRowData();
       if (wrapper != null)
       {
          this.renderingEngineTemplates.remove(wrapper);
@@ -750,7 +753,7 @@ public class CreateFormWizard
           this.getRenderingEngineTemplateFileName() != null)
       {
          this.renderingEngine = 
-            this.formsService.guessRenderingEngine(this.getRenderingEngineTemplateFileName());
+            this.getFormsService().guessRenderingEngine(this.getRenderingEngineTemplateFileName());
       }
       return (this.renderingEngine == null
               ? null
@@ -764,7 +767,7 @@ public class CreateFormWizard
    {
       this.renderingEngine = (renderingEngineName == null
                               ? null
-                              : this.formsService.getRenderingEngine(renderingEngineName));
+                              : this.getFormsService().getRenderingEngine(renderingEngineName));
    }
    
    /**
@@ -773,7 +776,7 @@ public class CreateFormWizard
    public List<SelectItem> getRenderingEngineChoices()
    {
       final List<SelectItem>  result = new LinkedList<SelectItem>();
-      for (RenderingEngine re : this.formsService.getRenderingEngines())
+      for (RenderingEngine re : this.getFormsService().getRenderingEngines())
       {
          result.add(new SelectItem(re.getName(), re.getName()));
       }
@@ -791,7 +794,7 @@ public class CreateFormWizard
        {
            this.mimetypeChoices = new ArrayList<SelectItem>(50);
            
-           final Map<String, String> mimetypes = this.mimetypeService.getDisplaysByMimetype();
+           final Map<String, String> mimetypes = this.getMimetypeService().getDisplaysByMimetype();
            for (String mimetype : mimetypes.keySet())
            {
               this.mimetypeChoices.add(new SelectItem(mimetype, 
@@ -1042,7 +1045,7 @@ public class CreateFormWizard
    {
       return (this.defaultWorkflowName == null || !this.applyDefaultWorkflow
               ? null
-              : this.workflowService.getDefinitionByName(this.defaultWorkflowName));
+              : this.getWorkflowService().getDefinitionByName(this.defaultWorkflowName));
    }
 
    /**
@@ -1128,6 +1131,16 @@ public class CreateFormWizard
    {
       this.contentService = contentService;
    }
+   
+   protected ContentService getContentService()
+   {
+      if (contentService == null)
+      {
+         contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+
+      return contentService;
+   }
 
    /**
     * @param mimetypeService The mimetypeService to set.
@@ -1135,6 +1148,15 @@ public class CreateFormWizard
    public void setMimetypeService(final MimetypeService mimetypeService)
    {
       this.mimetypeService = mimetypeService;
+   }
+   
+   protected MimetypeService getMimetypeService()
+   {
+      if (mimetypeService == null)
+      {
+         mimetypeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMimetypeService();
+      }
+      return mimetypeService;
    }
 
    /**
@@ -1144,6 +1166,15 @@ public class CreateFormWizard
    {
       this.workflowService = workflowService;
    }
+   
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
+   }
 
    /**
     * @param formsService    The FormsService to set.
@@ -1151,6 +1182,15 @@ public class CreateFormWizard
    public void setFormsService(final FormsService formsService)
    {
       this.formsService = formsService;
+   }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
    }
    
    // ------------------------------------------------------------------------------

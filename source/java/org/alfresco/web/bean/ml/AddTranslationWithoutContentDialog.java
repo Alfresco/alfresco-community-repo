@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.ml;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Dialog bean to add a new translation without content. I means, a new node is created
@@ -46,7 +49,9 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class AddTranslationWithoutContentDialog extends BaseDialogBean
 {
-   private MultilingualContentService multilingualContentService;
+   private static final long serialVersionUID = -1252453783397533792L;
+   
+   transient private MultilingualContentService multilingualContentService;
    private UserPreferencesBean userPreferencesBean;
 
    // the translation being to be created
@@ -80,12 +85,12 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
       Locale locale = I18NUtil.parseLocale(language);
 
       // add the empty translation
-      newTranslation = multilingualContentService.addEmptyTranslation(refNode, null, locale);
+      newTranslation = getMultilingualContentService().addEmptyTranslation(refNode, null, locale);
 
       // set the properties
-      nodeService.setProperty(newTranslation, ContentModel.PROP_DESCRIPTION, description);
-      nodeService.setProperty(newTranslation, ContentModel.PROP_AUTHOR, author);
-      nodeService.setProperty(newTranslation, ContentModel.PROP_TITLE, title);
+      getNodeService().setProperty(newTranslation, ContentModel.PROP_DESCRIPTION, description);
+      getNodeService().setProperty(newTranslation, ContentModel.PROP_AUTHOR, author);
+      getNodeService().setProperty(newTranslation, ContentModel.PROP_TITLE, title);
 
       // redirect the user according the value of (show other properties)
       if(showOtherProperties)
@@ -113,6 +118,16 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
    {
       this.multilingualContentService = multilingualContentService;
+   }
+   
+   private MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
+
    }
 
    /**
@@ -202,4 +217,5 @@ public class AddTranslationWithoutContentDialog extends BaseDialogBean
    {
        this.showOtherProperties = showOtherProperties;
    }
+   
 }

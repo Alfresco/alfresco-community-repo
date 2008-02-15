@@ -37,6 +37,7 @@ import javax.faces.model.ListDataModel;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.PresentationTemplate;
 import org.alfresco.web.forms.Form;
@@ -55,15 +56,17 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FormTemplatesDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 6383166841680919841L;
+
    private static final String COMPONENT_TEMPLATELIST = "template-list";
 
    private static final Log logger = LogFactory.getLog(FormTemplatesDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected CreateWebsiteWizard websiteWizard;
    
    /** datamodel for table of selected presentation templates */
-   private DataModel templatesDataModel = null;
+   transient private DataModel templatesDataModel = null;
    
    /** list of objects describing the selected presentation templates*/
    private List<PresentationTemplate> templates = null;
@@ -79,6 +82,15 @@ public class FormTemplatesDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
+   }
+
    /**
     * @param wizard        The Create Website Wizard to set.
     */
@@ -180,7 +192,7 @@ public class FormTemplatesDialog extends BaseDialogBean
     */
    public void removeTemplate(ActionEvent event)
    {
-      PresentationTemplate wrapper = (PresentationTemplate)this.templatesDataModel.getRowData();
+      PresentationTemplate wrapper = (PresentationTemplate)this.getTemplatesDataModel().getRowData();
       if (wrapper != null)
       {
          this.templates.remove(wrapper);

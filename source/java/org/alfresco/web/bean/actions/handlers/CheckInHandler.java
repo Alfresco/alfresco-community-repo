@@ -41,6 +41,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CheckInHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 9033071326749427779L;
+   
    protected static final String PROP_CHECKIN_DESC = "checkinDescription";
    protected static final String PROP_CHECKIN_MINOR = "checkinMinorChange";
    

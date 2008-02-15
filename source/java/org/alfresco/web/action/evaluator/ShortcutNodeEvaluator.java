@@ -37,6 +37,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class ShortcutNodeEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 8768692540125721144L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

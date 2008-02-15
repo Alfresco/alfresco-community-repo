@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -56,6 +57,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeploySnapshotDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 62702082716235924L;
+   
    protected int versionToDeploy;
    protected String[] deployTo;
    protected String stagingStore;
@@ -63,8 +66,8 @@ public class DeploySnapshotDialog extends BaseDialogBean
    protected NodeRef webProjectRef;
    
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMService avmService;
-   protected ActionService actionService;
+   transient private AVMService avmService;
+   transient private ActionService actionService;
    
    private static final Log logger = LogFactory.getLog(DeploySnapshotDialog.class);
    
@@ -110,7 +113,7 @@ public class DeploySnapshotDialog extends BaseDialogBean
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTSTORE, this.stagingStore);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTVERSION, this.versionToDeploy);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTTIME, new Date());
-         NodeRef attempt = this.nodeService.createNode(webProjectRef, 
+         NodeRef attempt = getNodeService().createNode(webProjectRef, 
                WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
                WCMAppModel.TYPE_DEPLOYMENTATTEMPT, props).getChildRef();
          
@@ -120,10 +123,10 @@ public class DeploySnapshotDialog extends BaseDialogBean
             if (targetServer.length() > 0)
             {
                NodeRef serverRef = new NodeRef(targetServer);
-               if (nodeService.exists(serverRef))
+               if (getNodeService().exists(serverRef))
                {
                   // get all properties of the target server
-                  Map<QName, Serializable> serverProps = nodeService.getProperties(serverRef);
+                  Map<QName, Serializable> serverProps = getNodeService().getProperties(serverRef);
                   
                   String serverUri = AVMDeploySnapshotAction.calculateServerUri(serverProps);
                   String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
@@ -151,8 +154,8 @@ public class DeploySnapshotDialog extends BaseDialogBean
                   args.put(AVMDeploySnapshotAction.PARAM_SERVER, serverRef);
                   args.put(AVMDeploySnapshotAction.PARAM_ATTEMPT, attempt);
                   args.put(AVMDeploySnapshotAction.PARAM_CALLBACK, monitor);
-                  Action action = this.actionService.createAction(AVMDeploySnapshotAction.NAME, args);
-                  this.actionService.executeAction(action, this.websiteRef, false, true);
+                  Action action = getActionService().createAction(AVMDeploySnapshotAction.NAME, args);
+                  getActionService().executeAction(action, this.websiteRef, false, true);
                }
                else if (logger.isWarnEnabled())
                {
@@ -162,12 +165,12 @@ public class DeploySnapshotDialog extends BaseDialogBean
          }
          
          // now we know the list of selected servers set the property on the attempt node
-         this.nodeService.setProperty(attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS, 
+         getNodeService().setProperty(attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS, 
                   (Serializable)selectedDeployToNames);
          
          // set the deploymentattempid property on the store this deployment was for
-         this.avmService.deleteStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
-         this.avmService.setStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID, 
+         getAvmService().deleteStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         getAvmService().setStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID, 
                   new PropertyValue(DataTypeDefinition.TEXT, attemptId));
          
          // close this dialog and immediately open the monitorDeployment dialog
@@ -191,6 +194,7 @@ public class DeploySnapshotDialog extends BaseDialogBean
       return super.getCancelButtonLabel();
    }
    
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
    
@@ -210,12 +214,30 @@ public class DeploySnapshotDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+   
    /**
     * @param actionService The actionService to set.
     */
    public void setActionService(ActionService actionService)
    {
       this.actionService = actionService;
+   }
+   
+   protected ActionService getActionService()
+   {
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
    }
    
    /**

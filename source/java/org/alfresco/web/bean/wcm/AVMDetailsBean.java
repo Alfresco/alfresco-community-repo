@@ -24,29 +24,18 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.dialog.NavigationSupport;
-import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 
@@ -57,11 +46,13 @@ import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
  */
 public abstract class AVMDetailsBean extends BaseDialogBean implements NavigationSupport
 {
+   private static final long serialVersionUID = -4895328117656471680L;
+
    /** NodeService bean reference */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** AVM service bean reference */
-   protected AVMService avmService;
+   transient private AVMService avmService;
    
    /** AVMBrowseBean bean reference */
    protected AVMBrowseBean avmBrowseBean;
@@ -80,12 +71,30 @@ public abstract class AVMDetailsBean extends BaseDialogBean implements Navigatio
       this.nodeService = nodeService;
    }
    
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
    /**
     * @param avmService       The AVMService to set.
     */
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
    
    /**

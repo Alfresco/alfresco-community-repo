@@ -59,7 +59,8 @@ import org.alfresco.web.bean.repository.Repository;
 public class AddContentDialog extends BaseContentWizard
 {
    private final static String MSG_OK = "ok";
-   
+   private static final long serialVersionUID = 3593557546118692687L;
+
    protected List<String> inlineEditableMimeTypes;
    protected File file;
    

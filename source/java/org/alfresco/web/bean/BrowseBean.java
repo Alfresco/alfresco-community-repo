@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,8 +104,10 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Kevin Roast
  */
-public class BrowseBean implements IContextListener
+public class BrowseBean implements IContextListener, Serializable
 {
+   private static final long serialVersionUID = -3234262484615161360L;
+
    /** Public JSF Bean name */
    public static final String BEAN_NAME = "BrowseBean";
 
@@ -132,12 +137,30 @@ public class BrowseBean implements IContextListener
       this.nodeService = nodeService;
    }
 
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+
    /**
     * @param searchService The Searcher to set.
     */
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+
+   protected SearchService getSearchService()
+   {
+      if (searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
    }
 
    /**
@@ -156,6 +179,15 @@ public class BrowseBean implements IContextListener
       this.lockService = lockService;
    }
 
+   protected LockService getLockService()
+   {
+      if (lockService == null)
+      {
+         lockService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getLockService();
+      }
+      return lockService;
+   }
+
    /**
     * @param navigator The NavigationBean to set.
     */
@@ -172,6 +204,15 @@ public class BrowseBean implements IContextListener
       this.dictionaryService = dictionaryService;
    }
 
+   protected DictionaryService getDictionaryService()
+   {
+      if (dictionaryService == null)
+      {
+         dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return dictionaryService;
+   }
+
    /**
     * @param multilingualContentService The Multilingual Content Service to set.
     */
@@ -180,12 +221,30 @@ public class BrowseBean implements IContextListener
       this.multilingualContentService = multilingualContentService;
    }
 
+   protected MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
+   }
+
    /**
     * @param fileFolderService The FileFolderService to set.
     */
    public void setFileFolderService(FileFolderService fileFolderService)
    {
       this.fileFolderService = fileFolderService;
+   }
+
+   protected FileFolderService getFileFolderService()
+   {
+      if (fileFolderService == null)
+      {
+         fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return fileFolderService;
    }
 
    /**
@@ -510,9 +569,9 @@ public class BrowseBean implements IContextListener
 	         tx = Repository.getUserTransaction(context, true);
 	         tx.begin();
 
-	         NodeRef parentRef = nodeService.getPrimaryParent(currNodeRef).getParentRef();
+	         NodeRef parentRef = getNodeService().getPrimaryParent(currNodeRef).getParentRef();
 	         
-	         List<FileInfo> children = this.fileFolderService.list(parentRef);
+	         List<FileInfo> children = this.getFileFolderService().list(parentRef);
 	         this.parentContainerNodes = new ArrayList<Node>(children.size());
 	         for (FileInfo fileInfo : children)
 	         {
@@ -520,20 +579,21 @@ public class BrowseBean implements IContextListener
 	            NodeRef nodeRef = fileInfo.getNodeRef();
 
 	            // find it's type so we can see if it's a node we are interested in
-	            QName type = this.nodeService.getType(nodeRef);
+	            QName type = this.getNodeService().getType(nodeRef);
 
 	            // make sure the type is defined in the data dictionary
-	            TypeDefinition typeDef = this.dictionaryService.getType(type);
+	            TypeDefinition typeDef = this.getDictionaryService().getType(type);
 
 	            if (typeDef != null)
 	            {
 	               MapNode node = null;
 
 	               // look for Space folder node
-	               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
+	               if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
+	                   this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
 	               {
 	                  // create our Node representation
-	                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+	                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
 	                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
 	                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
 
@@ -542,7 +602,7 @@ public class BrowseBean implements IContextListener
 	               else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
 	               {
 	                  // create our Folder Link Node representation
-	                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+	                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
 	                  node.addPropertyResolver("icon", this.resolverSpaceIcon);
 	                  node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
 
@@ -745,7 +805,7 @@ public class BrowseBean implements IContextListener
          if (parentNodeId == null)
          {
             // no specific parent node specified - use the root node
-            parentRef = this.nodeService.getRootNode(Repository.getStoreRef());
+            parentRef = this.getNodeService().getRootNode(Repository.getStoreRef());
          }
          else
          {
@@ -753,7 +813,7 @@ public class BrowseBean implements IContextListener
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
 
-         List<FileInfo> children = this.fileFolderService.list(parentRef);
+         List<FileInfo> children = this.getFileFolderService().list(parentRef);
          this.containerNodes = new ArrayList<Node>(children.size());
          this.contentNodes = new ArrayList<Node>(children.size());
          
@@ -766,29 +826,30 @@ public class BrowseBean implements IContextListener
             NodeRef nodeRef = fileInfo.getNodeRef();
 
             // find it's type so we can see if it's a node we are interested in
-            QName type = this.nodeService.getType(nodeRef);
+            QName type = this.getNodeService().getType(nodeRef);
 
             // make sure the type is defined in the data dictionary
-            TypeDefinition typeDef = this.dictionaryService.getType(type);
+            TypeDefinition typeDef = this.getDictionaryService().getType(type);
 
             if (typeDef != null)
             {
                MapNode node = null;
 
                // look for File content node
-               if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+               if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT))
                {
                   // create our Node representation
-                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
                   setupCommonBindingProperties(node);
 
                   this.contentNodes.add(node);
                }
                // look for Space folder node
-               else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
+               else if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true &&
+                        this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                {
                   // create our Node representation
-                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
                   node.addPropertyResolver("icon", this.resolverSpaceIcon);
                   node.addPropertyResolver("smallIcon", this.resolverSmallIcon);
 
@@ -798,7 +859,7 @@ public class BrowseBean implements IContextListener
                else if (ApplicationModel.TYPE_FILELINK.equals(type))
                {
                   // create our File Link Node representation
-                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
                   // only display the user has the permissions to navigate to the target of the link
                   NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
                   if (destRef != null && new Node(destRef).hasPermission(PermissionService.READ) == true)
@@ -817,7 +878,7 @@ public class BrowseBean implements IContextListener
                else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                {
                   // create our Folder Link Node representation
-                  node = new MapNode(nodeRef, this.nodeService, fileInfo.getProperties());
+                  node = new MapNode(nodeRef, this.getNodeService(), fileInfo.getProperties());
                   // only display the user has the permissions to navigate to the target of the link
                   NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
                   if (destRef != null && new Node(destRef).hasPermission(PermissionService.READ) == true)
@@ -918,7 +979,7 @@ public class BrowseBean implements IContextListener
             sp.setLimit(searchLimit);
          }
 
-         results = this.searchService.query(sp);
+         results = this.getSearchService().query(sp);
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());
 
@@ -934,24 +995,24 @@ public class BrowseBean implements IContextListener
             {
                NodeRef nodeRef = row.getNodeRef();
 
-               if (this.nodeService.exists(nodeRef))
+               if (this.getNodeService().exists(nodeRef))
                {
                   // find it's type so we can see if it's a node we are interested in
-                  QName type = this.nodeService.getType(nodeRef);
+                  QName type = this.getNodeService().getType(nodeRef);
 
                   // make sure the type is defined in the data dictionary
-                  TypeDefinition typeDef = this.dictionaryService.getType(type);
+                  TypeDefinition typeDef = this.getDictionaryService().getType(type);
 
                   if (typeDef != null)
                   {
                      MapNode node = null;
 
                      // look for Space or File nodes
-                     if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) &&
-                         this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                     if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) &&
+                         this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                      {
                         // create our Node representation
-                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node = new MapNode(nodeRef, this.getNodeService(), false);
 
                         node.addPropertyResolver("path", this.resolverPath);
                         node.addPropertyResolver("displayPath", this.resolverDisplayPath);
@@ -960,10 +1021,10 @@ public class BrowseBean implements IContextListener
 
                         this.containerNodes.add(node);
                      }
-                     else if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+                     else if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT))
                      {
                         // create our Node representation
-                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node = new MapNode(nodeRef, this.getNodeService(), false);
 
                         setupCommonBindingProperties(node);
 
@@ -976,7 +1037,7 @@ public class BrowseBean implements IContextListener
                      else if (ApplicationModel.TYPE_FILELINK.equals(type))
                      {
                         // create our File Link Node representation
-                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node = new MapNode(nodeRef, this.getNodeService(), false);
                         // only display the user has the permissions to navigate to the target of the link
                         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
                         if (new Node(destRef).hasPermission(PermissionService.READ) == true)
@@ -997,7 +1058,7 @@ public class BrowseBean implements IContextListener
                      else if (ApplicationModel.TYPE_FOLDERLINK.equals(type))
                      {
                         // create our Folder Link Node representation
-                        node = new MapNode(nodeRef, this.nodeService, false);
+                        node = new MapNode(nodeRef, this.getNodeService(), false);
                         // only display the user has the permissions to navigate to the target of the link
                         NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
                         if (new Node(destRef).hasPermission(PermissionService.READ) == true)
@@ -1082,35 +1143,45 @@ public class BrowseBean implements IContextListener
    // Property Resolvers
 
    public NodePropertyResolver resolverDownload = new NodePropertyResolver() {
+      private static final long serialVersionUID = 4048859853585650378L;
+
       public Object get(Node node) {
          return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), node.getName());
       }
    };
 
    public NodePropertyResolver resolverUrl = new NodePropertyResolver() {
+      private static final long serialVersionUID = -5264085143622470386L;
+
       public Object get(Node node) {
          return DownloadContentServlet.generateBrowserURL(node.getNodeRef(), node.getName());
       }
    };
 
    public NodePropertyResolver resolverWebdavUrl = new NodePropertyResolver() {
+      private static final long serialVersionUID = 9127234483419089006L;
+
       public Object get(Node node) {
          return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.WEBDAV);
       }
    };
 
    public NodePropertyResolver resolverCifsPath = new NodePropertyResolver() {
+      private static final long serialVersionUID = -5804924617772163104L;
+
       public Object get(Node node) {
          return Utils.generateURL(FacesContext.getCurrentInstance(), node, URLMode.CIFS);
       }
    };
 
    public NodePropertyResolver resolverLinkDownload = new NodePropertyResolver() {
+      private static final long serialVersionUID = 7208696954599958859L;
+
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef) == true)
+         if (getNodeService().exists(destRef) == true)
          {
-            String destName = Repository.getNameForNode(nodeService, destRef);
+            String destName = Repository.getNameForNode(getNodeService(), destRef);
             return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), destName);
          }
          else
@@ -1122,11 +1193,13 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverLinkUrl = new NodePropertyResolver() {
+      private static final long serialVersionUID = -1280702397805414147L;
+
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef) == true)
+         if (getNodeService().exists(destRef) == true)
          {
-            String destName = Repository.getNameForNode(nodeService, destRef);
+            String destName = Repository.getNameForNode(getNodeService(), destRef);
             return DownloadContentServlet.generateBrowserURL(destRef, destName);
          }
          else
@@ -1138,9 +1211,11 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverLinkWebdavUrl = new NodePropertyResolver() {
+      private static final long serialVersionUID = -3097558079118837397L;
+
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef) == true)
+         if (getNodeService().exists(destRef) == true)
          {
             return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.WEBDAV);
          }
@@ -1153,9 +1228,11 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverLinkCifsPath = new NodePropertyResolver() {
+      private static final long serialVersionUID = 673020173327603487L;
+
       public Object get(Node node) {
          NodeRef destRef = (NodeRef)node.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef) == true)
+         if (getNodeService().exists(destRef) == true)
          {
             return Utils.generateURL(FacesContext.getCurrentInstance(), new Node(destRef), URLMode.CIFS);
          }
@@ -1168,24 +1245,32 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverFileType16 = new NodePropertyResolver() {
+      private static final long serialVersionUID = -2690520488415178029L;
+
       public Object get(Node node) {
          return Utils.getFileTypeImage(node.getName(), true);
       }
    };
 
    public NodePropertyResolver resolverFileType32 = new NodePropertyResolver() {
+      private static final long serialVersionUID = 1991254398502584389L;
+
       public Object get(Node node) {
          return Utils.getFileTypeImage(node.getName(), false);
       }
    };
 
    public NodePropertyResolver resolverPath = new NodePropertyResolver() {
+      private static final long serialVersionUID = 8008094870888545035L;
+
       public Object get(Node node) {
          return node.getNodePath();
       }
    };
 
    public NodePropertyResolver resolverDisplayPath = new NodePropertyResolver() {
+      private static final long serialVersionUID = -918422848579179425L;
+
       public Object get(Node node) {
          // TODO: replace this with a method that shows the full display name - not QNames?
          return Repository.getDisplayPath(node.getNodePath());
@@ -1193,6 +1278,8 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverSpaceIcon = new NodePropertyResolver() {
+      private static final long serialVersionUID = -5644418026591098018L;
+
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
          String icon = (String)props.getRaw("app:icon");
@@ -1201,6 +1288,8 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverSmallIcon = new NodePropertyResolver() {
+      private static final long serialVersionUID = -150483121767183580L;
+
       public Object get(Node node) {
          QNameNodeMap props = (QNameNodeMap)node.getProperties();
          String icon = (String)props.getRaw("app:icon");
@@ -1209,6 +1298,8 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverMimetype = new NodePropertyResolver() {
+      private static final long serialVersionUID = -8864267975247235172L;
+
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
          return (content != null ? content.getMimetype() : null);
@@ -1216,6 +1307,8 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverEncoding = new NodePropertyResolver() {
+      private static final long serialVersionUID = -1130974681844152101L;
+
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
          return (content != null ? content.getEncoding() : null);
@@ -1223,6 +1316,8 @@ public class BrowseBean implements IContextListener
    };
    
    public NodePropertyResolver resolverSize = new NodePropertyResolver() {
+      private static final long serialVersionUID = 1273541660444385276L;
+
       public Object get(Node node) {
          ContentData content = (ContentData)node.getProperties().get(ContentModel.PROP_CONTENT);
          return (content != null ? new Long(content.getSize()) : 0L);
@@ -1230,6 +1325,9 @@ public class BrowseBean implements IContextListener
    };
 
    public NodePropertyResolver resolverLang = new NodePropertyResolver() {
+      
+    private static final long serialVersionUID = 5412446489528560367L;
+
       public Object get(Node node) {
 
          String lang = null;
@@ -1241,8 +1339,8 @@ public class BrowseBean implements IContextListener
             if(node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 // if the translation is empty, the lang of the content is the lang of it's pivot.
-                NodeRef pivot = multilingualContentService.getPivotTranslation(node.getNodeRef());
-                locale = (Locale) nodeService.getProperty(pivot, ContentModel.PROP_LOCALE);
+                NodeRef pivot = getMultilingualContentService().getPivotTranslation(node.getNodeRef());
+                locale = (Locale) getNodeService().getProperty(pivot, ContentModel.PROP_LOCALE);
             }
             else
             {
@@ -1364,9 +1462,9 @@ public class BrowseBean implements IContextListener
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
 
             // handle special folder link node case
-            if (ApplicationModel.TYPE_FOLDERLINK.equals(this.nodeService.getType(ref)))
+            if (ApplicationModel.TYPE_FOLDERLINK.equals(this.getNodeService().getType(ref)))
             {
-               ref = (NodeRef)this.nodeService.getProperty(ref, ContentModel.PROP_LINK_DESTINATION);
+               ref = (NodeRef)this.getNodeService().getProperty(ref, ContentModel.PROP_LINK_DESTINATION);
             }
 
             clickSpace(ref);
@@ -1429,7 +1527,7 @@ public class BrowseBean implements IContextListener
       {
          // user can either select a descendant of a node display on the page which means we
          // must add the it's parent and itself to the breadcrumb
-         ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+         ChildAssociationRef parentAssocRef = getNodeService().getPrimaryParent(nodeRef);
 
          if (logger.isDebugEnabled())
          {
@@ -1576,7 +1674,7 @@ public class BrowseBean implements IContextListener
       docDetails.setTranslationDocument(new Node(translation));
 
       // set the ml container as the current document
-      NodeRef mlContainer = multilingualContentService.getTranslationContainer(translation);
+      NodeRef mlContainer = getMultilingualContentService().getTranslationContainer(translation);
 
       setupContentAction(mlContainer.getId(), true);
     }
@@ -1859,7 +1957,7 @@ public class BrowseBean implements IContextListener
       else
       {
          // special case to add first item to the location
-         String name = Repository.getNameForNode(this.nodeService, ref);
+         String name = Repository.getNameForNode(this.getNodeService(), ref);
          location.add(new BrowseBreadcrumbHandler(ref, name));
       }
       
@@ -2018,13 +2116,13 @@ public class BrowseBean implements IContextListener
    public static final String MSG_SEARCH_MINIMUM      = "search_minimum";
 
    /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
+   private transient NodeService nodeService;
 
    /** The SearchService to be used by the bean */
-   protected SearchService searchService;
+   private transient SearchService searchService;
 
    /** The LockService to be used by the bean */
-   protected LockService lockService;
+   private transient LockService lockService;
 
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
@@ -2033,13 +2131,13 @@ public class BrowseBean implements IContextListener
    protected UserPreferencesBean userPreferencesBean;
 
    /** The DictionaryService bean reference */
-   protected DictionaryService dictionaryService;
+   private transient DictionaryService dictionaryService;
 
    /** The file folder service */
-   protected FileFolderService fileFolderService;
+   private transient FileFolderService fileFolderService;
 
    /** The Multilingual Content Service */
-   protected MultilingualContentService multilingualContentService;
+   private transient MultilingualContentService multilingualContentService;
 
    /** Views configuration object */
    protected ViewsConfigElement viewsConfig = null;

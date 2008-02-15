@@ -37,7 +37,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
@@ -54,11 +56,13 @@ import org.xml.sax.SAXException;
    implements Rendition
 {
 
+   private static final long serialVersionUID = -342658762155499039L;
+
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
-   private final FormsService formsService;
-   private transient RenderingEngineTemplate renderingEngineTemplate;
+   transient private FormsService formsService;
+   transient private RenderingEngineTemplate renderingEngineTemplate;
 
    /* package */ RenditionImpl(final NodeRef nodeRef, final FormsService formsService)
    {
@@ -89,6 +93,16 @@ import org.xml.sax.SAXException;
       this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
    }
 
+   private FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
+   
    /** the name of this rendition */
    public String getName()
    {
@@ -133,7 +147,7 @@ import org.xml.sax.SAXException;
       {
          throw new FileNotFoundException("unable to find primary form instance data " + path);
       }
-      return this.formsService.getFormInstanceData(-1, path);
+      return this.getFormsService().getFormInstanceData(-1, path);
    }
 
    /** the rendering engine template that generated this rendition */
@@ -177,7 +191,7 @@ import org.xml.sax.SAXException;
                          this.getPath());
             return null;
          }
-         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef, this.formsService);
+         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef, this.getFormsService());
       }
       return this.renderingEngineTemplate;
    }

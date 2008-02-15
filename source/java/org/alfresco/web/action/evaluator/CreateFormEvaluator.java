@@ -42,6 +42,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class CreateFormEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 4475319627518524432L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,10 +43,12 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Kevin Roast
  */
-public final class Preferences
+public final class Preferences implements Serializable
 {
+   private static final long serialVersionUID = 722840612660970723L;
+   
    private NodeRef preferencesRef;
-   private NodeService nodeService;
+   private transient NodeService nodeService;
    private Map<String, Serializable> cache = new HashMap<String, Serializable>(16, 1.0f);
    
    /**

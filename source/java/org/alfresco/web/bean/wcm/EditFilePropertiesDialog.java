@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.content.EditContentPropertiesDialog;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -61,9 +62,11 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class EditFilePropertiesDialog extends EditContentPropertiesDialog
 {
+   private static final long serialVersionUID = 635722726225138092L;
+   
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMService avmService;
-   protected FormsService formsService;
+   transient private AVMService avmService;
+   transient private FormsService formsService;
    
    
    // ------------------------------------------------------------------------------
@@ -85,6 +88,15 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       this.avmService = avmService;
    }
 
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+
    /**
     * @param formsService       The FormsService to set.
     */
@@ -92,6 +104,16 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
    {
       this.formsService = formsService;
    }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
    
    
    // ------------------------------------------------------------------------------
@@ -121,7 +143,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       
       // we need to put all the properties from the editable bag back into 
       // the format expected by the repository
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      Map<QName, Serializable> repoProps = this.getNodeService().getProperties(nodeRef);
       
       // but first extract and deal with the special mimetype property for ContentData
       String mimetype = (String)editedProps.get(TEMP_PROP_MIMETYPE);
@@ -138,9 +160,9 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       }
       
       // add the "titled" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+      if (this.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
       {
-         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+         getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
       }
       
       // add the remaining properties
@@ -157,7 +179,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
          if ((propValue != null) && (propValue instanceof String) && 
              (propValue.toString().length() == 0))
          {
-            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+            PropertyDefinition propDef = this.getDictionaryService().getProperty(qname);
             if (propDef != null)
             {
                if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
@@ -185,7 +207,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
          }
       }
       // send the properties back to the repository
-      this.avmService.setNodeProperties(AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), avmProps);
+      this.getAvmService().setNodeProperties(AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), avmProps);
       
       // perform the rename last as for an AVM it changes the NodeRef, but only if the name has changed!
       String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
@@ -194,32 +216,32 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       
       if (name != null && name.equals(oldName) == false)
       {
-         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
+         if (this.getNodeService().hasAspect(nodeRef, WCMAppModel.ASPECT_RENDITION))
          {
-            throw new UnsupportedOperationException(this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) +
+            throw new UnsupportedOperationException(this.getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME) +
                                                     " is a " + WCMAppModel.ASPECT_RENDITION +
                                                     " and cannot be renamed");
          }
 
          // need to find out if it's a form instance data before rename.  for whatever reason,
          // afterwards it claims it is not
-         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         if (this.getNodeService().hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            final FormInstanceData fid = this.formsService.getFormInstanceData(nodeRef);
+            final FormInstanceData fid = this.getFormsService().getFormInstanceData(nodeRef);
             // delete all existing renditions
             for (final Rendition r : fid.getRenditions())
             {
-               this.avmService.removeNode(r.getPath());
+               this.getAvmService().removeNode(r.getPath());
             }
-            this.nodeService.removeProperty(nodeRef, WCMAppModel.PROP_RENDITIONS);
+            this.getNodeService().removeProperty(nodeRef, WCMAppModel.PROP_RENDITIONS);
          }
 
-         this.avmService.rename(parentPath, oldName, parentPath, name);
+         this.getAvmService().rename(parentPath, oldName, parentPath, name);
          nodeRef = AVMNodeConverter.ToNodeRef(-1, AVMNodeConverter.ExtendAVMPath(parentPath, name));
 
-         if (this.nodeService.hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+         if (this.getNodeService().hasAspect(nodeRef, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            final FormInstanceData fid = this.formsService.getFormInstanceData(nodeRef);
+            final FormInstanceData fid = this.getFormsService().getFormInstanceData(nodeRef);
             for (final FormInstanceData.RegenerateResult rr : fid.regenerateRenditions())
             {
                if (rr.getException() != null)
@@ -250,7 +272,7 @@ public class EditFilePropertiesDialog extends EditContentPropertiesDialog
       String name = this.editableNode.getName();
       String oldPath = AVMNodeConverter.ToAVMVersionPath(this.editableNode.getNodeRef()).getSecond();
       String newPath = oldPath.substring(0, oldPath.lastIndexOf('/') + 1) + name;
-      this.avmBrowseBean.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, newPath)));
+      this.avmBrowseBean.setAvmActionNode(new AVMNode(this.getAvmService().lookup(-1, newPath)));
       
       return outcome;
    }

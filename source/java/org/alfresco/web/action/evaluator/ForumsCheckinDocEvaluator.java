@@ -41,6 +41,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class ForumsCheckinDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -924897450989526336L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

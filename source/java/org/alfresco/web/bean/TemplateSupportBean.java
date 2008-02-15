@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,8 +55,10 @@ import org.alfresco.web.data.QuickSort;
  * 
  * @author Kevin Roast
  */
-public class TemplateSupportBean
+public class TemplateSupportBean implements Serializable
 {
+   private static final long serialVersionUID = 6698338879903536081L;
+   
    private static final String MSG_SELECT_TEMPLATE = "select_a_template";
    private static final String MSG_SELECT_SCRIPT = "select_a_script";
    
@@ -61,10 +66,10 @@ public class TemplateSupportBean
    public static final String NO_SELECTION = "none";
    
    /** NodeService instance */
-   private NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** The SearchService instance */
-   private SearchService searchService;
+   transient private SearchService searchService;
    
    /** cache of content templates that lasts 30 seconds - enough for a couple of page refreshes */
    private ExpiringValueCache<List<SelectItem>> contentTemplates = new ExpiringValueCache<List<SelectItem>>(1000*30);
@@ -87,12 +92,30 @@ public class TemplateSupportBean
       this.nodeService = nodeService;
    }
    
+   private NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
    /**
     * @param searchService The SearchService to set.
     */
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   private SearchService getSearchService()
+   {
+      if (searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
    }
    
    /**
@@ -195,9 +218,9 @@ public class TemplateSupportBean
       
       try
       {
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+         NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
          NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
-         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, resolver, false);
+         List<NodeRef> results = this.getSearchService().selectNodes(rootNodeRef, xpath, null, resolver, false);
          
          wrappers = new ArrayList<SelectItem>(results.size() + 1);
          if (results.size() != 0)
@@ -205,7 +228,7 @@ public class TemplateSupportBean
             DictionaryService dd = Repository.getServiceRegistry(fc).getDictionaryService();
             for (NodeRef ref : results)
             {
-               if (this.nodeService.exists(ref) == true)
+               if (this.getNodeService().exists(ref) == true)
                {
                   Node childNode = new Node(ref);
                   if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
@@ -234,4 +257,5 @@ public class TemplateSupportBean
       
       return wrappers;
    }
+   
 }

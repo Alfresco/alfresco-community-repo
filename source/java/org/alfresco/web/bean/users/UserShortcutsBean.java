@@ -58,18 +58,20 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class UserShortcutsBean
+public class UserShortcutsBean implements Serializable
 {
+   private static final long serialVersionUID = -2264529845476479897L;
+
    private static Log    logger = LogFactory.getLog(UserShortcutsBean.class);
    
    /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
+   transient protected NodeService nodeService;
    
    /** The BrowseBean reference */
    protected BrowseBean browseBean;
    
    /** The PermissionService reference */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    /** List of shortcut nodes */
    private List<Node> shortcuts = null;
@@ -87,6 +89,15 @@ public class UserShortcutsBean
    {
       this.nodeService = nodeService;
    }
+   
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
 
    /**
     * @param browseBean The BrowseBean to set.
@@ -102,6 +113,15 @@ public class UserShortcutsBean
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
    }
    
    /**
@@ -132,7 +152,7 @@ public class UserShortcutsBean
                   NodeRef ref = new NodeRef(Repository.getStoreRef(), shortcuts.get(i));
                   try
                   {
-                     if (this.nodeService.exists(ref) == true)
+                     if (this.getNodeService().exists(ref) == true)
                      {
                         Node node = new Node(ref);
                         
@@ -338,9 +358,9 @@ public class UserShortcutsBean
       
       try
       {
-         if (permissionService.hasPermission(selectedNode.getNodeRef(), PermissionService.READ) == AccessStatus.ALLOWED)
+         if (getPermissionService().hasPermission(selectedNode.getNodeRef(), PermissionService.READ) == AccessStatus.ALLOWED)
          {
-            if (nodeService.exists(selectedNode.getNodeRef()) == false)
+            if (getNodeService().exists(selectedNode.getNodeRef()) == false)
             {
                throw new InvalidNodeRefException(selectedNode.getNodeRef());
             }

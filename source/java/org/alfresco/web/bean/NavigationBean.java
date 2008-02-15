@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -39,6 +42,7 @@ import org.alfresco.filesys.CIFSServerBean;
 import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskInterface;
+import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -60,6 +64,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
@@ -85,8 +90,10 @@ import org.springframework.web.jsf.FacesContextUtils;
  * 
  * @author Kevin Roast
  */
-public class NavigationBean
+public class NavigationBean implements Serializable
 {
+   private static final long serialVersionUID = -648110889585522227L;
+
    /** Public JSF Bean name */
    public static final String BEAN_NAME = "NavigationBean";
    
@@ -110,6 +117,13 @@ public class NavigationBean
    {
       this.nodeService = nodeService;
    }
+   
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      return nodeService;
+   }
 
    /**
     * @param searchService The searchService to set.
@@ -117,6 +131,13 @@ public class NavigationBean
    public void setSearchService(SearchService searchService)
    {
       this.searchService = searchService;
+   }
+   
+   protected SearchService getSearchService()
+   {
+      if (searchService == null)
+         this.searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      return searchService;
    }
    
    /**
@@ -127,12 +148,26 @@ public class NavigationBean
       this.namespaceService = namespaceService;
    }
    
+   protected NamespaceService getNamespaceService()
+   {
+      if (namespaceService == null)
+         this.namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+      return namespaceService;
+   }
+   
    /**
     * @param ruleService The ruleService to use
     */
    public void setRuleService(RuleService ruleService)
    {
       this.ruleService = ruleService;
+   }
+   
+   protected RuleService getRuleService()
+   {
+      if (ruleService == null)
+         this.ruleService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRuleService();
+      return ruleService;
    }
 
    /**
@@ -141,6 +176,13 @@ public class NavigationBean
    public void setCifsServer(CIFSServerBean cifsServer)
    {
       this.cifsServer = cifsServer;
+   }
+   
+   protected CIFSServerBean getCifsServer()
+   {
+      if (cifsServer == null)
+         this.cifsServer = (CIFSServerBean) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "cifsServer");
+      return cifsServer;
    }
 
    /**
@@ -151,6 +193,13 @@ public class NavigationBean
       this.contentDiskDriver = contentDiskDriver;
    }
    
+   protected ClientConfigElement getClientConfig()
+   {
+      if (clientConfig == null)
+         this.clientConfig = Application.getClientConfig(FacesContext.getCurrentInstance());
+      return clientConfig;
+   }
+
    /**
     * @param preferences The UserPreferencesBean to set
     */
@@ -167,12 +216,26 @@ public class NavigationBean
       this.authService = authService;
    }
    
+   protected AuthenticationService getAuthService()
+   {
+      if (authService == null)
+         this.authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
+      return authService;
+   }
+   
    /**
     * @param permissionService The PermissionService to set.
     */
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+         this.permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      return permissionService;
    }
 
    /**
@@ -443,7 +506,7 @@ public class NavigationBean
    public int getRuleCount()
    {
        Node node = getCurrentNode();
-       return (node != null ? this.ruleService.countRules(node.getNodeRef()) : 0);
+       return (node != null ? this.getRuleService().countRules(node.getNodeRef()) : 0);
    }
    
    /**
@@ -521,8 +584,8 @@ public class NavigationBean
       if (node.hasAspect(ContentModel.ASPECT_TEMPLATABLE))
       {
          NodeRef templateRef = (NodeRef)node.getProperties().get(ContentModel.PROP_TEMPLATE);
-         return (templateRef != null && this.nodeService.exists(templateRef) &&
-                 this.permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
+         return (templateRef != null && this.getNodeService().exists(templateRef) &&
+                 this.getPermissionService().hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
       }
       return false;
    }
@@ -657,7 +720,7 @@ public class NavigationBean
             NodeRef rootNode = contentCtx.getRootNode();
             try
             {
-               String cifsPath = Repository.getNamePath(this.nodeService, path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
+               String cifsPath = Repository.getNamePath(this.getNodeService(), path, rootNode, "\\", "file:///" + getCIFSServerPath(diskShare));
                
                node.getProperties().put("cifsPath", cifsPath);
                node.getProperties().put("cifsPathLabel", cifsPath.substring(8));  // strip file:/// part
@@ -764,9 +827,9 @@ public class NavigationBean
          {
             FacesContext fc = FacesContext.getCurrentInstance();
             String xpath = Application.getRootPath(fc) + "/" + Application.getGuestHomeFolderName(fc);
-            List<NodeRef> guestHomeRefs = this.searchService.selectNodes(
-                  this.nodeService.getRootNode(Repository.getStoreRef()),
-                  xpath, null, this.namespaceService, false);
+            List<NodeRef> guestHomeRefs = this.getSearchService().selectNodes(
+                  this.getNodeService().getRootNode(Repository.getStoreRef()),
+                  xpath, null, this.getNamespaceService(), false);
             if (guestHomeRefs.size() == 1)
             {
                this.guestHomeNode = new Node(guestHomeRefs.get(0));
@@ -805,7 +868,7 @@ public class NavigationBean
     */
    public boolean getGuestHomeVisible()
    {
-      if (this.authService.guestUserAuthenticationAllowed())
+      if (this.getAuthService().guestUserAuthenticationAllowed())
       {
          Node guestHome = getGuestHomeNode();
          return guestHome != null && guestHome.hasPermission(PermissionService.READ);
@@ -873,7 +936,7 @@ public class NavigationBean
       {
          StringBuilder buf = new StringBuilder(24);
          
-         String serverName = this.cifsServer.getConfiguration().getServerName();
+         String serverName = this.getCifsServer().getConfiguration().getServerName();
          if (serverName != null && serverName.length() != 0)
          {
             buf.append("\\\\");
@@ -1016,19 +1079,19 @@ public class NavigationBean
    private static final String ERROR_DELETED_FOLDER = "error_deleted_folder";
    
    /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** The SearchService to be used by the bean */
-   protected SearchService searchService;
+   transient private SearchService searchService;
    
    /** NamespaceService bean reference */
-   protected NamespaceService namespaceService;
+   transient private NamespaceService namespaceService;
    
    /** RuleService bean reference*/
-   protected RuleService ruleService;
+   transient private RuleService ruleService;
    
    /** CIFSServer bean reference */
-   protected CIFSServerBean cifsServer;
+   transient private CIFSServerBean cifsServer;
    
    /** CIFS content disk driver bean reference */
    protected ContentDiskInterface contentDiskDriver;
@@ -1037,13 +1100,13 @@ public class NavigationBean
    protected ClientConfigElement clientConfig = null;
    
    /** The user preferences bean reference */
-   protected UserPreferencesBean preferences;
+   UserPreferencesBean preferences;
    
    /** The Authentication service bean reference */
-   protected AuthenticationService authService;
+   transient private AuthenticationService authService;
    
    /** The PermissionService reference */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    /** Cached path to our CIFS server and top level node DIR */
    private String cifsServerPath;

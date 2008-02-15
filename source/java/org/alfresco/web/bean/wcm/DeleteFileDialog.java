@@ -35,7 +35,9 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,11 +49,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteFileDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -3962232696127851920L;
+
    private static final Log logger = LogFactory.getLog(DeleteFileDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   protected FormsService formsService;
+   transient private FormsService formsService;
  
    /**
     * @param avmBrowseBean The avmBrowseBean to set.
@@ -68,6 +72,15 @@ public class DeleteFileDialog extends BaseDialogBean
    {
       this.avmService = avmService;
    }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
 
    /**
     * @param formsService    The FormsService to set.
@@ -76,6 +89,16 @@ public class DeleteFileDialog extends BaseDialogBean
    {
       this.formsService = formsService;
    }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -99,7 +122,7 @@ public class DeleteFileDialog extends BaseDialogBean
          {
             try
             {
-               fid = this.formsService.getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
+               fid = this.getFormsService().getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
             }
             catch (FileNotFoundException fnfe)
             {
@@ -108,23 +131,23 @@ public class DeleteFileDialog extends BaseDialogBean
          }
          else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
          {
-            fid = this.formsService.getFormInstanceData(node.getNodeRef());
+            fid = this.getFormsService().getFormInstanceData(node.getNodeRef());
          }
          if (fid != null)
          {
             final List<Rendition> renditions = fid.getRenditions();
             for (final Rendition r : renditions)
             {
-               this.avmService.removeNode(AVMNodeConverter.SplitBase(r.getPath())[0],
+               this.getAvmService().removeNode(AVMNodeConverter.SplitBase(r.getPath())[0],
                                           AVMNodeConverter.SplitBase(r.getPath())[1]);
             }
-            this.avmService.removeNode(AVMNodeConverter.SplitBase(fid.getPath())[0],
+            this.getAvmService().removeNode(AVMNodeConverter.SplitBase(fid.getPath())[0],
                                        AVMNodeConverter.SplitBase(fid.getPath())[1]);
          }
          else
          {
             // delete the node
-            this.avmService.removeNode(AVMNodeConverter.SplitBase(node.getPath())[0],
+            this.getAvmService().removeNode(AVMNodeConverter.SplitBase(node.getPath())[0],
                                        AVMNodeConverter.SplitBase(node.getPath())[1]);
          }
       }
@@ -166,7 +189,7 @@ public class DeleteFileDialog extends BaseDialogBean
       {
          try
          {
-            final FormInstanceData fid = this.formsService.getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
+            final FormInstanceData fid = this.getFormsService().getRendition(node.getNodeRef()).getPrimaryFormInstanceData();
             return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                                "delete_rendition_confirm"), 
                                         node.getName(),
@@ -181,7 +204,7 @@ public class DeleteFileDialog extends BaseDialogBean
       }
       else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
-         final FormInstanceData fid = this.formsService.getFormInstanceData(node.getNodeRef());
+         final FormInstanceData fid = this.getFormsService().getFormInstanceData(node.getNodeRef());
          return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                             "delete_form_instance_data_confirm"), 
                                      fid.getName(),

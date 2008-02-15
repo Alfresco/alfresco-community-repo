@@ -41,6 +41,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class PropertyValueHandler extends BaseConditionHandler
 {
+   private static final long serialVersionUID = 6718858865738420012L;
+   
    public static final String PROP_CONTAINS_TEXT = "containstext";
    
    public String getJSPPath()

@@ -44,11 +44,9 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -63,6 +61,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ImportDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -8563911447832447065L;
+
    private static final Log logger = LogFactory.getLog(ImportDialog.class);
 
    private static final String DEFAULT_OUTCOME = "dialog:close";
@@ -73,11 +73,9 @@ public class ImportDialog extends BaseDialogBean
    private static final String MSG_OK = "ok";
    private static final String MSG_IMPORT = "import";
    
-   protected BrowseBean browseBean;
-   protected NodeService nodeService;
-   protected ActionService actionService;
-   protected ContentService contentService;
-   protected MimetypeService mimetypeService;
+   transient private ActionService actionService;
+   transient private ContentService contentService;
+   transient private MimetypeService mimetypeService;
    
    private File file;
    private String fileName;
@@ -118,11 +116,11 @@ public class ImportDialog extends BaseDialogBean
                      params.put(ImporterActionExecuter.PARAM_ENCODING, encoding);
                      
                      // build the action to execute
-                     Action action = actionService.createAction(ImporterActionExecuter.NAME, params);
+                     Action action = getActionService().createAction(ImporterActionExecuter.NAME, params);
                      action.setExecuteAsynchronously(runInBackground);
                      
                      // execute the action on the ACP file
-                     actionService.executeAction(action, acpNodeRef);
+                     getActionService().executeAction(action, acpNodeRef);
                      
                      if (logger.isDebugEnabled())
                      {
@@ -257,16 +255,6 @@ public class ImportDialog extends BaseDialogBean
    {
       this.runInBackground = runInBackground;
    }
-
-   /**
-    * Sets the BrowseBean instance to use to retrieve the current document
-    * 
-    * @param browseBean BrowseBean instance
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
    
    /**
     * Sets the action service
@@ -278,14 +266,13 @@ public class ImportDialog extends BaseDialogBean
       this.actionService = actionService;
    }
    
-   /**
-    * Sets the node service
-    * 
-    * @param nodeService  the node service
-    */
-   public void setNodeService(NodeService nodeService)
+   protected ActionService getActionService()
    {
-      this.nodeService = nodeService;
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
    }
    
    /**
@@ -298,6 +285,15 @@ public class ImportDialog extends BaseDialogBean
       this.contentService = contentService;
    }
    
+   protected ContentService getContentService()
+   {
+      if (contentService == null)
+      {
+         contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+      return contentService;
+   }
+   
    /**
     * Sets the mimetype sevice
     * 
@@ -306,6 +302,15 @@ public class ImportDialog extends BaseDialogBean
    public void setMimetypeService(MimetypeService mimetypeService)
    {
       this.mimetypeService = mimetypeService;
+   }
+   
+   protected MimetypeService getMimetypeService()
+   {
+      if (mimetypeService == null)
+      {
+         mimetypeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMimetypeService();
+      }
+      return mimetypeService;
    }
    
    /**
@@ -322,7 +327,7 @@ public class ImportDialog extends BaseDialogBean
       
       // create the node to represent the zip file
       String assocName = QName.createValidLocalName(this.fileName);
-      ChildAssociationRef assocRef = this.nodeService.createNode(
+      ChildAssociationRef assocRef = this.getNodeService().createNode(
            this.browseBean.getActionSpace().getNodeRef(), ContentModel.ASSOC_CONTAINS,
            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, assocName),
            ContentModel.TYPE_CONTENT, contentProps);
@@ -330,17 +335,17 @@ public class ImportDialog extends BaseDialogBean
       NodeRef acpNodeRef = assocRef.getChildRef();
       
       // apply the titled aspect to behave in the web client
-      String mimetype = this.mimetypeService.guessMimetype(this.fileName);
+      String mimetype = this.getMimetypeService().guessMimetype(this.fileName);
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(2, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, this.fileName);
       titledProps.put(ContentModel.PROP_DESCRIPTION,
             MimetypeMap.MIMETYPE_ACP.equals(mimetype) ?
                Application.getMessage(context, "import_acp_description") :
                Application.getMessage(context, "import_zip_description"));
-      this.nodeService.addAspect(acpNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.getNodeService().addAspect(acpNodeRef, ContentModel.ASPECT_TITLED, titledProps);
       
       // add the content to the node
-      ContentWriter writer = this.contentService.getWriter(acpNodeRef, ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = this.getContentService().getWriter(acpNodeRef, ContentModel.PROP_CONTENT, true);
       writer.setEncoding(this.encoding);
       writer.setMimetype(mimetype);
       writer.putContent(this.file);

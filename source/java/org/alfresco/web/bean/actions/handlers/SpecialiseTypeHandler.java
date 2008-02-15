@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class SpecialiseTypeHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 7404684895683515301L;
+   
    public static final String PROP_OBJECT_TYPE = "objecttype";
    
    public String getJSPPath()

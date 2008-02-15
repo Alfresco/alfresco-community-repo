@@ -69,7 +69,7 @@ public class UIClipboardShelfItem extends UIShelfItem
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.collections = (List)values[1];
-      this.pasteActionListener = (MethodBinding)values[2];
+      this.pasteActionListener = (MethodBinding) restoreAttachedState(context, values[2]);
    }
    
    /**
@@ -81,7 +81,7 @@ public class UIClipboardShelfItem extends UIShelfItem
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.collections;
-      values[2] = this.pasteActionListener;
+      values[2] = saveAttachedState(context, this.pasteActionListener);
       return values;
    }
    

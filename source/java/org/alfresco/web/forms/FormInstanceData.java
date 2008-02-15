@@ -26,7 +26,7 @@ package org.alfresco.web.forms;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import org.alfresco.service.cmr.repository.NodeRef;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -41,9 +41,11 @@ public interface FormInstanceData
 
    /////////////////////////////////////////////////////////////////////////////
 
-   public static class RegenerateResult
+   public static class RegenerateResult implements Serializable
    {
 
+      private static final long serialVersionUID = -3827878774655260635L;
+      
       private final RenderingEngineTemplate ret;
       private final Rendition r;
       private final Exception e;

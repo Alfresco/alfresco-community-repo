@@ -76,6 +76,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
@@ -106,6 +107,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMBrowseBean implements IContextListener
 {
+   private static final long serialVersionUID = -2310105113473561134L;
+
    public static final String BEAN_NAME = "AVMBrowseBean";
    
    private static final Log logger = LogFactory.getLog(AVMBrowseBean.class);
@@ -198,25 +201,25 @@ public class AVMBrowseBean implements IContextListener
    private SearchContext searchContext = null;
    
    /** The NodeService to be used by the bean */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** The WorkflowService bean reference. */
-   protected WorkflowService workflowService;
+   transient private WorkflowService workflowService;
    
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
    
    /** AVM service bean reference */
-   protected AVMService avmService;
+   transient private AVMService avmService;
 
    /** AVM sync service bean reference */
-   protected AVMSyncService avmSyncService;
+   transient private AVMSyncService avmSyncService;
    
    /** Action service bean reference */
-   protected ActionService actionService;
+   transient private ActionService actionService;
 
    /** The FormsService reference */
-   protected FormsService formsService;
+   transient private FormsService formsService;
    
    /** The SearchService reference */
    protected SearchService searchService;
@@ -243,6 +246,15 @@ public class AVMBrowseBean implements IContextListener
    {
       this.avmService = avmService;
    }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
 
    /**
     * @param avmSyncService   The AVMSyncService to set.
@@ -250,6 +262,15 @@ public class AVMBrowseBean implements IContextListener
    public void setAvmSyncService(AVMSyncService avmSyncService)
    {
       this.avmSyncService = avmSyncService;
+   }
+   
+   protected AVMSyncService getAvmSyncService()
+   {
+      if (avmSyncService == null)
+      {
+         avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return avmSyncService;
    }
    
    /**
@@ -269,6 +290,15 @@ public class AVMBrowseBean implements IContextListener
       workflowService = service;
    }
    
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
+   }
+   
    /**
     * @param searchService The Searcher to set.
     */
@@ -284,7 +314,11 @@ public class AVMBrowseBean implements IContextListener
     */
    public NodeService getNodeService()
    {
-      return this.nodeService;
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
    }
 
    /**
@@ -303,12 +337,30 @@ public class AVMBrowseBean implements IContextListener
       this.actionService = actionService;
    }
 
+   protected ActionService getActionService()
+   {
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
+   }
+   
    /**
     * @param formsService    The FormsService to set.
     */
    public void setFormsService(final FormsService formsService)
    {
       this.formsService = formsService;
+   }
+   
+   protected FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
    }
    
    public int getPageSizeFiles()
@@ -367,7 +419,7 @@ public class AVMBrowseBean implements IContextListener
       final FacesContext fc = FacesContext.getCurrentInstance();
       final ResourceBundle msg = Application.getBundle(fc);
       final String stagingStore = this.getStagingStore();
-      final AVMStoreDescriptor store = this.avmService.getStore(stagingStore);
+      final AVMStoreDescriptor store = getAvmService().getStore(stagingStore);
       final String storeId = (String)this.getWebProject().getStoreId();
       if (store != null)
       {
@@ -397,13 +449,13 @@ public class AVMBrowseBean implements IContextListener
    {
       QName qn = QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + storeId + "%");
       final Map<String, Map<QName, PropertyValue>> relatedSandboxes =
-         avmService.queryStoresPropertyKeys(qn);
+         getAvmService().queryStoresPropertyKeys(qn);
       final List<String> result = new LinkedList<String>();
       for (String storeName : relatedSandboxes.keySet())
       {
          for (final QName type : types)
          {
-            if (this.avmService.getStoreProperty(storeName, type) != null)
+            if (getAvmService().getStoreProperty(storeName, type) != null)
             {
                result.add(storeName);
                break;
@@ -604,7 +656,7 @@ public class AVMBrowseBean implements IContextListener
       if (this.webapps == null)
       {
          String path = AVMUtil.buildSandboxRootPath(getStagingStore());
-         Map<String, AVMNodeDescriptor> folders = this.avmService.getDirectoryListing(-1, path);
+         Map<String, AVMNodeDescriptor> folders = getAvmService().getDirectoryListing(-1, path);
          List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
          for (AVMNodeDescriptor node : folders.values())
          {
@@ -795,7 +847,7 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.currentPathNode == null)
       {
-         AVMNodeDescriptor node = this.avmService.lookup(-1, getCurrentPath(), true);
+         AVMNodeDescriptor node = getAvmService().lookup(-1, getCurrentPath(), true);
          this.currentPathNode = new AVMNode(node);
       }
       return this.currentPathNode;
@@ -851,7 +903,7 @@ public class AVMBrowseBean implements IContextListener
       {
          // see if there are any deployment attempts for the site
          NodeRef webProjectRef = this.getWebsite().getNodeRef();
-         deployAttempts = this.nodeService.getChildAssocs(webProjectRef, 
+         deployAttempts = getNodeService().getChildAssocs(webProjectRef, 
                   WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, RegexQNamePattern.MATCH_ALL);
          
          // add a placeholder object in the request so we don't evaluate this again for this request
@@ -924,7 +976,7 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         Map<String, AVMNodeDescriptor> nodes = this.avmService.getDirectoryListing(-1, getCurrentPath());
+         Map<String, AVMNodeDescriptor> nodes = getAvmService().getDirectoryListing(-1, getCurrentPath());
          this.files = new ArrayList<Map>(nodes.size());
          this.folders = new ArrayList<Map>(nodes.size());
          for (String name : nodes.keySet())
@@ -1234,7 +1286,7 @@ public class AVMBrowseBean implements IContextListener
          }
          
          // setup the action node
-         this.setAVMActionNodeDescriptor(avmService.lookup(-1, path, true));
+         this.setAVMActionNodeDescriptor(getAvmService().lookup(-1, path, true));
       }
       
       // update UI state ready for return after dialog close
@@ -1265,25 +1317,25 @@ public class AVMBrowseBean implements IContextListener
       
       // retrieve the content reader for this node
       String avmPath = this.getAvmActionNode().getPath();
-      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
+      if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_RENDITION))
       {
          if (logger.isDebugEnabled())
             logger.debug(avmPath + " is a rendition, editing primary rendition instead");
 
          try
          {
-            final FormInstanceData fid = this.formsService.getRendition(-1, avmPath).getPrimaryFormInstanceData();
+            final FormInstanceData fid = this.getFormsService().getRendition(-1, avmPath).getPrimaryFormInstanceData();
             avmPath = fid.getPath();
 
             if (logger.isDebugEnabled())
                logger.debug("Editing primary form instance data " + avmPath);
 
-            this.setAvmActionNode(new AVMNode(this.avmService.lookup(-1, avmPath)));
+            this.setAvmActionNode(new AVMNode(getAvmService().lookup(-1, avmPath)));
          }
          catch (FileNotFoundException fnfe)
          {
-            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_RENDITION);
-            this.avmService.removeAspect(avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+            getAvmService().removeAspect(avmPath, WCMAppModel.ASPECT_RENDITION);
+            getAvmService().removeAspect(avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
             Utils.addErrorMessage(fnfe.getMessage(), fnfe);
          }
       }
@@ -1292,14 +1344,14 @@ public class AVMBrowseBean implements IContextListener
          logger.debug("Editing AVM node: " + avmPath);
       String outcome = null;
       // calculate which editor screen to display
-      if (this.avmService.hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+      if (getAvmService().hasAspect(-1, avmPath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // make content available to the editing screen
          try
          {
             // make sure the form association works before proceeding to the
             // edit web content wizard
-            this.formsService.getFormInstanceData(-1, avmPath).getForm();
+            this.getFormsService().getFormInstanceData(-1, avmPath).getForm();
             // navigate to appropriate screen
             outcome = "wizard:editWebContent";
          }
@@ -1368,17 +1420,17 @@ public class AVMBrowseBean implements IContextListener
          tx = Repository.getUserTransaction(context, false);
          tx.begin();
          
-         AVMNodeDescriptor node = this.avmService.lookup(-1, path, true);
+         AVMNodeDescriptor node = getAvmService().lookup(-1, path, true);
          if (node != null)
          {
             FormInstanceData fid = null;
-            if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_RENDITION))
+            if (getAvmService().hasAspect(-1, path, WCMAppModel.ASPECT_RENDITION))
             {
-               fid = this.formsService.getRendition(-1, path).getPrimaryFormInstanceData();
+               fid = this.getFormsService().getRendition(-1, path).getPrimaryFormInstanceData();
             }
-            else if (this.avmService.hasAspect(-1, path, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+            else if (getAvmService().hasAspect(-1, path, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
             {
-               fid = this.formsService.getFormInstanceData(-1, path);
+               fid = this.getFormsService().getFormInstanceData(-1, path);
             }
             List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
             if (fid != null)
@@ -1398,8 +1450,8 @@ public class AVMBrowseBean implements IContextListener
             }
             final Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
             args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-            Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-            this.actionService.executeAction(action, null); // dummy action ref
+            Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
+            this.getActionService().executeAction(action, null); // dummy action ref
          }
          
          // commit the transaction
@@ -1449,13 +1501,13 @@ public class AVMBrowseBean implements IContextListener
             String sandboxPath = AVMUtil.buildSandboxRootPath( sandbox );
 
             List<AVMDifference> diffs = 
-                this.avmSyncService.compare(
+                this.getAvmSyncService().compare(
                    -1,sandboxPath,Integer.valueOf(strVersion),sandboxPath,null);
             
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
             args.put(AVMRevertStoreAction.PARAM_VERSION, Integer.valueOf(strVersion));
-            Action action = this.actionService.createAction(AVMRevertStoreAction.NAME, args);
-            this.actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
+            Action action = this.getActionService().createAction(AVMRevertStoreAction.NAME, args);
+            this.getActionService().executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
             
             // commit the transaction
             tx.commit();
@@ -1547,7 +1599,7 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
 
          // transition the task
-         this.workflowService.endTask(taskId, "launch");
+         this.getWorkflowService().endTask(taskId, "launch");
          
          // commit the transaction
          tx.commit();
@@ -1579,7 +1631,7 @@ public class AVMBrowseBean implements IContextListener
          tx.begin();
 
          // cancel the workflow
-         this.workflowService.cancelWorkflow(workflowId);
+         this.getWorkflowService().cancelWorkflow(workflowId);
          
          // commit the transaction
          tx.commit();

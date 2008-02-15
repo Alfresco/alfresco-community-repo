@@ -47,9 +47,11 @@ import org.alfresco.web.app.Application;
  * 
  * @author gavinc
  */
-public final class User
+public final class User implements Serializable
 {
-   private String companyRootId;
+   private static final long serialVersionUID = -90577901805847829L;
+
+   private String companyRootId;   
    private String homeSpaceId;
    private String userName;
    private String ticket;

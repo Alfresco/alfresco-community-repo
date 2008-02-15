@@ -215,7 +215,7 @@ public class CreateUserWizard extends BaseWizardBean
         String homeSpaceLabel = this.homeSpaceName;
         if (this.homeSpaceName.length() == 0 && this.homeSpaceLocation != null)
         {
-            homeSpaceLabel = Repository.getNameForNode(this.nodeService, this.homeSpaceLocation);
+            homeSpaceLabel = Repository.getNameForNode(this.getNodeService(), this.homeSpaceLocation);
         }
         
         String quotaLabel = "";
@@ -560,8 +560,8 @@ public class CreateUserWizard extends BaseWizardBean
         {
             String companyXPath = Application.getRootPath(FacesContext.getCurrentInstance());
 
-            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-            List<NodeRef> nodes = this.searchService.selectNodes(rootNodeRef, companyXPath, null, this.namespaceService, false);
+            NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+            List<NodeRef> nodes = this.getSearchService().selectNodes(rootNodeRef, companyXPath, null, this.getNamespaceService(), false);
 
             if (nodes.size() == 0)
             {
@@ -576,12 +576,12 @@ public class CreateUserWizard extends BaseWizardBean
 
     protected NodeRef getDefaultHomeSpace()
     {
-        if ((this.defaultHomeSpaceRef == null) || !nodeService.exists(this.defaultHomeSpaceRef))
+        if ((this.defaultHomeSpaceRef == null) || !getNodeService().exists(this.defaultHomeSpaceRef))
         {
             String defaultHomeSpacePath = Application.getClientConfig(FacesContext.getCurrentInstance()).getDefaultHomeSpacePath();
 
-            NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-            List<NodeRef> nodes = this.searchService.selectNodes(rootNodeRef, defaultHomeSpacePath, null, this.namespaceService, false);
+            NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+            List<NodeRef> nodes = this.getSearchService().selectNodes(rootNodeRef, defaultHomeSpacePath, null, this.getNamespaceService(), false);
 
             if (nodes.size() == 0)
             {
@@ -612,10 +612,10 @@ public class CreateUserWizard extends BaseWizardBean
             // check for existance of home space with same name - return immediately
             // if it exists or throw an exception an give user chance to enter another name
             // TODO: this might be better replaced with an XPath query!
-            List<ChildAssociationRef> children = this.nodeService.getChildAssocs(parentRef);
+            List<ChildAssociationRef> children = this.getNodeService().getChildAssocs(parentRef);
             for (ChildAssociationRef ref : children)
             {
-                String childNodeName = (String) this.nodeService.getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
+                String childNodeName = (String) this.getNodeService().getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
                 if (spaceName.equals(childNodeName))
                 {
                     if (error)
@@ -632,13 +632,13 @@ public class CreateUserWizard extends BaseWizardBean
             // space does not exist already, create a new Space under it with
             // the specified name
             String qname = QName.createValidLocalName(spaceName);
-            ChildAssociationRef assocRef = this.nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, qname),
+            ChildAssociationRef assocRef = this.getNodeService().createNode(parentRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, qname),
                     ContentModel.TYPE_FOLDER);
 
             NodeRef nodeRef = assocRef.getChildRef();
 
             // set the name property on the node
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, spaceName);
+            this.getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, spaceName);
 
             if (logger.isDebugEnabled())
                 logger.debug("Created Home Space for with name: " + spaceName);
@@ -647,7 +647,7 @@ public class CreateUserWizard extends BaseWizardBean
             Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
             uiFacetsProps.put(ApplicationModel.PROP_ICON, CreateSpaceWizard.DEFAULT_SPACE_ICON_NAME);
             uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
-            this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+            this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
 
             setupHomeSpacePermissions(nodeRef);
 

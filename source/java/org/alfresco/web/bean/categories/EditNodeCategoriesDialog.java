@@ -37,7 +37,6 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Implementation for the edit node categories dialog.
@@ -77,7 +76,7 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
       
       // determine description for dialog
       FacesContext context = FacesContext.getCurrentInstance();
-      if (this.dictionaryService.isSubClass(this.node.getType(), ContentModel.TYPE_FOLDER))
+      if (getDictionaryService().isSubClass(this.node.getType(), ContentModel.TYPE_FOLDER))
       {
          this.description = Application.getMessage(context, "editcategory_space_description"); 
       }
@@ -91,13 +90,13 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // firstly retrieve all the properties for the current node
-      Map<QName, Serializable> updateProps = this.nodeService.getProperties(this.node.getNodeRef());
+      Map<QName, Serializable> updateProps = getNodeService().getProperties(this.node.getNodeRef());
 
       // create a node ref representation of the selected id and set the new properties
       updateProps.put(ContentModel.PROP_CATEGORIES, (Serializable) categories);
 
       // set the properties on the node
-      this.nodeService.setProperties(this.node.getNodeRef(), updateProps);
+      getNodeService().setProperties(this.node.getNodeRef(), updateProps);
 
       return outcome;
    }
@@ -140,7 +139,7 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
       if (this.categories == null)
       {
          // get the list of categories
-         this.categories = (List)this.nodeService.getProperty(this.node.getNodeRef(),
+         this.categories = (List)getNodeService().getProperty(this.node.getNodeRef(),
                ContentModel.PROP_CATEGORIES);
       }
       

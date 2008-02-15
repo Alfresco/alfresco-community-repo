@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +79,8 @@ import org.apache.tools.zip.ZipFile;
  */
 public class ImportWebsiteDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -432986732265292504L;
+
    private static final int BUFFER_SIZE = 16384;
    private static Log logger = LogFactory.getLog(ImportWebsiteDialog.class);
 
@@ -86,19 +89,30 @@ public class ImportWebsiteDialog extends BaseDialogBean
    protected boolean isFinished = false;
    protected boolean highByteZip = false;
 
-   protected FileFolderService fileFolderService;
-   protected ContentService contentService;
+   transient private FileFolderService fileFolderService;
+   transient private ContentService contentService;
+   
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMService avmService;
-   protected NodeService nodeService;
-
-
+   
+   transient private AVMService avmService;
+   transient private NodeService nodeService;
+   
+   
    /**
     * @param contentService      The ContentService to set.
     */
    public void setContentService(ContentService contentService)
    {
       this.contentService = contentService;
+   }
+   
+   protected ContentService getContentService()
+   {
+      if (this.contentService == null)
+      {
+         this.contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+      return this.contentService;
    }
 
    /**
@@ -107,6 +121,15 @@ public class ImportWebsiteDialog extends BaseDialogBean
    public void setFileFolderService(FileFolderService fileFolderService)
    {
       this.fileFolderService = fileFolderService;
+   }
+
+   protected FileFolderService getFileFolderService()
+   {
+      if (this.fileFolderService == null)
+      {
+         this.fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return this.fileFolderService;
    }
 
    /**
@@ -125,12 +148,30 @@ public class ImportWebsiteDialog extends BaseDialogBean
       this.avmService = avmService;
    }
 
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingAwareService();
+      }
+      return this.avmService;
+   }
+
    /**
     * @param nodeService         The NodeService to set.
     */
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   protected NodeService getNodeService()
+   {
+      if (this.nodeService == null)
+      {
+         this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return this.nodeService;
    }
 
    /**
@@ -224,22 +265,22 @@ public class ImportWebsiteDialog extends BaseDialogBean
             RetryingTransactionHelper.RetryingTransactionCallback<String> cb =
             new RetryingTransactionHelper.RetryingTransactionCallback<String>()
             {
-                public String execute()
-                {
-                    // get the AVM path that will contain the imported content
-                    String rootPath = avmBrowseBean.getCurrentPath();
-
-                    // convert the AVM path to a NodeRef so we can use the NodeService to perform import
-                    NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
-                    processZipImport(file, importRef);
-
-                    // After a bulk import it's a good idea to snapshot the store
-                    avmService.createSnapshot(
-                          AVMUtil.getStoreName(rootPath),
-                          "Import of file: " + fileName, null);
-
-                    return rootPath;
-                }
+               public String execute()
+               {
+                  // get the AVM path that will contain the imported content
+                  String rootPath = avmBrowseBean.getCurrentPath();
+   
+                  // convert the AVM path to a NodeRef so we can use the NodeService to perform import
+                  NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
+                  processZipImport(file, importRef);
+   
+                  // After a bulk import it's a good idea to snapshot the store
+                  getAvmService().createSnapshot(
+                        AVMUtil.getStoreName(rootPath),
+                        "Import of file: " + fileName, null);
+   
+                  return rootPath;
+               }
             };
             String rootPath = Repository.getRetryingTransactionHelper(context).doInTransaction(cb);
 
@@ -373,7 +414,7 @@ public class ImportWebsiteDialog extends BaseDialogBean
                Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
                properties.put(ContentModel.PROP_TITLE,
                               new PropertyValue(DataTypeDefinition.TEXT, fileName));
-               this.avmService.createFile(
+               this.getAvmService().createFile(
                      avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE),
                      aspects, properties);
 
@@ -411,7 +452,7 @@ public class ImportWebsiteDialog extends BaseDialogBean
                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
                List<QName> aspects = new ArrayList<QName>();
                aspects.add(ApplicationModel.ASPECT_UIFACETS);
-               this.avmService.createDirectory(avmPath, file.getName(), aspects, null);
+               this.getAvmService().createDirectory(avmPath, file.getName(), aspects, null);
 
                String folderPath = avmPath + '/' + file.getName();
                NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);

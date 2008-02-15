@@ -55,6 +55,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateDiscussionDialog extends CreateTopicDialog
 {
+   private static final long serialVersionUID = 3500493916528264014L;
+
    protected NodeRef discussingNodeRef;
    
    private static final Log logger = LogFactory.getLog(CreateDiscussionDialog.class);
@@ -114,24 +116,24 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          
          this.discussingNodeRef = new NodeRef(Repository.getStoreRef(), id);
          
-         if (this.nodeService.hasAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE))
+         if (this.getNodeService().hasAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE))
          {
             throw new AlfrescoRuntimeException("createDiscussion called for an object that already has a discussion!");
          }
          
          // add the discussable aspect
-         this.nodeService.addAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE, null);
+         this.getNodeService().addAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE, null);
          
          // create a child forum space using the child association just introduced by
          // adding the discussable aspect
-         String name = (String)this.nodeService.getProperty(this.discussingNodeRef, 
+         String name = (String)this.getNodeService().getProperty(this.discussingNodeRef, 
                ContentModel.PROP_NAME);
          String msg = Application.getMessage(FacesContext.getCurrentInstance(), "discussion_for");
          String forumName = MessageFormat.format(msg, new Object[] {name});
          
          Map<QName, Serializable> forumProps = new HashMap<QName, Serializable>(1);
          forumProps.put(ContentModel.PROP_NAME, forumName);
-         ChildAssociationRef childRef = this.nodeService.createNode(this.discussingNodeRef, 
+         ChildAssociationRef childRef = this.getNodeService().createNode(this.discussingNodeRef, 
                ForumModel.ASSOC_DISCUSSION,
                QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), 
                ForumModel.TYPE_FORUM, forumProps);
@@ -141,7 +143,7 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          // apply the uifacets aspect
          Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
          uiFacetsProps.put(ApplicationModel.PROP_ICON, "forum");
-         this.nodeService.addAspect(forumNodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.getNodeService().addAspect(forumNodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
          
          if (logger.isDebugEnabled())
             logger.debug("created forum for content: " + this.discussingNodeRef.toString());
@@ -178,11 +180,11 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          tx.begin();
          
          // remove the discussable aspect from the node we were going to discuss!
-         this.nodeService.removeAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE);
+         this.getNodeService().removeAspect(this.discussingNodeRef, ForumModel.ASPECT_DISCUSSABLE);
          
          // delete the forum space created when the wizard started         
          Node forumNode = this.navigator.getCurrentNode();
-         this.nodeService.deleteNode(forumNode.getNodeRef());
+         this.getNodeService().deleteNode(forumNode.getNodeRef());
             
          // commit the transaction
          tx.commit();

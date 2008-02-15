@@ -48,6 +48,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ManageLinkValidationTaskDialog extends ManageTaskDialog
 {
+   private static final long serialVersionUID = 59524560340308134L;
+   
    protected String store;
    protected String webapp;
    protected AVMBrowseBean avmBrowseBean;
@@ -81,7 +83,7 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
          if (logger.isDebugEnabled())
             logger.debug("Retrieving link validation report from store '" + storeName + "'");
          
-         PropertyValue val = this.avmService.getStoreProperty(storeName, 
+         PropertyValue val = this.getAvmService().getStoreProperty(storeName, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
          if (val != null)
          {

@@ -39,10 +39,13 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.logging.Log;
@@ -57,10 +60,12 @@ import org.xml.sax.SAXException;
  */
 /* package */ class FormInstanceDataImpl implements FormInstanceData
 {
+   private static final long serialVersionUID = -7806221587661854013L;
+   
    private static final Log LOGGER = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
-   private final FormsService formsService;
+   private transient FormsService formsService;
 
    /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
                                       final FormsService formsService)
@@ -90,6 +95,15 @@ import org.xml.sax.SAXException;
                                       final FormsService formsService)
    {
       this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
+   }
+   
+   private FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
    }
 
    /** the name of this rendition */
@@ -134,11 +148,11 @@ import org.xml.sax.SAXException;
          // TODO - forms should be identified by nodeRef rather than name (which can be non-unique)
          if (getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
          {
-            return this.formsService.getWebForm(parentFormName);
+            return this.getFormsService().getWebForm(parentFormName);
          }
          else
          {
-            return this.formsService.getForm(parentFormName);
+            return this.getFormsService().getForm(parentFormName);
          }
       }
       catch (FormNotFoundException fnfe)
@@ -236,7 +250,7 @@ import org.xml.sax.SAXException;
          {
             final Rendition r = new RenditionImpl(-1, 
                                                   storeName + ':' + (String)path, 
-                                                  this.formsService);
+                                                  this.getFormsService());
             try
             {
                if (!this.equals(r.getPrimaryFormInstanceData()))

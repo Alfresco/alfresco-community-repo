@@ -139,7 +139,7 @@ public class DeleteUserDialog extends BaseDialogBean {
                 params.addStore(Repository.getStoreRef());
                 params.setQuery(query);
 
-                List<NodeRef> people = this.searchService.query(params).getNodeRefs();
+                List<NodeRef> people = this.getSearchService().query(params).getNodeRefs();
 
                 if (logger.isDebugEnabled())
                     logger.debug("Found " + people.size() + " users");

@@ -38,6 +38,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class ContentUsersBean extends UserMembersBean
 {
+   private static final long serialVersionUID = 5206400236997654181L;
+
    private final static String MSG_MANAGE_CONTENT_USERS = "manage_content_users";
    private final static String MSG_CONTENT_OWNER = "content_owner";
    private final static String MSG_CLOSE= "close";

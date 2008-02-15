@@ -38,30 +38,35 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.*;
+import org.alfresco.web.forms.Form;
+import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormNotFoundException;
+import org.alfresco.web.forms.FormsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * @author arielb
  */
-public class PromptForWebFormDialog 
-   extends BaseDialogBean
+public class PromptForWebFormDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 8062203927131257236L;
+
    private static final Log LOGGER = LogFactory.getLog(PromptForWebFormDialog.class);
    
    /** AVM service reference */
-   protected AVMService avmService;
+   transient private AVMService avmService;
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
 
    /** The FormsService reference */
-   protected FormsService formsService;
+   transient private FormsService formsService;
 
    private transient List<SelectItem> formChoices;
 
@@ -79,6 +84,15 @@ public class PromptForWebFormDialog
    {
       this.avmService = avmService;
    }
+   
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
+   }
 
    /**
     * @param avmBrowseBean    The AVMBrowseBean to set.
@@ -93,6 +107,15 @@ public class PromptForWebFormDialog
    public void setFormsService(final FormsService formsService)
    {
       this.formsService = formsService;
+   }
+   
+   protected FormsService getFormsService()
+   {
+      if (this.formsService == null)
+      {
+         this.formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return this.formsService;
    }
 
    /**
@@ -119,12 +142,12 @@ public class PromptForWebFormDialog
       this.formName = null;
       this.formChoices = null;
       final String avmPath = this.getAvmNode().getPath();
-      if (this.avmService.hasAspect(this.getAvmNode().getVersion(), 
+      if (this.getAvmService().hasAspect(this.getAvmNode().getVersion(), 
                                     avmPath, 
                                     WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // build a status message if this is an error case
-         final FormInstanceData fid = this.formsService.getFormInstanceData(this.getAvmNode().getVersion(), avmPath);
+         final FormInstanceData fid = this.getFormsService().getFormInstanceData(this.getAvmNode().getVersion(), avmPath);
          try
          {
             final Form f = fid.getForm();
@@ -158,15 +181,15 @@ public class PromptForWebFormDialog
       LOGGER.debug("configuring " + this.getAvmNode().getPath() + 
                    " to use form " + this.getFormName());
 
-      this.avmService.setNodeProperty(this.getAvmNode().getPath(),
+      this.getAvmService().setNodeProperty(this.getAvmNode().getPath(),
                                       WCMAppModel.PROP_PARENT_FORM_NAME,
                                       new PropertyValue(DataTypeDefinition.TEXT, this.getFormName()));
                                       
-      if (!this.avmService.hasAspect(this.getAvmNode().getVersion(),
+      if (!this.getAvmService().hasAspect(this.getAvmNode().getVersion(),
                                      this.getAvmNode().getPath(), 
                                      WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
-         this.avmService.addAspect(this.getAvmNode().getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+         this.getAvmService().addAspect(this.getAvmNode().getPath(), WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
       }
       return outcome;
    }

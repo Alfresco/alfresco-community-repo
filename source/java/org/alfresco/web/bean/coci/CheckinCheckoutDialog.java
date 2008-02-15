@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -69,6 +68,8 @@ public class CheckinCheckoutDialog extends BaseDialogBean
 {
    // ------------------------------------------------------------------------------
    // Private data
+
+   private static final long serialVersionUID = -4898900470274506760L;
 
    private static Log logger = LogFactory.getLog(CheckinCheckoutDialog.class);
 
@@ -115,22 +116,6 @@ public class CheckinCheckoutDialog extends BaseDialogBean
    public void setBrowseBean(BrowseBean browseBean)
    {
       this.browseBean = browseBean;
-   }
-   
-   /**
-    * @return Returns the NodeService.
-    */
-   public NodeService getNodeService()
-   {
-      return this.nodeService;
-   }
-
-   /**
-    * @param nodeService The NodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
    }
    
    public boolean getFinishButtonDisabled()

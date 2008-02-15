@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.app.context;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,8 +40,10 @@ import javax.faces.context.FacesContext;
  * 
  * @author Kevin Roast
  */
-public final class UIContextService
+public final class UIContextService implements Serializable
 {
+   private static final long serialVersionUID = -866750823190499704L;
+
    /**
     * Private constructor
     */

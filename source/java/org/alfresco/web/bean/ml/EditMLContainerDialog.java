@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.ml;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -36,6 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Dialog bean to edit an existing multilingual container.
@@ -44,7 +47,9 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class EditMLContainerDialog extends  BaseDialogBean
 {
-   MultilingualContentService multilingualContentService;
+   private static final long serialVersionUID = -6340255019962646300L;
+
+   transient private MultilingualContentService multilingualContentService;
 
    private Node editableNode;
 
@@ -82,7 +87,7 @@ public class EditMLContainerDialog extends  BaseDialogBean
       {
          QName qname = QName.createQName(entry.getKey());
 
-         nodeService.setProperty(container, qname, (Serializable) entry.getValue());
+         getNodeService().setProperty(container, qname, (Serializable) entry.getValue());
       }
 
       return outcome;
@@ -102,7 +107,7 @@ public class EditMLContainerDialog extends  BaseDialogBean
       else
       {
           return new Node(
-                  multilingualContentService.getTranslationContainer(
+                getMultilingualContentService().getTranslationContainer(
                         currentNode.getNodeRef())
             );
       }
@@ -132,7 +137,12 @@ public class EditMLContainerDialog extends  BaseDialogBean
    /**
     * @return the multilingualContentService
     */
-   public MultilingualContentService getMultilingualContentService() {
+   public MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
       return multilingualContentService;
    }
 
@@ -143,4 +153,5 @@ public class EditMLContainerDialog extends  BaseDialogBean
          MultilingualContentService multilingualContentService) {
       this.multilingualContentService = multilingualContentService;
    }
+   
 }

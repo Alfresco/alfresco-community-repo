@@ -39,6 +39,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class NewEditionEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -7511956951071280506L;
+
    public boolean evaluate(Node node)
    {
        FacesContext fc = FacesContext.getCurrentInstance();

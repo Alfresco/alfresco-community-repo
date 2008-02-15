@@ -41,6 +41,8 @@ public class ViewCompletedTaskDialog extends ManageTaskDialog
    // ------------------------------------------------------------------------------
    // Dialog implementation
 
+   private static final long serialVersionUID = 1568710712589201055L;
+
    @Override
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
@@ -67,6 +69,6 @@ public class ViewCompletedTaskDialog extends ManageTaskDialog
    {
       String titleStart = Application.getMessage(FacesContext.getCurrentInstance(), "view_completed_task_title");
          
-      return titleStart + ": " + this.task.title;
+      return titleStart + ": " + this.getWorkflowTask().title;
    }
 }

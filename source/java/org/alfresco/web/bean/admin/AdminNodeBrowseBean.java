@@ -56,6 +56,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.bean.repository.Repository;
 
 
 // TODO: DownloadServlet - use of request parameter for property name?
@@ -65,8 +66,10 @@ import org.alfresco.web.app.servlet.DownloadContentServlet;
 /**
  * Backing bean to support the Admin Node Browser
  */
-public class AdminNodeBrowseBean
+public class AdminNodeBrowseBean implements Serializable
 {
+    private static final long serialVersionUID = -8702324672426537379L;
+
     /** selected query language */
     private String queryLanguage = null;
 
@@ -85,24 +88,24 @@ public class AdminNodeBrowseBean
     private SearchResults searchResults = new SearchResults((List<NodeRef>)null);
     
     // stores and node
-    private DataModel stores = null;
+    transient private DataModel stores = null;
     private NodeRef nodeRef = null;
     private QName nodeType = null;
     private Path primaryPath = null;
-    private DataModel parents = null;
-    private DataModel aspects = null;
-    private DataModel properties = null;
-    private DataModel children = null;
-    private DataModel assocs = null;
+    transient private DataModel parents = null;
+    transient private DataModel aspects = null;
+    transient private DataModel properties = null;
+    transient private DataModel children = null;
+    transient private DataModel assocs = null;
     private Boolean inheritPermissions = null;
-    private DataModel permissions = null;
+    transient private DataModel permissions = null;
     
     // supporting repository services
-    private NodeService nodeService;
-    private DictionaryService dictionaryService;
-    private SearchService searchService;
-    private NamespaceService namespaceService;
-    private PermissionService permissionService;
+    transient private NodeService nodeService;
+    transient private DictionaryService dictionaryService;
+    transient private SearchService searchService;
+    transient private NamespaceService namespaceService;
+    transient private PermissionService permissionService;
     
     /**
      * @param nodeService  node service
@@ -110,6 +113,15 @@ public class AdminNodeBrowseBean
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    private NodeService getNodeService()
+    {
+        if (nodeService == null)
+        {
+            nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+        }
+        return nodeService;
     }
 
     /**
@@ -120,12 +132,30 @@ public class AdminNodeBrowseBean
         this.searchService = searchService;
     }
     
+    private SearchService getSearchService()
+    {
+        if (searchService == null)
+        {
+            searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+        }
+        return searchService;
+    }
+    
     /**
      * @param dictionaryService   dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    private DictionaryService getDictionaryService()
+    {
+        if (dictionaryService == null)
+        {
+            dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+        }
+        return dictionaryService;
     }
     
     /**
@@ -135,6 +165,15 @@ public class AdminNodeBrowseBean
     {
         this.namespaceService = namespaceService;
     }
+    
+    private NamespaceService getNamespaceService()
+    {
+        if (namespaceService == null)
+        {
+            namespaceService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+        }
+        return namespaceService;
+    }
 
     /**
      * @param permissionService   permission service
@@ -142,6 +181,15 @@ public class AdminNodeBrowseBean
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    private PermissionService getPermissionService()
+    {
+        if (permissionService == null)
+        {
+            permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+        }
+        return permissionService;
     }
 
     /**
@@ -153,7 +201,7 @@ public class AdminNodeBrowseBean
     {
         if (stores == null)
         {
-            List<StoreRef> storeRefs = nodeService.getStores();
+            List<StoreRef> storeRefs = getNodeService().getStores();
             stores = new ListDataModel(storeRefs);
         }
         return stores;
@@ -168,7 +216,7 @@ public class AdminNodeBrowseBean
     {
         if (nodeRef == null)
         {
-            nodeRef = nodeService.getRootNode(new StoreRef("system", "system"));
+            nodeRef = getNodeService().getRootNode(new StoreRef("system", "system"));
         }
         return nodeRef;
     }
@@ -203,7 +251,7 @@ public class AdminNodeBrowseBean
     {
         if (nodeType == null)
         {
-            nodeType = nodeService.getType(getNodeRef());
+            nodeType = getNodeService().getType(getNodeRef());
         }
         return nodeType;
     }
@@ -217,7 +265,7 @@ public class AdminNodeBrowseBean
     {
         if (primaryPath == null)
         {
-            primaryPath = nodeService.getPath(getNodeRef());
+            primaryPath = getNodeService().getPath(getNodeRef());
         }
         return ISO9075.decode(primaryPath.toString());
     }
@@ -244,7 +292,7 @@ public class AdminNodeBrowseBean
     {
         if (aspects == null)
         {
-            List<QName> aspectNames = new ArrayList<QName>(nodeService.getAspects(getNodeRef()));
+            List<QName> aspectNames = new ArrayList<QName>(getNodeService().getAspects(getNodeRef()));
             aspects = new ListDataModel(aspectNames);
         }
         return aspects;
@@ -259,7 +307,7 @@ public class AdminNodeBrowseBean
     {
         if (parents == null)
         {
-            List<ChildAssociationRef> parentRefs = nodeService.getParentAssocs(getNodeRef());
+            List<ChildAssociationRef> parentRefs = getNodeService().getParentAssocs(getNodeRef());
             parents = new ListDataModel(parentRefs);
         }
         return parents;        
@@ -274,7 +322,7 @@ public class AdminNodeBrowseBean
     {
         if (properties == null)
         {
-            Map<QName, Serializable> propertyValues = nodeService.getProperties(getNodeRef());
+            Map<QName, Serializable> propertyValues = getNodeService().getProperties(getNodeRef());
             List<Property> nodeProperties = new ArrayList<Property>(propertyValues.size());
             for (Map.Entry<QName, Serializable> property : propertyValues.entrySet())
             {
@@ -294,7 +342,7 @@ public class AdminNodeBrowseBean
     {
         if (inheritPermissions == null)
         {
-            inheritPermissions = permissionService.getInheritParentPermissions(nodeRef);
+            inheritPermissions = this.getPermissionService().getInheritParentPermissions(nodeRef);
         }
         return inheritPermissions.booleanValue();
     }
@@ -308,10 +356,10 @@ public class AdminNodeBrowseBean
     {
         if (permissions == null)
         {
-            AccessStatus readPermissions = permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
+            AccessStatus readPermissions = this.getPermissionService().hasPermission(nodeRef, PermissionService.READ_PERMISSIONS);
             if (readPermissions.equals(AccessStatus.ALLOWED))
             {
-                List<AccessPermission> nodePermissions = new ArrayList<AccessPermission>(permissionService.getAllSetPermissions(nodeRef));
+                List<AccessPermission> nodePermissions = new ArrayList<AccessPermission>(getPermissionService().getAllSetPermissions(nodeRef));
                 permissions = new ListDataModel(nodePermissions);
             }
             else
@@ -333,7 +381,7 @@ public class AdminNodeBrowseBean
     {
         if (children == null)
         {
-            List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(getNodeRef());
+            List<ChildAssociationRef> assocRefs = getNodeService().getChildAssocs(getNodeRef());
             children = new ListDataModel(assocRefs);
         }
         return children;
@@ -348,7 +396,7 @@ public class AdminNodeBrowseBean
     {
         if (assocs == null)
         {
-            List<AssociationRef> assocRefs = nodeService.getTargetAssocs(getNodeRef(), RegexQNamePattern.MATCH_ALL);
+            List<AssociationRef> assocRefs = getNodeService().getTargetAssocs(getNodeRef(), RegexQNamePattern.MATCH_ALL);
             assocs = new ListDataModel(assocRefs);
         }
         return assocs;
@@ -421,8 +469,8 @@ public class AdminNodeBrowseBean
      */
     public String selectStore()
     {
-        StoreRef storeRef = (StoreRef)stores.getRowData();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        StoreRef storeRef = (StoreRef)getStores().getRowData();
+        NodeRef rootNode = getNodeService().getRootNode(storeRef);
         setNodeRef(rootNode);
         return "success";
     }
@@ -468,7 +516,7 @@ public class AdminNodeBrowseBean
      */
     public String selectParent()
     {
-        ChildAssociationRef assocRef = (ChildAssociationRef)parents.getRowData();
+        ChildAssociationRef assocRef = (ChildAssociationRef)getParents().getRowData();
         NodeRef parentRef = assocRef.getParentRef();
         setNodeRef(parentRef);
         return "success";
@@ -481,7 +529,7 @@ public class AdminNodeBrowseBean
      */
     public String selectToNode()
     {
-        AssociationRef assocRef = (AssociationRef)assocs.getRowData();
+        AssociationRef assocRef = (AssociationRef)getAssocs().getRowData();
         NodeRef targetRef = assocRef.getTargetRef();
         setNodeRef(targetRef);
         return "success";
@@ -494,7 +542,7 @@ public class AdminNodeBrowseBean
      */
     public String selectNodeProperty()
     {
-        Property property = (Property)properties.getRowData();
+        Property property = (Property)getProperties().getRowData();
         Property.Value value = (Property.Value)property.getValues().getRowData();
         NodeRef nodeRef = (NodeRef)value.getValue();
         setNodeRef(nodeRef);
@@ -508,7 +556,7 @@ public class AdminNodeBrowseBean
      */
     public String selectChild()
     {
-        ChildAssociationRef assocRef = (ChildAssociationRef)children.getRowData();
+        ChildAssociationRef assocRef = (ChildAssociationRef)getChildren().getRowData();
         NodeRef childRef = assocRef.getChildRef();
         setNodeRef(childRef);
         return "success";
@@ -540,7 +588,7 @@ public class AdminNodeBrowseBean
             {
                 // ensure node exists
                 NodeRef nodeRef = new NodeRef(query);
-                boolean exists = nodeService.exists(nodeRef);
+                boolean exists = getNodeService().exists(nodeRef);
                 if (!exists)
                 {
                     throw new AlfrescoRuntimeException("Node " + nodeRef + " does not exist.");
@@ -550,13 +598,13 @@ public class AdminNodeBrowseBean
             }
             else if (queryLanguage.equals("selectnodes"))
             {
-                List<NodeRef> nodes = searchService.selectNodes(getNodeRef(), query, null, namespaceService, false);
+                List<NodeRef> nodes = getSearchService().selectNodes(getNodeRef(), query, null, namespaceService, false);
                 searchResults = new SearchResults(nodes);
                 return "search";
             }
             
             // perform search
-            searchResults = new SearchResults(searchService.query(getNodeRef().getStoreRef(), queryLanguage, query));
+            searchResults = new SearchResults(getSearchService().query(getNodeRef().getStoreRef(), queryLanguage, query));
             return "search";
         }
         catch(Throwable e)
@@ -591,7 +639,7 @@ public class AdminNodeBrowseBean
         {
             this.name = name;
             
-            PropertyDefinition propDef = dictionaryService.getProperty(name);
+            PropertyDefinition propDef = getDictionaryService().getProperty(name);
             if (propDef != null)
             {
                 datatype = propDef.getDataType().getName().toString();
@@ -720,10 +768,10 @@ public class AdminNodeBrowseBean
                 {
                     if (value != null)
                     {
-                        DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(value.getClass());
+                        DataTypeDefinition dataTypeDefinition = getDictionaryService().getDataType(value.getClass());
                         if (dataTypeDefinition != null)
                         {
-                            datatype = dictionaryService.getDataType(value.getClass()).getName().toString();
+                            datatype = getDictionaryService().getDataType(value.getClass()).getName().toString();
                         }
                     }
                 }
@@ -780,8 +828,10 @@ public class AdminNodeBrowseBean
     /**
      * Permission representing the fact that "Read Permissions" has not been granted
      */
-    public static class NoReadPermissionGranted
+    public static class NoReadPermissionGranted implements Serializable
     {
+        private static final long serialVersionUID = -6256369557521402921L;
+        
         public String getPermission()
         {
             return PermissionService.READ_PERMISSIONS;
@@ -801,10 +851,12 @@ public class AdminNodeBrowseBean
     /**
      * Wrapper class for Search Results
      */
-    public class SearchResults
+    public class SearchResults implements Serializable
     {
+        private static final long serialVersionUID = 7402906720039176001L;
+        
         private int length = 0;
-        private DataModel rows;
+        private SerialListDataModel rows;
 
         /**
          * Construct
@@ -813,7 +865,7 @@ public class AdminNodeBrowseBean
          */
         public SearchResults(ResultSet resultSet)
         {
-            rows = new ListDataModel();
+            rows = new SerialListDataModel();
             if (resultSet != null)
             {
                 rows.setWrappedData(resultSet.getChildAssocRefs());
@@ -828,13 +880,13 @@ public class AdminNodeBrowseBean
          */
         public SearchResults(List<NodeRef> resultSet)
         {
-            rows = new ListDataModel();
+            rows = new SerialListDataModel();
             if (resultSet != null)
             {
                 List<ChildAssociationRef> assocRefs = new ArrayList<ChildAssociationRef>(resultSet.size());
                 for (NodeRef nodeRef : resultSet)
                 {
-                    ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
+                    ChildAssociationRef childAssocRef = getNodeService().getPrimaryParent(nodeRef);
                     assocRefs.add(childAssocRef);
                 }
                 rows.setWrappedData(assocRefs);
@@ -860,6 +912,11 @@ public class AdminNodeBrowseBean
         public DataModel getRows()
         {
             return rows;
+        }
+        
+        private class SerialListDataModel extends ListDataModel implements Serializable
+        {
+            private static final long serialVersionUID = 4154583769762846020L;
         }
     }
     

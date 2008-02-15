@@ -122,7 +122,7 @@ public class UIGenericPicker extends UICommand
       height = (Integer)values[6];
       filterIndex = (Integer)values[7];
       contains = (String)values[8];
-      queryCallback = (MethodBinding)values[9];
+      queryCallback = (MethodBinding) restoreAttachedState(context, values[9]);
       selectedResults = (String[])values[10];
       currentResults = (SelectItem[])values[11];
       filters = (SelectItem[])values[12];
@@ -146,7 +146,7 @@ public class UIGenericPicker extends UICommand
       values[6] = height;
       values[7] = filterIndex;
       values[8] = contains;
-      values[9] = queryCallback;
+      values[9] = saveAttachedState(context, queryCallback);
       values[10] = selectedResults;
       values[11] = currentResults;
       values[12] = filters;

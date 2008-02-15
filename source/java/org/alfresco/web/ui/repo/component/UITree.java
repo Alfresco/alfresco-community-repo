@@ -24,8 +24,8 @@
  */
 package org.alfresco.web.ui.repo.component;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.faces.component.UIComponentBase;
@@ -261,8 +261,10 @@ public class UITree extends UIComponentBase
     * 
     * @author gavinc
     */
-   public static class TreeNode
+   public static class TreeNode implements Serializable
    {
+      private static final long serialVersionUID = 8820468648920825139L;
+      
       private String nodeRef;
       private String name;
       private String icon;

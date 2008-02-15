@@ -75,7 +75,7 @@ public class EditSimpleWorkflowDialog extends BaseDialogBean
 
         try
         {
-            Map<QName, Serializable> updateProps = nodeService.getProperties(getNode().getNodeRef());
+            Map<QName, Serializable> updateProps = getNodeService().getProperties(getNode().getNodeRef());
 
             // update the simple workflow properties
 
@@ -129,7 +129,7 @@ public class EditSimpleWorkflowDialog extends BaseDialogBean
             }
 
             // set the properties on the node
-            nodeService.setProperties(getNode().getNodeRef(), updateProps);
+            getNodeService().setProperties(getNode().getNodeRef(), updateProps);
             getNode().reset();
         }
         catch (Throwable e)

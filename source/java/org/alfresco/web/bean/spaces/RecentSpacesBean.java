@@ -56,6 +56,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RecentSpacesBean implements IContextListener
 {
+   private static final long serialVersionUID = -6405913558933664909L;
+
    private static Log    logger = LogFactory.getLog(RecentSpacesBean.class);
    
    /** The NavigationBean reference */

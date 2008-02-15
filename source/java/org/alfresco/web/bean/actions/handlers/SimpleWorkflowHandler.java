@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class SimpleWorkflowHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 2477573776900075171L;
+   
    public static final String PROP_APPROVE_STEP_NAME = "approveStepName";
    public static final String PROP_APPROVE_ACTION = "approveAction";
    public static final String PROP_APPROVE_FOLDER = "approveFolder";

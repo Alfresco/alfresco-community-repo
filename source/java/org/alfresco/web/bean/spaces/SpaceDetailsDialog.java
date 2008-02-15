@@ -56,6 +56,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSupport
 {
+   private static final long serialVersionUID = -6066782024875635443L;
+   
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories_space";
    private static final String MSG_NO_CATEGORIES_APPLIED = "no_categories_applied_space";
    private static final String MSG_ERROR_ASPECT_CLASSIFY = "error_aspect_classify_space";
@@ -126,7 +128,7 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
       if (ApplicationModel.TYPE_FOLDERLINK.equals(space.getType()))
       {
          NodeRef destRef = (NodeRef)space.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef))
+         if (getNodeService().exists(destRef))
          {
             space = new Node(destRef);
          }
@@ -306,7 +308,7 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
       {
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
-         Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.getProperty(
+         Collection<NodeRef> categories = (Collection<NodeRef>)getNodeService().getProperty(
                  getSpace().getNodeRef(), ContentModel.PROP_CATEGORIES);
          
          if (categories == null || categories.size() == 0)
@@ -321,10 +323,10 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
             builder.append("<ul>");
             for (NodeRef ref : categories)
             {
-               if (this.nodeService.exists(ref))
+               if (getNodeService().exists(ref))
                {
                   builder.append("<li>");
-                  builder.append(Repository.getNameForNode(this.nodeService, ref));
+                  builder.append(Repository.getNameForNode(getNodeService(), ref));
                   builder.append("</li>");
                }
             }
@@ -350,7 +352,7 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
          tx.begin();
          
          // add the general classifiable aspect to the node
-         this.nodeService.addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
+         getNodeService().addAspect(getSpace().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
          
          // commit the transaction
          tx.commit();
@@ -449,14 +451,14 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
             // apply the feedsource aspect if required 
             if (getNode().hasAspect(ApplicationModel.ASPECT_FEEDSOURCE) == false)
             {
-               this.nodeService.addAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE, null);
+               getNodeService().addAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE, null);
             }
             
             // get the selected template Id from the Template Picker
             NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.rssTemplate);
             
             // set the template NodeRef into the templatable aspect property
-            this.nodeService.setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, templateRef); 
+            getNodeService().setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, templateRef); 
             
             // reset node details for next refresh of details page
             getNode().reset();
@@ -477,8 +479,8 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
       try
       {
          // clear template property
-         this.nodeService.setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, null);
-         this.nodeService.removeAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE);
+         getNodeService().setProperty(getNode().getNodeRef(), ApplicationModel.PROP_FEEDTEMPLATE, null);
+         getNodeService().removeAspect(getNode().getNodeRef(), ApplicationModel.ASPECT_FEEDSOURCE);
          
          // reset node details for next refresh of details page
          getNode().reset();
@@ -510,7 +512,8 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
    @Override
    public String getContainerSubTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + getSpace().getNodePath().toDisplayPath(nodeService, permissionService);
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + 
+             getSpace().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
    }
 
    public String getContainerTitle()

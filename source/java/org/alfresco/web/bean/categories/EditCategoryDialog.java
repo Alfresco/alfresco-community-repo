@@ -243,18 +243,18 @@ public class EditCategoryDialog extends BaseDialogBean
 
          // update the category node
          NodeRef nodeRef = getActionCategory().getNodeRef();
-         nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, getName());
+         getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, getName());
 
          // apply the titled aspect - for description
-         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
+         if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
          {
             Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
             titledProps.put(ContentModel.PROP_DESCRIPTION, getDescription());
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
+            getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProps);
          }
          else
          {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, getDescription());
+            getNodeService().setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, getDescription());
          }
 
          // edit the node in the breadcrumb if required
@@ -266,7 +266,7 @@ public class EditCategoryDialog extends BaseDialogBean
          {
             // and update with the modified node details
             CategoriesDialog categoriesDialog = new CategoriesDialog();
-            IBreadcrumbHandler newHandler = categoriesDialog.new CategoryBreadcrumbHandler(nodeRef, Repository.getNameForNode(nodeService, nodeRef));
+            IBreadcrumbHandler newHandler = categoriesDialog.new CategoryBreadcrumbHandler(nodeRef, Repository.getNameForNode(getNodeService(), nodeRef));
             location.set(location.size() - 1, newHandler);
          }
       }

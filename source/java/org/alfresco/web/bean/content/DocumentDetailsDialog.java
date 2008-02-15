@@ -77,6 +77,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class DocumentDetailsDialog extends BaseDetailsBean implements  NavigationSupport
 {
+   private static final long serialVersionUID = -8579599071702546214L;
+
    private static final String OUTCOME_RETURN = null;
 
    private static final String MSG_HAS_FOLLOWING_CATEGORIES = "has_following_categories";
@@ -93,12 +95,12 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
 
-   protected LockService lockService;
-   protected VersionService versionService;
-   protected CheckOutCheckInService cociService;
-   protected MultilingualContentService multilingualContentService;
-   protected ContentFilterLanguagesService contentFilterLanguagesService;
-   protected EditionService editionService;
+   transient protected LockService lockService;
+   transient protected VersionService versionService;
+   transient protected CheckOutCheckInService cociService;
+   transient protected MultilingualContentService multilingualContentService;
+   transient protected ContentFilterLanguagesService contentFilterLanguagesService;
+   transient protected EditionService editionService;
 
    private Node translationDocument;
    
@@ -184,7 +186,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       if (ApplicationModel.TYPE_FILELINK.equals(document.getType()))
       {
          NodeRef destRef = (NodeRef)document.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef))
+         if (getNodeService().exists(destRef))
          {
             document = new Node(destRef);
          }
@@ -252,7 +254,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
       if (getDocument().hasAspect(ContentModel.ASPECT_VERSIONABLE))
       {
-         VersionHistory history = this.versionService.getVersionHistory(getDocument().getNodeRef());
+         VersionHistory history = this.getVersionService().getVersionHistory(getDocument().getNodeRef());
 
          if (history != null)
          {
@@ -333,7 +335,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
        NodeRef mlContainer = getDocumentMlContainer().getNodeRef();
 
        // get all editions and sort them ascending according their version label
-       List<Version> orderedEditionList = new ArrayList<Version>(editionService.getEditions(mlContainer).getAllVersions());
+       List<Version> orderedEditionList = new ArrayList<Version>(getEditionService().getEditions(mlContainer).getAllVersions());
        Collections.sort(orderedEditionList, new VersionLabelComparator());
 
        // the list of Single Edition Bean to return
@@ -369,16 +371,16 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
            {
                // Get the translations because the current edition doesn't content link with its
                // translation in the version store.
-               Map<Locale, NodeRef> translations = multilingualContentService.getTranslations(mlContainer);
+               Map<Locale, NodeRef> translations = getMultilingualContentService().getTranslations(mlContainer);
                translationHistories = new ArrayList<VersionHistory>(translations.size());
                for (NodeRef translation : translations.values())
                {
-                   translationHistories.add(versionService.getVersionHistory(translation));
+                   translationHistories.add(getVersionService().getVersionHistory(translation));
                }
            }
            else
            {
-            translationHistories = editionService.getVersionedTranslations(edition);
+            translationHistories = getEditionService().getVersionedTranslations(edition);
            }
 
            // add each translation in the SingleEditionBean
@@ -392,7 +394,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
                Version lastVersion = orderedVersions.get(0);
 
                // get the properties of the lastVersion
-               Map<QName, Serializable> lastVersionProperties = editionService.getVersionedMetadatas(lastVersion);
+               Map<QName, Serializable> lastVersionProperties = getEditionService().getVersionedMetadatas(lastVersion);
                Locale language  = (Locale) lastVersionProperties.get(ContentModel.PROP_LOCALE);
 
                // create a map node representation of the last version
@@ -400,13 +402,13 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
                clientLastVersion.put("versionName", lastVersionProperties.get(ContentModel.PROP_NAME));
                // use the node service for the description to ensure that the returned value is a text and not a MLText
-               clientLastVersion.put("versionDescription", nodeService.getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
+               clientLastVersion.put("versionDescription", getNodeService().getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
                clientLastVersion.put("versionAuthor", lastVersionProperties.get(ContentModel.PROP_AUTHOR));
                clientLastVersion.put("versionCreatedDate",  lastVersionProperties.get(ContentModel.PROP_CREATED));
                clientLastVersion.put("versionModifiedDate", lastVersionProperties.get(ContentModel.PROP_MODIFIED));
-               clientLastVersion.put("versionLanguage", this.contentFilterLanguagesService.convertToNewISOCode(language.getLanguage()).toUpperCase());
+               clientLastVersion.put("versionLanguage", this.getContentFilterLanguagesService().convertToNewISOCode(language.getLanguage()).toUpperCase());
 
-               if(nodeService.hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+               if(getNodeService().hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
                {
                    clientLastVersion.put("versionUrl", null);
                }
@@ -450,7 +452,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       {
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
-         Collection<NodeRef> categories = (Collection<NodeRef>)this.nodeService.getProperty(
+         Collection<NodeRef> categories = (Collection<NodeRef>)this.getNodeService().getProperty(
                  getDocument().getNodeRef(), ContentModel.PROP_CATEGORIES);
 
          if (categories == null || categories.size() == 0)
@@ -465,10 +467,10 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
             builder.append("<ul>");
             for (NodeRef ref : categories)
             {
-               if (this.nodeService.exists(ref))
+               if (this.getNodeService().exists(ref))
                {
                   builder.append("<li>");
-                  builder.append(Repository.getNameForNode(this.nodeService, ref));
+                  builder.append(Repository.getNameForNode(this.getNodeService(), ref));
                   builder.append("</li>");
                }
             }
@@ -494,7 +496,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
             public Object execute() throws Throwable
             {
                // add the general classifiable aspect to the node
-               nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
+               getNodeService().addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE, null);
                return null;
             }
          };
@@ -524,7 +526,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
             public Object execute() throws Throwable
             {
                // add the versionable aspect to the node
-               nodeService.addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+               getNodeService().addAspect(getDocument().getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
                return null;
             }
          };
@@ -561,7 +563,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          {
             public Object execute() throws Throwable
             {
-               lockService.unlock(getNode().getNodeRef());
+               getLockService().unlock(getNode().getNodeRef());
 
          String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
@@ -613,7 +615,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
                props.put(ApplicationModel.PROP_EDITINLINE, true);
             }
          }
-               nodeService.addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
+               getNodeService().addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
 
                return null;
             }
@@ -768,7 +770,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
       if (isLocked())
       {
-         NodeRef workingCopyRef = this.cociService.getWorkingCopy(getDocument().getNodeRef());
+         NodeRef workingCopyRef = this.getCheckOutCheckInService().getWorkingCopy(getDocument().getNodeRef());
          if (workingCopyRef != null)
          {
             workingCopyNode = new Node(workingCopyRef);
@@ -845,7 +847,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
        {
            NodeRef nodeRef = getNode().getNodeRef();
 
-           return new Node(multilingualContentService.getTranslationContainer(nodeRef));
+           return new Node(getMultilingualContentService().getTranslationContainer(nodeRef));
        }
    }
    /**
@@ -857,6 +859,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.lockService = lockService;
    }
+   
+   protected LockService getLockService()
+   {
+      if (lockService == null)
+      {
+         lockService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getLockService();
+      }
+      return lockService;
+   }
 
    /**
     * Sets the version service instance the bean should use
@@ -866,6 +877,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    public void setVersionService(VersionService versionService)
    {
       this.versionService = versionService;
+   }
+   
+   protected VersionService getVersionService()
+   {
+      if (versionService == null)
+      {
+         versionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVersionService();
+      }
+      return versionService;
    }
 
    /**
@@ -877,6 +897,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.cociService = cociService;
    }
+   
+   protected CheckOutCheckInService getCheckOutCheckInService()
+   {
+      if (cociService == null)
+      {
+         cociService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCheckOutCheckInService();
+      }
+      return cociService;
+   }
 
    /**
     * @param multilingualContentService the multilingual ContentService to set
@@ -884,6 +913,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
    {
       this.multilingualContentService = multilingualContentService;
+   }
+   
+   protected MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
    }
 
    /**
@@ -893,6 +931,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
+   
+   protected ContentFilterLanguagesService getContentFilterLanguagesService()
+   {
+      if (contentFilterLanguagesService == null)
+      {
+         contentFilterLanguagesService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentFilterLanguagesService();
+      }
+      return contentFilterLanguagesService;
+   }
 
    /**
     * @param EditionService The Edition Service to set.
@@ -900,6 +947,15 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    public void setEditionService(EditionService editionService)
    {
       this.editionService = editionService;
+   }
+   
+   protected EditionService getEditionService()
+   {
+      if (editionService == null)
+      {
+         editionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getEditionService();
+      }
+      return editionService;
    }
 
    public String getCancelButtonLabel()
@@ -909,7 +965,8 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
    public String getContainerSubTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + getDocument().getNodePath().toDisplayPath(nodeService, permissionService);
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + 
+             getDocument().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
    }
 
    public String getContainerTitle()

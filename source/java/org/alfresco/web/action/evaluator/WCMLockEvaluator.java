@@ -43,6 +43,8 @@ import org.alfresco.web.bean.wcm.WebProject;
  */
 public class WCMLockEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -816856825850017138L;
+
    /**
     * @return true if the item is not locked by another user
     */

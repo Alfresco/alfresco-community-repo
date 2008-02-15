@@ -54,6 +54,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteSpaceDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 5960844637376808571L;
+
    private static final Log logger = LogFactory.getLog(DeleteContentDialog.class);
    
    private static final String DELETE_ALL = "all";
@@ -84,22 +86,22 @@ public class DeleteSpaceDialog extends BaseDialogBean
          if (DELETE_ALL.equals(this.deleteMode))
          {
             NodeRef nodeRef = node.getNodeRef();
-            if (this.nodeService.exists(nodeRef))
+            if (this.getNodeService().exists(nodeRef))
             {
                // The node still exists
-               this.nodeService.deleteNode(node.getNodeRef());
+               this.getNodeService().deleteNode(node.getNodeRef());
             }
          }
          else
          {
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(node.getNodeRef(), 
+            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(node.getNodeRef(), 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             List<NodeRef> deleteRefs = new ArrayList<NodeRef>(childRefs.size());
             for (ChildAssociationRef ref : childRefs)
             {
                NodeRef nodeRef = ref.getChildRef();
                
-               if (this.nodeService.exists(nodeRef))
+               if (this.getNodeService().exists(nodeRef))
                {
                   if (DELETE_CONTENTS.equals(this.deleteMode))
                   {
@@ -108,18 +110,18 @@ public class DeleteSpaceDialog extends BaseDialogBean
                   else
                   {
                      // find it's type so we can see if it's a node we are interested in
-                     QName type = this.nodeService.getType(nodeRef);
+                     QName type = this.getNodeService().getType(nodeRef);
                      
                      // make sure the type is defined in the data dictionary
-                     TypeDefinition typeDef = this.dictionaryService.getType(type);
+                     TypeDefinition typeDef = this.getDictionaryService().getType(type);
                      
                      if (typeDef != null)
                      {
                         if (DELETE_FOLDERS.equals(this.deleteMode))
                         {
                            // look for folder type
-                           if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
-                               this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                           if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
+                               this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                            {
                               deleteRefs.add(nodeRef);
                            }
@@ -127,7 +129,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
                         else if (DELETE_FILES.equals(this.deleteMode))
                         {
                            // look for content file type
-                           if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+                           if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT))
                            {
                               deleteRefs.add(nodeRef);
                            }
@@ -148,7 +150,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
                   tx = txService.getNonPropagatingUserTransaction();
                   tx.begin();
                   
-                  this.nodeService.deleteNode(nodeRef);
+                  this.getNodeService().deleteNode(nodeRef);
                   
                   tx.commit();
                }
@@ -172,7 +174,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
    {
       Node node = this.browseBean.getActionSpace();
       
-      if (node != null && this.nodeService.exists(node.getNodeRef()) == false)
+      if (node != null && this.getNodeService().exists(node.getNodeRef()) == false)
       {
          // remove this node from the breadcrumb if required
          this.browseBean.removeSpaceFromBreadcrumb(node);

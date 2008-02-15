@@ -44,6 +44,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class InCategoryHandler extends BaseConditionHandler
 {
+   private static final long serialVersionUID = -7312917724514125469L;
+   
    protected static final String PROP_CATEGORY = "category";
    
    public String getJSPPath()

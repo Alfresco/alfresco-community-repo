@@ -26,9 +26,16 @@ package org.alfresco.web.bean;
 
 import javax.faces.context.FacesContext;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+
+import javax.faces.context.FacesContext;
+
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Simple backing bean used by the about page to display the version.
@@ -37,10 +44,12 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
  */
 public class AboutBean extends BaseDialogBean
 {
+   private static final long serialVersionUID = -3777479360531145878L;
+   
    private final static String MSG_VERSION = "version";
    private final static String MSG_CLOSE = "close";
    
-   DescriptorService descriptorService;
+   transient private DescriptorService descriptorService;
    
    /**
     * Retrieves the version of the repository.
@@ -49,7 +58,7 @@ public class AboutBean extends BaseDialogBean
     */
    public String getVersion()
    {
-      return this.descriptorService.getServerDescriptor().getVersion();
+      return this.getDescriptorService().getServerDescriptor().getVersion();
    }
    
    /**
@@ -59,7 +68,7 @@ public class AboutBean extends BaseDialogBean
     */
    public String getEdition()
    {
-      return this.descriptorService.getServerDescriptor().getEdition();
+      return this.getDescriptorService().getServerDescriptor().getEdition();
    }
    
    /**
@@ -82,7 +91,16 @@ public class AboutBean extends BaseDialogBean
    public String getContainerDescription()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_VERSION) + " :" + getEdition() + " - v" + getVersion();
-}
+   }
+
+   DescriptorService getDescriptorService()
+   {
+      if (descriptorService == null)
+      {
+         descriptorService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDescriptorService();
+      }
+      return descriptorService;
+   }
    
    @Override
    public String getCancelButtonLabel()
@@ -92,8 +110,8 @@ public class AboutBean extends BaseDialogBean
    }
    
    @Override
-protected String getDefaultCancelOutcome() {
-
-	return "dialog:close:browse";
-}
+   protected String getDefaultCancelOutcome() 
+   {
+	  return "dialog:close:browse";
+   }
 }

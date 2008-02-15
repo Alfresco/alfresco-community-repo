@@ -73,7 +73,7 @@ public class UIShelf extends SelfRenderingComponent
       this.selectedGroupBgcolor = (String)values[4];
       this.innerGroupPanel = (String)values[5];
       this.innerGroupBgcolor = (String)values[6];
-      this.groupExpandedActionListener = (MethodBinding)values[7];
+      this.groupExpandedActionListener = (MethodBinding)restoreAttachedState(context, values[7]);
    }
    
    /**
@@ -90,7 +90,7 @@ public class UIShelf extends SelfRenderingComponent
       values[4] = this.selectedGroupBgcolor;
       values[5] = this.innerGroupPanel;
       values[6] = this.innerGroupBgcolor;
-      values[7] = this.groupExpandedActionListener;
+      values[7] = saveAttachedState(context, this.groupExpandedActionListener);
       return values;
    }
    

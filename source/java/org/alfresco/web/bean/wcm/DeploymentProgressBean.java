@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -40,8 +41,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class DeploymentProgressBean
+public class DeploymentProgressBean implements Serializable
 {
+   private static final long serialVersionUID = 3940559099944268131L;
+   
    private static Log logger = LogFactory.getLog(DeploymentProgressBean.class);
    
    public void getStatus() throws IOException

@@ -33,6 +33,8 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
  */
 public class DeleteFolderBrowseDialog extends DeleteFolderDialog
 {
+   private static final long serialVersionUID = -8223178194058011913L;
+
    @Override
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {

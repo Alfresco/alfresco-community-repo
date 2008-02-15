@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.common.renderer.data;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.faces.context.FacesContext;
 
@@ -37,7 +38,7 @@ import org.alfresco.web.ui.common.component.data.UIRichList;
  * 
  * @author kevinr
  */
-public interface IRichListRenderer
+public interface IRichListRenderer extends Serializable
 {
    /**
     * Callback executed by the RichList component to render any adornments before

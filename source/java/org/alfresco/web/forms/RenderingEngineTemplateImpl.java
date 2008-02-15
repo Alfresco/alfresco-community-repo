@@ -61,6 +61,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.apache.commons.lang.StringUtils;
@@ -84,6 +85,8 @@ import freemarker.template.SimpleHash;
 public class RenderingEngineTemplateImpl
    implements RenderingEngineTemplate
 {
+   private static final long serialVersionUID = -1656812676972437532L;
+   
    private static final Log LOGGER = LogFactory.getLog(RenderingEngineTemplateImpl.class);
 
    private static final DynamicNamespacePrefixResolver namespacePrefixResolver = 
@@ -100,7 +103,7 @@ public class RenderingEngineTemplateImpl
 
    private final NodeRef nodeRef;
    private final NodeRef renditionPropertiesNodeRef;
-   private final FormsService formsService;
+   private transient FormsService formsService;
 
    protected RenderingEngineTemplateImpl(final NodeRef nodeRef,
                                          final NodeRef renditionPropertiesNodeRef,
@@ -123,6 +126,15 @@ public class RenderingEngineTemplateImpl
       this.formsService = formsService;
    }
 
+   private FormsService getFormsService()
+   {
+      if (formsService == null)
+      {
+         formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+   
    public String getName()
    {
       final NodeService nodeService = this.getServiceRegistry().getNodeService();
@@ -179,7 +191,7 @@ public class RenderingEngineTemplateImpl
       final String renderingEngineName = (String)
          nodeService.getProperty(this.nodeRef,
                                  WCMAppModel.PROP_PARENT_RENDERING_ENGINE_NAME);
-      return this.formsService.getRenderingEngine(renderingEngineName);
+      return this.getFormsService().getRenderingEngine(renderingEngineName);
    }
 
    /**
@@ -286,7 +298,7 @@ public class RenderingEngineTemplateImpl
 
       final Rendition result = new RenditionImpl(-1, 
                                                  renditionAvmPath,
-                                                 this.formsService);
+                                                 this.getFormsService());
       this.render(formInstanceData, result);
 
       if (!isRegenerate)

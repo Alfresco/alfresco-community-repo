@@ -54,6 +54,8 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
 {
+   private static final long serialVersionUID = -8128781845465773847L;
+
    /** Cache of available folder permissions */
    Set<String> folderPermissions = null;
    
@@ -159,13 +161,13 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
             }
          }
          
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+         List<ChildAssociationRef> userInfoRefs = this.getNodeService().getChildAssocs(
             getNode().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            String username = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             if (AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole) &&
                 managers.contains(username) == false)
@@ -199,7 +201,7 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
                props.put(WCMAppModel.PROP_WEBUSERNAME, userAuth);
                props.put(WCMAppModel.PROP_WEBUSERROLE, userRole.getRole());
-               this.nodeService.createNode(getNode().getNodeRef(),
+               this.getNodeService().createNode(getNode().getNodeRef(),
                      WCMAppModel.ASSOC_WEBUSER,
                      WCMAppModel.ASSOC_WEBUSER,
                      WCMAppModel.TYPE_WEBUSER,
@@ -215,12 +217,12 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
       if (isStandalone() == true && managersUpdateRequired == true)
       {
          // walk existing sandboxes and reapply manager permissions to include any new manager users
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+         List<ChildAssociationRef> userInfoRefs = this.getNodeService().getChildAssocs(
             getNode().getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String username = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
             if (existingUsers.contains(username))
             {
                // only need to modify the sandboxes we haven't just created
@@ -272,7 +274,7 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
       if (authType.equals(AuthorityType.USER))
       {
          users = new HashSet<String>(1, 1.0f);
-         if (this.personService.personExists(authority) == true)
+         if (this.getPersonService().personExists(authority) == true)
          {
             users.add(authority); 
          }
@@ -280,10 +282,10 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
       else if (authType.equals(AuthorityType.GROUP))
       {
          // walk each member of the group
-         users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+         users = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
          for (String userAuth : users)
          {
-            if (this.personService.personExists(userAuth) == false)
+            if (this.getPersonService().personExists(userAuth) == false)
             {
                users.remove(authType);
             }
@@ -334,7 +336,7 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
       if (this.folderPermissions == null)
       {
          // get permissions and roles for a website folder type
-         this.folderPermissions = this.permissionService.getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
+         this.folderPermissions = this.getPermissionService().getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
       }
        
       return this.folderPermissions;

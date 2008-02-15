@@ -70,18 +70,20 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Ariel Backenroth
  */
-public class WebProject
-   implements Serializable
+public class WebProject implements Serializable
 {
 
    /////////////////////////////////////////////////////////////////////////////
 
+   private static final long serialVersionUID = 2480625511643744703L;
+   
    /**
     * Wraps a form object to provide overridden values at the web project level
     */
-   private class FormWrapper 
-      extends FormImpl
+   private class FormWrapper extends FormImpl
    {
+      private static final long serialVersionUID = 1L;
+      
       private final NodeRef formNodeRef;
       private Form baseForm;
       private NodeRef defaultWorkflowNodeRef;
@@ -164,8 +166,10 @@ public class WebProject
             result.put(ret.getName(), 
                        new RenderingEngineTemplateImpl(ret.getNodeRef(),
                                                        ret.getRenditionPropertiesNodeRef(),
-                                                       this.formsService)
+                                                       this.getFormsService())
                        {
+                          private static final long serialVersionUID = -5498865830153013192L;
+                          
                           @Override
                           public String getOutputPathPattern()
                           {

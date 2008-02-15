@@ -187,11 +187,11 @@ public class AddUsersDialog extends BaseDialogBean
                ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
                for (NodeRef personRef : nodes)
                {
-                  String username = (String) nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+                  String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
                   if (PermissionService.GUEST_AUTHORITY.equals(username) == false)
                   {
-                     String firstName = (String) nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                     String lastName = (String) nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+                     String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+                     String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
 
                      SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
                      itemList.add(item);
@@ -258,8 +258,8 @@ public class AddUsersDialog extends BaseDialogBean
                {
                   // found a Person with a User authority
                   NodeRef ref = this.personService.getPerson(authority);
-                  String firstName = (String) this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-                  String lastName = (String) this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+                  String firstName = (String)getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+                  String lastName = (String)getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
 
                   // build a sensible label for display
                   label.append(firstName).append(' ').append(lastName);

@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,8 +63,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class NavigatorPluginBean implements IContextListener
+public class NavigatorPluginBean implements IContextListener,Serializable
 {
+   private static final long serialVersionUID = 5837326721916936115L;
+
    public static final String BEAN_NAME = "NavigatorPluginBean";
    
    protected List<TreeNode> companyHomeRootNodes;
@@ -74,9 +77,9 @@ public class NavigatorPluginBean implements IContextListener
    protected Map<String, TreeNode> guestHomeNodes;
    protected NodeRef previouslySelectedNode;
    
-   private NodeService nodeService;
-   private NodeService internalNodeService;
-   private DictionaryService dictionaryService;
+   transient private NodeService nodeService;
+   transient private NodeService internalNodeService;
+   transient private DictionaryService dictionaryService;
    
    private static final Log logger = LogFactory.getLog(NavigatorPluginBean.class);
    
@@ -128,7 +131,7 @@ public class NavigatorPluginBean implements IContextListener
             parentNode.removeChildren();
             
             // get all the child folder objects for the parent
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentNodeRef, 
+            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(parentNodeRef, 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             List<TreeNode> sortedNodes = new ArrayList<TreeNode>();
             for (ChildAssociationRef ref: childRefs)
@@ -328,7 +331,7 @@ public class NavigatorPluginBean implements IContextListener
             
             // query for the child nodes of company home
             NodeRef root = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(root, 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             
             for (ChildAssociationRef ref: childRefs)
@@ -380,7 +383,7 @@ public class NavigatorPluginBean implements IContextListener
             // query for the child nodes of the user's home
             NodeRef root = new NodeRef(Repository.getStoreRef(),
                   Application.getCurrentUser(FacesContext.getCurrentInstance()).getHomeSpaceId());         
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(root, 
                   ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             
             for (ChildAssociationRef ref: childRefs)
@@ -434,7 +437,7 @@ public class NavigatorPluginBean implements IContextListener
             if (navBean != null)
             {
                NodeRef root = navBean.getGuestHomeNode().getNodeRef();
-               List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(root, 
+               List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(root, 
                      ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                
                for (ChildAssociationRef ref: childRefs)
@@ -470,12 +473,32 @@ public class NavigatorPluginBean implements IContextListener
       this.nodeService = nodeService;
    }
    
+   private NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
    /**
     * @param internalNodeService The internalNodeService to set.
     */
    public void setInternalNodeService(NodeService internalNodeService)
    {
       this.internalNodeService = internalNodeService;
+   }
+   
+   /**
+    * @return the internalNodeService
+    */
+   private NodeService getInternalNodeService()
+   {
+      if (this.internalNodeService == null) {
+         this.internalNodeService = (NodeService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "nodeService");
+      }
+      return this.internalNodeService;
    }
 
    /**
@@ -484,6 +507,15 @@ public class NavigatorPluginBean implements IContextListener
    public void setDictionaryService(DictionaryService dictionaryService)
    {
       this.dictionaryService = dictionaryService;
+   }
+   
+   private DictionaryService getDictionaryService()
+   {
+      if (dictionaryService == null)
+      {
+         dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return dictionaryService;
    }
    
    // ------------------------------------------------------------------------------
@@ -630,19 +662,19 @@ public class NavigatorPluginBean implements IContextListener
    {
       boolean addable = false;
       
-      if (this.nodeService.exists(nodeRef))
+      if (this.getNodeService().exists(nodeRef))
       {
          // find it's type so we can see if it's a node we are interested in
-         QName type = this.nodeService.getType(nodeRef);
+         QName type = this.getNodeService().getType(nodeRef);
          
          // make sure the type is defined in the data dictionary
-         TypeDefinition typeDef = this.dictionaryService.getType(type);
+         TypeDefinition typeDef = this.getDictionaryService().getType(type);
          
          if (typeDef != null)
          {
             // look for folder node types
-            if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
-                this.dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+            if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
+                this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
             {
                addable = true;
             }
@@ -660,8 +692,8 @@ public class NavigatorPluginBean implements IContextListener
    protected TreeNode createTreeNode(NodeRef nodeRef)
    {
       TreeNode node = new TreeNode(nodeRef.toString(), 
-            Repository.getNameForNode(this.internalNodeService, nodeRef),
-            (String)this.internalNodeService.getProperty(nodeRef, ApplicationModel.PROP_ICON));
+            Repository.getNameForNode(this.getInternalNodeService(), nodeRef),
+            (String)this.getInternalNodeService().getProperty(nodeRef, ApplicationModel.PROP_ICON));
       
       return node;
    }

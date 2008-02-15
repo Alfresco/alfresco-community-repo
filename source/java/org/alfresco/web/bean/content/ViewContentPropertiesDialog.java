@@ -41,6 +41,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class ViewContentPropertiesDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -867609607881256449L;
+   
    protected static final String TEMP_PROP_MIMETYPE = "mimetype";
    protected static final String TEMP_PROP_ENCODING = "encoding";
    

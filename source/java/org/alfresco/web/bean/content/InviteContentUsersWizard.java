@@ -37,6 +37,8 @@ import org.alfresco.web.bean.wizard.BaseInviteUsersWizard;
  */
 public class InviteContentUsersWizard extends BaseInviteUsersWizard
 {
+   private static final long serialVersionUID = 9198783146031469545L;
+   
    /** Cache of available content permissions */
    Set<String> contentPermissions = null;
    
@@ -45,7 +47,7 @@ public class InviteContentUsersWizard extends BaseInviteUsersWizard
    {
       if (this.contentPermissions == null)
       {
-         this.contentPermissions = this.permissionService.getSettablePermissions(ContentModel.TYPE_CONTENT);
+         this.contentPermissions = getPermissionService().getSettablePermissions(ContentModel.TYPE_CONTENT);
       }
        
       return this.contentPermissions;

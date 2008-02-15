@@ -30,13 +30,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.FormWrapper;
 import org.alfresco.web.bean.wcm.CreateWebsiteWizard.WorkflowWrapper;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -52,11 +52,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FormDetailsDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -7191411837509451750L;
+
    private static final Log logger = LogFactory.getLog(FormDetailsDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected CreateWebsiteWizard websiteWizard;
-   protected WorkflowService workflowService;
+   transient private WorkflowService workflowService;
    
    private String title;
    private String description;
@@ -93,6 +95,16 @@ public class FormDetailsDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+
+   
    /**
     * @param wizard        The Create Website Wizard to set.
     */
@@ -107,6 +119,15 @@ public class FormDetailsDialog extends BaseDialogBean
    public void setWorkflowService(WorkflowService workflowService)
    {
       this.workflowService = workflowService;
+   }
+   
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
    }
    
    /**
@@ -252,7 +273,7 @@ public class FormDetailsDialog extends BaseDialogBean
          String wfSelected = this.workflowSelectedValue[0];
          if (form.getWorkflow() == null || form.getWorkflow().getName().equals(wfSelected) == false)
          {
-            WorkflowDefinition def = this.workflowService.getDefinitionByName(wfSelected);
+            WorkflowDefinition def = this.getWorkflowService().getDefinitionByName(wfSelected);
             form.setWorkflow(new CreateWebsiteWizard.WorkflowWrapper(def.getName(), def.getTitle(), def.getDescription()));
          }
       }

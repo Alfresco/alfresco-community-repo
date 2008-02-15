@@ -68,14 +68,16 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author gavinc
  */
-public class DocumentPropertiesDialog
+public class DocumentPropertiesDialog implements Serializable
 {
+   private static final long serialVersionUID = 3065164840163513872L;
+   
    private static final String TEMP_PROP_MIMETYPE = "mimetype";
    private static final String TEMP_PROP_ENCODING = "encoding";
    
-   protected NodeService nodeService;
-   protected FileFolderService fileFolderService;
-   protected DictionaryService dictionaryService;
+   transient private NodeService nodeService;
+   transient private FileFolderService fileFolderService;
+   transient private DictionaryService dictionaryService;
    protected BrowseBean browseBean;
    private List<SelectItem> contentTypes;
    private Node editableNode;
@@ -136,10 +138,10 @@ public class DocumentPropertiesDialog
          String name = (String) props.get(ContentModel.PROP_NAME);
          if (name != null)
          {
-            fileFolderService.rename(nodeRef, name);
+            getFileFolderService().rename(nodeRef, name);
          }
          
-         Map<QName, Serializable> properties = this.nodeService.getProperties(nodeRef);
+         Map<QName, Serializable> properties = getNodeService().getProperties(nodeRef);
          // we need to put all the properties from the editable bag back into 
          // the format expected by the repository
          
@@ -176,11 +178,11 @@ public class DocumentPropertiesDialog
          if (author != null && author.length() != 0)
          {
             // add aspect if required
-            if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
+            if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == false)
             {
                Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
                authorProps.put(ContentModel.PROP_AUTHOR, author);
-               this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+               getNodeService().addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
             }
             // else it will get updated in the later setProperties() call
          }
@@ -191,7 +193,7 @@ public class DocumentPropertiesDialog
          if (title != null || description != null)
          {
             // add the aspect to be sure it's present
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+            getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
             // props will get added later in setProperties()
          }
          
@@ -209,7 +211,7 @@ public class DocumentPropertiesDialog
             if ((propValue != null) && (propValue instanceof String) && 
                 (propValue.toString().length() == 0))
             {
-               PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+               PropertyDefinition propDef = getDictionaryService().getProperty(qname);
                if (propDef != null)
                {
                   if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) || 
@@ -226,7 +228,7 @@ public class DocumentPropertiesDialog
          }
          
          // send the properties back to the repository
-         this.nodeService.setProperties(this.browseBean.getDocument().getNodeRef(), properties);
+         getNodeService().setProperties(this.browseBean.getDocument().getNodeRef(), properties);
          
          // we also need to persist any association changes that may have been made
          
@@ -236,7 +238,7 @@ public class DocumentPropertiesDialog
          {
             for (AssociationRef assoc : typedAssoc.values())
             {
-               this.nodeService.createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+               getNodeService().createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
             }
          }
          
@@ -246,7 +248,7 @@ public class DocumentPropertiesDialog
          {
             for (AssociationRef assoc : typedAssoc.values())
             {
-               this.nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+               getNodeService().removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
             }
          }
          
@@ -256,7 +258,7 @@ public class DocumentPropertiesDialog
          {
             for (ChildAssociationRef assoc : typedAssoc.values())
             {
-               this.nodeService.addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
+               getNodeService().addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
             }
          }
          
@@ -266,7 +268,7 @@ public class DocumentPropertiesDialog
          {
             for (ChildAssociationRef assoc : typedAssoc.values())
             {
-               this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
+               getNodeService().removeChild(assoc.getParentRef(), assoc.getChildRef());
             }
          }
          
@@ -378,6 +380,11 @@ public class DocumentPropertiesDialog
     */
    public NodeService getNodeService()
    {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      
       return this.nodeService;
    }
 
@@ -396,6 +403,15 @@ public class DocumentPropertiesDialog
    {
       this.fileFolderService = fileFolderService;
    }
+   
+   protected FileFolderService getFileFolderService()
+   {
+      if (fileFolderService == null)
+      {
+         fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return fileFolderService;
+   }
 
    /**
     * Sets the DictionaryService to use when persisting metadata
@@ -405,6 +421,15 @@ public class DocumentPropertiesDialog
    public void setDictionaryService(DictionaryService dictionaryService)
    {
       this.dictionaryService = dictionaryService;
+   }
+   
+   protected DictionaryService getDictionaryService()
+   {
+      if (dictionaryService == null)
+      {
+         dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return dictionaryService;
    }
 
    /**

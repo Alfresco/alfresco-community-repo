@@ -67,7 +67,7 @@ public class WebSiteDetailsDialog extends BaseDetailsBean implements NavigationS
       if (ApplicationModel.TYPE_FOLDERLINK.equals(space.getType()))
       {
          NodeRef destRef = (NodeRef) space.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
-         if (nodeService.exists(destRef))
+         if (getNodeService().exists(destRef))
          {
             space = new Node(destRef);
          }
@@ -232,7 +232,8 @@ public class WebSiteDetailsDialog extends BaseDetailsBean implements NavigationS
    @Override
    public String getContainerSubTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + getSpace().getNodePath().toDisplayPath(nodeService, permissionService);
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + 
+             getSpace().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
    }
 
    public String getContainerTitle()

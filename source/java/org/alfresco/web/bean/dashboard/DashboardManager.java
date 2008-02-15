@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.dashboard;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +46,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class DashboardManager
+public class DashboardManager implements Serializable
 {
+   private static final long serialVersionUID = 6160628072764689380L;
+
    public static final String BEAN_NAME = "DashboardManager";
    
    private static Log logger = LogFactory.getLog(DashboardManager.class);
@@ -59,8 +62,8 @@ public class DashboardManager
    private static final String JSP_DUMMY = "/jsp/dashboards/dummy.jsp";
    
    private PageConfig pageConfig = null;
-   private DashletRenderingList renderingList = null;
-   private DashletTitleList titleList = null;
+   transient private DashletRenderingList renderingList = null;
+   transient private DashletTitleList titleList = null;
    
    /**
     * @return The layout JSP page for the current My Alfresco dashboard page
@@ -251,6 +254,8 @@ public class DashboardManager
     */
    private static class DashletRenderingList extends JSFHelperList
    {
+      private static final long serialVersionUID = -8611864902847833088L;
+      
       PageConfig config;
       
       public DashletRenderingList(PageConfig config)
@@ -274,6 +279,8 @@ public class DashboardManager
     */
    private static class DashletTitleList extends JSFHelperList
    {
+      private static final long serialVersionUID = 3522065600475233262L;
+      
       PageConfig config;
       
       public DashletTitleList(PageConfig config)
@@ -308,7 +315,7 @@ public class DashboardManager
    /**
     * Helper class that implements a dummy List contract for use by JSF List getter methods
     */
-   private static abstract class JSFHelperList implements List
+   private static abstract class JSFHelperList implements List, Serializable
    {
       //
       // Satisfy List interface contract

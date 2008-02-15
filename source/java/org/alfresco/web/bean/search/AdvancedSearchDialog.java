@@ -86,8 +86,10 @@ import org.alfresco.web.ui.repo.component.UISearchCustomProperties;
  */
 public class AdvancedSearchDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 3658148969240122732L;
+
    /** PermissionService */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
 
    /**
     * Default constructor
@@ -109,6 +111,15 @@ public class AdvancedSearchDialog extends BaseDialogBean
       this.permissionService = permissionService;
    }
    
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
+   }
+   
    public void setProperties(SearchProperties properties)
    {
       this.properties = properties;
@@ -123,7 +134,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
       if (allow)
       {
          NodeRef savedSearchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
-         allow = (this.permissionService.hasPermission(savedSearchRef,
+         allow = (getPermissionService().hasPermission(savedSearchRef,
                      PermissionService.WRITE) == AccessStatus.ALLOWED);
       }
       return allow;
@@ -510,7 +521,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
       {
          NodeRef searchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
          Node searchNode = new Node(searchRef);
-         if (this.nodeService.exists(searchRef) && searchNode.hasPermission(PermissionService.WRITE))
+         if (getNodeService().exists(searchRef) && searchNode.hasPermission(PermissionService.WRITE))
          {
             Node node = new Node(searchRef);
             properties.setSearchName(node.getName());
@@ -559,7 +570,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
          {
             DictionaryService dd = services.getDictionaryService();
             
-            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
+            List<ChildAssociationRef> childRefs = getNodeService().getChildAssocs(
                   searchesRef,
                   ContentModel.ASSOC_CONTAINS,
                   RegexQNamePattern.MATCH_ALL);
@@ -822,11 +833,11 @@ public class AdvancedSearchDialog extends BaseDialogBean
       List<NodeRef> results = null;
       try
       {
-         results = searchService.selectNodes(
+         results = getSearchService().selectNodes(
                rootRef,
                xpath,
                null,
-               namespaceService,
+               getNamespaceService(),
                false);
       }
       catch (AccessDeniedException err)
@@ -855,11 +866,11 @@ public class AdvancedSearchDialog extends BaseDialogBean
             List<NodeRef> results = null;
             try
             {
-               results = searchService.selectNodes(
+               results = getSearchService().selectNodes(
                      globalRef,
                      xpath,
                      null,
-                     namespaceService,
+                     getNamespaceService(),
                      false);
             }
             catch (AccessDeniedException err)
@@ -879,7 +890,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
                   // create the preferences Node for this user
                   Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
                   props.put(ContentModel.PROP_NAME, user.getUserName());
-                  ChildAssociationRef childRef = nodeService.createNode(
+                  ChildAssociationRef childRef = getNodeService().createNode(
                         globalRef,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.APP_MODEL_1_0_URI, QName.createValidLocalName(user.getUserName())),
@@ -910,11 +921,11 @@ public class AdvancedSearchDialog extends BaseDialogBean
          List<NodeRef> results = null;
          try
          {
-            results = searchService.selectNodes(
-                  nodeService.getRootNode(Repository.getStoreRef()),
+            results = getSearchService().selectNodes(
+                  getNodeService().getRootNode(Repository.getStoreRef()),
                   xpath,
                   null,
-                  namespaceService,
+                  getNamespaceService(),
                   false);
          }
          catch (AccessDeniedException err)
@@ -934,6 +945,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
    /**
     * Action handler called when the Add button is pressed to add the current Category selection
     */
+   @SuppressWarnings("unchecked")
    public void addCategory(ActionEvent event)
    {
       UIAjaxCategoryPicker selector = (UIAjaxCategoryPicker)event.getComponent().findComponent("catSelector");

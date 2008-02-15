@@ -24,15 +24,22 @@
  */
 package org.alfresco.web.bean.workflow;
 
+import java.io.Serializable;
+
+import javax.faces.context.FacesContext;
+
 import org.alfresco.repo.workflow.WorkflowInterpreter;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.web.app.servlet.FacesHelper;
 
 
 /**
  * Backing bean to support the Workflow Console
  */
-public class WorkflowConsoleBean
+public class WorkflowConsoleBean implements Serializable
 {
+    private static final long serialVersionUID = -7531838393180855185L;
+    
     // command
     private String command = "";
     private String submittedCommand = "none";
@@ -40,7 +47,7 @@ public class WorkflowConsoleBean
     private String result = null;
     
     // supporting repository services
-    private WorkflowInterpreter workflowInterpreter;
+    transient private WorkflowInterpreter workflowInterpreter;
 
     
     /**
@@ -50,8 +57,17 @@ public class WorkflowConsoleBean
     {
         this.workflowInterpreter = workflowInterpreter;
     }
+    
+    private WorkflowInterpreter getWorkflowInterpreter()
+   {
+       if (this.workflowInterpreter == null)
+       {
+          this.workflowInterpreter = (WorkflowInterpreter) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "workflowInterpreter");
+       }
+       return this.workflowInterpreter;
+   }
 
-    /**
+   /**
      * Gets the command result
      * 
      * @return  result
@@ -153,7 +169,7 @@ public class WorkflowConsoleBean
      */
     public String getCurrentUserName()
     {
-        return workflowInterpreter.getCurrentUserName();
+        return getWorkflowInterpreter().getCurrentUserName();
     }
     
     /**
@@ -163,7 +179,7 @@ public class WorkflowConsoleBean
      */
     public String getCurrentWorkflowDef()
     {
-        WorkflowDefinition def = workflowInterpreter.getCurrentWorkflowDef();
+        WorkflowDefinition def = getWorkflowInterpreter().getCurrentWorkflowDef();
         return (def == null) ? "None" : def.title + " v" + def.version;
     }
     
@@ -177,7 +193,7 @@ public class WorkflowConsoleBean
         try
         {
             long startms = System.currentTimeMillis();
-            String result = workflowInterpreter.interpretCommand(command);
+            String result = getWorkflowInterpreter().interpretCommand(command);
             setDuration(System.currentTimeMillis() - startms);
             setResult(result);
             setCommand("");

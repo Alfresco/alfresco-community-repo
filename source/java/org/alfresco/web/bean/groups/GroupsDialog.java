@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.groups;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,15 +67,17 @@ import org.apache.commons.logging.LogFactory;
 public class GroupsDialog extends BaseDialogBean 
    implements IContextListener, FilterViewSupport, ChangeViewSupport
 {
+   private static final long serialVersionUID = -624617545796275734L;
+   
    public static final String KEY_GROUP = "group";
    public static final String PARAM_GROUP = "group";
    public static final String PARAM_GROUP_NAME = "groupName";
    
    /** The AuthorityService to be used by the bean */
-   protected AuthorityService authService;
+   transient private AuthorityService authService;
 
    /** personService bean reference */
-   protected PersonService personService;
+   transient private PersonService personService;
 
    /** Component references */
    protected UIRichList groupsRichList;
@@ -269,10 +272,28 @@ public class GroupsDialog extends BaseDialogBean
    {
       this.authService = authService;
    }
+   
+   private AuthorityService getAuthorityService()
+   {
+      if (authService == null)
+      {
+         authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authService;
+   }
 
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   private PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
 
    public UIRichList getGroupsRichList()
@@ -334,24 +355,24 @@ public class GroupsDialog extends BaseDialogBean
             // root groups
             if (immediate == true)
             {
-               authorities = this.authService.getAllRootAuthorities(AuthorityType.GROUP);
+               authorities = this.getAuthorityService().getAllRootAuthorities(AuthorityType.GROUP);
             }
             else
             {
-               authorities = this.authService.getAllAuthorities(AuthorityType.GROUP);
+               authorities = this.getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
             }
          }
          else
          {
             // sub-group of an existing group
-            authorities = this.authService.getContainedAuthorities(AuthorityType.GROUP, this.group, immediate);
+            authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.GROUP, this.group, immediate);
          }
          groups = new ArrayList<Map>(authorities.size());
          for (String authority : authorities)
          {
             Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
 
-            String name = this.authService.getShortName(authority);
+            String name = this.getAuthorityService().getShortName(authority);
             authMap.put("name", name);
             authMap.put("id", authority);
             authMap.put("group", authority);
@@ -397,21 +418,21 @@ public class GroupsDialog extends BaseDialogBean
          {
             // users of an existing group
             boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-            authorities = this.authService.getContainedAuthorities(AuthorityType.USER, this.group, immediate);
+            authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, this.group, immediate);
          }
          users = new ArrayList<Map>(authorities.size());
          for (String authority : authorities)
          {
             Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
             
-            String userName = this.authService.getShortName(authority);
+            String userName = this.getAuthorityService().getShortName(authority);
             authMap.put("userName", userName);
             authMap.put("id", authority);
             
             // get Person details for this Authority
-            NodeRef ref = this.personService.getPerson(authority);
-            String firstName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)this.nodeService.getProperty(ref, ContentModel.PROP_LASTNAME);
+            NodeRef ref = this.getPersonService().getPerson(authority);
+            String firstName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+            String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
             
             // build a sensible label for display
             StringBuilder label = new StringBuilder(48);
@@ -493,7 +514,7 @@ public class GroupsDialog extends BaseDialogBean
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            this.authService.removeAuthority(this.group, authority);
+            this.getAuthorityService().removeAuthority(this.group, authority);
             
             // commit the transaction
             tx.commit();
@@ -518,7 +539,7 @@ public class GroupsDialog extends BaseDialogBean
     */
    protected void updateUILocation(String group)
    {
-      String groupName = this.authService.getShortName(group);
+      String groupName = this.getAuthorityService().getShortName(group);
       this.location.add(new GroupBreadcrumbHandler(group, groupName));
       this.setCurrentGroup(group, groupName);
    }
@@ -632,8 +653,10 @@ public class GroupsDialog extends BaseDialogBean
    /**
     * Simple wrapper bean exposing user authority and person details for JSF results list
     */
-   public static class UserAuthorityDetails
+   public static class UserAuthorityDetails implements Serializable
    {
+      private static final long serialVersionUID = 1056255933962068348L;
+      
       public UserAuthorityDetails(String name, String authority)
       {
          this.name = name;

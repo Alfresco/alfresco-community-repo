@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +36,10 @@ import org.alfresco.service.namespace.QNameMap;
  * 
  * @author Kevin Roast
  */
-public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
+public final class QNameNodeMap<K, V> extends QNameMap implements Map, Cloneable, Serializable
 {
+   
+   private static final long serialVersionUID = -1760755862411509262L;
    private Node parent = null;
    private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(8, 1.0f);
    
@@ -55,6 +58,16 @@ public final class QNameNodeMap<K,V> extends QNameMap implements Map, Cloneable
       this.parent = parent;
    }
    
+   
+   /**
+    * 
+    */
+   protected QNameNodeMap()
+   {
+      super();
+   }
+
+
    /**
     * Register a property resolver for the named property.
     * 

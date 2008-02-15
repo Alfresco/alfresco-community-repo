@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.forums;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,8 +55,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateTopicDialog extends CreateSpaceDialog
 {
+   private static final long serialVersionUID = -8672220556613430308L;
+   
    protected String message;
-   protected ContentService contentService;
+   transient private ContentService contentService;
    
    private static final Log logger = LogFactory.getLog(CreateTopicDialog.class);
    
@@ -83,7 +87,7 @@ public class CreateTopicDialog extends CreateSpaceDialog
       // create a unique file name for the message content
       String fileName = ForumsBean.createPostFileName();
       
-      FileInfo fileInfo = this.fileFolderService.create(containerNodeRef,
+      FileInfo fileInfo = this.getFileFolderService().create(containerNodeRef,
             fileName, ForumModel.TYPE_POST);
       NodeRef postNodeRef = fileInfo.getNodeRef();
       
@@ -93,20 +97,20 @@ public class CreateTopicDialog extends CreateSpaceDialog
       // apply the titled aspect - title and description
       Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
       titledProps.put(ContentModel.PROP_TITLE, fileName);
-      this.nodeService.addAspect(postNodeRef, ContentModel.ASPECT_TITLED, titledProps);
+      this.getNodeService().addAspect(postNodeRef, ContentModel.ASPECT_TITLED, titledProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Added titled aspect with properties: " + titledProps);
       
       Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
       editProps.put(ApplicationModel.PROP_EDITINLINE, true);
-      this.nodeService.addAspect(postNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
+      this.getNodeService().addAspect(postNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
       
       if (logger.isDebugEnabled())
          logger.debug("Added inlineeditable aspect with properties: " + editProps);
       
       // get a writer for the content and put the file
-      ContentWriter writer = contentService.getWriter(postNodeRef, ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = getContentService().getWriter(postNodeRef, ContentModel.PROP_CONTENT, true);
       // set the mimetype and encoding
       writer.setMimetype(Repository.getMimeTypeForFileName(context, fileName));
       writer.setEncoding("UTF-8");
@@ -165,4 +169,14 @@ public class CreateTopicDialog extends CreateSpaceDialog
    {
       this.contentService = contentService;
    }
+   
+   protected ContentService getContentService()
+   {
+      if (contentService == null)
+      {
+         contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+      }
+      return contentService;
+   }
+   
 }

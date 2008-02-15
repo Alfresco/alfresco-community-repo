@@ -70,8 +70,10 @@ import org.w3c.dom.Node;
  * 
  * @author Kevin Roast
  */
-public class FileUploadBean
+public class FileUploadBean implements Serializable
 {
+   private static final long serialVersionUID = 4555828718375916674L;
+   
    private static Log logger = LogFactory.getLog(FileUploadBean.class);
    
    /**

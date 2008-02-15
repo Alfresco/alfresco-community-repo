@@ -3037,28 +3037,12 @@
          <value>#{NodeService}</value>
       </managed-property>
       <managed-property>
-         <property-name>fileFolderService</property-name>
-         <value>#{FileFolderService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>searchService</property-name>
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
-         <property-name>namespaceService</property-name>
-         <value>#{NamespaceService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>navigator</property-name>
-         <value>#{NavigationBean}</value>
-      </managed-property>
-      <managed-property>
          <property-name>browseBean</property-name>
          <value>#{BrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>contentService</property-name>
-         <value>#{ContentService}</value>
       </managed-property>
       <managed-property>
          <property-name>avmService</property-name>
@@ -4534,10 +4518,6 @@
       <managed-bean-name>XFormsBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.forms.xforms.XFormsBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>avmService</property-name>
-         <value>#{AVMLockingAwareService}</value>
-      </managed-property>
       <managed-property>
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>

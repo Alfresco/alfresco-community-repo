@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public class DialogsConfigElement extends ConfigElementAdapter
 {
+   private static final long serialVersionUID = 8265738244249506534L;
+
    public static final String CONFIG_ELEMENT_ID = "dialogs";
    
    private Map<String, DialogConfig> dialogs = new LinkedHashMap<String, DialogConfig>(8, 10f);
@@ -127,8 +130,10 @@ public class DialogsConfigElement extends ConfigElementAdapter
     * 
     * @author gavinc
     */
-   public static class DialogConfig
+   public static class DialogConfig implements Serializable
    {
+      private static final long serialVersionUID = -3163053165721862390L;
+
       protected DialogAttributes attributes;
       
       public DialogConfig(DialogAttributes attrs)
@@ -257,8 +262,10 @@ public class DialogsConfigElement extends ConfigElementAdapter
     * 
     * @author gavinc
     */
-   public static class DialogButtonConfig
+   public static class DialogButtonConfig implements Serializable
    {
+      private static final long serialVersionUID = -6897300549206163138L;
+      
       private String id;
       private String label;
       private String labelId;

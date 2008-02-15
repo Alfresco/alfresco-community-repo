@@ -25,6 +25,7 @@
 package org.alfresco.web.bean;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 
 import javax.servlet.ServletException;
@@ -34,8 +35,10 @@ import javax.servlet.ServletException;
  * 
  * @author gavinc
  */
-public class ErrorBean
+public class ErrorBean implements Serializable
 {
+   private static final long serialVersionUID = -5101720299256547100L;
+
    public static final String ERROR_BEAN_NAME = "alfresco.ErrorBean";
    
    private String returnPage;

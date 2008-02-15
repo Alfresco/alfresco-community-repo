@@ -46,6 +46,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class AddTranslationEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -1513219397606505237L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

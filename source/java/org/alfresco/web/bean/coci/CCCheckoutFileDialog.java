@@ -99,7 +99,7 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
                     // checkout to a arbituary parent Space
                     NodeRef destRef = property.getSelectedSpaceId();
 
-                    ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(destRef);
+                    ChildAssociationRef childAssocRef = getNodeService().getPrimaryParent(destRef);
                     workingCopyRef = property.getVersionOperationsService().checkout(node.getNodeRef(), destRef, ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
                 }
                 else
@@ -120,8 +120,8 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
                             NodeRef workflowPackage = (NodeRef) task.properties.get(WorkflowModel.ASSOC_PACKAGE);
                             if (workflowPackage != null)
                             {
-                                nodeService.addChild(workflowPackage, workingCopyRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
-                                        .createValidLocalName((String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME))));
+                                getNodeService().addChild(workflowPackage, workingCopyRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
+                                        .createValidLocalName((String) getNodeService().getProperty(workingCopyRef, ContentModel.PROP_NAME))));
 
                                 if (logger.isDebugEnabled())
                                     logger.debug("Added working copy to workflow package: " + workflowPackage);
@@ -162,7 +162,7 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
             // If a check-in rule is present in the space
             // the document was checked out to the working copy would have
             // already disappeared!
-            if (this.nodeService.exists(property.getWorkingDocument().getNodeRef()))
+            if (getNodeService().exists(property.getWorkingDocument().getNodeRef()))
             {
                 // go to the page that allows the user to download the content
                 // for editing

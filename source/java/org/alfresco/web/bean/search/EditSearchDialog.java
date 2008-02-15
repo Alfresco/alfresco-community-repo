@@ -76,12 +76,12 @@ public class EditSearchDialog extends AdvancedSearchDialog
                         // detect if was previously selected saved search (e.g.
                         // NodeRef not null)
                         NodeRef searchRef = new NodeRef(Repository.getStoreRef(), properties.getSavedSearch());
-                        if (nodeService.exists(searchRef))
+                        if (getNodeService().exists(searchRef))
                         {
-                            Map<QName, Serializable> props = nodeService.getProperties(searchRef);
+                            Map<QName, Serializable> props = getNodeService().getProperties(searchRef);
                             props.put(ContentModel.PROP_NAME, properties.getSearchName());
                             props.put(ContentModel.PROP_DESCRIPTION, properties.getSearchDescription());
-                            nodeService.setProperties(searchRef, props);
+                            getNodeService().setProperties(searchRef, props);
 
                             ContentService contentService = Repository.getServiceRegistry(context).getContentService();
                             ContentWriter writer = contentService.getWriter(searchRef, ContentModel.PROP_CONTENT, true);

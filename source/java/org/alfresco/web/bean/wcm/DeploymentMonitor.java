@@ -41,9 +41,11 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-@SuppressWarnings("serial")
+
 public class DeploymentMonitor implements DeploymentCallback, Serializable
 {
+   private static final long serialVersionUID = 8167554931073708558L;
+   
    private String id;
    private NodeRef website;
    private NodeRef targetServer;

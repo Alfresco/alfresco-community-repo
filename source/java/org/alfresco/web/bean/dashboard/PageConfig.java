@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.dashboard;
 
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -50,8 +51,10 @@ import org.dom4j.io.XMLWriter;
  * 
  * @author Kevin Roast
  */
-public final class PageConfig
+public final class PageConfig implements Serializable
 {
+   private static final long serialVersionUID = 5464324390924278215L;
+
    private static Log logger = LogFactory.getLog(DashboardManager.class);
    
    private static final String ELEMENT_DASHBOARD = "dashboard";
@@ -286,8 +289,10 @@ public final class PageConfig
  * Simple class to represent a Page in a Dashboard.
  * Each Page has a Layout associated with it, and a number of Column definitions.
  */
-final class Page
+final class Page implements Serializable
 {
+   private static final long serialVersionUID = 8023042580316126423L;
+   
    private String id;
    private LayoutDefinition layoutDef;
    private List<Column> columns = new ArrayList<Column>(4);
@@ -373,8 +378,10 @@ final class Page
  * Simple class representing a single Column in a dashboard Page.
  * Each column contains a list of Dashlet definitions.
  */
-final class Column
+final class Column implements Serializable
 {
+   private static final long serialVersionUID = 6462844390234508010L;
+   
    private List<DashletDefinition> dashlets = new ArrayList<DashletDefinition>(4);
    
    /**

@@ -65,6 +65,8 @@ import org.w3c.dom.Document;
  */
 public class CreateContentWizard extends BaseContentWizard
 {
+   private static final long serialVersionUID = -2740634368271194418L;
+   
    protected String content = null;
    protected List<SelectItem> createMimeTypes;
    
@@ -105,7 +107,7 @@ public class CreateContentWizard extends BaseContentWizard
          final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
          props.put(WCMAppModel.PROP_PARENT_FORM_NAME, getFormName());
          props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, "");
-         this.nodeService.addAspect(super.createdNode, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
+         getNodeService().addAspect(super.createdNode, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
       }
       
       return result;

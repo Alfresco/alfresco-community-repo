@@ -49,6 +49,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class EditSpaceDialog extends CreateSpaceDialog
 {
+   private static final long serialVersionUID = 6090397957979372269L;
+   
    protected Node editableNode;
 
    @Override
@@ -92,16 +94,16 @@ public class EditSpaceDialog extends CreateSpaceDialog
       String name = (String)editedProps.get(ContentModel.PROP_NAME);
       if (name != null)
       {
-         this.fileFolderService.rename(nodeRef, name);
+         this.getFileFolderService().rename(nodeRef, name);
       }
 
       // get the current set of properties from the repository
-      Map<QName, Serializable> repoProps = this.nodeService.getProperties(nodeRef);
+      Map<QName, Serializable> repoProps = this.getNodeService().getProperties(nodeRef);
 
       // add the "uifacets" aspect if required, properties will get set below
-      if (this.nodeService.hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
+      if (this.getNodeService().hasAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS) == false)
       {
-         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
+         this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       }
 
       // overwrite the current properties with the edited ones
@@ -118,7 +120,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
          if ((propValue != null) && (propValue instanceof String) &&
              (propValue.toString().length() == 0))
          {
-            PropertyDefinition propDef = this.dictionaryService.getProperty(qname);
+            PropertyDefinition propDef = this.getDictionaryService().getProperty(qname);
             if (propDef != null)
             {
                if (propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE) ||
@@ -135,7 +137,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       }
 
       // send the properties back to the repository
-      this.nodeService.setProperties(nodeRef, repoProps);
+      this.getNodeService().setProperties(nodeRef, repoProps);
 
       // we also need to persist any association changes that may have been made
 
@@ -145,7 +147,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       {
          for (AssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+            this.getNodeService().createAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
 
@@ -155,7 +157,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       {
          for (AssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+            this.getNodeService().removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
          }
       }
 
@@ -165,7 +167,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       {
          for (ChildAssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
+            this.getNodeService().addChild(assoc.getParentRef(), assoc.getChildRef(), assoc.getTypeQName(), assoc.getTypeQName());
          }
       }
 
@@ -175,7 +177,7 @@ public class EditSpaceDialog extends CreateSpaceDialog
       {
          for (ChildAssociationRef assoc : typedAssoc.values())
          {
-            this.nodeService.removeChild(assoc.getParentRef(), assoc.getChildRef());
+            this.getNodeService().removeChild(assoc.getParentRef(), assoc.getChildRef());
          }
       }
 

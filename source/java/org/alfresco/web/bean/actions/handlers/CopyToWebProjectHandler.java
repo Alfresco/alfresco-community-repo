@@ -48,6 +48,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CopyToWebProjectHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -6725139406646296868L;
+
    public String getJSPPath()
    {
       return getJSPPath(CopyToWebProjectActionExecuter.NAME);

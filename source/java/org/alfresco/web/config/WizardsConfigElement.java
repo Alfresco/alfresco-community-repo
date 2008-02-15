@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -122,13 +123,20 @@ public class WizardsConfigElement extends ConfigElementAdapter
       this.wizards.put(wizardConfig.getName(), wizardConfig);
    }
    
-   public abstract static class AbstractConfig
+   public abstract static class AbstractConfig implements Serializable
    {
       protected String title;
       protected String titleId;
       protected String description;
       protected String descriptionId;
       
+      
+      
+      protected AbstractConfig()
+      {
+         super();
+      }
+
       public AbstractConfig(String title, String titleId,
                             String description, String descriptionId)
       {
@@ -162,8 +170,10 @@ public class WizardsConfigElement extends ConfigElementAdapter
    /**
     * Represents the configuration of a single wizard i.e. the &lt;wizard&gt; element
     */
-   public static class WizardConfig extends AbstractConfig
+   public static class WizardConfig extends AbstractConfig implements Serializable
    {
+      private static final long serialVersionUID = -3377339374041580932L;
+
       protected String subTitle;
       protected String subTitleId;
       protected String name;
@@ -172,6 +182,11 @@ public class WizardsConfigElement extends ConfigElementAdapter
       protected String errorMsgId = "error_wizard";
       
       protected Map<String, StepConfig> steps = new LinkedHashMap<String, StepConfig>(4);
+
+      protected WizardConfig()
+      {
+         super();
+      }
       
       public WizardConfig(String name, String bean, String icon,
                           String title, String titleId,
@@ -282,8 +297,10 @@ public class WizardsConfigElement extends ConfigElementAdapter
    /**
     * Represents the configuration of a page in a wizard i.e. the &lt;page&gt; element
     */
-   public static class PageConfig extends AbstractConfig
+   public static class PageConfig extends AbstractConfig implements Serializable
    {
+      private static final long serialVersionUID = 4154515148190230391L;
+      
       protected String path;
       protected String instruction;
       protected String instructionId;
@@ -343,6 +360,8 @@ public class WizardsConfigElement extends ConfigElementAdapter
     */
    public static class ConditionalPageConfig extends PageConfig
    {
+      private static final long serialVersionUID = -3398913681170199314L;
+      
       protected String condition;
       
       public ConditionalPageConfig(String path, String condition,
@@ -386,8 +405,10 @@ public class WizardsConfigElement extends ConfigElementAdapter
     * Represents the configuration of a step in a wizard
     * i.e. the &lt;step&gt; element.
     */
-   public static class StepConfig extends AbstractConfig
+   public static class StepConfig extends AbstractConfig implements Serializable
    {
+      private static final long serialVersionUID = -3707570689181455754L;
+      
       protected String name;
       protected PageConfig defaultPage;
       protected List<ConditionalPageConfig> conditionalPages = 

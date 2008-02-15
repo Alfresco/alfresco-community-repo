@@ -59,10 +59,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ReassignWorkItemDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 6501900045849920148L;
+
    protected String workItemId;
    
-   protected WorkflowService workflowService;
-   protected PersonService personService;
+   transient private WorkflowService workflowService;
+   transient private PersonService personService;
    
    private static final Log logger = LogFactory.getLog(ReassignWorkItemDialog.class);   
 
@@ -100,7 +102,7 @@ public class ReassignWorkItemDialog extends BaseDialogBean
             String userName = user[0];
             Map<QName, Serializable> params = new HashMap<QName, Serializable>(1);
             params.put(ContentModel.PROP_OWNER, userName);
-            this.workflowService.updateTask(this.workItemId, params, null, null);
+            this.getWorkflowService().updateTask(this.workItemId, params, null, null);
          }
          else
          {
@@ -163,25 +165,25 @@ public class ReassignWorkItemDialog extends BaseDialogBean
          tx.begin();
          
          // build xpath to match available User/Person objects
-         NodeRef peopleRef = personService.getPeopleContainer();
+         NodeRef peopleRef = getPersonService().getPeopleContainer();
          // NOTE: see SearcherComponentTest
          String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
                  " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false)]";
          
-         List<NodeRef> nodes = searchService.selectNodes(
+         List<NodeRef> nodes = getSearchService().selectNodes(
                peopleRef,
                xpath,
                null,
-               this.namespaceService,
+               this.getNamespaceService(),
                false);
          
          items = new SelectItem[nodes.size()];
          for (int index=0; index<nodes.size(); index++)
          {
             NodeRef personRef = nodes.get(index);
-            String firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
-            String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+            String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+            String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
             SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
             items[index] = item;
          }
@@ -213,11 +215,29 @@ public class ReassignWorkItemDialog extends BaseDialogBean
       this.workflowService = workflowService;
    }
    
+   protected WorkflowService getWorkflowService()
+   {
+      if (workflowService == null)
+      {
+         workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return workflowService;
+   }
+   
    /**
     * @param personService   The PersonService to set.
     */
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
+   }
+   
+   protected PersonService getPersonService()
+   {
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
    }
 }

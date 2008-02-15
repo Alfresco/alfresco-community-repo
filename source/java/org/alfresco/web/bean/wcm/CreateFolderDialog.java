@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,9 +48,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateFolderDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 5501238017264037644L;
+
    private static final Log logger = LogFactory.getLog(CreateFolderDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
    
    protected String name;
@@ -81,6 +84,15 @@ public class CreateFolderDialog extends BaseDialogBean
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
    
    /**
@@ -126,14 +138,14 @@ public class CreateFolderDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       String parent = this.avmBrowseBean.getCurrentPath();
-      this.avmService.createDirectory(parent, this.name);
+      this.getAvmService().createDirectory(parent, this.name);
       
       String path = parent + '/' + this.name;
       NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
-      this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
+      this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
       if (this.description != null && this.description.length() != 0)
       {
-         this.avmService.setNodeProperty(path, ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, this.description));
+         this.getAvmService().setNodeProperty(path, ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, this.description));
          // this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
       }
       

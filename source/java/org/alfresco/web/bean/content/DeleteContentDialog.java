@@ -34,6 +34,7 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,9 +45,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteContentDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 4199496011879649213L;
 
-
-   protected MultilingualContentService multilingualContentService;
+   transient private MultilingualContentService multilingualContentService;
 
    private static final Log logger = LogFactory.getLog(DeleteContentDialog.class);
 
@@ -67,7 +68,7 @@ public class DeleteContentDialog extends BaseDialogBean
                  logger.debug("Trying to delete multilingual container: " + node.getId() + " and its translations" );
 
              // delete the mlContainer and its translations
-             multilingualContentService.deleteTranslationContainer(node.getNodeRef());
+             getMultilingualContentService().deleteTranslationContainer(node.getNodeRef());
          }
          else
          {
@@ -75,7 +76,7 @@ public class DeleteContentDialog extends BaseDialogBean
                  logger.debug("Trying to delete content node: " + node.getId());
 
              // delete the node
-             this.nodeService.deleteNode(node.getNodeRef());
+             this.getNodeService().deleteNode(node.getNodeRef());
          }
 
       }
@@ -156,4 +157,14 @@ public class DeleteContentDialog extends BaseDialogBean
    {
        this.multilingualContentService = multilingualContentService;
    }
+   
+   protected MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
+   }
+
 }

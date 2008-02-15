@@ -38,7 +38,7 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  * 
  * @author gavinc
  */
-public interface IHandler
+public interface IHandler extends Serializable
 {
    /**
     * Adds any properties to the given map that need default values

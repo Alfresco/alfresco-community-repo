@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +39,10 @@ import org.alfresco.config.element.ConfigElementAdapter;
  * 
  * @author Gavin Cornwell
  */
-public class ViewsConfigElement extends ConfigElementAdapter
+public class ViewsConfigElement extends ConfigElementAdapter implements Serializable
 {
+   private static final long serialVersionUID = -503735723795178986L;
+
    public static final String CONFIG_ELEMENT_ID = "views";
 
    public static final String VIEW_DETAILS = "details";

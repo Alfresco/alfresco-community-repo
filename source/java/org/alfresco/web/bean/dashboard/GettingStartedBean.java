@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.dashboard;
 
+import java.io.Serializable;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.web.app.Application;
@@ -34,8 +36,10 @@ import org.alfresco.web.bean.NavigationBean;
  * 
  * @author Kevin Roast
  */
-public class GettingStartedBean
+public class GettingStartedBean implements Serializable
 {
+    private static final long serialVersionUID = 5170536816906380802L;
+    
     private NavigationBean navigationBean;
     
         

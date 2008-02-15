@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.common.renderer.data;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -171,6 +172,8 @@ public class RichListRenderer extends BaseRenderer
     */
    public static class DetailsViewRenderer implements IRichListRenderer
    {
+      private static final long serialVersionUID = -2753231623981676639L;
+      
       public static final String VIEWMODEID = "details";
       
       public String getViewModeID()
@@ -329,6 +332,8 @@ public class RichListRenderer extends BaseRenderer
     */
    public static class ListViewRenderer implements IRichListRenderer
    {
+      private static final long serialVersionUID = -6468162313606829713L;
+
       // maximum displayable textual lines within a single item cell
       private final static int MAX_DISPLAYABLE_LINES = 3;
       
@@ -521,6 +526,8 @@ public class RichListRenderer extends BaseRenderer
     */
    public static class IconViewRenderer implements IRichListRenderer
    {
+      private static final long serialVersionUID = -1961880941305536121L;
+
       // number of vertical columns to render before starting new row
       private final static int COLUMNS = 3;
       

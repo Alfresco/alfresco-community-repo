@@ -48,6 +48,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Revert (undo) all files in the current user sandbox.
@@ -56,12 +57,16 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
  */
 public class RevertAllDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 2693006540783155474L;
+
    private static final String MSG_REVERTALL_SUCCESS = "revertall_success";
    
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMService avmService;
-   protected AVMSyncService avmSyncService;
-   protected ActionService actionService;
+   
+   transient private AVMService avmService;
+   transient private AVMSyncService avmSyncService;
+   transient private ActionService actionService;
+   
    protected NameMatcher nameMatcher;
 
    // The virtualization server might need to be notified 
@@ -78,6 +83,17 @@ public class RevertAllDialog extends BaseDialogBean
    {
       this.avmService = avmService;
    }
+   
+   
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
+   }
+
 
    /**
     * @param avmBrowseBean    The AVM BrowseBean to set
@@ -95,6 +111,15 @@ public class RevertAllDialog extends BaseDialogBean
       this.avmSyncService = avmSyncService;
    }
    
+   protected AVMSyncService getAvmSyncService()
+   {
+      if (this.avmSyncService == null)
+      {
+         this.avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return this.avmSyncService;
+   }
+
    /**
     * @param actionService The actionService to set.
     */
@@ -103,6 +128,15 @@ public class RevertAllDialog extends BaseDialogBean
       this.actionService = actionService;
    }
    
+   protected ActionService getActionService()
+   {
+      if (this.actionService == null)
+      {
+         this.actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return this.actionService;
+   }
+
    /**
     * @param nameMatcher The nameMatcher to set.
     */
@@ -123,7 +157,7 @@ public class RevertAllDialog extends BaseDialogBean
       String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
       
       // calcluate the list of differences between the user store and the staging area
-      List<AVMDifference> diffs = this.avmSyncService.compare(
+      List<AVMDifference> diffs = this.getAvmSyncService().compare(
             -1, userStore, -1, stagingStore, this.nameMatcher);
 
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
@@ -131,7 +165,7 @@ public class RevertAllDialog extends BaseDialogBean
       List<WorkflowTask> tasks = null;
       for (AVMDifference diff : diffs)
       {
-         AVMNodeDescriptor node = avmService.lookup(-1, diff.getSourcePath(), true);
+         AVMNodeDescriptor node = getAvmService().lookup(-1, diff.getSourcePath(), true);
          if (tasks == null)
          {
             tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(diff.getSourcePath()));
@@ -151,8 +185,8 @@ public class RevertAllDialog extends BaseDialogBean
 
       Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
       args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable)versionPaths);
-      Action action = this.actionService.createAction(AVMUndoSandboxListAction.NAME, args);
-      this.actionService.executeAction(action, null); // dummy action ref, list passed as action arg
+      Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
+      this.getActionService().executeAction(action, null); // dummy action ref, list passed as action arg
       
       String msg = MessageFormat.format(Application.getMessage(
             context, MSG_REVERTALL_SUCCESS), this.avmBrowseBean.getUsername());

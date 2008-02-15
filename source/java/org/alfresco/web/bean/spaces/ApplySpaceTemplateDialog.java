@@ -73,14 +73,14 @@ public class ApplySpaceTemplateDialog extends BaseDialogBean
                 // apply the templatable aspect if required
                 if (getNode().hasAspect(ContentModel.ASPECT_TEMPLATABLE) == false)
                 {
-                    this.nodeService.addAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
+                    this.getNodeService().addAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
                 }
 
                 // get the selected template from the Template Picker
                 NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
 
                 // set the template NodeRef into the templatable aspect property
-                this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef);
+                this.getNodeService().setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef);
 
                 // reset node details for next refresh of details page
                 getNode().reset();

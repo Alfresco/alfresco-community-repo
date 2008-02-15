@@ -46,6 +46,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CopyHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -3570705279828902436L;
+
    public String getJSPPath()
    {
       return getJSPPath(CopyActionExecuter.NAME);

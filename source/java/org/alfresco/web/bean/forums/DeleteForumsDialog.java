@@ -43,6 +43,8 @@ import org.alfresco.web.bean.spaces.DeleteSpaceDialog;
  */
 public class DeleteForumsDialog extends DeleteSpaceDialog
 {
+   private static final long serialVersionUID = -1673691210425371041L;
+   
    protected boolean reDisplayForums;
 
    // ------------------------------------------------------------------------------
@@ -62,11 +64,11 @@ public class DeleteForumsDialog extends DeleteSpaceDialog
    {
       // find out what the parent type of the node being deleted 
       Node node = this.browseBean.getActionSpace();
-      ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+      ChildAssociationRef assoc = this.getNodeService().getPrimaryParent(node.getNodeRef());
       if (assoc != null)
       {
          NodeRef parent = assoc.getParentRef();
-         QName parentType = this.nodeService.getType(parent);
+         QName parentType = this.getNodeService().getType(parent);
          if (parentType.equals(ForumModel.TYPE_FORUMS))
          {
             this.reDisplayForums = true;

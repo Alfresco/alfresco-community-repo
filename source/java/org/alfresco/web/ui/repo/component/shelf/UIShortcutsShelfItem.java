@@ -65,8 +65,8 @@ public class UIShortcutsShelfItem extends UIShelfItem
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.value = values[1];
-      this.clickActionListener = (MethodBinding)values[2];
-      this.removeActionListener = (MethodBinding)values[3];
+      this.clickActionListener = (MethodBinding) restoreAttachedState(context, values[2]);
+      this.removeActionListener = (MethodBinding) restoreAttachedState(context, values[3]);
    }
    
    /**
@@ -78,8 +78,8 @@ public class UIShortcutsShelfItem extends UIShelfItem
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.value;
-      values[2] = this.clickActionListener;
-      values[3] = this.removeActionListener;
+      values[2] = saveAttachedState(context, this.clickActionListener);
+      values[3] = saveAttachedState(context, this.removeActionListener);
       
       return (values);
    }

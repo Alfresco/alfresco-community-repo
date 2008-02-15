@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.ml;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Locale;
 import java.util.Map;
 
@@ -38,6 +40,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Dialog bean to make a node multilingual
@@ -46,7 +49,9 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class MakeMultilingualDialog extends BaseDialogBean
 {
-   private MultilingualContentService multilingualContentService;
+   private static final long serialVersionUID = -2862474360129631088L;
+
+   transient private MultilingualContentService multilingualContentService;
 
    private UserPreferencesBean userPreferencesBean;
 
@@ -82,20 +87,20 @@ public class MakeMultilingualDialog extends BaseDialogBean
       NodeRef nodeRef = this.editableNode.getNodeRef();
 
       // propose the author and the language of the content for the properties of the MLContainer
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == true
-            && this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR) != null)
+      if (this.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_AUTHOR) == true
+            && this.getNodeService().getProperty(nodeRef, ContentModel.PROP_AUTHOR) != null)
       {
-         setAuthor((String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR));
+         setAuthor((String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_AUTHOR));
       }
       else
       {
          setAuthor("");
       }
 
-      if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCALIZED) == true
-            && this.nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE) != null)
+      if (this.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_LOCALIZED) == true
+            && this.getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCALE) != null)
       {
-         setLanguage(((Locale) this.nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE)).toString());
+         setLanguage(((Locale) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCALE)).toString());
       }
       else
       {
@@ -125,17 +130,17 @@ public class MakeMultilingualDialog extends BaseDialogBean
       NodeRef nodeRef = this.editableNode.getNodeRef();
 
       // make this node multilingual
-      multilingualContentService.makeTranslation(nodeRef, locale);
-      NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
+      getMultilingualContentService().makeTranslation(nodeRef, locale);
+      NodeRef mlContainer = getMultilingualContentService().getTranslationContainer(nodeRef);
 
       // if the author of the node is not set, set it with the default author name of
       // the new ML Container
-      String nodeAuthor = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR);
+      String nodeAuthor = (String) getNodeService().getProperty(nodeRef, ContentModel.PROP_AUTHOR);
       if (nodeAuthor == null || nodeAuthor.length() < 1)
-         nodeService.setProperty(nodeRef, ContentModel.PROP_AUTHOR, getAuthor());
+         getNodeService().setProperty(nodeRef, ContentModel.PROP_AUTHOR, getAuthor());
 
       // set properties of the ml container
-      nodeService.setProperty(mlContainer, ContentModel.PROP_AUTHOR, getAuthor());
+      getNodeService().setProperty(mlContainer, ContentModel.PROP_AUTHOR, getAuthor());
 
       return outcome;
    }
@@ -277,9 +282,19 @@ public class MakeMultilingualDialog extends BaseDialogBean
    {
       this.multilingualContentService = multilingualContentService;
    }
+   
+   private MultilingualContentService getMultilingualContentService()
+   {
+      if (multilingualContentService == null)
+      {
+         multilingualContentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getMultilingualContentService();
+      }
+      return multilingualContentService;
+   }
 
    public void setUserPreferencesBean(UserPreferencesBean userPreferencesBean)
    {
       this.userPreferencesBean = userPreferencesBean;
    }
+
 }

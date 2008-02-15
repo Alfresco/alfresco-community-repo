@@ -46,6 +46,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CheckOutHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -7115284366068767316L;
+
    public String getJSPPath()
    {
       return getJSPPath(CheckOutActionExecuter.NAME);

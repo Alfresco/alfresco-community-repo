@@ -57,6 +57,8 @@ import org.apache.commons.logging.LogFactory;
 public class EditFormWizard 
    extends CreateFormWizard
 {
+   private static final long serialVersionUID = -3260838389223325316L;
+   
    private final static Log LOGGER = LogFactory.getLog(EditFormWizard.class);
 
    private List<RenderingEngineTemplateData> removedRenderingEngineTemplates;
@@ -79,23 +81,23 @@ public class EditFormWizard
          throw new IllegalArgumentException("Edit Form wizard requires action node context.");
       }
 
-      final Form form = this.formsService.getForm(formNodeRef);
+      final Form form = this.getFormsService().getForm(formNodeRef);
       // simple properties
       this.setFormName(form.getName());
       this.setFormTitle(form.getTitle());
       this.setFormDescription(form.getDescription());
       this.setSchemaRootElementName(form.getSchemaRootElementName());
       NodeRef schemaNodeRef = (NodeRef)
-         this.nodeService.getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA);
+         this.getNodeService().getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA);
       if (schemaNodeRef == null)
       {
          LOGGER.debug(WCMAppModel.PROP_XML_SCHEMA + " not set on " + formNodeRef +
                       ", checking " + WCMAppModel.PROP_XML_SCHEMA_OLD);
          schemaNodeRef = (NodeRef)
-            nodeService.getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA_OLD);
+            getNodeService().getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA_OLD);
          if (schemaNodeRef != null)
          {
-            nodeService.setProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA, schemaNodeRef);
+            getNodeService().setProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA, schemaNodeRef);
          }
       }
       if (schemaNodeRef == null)
@@ -105,7 +107,7 @@ public class EditFormWizard
                                         " for form " + form.getName() +
                                         " not to be null.");
       }
-      this.setSchemaFileName((String)this.nodeService.getProperty(schemaNodeRef, 
+      this.setSchemaFileName((String)this.getNodeService().getProperty(schemaNodeRef, 
                                                                   ContentModel.PROP_NAME));
       try
       {
@@ -137,7 +139,7 @@ public class EditFormWizard
       
       if (getIsWebForm() == true)
       {
-         this.associatedWebProjects = this.formsService.getAssociatedWebProjects(form);
+         this.associatedWebProjects = this.getFormsService().getAssociatedWebProjects(form);
       }
    }
    
@@ -152,22 +154,22 @@ public class EditFormWizard
       final NodeRef formNodeRef = this.browseBean.getActionSpace().getNodeRef();
       
       // apply the name, title and description props
-      if (!this.getFormName().equals(this.nodeService.getProperty(formNodeRef, ContentModel.PROP_NAME)))
+      if (!this.getFormName().equals(this.getNodeService().getProperty(formNodeRef, ContentModel.PROP_NAME)))
       {
-         this.fileFolderService.rename(formNodeRef, this.getFormName());
+         this.getFileFolderService().rename(formNodeRef, this.getFormName());
       }
 
-      this.nodeService.setProperty(formNodeRef, ContentModel.PROP_TITLE, this.getFormTitle());
-      this.nodeService.setProperty(formNodeRef, ContentModel.PROP_DESCRIPTION, this.getFormDescription());
-      this.nodeService.setProperty(formNodeRef, 
+      this.getNodeService().setProperty(formNodeRef, ContentModel.PROP_TITLE, this.getFormTitle());
+      this.getNodeService().setProperty(formNodeRef, ContentModel.PROP_DESCRIPTION, this.getFormDescription());
+      this.getNodeService().setProperty(formNodeRef, 
                                    WCMAppModel.PROP_OUTPUT_PATH_PATTERN, 
                                    this.getOutputPathPatternForFormInstanceData());
-      this.nodeService.setProperty(formNodeRef,
+      this.getNodeService().setProperty(formNodeRef,
                                    WCMAppModel.PROP_XML_SCHEMA_ROOT_ELEMENT_NAME,
                                    this.getSchemaRootElementName());
       final WorkflowDefinition wd = this.getDefaultWorkflowDefinition();
       final List<ChildAssociationRef> workflowRefs = 
-         this.nodeService.getChildAssocs(formNodeRef,
+         this.getNodeService().getChildAssocs(formNodeRef,
                                          WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                          RegexQNamePattern.MATCH_ALL);
 
@@ -177,7 +179,7 @@ public class EditFormWizard
                       " to form " + this.getFormName());
          final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
          props.put(WCMAppModel.PROP_WORKFLOW_NAME, wd.getName());
-         this.nodeService.createNode(formNodeRef,
+         this.getNodeService().createNode(formNodeRef,
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                      WCMAppModel.ASSOC_FORM_WORKFLOW_DEFAULTS,
                                      WCMAppModel.TYPE_WORKFLOW_DEFAULTS,
@@ -187,20 +189,20 @@ public class EditFormWizard
       {
          LOGGER.debug("setting workflow definition " + wd.getName() + 
                       " to form " + this.getFormName());
-         this.nodeService.setProperty(workflowRefs.get(0).getChildRef(),
+         this.getNodeService().setProperty(workflowRefs.get(0).getChildRef(),
                                       WCMAppModel.PROP_WORKFLOW_NAME,
                                       wd.getName());
       }              
       else if (wd == null && workflowRefs.size() == 1)
       {
          LOGGER.debug("removing workflow definitions from form " + this.getFormName());
-         this.nodeService.removeChild(formNodeRef, workflowRefs.get(0).getChildRef());
+         this.getNodeService().removeChild(formNodeRef, workflowRefs.get(0).getChildRef());
       }         
 
       if (this.getSchemaFile() != null)
       {
          final FileInfo fileInfo = 
-            this.fileFolderService.create(formNodeRef,
+            this.getFileFolderService().create(formNodeRef,
                                           this.getSchemaFileName(),
                                           ContentModel.TYPE_CONTENT);
          // get a writer for the content and put the file
@@ -211,7 +213,7 @@ public class EditFormWizard
          writer.setMimetype(MimetypeMap.MIMETYPE_XML);
          writer.setEncoding("UTF-8");
          writer.putContent(this.getSchemaFile());
-         this.nodeService.setProperty(formNodeRef,
+         this.getNodeService().setProperty(formNodeRef,
                                       WCMAppModel.PROP_XML_SCHEMA, 
                                       fileInfo.getNodeRef());
       }
@@ -223,7 +225,7 @@ public class EditFormWizard
             LOGGER.debug("removing rendering engine template " + retd);
             assert retd != null;
             assert retd.getNodeRef() != null;
-            this.nodeService.removeChild(formNodeRef, retd.getNodeRef());
+            this.getNodeService().removeChild(formNodeRef, retd.getNodeRef());
          }
       }
 
@@ -245,7 +247,7 @@ public class EditFormWizard
    public void removeSelectedRenderingEngineTemplate(final ActionEvent event)
    {
       final RenderingEngineTemplateData wrapper = (RenderingEngineTemplateData)
-         this.renderingEngineTemplatesDataModel.getRowData();
+         this.getRenderingEngineTemplatesDataModel().getRowData();
       if (wrapper != null)
       {
          if (this.removedRenderingEngineTemplates == null)

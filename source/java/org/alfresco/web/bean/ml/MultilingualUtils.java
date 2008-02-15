@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.ml;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
@@ -42,10 +43,12 @@ import org.alfresco.web.bean.repository.Node;
  *
  * @author yanipig
  */
-public class MultilingualUtils
+public class MultilingualUtils implements Serializable
 {
 
-    /**
+    private static final long serialVersionUID = 2218309432064312000L;
+
+   /**
      * Returns true if the current user has enough right to add a content to the space
      * where the pivot translation is located in.
      *

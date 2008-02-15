@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.config;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -165,8 +166,10 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    /**
     * Structure class for the definition of a dashboard page layout 
     */
-   public static class LayoutDefinition
+   public static class LayoutDefinition implements Serializable
    {
+      private static final long serialVersionUID = -3014156293576142077L;
+    
       LayoutDefinition(String id)
       {
          this.Id = id;
@@ -186,8 +189,10 @@ public class DashboardsConfigElement extends ConfigElementAdapter
    /**
     * Structure class for the definition of a dashboard dashlet component
     */
-   public static class DashletDefinition
+   public static class DashletDefinition implements Serializable
    {
+      private static final long serialVersionUID = -5755903997700459631L;
+      
       DashletDefinition(String id)
       {
          this.Id = id;

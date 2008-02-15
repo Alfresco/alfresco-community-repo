@@ -38,6 +38,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class UpdateDocEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 6030963610213633893L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

@@ -83,7 +83,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
         {
             ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
             DictionaryService dd = services.getDictionaryService();
-            Map<QName, Serializable> props = this.nodeService.getProperties(getPerson().getNodeRef());
+            Map<QName, Serializable> props = getNodeService().getProperties(getPerson().getNodeRef());
             for (String key : getPerson().getProperties().keySet())
             {
                 QName propQName = QName.createQName(key);
@@ -95,7 +95,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
 
             // persist all property changes
             NodeRef personRef = getPerson().getNodeRef();
-            this.nodeService.setProperties(personRef, props);
+            this.getNodeService().setProperties(personRef, props);
             
             // save person description content field
             if (this.personDescription != null)
@@ -109,16 +109,16 @@ public class EditUserDetailsDialog extends BaseDialogBean
             // setup user avatar association
             if (this.photoRef != null)
             {
-                List<AssociationRef> refs = this.nodeService.getTargetAssocs(personRef, ContentModel.ASSOC_AVATAR);
+                List<AssociationRef> refs = this.getNodeService().getTargetAssocs(personRef, ContentModel.ASSOC_AVATAR);
                 // remove old association if it exists
                 if (refs.size() == 1)
                 {
                     NodeRef existingRef = refs.get(0).getTargetRef();
-                    this.nodeService.removeAssociation(
+                    this.getNodeService().removeAssociation(
                             personRef, existingRef, ContentModel.ASSOC_AVATAR);
                 }
                 // setup new association
-                this.nodeService.createAssociation(personRef, this.photoRef, ContentModel.ASSOC_AVATAR);
+                this.getNodeService().createAssociation(personRef, this.photoRef, ContentModel.ASSOC_AVATAR);
             }
             
             // if the above calls were successful, then reset Person Node in the session
@@ -195,7 +195,7 @@ public class EditUserDetailsDialog extends BaseDialogBean
     {
         if (this.photoRef == null)
         {
-            List<AssociationRef> refs = this.nodeService.getTargetAssocs(person.getNodeRef(), ContentModel.ASSOC_AVATAR);
+            List<AssociationRef> refs = this.getNodeService().getTargetAssocs(person.getNodeRef(), ContentModel.ASSOC_AVATAR);
             if (refs.size() == 1)
             {
                 this.photoRef = refs.get(0).getTargetRef();

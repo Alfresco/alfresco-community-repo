@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.ui.common.component.data;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,13 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Kevin Roast
  */
-public class UIRichList extends UIComponentBase implements IDataContainer
+public class UIRichList extends UIComponentBase implements IDataContainer,Serializable
 {
    // ------------------------------------------------------------------------------
    // Construction
    
+   private static final long serialVersionUID = 4302199745018058173L;
+
    /**
     * Default constructor
     */

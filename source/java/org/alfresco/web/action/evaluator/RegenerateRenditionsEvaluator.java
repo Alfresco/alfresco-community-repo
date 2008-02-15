@@ -43,6 +43,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public class RegenerateRenditionsEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = -3479861093052578775L;
+
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */

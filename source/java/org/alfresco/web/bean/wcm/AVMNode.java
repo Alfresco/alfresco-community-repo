@@ -57,10 +57,14 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class AVMNode extends Node implements Map<String, Object>
 {
+   private static final long serialVersionUID = 2200295347489543757L;
+
    public final static NodePropertyResolver RESOLVER_PREVIEW_URL =
       new NodePropertyResolver()
       {
-         public Object get(final Node node)
+        private static final long serialVersionUID = -8437274476137672895L;
+
+        public Object get(final Node node)
          {
             if (! (node instanceof AVMNode))
             {
@@ -80,7 +84,9 @@ public class AVMNode extends Node implements Map<String, Object>
    public final static NodePropertyResolver RESOLVER_SANDBOX_RELATIVE_PATH =
       new NodePropertyResolver()
       {
-         public Object get(final Node node)
+        private static final long serialVersionUID = -2367701285830581225L;
+
+        public Object get(final Node node)
          {
             if (! (node instanceof AVMNode))
             {
@@ -108,7 +114,9 @@ public class AVMNode extends Node implements Map<String, Object>
    public final static NodePropertyResolver RESOLVER_FILE_TYPE_16 =
       new NodePropertyResolver()
       {
-         public Object get(final Node node)
+        private static final long serialVersionUID = 4300079423348609858L;
+
+        public Object get(final Node node)
          {
             if (! (node instanceof AVMNode))
             {

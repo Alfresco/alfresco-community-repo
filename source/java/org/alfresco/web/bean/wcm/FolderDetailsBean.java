@@ -38,6 +38,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class FolderDetailsBean extends AVMDetailsBean
 {
+   private static final long serialVersionUID = -2668158215990649862L;
+
    /**
     * @see org.alfresco.web.bean.wcm.AVMDetailsBean#getAvmNode()
     */

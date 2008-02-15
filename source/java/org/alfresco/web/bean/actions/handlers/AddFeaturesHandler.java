@@ -45,6 +45,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class AddFeaturesHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -2062128886273060606L;
+   
    protected static final String PROP_ASPECT = "aspect";
    
    public String getJSPPath()

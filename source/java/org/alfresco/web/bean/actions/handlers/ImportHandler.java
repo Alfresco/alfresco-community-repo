@@ -43,6 +43,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class ImportHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -3011384175544764038L;
+   
    protected static final String IMPORT_ENCODING = "UTF-8";
    
    public String getJSPPath()

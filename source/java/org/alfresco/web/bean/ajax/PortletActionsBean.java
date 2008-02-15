@@ -27,26 +27,17 @@ package org.alfresco.web.bean.ajax;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.model.ApplicationModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,8 +46,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Mike Hatfield
  */
-public class PortletActionsBean
+public class PortletActionsBean implements Serializable
 {
+   private static final long serialVersionUID = -8230154592621310289L;
+   
    private static Log logger = LogFactory.getLog(PortletActionsBean.class);
    
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)

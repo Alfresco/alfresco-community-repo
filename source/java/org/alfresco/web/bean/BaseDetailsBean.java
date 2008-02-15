@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -75,16 +77,16 @@ public abstract class BaseDetailsBean extends BaseDialogBean
    protected NavigationBean navigator;
    
    /** NodeServuce bean reference */
-   protected NodeService nodeService;
+   transient private NodeService nodeService;
    
    /** OwnableService bean reference */
-   protected OwnableService ownableService;
+   transient private OwnableService ownableService;
    
    /** CopyService bean reference */
-   protected CopyService copyService;
+   transient private CopyService copyService;
    
    /** The PermissionService reference */
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
    
    /** Selected template Id */
    protected String template;
@@ -134,6 +136,15 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       this.nodeService = nodeService;
    }
    
+   protected NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
    /**
     * Sets the ownable service instance the bean should use
     * 
@@ -142,6 +153,15 @@ public abstract class BaseDetailsBean extends BaseDialogBean
    public void setOwnableService(OwnableService ownableService)
    {
       this.ownableService = ownableService;
+   }
+   
+   protected OwnableService getOwnableService()
+   {
+      if (ownableService == null)
+      {
+         ownableService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getOwnableService();
+      }
+      return ownableService;
    }
    
    /**
@@ -154,12 +174,30 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       this.copyService = copyService;
    }
    
+   protected CopyService getCopyService()
+   {
+      if (copyService == null)
+      {
+         copyService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCopyService();
+      }
+      return copyService;
+   }
+   
    /**
     * @param permissionService The PermissionService to set.
     */
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
    }
    
    /**
@@ -289,8 +327,8 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       if (getNode().hasAspect(ContentModel.ASPECT_TEMPLATABLE))
       {
          NodeRef templateRef = (NodeRef)getNode().getProperties().get(ContentModel.PROP_TEMPLATE);
-         return (templateRef != null && this.nodeService.exists(templateRef) &&
-                 this.permissionService.hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
+         return (templateRef != null && this.getNodeService().exists(templateRef) &&
+                 this.getPermissionService().hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
       }
       return false;
    }
@@ -332,8 +370,10 @@ public abstract class BaseDetailsBean extends BaseDialogBean
    public abstract Map getTemplateModel();
    
    /** Template Image resolver helper */
-   protected TemplateImageResolver imageResolver = new TemplateImageResolver()
+   protected TemplateImageResolver imageResolver = new TemplateImageResolver() 
    {
+      private static final long serialVersionUID = 1539708282743314697L;
+
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
          return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
@@ -426,7 +466,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
             public Object execute() throws Throwable
             {
                // firstly retrieve all the properties for the current node
-               Map<QName, Serializable> updateProps = nodeService.getProperties(
+               Map<QName, Serializable> updateProps = getNodeService().getProperties(
                      getNode().getNodeRef());
                
                // update the simple workflow properties
@@ -487,7 +527,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
                }
                
                // set the properties on the node
-               nodeService.setProperties(getNode().getNodeRef(), updateProps);
+               getNodeService().setProperties(getNode().getNodeRef(), updateProps);
                return null;
             }
          };
@@ -550,7 +590,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
             public Object execute() throws Throwable
             {
                // call the service to perform the approve
-               WorkflowUtil.approve(docNodeRef, nodeService, copyService);
+               WorkflowUtil.approve(docNodeRef, getNodeService(), getCopyService());
                return null;
             }
          };
@@ -615,7 +655,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
             public Object execute() throws Throwable
             {
                // call the service to perform the reject
-               WorkflowUtil.reject(docNodeRef, nodeService, copyService);
+               WorkflowUtil.reject(docNodeRef, getNodeService(), getCopyService());
                return null;
             }
          };
@@ -653,14 +693,14 @@ public abstract class BaseDetailsBean extends BaseDialogBean
             // apply the templatable aspect if required 
             if (getNode().hasAspect(ContentModel.ASPECT_TEMPLATABLE) == false)
             {
-               this.nodeService.addAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
+               this.getNodeService().addAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE, null);
             }
             
             // get the selected template from the Template Picker
             NodeRef templateRef = new NodeRef(Repository.getStoreRef(), this.template);
             
             // set the template NodeRef into the templatable aspect property
-            this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef); 
+            this.getNodeService().setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, templateRef); 
             
             // reset node details for next refresh of details page
             getNode().reset();
@@ -681,9 +721,9 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       try
       {
          // clear template property
-         this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
-         this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
-         this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_WEBSCRIPTABLE);
+         this.getNodeService().setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
+         this.getNodeService().removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
+         this.getNodeService().removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_WEBSCRIPTABLE);
          
          // reset node details for next refresh of details page
          getNode().reset();
@@ -709,7 +749,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
          {
             public Object execute() throws Throwable
             {
-               ownableService.takeOwnership(getNode().getNodeRef());
+               getOwnableService().takeOwnership(getNode().getNodeRef());
                
                String msg = Application.getMessage(fc, MSG_SUCCESS_OWNERSHIP);
                FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);

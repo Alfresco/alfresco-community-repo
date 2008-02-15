@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.app;
 
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -48,12 +49,17 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @author Kevin Roast
  */
-public final class ResourceBundleWrapper extends ResourceBundle
+public final class ResourceBundleWrapper extends ResourceBundle implements Serializable
 {
+   private static final long serialVersionUID = -3230653664902689948L;
+
    private static Log    logger = LogFactory.getLog(ResourceBundleWrapper.class);
    
-   private ResourceBundle delegate;
-   private ResourceBundle delegateCustom;
+   private String name;
+   private Locale locale;
+   
+   transient private ResourceBundle delegate;
+   transient private ResourceBundle delegateCustom;
    
    private MessageService messageService;
    
@@ -80,91 +86,14 @@ public final class ResourceBundleWrapper extends ResourceBundle
     * @param customBundle A custom version of bundle to look in if the string is
     *                     not found in bundle
     */
-   private ResourceBundleWrapper(ResourceBundle bundle, ResourceBundle customBundle)
+   private ResourceBundleWrapper(String name, Locale locale)
    {
-      this.delegate = bundle;
-      this.delegateCustom = customBundle;
+      this.name = name;
+      this.locale = locale;
+      retreiveBundles();
    }
    
-   /**
-    * @see java.util.ResourceBundle#getKeys()
-    */
-   public Enumeration<String> getKeys()
-   {
-      if (this.delegateCustom == null)
-      {
-         return this.delegate.getKeys();
-      }
-      else
-      {
-         // get existing keys
-         Enumeration<String> keys = this.delegate.getKeys();
-         Enumeration<String> customKeys = this.delegateCustom.getKeys();
-         
-         // combine keys into one list
-         Vector<String> allKeys = new Vector<String>(100, 2);
-         while (keys.hasMoreElements())
-         {
-            allKeys.add(keys.nextElement());
-         }
-         while (customKeys.hasMoreElements())
-         {
-            allKeys.add(customKeys.nextElement());
-         }
-         
-         return allKeys.elements();
-      }
-   }
-   
-   /**
-    * @see java.util.ResourceBundle#handleGetObject(java.lang.String)
-    */
-   protected Object handleGetObject(String key)
-   {
-      Object result = null;
-      
-      try
-      {
-         result =  this.delegate.getObject(key);
-      }
-      catch (MissingResourceException err)
-      {
-         // if the string wasn't found in the normal bundle
-         // try the custom bundle if there is one
-         try
-         {
-            if (this.delegateCustom != null)
-            {
-               result = this.delegateCustom.getObject(key);
-            }
-         }
-         catch (MissingResourceException mre)
-         {
-            // don't do anything here, dealt with below
-         }
-         
-         // if the key was not found return a default string 
-         if (result == null)
-         {
-            if (logger.isWarnEnabled())
-               logger.warn("Failed to find I18N message string key: " + key);
-         
-            result = "$$" + key + "$$";
-         }
-      }
-      
-      return result;
-   }
-   
-   /**
-    * Factory method to get a named wrapped resource bundle for a particular locale.
-    * 
-    * @param name       Bundle name
-    * @param locale     Locale to retrieve bundle for
-    * 
-    * @return Wrapped ResourceBundle instance for specified locale
-    */
-   public ResourceBundle getResourceBundle(String name, Locale locale)
+   private void retreiveBundles()
    {
       ResourceBundle bundle = ResourceBundle.getBundle(name, locale);
       if (bundle == null)
@@ -204,26 +133,122 @@ public final class ResourceBundleWrapper extends ResourceBundle
           // for now ... ignore the error, cannot be found or read from repo
           logger.debug("Custom Web Client properties not found: " + storeRef + path);
       }
-
+      
       if (customBundle == null)
       {
-          // classpath
-          String customName = determineCustomBundleName(name);
-          try
-          {
-             customBundle = ResourceBundle.getBundle(customName, locale);
-             
-             if (logger.isDebugEnabled())
-                logger.debug("Located and loaded custom bundle: " + customName);
-          }
-          catch (MissingResourceException mre)
-          {
-             // ignore the error, just leave custom bundle as null
-          }
+         // classpath
+         String customName = determineCustomBundleName(name);
+         try
+         {
+            customBundle = ResourceBundle.getBundle(customName, locale);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Located and loaded custom bundle: " + customName);
+         }
+         catch (MissingResourceException mre)
+         {
+            // ignore the error, just leave custom bundle as null
+         }
       }
       
+      this.delegate = bundle;
+      this.delegateCustom = customBundle;
+   }
+   
+   /**
+    * @see java.util.ResourceBundle#getKeys()
+    */
+   public Enumeration<String> getKeys()
+   {
+      if (this.delegate == null)
+      {
+         // restore if the session was [de]serialised - as bundles themselves are not serialised
+         retreiveBundles();
+      }
+      
+      if (this.delegateCustom == null)
+      {
+         return this.delegate.getKeys();
+      }
+      else
+      {
+         // get existing keys
+         Enumeration<String> keys = this.delegate.getKeys();
+         Enumeration<String> customKeys = this.delegateCustom.getKeys();
+         
+         // combine keys into one list
+         Vector<String> allKeys = new Vector<String>(100, 2);
+         while (keys.hasMoreElements())
+         {
+            allKeys.add(keys.nextElement());
+         }
+         while (customKeys.hasMoreElements())
+         {
+            allKeys.add(customKeys.nextElement());
+         }
+         
+         return allKeys.elements();
+      }
+   }
+   
+   /**
+    * @see java.util.ResourceBundle#handleGetObject(java.lang.String)
+    */
+   protected Object handleGetObject(String key)
+   {
+      Object result = null;
+      
+      if (this.delegate == null)
+      {
+         // restore if the session was [de]serialised - as bundles themselves are not serialised
+         retreiveBundles();
+      }
+      
+      try
+      {
+         result = this.delegate.getObject(key);
+      }
+      catch (MissingResourceException err)
+      {
+         // if the string wasn't found in the normal bundle
+         // try the custom bundle if there is one
+         try
+         {
+            if (this.delegateCustom != null)
+            {
+               result = this.delegateCustom.getObject(key);
+            }
+         }
+         catch (MissingResourceException mre)
+         {
+            // don't do anything here, dealt with below
+         }
+         
+         // if the key was not found return a default string 
+         if (result == null)
+         {
+            if (logger.isWarnEnabled())
+               logger.warn("Failed to find I18N message string key: " + key);
+         
+            result = "$$" + key + "$$";
+         }
+      }
+      
+      return result;
+   }
+   
+   /**
+    * Factory method to get a named wrapped resource bundle for a particular locale.
+    * 
+    * @param name       Bundle name
+    * @param locale     Locale to retrieve bundle for
+    * 
+    * @return Wrapped ResourceBundle instance for specified locale
+    */
+   public static ResourceBundle getResourceBundle(String name, Locale locale)
+   {
       // apply our wrapper to catch MissingResourceException
-      return new ResourceBundleWrapper(bundle, customBundle);
+      return new ResourceBundleWrapper(name, locale);
    }
    
    /**
@@ -251,4 +276,5 @@ public final class ResourceBundleWrapper extends ResourceBundle
       
       return customBundleName;
    }
+   
 }

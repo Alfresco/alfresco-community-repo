@@ -24,17 +24,21 @@
  */
 package org.alfresco.web.ui.common.component;
 
+import java.io.Serializable;
+
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
 /**
  * @author kevinr
  */
-public class UIListItem extends SelfRenderingComponent
+public class UIListItem extends SelfRenderingComponent implements Serializable
 {
    // ------------------------------------------------------------------------------
    // Component Impl 
    
+   private static final long serialVersionUID = 6654796229844597265L;
+
    /**
     * @see javax.faces.component.UIComponent#getFamily()
     */

@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.io.Serializable;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -34,7 +36,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Kevin Roast
  */
-public interface ClipboardItem
+public interface ClipboardItem extends Serializable
 {
    /**
     * @return the mode status of the clipboard item, the enum can be either Cut or Copy

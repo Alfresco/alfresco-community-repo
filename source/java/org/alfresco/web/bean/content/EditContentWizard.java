@@ -65,7 +65,7 @@ public class EditContentWizard extends CreateContentWizard
       this.nodeRef = node.getNodeRef();
       try
       {
-         formName = (String)nodeService.getProperty(nodeRef, WCMAppModel.PROP_PARENT_FORM_NAME); // getFormName() ...
+         formName = (String)getNodeService().getProperty(nodeRef, WCMAppModel.PROP_PARENT_FORM_NAME); // getFormName() ...
          form = formsService.getForm(this.formName);
       }
       catch (FormNotFoundException fnfe)
@@ -74,9 +74,9 @@ public class EditContentWizard extends CreateContentWizard
          throw new IllegalArgumentException(fnfe);
       }
 
-      this.content = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentString();
+      this.content = this.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).getContentString();
       
-      this.fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME); // getName() ...
+      this.fileName = (String)getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME); // getName() ...
       this.mimeType = MimetypeMap.MIMETYPE_XML;
    }
 
@@ -89,7 +89,7 @@ public class EditContentWizard extends CreateContentWizard
    @Override
    protected void saveContent(File fileContent, String strContent) throws Exception
    {
-      ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+      ContentWriter writer = getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
       writer.putContent(strContent);
    }
    

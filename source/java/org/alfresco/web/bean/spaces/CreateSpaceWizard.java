@@ -65,6 +65,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CreateSpaceWizard extends BaseWizardBean
 {
+   private static final long serialVersionUID = 2917623558917193097L;
+   
    public static final String DEFAULT_SPACE_ICON_NAME = "space-icon-default";
    public static final String DEFAULT_SPACE_ICON_PATH = "";
    public static final String DEFAULT_SPACE_TYPE_ICON_PATH = "/images/icons/space.gif";
@@ -131,12 +133,12 @@ public class CreateSpaceWizard extends BaseWizardBean
       // the current set of icons.
       if (this.createFrom.equals(CREATEFROM_EXISTING) && this.existingSpaceId != null)
       {
-         this.spaceType = this.nodeService.getType(this.existingSpaceId).toString();
+         this.spaceType = this.getNodeService().getType(this.existingSpaceId).toString();
       }
       else if (this.createFrom.equals(CREATEFROM_TEMPLATE) && this.templateSpaceId != null)
       {
          NodeRef templateNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
-         this.spaceType = this.nodeService.getType(templateNode).toString();
+         this.spaceType = this.getNodeService().getType(templateNode).toString();
       }
 
       return null;
@@ -154,14 +156,14 @@ public class CreateSpaceWizard extends BaseWizardBean
          String nodeId = this.navigator.getCurrentNodeId();
          if (nodeId == null)
          {
-            parentNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
+            parentNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
          }
          else
          {
             parentNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
          }
 
-         FileInfo fileInfo = fileFolderService.create(
+         FileInfo fileInfo = getFileFolderService().create(
                parentNodeRef,
                this.name,
                Repository.resolveToQName(this.spaceType));
@@ -176,7 +178,7 @@ public class CreateSpaceWizard extends BaseWizardBean
          uiFacetsProps.put(ApplicationModel.PROP_ICON, this.icon);
          uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
          uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+         this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
 
          if (logger.isDebugEnabled())
             logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
@@ -191,12 +193,12 @@ public class CreateSpaceWizard extends BaseWizardBean
          NodeRef parentSpace = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
 
          // copy from existing
-         NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef();
+         NodeRef copiedNode = this.getFileFolderService().copy(sourceNode, parentSpace, this.name).getNodeRef();
 
          // also need to set the new title, description and icon properties
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
+         this.getNodeService().setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
+         this.getNodeService().setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
+         this.getNodeService().setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
 
          newSpaceId = copiedNode.getId();
 
@@ -212,11 +214,11 @@ public class CreateSpaceWizard extends BaseWizardBean
          NodeRef sourceNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
          NodeRef parentSpace = new NodeRef(Repository.getStoreRef(), this.navigator.getCurrentNodeId());
          // copy from the template
-         NodeRef copiedNode = this.fileFolderService.copy(sourceNode, parentSpace, this.name).getNodeRef();
+         NodeRef copiedNode = this.getFileFolderService().copy(sourceNode, parentSpace, this.name).getNodeRef();
          // also need to set the new title, description and icon properties
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
-         this.nodeService.setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
-         this.nodeService.setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
+         this.getNodeService().setProperty(copiedNode, ContentModel.PROP_TITLE, this.title);
+         this.getNodeService().setProperty(copiedNode, ContentModel.PROP_DESCRIPTION, this.description);
+         this.getNodeService().setProperty(copiedNode, ApplicationModel.PROP_ICON, this.icon);
 
          newSpaceId = copiedNode.getId();
 
@@ -239,8 +241,8 @@ public class CreateSpaceWizard extends BaseWizardBean
                Application.getGlossaryFolderName(FacesContext.getCurrentInstance()) + "/" +
                Application.getSpaceTemplatesFolderName(FacesContext.getCurrentInstance());
 
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         List<NodeRef> templateNodeList = this.searchService.selectNodes(
+         NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+         List<NodeRef> templateNodeList = this.getSearchService().selectNodes(
                rootNodeRef,
                xpath, null, namespacePrefixResolver, false);
          if (templateNodeList.size() == 1)
@@ -249,7 +251,7 @@ public class CreateSpaceWizard extends BaseWizardBean
             NodeRef templateNode = templateNodeList.get(0);
             NodeRef sourceNode = new NodeRef(Repository.getStoreRef(), newSpaceId);
             // copy this to the template location
-            fileFolderService.copy(sourceNode, templateNode, this.templateName);
+            getFileFolderService().copy(sourceNode, templateNode, this.templateName);
          }
       }
 
@@ -491,8 +493,8 @@ public class CreateSpaceWizard extends BaseWizardBean
          FacesContext context = FacesContext.getCurrentInstance();
          String xpath = Application.getRootPath(context) + "/" + Application.getGlossaryFolderName(context) +
                "/" + Application.getSpaceTemplatesFolderName(context) + "/*";
-         NodeRef rootNodeRef = this.nodeService.getRootNode(Repository.getStoreRef());
-         List<NodeRef> results = this.searchService.selectNodes(rootNodeRef, xpath, null, this.namespaceService, false);
+         NodeRef rootNodeRef = this.getNodeService().getRootNode(Repository.getStoreRef());
+         List<NodeRef> results = this.getSearchService().selectNodes(rootNodeRef, xpath, null, this.getNamespaceService(), false);
 
          if (results.size() != 0)
          {
@@ -501,7 +503,7 @@ public class CreateSpaceWizard extends BaseWizardBean
             for (NodeRef assocRef : results)
             {
                Node childNode = new Node(assocRef);
-               if (this.dictionaryService.isSubClass(childNode.getType(), spaceType))
+               if (this.getDictionaryService().isSubClass(childNode.getType(), spaceType))
                {
                   this.templates.add(new SelectItem(childNode.getId(), childNode.getName()));
                }
@@ -559,11 +561,11 @@ public class CreateSpaceWizard extends BaseWizardBean
                for (ConfigElement child : typesCfg.getChildren())
                {
                   QName idQName = Repository.resolveToQName(child.getAttribute("name"));
-                  TypeDefinition typeDef = this.dictionaryService.getType(idQName);
+                  TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
 
                   if (typeDef != null)
                   {
-                     if (this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
+                     if (this.getDictionaryService().isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
                      {
                         // try and get the label from config
                         String label = Utils.getDisplayLabel(context, child);
@@ -668,7 +670,7 @@ public class CreateSpaceWizard extends BaseWizardBean
       List<String> iconNames = new ArrayList<String>(8);
 
       QName type = QName.createQName(this.spaceType);
-      String typePrefixForm = type.toPrefixString(this.namespaceService);
+      String typePrefixForm = type.toPrefixString(this.getNamespaceService());
 
       Config config = Application.getConfigService(FacesContext.getCurrentInstance()).
             getConfig(typePrefixForm + " icons");

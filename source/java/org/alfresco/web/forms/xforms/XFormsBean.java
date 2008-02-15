@@ -24,6 +24,7 @@
 package org.alfresco.web.forms.xforms;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,7 +41,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
@@ -81,8 +81,9 @@ import org.xml.sax.SAXException;
  * Bean for interacting with the chiba processor from the ui using ajax requests.
  * Manages the chiba bean lifecycle.
  */
-public class XFormsBean
+public class XFormsBean implements Serializable
 {
+   private static final long serialVersionUID = -7979077333882370784L;
 
    /////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +103,7 @@ public class XFormsBean
          }
          final FacesContext fc = FacesContext.getCurrentInstance();
          //make the XFormsBean available for this session
-         final XFormsBean xforms = (XFormsBean)FacesHelper.getManagedBean(fc, "XFormsBean");
+         final XFormsBean xforms = (XFormsBean)FacesHelper.getManagedBean(fc, BEAN_NAME);
          xforms.handleSubmit(instance);
          return Collections.EMPTY_MAP;
       }
@@ -114,14 +115,12 @@ public class XFormsBean
     */
    class XFormsSession implements FormProcessor.Session
    {
-
       private final Document formInstanceData;
       private final String formInstanceDataName;
       private final Form form;
 
       private ChibaBean chibaBean;
       private final Schema2XForms schema2XForms;
-//      private final Set<NodeRef> uploads = new HashSet<NodeRef>();
       private final List<XMLEvent> eventLog = new LinkedList<XMLEvent>();
 
       public XFormsSession(final Document formInstanceData,
@@ -170,21 +169,28 @@ public class XFormsBean
    private static final Log LOGGER = LogFactory.getLog(XFormsBean.class);
 
    private XFormsSession xformsSession;
-   private Schema2XFormsProperties schema2XFormsProperties;
+   private transient Schema2XFormsProperties schema2XFormsProperties;
    private AVMBrowseBean avmBrowseBean;
-   private AVMService avmService;
    private NavigationBean navigator;
    
-   public XFormsBean()
-   {
-   }
-
+   public static String BEAN_NAME = "XFormsBean";
+   
    /**
     * @param schema2XFormsProperties the schema2XFormsProperties to set.
     */
    public void setSchema2XFormsProperties(final Schema2XFormsProperties schema2XFormsProperties)
    {
       this.schema2XFormsProperties = schema2XFormsProperties;
+   }
+   
+   protected Schema2XFormsProperties getSchema2XFormsProperties()
+   {
+      if (schema2XFormsProperties == null)
+      {
+         schema2XFormsProperties = (Schema2XFormsProperties)FacesHelper.getManagedBean(
+               FacesContext.getCurrentInstance(), "Schema2XFormsProperties");
+      }
+      return schema2XFormsProperties;
    }
 
    /**
@@ -198,14 +204,6 @@ public class XFormsBean
    public void setNavigator(final NavigationBean navigator)
    {
       this.navigator = navigator;
-   }
-   
-   /**
-    * @param avmService the avmService to set.
-    */
-   public void setAvmService(final AVMService avmService)
-   {
-      this.avmService = avmService;
    }
 
    /** @param xformsSession the current session */
@@ -224,7 +222,6 @@ public class XFormsBean
       
       final ChibaBean chibaBean = new ChibaBean();
       chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
-//      XFormsBean.storeCookies(request.getCookies(), chibaBean);
       chibaBean.setXMLContainer(this.getXFormsDocument());
 
       final EventTarget et = (EventTarget)
@@ -234,7 +231,8 @@ public class XFormsBean
          public void handleEvent(final Event e)
          {
             final XMLEvent xmle = (XMLEvent)e;
-            XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
+            if (XFormsBean.LOGGER.isDebugEnabled())
+               XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
             XFormsBean.this.xformsSession.eventLog.add(xmle);
          }
       };
@@ -310,7 +308,8 @@ public class XFormsBean
       throws IOException,
       XFormsException
    {
-      LOGGER.debug(this + ".getXForm()");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".getXForm()");
       final FacesContext context = FacesContext.getCurrentInstance();
       final ResponseWriter out = context.getResponseWriter();
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
@@ -329,7 +328,8 @@ public class XFormsBean
       final String id = (String)requestParameters.get("id");
       final String value = (String)requestParameters.get("value");
 
-      LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
       if (chibaBean.getContainer().lookup(id) instanceof Upload)
       {
@@ -354,11 +354,13 @@ public class XFormsBean
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
       final String repeatIds = (String)requestParameters.get("repeatIds");
-      LOGGER.debug(this + ".setRepeatIndeces(" + repeatIds + ")");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".setRepeatIndeces(" + repeatIds + ")");
       for (String id : repeatIds.split(","))
       {
          final int index = Integer.parseInt((String)requestParameters.get(id));
-         LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
          final ChibaBean chibaBean = this.xformsSession.chibaBean;
          chibaBean.updateRepeatIndex(id, index);
       }
@@ -377,7 +379,8 @@ public class XFormsBean
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
       final String id = (String)requestParameters.get("id");
 
-      LOGGER.debug(this + ".fireAction(" + id + ")");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".fireAction(" + id + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
       chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
 
@@ -391,7 +394,8 @@ public class XFormsBean
     */
    public void handleAction() 
    {
-      LOGGER.debug(this + ".handleAction");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".handleAction");
       try
       {
          final FacesContext context = FacesContext.getCurrentInstance();
@@ -439,7 +443,8 @@ public class XFormsBean
 
       final String fromItemId = (String)requestParameters.get("fromItemId");
       final String toItemId = (String)requestParameters.get("toItemId");
-      LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
       final ChibaBean chibaBean = this.xformsSession.chibaBean;
       final RepeatItem from = (RepeatItem)chibaBean.getContainer().lookup(fromItemId);
       if (from == null)
@@ -462,9 +467,11 @@ public class XFormsBean
                                 final RepeatItem to)
       throws XFormsException
    {
-      LOGGER.debug("swapping repeat item " + from + " with " + to);
-
-      LOGGER.debug("from instance id  " + from.getInstanceId());
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("swapping repeat item " + from + " with " + to);
+         LOGGER.debug("from instance id  " + from.getInstanceId());
+      }
       final Model model = from.getModel();
       final Instance instance = model.getInstance(from.getInstanceId());
       assert instance == to.getModel().getInstance(to.getInstanceId());
@@ -491,7 +498,8 @@ public class XFormsBean
                            : to.getRepeat().getLocationPath().replaceAll("\\[position\\(\\)[\\s]*!=[\\s]*last\\(\\)]$",
                                                                          "[position()=last()]"));
       }
-      LOGGER.debug("inserting node before " + beforeLocation);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("inserting node before " + beforeLocation);
       instance.insertNode(fromLocationPath, beforeLocation);
 
       model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REBUILD, null);
@@ -499,7 +507,8 @@ public class XFormsBean
       model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REVALIDATE, null);
       model.getContainer().dispatch(model.getTarget(), XFormsEventNames.REFRESH, null);
 
-      LOGGER.debug("deleting from " + from.getLocationPath());
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("deleting from " + from.getLocationPath());
       // need to reload from location path since it has moved
       instance.deleteNode(from.getLocationPath());
 
@@ -528,7 +537,8 @@ public class XFormsBean
       final NodeList nl =
          XMLUtil.combine(schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "include"),
                          schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "import"));
-      LOGGER.debug("rewriting " + nl.getLength() + " includes");
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("rewriting " + nl.getLength() + " includes");
       for (int i = 0; i < nl.getLength(); i++)
       {
          final Element includeEl = (Element)nl.item(i);
@@ -537,7 +547,8 @@ public class XFormsBean
             String uri = includeEl.getAttribute("schemaLocation");
             if (uri != null && uri.startsWith("http://"))
             {
-               LOGGER.debug("not rewriting " + uri);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("not rewriting " + uri);
                continue;
             }
 
@@ -545,7 +556,8 @@ public class XFormsBean
                                     ? AVMUtil.buildStoreUrl(cwdAvmPath)
                                     : AVMUtil.buildAssetUrl(cwdAvmPath));
             
-            LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
             includeEl.setAttribute("schemaLocation", baseURI + uri);
          }
       }
@@ -677,7 +689,7 @@ public class XFormsBean
       final Locale locale = 
          Application.getLanguage(FacesContext.getCurrentInstance());
       final ResourceBundle resourceBundle = 
-         this.schema2XFormsProperties.getResourceBundle(this.xformsSession.form, 
+         getSchema2XFormsProperties().getResourceBundle(this.xformsSession.form, 
                                                         locale);
       try
       {

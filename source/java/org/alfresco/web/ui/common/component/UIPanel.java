@@ -42,6 +42,7 @@ import javax.faces.event.FacesEvent;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
+import org.apache.myfaces.el.MethodBindingImpl;
 
 /**
  * @author kevinr
@@ -334,7 +335,7 @@ public class UIPanel extends UICommand
       this.titleBgcolor = (String)values[6];
       this.titleBorder = (String)values[7];
       this.expandedTitleBorder = (String)values[8];
-      this.expandedActionListener = (MethodBinding)values[9];
+      this.expandedActionListener = (MethodBindingImpl) restoreAttachedState(context, values[9]);
       this.facetsId = (String)values[10];
    }
    
@@ -353,7 +354,7 @@ public class UIPanel extends UICommand
          this.titleBgcolor,
          this.titleBorder,
          this.expandedTitleBorder,
-         this.expandedActionListener,
+         saveAttachedState(context, this.expandedActionListener),
          this.facetsId};
       return values;
    }

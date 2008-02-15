@@ -63,9 +63,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class LinkValidationDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 3459041471664931826L;
+
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMService avmService;
-   protected ActionService actionService;
+   
+   transient private AVMService avmService;
+   transient private ActionService actionService;
    
    private String store;
    private String webapp;
@@ -122,7 +125,7 @@ public class LinkValidationDialog extends BaseDialogBean
       
       // work out title for dialog by examining store type
       FacesContext context = FacesContext.getCurrentInstance(); 
-      if (this.avmService.getStoreProperty(this.store, 
+      if (this.getAvmService().getStoreProperty(this.store, 
                SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN) != null)
       {
          String pattern = Application.getMessage(context, "link_validaton_dialog_title_user");
@@ -131,12 +134,12 @@ public class LinkValidationDialog extends BaseDialogBean
          this.title = MessageFormat.format(pattern, 
                   new Object[] {user});
       }
-      else if (this.avmService.getStoreProperty(this.store, 
+      else if (this.getAvmService().getStoreProperty(this.store, 
                SandboxConstants.PROP_SANDBOX_STAGING_MAIN) != null)
       {
          this.title = Application.getMessage(context, "link_validaton_dialog_title_staging");
       }
-      else if (this.avmService.getStoreProperty(this.store, 
+      else if (this.getAvmService().getStoreProperty(this.store, 
                SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN) != null)
       {
          this.title = Application.getMessage(context, "link_validaton_dialog_title_workflow");
@@ -236,7 +239,7 @@ public class LinkValidationDialog extends BaseDialogBean
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         PropertyValue val = this.avmService.getStoreProperty(this.store, 
+         PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
          if (val != null)
          {
@@ -317,8 +320,8 @@ public class LinkValidationDialog extends BaseDialogBean
       this.avmBrowseBean.setLinkValidationMonitor(monitor);
       
       // create and execute the action in the background
-      Action action = this.actionService.createAction(LinkValidationAction.NAME, args);
-      this.actionService.executeAction(action, this.webappPathRef, false, true);
+      Action action = this.getActionService().createAction(LinkValidationAction.NAME, args);
+      this.getActionService().executeAction(action, this.webappPathRef, false, true);
    }
    
    // ------------------------------------------------------------------------------
@@ -386,6 +389,15 @@ public class LinkValidationDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (this.avmService == null)
+      {
+         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return this.avmService;
+   }
+
    /**
     * @param actionService The actionService to set.
     */
@@ -393,4 +405,14 @@ public class LinkValidationDialog extends BaseDialogBean
    {
       this.actionService = actionService;
    }
+
+   protected ActionService getActionService()
+   {
+      if (this.actionService == null)
+      {
+         this.actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return this.actionService;
+   }
+   
 }

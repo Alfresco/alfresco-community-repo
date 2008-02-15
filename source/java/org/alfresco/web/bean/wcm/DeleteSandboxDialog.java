@@ -39,6 +39,7 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,11 +50,13 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteSandboxDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 6139801947722234685L;
+
    private static final Log logger = LogFactory.getLog(DeleteSandboxDialog.class);
    
-   protected AVMService avmService;
+   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   protected AVMLockingService avmLockingService;
+   transient private AVMLockingService avmLockingService;
    
    
    // ------------------------------------------------------------------------------
@@ -75,12 +78,30 @@ public class DeleteSandboxDialog extends BaseDialogBean
       this.avmService = avmService;
    }
    
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
+   }
+   
    /**
     * @param avmLockingService The AVMLockingService to set
     */
    public void setAvmLockingService(AVMLockingService avmLockingService)
    {
       this.avmLockingService = avmLockingService;
+   }
+   
+   protected AVMLockingService getAvmLockingService()
+   {
+      if (avmLockingService == null)
+      {
+         avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
+      }
+      return avmLockingService;
    }
    
    
@@ -98,14 +119,14 @@ public class DeleteSandboxDialog extends BaseDialogBean
          Node website = this.avmBrowseBean.getWebsite();
          
          // remove the store reference from the website folder meta-data
-         List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+         List<ChildAssociationRef> userInfoRefs = this.getNodeService().getChildAssocs(
                   website.getNodeRef(),
                   WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          for (ChildAssociationRef ref : userInfoRefs)
          {
             NodeRef userInfoRef = ref.getChildRef();
-            String user = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            String user = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String role = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             if (username.equals(user))
             {
@@ -137,18 +158,18 @@ public class DeleteSandboxDialog extends BaseDialogBean
                //       layer attached.
                
                // purge the user main sandbox store from the system
-               this.avmService.purgeStore(sandbox);
+               this.getAvmService().purgeStore(sandbox);
                // remove any locks this user may have
-               this.avmLockingService.removeStoreLocks(sandbox);
+               this.getAvmLockingService().removeStoreLocks(sandbox);
                
                // purge the user preview sandbox store from the system
                sandbox = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
-               this.avmService.purgeStore(sandbox);
+               this.getAvmService().purgeStore(sandbox);
                // remove any locks this user may have
-               this.avmLockingService.removeStoreLocks(sandbox);
+               this.getAvmLockingService().removeStoreLocks(sandbox);
                
                // remove the association to this web project user meta-data
-               this.nodeService.removeChild(website.getNodeRef(), ref.getChildRef());
+               this.getNodeService().removeChild(website.getNodeRef(), ref.getChildRef());
                
                break;
             }

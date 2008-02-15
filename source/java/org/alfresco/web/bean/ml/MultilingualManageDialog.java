@@ -197,18 +197,18 @@ public class MultilingualManageDialog extends BaseDialogBean
                 // create a map node representation of the translation
                 MapNode mapNode = new MapNode(nodeRef);
 
-                Locale locale = (Locale) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCALE);
+                Locale locale = (Locale) getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCALE);
 
                 String lgge = (locale != null) ?
                       // convert the locale into new ISO codes
                       contentFilterLanguagesService.convertToNewISOCode(locale.getLanguage()).toUpperCase()
                       : null;
 
-                mapNode.put("name", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                mapNode.put("name", getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
                 mapNode.put("language", lgge);
                 mapNode.put("url", DownloadContentServlet.generateBrowserURL(nodeRef, mapNode.getName()));
 
-                mapNode.put("notEmpty", new Boolean(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION)));
+                mapNode.put("notEmpty", new Boolean(!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION)));
                 mapNode.put("userHasRight", new Boolean(canNewEdtion));
                 // add the client side version to the list
                 translations.add(mapNode);
@@ -310,8 +310,8 @@ public class MultilingualManageDialog extends BaseDialogBean
        try
        {
           // clear template property
-          this.nodeService.setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
-          this.nodeService.removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
+          this.getNodeService().setProperty(getNode().getNodeRef(), ContentModel.PROP_TEMPLATE, null);
+          this.getNodeService().removeAspect(getNode().getNodeRef(), ContentModel.ASPECT_TEMPLATABLE);
           
           // reset node details for next refresh of details page
           getNode().reset();
@@ -449,13 +449,13 @@ public class MultilingualManageDialog extends BaseDialogBean
 
                 clientLastVersion.put("versionName", lastVersionProperties.get(ContentModel.PROP_NAME));
                 // use the node service for the description to ensure that the returned value is a text and not a MLText
-                clientLastVersion.put("versionDescription", nodeService.getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
+                clientLastVersion.put("versionDescription", getNodeService().getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
                 clientLastVersion.put("versionAuthor", lastVersionProperties.get(ContentModel.PROP_AUTHOR));
                 clientLastVersion.put("versionCreatedDate",  lastVersionProperties.get(ContentModel.PROP_CREATED));
                 clientLastVersion.put("versionModifiedDate", lastVersionProperties.get(ContentModel.PROP_MODIFIED));
                 clientLastVersion.put("versionLanguage", this.contentFilterLanguagesService.convertToNewISOCode(language.getLanguage()).toUpperCase());
 
-                if(nodeService.hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+                if(getNodeService().hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
                 {
                     clientLastVersion.put("versionUrl", null);
                 }

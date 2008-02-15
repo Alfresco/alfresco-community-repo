@@ -292,13 +292,13 @@ public class FormsTest
          }
          else
          {
-            assertEquals(oppt.pattern + " failed", 
-                         oppt.expected,
-                         this.mockForm.getOutputPathForFormInstanceData(oppt.xml,
-                                                                        oppt.name,
-                                                                        oppt.parentAVMPath,
-                                                                        oppt.webapp));
+         assertEquals(oppt.pattern + " failed", 
+                      oppt.expected,
+                      this.mockForm.getOutputPathForFormInstanceData(oppt.xml,
+                                                                     oppt.name,
+                                                                     oppt.parentAVMPath,
+                                                                     oppt.webapp));
          }
       }
-   }
-}
+    }
+}  

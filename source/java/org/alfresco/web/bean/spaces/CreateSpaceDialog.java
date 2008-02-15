@@ -38,9 +38,12 @@ import org.alfresco.web.app.Application;
  */
 public class CreateSpaceDialog extends CreateSpaceWizard
 {
+   private static final long serialVersionUID = 4659583264588102372L;
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   
+
    @Override
    public String getFinishButtonLabel()
    {

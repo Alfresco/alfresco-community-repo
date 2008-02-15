@@ -35,7 +35,6 @@ import org.alfresco.repo.action.executer.RepositoryExporterActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -50,6 +49,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ExportDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -2592252768301728700L;
+
    private static final Log logger = LogFactory.getLog(ExportDialog.class);
    
    private static final String ALL_SPACES = "all";
@@ -58,8 +59,7 @@ public class ExportDialog extends BaseDialogBean
    private static final String MSG_EXPORT = "export";
    
    protected BrowseBean browseBean;
-   protected NodeService nodeService;
-   protected ActionService actionService;
+   transient private ActionService actionService;
    
    private String packageName;
    private String encoding = "UTF-8";
@@ -85,7 +85,7 @@ public class ExportDialog extends BaseDialogBean
          Map<String, Serializable> params = new HashMap<String, Serializable>(5);
          params.put(ExporterActionExecuter.PARAM_PACKAGE_NAME, this.packageName);
          params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
-         action = this.actionService.createAction(RepositoryExporterActionExecuter.NAME, params);
+         action = this.getActionService().createAction(RepositoryExporterActionExecuter.NAME, params);
       }
       else
       {
@@ -96,12 +96,12 @@ public class ExportDialog extends BaseDialogBean
          params.put(ExporterActionExecuter.PARAM_DESTINATION_FOLDER, this.destination);
          params.put(ExporterActionExecuter.PARAM_INCLUDE_CHILDREN, Boolean.valueOf(includeChildren));
          params.put(ExporterActionExecuter.PARAM_INCLUDE_SELF, new Boolean(includeSelf));
-         action = this.actionService.createAction(ExporterActionExecuter.NAME, params);
+         action = this.getActionService().createAction(ExporterActionExecuter.NAME, params);
       }
 
       // execute action
       action.setExecuteAsynchronously(this.runInBackground);
-      this.actionService.executeAction(action, startNode);
+      this.getActionService().executeAction(action, startNode);
 
       if (logger.isDebugEnabled())
       {
@@ -306,13 +306,12 @@ public class ExportDialog extends BaseDialogBean
       this.actionService = actionService;
    }
    
-   /**
-    * Sets the node service
-    * 
-    * @param nodeService  the node service
-    */
-   public void setNodeService(NodeService nodeService)
+   protected ActionService getActionService()
    {
-      this.nodeService = nodeService;
+      if (actionService == null)
+      {
+         actionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getActionService();
+      }
+      return actionService;
    }
 }

@@ -40,6 +40,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class MakeMultilingualEvaluator extends BaseActionEvaluator
 {
+   private static final long serialVersionUID = 4417014487557744219L;
+
    public boolean evaluate(Node node)
    {
       FacesContext fc = FacesContext.getCurrentInstance();

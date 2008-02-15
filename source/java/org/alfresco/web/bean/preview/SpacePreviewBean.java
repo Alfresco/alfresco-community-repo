@@ -46,8 +46,10 @@ import org.alfresco.web.ui.common.component.UIActionLink;
  */
 public class SpacePreviewBean extends BasePreviewBean implements NavigationSupport
 {
+   private static final long serialVersionUID = -4766291793031654901L;
    private final static String MSG_PREVIEW_OF = "preview_of";
    private final static String MSG_CLOSE = "close";
+
    /**
     * Returns the Space this bean is currently representing
     * 

@@ -47,6 +47,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class MailHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = 622475325355334995L;
+   
    public static final String PROP_TO = "to";
    public static final String PROP_FROM = "from";
    public static final String PROP_MESSAGE = "message";

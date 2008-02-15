@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.ui.common.component.description;
 
+import java.io.Serializable;
+
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
@@ -34,8 +36,10 @@ import org.alfresco.web.ui.common.component.SelfRenderingComponent;
  * 
  * @author gavinc
  */
-public class UIDescription extends SelfRenderingComponent
+public class UIDescription extends SelfRenderingComponent implements Serializable
 {
+   private static final long serialVersionUID = -2319791691993957792L;
+   
    private String controlValue;
    private String text;
 

@@ -33,8 +33,6 @@ import javax.faces.context.FacesContext;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.IWizardBean;
 
@@ -45,6 +43,8 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class ScriptHandler extends BaseActionHandler
 {
+   private static final long serialVersionUID = -8006002591602401584L;
+   
    protected static final String PROP_SCRIPT = "script";
    
    public String getJSPPath()

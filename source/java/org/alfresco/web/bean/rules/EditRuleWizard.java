@@ -52,6 +52,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class EditRuleWizard extends CreateRuleWizard
 {
+   private static final long serialVersionUID = -7222762769396254445L;
+   
    private static final Log logger = LogFactory.getLog(EditRuleWizard.class);
    
    // ------------------------------------------------------------------------------
@@ -106,7 +108,7 @@ public class EditRuleWizard extends CreateRuleWizard
          {
             // there's no handler, so we presume it is a no-paramter
             // condition, use the condition title as the summary
-            ActionConditionDefinition conditionDef = this.actionService.
+            ActionConditionDefinition conditionDef = this.getActionService().
                   getActionConditionDefinition(this.condition);
             this.currentConditionProperties.put(PROP_CONDITION_SUMMARY,
                   conditionDef.getTitle());
@@ -138,7 +140,7 @@ public class EditRuleWizard extends CreateRuleWizard
          {
             // there's no handler, so we presume it is a no-paramter
             // action, use the action title as the summary
-            ActionDefinition actionDef = this.actionService.getActionDefinition(this.action);
+            ActionDefinition actionDef = this.getActionService().getActionDefinition(this.action);
             this.currentActionProperties.put(PROP_ACTION_SUMMARY, actionDef.getTitle());
             // add the no params marker so we can disable the edit action
             this.currentActionProperties.put(NO_PARAMS_MARKER, "no-params");
@@ -176,7 +178,7 @@ public class EditRuleWizard extends CreateRuleWizard
       outcome = setupRule(context, rule, outcome);
       
       // Save the rule
-      this.ruleService.saveRule(currentSpace.getNodeRef(), rule);
+      this.getRuleService().saveRule(currentSpace.getNodeRef(), rule);
       
       if (logger.isDebugEnabled())
          logger.debug("Updated rule '" + this.title + "'");

@@ -24,6 +24,8 @@
  */
 package org.alfresco.web.bean.dialog;
 
+import java.io.Serializable;
+
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 
@@ -32,8 +34,10 @@ import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
  * 
  * @author gavinc
  */
-public final class DialogState
+public final class DialogState implements Serializable
 {
+   private static final long serialVersionUID = -5007635589636930602L;
+   
    private DialogConfig config;
    private IDialogBean dialog;
    

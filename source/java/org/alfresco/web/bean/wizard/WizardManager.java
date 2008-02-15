@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.wizard;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public final class WizardManager
+public final class WizardManager implements Serializable
 {
+   private static final long serialVersionUID = -5029787339914973070L;
+
    /** public JSF bean name */
    public final static String BEAN_NAME = "WizardManager";
    

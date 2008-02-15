@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,11 +62,15 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gavinc
  */
-public class WorkflowBean
+public class WorkflowBean implements Serializable
 {
+   private static final long serialVersionUID = 2950475254440425384L;
+
    protected NavigationBean navigationBean;
-   protected NodeService nodeService;
-   protected WorkflowService workflowService;
+   
+   transient private NodeService nodeService;
+   transient private WorkflowService workflowService;
+   
    protected List<Node> tasks;
    protected List<Node> activeTasks;
    protected List<Node> pooledTasks;
@@ -101,7 +106,7 @@ public class WorkflowBean
             
             // query for all active tasks
             WorkflowTaskQuery query = new WorkflowTaskQuery();
-            List<WorkflowTask> tasks = this.workflowService.queryTasks(query);
+            List<WorkflowTask> tasks = this.getWorkflowService().queryTasks(query);
             
             // create a list of transient nodes to represent
             this.activeTasks = new ArrayList<Node>(tasks.size());
@@ -150,7 +155,7 @@ public class WorkflowBean
             tx.begin();
             
             // get the current pooled tasks for the current user
-            List<WorkflowTask> tasks = this.workflowService.getPooledTasks(userName);
+            List<WorkflowTask> tasks = this.getWorkflowService().getPooledTasks(userName);
             
             // create a list of transient nodes to represent
             this.pooledTasks = new ArrayList<Node>(tasks.size());
@@ -199,7 +204,7 @@ public class WorkflowBean
             tx.begin();
             
             // get the current in progress tasks for the current user
-            List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
+            List<WorkflowTask> tasks = this.getWorkflowService().getAssignedTasks(
                   userName, WorkflowTaskState.IN_PROGRESS);
             
             // create a list of transient nodes to represent
@@ -249,7 +254,7 @@ public class WorkflowBean
             tx.begin();
             
             // get the current in progress tasks for the current user
-            List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(
+            List<WorkflowTask> tasks = this.getWorkflowService().getAssignedTasks(
                   userName, WorkflowTaskState.COMPLETED);
             
             // create a list of transient nodes to represent
@@ -297,6 +302,15 @@ public class WorkflowBean
       this.workflowService = workflowService;
    }
    
+   protected WorkflowService getWorkflowService()
+   {
+      if (this.workflowService == null)
+      {
+         this.workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+      }
+      return this.workflowService;
+   }
+
    /**
     * Sets the node service to use
     * 
@@ -307,7 +321,14 @@ public class WorkflowBean
       this.nodeService = nodeService;
    }
    
-   
+   protected NodeService getNodeService()
+   {
+      if (this.nodeService == null)
+      {
+         this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return this.nodeService;
+   }
    // ------------------------------------------------------------------------------
    // Navigation handlers
    

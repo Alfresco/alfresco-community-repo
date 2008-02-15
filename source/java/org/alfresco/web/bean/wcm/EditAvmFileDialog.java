@@ -24,22 +24,17 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
-import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,10 +45,12 @@ import org.apache.commons.logging.LogFactory;
 public class EditAvmFileDialog
    extends BaseDialogBean
 {
+   private static final long serialVersionUID = 3099172372971422442L;
+
    private static final Log LOGGER = LogFactory.getLog(EditAvmFileDialog.class);
    
    /** AVM service reference */
-   protected AVMService avmService;
+   transient private AVMService avmService;
    
    /** AVM Browse Bean reference */
    protected AVMBrowseBean avmBrowseBean;
@@ -67,6 +64,15 @@ public class EditAvmFileDialog
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
 
    /**

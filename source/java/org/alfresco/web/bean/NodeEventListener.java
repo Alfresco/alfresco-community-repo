@@ -24,13 +24,15 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.Serializable;
+
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 
 /**
  * @author Kevin Roast
  */
-public interface NodeEventListener
+public interface NodeEventListener extends Serializable
 {
    /**
     * Callback executed when a Node wrapped object is created. This is generally used

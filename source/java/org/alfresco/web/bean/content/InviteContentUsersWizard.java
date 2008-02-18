@@ -26,7 +26,6 @@ package org.alfresco.web.bean.content;
 
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.wizard.BaseInviteUsersWizard;
 
@@ -47,7 +46,7 @@ public class InviteContentUsersWizard extends BaseInviteUsersWizard
    {
       if (this.contentPermissions == null)
       {
-         this.contentPermissions = getPermissionService().getSettablePermissions(ContentModel.TYPE_CONTENT);
+         this.contentPermissions = this.permissionService.getSettablePermissions(getNode().getType());
       }
        
       return this.contentPermissions;

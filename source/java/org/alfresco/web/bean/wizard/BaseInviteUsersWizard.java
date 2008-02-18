@@ -93,7 +93,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    transient private AuthorityService authorityService;
    
    /** PermissionService bean reference */
-   transient private PermissionService permissionService;
+   transient protected PermissionService permissionService;
    
    /** personService bean reference */
    transient private PersonService personService;
@@ -506,6 +506,10 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       for (String permission : perms)
       {
          String displayLabel = bundle.getString(permission);
+         if (displayLabel.startsWith("$$") == true)
+         {
+             displayLabel = permission;
+         }
          roles[index++] = new SelectItem(permission, displayLabel);
       }
       

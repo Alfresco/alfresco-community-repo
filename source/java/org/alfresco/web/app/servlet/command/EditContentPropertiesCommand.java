@@ -63,7 +63,7 @@ public class EditContentPropertiesCommand extends BaseUIActionCommand
       ServletContext sc = (ServletContext)properties.get(PROP_SERVLETCONTEXT);
       ServletRequest req = (ServletRequest)properties.get(PROP_REQUEST);
       ServletResponse res = (ServletResponse)properties.get(PROP_RESPONSE);
-      FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+      FacesContext fc = FacesHelper.getFacesContext(req, res, sc, "/jsp/return.jsp");
       BrowseBean browseBean = (BrowseBean)FacesHelper.getManagedBean(fc, BrowseBean.BEAN_NAME);
       
       // setup context from url args in properties map

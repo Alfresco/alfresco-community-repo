@@ -113,6 +113,14 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
+    
+    <!-- =========================== -->
+    <!-- Permissions Model Bootstrap -->
+    <!-- =========================== -->
+    
+    <bean id="permissionModelBootstrap" class="org.alfresco.repo.security.permissions.impl.model.PermissionModelBootstrap" abstract="true" init-method="init">
+    	<property name="permissionModel" ref="permissionsModelDAO"/>    
+    </bean>
 
     <!-- ====== -->
     <!-- Voters -->

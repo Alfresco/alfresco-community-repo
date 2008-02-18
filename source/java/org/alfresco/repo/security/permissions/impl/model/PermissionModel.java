@@ -158,6 +158,16 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public void afterPropertiesSet()
     {
+        addPermissionModel(this.model);
+    }
+    
+    /**
+     * Adds a permission model
+     * 
+     * @param model     path to the permission model to add
+     */
+    public void addPermissionModel(String model)
+    {
         Document document = createDocument(model);
         Element root = document.getRootElement();
 

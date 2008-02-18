@@ -30,6 +30,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
@@ -76,8 +77,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private DescriptorService descriptorService;
     private TenantDeployerService tenantDeployerService;
     
-    private Map<String, Registry> tenantRegistries = new HashMap<String, Registry>(0);
+    private SimpleCache<String, Registry> webScriptsRegistryCache;
 
+    public void setWebScriptsRegistryCache(SimpleCache<String, Registry> webScriptsRegistryCache)
+    {
+        this.webScriptsRegistryCache = webScriptsRegistryCache;
+    }
+    
     /**
      * @param repository
      */
@@ -317,21 +323,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public Registry getRegistry()
     {
-    	if (tenantDeployerService.isEnabled())
-    	{
-    	    String tenantDomain = tenantDeployerService.getCurrentUserDomain();
-    	    Registry registry = tenantRegistries.get(tenantDomain);
-    	    if (registry == null)
-    	    {
-    	        init();
-    	        registry = tenantRegistries.get(tenantDomain);
-    	    }
-    	    return registry;
-    	}
-    	else
-    	{
-    		return super.getRegistry();
-    	}
+        String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+        Registry registry = webScriptsRegistryCache.get(tenantDomain);
+        if (registry == null)
+        {
+            init();
+            registry = webScriptsRegistryCache.get(tenantDomain);
+        }
+        return registry;
     }
 
     /* (non-Javadoc)
@@ -340,8 +339,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public void reset() 
     {
-        tenantDeployerService.register(this);
-        super.reset();
+        destroy();
+        init();
     }
     
     /* (non-Javadoc)
@@ -365,9 +364,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public void init()
     {
+        tenantDeployerService.register(this);
+        
         Registry registry = super.getRegistry().cloneEmpty();
-        tenantRegistries.put(tenantDeployerService.getCurrentUserDomain(), registry);
-        registry.reset();
+        webScriptsRegistryCache.put(tenantDeployerService.getCurrentUserDomain(), registry);
+        
+        super.reset();
     }
     
     /* (non-Javadoc)
@@ -375,6 +377,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public void destroy()
     {
-        tenantRegistries.remove(tenantDeployerService.getCurrentUserDomain());
+        webScriptsRegistryCache.remove(tenantDeployerService.getCurrentUserDomain());
     }
 }

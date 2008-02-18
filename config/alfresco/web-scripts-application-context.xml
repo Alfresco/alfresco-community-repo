@@ -118,6 +118,7 @@
       <property name="searchPath" ref="webscripts.searchpath" />
       <property name="configService" ref="web.config" />
       <property name="tenantDeployerService" ref="tenantAdminService" />
+      <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>
 
 

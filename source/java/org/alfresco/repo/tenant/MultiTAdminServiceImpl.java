@@ -457,6 +457,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     
     public void enableTenant(String tenantDomain)
     { 
+        if (! existsTenant(tenantDomain))
+        {
+            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+        }
+        
         if (isEnabledTenant(tenantDomain))
         {
             logger.warn("Tenant already enabled: " + tenantDomain);
@@ -495,6 +500,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     
     public void disableTenant(String tenantDomain)
     { 
+        if (! existsTenant(tenantDomain))
+        {
+            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+        }
+        
         if (! isEnabledTenant(tenantDomain))
         {
             logger.warn("Tenant already disabled: " + tenantDomain);
@@ -566,6 +576,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     
     public Tenant getTenant(String tenantDomain)
     {
+        if (! existsTenant(tenantDomain))
+        {
+            throw new RuntimeException("Tenant does not exist: " + tenantDomain);
+        }
+        
         return new Tenant(tenantDomain, isEnabledTenant(tenantDomain), getRootContentStoreDir(tenantDomain));
     }
     

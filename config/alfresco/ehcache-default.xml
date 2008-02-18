@@ -427,4 +427,13 @@
         overflowToDisk="false"
         />
         
+    <!-- Web Scripts Registry -->
+    
+    <cache 
+        name="org.alfresco.cache.webScriptsRegistryCache"
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false"
+        />
+             
 </ehcache>

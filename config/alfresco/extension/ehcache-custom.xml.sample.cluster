@@ -761,5 +761,23 @@
                                  replicateAsynchronously = false"/>
 
     </cache>
-            
+         
+    <!-- Web Scripts Registry -->
+    
+    <cache 
+        name="org.alfresco.cache.webScriptsRegistryCache"
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+        
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+
+    </cache>
+       
 </ehcache>

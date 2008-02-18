@@ -778,9 +778,6 @@
         <property name="internalNodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
     </bean>
 
     <!--                           -->

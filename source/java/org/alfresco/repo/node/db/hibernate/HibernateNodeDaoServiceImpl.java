@@ -450,7 +450,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public Store getStore(String protocol, String identifier)
     {
-        StoreKey storeKey = new StoreKey(protocol, identifier);
+        StoreKey storeKey = new StoreKey(protocol, tenantService.getName(identifier));
         Store store = (Store) getHibernateTemplate().get(StoreImpl.class, storeKey);
         // done
         return store;
@@ -461,7 +461,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      */
     public NodeStatus getNodeStatus(NodeRef nodeRef, boolean update)
     {
-        NodeKey nodeKey = new NodeKey(nodeRef);
+        NodeKey nodeKey = new NodeKey(tenantService.getName(nodeRef));
         NodeStatus status = null;
         try
         {
@@ -495,7 +495,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public void recordChangeId(NodeRef nodeRef)
     {
-        NodeKey key = new NodeKey(nodeRef);
+        NodeKey key = new NodeKey(tenantService.getName(nodeRef));
         
         NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
         if (status == null)
@@ -1434,7 +1434,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session.getNamedQuery(QUERY_GET_NODE_COUNT_FOR_STORE);
                 query.setString("protocol", storeRef.getProtocol())
-                     .setString("identifier", storeRef.getIdentifier())
+                     .setString("identifier", tenantService.getName(storeRef.getIdentifier()))
                      .setMaxResults(1)
                      .setReadOnly(true);
                 return query.uniqueResult();
@@ -1455,7 +1455,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session.getNamedQuery(QUERY_NODES_WITH_PROPERTY_STRING_VALUE_FOR_STORE);
                 query.setString("protocol", storeRef.getProtocol())
-                     .setString("identifier", storeRef.getIdentifier())
+                     .setString("identifier", tenantService.getName(storeRef.getIdentifier()))
                      .setParameter("propQName", propQName)
                      .setString("propStringValue", propStringValue)
                      .setReadOnly(true);

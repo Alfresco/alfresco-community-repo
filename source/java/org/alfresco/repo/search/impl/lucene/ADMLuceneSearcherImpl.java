@@ -566,9 +566,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, getDictionaryService(), this);
-
-        contextNodeRef = tenantService.getName(contextNodeRef);
-
         return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
     }
 

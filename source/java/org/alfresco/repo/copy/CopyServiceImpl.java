@@ -40,7 +40,6 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -101,9 +100,6 @@ public class CopyServiceImpl implements CopyService
     
     /** Authentication service */
     private AuthenticationService authenticationService;
-    
-    /** Tenant service */
-    private TenantService tenantService;
 
 	/** Policy delegates */
 	private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
@@ -188,16 +184,6 @@ public class CopyServiceImpl implements CopyService
     {
 		this.authenticationService = authenticationService;
 	}
-   
-    /**
-     * Sets the tenant service
-     * 
-     * @param tenantService		the tenant service
-     */
-    public void setTenantService(TenantService tenantService) 
-    {
-		this.tenantService = tenantService;
-	}
     
 	/**
 	 * Initialise method
@@ -239,8 +225,7 @@ public class CopyServiceImpl implements CopyService
         ParameterCheck.mandatory("Destination Parent", destinationParentRef);
         ParameterCheck.mandatory("Destination Association Name", destinationQName);
 
-        // AR-2023, need to push down
-        if (tenantService.getName(sourceNodeRef.getStoreRef()).equals(tenantService.getName(destinationParentRef.getStoreRef())) == false)
+        if (sourceNodeRef.getStoreRef().equals(destinationParentRef.getStoreRef()) == false)
         {
             // TODO We need to create a new node in the other store with the same id as the source
 

@@ -28,6 +28,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -50,6 +51,7 @@ public class NodeIndexer
     private PolicyComponent policyComponent;
     /** the component to index the node hierarchy */
     private Indexer indexer;
+    private TenantService tenantService;
     
     /**
      * @param policyComponent used for registrations
@@ -65,6 +67,11 @@ public class NodeIndexer
     public void setIndexer(Indexer indexer)
     {
         this.indexer = indexer;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -96,29 +103,29 @@ public class NodeIndexer
 
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        indexer.createNode(childAssocRef);
+        indexer.createNode(tenantService.getName(childAssocRef));
     }
 
     public void onUpdateNode(NodeRef nodeRef)
     {
-        indexer.updateNode(nodeRef);
+        indexer.updateNode(tenantService.getName(nodeRef));
     }
 
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
     {
-        indexer.deleteNode(childAssocRef);
+        indexer.deleteNode(tenantService.getName(childAssocRef));
     }
 
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
         if (!isNew)
         {
-            indexer.createChildRelationship(childAssocRef);
+            indexer.createChildRelationship(tenantService.getName(childAssocRef));
         }
     }
 
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        indexer.deleteChildRelationship(childAssocRef);
+        indexer.deleteChildRelationship(tenantService.getName(childAssocRef));
     }
 }

@@ -101,6 +101,9 @@
       <property name="indexer">
          <ref bean="indexerComponent" />
       </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>
    </bean>
 
    <!-- ensures model-compliance of node structures -->

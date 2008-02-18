@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.usage.hibernate.UsageDeltaImpl;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,10 +43,6 @@ public class UsageServiceImpl implements UsageService
 {
     private UsageDeltaDAO usageDeltaDao;
     private NodeDaoService nodeDaoService;
-    private TenantService tenantService;
-    
-    //private static Log logger = LogFactory.getLog(UsageServiceImpl.class);
-    
 
     public void setUsageDeltaDao(UsageDeltaDAO usageDeltaDao)
     {
@@ -57,11 +52,6 @@ public class UsageServiceImpl implements UsageService
     public void setNodeDaoService(NodeDaoService nodeDaoService)
     {
         this.nodeDaoService = nodeDaoService;
-    }
-
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
     
     
@@ -103,7 +93,7 @@ public class UsageServiceImpl implements UsageService
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        Node unchecked = nodeDaoService.getNode(tenantService.getName(nodeRef));
+        Node unchecked = nodeDaoService.getNode(nodeRef);
         if (unchecked == null)
         {
             throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);

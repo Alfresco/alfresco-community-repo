@@ -132,7 +132,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        Node unchecked = nodeDaoService.getNode(tenantService.getName(nodeRef));
+        Node unchecked = nodeDaoService.getNode(nodeRef);
         if (unchecked == null)
         {
             throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
@@ -150,7 +150,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(tenantService.getName(nodeRef), false);
+        NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
         if (nodeStatus == null || nodeStatus.getNode() == null)
         {
             throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
@@ -160,7 +160,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public boolean exists(StoreRef storeRef)
     {
-        storeRef = tenantService.getName(storeRef);
         Store store = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
         boolean exists = (store != null);
         // done
@@ -171,7 +170,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        nodeRef = tenantService.getName(nodeRef);
         Node node = nodeDaoService.getNode(nodeRef);
         boolean exists = (node != null);
         // done
@@ -182,7 +180,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        nodeRef = tenantService.getName(nodeRef);
         NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
         if (nodeStatus == null)     // node never existed
         {
@@ -234,8 +231,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public StoreRef createStore(String protocol, String identifier)
     {
-        StoreRef storeRef = tenantService.getName(new StoreRef(protocol, identifier));
-        identifier = storeRef.getIdentifier();
+    	StoreRef storeRef = new StoreRef(protocol, identifier);
+    	
         // check that the store does not already exist
         Store store = nodeDaoService.getStore(protocol, identifier);
         if (store != null)
@@ -250,20 +247,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         store = nodeDaoService.createStore(protocol, identifier);
         // get the root node
         Node rootNode = store.getRootNode();
+        NodeRef rootNodeRef = tenantService.getBaseName(rootNode.getNodeRef());
+        
         // assign the root aspect - this is expected of all roots, even store roots
-        addAspect(rootNode.getNodeRef(),
+        addAspect(rootNodeRef,
                 ContentModel.ASPECT_ROOT,
                 Collections.<QName, Serializable>emptyMap());
         
         // invoke policies
-        invokeOnCreateStore(rootNode.getNodeRef());
+        invokeOnCreateStore(rootNodeRef);
         
         // done
         if (!store.getStoreRef().equals(storeRef))
         {
             throw new RuntimeException("Incorrect store reference");
         }
-        storeRef = tenantService.getBaseName(storeRef);
+        
         return storeRef;
     }
 
@@ -272,8 +271,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public void deleteStore(StoreRef storeRef)
     {
-        storeRef = tenantService.getName(storeRef);
-
         String protocol = storeRef.getProtocol();
         String identifier = storeRef.getIdentifier();
 
@@ -296,7 +293,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
     {
-        storeRef = tenantService.getName(storeRef);
         Store store = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
         if (store == null)
         {
@@ -308,10 +304,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             throw new InvalidStoreRefException("Store does not have a root node: " + storeRef, storeRef);
         }
-        NodeRef nodeRef = node.getNodeRef();
-        nodeRef = tenantService.getBaseName(nodeRef);
         // done
-        return nodeRef;
+        return tenantService.getBaseName(node.getNodeRef());
     }
 
     /**
@@ -341,7 +335,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Assert.notNull(assocQName);
         
         // Get the parent node
-        parentRef = tenantService.getName(parentRef);
         Node parentNode = getNodeNotNull(parentRef);
 
         // null property map is allowed
@@ -359,8 +352,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
         
         // get the store that the parent belongs to
-        StoreRef storeRef = parentRef.getStoreRef();
-        Store store = nodeDaoService.getStore(storeRef.getProtocol(), storeRef.getIdentifier());
+        Store store = nodeDaoService.getStore(parentRef.getStoreRef().getProtocol(), parentRef.getStoreRef().getIdentifier());
         if (store == null)
         {
             throw new RuntimeException("No store found for parent node: " + parentRef);
@@ -378,7 +370,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // create the node instance
         Node childNode = nodeDaoService.newNode(store, newId, nodeTypeQName);
-        NodeRef childNodeRef = childNode.getNodeRef();
+        NodeRef childNodeRef = tenantService.getBaseName(childNode.getNodeRef());
 
         // We now have enough to declare the child association creation
         invokeBeforeCreateChildAssociation(parentRef, childNodeRef, assocTypeQName, assocQName, true);
@@ -407,7 +399,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // Ensure child uniqueness
         setChildUniqueName(childNode);         // ensure uniqueness
-        ChildAssociationRef childAssocRef = childAssoc.getChildAssocRef();
+        ChildAssociationRef childAssocRef = tenantService.getBaseName(childAssoc.getChildAssocRef());
         
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
@@ -468,10 +460,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Node newParentNode = getNodeNotNull(newParentRef);
         // get the primary parent assoc
         ChildAssoc oldAssoc = nodeDaoService.getPrimaryParentAssoc(nodeToMove);
-        ChildAssociationRef oldAssocRef = oldAssoc.getChildAssocRef();
+        ChildAssociationRef oldAssocRef = tenantService.getBaseName(oldAssoc.getChildAssocRef());
         
-        // AR-2023, need to push down
-        boolean movingStore = !tenantService.getName(nodeToMoveRef.getStoreRef()).equals(tenantService.getName(newParentRef.getStoreRef()));
+        boolean movingStore = !nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef());
         
         // data needed for policy invocation
         QName nodeToMoveTypeQName = nodeToMove.getTypeQName();
@@ -501,7 +492,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 assocTypeQName,
                 assocQName);
         setChildUniqueName(nodeToMove);         // ensure uniqueness
-        ChildAssociationRef newAssocRef = newAssoc.getChildAssocRef();
+        ChildAssociationRef newAssocRef = tenantService.getBaseName(newAssoc.getChildAssocRef());
         
         // If the node is moving stores, then drag the node hierarchy with it
         if (movingStore)
@@ -605,7 +596,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Map<QName, Serializable> aspectProperties)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        nodeRef = tenantService.getName(nodeRef);
         // check that the aspect is legal
         AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
         if (aspectDef == null)
@@ -749,7 +739,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void deleteNode(NodeRef nodeRef)
     {
-        nodeRef = tenantService.getName(nodeRef);
         // First get the node to ensure that it exists
         Node node = getNodeNotNull(nodeRef);
 
@@ -759,7 +748,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeDeleteNode(nodeRef);
         
         // get the primary parent-child relationship before it is gone
-        ChildAssociationRef childAssocRef = tenantService.getName(getPrimaryParent(nodeRef)); //note: tenant-specific for re-indexing
+        ChildAssociationRef childAssocRef = getPrimaryParent(nodeRef);
+        
         // get type and aspect QNames as they will be unavailable after the delete
         QName nodeTypeQName = node.getTypeQName();
         Set<QName> nodeAspectQNames = node.getAspects();
@@ -778,8 +768,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
            StoreRef storeRef = nodeRef.getStoreRef();
 
            // remove tenant domain - to retrieve archive store from map
-           storeRef = tenantService.getBaseName(storeRef);
-
            archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
            // get the type and check if we need archiving
            TypeDefinition typeDef = dictionaryService.getType(node.getTypeQName());
@@ -977,7 +965,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        nodeRef = tenantService.getName(nodeRef);
         Node node = getNodeNotNull(nodeRef);
         return getPropertiesImpl(node);
     }
@@ -1139,7 +1126,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         Assert.notNull(qname);
         
-        nodeRef = tenantService.getName(nodeRef);
         // get the node
         Node node = getNodeNotNull(nodeRef);
         
@@ -1193,7 +1179,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throw new UnsupportedOperationException("The property " + qname + " may not be removed individually");
         }
         
-        nodeRef = tenantService.getName(nodeRef);
         // Get the node
         Node node = getNodeNotNull(nodeRef);
         
@@ -1900,7 +1885,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public NodeRef getStoreArchiveNode(StoreRef storeRef)
     {
-        storeRef = tenantService.getBaseName(storeRef);
         StoreRef archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
         if (archiveStoreRef == null)
         {

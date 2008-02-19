@@ -238,14 +238,6 @@
       </property>       
    </bean>
    
-   
-   <!-- NOTE: This references a bean in the repository Spring configuration -->
-   <bean id="resourceBundleWrapper" class="org.alfresco.web.app.ResourceBundleWrapper">
-      <constructor-arg>
-         <ref bean="messageService" />
-      </constructor-arg>
-   </bean>
-   
    <!-- NOTE: This references a bean in the repository Spring configuration -->
    <bean id="dataDictionary" class="org.alfresco.web.bean.repository.DataDictionary">
       <constructor-arg>

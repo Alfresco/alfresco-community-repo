@@ -688,7 +688,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundleWrapper(session.getServletContext()).getResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(session.getServletContext(), MESSAGE_BUNDLE, locale);
          
          session.setAttribute(MESSAGE_BUNDLE, bundle);
       }
@@ -719,7 +719,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundleWrapper(FacesContextUtils.getRequiredWebApplicationContext(context).getServletContext()).getResourceBundle(MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(FacesContextUtils.getRequiredWebApplicationContext(context).getServletContext(), MESSAGE_BUNDLE, locale);
          
          session.put(MESSAGE_BUNDLE, bundle);
       }

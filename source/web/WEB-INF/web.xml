@@ -362,12 +362,6 @@
       <servlet-class>org.alfresco.web.app.servlet.PageRendererServlet</servlet-class>
    </servlet>
    -->
-   
-   <!-- JanV -->
-   <servlet>
-      <servlet-name>activitiesFeedServlet</servlet-name>
-      <servlet-class>org.alfresco.web.scripts.servlet.ActivitiesFeedServlet</servlet-class>
-   </servlet>
 
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -535,12 +529,6 @@
       <url-pattern>/page/*</url-pattern>
    </servlet-mapping>
    -->
-   
-   <!-- JanV -->
-   <servlet-mapping>
-      <servlet-name>activitiesFeedServlet</servlet-name>
-      <url-pattern>/feed</url-pattern>
-   </servlet-mapping>
 
    <session-config>
       <session-timeout>60</session-timeout>

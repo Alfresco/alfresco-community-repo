@@ -289,4 +289,17 @@
 	    </list>
       </property>
    </bean>
+   
+    <!-- Blog Integration Action Listeners -->
+    <bean id="BlogDetailsActionListener" class="org.alfresco.web.bean.actions.blogIntegration.BlogDetailsActionListener">               
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="BlogActionListener" class="org.alfresco.web.bean.actions.blogIntegration.BlogActionListener">               
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="blogIntegrationService" ref="BlogIntegrationService"/>
+    </bean>
+
 </beans>

@@ -193,7 +193,7 @@
          <div style="padding: 4px"></div>
       </f:verbatim>
       <%-- list of translations --%>
-      <a:richList id="TranslationList" viewMode="details" value="#{DialogManager.bean.translations}" var="r" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
+      <a:richList id="TranslationList" viewMode="details" value="#{MultilingualManageDialog.translations}" var="r" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
          pageSize="10" initialSortColumn="Name" initialSortDescending="false">
 
          <%-- Name and icon columns --%>

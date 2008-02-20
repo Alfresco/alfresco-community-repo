@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -42,7 +42,9 @@ public class UploadInput extends UIInput implements NamingContainer
       ResponseWriter writer = context.getResponseWriter();
       String path = context.getExternalContext().getRequestContextPath();
       
-      writer.write("<script type='text/javascript' src='/alfresco/scripts/upload_helper.js'></script>\n");
+      writer.write("<script type='text/javascript' src='");
+      writer.write(path);
+      writer.write("/scripts/upload_helper.js'></script>\n");
       
       writer.write("<script type='text/javascript'>");
       writer.write("function handle_upload(target)\n");

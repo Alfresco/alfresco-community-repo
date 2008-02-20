@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 
 /**
@@ -110,6 +111,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
+            if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 continue;
@@ -156,6 +165,14 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
+            if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 continue;

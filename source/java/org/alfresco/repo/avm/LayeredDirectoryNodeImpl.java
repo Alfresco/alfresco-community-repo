@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 
 /**
@@ -373,27 +374,38 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
         // Get the base listing from the thing we indirect to.
-        Map<String, AVMNode> listing = null;
-        if (fOpacity)
-        {
-            listing = new HashMap<String, AVMNode>();
-        }
-        else
+        Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
+        if (!fOpacity)
         {
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(getUnderlyingVersion(lPath), getUnderlying(lPath));
             if (lookup != null)
             {
                 DirectoryNode dir = (DirectoryNode)lookup.getCurrentNode();
-                listing = dir.getListing(lookup, includeDeleted);
-            }
-            else
-            {
-                // It's OK for an indirection to dangle.
-                listing = new HashMap<String, AVMNode>();
+                Map<String, AVMNode> underListing = dir.getListing(lookup, includeDeleted);
+                for (Map.Entry<String, AVMNode> entry : underListing.entrySet())
+                {
+                    if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                        entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
+                    {
+                        if (!AVMRepository.GetInstance().can(entry.getValue(), PermissionService.READ_CHILDREN))
+                        {
+                            continue;
+                        }
+                    }
+                    listing.put(entry.getKey(), entry.getValue());
+                }
             }
         }
         for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this))
         {
+            if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(entry.getChild(), PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 listing.remove(entry.getKey().getName());
@@ -416,6 +428,14 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
         for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this))
         {
+            if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(entry.getChild(), PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (includeDeleted || entry.getChild().getType() != AVMNodeType.DELETED_NODE)
             {
                 listing.put(entry.getKey().getName(), entry.getChild());
@@ -438,6 +458,14 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         for (ChildEntry child : children)
         {
             AVMNode childNode = child.getChild();
+            if (childNode.getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                childNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(childNode, PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (!includeDeleted && childNode.getType() == AVMNodeType.DELETED_NODE)
             {
                 continue;
@@ -471,18 +499,34 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             {
                 DirectoryNode dirNode = (DirectoryNode)lookup.getCurrentNode();
                 Map<String, AVMNode> listing = dirNode.getListing(lookup, includeDeleted);
-                for (String name : listing.keySet())
+                for (Map.Entry<String, AVMNode> entry : listing.entrySet())
                 {
-                    baseListing.put(name,
-                                    listing.get(name).getDescriptor(dir.getPath(), name,
-                                                                    lookup.getCurrentIndirection(),
-                                                                    lookup.getCurrentIndirectionVersion()));
+                    if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                        entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
+                    {
+                        if (!AVMRepository.GetInstance().can(entry.getValue(), PermissionService.READ_CHILDREN))
+                        {
+                            continue;
+                        }
+                    }
+                    baseListing.put(entry.getKey(),
+                                    entry.getValue().getDescriptor(dir.getPath(), entry.getKey(),
+                                                                   lookup.getCurrentIndirection(),
+                                                                   lookup.getCurrentIndirectionVersion()));
                 }
             }
         }
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {
+            if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            {
+                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                {
+                    continue;
+                }
+            }
             if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
                 baseListing.remove(child.getKey().getName());

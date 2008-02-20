@@ -65,7 +65,8 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 		this.authenticationService = authenticationService;
 	}
 	
-	public void setLinkValidationService(LinkValidationService linkValidationService) 
+	// TODO - temporary workaround, can be removed when link validation is part of repo
+	public void registerLinkValidationService(LinkValidationService linkValidationService)
 	{
 		this.linkValidationService = linkValidationService;
 	}
@@ -344,6 +345,12 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	 */
 	public void setLinkValidationDisabled(boolean disable)
 	{
+		if (linkValidationService == null)
+		{
+			log.error("LinkValidationService not registered");
+			throw new AlfrescoRuntimeException("LinkValidationService not registered");
+		}
+
 		linkValidationService.setLinkValidationDisabled(disable);
 		if (disable)
 		{
@@ -361,6 +368,12 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
 	 */
 	public boolean isLinkValidationDisabled()
 	{  
+		if (linkValidationService == null)
+		{
+			log.error("LinkValidationService not registered");
+			throw new AlfrescoRuntimeException("LinkValidationService not registered");
+		}
+		
 		return linkValidationService.isLinkValidationDisabled();
 	}
 }

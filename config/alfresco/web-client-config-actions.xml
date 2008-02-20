@@ -596,14 +596,14 @@
          </action>
 		
 		 <!-- Invite Space user action-->
-         <action id="ivite_user">
+         <action id="invite_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
             <action>wizard:inviteSpaceUsers</action>
          </action>
 			
 		<!-- Invite Content user action-->
-         <action id="ivite_content_user">
+         <action id="invite_content_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
             <action>wizard:inviteContentUsers</action>
@@ -901,12 +901,12 @@
 		
 		<!-- Action menu for Invite Space user in Manage invite users screen-->
          <action-group id="invite_user_menu">
-            <action idref="ivite_user"/>
+            <action idref="invite_user"/>
          </action-group>
          
          <!-- Action menu for Invite Content user in Manage invite users screen-->
          <action-group id="invite_content_user_menu">
-            <action idref="ivite_content_user"/>
+            <action idref="invite_content_user"/>
          </action-group>
 		
          <!-- Actions for a space in the Browse screen -->

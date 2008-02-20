@@ -137,7 +137,7 @@
                  title-id="invite_content_title" description-id="invite_content_desc"
                  icon="/images/icons/users_large.gif">
             <step name="invite" title-id="invite_step_1" description-id="invite_content_step1_desc">
-               <page path="/jsp/wizard/invite-users/invite.jsp"
+               <page path="/jsp/users/invite-users-wizard/invite.jsp"
                      title-id="invite_step1_title"
                      description-id="invite_content_step1_desc"
                      instruction-id="default_instruction" />

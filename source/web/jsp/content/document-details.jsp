@@ -266,13 +266,13 @@
 <h:panelGroup id="workflow-panel-facets">
    <f:facet name="title">
       <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
-         <a:actionLink id="titleLink2" value="#{msg.title_edit_simple_workflow}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editSimpleWorkflow" rendered="#{DialogManager.bean.approveStepName != null}" />
+         <a:actionLink id="titleLink2" value="#{msg.title_edit_simple_workflow}" showLink="false" image="/images/icons/Change_details.gif" action="dialog:editContentSimpleWorkflow" rendered="#{DialogManager.bean.approveStepName != null}" />
       </r:permissionEvaluator>
    </f:facet>
 </h:panelGroup>
 <a:panel label="#{msg.workflows}" id="workflow-panel" facetsId="dialog:dialog-body:workflow-panel-facets" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
    expanded='#{DialogManager.bean.panels["workflow-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
-   <r:nodeWorkflowInfo id="workflow-info" value="#{EditSimpleWorkflowDialog.document}" />
+   <r:nodeWorkflowInfo id="workflow-info" value="#{DialogManager.bean.document}" />
 </a:panel>
 
 <f:verbatim>

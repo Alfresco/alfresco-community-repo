@@ -430,11 +430,11 @@
                  icon="/images/icons/preview_large.gif" title-id="apply_template"
                  description-id="apply_dashboard_info"  /> 
          
-         <dialog name="editSimpleWorkflow" page="/jsp/content/edit-simple-workflow.jsp" managed-bean="EditSimpleWorkflowDialog"
+         <dialog name="editContentSimpleWorkflow" page="/jsp/content/edit-simple-workflow.jsp" managed-bean="EditContentSimpleWorkflowDialog"
                  icon="/images/icons/edit_large.gif" title-id="modify_workflow_props"
                  description-id="editworkflow_description"  /> 
          
-         <dialog name="editSpaceSimpleWorkflow" page="/jsp/spaces/edit-simple-workflow.jsp" managed-bean="EditSimpleWorkflowDialog"
+         <dialog name="editSpaceSimpleWorkflow" page="/jsp/spaces/edit-simple-workflow.jsp" managed-bean="EditSpaceSimpleWorkflowDialog"
                  icon="/images/icons/edit_large.gif" title-id="modify_workflow_props"
                  description-id="editworkflow_description"  /> 
          

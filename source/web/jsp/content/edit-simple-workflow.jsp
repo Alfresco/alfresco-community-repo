@@ -76,7 +76,7 @@
    <tr>
    	<td><nobr></f:verbatim><h:outputText value="#{msg.name_approve_step}" /><f:verbatim>:</nobr></td>
    	<td width="90%"></f:verbatim><h:inputText id="approve-step-name"
-   		value="#{EditSimpleWorkflowDialog.workflowProperties.approveStepName}"
+   		value="#{DialogManager.bean.workflowProperties.approveStepName}"
    		onkeyup="javascript:checkButtonState();" /><f:verbatim></td>
    </tr>
    <tr>
@@ -90,7 +90,7 @@
    	<table cellpadding="2" cellspacing="2" border="0">
    		<tr>
    			<td valign="top"></f:verbatim><h:selectOneRadio
-   				value="#{EditSimpleWorkflowDialog.workflowProperties.approveAction}">
+   				value="#{DialogManager.bean.workflowProperties.approveAction}">
    				<f:selectItem itemValue="move" itemLabel="Move" />
    				<f:selectItem itemValue="copy" itemLabel="Copy" />
    			</h:selectOneRadio><f:verbatim></td>
@@ -101,7 +101,7 @@
    			<td style="padding-top:6px;"></f:verbatim><r:ajaxFolderSelector
    			      id="clientApproveFolder"
    			      label="#{msg.select_destination_prompt}" 
-                  value="#{EditSimpleWorkflowDialog.workflowProperties.approveFolder}" 
+                  value="#{DialogManager.bean.workflowProperties.approveFolder}" 
                   initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
                   styleClass="selector" /><f:verbatim></td>
    		</tr>
@@ -120,7 +120,7 @@
    </tr>
    <tr>
    	<td></f:verbatim><h:selectOneRadio id="reject-step-present"
-   		value="#{EditSimpleWorkflowDialog.workflowProperties.rejectStepPresent}"
+   		value="#{DialogManager.bean.workflowProperties.rejectStepPresent}"
    		onclick="javascript:checkButtonState();">
    		<f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
    		<f:selectItem itemValue="no" itemLabel="#{msg.no}" />
@@ -137,7 +137,7 @@
    					<td><nobr> </f:verbatim><h:outputText
    						value="#{msg.name_reject_step}" /><f:verbatim>:&nbsp; </f:verbatim><h:inputText
    						id="reject-step-name"
-   						value="#{EditSimpleWorkflowDialog.workflowProperties.rejectStepName}"
+   						value="#{DialogManager.bean.workflowProperties.rejectStepName}"
    						onkeyup="javascript:checkButtonState();" /><f:verbatim> </nobr></td>
    				</tr>
    				<tr>
@@ -161,7 +161,7 @@
    							<td style="padding-top:6px;"></f:verbatim><r:ajaxFolderSelector
 							      id="clientRejectFolder"
             			      label="#{msg.select_destination_prompt}" 
-                           value="#{EditSimpleWorkflowDialog.workflowProperties.rejectFolder}" 
+                           value="#{DialogManager.bean.workflowProperties.rejectFolder}" 
                            initialSelection="#{NavigationBean.currentNode.nodeRefAsString}"
                            styleClass="selector" /><f:verbatim></td>
    						</tr>

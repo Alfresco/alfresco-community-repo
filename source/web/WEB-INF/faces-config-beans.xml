@@ -5018,8 +5018,8 @@
    </managed-bean>
 
    <managed-bean>
-      <description>The bean for Edit Simple Workflow Screen.</description>
-      <managed-bean-name>EditSimpleWorkflowDialog</managed-bean-name>
+      <description>The bean for content Edit Simple Workflow Screen.</description>
+      <managed-bean-name>EditContentSimpleWorkflowDialog</managed-bean-name>
       <managed-bean-class>
          org.alfresco.web.bean.content.EditSimpleWorkflowDialog
       </managed-bean-class>
@@ -5035,8 +5035,8 @@
    </managed-bean>
 
    <managed-bean>
-      <description>The bean for Edit Simple Space Workflow Screen.</description>
-      <managed-bean-name>EditSimpleWorkflowDialog</managed-bean-name>
+      <description>The bean for space Edit Simple Space Workflow Screen.</description>
+      <managed-bean-name>EditSpaceSimpleWorkflowDialog</managed-bean-name>
       <managed-bean-class>
          org.alfresco.web.bean.spaces.EditSimpleWorkflowDialog
       </managed-bean-class>

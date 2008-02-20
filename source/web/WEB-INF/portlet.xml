@@ -25,7 +25,7 @@
     <portlet>
         <description>My Tasks</description>
         <portlet-name>AlfrescoMyTasks</portlet-name>
-        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        <portlet-class>org.alfresco.repo.web.scripts.portlet.WebScriptRepoPortlet</portlet-class>
         
         <init-param>
            <name>authenticator</name>
@@ -50,7 +50,7 @@
     <portlet>
         <description>Document List</description>
         <portlet-name>AlfrescoDocList</portlet-name>
-        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        <portlet-class>org.alfresco.repo.web.scripts.portlet.WebScriptRepoPortlet</portlet-class>
         
         <init-param>
            <name>authenticator</name>
@@ -75,7 +75,7 @@
     <portlet>
         <description>My Spaces</description>
         <portlet-name>AlfrescoMySpaces</portlet-name>
-        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        <portlet-class>org.alfresco.repo.web.scripts.portlet.WebScriptRepoPortlet</portlet-class>
         
         <init-param>
            <name>authenticator</name>
@@ -100,7 +100,7 @@
     <portlet>
         <description>My Web Forms</description>
         <portlet-name>AlfrescoMyWebForms</portlet-name>
-        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        <portlet-class>org.alfresco.repo.web.scripts.portlet.WebScriptRepoPortlet</portlet-class>
         
         <init-param>
            <name>authenticator</name>
@@ -125,7 +125,7 @@
     <portlet>
         <description>My Web Files</description>
         <portlet-name>AlfrescoMyWebFiles</portlet-name>
-        <portlet-class>org.alfresco.web.scripts.portlet.WebScriptPortlet</portlet-class>
+        <portlet-class>org.alfresco.repo.web.scripts.portlet.WebScriptRepoPortlet</portlet-class>
         
         <init-param>
            <name>authenticator</name>

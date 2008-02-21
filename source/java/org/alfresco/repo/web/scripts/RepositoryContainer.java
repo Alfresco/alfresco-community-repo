@@ -56,6 +56,7 @@ import org.alfresco.web.scripts.Description.RequiredAuthentication;
 import org.alfresco.web.scripts.Description.RequiredTransaction;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.ObjectFactory;
 
 
 /**
@@ -76,12 +77,22 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private PermissionService permissionService;
     private DescriptorService descriptorService;
     private TenantDeployerService tenantDeployerService;
-    
+    private ObjectFactory registryFactory;
     private SimpleCache<String, Registry> webScriptsRegistryCache;
 
+    /**
+     * @param webScriptsRegistryCache
+     */
     public void setWebScriptsRegistryCache(SimpleCache<String, Registry> webScriptsRegistryCache)
     {
         this.webScriptsRegistryCache = webScriptsRegistryCache;
+    }
+    
+    /**
+     * @param registryFactory
+     */
+    public void setRegistryFactory(ObjectFactory registryFactory) {
+        this.registryFactory = registryFactory;
     }
     
     /**
@@ -366,7 +377,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     {
         tenantDeployerService.register(this);
         
-        Registry registry = super.getRegistry().cloneEmpty();
+        Registry registry = (Registry)registryFactory.getObject();
         webScriptsRegistryCache.put(tenantDeployerService.getCurrentUserDomain(), registry);
         
         super.reset();

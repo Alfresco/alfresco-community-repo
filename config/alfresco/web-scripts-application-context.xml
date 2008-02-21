@@ -110,7 +110,13 @@
       <property name="authorityService" ref="authorityService" />
       <property name="repository" ref="webscripts.repo" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
-      <property name="registry" ref="webscripts.registry" />
+      
+      <property name="registryFactory">
+          <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+             <property name="targetBeanName"><idref local="webscripts.registry.prototype"/></property>
+          </bean>
+      </property>
+      
       <property name="formatRegistry" ref="webscripts.formatregistry" />
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
       <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
@@ -120,6 +126,8 @@
       <property name="tenantDeployerService" ref="tenantAdminService" />
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>
+   
+   <bean id="webscripts.registry.prototype" parent="webscripts.registry" singleton="false"/>
 
 
    <!--                            -->

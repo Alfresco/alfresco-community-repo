@@ -40,17 +40,17 @@
    
    <%@ include file="admin-title.jsp" %>
    
-   <h:form id="searchForm">
+   <h:form id="searchForm" styleClass="nodeBrowserForm">
       <h:commandLink action="#{AdminNodeBrowseBean.selectStores}">
           <h:outputText styleClass="mainSubText" value="Refresh view"/>
       </h:commandLink>
       
-      <br>
-      <br>
+      <br/>
+      <br/>
       <h:outputText styleClass="mainTitle" value="Stores"/>
-      <br>
+      <br/>
       
-      <h:dataTable id="stores" border="1" value="#{AdminNodeBrowseBean.stores}" var="store">
+      <h:dataTable id="stores" border="1" value="#{AdminNodeBrowseBean.stores}" var="store" styleClass="nodeBrowserTable">
           <h:column>
               <f:facet name="header">
                   <h:outputText value="Reference"/>

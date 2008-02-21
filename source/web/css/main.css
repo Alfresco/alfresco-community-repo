@@ -1032,4 +1032,30 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    margin-bottom: 5px;
 }
 
+.nodeBrowserForm
+{
+   border-top: 1px dotted #aaa;
+   padding: 8px;
+   margin: 4px 4px 16px 2px;
+}
+
+.nodeBrowserTable
+{
+   border-collapse: collapse;
+   border: 1px solid #aaa;
+   margin-top: 3px;
+}
+
+.nodeBrowserTable th
+{
+   background-color: #dfe6ed;
+   font-weight: bold;
+   padding: 4px;
+   text-align: left;
+}
+
+.nodeBrowserTable td
+{
+   padding: 3px;
+}
 

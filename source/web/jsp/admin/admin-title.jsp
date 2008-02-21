@@ -23,7 +23,9 @@
  * http://www.alfresco.com/legal/licensing"
 --%>
 
-<h:form id="node-browser-titlebar">
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
+
+<h:form id="node-browser-titlebar" style="margin-bottom: 8px;">
 
    <table width="100%">
       <tr>
@@ -40,5 +42,3 @@
    </table>
 
 </h:form>
-
-<br>

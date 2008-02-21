@@ -40,23 +40,17 @@
    
    <%@ include file="admin-title.jsp" %>
    
-   <h:form id="searchForm">
-      <table>
-         <tr>
-         <td>   
-            <h:commandLink action="#{AdminNodeBrowseBean.selectStores}">
-   	        <h:outputText value="Stores"/>
-   	     </h:commandLink>
-   	  </td>
-   	  <td>&nbsp;|&nbsp;</td>
-   	  <td>
-            <h:commandLink action="nodeBrowser">
-               <h:outputText value="Node Browser"/>
-            </h:commandLink>
-   	  </td>
-      </table>
+   <h:form id="searchForm" styleClass="nodeBrowserForm">
+      <h:commandLink action="#{AdminNodeBrowseBean.selectStores}">
+         <h:outputText styleClass="mainSubText" value="Stores"/>
+      </h:commandLink>
+      <span class="mainSubText">&nbsp;|&nbsp;</span>
+      <h:commandLink action="nodeBrowser">
+         <h:outputText styleClass="mainSubText" value="Node Browser"/>
+      </h:commandLink>
       
-      <br>
+      <br/>
+      <br/>
       <h:outputText styleClass="mainTitle" value="Search"/>
    
       <table>
@@ -68,10 +62,10 @@
          </tr>
       </table>
    
-      <br>
+      <br/>
       <span class="mainTitle">Results (<h:outputText value="#{AdminNodeBrowseBean.searchResults.length}"/> rows)</span>
    
-      <h:dataTable id="searchResults" border="1" value="#{AdminNodeBrowseBean.searchResults.rows}" var="row">
+      <h:dataTable id="searchResults" border="1" value="#{AdminNodeBrowseBean.searchResults.rows}" var="row" styleClass="nodeBrowserTable">
           <h:column>
               <f:facet name="header">
                   <h:outputText value="Name"/>

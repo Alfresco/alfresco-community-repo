@@ -1,0 +1,839 @@
+/*
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing
+ */
+package org.alfresco.web.ui.wcm.component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+
+import javax.faces.component.UICommand;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.component.UIParameter;
+import javax.faces.component.UISelectBoolean;
+import javax.faces.component.UISelectItems;
+import javax.faces.component.UISelectOne;
+import javax.faces.context.FacesContext;
+import javax.faces.context.ResponseWriter;
+import javax.faces.el.MethodBinding;
+import javax.faces.el.ValueBinding;
+import javax.faces.model.SelectItem;
+import javax.transaction.UserTransaction;
+
+import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.DeploymentServerConfig;
+import org.alfresco.web.ui.common.ComponentConstants;
+import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.repo.component.UIActions;
+
+/**
+ * JSF component that allows deployment servers to be added, edited and removed.
+ * 
+ * @author gavinc
+ */
+public class UIDeploymentServers extends UIInput
+{
+   private static final String MSG_ALF_SERVER = "deploy_add_alf_receiver";
+   private static final String MSG_FILE_SYSTEM = "deploy_add_file_receiver";
+   private static final String MSG_LIVE_SERVER = "deploy_server_type_live";
+   private static final String MSG_TEST_SERVER = "deploy_server_type_test";
+   private static final String MSG_TYPE = "deploy_server_type";
+   private static final String MSG_NAME = "deploy_server_name";
+   private static final String MSG_HOST = "deploy_server_host";
+   private static final String MSG_PORT = "deploy_server_port";
+   private static final String MSG_USER = "deploy_server_username";
+   private static final String MSG_PWD = "deploy_server_password";
+   private static final String MSG_URL = "deploy_server_url";
+   private static final String MSG_SOURCE = "deploy_server_source_path";
+   private static final String MSG_TARGET = "deploy_server_target_name";
+   private static final String MSG_AUTO_DEPLOY = "deploy_automatically";
+   private static final String MSG_EDIT = "edit_deploy_server";
+   private static final String MSG_DELETE = "delete_deploy_server";
+   private static final String MSG_NO_DEPLOY_SERVERS = "no_deploy_servers";
+   
+   private List<DeploymentServerConfig> servers;
+   private DeploymentServerConfig currentServer;
+   private Boolean inAddMode;
+   private String addType;
+   
+   // ------------------------------------------------------------------------------
+   // Component implementation
+   
+   /**
+    * Default constructor
+    */
+   public UIDeploymentServers()
+   {
+      setRendererType(null);
+   }
+   
+   @Override
+   public String getFamily()
+   {
+      return "org.alfresco.faces.DeploymentServers";
+   }
+
+   @SuppressWarnings("unchecked")
+   @Override
+   public void restoreState(FacesContext context, Object state)
+   {
+      Object values[] = (Object[])state;
+      // standard component attributes are restored by the super class
+      super.restoreState(context, values[0]);
+      this.servers = (List<DeploymentServerConfig>)values[1];
+      this.inAddMode = (Boolean)values[2];
+      this.addType = (String)values[3];
+      this.currentServer = (DeploymentServerConfig)values[4];
+   }
+   
+   @Override
+   public Object saveState(FacesContext context)
+   {
+      Object values[] = new Object[5];
+      // standard component attributes are saved by the super class
+      values[0] = super.saveState(context);
+      values[1] = this.servers;
+      values[2] = this.inAddMode;
+      values[3] = this.addType;
+      values[4] = this.currentServer;
+      return values;
+   }
+   
+   @SuppressWarnings("unchecked")
+   @Override
+   public void encodeBegin(FacesContext context) throws IOException
+   {
+      if (isRendered() == false)
+      {
+         return;
+      }
+      
+      // clear previously generated children
+      this.getChildren().clear();
+      
+      ResponseWriter out = context.getResponseWriter();
+      UserTransaction tx = null;
+      try
+      {
+         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+         tx.begin();
+         
+         String contextPath = context.getExternalContext().getRequestContextPath();
+         out.write("<script type='text/javascript' src='");
+         out.write(contextPath);
+         out.write("/scripts/ajax/deployment.js'></script>\n");
+         out.write("<div class='deployConfig'>");
+         
+         List<DeploymentServerConfig> servers = getValue();
+         DeploymentServerConfig currentServer = getCurrentServer();
+         for (DeploymentServerConfig server: servers)
+         {
+            if (currentServer != null && currentServer.getId().equals(server.getId()))
+            {
+               renderServerForm(context, out, server, true);
+            }
+            else
+            {
+               renderServer(context, out, server);
+            }
+         }
+         
+         if (getInAddMode())
+         {
+            renderServerForm(context, out, null, false);
+         }
+         else
+         {
+            if (servers.size() == 0)
+            {
+               out.write("<div class='deployNoServers'><img src='");
+               out.write(contextPath);
+               out.write("/images/icons/info_icon.gif' />&nbsp;");
+               out.write(Application.getMessage(context, MSG_NO_DEPLOY_SERVERS));
+               out.write("</div>");
+            }
+         }
+         
+         out.write("</div>");
+         
+         out.write("\n<script type='text/javascript'>");
+         out.write("window.onload=Alfresco.deployServerTypeChanged();");
+         out.write("</script>");
+         
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         throw new RuntimeException(err);
+      }
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Strongly typed component property accessors
+   
+   /**
+    * @return List of deployment servers to show 
+    */
+   @SuppressWarnings("unchecked")
+   public List<DeploymentServerConfig> getValue()
+   {
+      ValueBinding vb = getValueBinding("value");
+      if (vb != null)
+      {
+         this.servers = (List<DeploymentServerConfig>)vb.getValue(getFacesContext());
+      }
+      
+      return this.servers;
+   }
+   
+   /**
+    * @param value The list of deployment servers to show 
+    */
+   public void setValue(List<DeploymentServerConfig> value)
+   {
+      this.servers = value;
+   }
+   
+   /**
+    * @param server The current deployment server being added or edited
+    */
+   public void setCurrentServer(DeploymentServerConfig server)
+   {
+      this.currentServer = server;
+   }
+   
+   /**
+    * @return Deployment server currently being edited or added 
+    */
+   @SuppressWarnings("unchecked")
+   public DeploymentServerConfig getCurrentServer()
+   {
+      ValueBinding vb = getValueBinding("currentServer");
+      if (vb != null)
+      {
+         this.currentServer = (DeploymentServerConfig)vb.getValue(getFacesContext());
+      }
+      
+      return this.currentServer;
+   }
+   
+   /**
+    * @return true if the component should show a form to add a new server
+    */
+   public boolean getInAddMode()
+   {
+      ValueBinding vb = getValueBinding("inAddMode");
+      if (vb != null)
+      {
+         this.inAddMode = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      if (this.inAddMode == null)
+      {
+         this.inAddMode = Boolean.FALSE;
+      }
+      
+      return this.inAddMode.booleanValue();
+   }
+   
+   /**
+    * @param inAddMode Determines whether a new server should be added
+    */
+   public void setInAddMode(boolean inAddMode)
+   {
+      this.inAddMode = new Boolean(inAddMode);
+   }
+   
+   /**
+    * @return The type of reciever server to add
+    */
+   public String getAddType()
+   {
+      ValueBinding vb = getValueBinding("addType");
+      if (vb != null)
+      {
+         this.addType = (String)vb.getValue(getFacesContext());
+      }
+      
+      if (this.addType == null)
+      {
+         this.addType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
+      }
+      
+      return this.addType;
+   }
+   
+   /**
+    * @param value The type of server receiver to add 
+    */
+   public void setAddType(String value)
+   {
+      this.addType = value;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Helpers
+   
+   protected void renderAddControls(FacesContext context, ResponseWriter out)
+            throws IOException
+   {
+      out.write("");
+      
+      UICommand addAlfAction = aquireAddAlfReceiverAction(context);
+      Utils.encodeRecursive(context, addAlfAction);
+      
+      UICommand addFileAction = aquireAddFileReceiverAction(context);
+      Utils.encodeRecursive(context, addFileAction);
+      
+      out.write("</div>");
+   }
+   
+   protected void renderServer(FacesContext context, ResponseWriter out,
+            DeploymentServerConfig server) throws IOException
+   {
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      ResourceBundle bundle = Application.getBundle(context);
+      
+      String serverName = (String)server.getProperties().get(DeploymentServerConfig.PROP_NAME);
+      if (serverName == null || serverName.length() == 0)
+      {
+         serverName = AVMDeploySnapshotAction.calculateServerUri(server.getRepoProps());
+      }
+      
+      out.write("<div class='deployConfigServer'>");
+      out.write("<table><tr><td valign='top'><img class='deployConfigServerIcon' src='");
+      out.write(contextPath);
+      out.write("/images/icons/deploy_server_");
+      out.write(server.getDeployType());
+      out.write(".gif");
+      out.write("' /></td><td><table class='deployConfigServerDetails'>");
+      out.write("<tr><td colspan='4'><span class='deployPanelServerName'>");
+      out.write(serverName);
+      out.write("</span></td><td align='right'>");
+      Utils.encodeRecursive(context, aquireEditServerAction(context, server.getId()));
+      Utils.encodeRecursive(context, aquireDeleteServerAction(context, server.getId()));
+      out.write("</td></tr><tr><td>");
+      out.write(bundle.getString(MSG_HOST));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_HOST) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_HOST));
+      }
+      
+      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write(bundle.getString(MSG_PORT));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_PORT) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT));
+      }
+      
+      out.write("</td></tr><tr><td>");
+      out.write(bundle.getString(MSG_TYPE));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_TYPE) != null)
+      {
+         String type = (String)server.getProperties().get(DeploymentServerConfig.PROP_TYPE);
+         if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(type))
+         {
+            out.write(Application.getMessage(context, MSG_LIVE_SERVER));
+         }
+         else if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(type))
+         {
+            out.write(Application.getMessage(context, MSG_TEST_SERVER));
+         }
+      }
+      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write(bundle.getString(MSG_URL));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_URL) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_URL));
+      }
+      out.write("</td></tr><tr><td>");
+      out.write(bundle.getString(MSG_USER));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_USER) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_USER));
+      }
+      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write(bundle.getString(MSG_SOURCE));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH));
+      }
+      out.write("</td></tr>");
+      
+      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType()))
+      {
+         out.write("<tr><td>");
+         out.write(bundle.getString(MSG_TARGET));
+         out.write(":</td><td>");
+         if (server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME) != null)
+         {
+            out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME));
+         }
+         out.write("</td></tr>");
+      }
+      
+      if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(
+          server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
+      {
+         out.write("<tr><td>");
+         out.write(bundle.getString(MSG_AUTO_DEPLOY));
+         out.write(":</td><td>");
+         if (server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL) != null)
+         {
+            Object obj = server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL);
+            if (obj instanceof Boolean && ((Boolean)obj).booleanValue())
+            {
+               out.write(bundle.getString("yes"));
+            }
+            else
+            {
+               out.write(bundle.getString("no"));
+            }
+         }
+         out.write("</td></tr>");
+      }
+      
+      out.write("</table></td></tr></table></div>");         
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected void renderServerForm(FacesContext context, ResponseWriter out,
+            DeploymentServerConfig server, boolean edit) throws IOException
+   {
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      ResourceBundle bundle = Application.getBundle(context);
+      
+      out.write("<div class='deployConfigServer'>");
+      out.write("<table><tr><td valign='top'><img class='deployConfigServerIcon' src='");
+      out.write(contextPath);
+      out.write("/images/icons/deploy_server_");
+      if (server != null)
+      {
+         out.write(server.getDeployType());
+      }
+      else
+      {
+         out.write(getAddType());
+      }
+      out.write(".gif' /></td>");
+      out.write("<td><table class='deployConfigServerForm'>");
+      
+      // create the server type drop down
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_TYPE));
+      out.write(":</td><td>");
+      UIComponent type = context.getApplication().createComponent(
+               UISelectOne.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, type, "deployServerType");
+      type.getAttributes().put("styleClass", "inputField");
+      type.getAttributes().put("onchange", 
+               "javascript:Alfresco.deployServerTypeChanged();");
+      ValueBinding vbType = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_TYPE + "}");
+      type.setValueBinding("value", vbType);
+      UISelectItems itemsComponent = (UISelectItems)context.getApplication().
+               createComponent(UISelectItems.COMPONENT_TYPE);
+      List<SelectItem> items = new ArrayList<SelectItem>(2);
+      
+      items.add(new SelectItem(WCMAppModel.CONSTRAINT_LIVESERVER, 
+               Application.getMessage(context, MSG_LIVE_SERVER)));
+      items.add(new SelectItem(WCMAppModel.CONSTRAINT_TESTSERVER, 
+               Application.getMessage(context, MSG_TEST_SERVER)));
+      
+      itemsComponent.setValue(items);
+      type.getChildren().add(itemsComponent);
+      this.getChildren().add(type);
+      Utils.encodeRecursive(context, type);
+      out.write("</td></tr>");
+      
+      // create the server name field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_NAME));
+      out.write(":</td><td>");
+      UIComponent name = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, name, null);
+      name.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbName = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_NAME + "}");
+      name.setValueBinding("value", vbName);
+      this.getChildren().add(name);
+      Utils.encodeRecursive(context, name);
+      out.write("</td></tr>");
+      
+      // create the server host field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_HOST));
+      out.write(":</td><td>");
+      UIComponent host = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, host, null);
+      host.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbHost = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_HOST + "}");
+      host.setValueBinding("value", vbHost);
+      this.getChildren().add(host);
+      Utils.encodeRecursive(context, host);
+      out.write("</td></tr>");
+      
+      // create the server port field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_PORT));
+      out.write(":</td><td>");
+      UIComponent port = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, port, null);
+      port.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbPort = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_PORT + "}");
+      port.setValueBinding("value", vbPort);
+      this.getChildren().add(port);
+      Utils.encodeRecursive(context, port);
+      out.write("</td></tr>");
+      
+      // create the server username field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_USER));
+      out.write(":</td><td>");
+      UIComponent username = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, username, null);
+      username.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbUser = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_USER + "}");
+      username.setValueBinding("value", vbUser);
+      this.getChildren().add(username);
+      Utils.encodeRecursive(context, username);
+      out.write("</td></tr>");
+      
+      // create the server password field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_PWD));
+      out.write(":</td><td>");
+      UIComponent pwd = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, pwd, null);
+      pwd.setRendererType("javax.faces.Secret");
+      pwd.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbPwd = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_PASSWORD + "}");
+      pwd.setValueBinding("value", vbPwd);
+      this.getChildren().add(pwd);
+      Utils.encodeRecursive(context, pwd);
+      out.write("</td></tr>");
+      
+      // create the server url field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_URL));
+      out.write(":</td><td>");
+      UIComponent url = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, url, null);
+      url.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbUrl = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_URL + "}");
+      url.setValueBinding("value", vbUrl);
+      this.getChildren().add(url);
+      Utils.encodeRecursive(context, url);
+      out.write("</td></tr>");
+      
+      // create the source path field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_SOURCE));
+      out.write(":</td><td>");
+      UIComponent source = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, source, null);
+      source.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbSource = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_SOURCE_PATH + "}");
+      source.setValueBinding("value", vbSource);
+      this.getChildren().add(source);
+      Utils.encodeRecursive(context, source);
+      out.write("</td></tr>");
+      
+      if ((edit == false && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType())) ||
+          (edit && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
+      {
+         // create the target field
+         out.write("<tr><td align='right'>");
+         out.write(bundle.getString(MSG_TARGET));
+         out.write(":</td><td>");
+         UIComponent target = context.getApplication().createComponent(
+                  UIInput.COMPONENT_TYPE);
+         FacesHelper.setupComponentId(context, target, null);
+         target.getAttributes().put("styleClass", "inputField");
+         ValueBinding vbTarget = context.getApplication().createValueBinding(
+               "#{WizardManager.bean.editedDeployServerProperties." + 
+               DeploymentServerConfig.PROP_TARGET_NAME + "}");
+         target.setValueBinding("value", vbTarget);
+         this.getChildren().add(target);
+         Utils.encodeRecursive(context, target);
+         out.write("</td></tr>");
+      }
+      
+      // create the auto deploy checkbox
+      out.write("<tr><td align='right'><span id='autoDeployLabel'>");
+      out.write(bundle.getString(MSG_AUTO_DEPLOY));
+      out.write(":</td><td>");
+      UIComponent auto = context.getApplication().createComponent(
+               UISelectBoolean.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, auto, "autoDeployCheckbox");
+      ValueBinding vbAuto = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_ON_APPROVAL + "}");
+      auto.setValueBinding("value", vbAuto);
+      this.getChildren().add(auto);
+      Utils.encodeRecursive(context, auto);
+      out.write("</td></tr>");
+      
+      if (edit)
+      {
+         // create the done button
+         out.write("<tr><td colspan='2' align='right'>");
+         UICommand saveButton = (UICommand)context.getApplication().createComponent(
+                  UICommand.COMPONENT_TYPE);
+         FacesHelper.setupComponentId(context, saveButton, null);
+         saveButton.setValue(bundle.getString("save"));
+         MethodBinding binding = context.getApplication().createMethodBinding(
+                     "#{WizardManager.bean.saveDeploymentServerConfig}", new Class[] {});
+         saveButton.setAction(binding);
+         this.getChildren().add(saveButton);
+         Utils.encodeRecursive(context, saveButton);
+         out.write("</td></tr>");
+      }
+      else
+      {
+         // create the add button
+         out.write("<tr><td colspan='2' align='right'>");
+         UICommand addButton = (UICommand)context.getApplication().createComponent(
+                  UICommand.COMPONENT_TYPE);
+         FacesHelper.setupComponentId(context, addButton, null);
+         addButton.setValue(bundle.getString("add"));
+         MethodBinding binding = context.getApplication().createMethodBinding(
+                     "#{WizardManager.bean.addDeploymentServerConfig}", new Class[] {});
+         addButton.setAction(binding);
+         this.getChildren().add(addButton);
+         Utils.encodeRecursive(context, addButton);
+         out.write("</td></tr>");
+      }
+      
+      // finish off tables and div
+      out.write("</table></td></tr></table></div>");
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected UIActionLink aquireAddAlfReceiverAction(FacesContext context)
+   {
+      UIActionLink action = null;
+      String actionId = "add_alf_receiver";
+      
+      // try find the action as a child of this component
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (actionId.equals(component.getId()))
+         {
+            action = (UIActionLink)component;
+            break;
+         }
+      }
+      
+      if (action == null)
+      {
+         // create the action and add as a child component
+         javax.faces.application.Application facesApp = context.getApplication();
+         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
+         action.setId(actionId);
+         action.setValue(Application.getMessage(context, MSG_ALF_SERVER));
+         action.setImage("/images/icons/plus.gif");
+         MethodBinding binding = facesApp.createMethodBinding(
+                  "#{WizardManager.bean.addAlfrescoServerReceiver}", new Class[] {});
+         action.setAction(binding);
+         this.getChildren().add(action);
+      }
+      
+      return action;
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected UIActionLink aquireAddFileReceiverAction(FacesContext context)
+   {
+      UIActionLink action = null;
+      String actionId = "add_file_receiver";
+      
+      // try find the action as a child of this component
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (actionId.equals(component.getId()))
+         {
+            action = (UIActionLink)component;
+            break;
+         }
+      }
+      
+      if (action == null)
+      {
+         // create the action and add as a child component
+         javax.faces.application.Application facesApp = context.getApplication();
+         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
+         action.setId(actionId);
+         action.setValue(Application.getMessage(context, MSG_FILE_SYSTEM));
+         action.setImage("/images/icons/plus.gif");
+         MethodBinding binding = facesApp.createMethodBinding(
+                  "#{WizardManager.bean.addFileSystemReceiver}", new Class[] {});
+         action.setAction(binding);
+         this.getChildren().add(action);
+      }
+      
+      return action;
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected UIActionLink aquireEditServerAction(FacesContext context, String serverId)
+   {
+      UIActionLink action = null;
+      String actionId = "edit_" + serverId;
+      
+      // try find the action as a child of this component
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (actionId.equals(component.getId()))
+         {
+            action = (UIActionLink)component;
+            break;
+         }
+      }
+      
+      if (action == null)
+      {
+         // create the action and add as a child component
+         javax.faces.application.Application facesApp = context.getApplication();
+         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
+         action.setId(actionId);
+         action.setValue(Application.getMessage(context, MSG_EDIT));
+         action.setImage("/images/icons/edit_icon.gif");
+         action.setShowLink(false);
+         action.setActionListener(facesApp.createMethodBinding(
+               "#{WizardManager.bean.editDeploymentServerConfig}", 
+               UIActions.ACTION_CLASS_ARGS));
+         
+         // add server id param
+         UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setId(actionId + "_1");
+         param.setName("id");
+         param.setValue(serverId);
+         action.getChildren().add(param);
+         
+         this.getChildren().add(action);
+      }
+      
+      return action;
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected UIActionLink aquireDeleteServerAction(FacesContext context, String serverId)
+   {
+      UIActionLink action = null;
+      String actionId = "delete_" + serverId;
+      
+      // try find the action as a child of this component
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (actionId.equals(component.getId()))
+         {
+            action = (UIActionLink)component;
+            break;
+         }
+      }
+      
+      if (action == null)
+      {
+         // create the action and add as a child component
+         javax.faces.application.Application facesApp = context.getApplication();
+         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
+         action.setId(actionId);
+         action.setValue(Application.getMessage(context, MSG_DELETE));
+         action.setImage("/images/icons/delete.gif");
+         action.setShowLink(false);
+         action.setActionListener(facesApp.createMethodBinding(
+               "#{WizardManager.bean.deleteDeploymentServerConfig}", 
+               UIActions.ACTION_CLASS_ARGS));
+         
+         // add server id param
+         UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param.setId(actionId + "_1");
+         param.setName("id");
+         param.setValue(serverId);
+         action.getChildren().add(param);
+         
+         this.getChildren().add(action);
+      }
+      
+      return action;
+   }
+   
+   /**
+    * @return Options for the type of deployment server i.e. test or live
+    */
+   public List<UIListItem> getDeployServerTypes()
+   {
+      List<UIListItem> items = new ArrayList<UIListItem>(2);
+      
+      UIListItem live = new UIListItem();
+      live.setValue(WCMAppModel.CONSTRAINT_LIVESERVER);
+      live.setLabel(Application.getMessage(FacesContext.getCurrentInstance(), MSG_LIVE_SERVER));
+      
+      UIListItem test = new UIListItem();
+      test.setValue(WCMAppModel.CONSTRAINT_TESTSERVER);
+      test.setLabel(Application.getMessage(FacesContext.getCurrentInstance(), MSG_TEST_SERVER));
+      
+      items.add(live);
+      items.add(test);
+      
+      return items;
+   }
+}

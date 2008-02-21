@@ -88,8 +88,8 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       getNodeService().setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
       getNodeService().setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
       
-      // clear the existing settings for forms, template and workflows - then the existing methods
-      // can be used to apply the modified and previous settings from scratch
+      // clear the existing settings for forms, template, workflows and deployment - then 
+      // the existing methods can be used to apply the modified and previous settings from scratch
       clearWebProjectModel(nodeRef);
       
       // change/create the root webapp name for the website
@@ -106,7 +106,8 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       
       // TODO: allow change of dns name - via store rename functionality
       
-      // persist the forms, templates, workflows and workflow defaults to the model for this web project
+      // persist the forms, templates, workflows, workflow defaults and deployment config
+      // to the model for this web project
       saveWebProjectModel(nodeRef);
       
       return AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
@@ -130,6 +131,13 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       List<ChildAssociationRef> wfRefs = getNodeService().getChildAssocs(
                nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
       for (ChildAssociationRef ref : wfRefs)
+      {
+         getNodeService().removeChild(nodeRef, ref.getChildRef());
+      }
+      
+      List<ChildAssociationRef> serverRefs = getNodeService().getChildAssocs(
+               nodeRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+      for (ChildAssociationRef ref : serverRefs)
       {
          getNodeService().removeChild(nodeRef, ref.getChildRef());
       }

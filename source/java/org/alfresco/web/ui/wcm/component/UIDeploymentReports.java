@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -36,6 +37,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -44,6 +46,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -237,29 +240,42 @@ public class UIDeploymentReports extends SelfRenderingComponent
                context.getExternalContext().getRequestContextPath(), "innerwhite", "white");
       
       // extract the information we need to display
-      String server = (String)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSERVER);
-      String creator = (String)nodeService.getProperty(deploymentReport, ContentModel.PROP_CREATOR);
-      Date startTime = (Date)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSTARTTIME);
+      Map<QName, Serializable> serverProps = nodeService.getProperties(deploymentReport);
+      String server = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVER);
+      String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAMEUSED);
+      if (serverName == null || serverName.length() == 0)
+      {
+         serverName = server;
+      }
+      
+      String deployType = WCMAppModel.CONSTRAINT_ALFDEPLOY;
+      if (server.startsWith(AVMDeploySnapshotAction.FILE_SERVER_PREFIX))
+      {
+         deployType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
+      }
+      
+      String creator = (String)serverProps.get(ContentModel.PROP_CREATOR);
+      Date startTime = (Date)serverProps.get(WCMAppModel.PROP_DEPLOYSTARTTIME);
       String started = null;
       if (startTime != null)
       {
          started = Utils.getDateTimeFormat(context).format(startTime);
       }
       
-      Date endTime = (Date)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYENDTIME);
+      Date endTime = (Date)serverProps.get(WCMAppModel.PROP_DEPLOYENDTIME);
       String finished = null;
       if (endTime != null)
       {
          finished = Utils.getDateTimeFormat(context).format(endTime);
       }
       
-      Boolean success = (Boolean)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYSUCCESSFUL);
+      Boolean success = (Boolean)serverProps.get(WCMAppModel.PROP_DEPLOYSUCCESSFUL);
       if (success == null)
       {
          success = Boolean.FALSE;
       }
       
-      String failReason = (String)nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYFAILEDREASON);
+      String failReason = (String)serverProps.get(WCMAppModel.PROP_DEPLOYFAILEDREASON);
       String content = "";
       ContentReader reader = contentService.getReader(deploymentReport, ContentModel.PROP_CONTENT);
       if (reader != null)
@@ -276,7 +292,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       }
       
       int snapshot = -1;
-      Serializable snapshotObj = nodeService.getProperty(deploymentReport, WCMAppModel.PROP_DEPLOYVERSION);
+      Serializable snapshotObj = serverProps.get(WCMAppModel.PROP_DEPLOYVERSION);
       if (snapshotObj != null && snapshotObj instanceof Integer)
       {
          snapshot = (Integer)snapshotObj;
@@ -285,9 +301,11 @@ public class UIDeploymentReports extends SelfRenderingComponent
       out.write("<table cellspacing='0' cellpadding='2' border='0' width='100%'>");
       out.write("<tr><td width='40' valign='top'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/deploy_server_large.gif' /></td><td>");
+      out.write("/images/icons/deploy_server_");
+      out.write(deployType);
+      out.write(".gif' /></td><td>");
       out.write("<div class='mainHeading'>");
-      out.write(server);
+      out.write(serverName);
       out.write("</div><div style='margin-top: 3px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/images/icons/deploy_");

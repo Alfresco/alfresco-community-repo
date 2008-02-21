@@ -211,6 +211,56 @@
    </tag>
    
    <tag>
+      <name>deploymentServers</name>
+      <tag-class>org.alfresco.web.ui.wcm.tag.DeploymentServersTag</tag-class>
+      <body-content>JSP</body-content>
+      <display-name>Deployment Servers</display-name>
+      <description>
+         Renders a list of deployment servers and allows new ones to be 
+         added and existing servers to be edited and removed
+      </description>
+      
+      <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+      
+      <attribute>
+         <name>value</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The list of deployment servers to show</description>
+      </attribute>
+      
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>currentServer</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The deployment server currently being added or edited</description>
+      </attribute>
+      
+      <attribute>
+         <name>inAddMode</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+      
+      <attribute>
+         <name>addType</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
       <name>deployWebsite</name>
       <tag-class>org.alfresco.web.ui.wcm.tag.DeployWebsiteTag</tag-class>
       <body-content>JSP</body-content>

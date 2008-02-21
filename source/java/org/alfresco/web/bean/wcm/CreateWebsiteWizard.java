@@ -71,6 +71,7 @@ import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -94,6 +95,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    // wizard step names (that are referenced)
    private static final String STEP_DETAILS = "details";
    private static final String STEP_FORMS = "forms";
+   private static final String STEP_DEPLOYMENT = "deployment";
    
    private static final String MATCH_DEFAULT = ".*";
 
@@ -143,18 +145,24 @@ public class CreateWebsiteWizard extends BaseWizardBean
    /** datamodel for table of selected workflows */
    transient private DataModel workflowsDataModel = null;
    
-   /** transient list of workflow UIListItem objects */
-   transient private List<UIListItem> workflowsList = null;
-   
    /** list of workflow wrapper objects */
    protected List<WorkflowWrapper> workflows = null;
    
    /** Current workflow for dialog context */
    protected WorkflowConfiguration actionWorkflow = null;
    
+   /** Map and list of deployment servers */
+   protected Map<String, DeploymentServerConfig> deployServersMap = null;
+   protected List<DeploymentServerConfig> deployServersList = null;
+   
+   /** Current state of deploy server editing */
+   protected DeploymentServerConfig currentDeployServer = null;
+   protected Map<String, Object> editedDeployServerProps = null;
+   protected boolean inAddDeployServerMode = false;
+   protected String addDeployServerType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
+   
    /** Data for virtualization server notification  */
    private SandboxInfo sandboxInfo;
-   
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -171,7 +179,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.title = null;
       this.description = null;
       this.isSource = false;
-      clearFormsWorkflowsAndUsers();
+      clearFormsWorkflowsDeploymentAndUsers();
       this.createFrom = CREATE_EMPTY;
       // requry existing web projects list every 10 seconds
       this.webProjectsList = new ExpiringValueCache<List<UIListItem>>(1000L*10L);
@@ -180,12 +188,20 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.showAllSourceProjects = false;
    }
 
-   private void clearFormsWorkflowsAndUsers()
+   private void clearFormsWorkflowsDeploymentAndUsers()
    {
       this.formsDataModel = null;
       this.forms = new ArrayList<FormWrapper>(8);
       this.workflowsDataModel = null;
       this.workflows = new ArrayList<WorkflowWrapper>(4);
+      
+      // reset all deployment data
+      this.deployServersMap = new HashMap<String, DeploymentServerConfig>(4, 1.0f);
+      this.deployServersList = new ArrayList<DeploymentServerConfig>(4);
+      this.currentDeployServer = null;
+      this.editedDeployServerProps = new HashMap<String, Object>(12, 1.0f);
+      this.inAddDeployServerMode = false;
+      this.addDeployServerType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
       
       // init the dependant bean we are using for the invite users pages
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
@@ -266,7 +282,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          // set the property on the node to reference the root AVM store
          getNodeService().setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
          
-         // persist the forms, templates, workflows and workflow defaults to the model for this web project
+         // persist the forms, templates, workflows, workflow defaults and deployment 
+         // config to the model for this web project
          saveWebProjectModel(nodeRef);
          
          // navigate to the Websites folder so we can see the newly created folder
@@ -311,7 +328,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
    }
    
    /**
-    * Persist the forms, templates, workflows and workflow defaults to the model for this web project
+    * Persist the forms, templates, workflows, workflow defaults and deployment config
+    * to the model for this web project
     * 
     * @param nodeRef        NodeRef to the web project
     */
@@ -385,7 +403,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          }
       }
       
-      // finally walk each web project workflow definition and save defaults for each
+      // walk each web project workflow definition and save defaults for each
       for (WorkflowWrapper workflow : this.workflows)
       {
          props.clear();
@@ -410,11 +428,24 @@ public class CreateWebsiteWizard extends BaseWizardBean
             getNodeService().addAspect(workflowRef, WCMAppModel.ASPECT_FILENAMEPATTERN, props);
          }
       }
+      
+      // finally walk through the deployment config and save
+      for (DeploymentServerConfig server : this.deployServersList)
+      {
+         Map<QName, Serializable> repoProps = server.getRepoProps();
+         
+         getNodeService().createNode(nodeRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER,
+                  WCMAppModel.ASSOC_DEPLOYMENTSERVER, WCMAppModel.TYPE_DEPLOYMENTSERVER,
+                  repoProps);
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Saved deploymentserver node using repo props: " + repoProps);
+      }
    }
    
    /**
-    * Restore the forms, templates and workflows from the model for a web project. Can also
-    * optional restore the basic node propetries and user details.
+    * Restore the forms, templates, workflows and deployment config from the model for a web project. 
+    * Can also optionally restore the basic node propetries and user details.
     * 
     * @param nodeRef        NodeRef to the web project to load model from
     * @param loadProperties Load the basic properties such as name, title, DNS.
@@ -540,6 +571,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
             }
             this.workflows.add(wfWrapper);
          }
+      }
+      
+      // load the deployment server config objects
+      List<ChildAssociationRef> serverRefs = getNodeService().getChildAssocs(
+               nodeRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+      for (ChildAssociationRef sChildRef : serverRefs)
+      {
+         NodeRef serverRef = sChildRef.getChildRef();
+         DeploymentServerConfig server = new DeploymentServerConfig(
+                  serverRef, getNodeService().getProperties(serverRef));
+         
+         this.deployServersList.add(server);
+         this.deployServersMap.put(server.getId(), server);
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Loaded deploy server config: " + server);
       }
    }
    
@@ -895,9 +942,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public String next()
    {
       String stepName = Application.getWizardManager().getCurrentStepName();
-      if (STEP_FORMS.equals(stepName))
+      if (STEP_DEPLOYMENT.equals(stepName))
       {
-         // if we have just entered the Forms page and the Create From page data has changed
+         // if we have just entered the deployment page and the Create From page data has changed
          // then we need to pre-populate the Forms etc. from the template web project
          updateModelOnCreateFromChange();
       }
@@ -915,13 +962,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             if (this.sourceWebProject != null && this.sourceWebProject.length != 0)
             {
-               clearFormsWorkflowsAndUsers();
+               clearFormsWorkflowsDeploymentAndUsers();
                loadWebProjectModel(new NodeRef(this.sourceWebProject[0]), false, true);
             }
          }
          else
          {
-            clearFormsWorkflowsAndUsers();
+            clearFormsWorkflowsDeploymentAndUsers();
          }
          
          this.createFromValueChanged = false;
@@ -989,6 +1036,155 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return result;      
    }
    
+   // ------------------------------------------------------------------------------
+   // Deployment server configuration
+   
+   /**
+    * @return Determines whether a deployment server is being added
+    */
+   public boolean isInAddDeployServerMode()
+   {
+      return this.inAddDeployServerMode;
+   }
+
+   /**
+    * @return The type of server receiver to add, either 'alfresco' or 'file'
+    */
+   public String getAddDeployServerType()
+   {
+      return this.addDeployServerType;
+   }
+   
+   /**
+    * @return The deploy server currently being added or edited 
+    */
+   public DeploymentServerConfig getCurrentDeployServer()
+   {
+      return this.currentDeployServer;
+   }
+   
+   /**
+    * @return The properties of the deploy server currently being added or edited 
+    */
+   public Map<String, Object> getEditedDeployServerProperties()
+   {
+      return this.editedDeployServerProps;
+   }
+
+   /**
+    * @return Map of the deployment servers currently configured for the web project
+    */
+   public List<DeploymentServerConfig> getDeployServers()
+   {
+      return this.deployServersList;
+   }
+
+   /**
+    * Sets up the wizard for adding a new Alfresco Server Receiver
+    * 
+    * @return null outcome to stay on same page
+    */
+   public String addAlfrescoServerReceiver()
+   {
+      this.addDeployServerType = WCMAppModel.CONSTRAINT_ALFDEPLOY;
+      this.inAddDeployServerMode = true;
+      
+      // create an empty server config
+      this.currentDeployServer = new DeploymentServerConfig(this.addDeployServerType);
+      this.editedDeployServerProps.clear();
+      
+      // refresh the current page
+      return null;
+   }
+   
+   /**
+    * Sets up the wizard for adding a new File System Receiver
+    * 
+    * @return null outcome to stay on same page
+    */
+   public String addFileSystemReceiver()
+   {
+      this.addDeployServerType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
+      this.inAddDeployServerMode = true;
+      
+      // create an empty server config
+      this.currentDeployServer = new DeploymentServerConfig(this.addDeployServerType);
+      this.editedDeployServerProps.clear();
+      
+      // refresh the current page
+      return null;
+   }
+   
+   public void editDeploymentServerConfig(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String id = params.get("id");
+      if (id != null && id.length() != 0)
+      {
+         this.inAddDeployServerMode = false;
+         
+         // setup the config object to edit
+         this.currentDeployServer = this.deployServersMap.get(id);
+         this.editedDeployServerProps.clear();
+         this.editedDeployServerProps.putAll(this.currentDeployServer.getProperties());
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Set current deploy server to: " + this.currentDeployServer);
+      }
+   }
+   
+   public void deleteDeploymentServerConfig(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String id = params.get("id");
+      if (id != null && id.length() != 0)
+      {
+         this.currentDeployServer = null;
+         this.editedDeployServerProps.clear();
+         this.inAddDeployServerMode = false;
+         
+         // remove the config object from the list and map
+         DeploymentServerConfig dsc = this.deployServersMap.get(id);
+         if (dsc != null)
+         {
+            this.deployServersList.remove(dsc);
+            this.deployServersMap.remove(dsc.getId());
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Removed deploy server config with id: " + id);
+         }
+      }
+   }
+   
+   public String addDeploymentServerConfig()
+   {
+      // add the new config to the list and map
+      this.deployServersList.add(this.currentDeployServer);
+      this.deployServersMap.put(this.currentDeployServer.getId(), 
+               this.currentDeployServer);
+      
+      // save the changes
+      return saveDeploymentServerConfig();
+   }
+   
+   public String saveDeploymentServerConfig()
+   {
+      // set the edited properties
+      this.currentDeployServer.setProperties(this.editedDeployServerProps);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Updated deploy server config: " + this.currentDeployServer);
+      
+      // reset state
+      this.currentDeployServer = null;
+      this.editedDeployServerProps.clear();
+      this.inAddDeployServerMode = false;
+      
+      // refresh the current page
+      return null;
+   }
    
    // ------------------------------------------------------------------------------
    // Define Web Content Workflows page
@@ -1181,7 +1377,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          item.setImage(WebResources.IMAGE_WORKFLOW_32);
          items.add(item);
       }
-      this.workflowsList = items;
+      
       return items;
    }
    

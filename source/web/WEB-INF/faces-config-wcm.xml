@@ -35,6 +35,11 @@
    </component>
    
    <component>
+      <component-type>org.alfresco.faces.DeploymentServers</component-type>
+      <component-class>org.alfresco.web.ui.wcm.component.UIDeploymentServers</component-class>
+   </component>
+   
+   <component>
       <component-type>org.alfresco.faces.PendingSubmissions</component-type>
       <component-class>org.alfresco.web.ui.wcm.component.UIPendingSubmissions</component-class>
    </component>

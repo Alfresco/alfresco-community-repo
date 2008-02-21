@@ -436,6 +436,7 @@ public class UIDeployWebsite extends UIInput
       String contextPath = context.getExternalContext().getRequestContextPath();
       
       Map<QName, Serializable> props = nodeService.getProperties(server);
+      String deployType = (String)props.get(WCMAppModel.PROP_DEPLOYTYPE);
       String serverName = (String)props.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
       if (serverName == null || serverName.length() == 0)
       {
@@ -481,7 +482,9 @@ public class UIDeployWebsite extends UIInput
       out.write("<div class='deployPanelIcon'>");
       out.write("<img src='");
       out.write(contextPath);
-      out.write("/images/icons/deploy_server_large.gif' /></div></td>");
+      out.write("/images/icons/deploy_server_");
+      out.write(deployType);
+      out.write(".gif' /></div></td>");
       out.write("<td style='background-image: url(");
       out.write(contextPath);
       out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x; width: 100%;'>");

@@ -297,7 +297,6 @@
             <property name="wca:deployserverport">
                <title>Port</title>
                <type>d:int</type>
-               <mandatory enforced="true">true</mandatory>
             </property>
             <property name="wca:deployservername">
                <title>Display Name</title>
@@ -330,7 +329,6 @@
             <property name="wca:deployonapproval">
                <title>Deploy On Approval</title>
                <type>d:boolean</type>
-               <default>false</default>
             </property>
          </properties>
       </type>

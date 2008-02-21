@@ -65,6 +65,7 @@ import org.apache.commons.logging.LogFactory;
 public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
 {
    public static final String NAME = "avm-deploy-snapshot";
+   public static final String FILE_SERVER_PREFIX = "\\\\";
 
    public static final String PARAM_WEBSITE = "website";
    public static final String PARAM_SERVER = "server";
@@ -83,7 +84,6 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
 
    private static Log logger = LogFactory.getLog(AVMDeploySnapshotAction.class);
    private static Log delayDeploymentLogger = LogFactory.getLog("alfresco.deployment.delay");
-   private static final String FILE_SERVER_PREFIX = "\\\\";
    
    /**
     * Calculate the URI representation of a server from the given set of properties
@@ -439,7 +439,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
          reportProps.put(WCMAppModel.PROP_DEPLOYFAILEDREASON, error.getMessage());
       }
       reportRef = this.nodeService.createNode(attempt, 
-               WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORT, 
+               WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORTS, 
                WCMAppModel.TYPE_DEPLOYMENTREPORT, reportProps).getChildRef();
       ContentWriter writer = contentService.getWriter(reportRef, ContentModel.PROP_CONTENT, true);
       writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);

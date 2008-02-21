@@ -28,7 +28,6 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.apache.commons.logging.Log;
@@ -43,10 +42,7 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = -8054466371051782132L;
    
-   protected NodeRef webProjectRef;
-   protected Integer deployedVersion;
-   
-   protected AVMBrowseBean avmBrowseBean;
+   protected String store;
    
    private static final Log logger = LogFactory.getLog(ViewDeploymentReportDialog.class);
    
@@ -58,11 +54,16 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
    {
       super.init(parameters);
       
-      this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
+      this.store = parameters.get("store");
       
+      if (this.store == null || this.store.length() == 0)
+      {
+         throw new IllegalArgumentException("store parameter is mandatory");
+      }
+
       if (logger.isDebugEnabled())
-         logger.debug("Initialising dialog to view deployment report for " + 
-                  this.avmBrowseBean.getStagingStore());
+         logger.debug("Initialising dialog to view deployment report for: " + 
+                  this.store);
    }
    
    @Override
@@ -81,18 +82,10 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
    // Bean getters and setters
    
    /**
-    * @return The NodeRef of the web project the deployment reports are being shown for
+    * @return The store to show deployment reports for
     */
-   public NodeRef getWebProjectRef()
+   public String getStore()
    {
-      return this.webProjectRef;
-   }
-   
-   /**
-    * @param avmBrowseBean The AVM BrowseBean instance to use
-    */
-   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
-   {
-      this.avmBrowseBean = avmBrowseBean;
+      return this.store;
    }
 }

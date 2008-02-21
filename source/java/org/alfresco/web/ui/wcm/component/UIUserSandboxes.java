@@ -46,6 +46,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -65,6 +67,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.data.IDataContainer;
@@ -114,6 +117,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private static final String ACT_SANDBOX_ICON = "sandbox_icon";
    private static final String ACT_REMOVE_SANDBOX = "sandbox_remove";
    private static final String ACT_SANDBOX_REFRESH = "sandbox_refresh";
+   private static final String ACT_SANDBOX_DEPLOY = "sandbox_deploy";
+   private static final String ACT_SANDBOX_DEPLOY_REPORT = "deployment_report_action";
    
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
@@ -141,6 +146,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    
    private static final String REQUEST_FORM_REF = "formref";
    private static final String REQUEST_PREVIEW_REF = "prevhref";
+   private static final String REQUEST_UPDATE_TEST_SERVER = "updatetestserver";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
    
@@ -315,6 +321,15 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          // sort the user list alphabetically and insert the current user at the top of the list 
          List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
          
+         // determine whether the deploy action should be shown
+         boolean deployServersConfigured = false;
+         List<ChildAssociationRef> deployToServers = nodeService.getChildAssocs(
+                     websiteRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+         if (deployToServers != null && deployToServers.size() > 0)
+         {
+            deployServersConfigured = true;
+         }
+         
          // output a javascript function we need for multi-select functionality
          out.write(SCRIPT_MULTISELECT);
          
@@ -405,6 +420,38 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                         null, null, "#{" + REQUEST_PREVIEW_REF + "}", null));
                   requestMap.remove(REQUEST_PREVIEW_REF);
                   out.write("&nbsp;&nbsp;");
+                  
+                  // Deployment actions
+                  if (deployServersConfigured)
+                  {
+                     // if a deployment has already occurred then the next
+                     // deployment will be an update (this informs the dialog
+                     // that test server allocation checks are not needed).
+                     PropertyValue val = avmService.getStoreProperty(mainStore, 
+                              SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+                     
+                     boolean reDeploy = (val != null);
+                     
+                     Map<String, String> dialogParams = new HashMap<String, String>(6);
+                     dialogParams.put("store", mainStore);
+                     dialogParams.put("username", username);
+                     requestMap.put(REQUEST_UPDATE_TEST_SERVER, Boolean.toString(reDeploy));
+                     dialogParams.put("updateTestServer", "#{" + REQUEST_UPDATE_TEST_SERVER + "}");
+                     Utils.encodeRecursive(context, aquireAction(
+                           context, mainStore, username, ACT_SANDBOX_DEPLOY, "/images/icons/deploy.gif",
+                           "#{DialogManager.setupParameters}", "dialog:deploySandbox", null, dialogParams));
+                     out.write("&nbsp;&nbsp;");
+                  }
+                  
+                  // View deployment report (if there are any)
+                  List<NodeRef> attempts = DeploymentUtil.findDeploymentAttempts(mainStore);
+                  if (attempts != null && attempts.size() > 0)
+                  {
+                     Utils.encodeRecursive(context, aquireAction(
+                           context, mainStore, username, ACT_SANDBOX_DEPLOY_REPORT, "/images/icons/deployment_report.gif", 
+                           "#{DialogManager.setupParameters}", "dialog:viewDeploymentReport"));
+                     out.write("&nbsp;&nbsp;");
+                  }
                   
                   // Refresh Sandbox
                   Utils.encodeRecursive(context, aquireAction(

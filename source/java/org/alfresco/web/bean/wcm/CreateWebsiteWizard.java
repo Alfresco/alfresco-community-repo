@@ -1175,7 +1175,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.currentDeployServer.setProperties(this.editedDeployServerProps);
       
       if (logger.isDebugEnabled())
-         logger.debug("Updated deploy server config: " + this.currentDeployServer);
+         logger.debug("Saved transient deploy server config: " + this.currentDeployServer);
       
       // reset state
       this.currentDeployServer = null;

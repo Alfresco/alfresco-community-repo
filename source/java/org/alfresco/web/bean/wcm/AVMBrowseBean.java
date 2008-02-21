@@ -895,16 +895,17 @@ public class AVMBrowseBean implements IContextListener
       //       expression in a 'rendered' attribute, we therefore cache the result
       //       on a per request basis
       
-      List<ChildAssociationRef> deployAttempts = null;
+      List<NodeRef> deployAttempts = null;
       
       FacesContext context = FacesContext.getCurrentInstance();
       Map request = context.getExternalContext().getRequestMap();
       if (request.get(REQUEST_BEEN_DEPLOYED_KEY) == null)
       {
-         // see if there are any deployment attempts for the site
+         // see if there are any deployment attempts for the staging area
          NodeRef webProjectRef = this.getWebsite().getNodeRef();
-         deployAttempts = getNodeService().getChildAssocs(webProjectRef, 
-                  WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, RegexQNamePattern.MATCH_ALL);
+         String store = (String)nodeService.getProperty(webProjectRef, 
+                  WCMAppModel.PROP_AVMSTORE);
+         deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
          
          // add a placeholder object in the request so we don't evaluate this again for this request
          request.put(REQUEST_BEEN_DEPLOYED_KEY, Boolean.TRUE);
@@ -912,7 +913,7 @@ public class AVMBrowseBean implements IContextListener
       }
       else
       {
-         deployAttempts = (List<ChildAssociationRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
+         deployAttempts = (List<NodeRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
       }
       
       return (deployAttempts != null && deployAttempts.size() > 0);

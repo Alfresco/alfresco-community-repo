@@ -32,5 +32,6 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<w:deployWebsite value="#{DialogManager.bean.deployTo}" website="#{DialogManager.bean.webProjectRef}" 
+<w:deployWebsite value="#{DialogManager.bean.deployTo}" deployMode="#{DialogManager.bean.deployMode}"
+                 website="#{DialogManager.bean.webProjectRef}" store="#{DialogManager.bean.store}"
                  snapshotVersion="#{DialogManager.bean.snapshotVersion}" />

@@ -156,8 +156,10 @@
                                                actionListener="#{AVMBrowseBean.refreshSandbox}" image="/images/icons/reset.gif" />
                                  &nbsp;
                                  <a:actionLink id="actViewDeployReport" rendered="#{AVMBrowseBean.hasDeployBeenAttempted}" value="#{msg.deployment_report_action}" 
-                                               actionListener="#{AVMBrowseBean.setupSandboxAction}" action="dialog:viewDeploymentReport"
-                                               image="/images/icons/deployment_report.gif"  />
+                                               actionListener="#{DialogManager.setupParameters}" action="dialog:viewDeploymentReport"
+                                               image="/images/icons/deployment_report.gif">
+                                    <f:param name="store" value="#{AVMBrowseBean.stagingStore}" />
+                                 </a:actionLink>
                                  
                                  <%-- Disabled action for GA
                                  <a:actionLink id="actSnap" value="#{msg.sandbox_snapshot}" image="/images/icons/create_snapshot.gif" 

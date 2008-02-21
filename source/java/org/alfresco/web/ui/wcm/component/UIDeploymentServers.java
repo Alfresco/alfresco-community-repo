@@ -44,12 +44,13 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.DeploymentServerConfig;
 import org.alfresco.web.ui.common.ComponentConstants;
+import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -154,18 +155,6 @@ public class UIDeploymentServers extends UIInput
          out.write("<div class='deployConfig'>");
          
          List<DeploymentServerConfig> servers = getValue();
-         DeploymentServerConfig currentServer = getCurrentServer();
-         for (DeploymentServerConfig server: servers)
-         {
-            if (currentServer != null && currentServer.getId().equals(server.getId()))
-            {
-               renderServerForm(context, out, server, true);
-            }
-            else
-            {
-               renderServer(context, out, server);
-            }
-         }
          
          if (getInAddMode())
          {
@@ -180,6 +169,19 @@ public class UIDeploymentServers extends UIInput
                out.write("/images/icons/info_icon.gif' />&nbsp;");
                out.write(Application.getMessage(context, MSG_NO_DEPLOY_SERVERS));
                out.write("</div>");
+            }
+         }
+         
+         DeploymentServerConfig currentServer = getCurrentServer();
+         for (DeploymentServerConfig server: servers)
+         {
+            if (currentServer != null && currentServer.getId().equals(server.getId()))
+            {
+               renderServerForm(context, out, server, true);
+            }
+            else
+            {
+               renderServer(context, out, server);
             }
          }
          
@@ -304,20 +306,6 @@ public class UIDeploymentServers extends UIInput
    // ------------------------------------------------------------------------------
    // Helpers
    
-   protected void renderAddControls(FacesContext context, ResponseWriter out)
-            throws IOException
-   {
-      out.write("");
-      
-      UICommand addAlfAction = aquireAddAlfReceiverAction(context);
-      Utils.encodeRecursive(context, addAlfAction);
-      
-      UICommand addFileAction = aquireAddFileReceiverAction(context);
-      Utils.encodeRecursive(context, addFileAction);
-      
-      out.write("</div>");
-   }
-   
    protected void renderServer(FacesContext context, ResponseWriter out,
             DeploymentServerConfig server) throws IOException
    {
@@ -327,38 +315,44 @@ public class UIDeploymentServers extends UIInput
       String serverName = (String)server.getProperties().get(DeploymentServerConfig.PROP_NAME);
       if (serverName == null || serverName.length() == 0)
       {
-         serverName = AVMDeploySnapshotAction.calculateServerUri(server.getRepoProps());
+         serverName = AVMDeployWebsiteAction.calculateServerUri(server.getRepoProps());
       }
       
       out.write("<div class='deployConfigServer'>");
-      out.write("<table><tr><td valign='top'><img class='deployConfigServerIcon' src='");
+      PanelGenerator.generatePanelStart(out, contextPath, "lightstorm", "#eaeff2");
+      out.write("<table width='100%'><tr><td><img class='deployConfigServerIcon' src='");
       out.write(contextPath);
       out.write("/images/icons/deploy_server_");
       out.write(server.getDeployType());
       out.write(".gif");
-      out.write("' /></td><td><table class='deployConfigServerDetails'>");
-      out.write("<tr><td colspan='4'><span class='deployPanelServerName'>");
+      out.write("' /></td><td width='100%'><span class='deployPanelServerName'>");
       out.write(serverName);
-      out.write("</span></td><td align='right'>");
+      out.write("</span></td><td><div class='deployConfigServerActions'>");
       Utils.encodeRecursive(context, aquireEditServerAction(context, server.getId()));
       Utils.encodeRecursive(context, aquireDeleteServerAction(context, server.getId()));
-      out.write("</td></tr><tr><td>");
+      out.write("</div></td></tr>");
+      out.write("<tr><td colspan='3'>");
+      out.write("<table cellpadding='0' cellspacing='0'>");
+      out.write("<tr><td><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsLeftCol'>");
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_HOST));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_HOST) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_HOST));
       }
+      out.write("</td></tr>");
       
-      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_PORT));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_PORT) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT));
       }
+      out.write("</td></tr>");
       
-      out.write("</td></tr><tr><td>");
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_TYPE));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_TYPE) != null)
@@ -373,21 +367,27 @@ public class UIDeploymentServers extends UIInput
             out.write(Application.getMessage(context, MSG_TEST_SERVER));
          }
       }
-      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write("</td></tr>");
+      
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_URL));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_URL) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_URL));
       }
-      out.write("</td></tr><tr><td>");
+      out.write("</td></tr></table></td>"); 
+      out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_USER));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_USER) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_USER));
       }
-      out.write("</td><td width='30'>&nbsp;</td><td>");
+      out.write("</td></tr>");
+      
+      out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_SOURCE));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH) != null)
@@ -398,7 +398,7 @@ public class UIDeploymentServers extends UIInput
       
       if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType()))
       {
-         out.write("<tr><td>");
+         out.write("<tr><td align='right'>");
          out.write(bundle.getString(MSG_TARGET));
          out.write(":</td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME) != null)
@@ -411,7 +411,7 @@ public class UIDeploymentServers extends UIInput
       if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(
           server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
       {
-         out.write("<tr><td>");
+         out.write("<tr><td align='right'>");
          out.write(bundle.getString(MSG_AUTO_DEPLOY));
          out.write(":</td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL) != null)
@@ -429,7 +429,9 @@ public class UIDeploymentServers extends UIInput
          out.write("</td></tr>");
       }
       
-      out.write("</table></td></tr></table></div>");         
+      out.write("</table></td></tr></table></td></tr></table>");
+      PanelGenerator.generatePanelEnd(out, contextPath, "lightstorm");
+      out.write("</div>");
    }
    
    @SuppressWarnings("unchecked")
@@ -438,12 +440,13 @@ public class UIDeploymentServers extends UIInput
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
       ResourceBundle bundle = Application.getBundle(context);
-      
+         
       out.write("<div class='deployConfigServer'>");
-      out.write("<table><tr><td valign='top'><img class='deployConfigServerIcon' src='");
+      PanelGenerator.generatePanelStart(out, contextPath, "lightstorm", "#eaeff2");
+      out.write("<table width='100%'><tr><td><img class='deployConfigServerIcon' src='");
       out.write(contextPath);
       out.write("/images/icons/deploy_server_");
-      if (server != null)
+      if (edit)
       {
          out.write(server.getDeployType());
       }
@@ -452,7 +455,31 @@ public class UIDeploymentServers extends UIInput
          out.write(getAddType());
       }
       out.write(".gif' /></td>");
-      out.write("<td><table class='deployConfigServerForm'>");
+      out.write("<td width='100%'><span class='mainSubTitle'>");
+      if (edit)
+      {
+         if (WCMAppModel.CONSTRAINT_ALFDEPLOY.equals(server.getDeployType()))
+         {
+            out.write(bundle.getString("edit_alf_deploy_server_info"));
+         }
+         else
+         {
+            out.write(bundle.getString("edit_file_deploy_server_info"));
+         }
+      }
+      else
+      {
+         if (WCMAppModel.CONSTRAINT_ALFDEPLOY.equals(getAddType()))
+         {
+            out.write(bundle.getString("add_alf_deploy_server_info"));
+         }
+         else
+         {
+            out.write(bundle.getString("add_file_deploy_server_info"));
+         }
+      }
+      out.write("</span></td></tr>");
+      out.write("<tr><td colspan='2'><table class='deployConfigServerForm'>");
       
       // create the server type drop down
       out.write("<tr><td align='right'>");
@@ -663,73 +690,9 @@ public class UIDeploymentServers extends UIInput
       }
       
       // finish off tables and div
-      out.write("</table></td></tr></table></div>");
-   }
-   
-   @SuppressWarnings("unchecked")
-   protected UIActionLink aquireAddAlfReceiverAction(FacesContext context)
-   {
-      UIActionLink action = null;
-      String actionId = "add_alf_receiver";
-      
-      // try find the action as a child of this component
-      for (UIComponent component : (List<UIComponent>)getChildren())
-      {
-         if (actionId.equals(component.getId()))
-         {
-            action = (UIActionLink)component;
-            break;
-         }
-      }
-      
-      if (action == null)
-      {
-         // create the action and add as a child component
-         javax.faces.application.Application facesApp = context.getApplication();
-         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
-         action.setId(actionId);
-         action.setValue(Application.getMessage(context, MSG_ALF_SERVER));
-         action.setImage("/images/icons/plus.gif");
-         MethodBinding binding = facesApp.createMethodBinding(
-                  "#{WizardManager.bean.addAlfrescoServerReceiver}", new Class[] {});
-         action.setAction(binding);
-         this.getChildren().add(action);
-      }
-      
-      return action;
-   }
-   
-   @SuppressWarnings("unchecked")
-   protected UIActionLink aquireAddFileReceiverAction(FacesContext context)
-   {
-      UIActionLink action = null;
-      String actionId = "add_file_receiver";
-      
-      // try find the action as a child of this component
-      for (UIComponent component : (List<UIComponent>)getChildren())
-      {
-         if (actionId.equals(component.getId()))
-         {
-            action = (UIActionLink)component;
-            break;
-         }
-      }
-      
-      if (action == null)
-      {
-         // create the action and add as a child component
-         javax.faces.application.Application facesApp = context.getApplication();
-         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
-         action.setId(actionId);
-         action.setValue(Application.getMessage(context, MSG_FILE_SYSTEM));
-         action.setImage("/images/icons/plus.gif");
-         MethodBinding binding = facesApp.createMethodBinding(
-                  "#{WizardManager.bean.addFileSystemReceiver}", new Class[] {});
-         action.setAction(binding);
-         this.getChildren().add(action);
-      }
-      
-      return action;
+      out.write("</table></td></tr></table>");
+      PanelGenerator.generatePanelEnd(out, contextPath, "lightstorm");
+      out.write("</div>");
    }
    
    @SuppressWarnings("unchecked")

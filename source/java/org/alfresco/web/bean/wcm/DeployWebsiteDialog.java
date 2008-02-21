@@ -33,9 +33,10 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
@@ -51,25 +52,27 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Deploys a web project snapshot to one or more remote servers.
+ * Deploys a website to one or more remote servers.
  * 
  * @author gavinc
  */
-public class DeploySnapshotDialog extends BaseDialogBean
+public class DeployWebsiteDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = 62702082716235924L;
    
    protected int versionToDeploy;
    protected String[] deployTo;
-   protected String stagingStore;
+   protected String store;
+   protected String deployMode;
    protected NodeRef websiteRef;
    protected NodeRef webProjectRef;
+   protected boolean updateTestServer;
    
    protected AVMBrowseBean avmBrowseBean;
    transient private AVMService avmService;
    transient private ActionService actionService;
    
-   private static final Log logger = LogFactory.getLog(DeploySnapshotDialog.class);
+   private static final Log logger = LogFactory.getLog(DeployWebsiteDialog.class);
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -81,16 +84,35 @@ public class DeploySnapshotDialog extends BaseDialogBean
       
       // setup context for dialog
       this.deployTo = null;
-      this.versionToDeploy = Integer.parseInt(parameters.get("version"));
-      this.avmBrowseBean.getDeploymentMonitorIds().clear();
-      this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
-      this.stagingStore = this.avmBrowseBean.getStagingStore();
-      String storeRoot = AVMUtil.buildSandboxRootPath(this.stagingStore);
+      String ver = parameters.get("version");
+      if (ver != null && ver.length() > 0)
+      {
+         this.versionToDeploy = Integer.parseInt(ver);
+      }
+      else
+      {
+         this.versionToDeploy = -1;
+      }
+      
+      this.store = parameters.get("store");
+      String storeRoot = AVMUtil.buildSandboxRootPath(this.store);
       this.websiteRef = AVMNodeConverter.ToNodeRef(this.versionToDeploy, storeRoot);
       
+      this.deployMode = (this.versionToDeploy == -1) ? 
+               WCMAppModel.CONSTRAINT_TESTSERVER : WCMAppModel.CONSTRAINT_LIVESERVER;
+      
+      this.updateTestServer = false;
+      String updateTestServerParam = parameters.get("updateTestServer");
+      if (updateTestServerParam != null)
+      {
+         this.updateTestServer = Boolean.parseBoolean(updateTestServerParam);
+      }
+      
+      this.avmBrowseBean.getDeploymentMonitorIds().clear();
+      this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
+      
       if (logger.isDebugEnabled())
-         logger.debug("Initialising dialog to deploy version " + this.versionToDeploy + 
-                  " of " + this.websiteRef.toString());
+         logger.debug("Initialising dialog to deploy: " + this.websiteRef.toString());
    }
    
    @SuppressWarnings("unchecked")
@@ -102,18 +124,17 @@ public class DeploySnapshotDialog extends BaseDialogBean
       
       if (this.deployTo != null && this.deployTo.length > 0)
       {
-         NodeRef webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
          List<String> selectedDeployToNames = new ArrayList<String>();
          
          // create a deploymentattempt node to represent this deployment
          String attemptId = GUID.generate();
          Map<QName, Serializable> props = new HashMap<QName, Serializable>(8, 1.0f);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTID, attemptId);
-         props.put(WCMAppModel.PROP_DEPLOYATTEMPTTYPE, WCMAppModel.CONSTRAINT_LIVESERVER);
-         props.put(WCMAppModel.PROP_DEPLOYATTEMPTSTORE, this.stagingStore);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTTYPE, this.deployMode);
+         props.put(WCMAppModel.PROP_DEPLOYATTEMPTSTORE, this.store);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTVERSION, this.versionToDeploy);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTTIME, new Date());
-         NodeRef attempt = getNodeService().createNode(webProjectRef, 
+         NodeRef attempt = getNodeService().createNode(this.webProjectRef, 
                WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
                WCMAppModel.TYPE_DEPLOYMENTATTEMPT, props).getChildRef();
          
@@ -128,11 +149,31 @@ public class DeploySnapshotDialog extends BaseDialogBean
                   // get all properties of the target server
                   Map<QName, Serializable> serverProps = getNodeService().getProperties(serverRef);
                   
-                  String serverUri = AVMDeploySnapshotAction.calculateServerUri(serverProps);
+                  String serverUri = AVMDeployWebsiteAction.calculateServerUri(serverProps);
                   String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
                   if (serverName == null || serverName.length() == 0)
                   {
                      serverName = serverUri;
+                  }
+                  
+                  // if this is a test server deployment we need to allocate the
+                  // test server to the current sandbox so it can re-use it and
+                  // more importantly, no one else can. Before doing that however,
+                  // we need to make sure no one else has taken the server since
+                  // we selected it.
+                  if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(this.deployMode) &&
+                      this.updateTestServer == false)
+                  {
+                     String allocatedTo = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO);
+                     if (allocatedTo != null)
+                     {
+                        throw new AlfrescoRuntimeException("testserver.taken", new Object[] {serverName});
+                     }
+                     else
+                     {
+                        getNodeService().setProperty(serverRef, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, 
+                                 this.store);
+                     }
                   }
                   
                   if (logger.isDebugEnabled())
@@ -150,11 +191,11 @@ public class DeploySnapshotDialog extends BaseDialogBean
                   
                   // create and execute the action asynchronously
                   Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-                  args.put(AVMDeploySnapshotAction.PARAM_WEBSITE, webProjectRef);
-                  args.put(AVMDeploySnapshotAction.PARAM_SERVER, serverRef);
-                  args.put(AVMDeploySnapshotAction.PARAM_ATTEMPT, attempt);
-                  args.put(AVMDeploySnapshotAction.PARAM_CALLBACK, monitor);
-                  Action action = getActionService().createAction(AVMDeploySnapshotAction.NAME, args);
+                  args.put(AVMDeployWebsiteAction.PARAM_WEBSITE, webProjectRef);
+                  args.put(AVMDeployWebsiteAction.PARAM_SERVER, serverRef);
+                  args.put(AVMDeployWebsiteAction.PARAM_ATTEMPT, attempt);
+                  args.put(AVMDeployWebsiteAction.PARAM_CALLBACK, monitor);
+                  Action action = getActionService().createAction(AVMDeployWebsiteAction.NAME, args);
                   getActionService().executeAction(action, this.websiteRef, false, true);
                }
                else if (logger.isWarnEnabled())
@@ -169,8 +210,8 @@ public class DeploySnapshotDialog extends BaseDialogBean
                   (Serializable)selectedDeployToNames);
          
          // set the deploymentattempid property on the store this deployment was for
-         getAvmService().deleteStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
-         getAvmService().setStoreProperty(this.stagingStore, SandboxConstants.PROP_LAST_DEPLOYMENT_ID, 
+         getAvmService().deleteStoreProperty(this.store, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         getAvmService().setStoreProperty(this.store, SandboxConstants.PROP_LAST_DEPLOYMENT_ID, 
                   new PropertyValue(DataTypeDefinition.TEXT, attemptId));
          
          // close this dialog and immediately open the monitorDeployment dialog
@@ -178,6 +219,9 @@ public class DeploySnapshotDialog extends BaseDialogBean
       }
       else
       {
+         if (logger.isWarnEnabled())
+            logger.warn("Deployment of '" + this.websiteRef.toString() + "' skipped as no servers were selected");
+         
          return outcome;
       }
    }
@@ -261,11 +305,29 @@ public class DeploySnapshotDialog extends BaseDialogBean
    }
    
    /**
+    * Returns the type of server to deploy to, either 'live' or 'test'.
+    * 
+    * @return The type of server to deploy to
+    */
+   public String getDeployMode()
+   {
+      return this.deployMode;
+   }
+   
+   /**
     * @return The NodeRef of the web project the deployment reports are being shown for
     */
    public NodeRef getWebProjectRef()
    {
       return this.webProjectRef;
+   }
+   
+   /**
+    * @return The store being deployed
+    */
+   public String getStore()
+   {
+      return this.store;
    }
    
    /**

@@ -26,7 +26,6 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +52,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.ConstantMethodBinding;
 import org.alfresco.web.ui.common.Utils;
@@ -297,6 +297,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                   {
                      Map<String, String> params = new HashMap<String, String>(2, 1.0f);
                      params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
+                     params.put("store", sandbox);
                      action = createAction(context, sandbox, ACT_SNAPSHOT_DEPLOY, "/images/icons/deploy.gif",
                            "#{DialogManager.setupParameters}", "dialog:deploySnapshot", null, params);
                   }
@@ -496,7 +497,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          attemptId = val.getStringValue();
          
          // get the latest deployment attempt
-         NodeRef attempt = AVMUtil.findDeploymentAttempt(attemptId);
+         NodeRef attempt = DeploymentUtil.findDeploymentAttempt(attemptId);
          if (attempt != null)
          {
             // retrieve the snapshot deployed

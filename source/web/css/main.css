@@ -719,59 +719,46 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    margin-right: 2px;
 }
 
-.deployConfig
-{
-   padding: 4px;
-}
-
-.deployNoServers
-{
-   margin-top: 26px;
-   margin-bottom: 10px;
-}
-
-.deployNoServers img
-{
-   vertical-align: -6px;
-}
-
 .deployConfigServer
 {
-   margin-top: 14px;
-   border: 1px solid #555;
-   background-color: #f9f9f9;
-   -moz-border-radius: 8px;
+   margin-top: 10px;
 }
 
-.deployConfigServerIcon
+.deployConfigServerActions
 {
-   margin: 8px 0px 0px 8px;
+   white-space: nowrap;
+   margin-right: 16px;
 }
 
-.deployConfigServer td
+.deployConfigServerActions a
 {
-   padding: 5px;
+   margin-left: 4px;
 }
 
-.deployConfigServerDetails
-{
-   padding-left: 10px;
-}
-
-.deployConfigServerDetails td
-{
-   padding: 2px;
-}
-
-.deployConfigServerDetails img
+.deployConfigServerActions img
 {
    border: none;
-   margin-left: 3px;
+}
+
+.deployConfigServerDetailsLeftCol
+{
+   margin-left: 34px;
+}
+
+.deployConfigServerDetailsRightCol
+{
+   margin-left: 100px;
 }
 
 .deployConfigServerForm
 {
-   padding-left: 15px;
+   margin-left: 10px;
+   margin-top: 5px;
+}
+
+.deployConfigServerForm td
+{
+   padding: 0px 6px 6px 0px;
 }
 
 .deployConfigServerForm .inputField
@@ -779,7 +766,18 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    width: 200px;
 }
 
-.deployPanelCheckbox
+.deployServersInfo
+{
+   margin: 10px 5px 16px 5px;
+}
+
+.deployServersInfo img
+{
+   vertical-align: -7px;
+   margin: 2px;
+}
+
+.deployPanelControl
 {
    padding-left: 6px;
    padding-right: 16px;

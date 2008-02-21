@@ -37,9 +37,11 @@ public class DeployWebsiteTag extends BaseComponentTag
 {
    private String value;
    private String website;
+   private String store;
    private String monitor;
    private String monitorIds;
    private String snapshotVersion;
+   private String deployMode;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -66,9 +68,11 @@ public class DeployWebsiteTag extends BaseComponentTag
       
       setStringProperty(component, "value", this.value);
       setStringProperty(component, "website", this.website);
+      setStringProperty(component, "store", this.store);
       setBooleanProperty(component, "monitor", this.monitor);
       setStringProperty(component, "monitorIds", this.monitorIds);
       setIntProperty(component, "snapshotVersion", this.snapshotVersion);
+      setStringProperty(component, "deployMode", this.deployMode);
    }
    
    /**
@@ -79,9 +83,11 @@ public class DeployWebsiteTag extends BaseComponentTag
       super.release();
       this.value = null;
       this.website = null;
+      this.store = null;
       this.monitor = null;
       this.monitorIds = null;
       this.snapshotVersion = null;
+      this.deployMode = null;
    }
    
    /**
@@ -117,10 +123,26 @@ public class DeployWebsiteTag extends BaseComponentTag
    }
    
    /**
+    * @param store The store being deployed to
+    */
+   public void setStore(String store)
+   {
+      this.store = store;
+   }
+   
+   /**
     * @param snapshotVersion The version of the snapshot to deploy to
     */
    public void setSnapshotVersion(String snapshotVersion)
    {
       this.snapshotVersion = snapshotVersion;
+   }
+   
+   /**
+    * @param deployMode The type of server being deployed to
+    */
+   public void setDeployMode(String deployMode)
+   {
+      this.deployMode = deployMode;
    }
 }

@@ -26,6 +26,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -36,16 +37,15 @@ import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentMonitor;
+import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,6 +61,8 @@ public class UIDeployWebsite extends UIInput
    protected Integer snapshotVersion = -1;
    protected Boolean monitorDeployment;
    protected List<String> monitorIds;
+   protected String deployMode;
+   protected String store;
    
    private static Log logger = LogFactory.getLog(UIDeployWebsite.class);
    
@@ -104,18 +106,22 @@ public class UIDeployWebsite extends UIInput
       this.monitorDeployment = (Boolean)values[2];
       this.monitorIds = (List<String>)values[3];
       this.snapshotVersion = (Integer)values[4];
+      this.deployMode = (String)values[5];
+      this.store = (String)values[6];
    }
    
    @Override
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[5];
+      Object values[] = new Object[7];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.webProjectRef;
       values[2] = this.monitorDeployment;
       values[3] = this.monitorIds;
       values[4] = this.snapshotVersion;
+      values[5] = this.deployMode;
+      values[6] = this.store;
       return values;
    }
    
@@ -175,54 +181,60 @@ public class UIDeployWebsite extends UIInput
                   if (logger.isDebugEnabled())
                      logger.debug("Found deployment monitor: " + monitor);
 
-                  renderServer(context, out, nodeService, monitor.getTargetServer(), false, true, id);
+                  renderServer(context, out, nodeService, monitor.getTargetServer(), false, true, id, true);
                }
             }
          }
          else
          {
-            // get a list of the servers that have been successfully deployed to 
-            /*
-            NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
-            int deployingVersion = this.getSnapshotVersion();
-            List<String> serversAlreadyDeployed = new ArrayList<String>();
-            List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                     webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTREPORT, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef ref : deployReportRefs)
+            if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(getDeployMode()))
             {
-               NodeRef report = ref.getChildRef();
-               if (report != null)
+               // determine the state, the sandbox may already have a test server
+               // allocated, in which case we need to allow the user to preview or
+               // re-deploy. If this is the first deployment or the test server has
+               // been removed then show a list of available test servers to choose
+               // from.
+               
+               NodeRef allocatedServer = DeploymentUtil.findAllocatedTestServer(getStore());
+               if (allocatedServer != null)
                {
-                  int deployedVersion = -1;
-                  Boolean success = (Boolean)nodeService.getProperty(report, 
-                           WCMAppModel.PROP_DEPLOYSUCCESSFUL);
-                  
-                  Serializable deployVersionObj = nodeService.getProperty(report, 
-                           WCMAppModel.PROP_DEPLOYVERSION); 
-                  if (deployVersionObj != null && deployVersionObj instanceof Integer)
+                  renderAllocatedTestServer(context, out, nodeService, allocatedServer);
+               }
+               else
+               {
+                  List<NodeRef> servers = DeploymentUtil.findTestServers(webProject, false);
+                  if (servers.size() > 0)
                   {
-                     deployedVersion = (Integer)deployVersionObj;
+                     boolean first = true;
+                     for (NodeRef server : servers)
+                     {
+                        renderServer(context, out, nodeService, server, first, false, null, false);
+                        first = false;
+                     }
                   }
-                  
-                  if (success != null && success.booleanValue() && (deployingVersion == deployedVersion))
+                  else
                   {
-                     serversAlreadyDeployed.add((String)nodeService.getProperty(report, 
-                              WCMAppModel.PROP_DEPLOYSERVER));
+                     // show the none available message
+                     out.write("<div class='deployServersInfo'><img src='");
+                     out.write(context.getExternalContext().getRequestContextPath());
+                     out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
+                     out.write(Application.getMessage(context, "deploy_test_server_not_available"));
+                     out.write("</div>");
                   }
                }
             }
-            */
-            
-            // get the servers available to deploy to
-            List<ChildAssociationRef> deployServerRefs = nodeService.getChildAssocs(
-                     webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef ref : deployServerRefs)
+            else
             {
-               NodeRef server = ref.getChildRef();
+               // TODO: get a list of the servers that have been successfully deployed to 
                
-               // TODO: determine if the server has already been successfully deployed to
-
-               renderServer(context, out, nodeService, server, true, false, null);
+               List<NodeRef> servers = DeploymentUtil.findLiveServers(webProject);
+               for (NodeRef server : servers)
+               {
+                  // TODO: determine if the server has already been successfully deployed to
+                  boolean selected = true;
+                  
+                  renderServer(context, out, nodeService, server, selected, false, null, true);
+               }
             }
          }
          
@@ -332,15 +344,61 @@ public class UIDeployWebsite extends UIInput
       this.snapshotVersion = snapshotVersion;
    }
    
+   /**
+    * @return The type of server being deployed to, 'live' or 'test'
+    */
+   public String getDeployMode()
+   {
+      ValueBinding vb = getValueBinding("deployMode");
+      if (vb != null)
+      {
+         this.deployMode = (String)vb.getValue(getFacesContext());
+      }
+      
+      if (this.deployMode == null || this.deployMode.length() == 0)
+      {
+         this.deployMode = WCMAppModel.CONSTRAINT_TESTSERVER;
+      }
+      
+      return this.deployMode;
+   }
+   
+   /**
+    * @param deployMode The type of server to deploy to, 'live' or 'test'
+    */
+   public void setDeployMode(String deployMode)
+   {
+      this.deployMode = deployMode;
+   }
+   
+   /**
+    * @return The store being deployed to
+    */
+   public String getStore()
+   {
+      ValueBinding vb = getValueBinding("store");
+      if (vb != null)
+      {
+         this.store = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.store;
+   }
+   
+   /**
+    * @param store The store to deploy to
+    */
+   public void setStore(String store)
+   {
+      this.store = store;
+   }
+   
    // ------------------------------------------------------------------------------
    // Helpers
    
    private void renderScript(FacesContext context, ResponseWriter out, 
             List<String> monitorIds) throws IOException
    {
-//      // render supporting Yahoo scripts 
-//      Utils.writeYahooScripts(context, out, null);
-      
       // create comma separated list of deplyment ids
       StringBuilder ids = new StringBuilder();
       for (int x = 0; x < monitorIds.size(); x++)
@@ -430,8 +488,8 @@ public class UIDeployWebsite extends UIInput
    }
    
    private void renderServer(FacesContext context, ResponseWriter out, NodeService nodeService,
-            NodeRef server, boolean selected, boolean monitoring, String monitorId) 
-            throws IOException
+            NodeRef server, boolean selected, boolean monitoring, String monitorId, 
+            boolean liveServer) throws IOException
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
       
@@ -440,7 +498,7 @@ public class UIDeployWebsite extends UIInput
       String serverName = (String)props.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
       if (serverName == null || serverName.length() == 0)
       {
-         serverName = AVMDeploySnapshotAction.calculateServerUri(props);
+         serverName = AVMDeployWebsiteAction.calculateServerUri(props);
       }
       
       out.write("<table cellspacing='0' cellpadding='0' border='0' width='100%'>");
@@ -461,15 +519,24 @@ public class UIDeployWebsite extends UIInput
       }
       else
       {
-         out.write("<div class='deployPanelCheckbox'>");
-         out.write("<input type='checkbox' name='");
+         out.write("<div class='deployPanelControl'>");
+         out.write("<input type='");
+         if (liveServer)
+         {
+            out.write("checkbox");
+         }
+         else
+         {
+            out.write("radio");
+         }
+         out.write("' name='");
          out.write(this.getClientId(context));
          out.write("' value='");
          out.write(server.toString());
          out.write("'");
          if (selected)
          {
-            out.write("checked='checked'");
+            out.write(" checked='checked'");
          }
          out.write(" />");
       }
@@ -499,7 +566,7 @@ public class UIDeployWebsite extends UIInput
          out.write(Application.getMessage(context, "deploying"));
          out.write("</div>");
       }
-      else if (selected == false)
+      else if (selected == false && liveServer == true)
       {
          out.write("<div class='deployPanelServerStatus'><img src='");
          out.write(contextPath);
@@ -513,5 +580,46 @@ public class UIDeployWebsite extends UIInput
       
       // add some padding under each panel
       out.write("\n<div style='padding-top:8px;'></div>\n");
+   }
+   
+   private void renderAllocatedTestServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server) throws IOException
+   {
+      Map<QName, Serializable> serverProps = nodeService.getProperties(server);
+      String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
+      if (serverName == null || serverName.length() == 0)
+      {
+         serverName = AVMDeployWebsiteAction.calculateServerUri(serverProps);
+      }
+      
+      String pattern = Application.getMessage(context, "deploy_test_server_allocated");
+      String msg = MessageFormat.format(pattern, serverName);
+      
+      out.write("<div class='deployServersInfo'><img src='");
+      out.write(context.getExternalContext().getRequestContextPath());
+      out.write("/images/icons/info_icon.gif' />&nbsp;");
+      out.write(msg);
+      
+      String url = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERURL);
+      if (url != null && url.length() > 0)
+      {
+         out.write("<div style='margin: 12px 0px 0px 24px;'><img src='");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/images/icons/preview_website.gif");
+         out.write("' /><a target='new' href='");
+         out.write(url);
+         out.write("'>");
+         out.write("Preview Deployment");
+         out.write("</a></div>");
+      }
+      
+      out.write("</div>");
+      
+      // render a hidden field with the value of the allocated test server
+      out.write("<input type='hidden' name='");
+      out.write(this.getClientId(context));
+      out.write("' value='");
+      out.write(server.toString());
+      out.write("' />");
    }
 }

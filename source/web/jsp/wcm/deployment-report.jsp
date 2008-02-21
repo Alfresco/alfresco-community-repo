@@ -32,7 +32,7 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<w:deploymentReports value="#{DialogManager.bean.webProjectRef}" />
+<w:deploymentReports value="#{DialogManager.bean.store}" />
 
 
 

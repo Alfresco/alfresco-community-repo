@@ -37,7 +37,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.actions.AVMDeploySnapshotAction;
+import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -50,7 +50,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
@@ -65,7 +65,7 @@ import org.springframework.util.StringUtils;
  */
 public class UIDeploymentReports extends SelfRenderingComponent
 {
-   protected NodeRef webProjectRef;
+   protected String store;
    
    private static Log logger = LogFactory.getLog(UIDeploymentReports.class);
    
@@ -85,7 +85,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       Object values[] = (Object[])state;
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
-      this.webProjectRef = (NodeRef)values[1];
+      this.store = (String)values[1];
    }
    
    public Object saveState(FacesContext context)
@@ -93,7 +93,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       Object values[] = new Object[2];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
-      values[1] = this.webProjectRef;
+      values[1] = this.store;
       return values;
    }
    
@@ -115,21 +115,20 @@ public class UIDeploymentReports extends SelfRenderingComponent
          tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
          tx.begin();
          
-         NodeRef webProject = getValue();
-         if (webProject == null)
+         String storeName = getValue();
+         if (storeName == null)
          {
-            throw new IllegalArgumentException("The web project must be specified.");
+            throw new IllegalArgumentException("The store must be specified.");
          }
          
          if (logger.isDebugEnabled())
-            logger.debug("Rendering deployment reports for: " + webProject.toString());
+            logger.debug("Rendering deployment reports for store: " + storeName);
          
          NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
          ContentService contentService = Repository.getServiceRegistry(context).getContentService();
          AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
          
-         String store = (String)nodeService.getProperty(webProject, WCMAppModel.PROP_AVMSTORE);
-         PropertyValue val = avmService.getStoreProperty(store, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         PropertyValue val = avmService.getStoreProperty(storeName, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
          String attemptId = null;
          
          if (val != null)
@@ -146,7 +145,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
             logger.debug("Retrieving deployment reports for attempt id: " + attemptId);
          
          // get the deploymentattempt object
-         NodeRef attempt = AVMUtil.findDeploymentAttempt(attemptId);
+         NodeRef attempt = DeploymentUtil.findDeploymentAttempt(attemptId);
          
          if (attempt != null)
          {
@@ -179,25 +178,25 @@ public class UIDeploymentReports extends SelfRenderingComponent
    // Strongly typed component property accessors
 
    /**
-    * @return The NodeRef representation of the web project to show the deployment reports for 
+    * @return The store to show the deployment reports for 
     */
-   public NodeRef getValue()
+   public String getValue()
    {
       ValueBinding vb = getValueBinding("value");
       if (vb != null)
       {
-         this.webProjectRef = (NodeRef)vb.getValue(getFacesContext());
+         this.store = (String)vb.getValue(getFacesContext());
       }
       
-      return this.webProjectRef;
+      return this.store;
    }
    
    /**
-    * @param value The NodeRef representation of the web project to show the deployment reports for 
+    * @param value The store to show the deployment reports for 
     */
-   public void setValue(NodeRef value)
+   public void setValue(String value)
    {
-      this.webProjectRef = value;
+      this.store = value;
    }
    
    // ------------------------------------------------------------------------------
@@ -249,7 +248,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       }
       
       String deployType = WCMAppModel.CONSTRAINT_ALFDEPLOY;
-      if (server.startsWith(AVMDeploySnapshotAction.FILE_SERVER_PREFIX))
+      if (server.startsWith(AVMDeployWebsiteAction.FILE_SERVER_PREFIX))
       {
          deployType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
       }

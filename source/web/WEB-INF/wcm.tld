@@ -268,6 +268,20 @@
       <description>Renders a list of servers to deploy to or show deployment progress for</description>
       
       <attribute>
+         <name>id</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The component identifier for this component</description>
+      </attribute>
+
+      <attribute>
+         <name>rendered</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether component should be rendered</description>
+      </attribute>
+      
+      <attribute>
          <name>website</name>
          <required>true</required>
          <rtexprvalue>true</rtexprvalue>
@@ -289,17 +303,17 @@
       </attribute>
       
       <attribute>
-         <name>id</name>
+         <name>deployMode</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
-         <description>The component identifier for this component</description>
+         <description>The type of servers being deployed to, 'live' or 'test'</description>
       </attribute>
-
+      
       <attribute>
-         <name>rendered</name>
+         <name>store</name>
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
-         <description>Flag to determine whether component should be rendered</description>
+         <description>The store being deployed</description>
       </attribute>
       
       <attribute>

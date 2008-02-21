@@ -809,44 +809,6 @@ public final class AVMUtil
       
       return webProjectNode;
    }
-   
-   /**
-    * Retrieves the NodeRef of the deploymentattempt node with the given id
-    * 
-    * @param attemptId The deployattemptid of the node to be found
-    * @return The NodeRef of the deploymentattempt node or null if not found
-    */
-   public static NodeRef findDeploymentAttempt(String attemptId)
-   {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      SearchService searchService = Repository.getServiceRegistry(fc).getSearchService();
-      
-      // construct the query
-      String query = "@wca\\:deployattemptid:\"" + attemptId + "\"";
-      
-      NodeRef attempt = null;
-      ResultSet results = null;
-      try
-      {
-         // execute the query
-         results = searchService.query(Repository.getStoreRef(), 
-               SearchService.LANGUAGE_LUCENE, query);
-         
-         if (results.length() == 1)
-         {
-            attempt = results.getNodeRef(0);
-         }
-      }
-      finally
-      {
-         if (results != null)
-         {
-            results.close();
-         }
-      }
-      
-      return attempt;
-   }
 
    /**
     * Creates all directories for a path if they do not already exist.

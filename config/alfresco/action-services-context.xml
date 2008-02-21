@@ -496,7 +496,7 @@
     	</property>
     </bean>
     
-    <bean id="avm-deploy-snapshot" class="org.alfresco.repo.avm.actions.AVMDeploySnapshotAction" parent="action-executer">
+    <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
     	<property name="deploymentService">
     	    <ref bean="DeploymentService"/>
     	</property>

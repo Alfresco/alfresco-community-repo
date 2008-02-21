@@ -58,13 +58,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Deploys a website snapshot to a remote server.
+ * Deploys a website to a remote server.
  * 
  * @author gavinc
  */
-public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
+public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 {
-   public static final String NAME = "avm-deploy-snapshot";
+   public static final String NAME = "avm-deploy-website";
    public static final String FILE_SERVER_PREFIX = "\\\\";
 
    public static final String PARAM_WEBSITE = "website";
@@ -82,7 +82,7 @@ public class AVMDeploySnapshotAction extends ActionExecuterAbstractBase
    private ContentService contentService;
    private NodeService nodeService;
 
-   private static Log logger = LogFactory.getLog(AVMDeploySnapshotAction.class);
+   private static Log logger = LogFactory.getLog(AVMDeployWebsiteAction.class);
    private static Log delayDeploymentLogger = LogFactory.getLog("alfresco.deployment.delay");
    
    /**

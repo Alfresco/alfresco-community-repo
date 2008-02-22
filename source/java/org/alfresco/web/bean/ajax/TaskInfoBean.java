@@ -25,7 +25,6 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -100,7 +99,7 @@ public class TaskInfoBean implements Serializable
          throw new IllegalArgumentException("'taskId' parameter is missing");
       }
       
-      WorkflowTask task = this.workflowService.getTaskById(taskId);
+      WorkflowTask task = this.getWorkflowService().getTaskById(taskId);
       if (task != null)
       {
          Repository.getServiceRegistry(context).getTemplateService().processTemplate(

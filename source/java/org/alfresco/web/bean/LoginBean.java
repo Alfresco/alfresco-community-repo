@@ -25,7 +25,6 @@
 package org.alfresco.web.bean;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Map;

@@ -25,24 +25,30 @@
 package org.alfresco.web.bean.repository.admin;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.repo.admin.RepoAdminInterpreter;
+import org.alfresco.web.app.servlet.FacesHelper;
 
 
 /**
  * Backing bean to support the Repository Admin Console
  */
-public class RepoAdminConsoleBean
+public class RepoAdminConsoleBean implements Serializable
 {
-    // command
+    private static final long serialVersionUID = -8131607149189675180L;
+    
+   // command
     private String command = "";
     private String submittedCommand = "none";
     private long duration = 0L;
     private String result = null;
 
     // supporting repository services
-    private RepoAdminInterpreter repoAdminInterpreter;
+    transient private RepoAdminInterpreter repoAdminInterpreter;
 
 
     /**
@@ -53,6 +59,19 @@ public class RepoAdminConsoleBean
         this.repoAdminInterpreter = repoAdminInterpreter;
     }
 
+    /**
+     *@return repoAdminInterpreter
+     */
+    private RepoAdminInterpreter getRepoAdminInterpreter()
+    {
+     //check for null for cluster environment
+       if (repoAdminInterpreter == null)
+       {
+          repoAdminInterpreter = (RepoAdminInterpreter) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "repoAdminInterpreter");
+       }
+       return repoAdminInterpreter;
+    }
+    
     /**
      * Gets the command result
      *
@@ -155,7 +174,7 @@ public class RepoAdminConsoleBean
      */
     public String getCurrentUserName()
     {
-        return repoAdminInterpreter.getCurrentUserName();
+        return getRepoAdminInterpreter().getCurrentUserName();
     }
 
     /**
@@ -168,7 +187,7 @@ public class RepoAdminConsoleBean
         try
         {
             long startms = System.currentTimeMillis();
-            String result = repoAdminInterpreter.interpretCommand(command);
+            String result = getRepoAdminInterpreter().interpretCommand(command);
             setDuration(System.currentTimeMillis() - startms);
             setResult(result);
             setCommand("");

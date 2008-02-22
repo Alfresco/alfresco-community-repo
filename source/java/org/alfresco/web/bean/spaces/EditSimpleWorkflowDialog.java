@@ -45,6 +45,8 @@ import org.alfresco.web.ui.common.Utils;
 
 public class EditSimpleWorkflowDialog extends BaseDialogBean
 {
+    private static final long serialVersionUID = 5997327694341960824L;
+
     protected Map<String, Serializable> workflowProperties;
 
     private static final String MSG_ERROR_UPDATE_SIMPLEWORKFLOW = "error_update_simpleworkflow";

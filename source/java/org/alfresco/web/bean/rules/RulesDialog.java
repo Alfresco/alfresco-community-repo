@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.rules;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,7 +83,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    
    transient private RuleService ruleService;
    private List<WrappedRule> rules;
-   private Rule currentRule;
+   transient private Rule currentRule;
    private UIRichList richList;
    transient private ActionService actionService;
    
@@ -373,9 +374,11 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
     * Inner class to wrap the Rule objects so we can expose a flag to indicate whether
     * the rule is a local or inherited rule
     */
-   public static class WrappedRule
+   public static class WrappedRule implements Serializable
    {
-      private Rule rule;
+      private static final long serialVersionUID = -8887443730660109283L;
+      
+      transient private Rule rule;
       private boolean isLocal;
       private Date createdDate;
       private Date modifiedDate;

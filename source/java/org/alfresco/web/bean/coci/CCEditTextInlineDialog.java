@@ -30,6 +30,8 @@ import org.alfresco.web.app.Application;
 
 public class CCEditTextInlineDialog extends CheckinCheckoutDialog
 {
+    private static final long serialVersionUID = 4657371875928010937L;
+    
     public static final String LBL_SAVE = "save";
 
     @Override

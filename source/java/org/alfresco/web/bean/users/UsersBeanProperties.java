@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.users;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
@@ -39,27 +40,30 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
-public class UsersBeanProperties
+public class UsersBeanProperties implements Serializable
 {
+    private static final long serialVersionUID = 8874192805959149144L;
+
     /** NodeService bean reference */
-    private NodeService nodeService;
+    transient private NodeService nodeService;
 
     /** SearchService bean reference */
-    private SearchService searchService;
+    transient private SearchService searchService;
     
     /** AuthenticationService bean reference */
-    private AuthenticationService authenticationService;
+    transient private AuthenticationService authenticationService;
 
     /** PersonService bean reference */
-    private PersonService personService;
+    transient private PersonService personService;
     
     /** ContentUsageService bean reference */
-    private ContentUsageService contentUsageService;
+    transient private ContentUsageService contentUsageService;
     
     
     /** Component reference for Users RichList control */
@@ -82,6 +86,11 @@ public class UsersBeanProperties
      */
     public NodeService getNodeService()
     {
+     //check for null for cluster environment
+        if (nodeService == null)
+        {
+            nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+        }
         return nodeService;
     }
 
@@ -90,6 +99,12 @@ public class UsersBeanProperties
      */
     public SearchService getSearchService()
     {
+     //check for null for cluster environment
+        if (searchService == null)
+        {
+           searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+        }
+       
         return searchService;
     }
 
@@ -98,6 +113,11 @@ public class UsersBeanProperties
      */
     public AuthenticationService getAuthenticationService()
     {
+     //check for null for cluster environment
+        if (authenticationService == null)
+        {
+           authenticationService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
+        }
         return authenticationService;
     }
 
@@ -106,10 +126,29 @@ public class UsersBeanProperties
      */
     public PersonService getPersonService()
     {
+     //check for null for cluster environment
+        if(personService == null)
+        {
+           personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+        }
         return personService;
     }
-
+    
+    
     /**
+     *@return contentUsageService
+     */
+    public ContentUsageService getContentUsageService()
+    {
+       //check for null for cluster environment
+        if(contentUsageService == null)
+        {
+           contentUsageService = (ContentUsageService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "ContentUsageService");
+        }
+        return contentUsageService;
+    }
+
+   /**
      * @param nodeService        The NodeService to set.
      */
     public void setNodeService(NodeService nodeService)
@@ -248,25 +287,25 @@ public class UsersBeanProperties
     
     public Long getUserUsage(String userName)
     {
-       long usage = this.contentUsageService.getUserUsage(userName);
+       long usage = getContentUsageService().getUserUsage(userName);
        return (usage == -1 ? null : usage);
     }
     
     public Long getUserUsage()
     {
-       long usage = this.contentUsageService.getUserUsage(this.userName);
+       long usage = getContentUsageService().getUserUsage(this.userName);
        return (usage == -1 ? null : usage);
     }
   
     public Long getUserQuota()
     {
-       long quota = this.contentUsageService.getUserQuota(this.userName);
+       long quota = getContentUsageService().getUserQuota(this.userName);
        return (quota == -1 ? null : quota);
     }
      
     public boolean getUsagesEnabled()
     {
-       return this.contentUsageService.getEnabled();
+       return getContentUsageService().getEnabled();
     }
     
     public String getPersonDescription()
@@ -287,11 +326,11 @@ public class UsersBeanProperties
     {
        String avatarUrl = null;
        
-       List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.person.getNodeRef(), ContentModel.ASSOC_AVATAR);
+       List<AssociationRef> refs = getNodeService().getTargetAssocs(this.person.getNodeRef(), ContentModel.ASSOC_AVATAR);
        if (refs.size() == 1)
        {
           NodeRef photoRef = refs.get(0).getTargetRef();
-          String name = (String)this.nodeService.getProperty(photoRef, ContentModel.PROP_NAME);
+          String name = (String)getNodeService().getProperty(photoRef, ContentModel.PROP_NAME);
           avatarUrl = DownloadContentServlet.generateBrowserURL(photoRef, name);
        }
        

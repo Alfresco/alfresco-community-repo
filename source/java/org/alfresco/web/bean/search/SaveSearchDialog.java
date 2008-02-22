@@ -48,6 +48,8 @@ import org.alfresco.web.ui.common.Utils;
 public class SaveSearchDialog extends AdvancedSearchDialog
 {
 
+    private static final long serialVersionUID = 237262751601280456L;
+    
     private static final String MSG_ERROR_SAVE_SEARCH = "error_save_search";
 
     @Override

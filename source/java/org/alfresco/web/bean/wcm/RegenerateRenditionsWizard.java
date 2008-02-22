@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -72,6 +71,8 @@ import org.apache.commons.logging.LogFactory;
 public class RegenerateRenditionsWizard
    extends BaseWizardBean
 {
+   private static final long serialVersionUID = -8573877482412328963L;
+   
    public final String REGENERATE_SCOPE_ALL = "all";
    public final String REGENERATE_SCOPE_FORM = "form";
    public final String REGENERATE_SCOPE_RENDERING_ENGINE_TEMPLATE = "rendering_engine_template";

@@ -32,9 +32,12 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 
 public class DeleteGroupDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -8743700617152460027L;
+   
    /** The group to be deleted */
    protected String group = null;
    protected String groupName = null;
@@ -43,7 +46,7 @@ public class DeleteGroupDialog extends BaseDialogBean
    protected int numItemsInGroup = 0;
    
    /** The AuthorityService to be used by the bean */
-   protected AuthorityService authService;
+   transient private AuthorityService authService;
    
    private static final String MSG_DELETE = "delete";
    private static final String MSG_DELETE_GROUP = "delete_group";
@@ -63,9 +66,9 @@ public class DeleteGroupDialog extends BaseDialogBean
       // calculate the number of items the givev group has
       if (this.group != null)
       {
-         numItemsInGroup = this.authService.getContainedAuthorities(
+         numItemsInGroup = this.getAuthService().getContainedAuthorities(
                      AuthorityType.GROUP, this.group, false).size();
-         numItemsInGroup += this.authService.getContainedAuthorities(
+         numItemsInGroup += this.getAuthService().getContainedAuthorities(
                      AuthorityType.USER, this.group, false).size();
       }
    }
@@ -74,7 +77,7 @@ public class DeleteGroupDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // delete group using the Authentication Service
-      this.authService.deleteAuthority(this.group);
+      this.getAuthService().deleteAuthority(this.group);
       
       return outcome;
    }
@@ -125,5 +128,18 @@ public class DeleteGroupDialog extends BaseDialogBean
    public void setAuthService(AuthorityService authService)
    {
       this.authService = authService;
+   }
+   
+   /**
+    * @return the authService
+    */
+   protected AuthorityService getAuthService()
+   {
+     //check for null in cluster environment
+      if (authService == null)
+      {
+         authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authService;
    }
 }

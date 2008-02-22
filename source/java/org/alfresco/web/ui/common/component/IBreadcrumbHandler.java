@@ -26,8 +26,6 @@ package org.alfresco.web.ui.common.component;
 
 import java.io.Serializable;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-
 /**
  * @author Kevin Roast
  */

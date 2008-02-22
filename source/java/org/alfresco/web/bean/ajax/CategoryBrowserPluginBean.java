@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,20 +51,19 @@ import org.alfresco.web.ui.repo.component.UITree.TreeNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class CategoryBrowserPluginBean
+public class CategoryBrowserPluginBean implements Serializable
 {
+   private static final long serialVersionUID = -1493808456969763500L;
+
    public static final String BEAN_NAME = "CategoryBrowserPluginBean";
    
    private static final Log logger = LogFactory.getLog(CategoryBrowserPluginBean.class);
  
-   private CategoryService categoryService;
- 
-   private NodeService nodeService;
+   transient private CategoryService categoryService;
+   transient private NodeService nodeService;
  
    private List<TreeNode> categoryRootNodes;
- 
    private Map<String, TreeNode> categoryNodes;
- 
    protected NodeRef previouslySelectedNode;
  
    /**
@@ -74,7 +74,20 @@ public class CategoryBrowserPluginBean
    {
       this.categoryService = categoryService;
    }
- 
+   
+   /**
+    * @return the categoryService
+    */
+   private CategoryService getCategoryService()
+   {
+      //check for null in cluster environment
+      if(categoryService == null)
+      {
+         categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+      }
+      return categoryService;
+   }
+
    /**
     * @param nodeService
     *           the nodeService to set
@@ -84,6 +97,19 @@ public class CategoryBrowserPluginBean
       this.nodeService = nodeService;
    }
  
+   /**
+    * @return the nodeService
+    */
+   private NodeService getNodeService()
+   {
+      //check for null in cluster environment
+      if(nodeService == null)
+      {
+         nodeService =  Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+
    public List<TreeNode> getCategoryRootNodes()
    {
       if (this.categoryRootNodes == null)
@@ -97,7 +123,7 @@ public class CategoryBrowserPluginBean
             tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
             tx.begin();
  
-            Collection<ChildAssociationRef> childRefs = this.categoryService.getRootCategories(
+            Collection<ChildAssociationRef> childRefs = this.getCategoryService().getRootCategories(
                   Repository.getStoreRef(), ContentModel.ASPECT_GEN_CLASSIFIABLE);
  
             for (ChildAssociationRef ref : childRefs)
@@ -170,7 +196,7 @@ public class CategoryBrowserPluginBean
             parentNode.removeChildren();
  
             // get all the child folder objects for the parent
-            List<ChildAssociationRef> childRefs = this.nodeService.getChildAssocs(parentNodeRef,
+            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(parentNodeRef,
                   ContentModel.ASSOC_SUBCATEGORIES, RegexQNamePattern.MATCH_ALL);
             List<TreeNode> sortedNodes = new ArrayList<TreeNode>();
             for (ChildAssociationRef ref : childRefs)
@@ -319,8 +345,8 @@ public class CategoryBrowserPluginBean
     */
    protected TreeNode createTreeNode(NodeRef nodeRef)
    {
-      TreeNode node = new TreeNode(nodeRef.toString(), Repository.getNameForNode(this.nodeService, nodeRef),
-            (String) this.nodeService.getProperty(nodeRef, ApplicationModel.PROP_ICON));
+      TreeNode node = new TreeNode(nodeRef.toString(), Repository.getNameForNode(this.getNodeService(), nodeRef),
+            (String) this.getNodeService().getProperty(nodeRef, ApplicationModel.PROP_ICON));
  
       return node;
    }

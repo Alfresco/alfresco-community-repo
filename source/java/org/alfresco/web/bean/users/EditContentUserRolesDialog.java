@@ -32,6 +32,8 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class EditContentUserRolesDialog extends BaseDialogBean
 {
+    private static final long serialVersionUID = -1690749440382024258L;
+  
     ContentUsersBean contentUsersBean;
     @Override
     public boolean getFinishButtonDisabled()

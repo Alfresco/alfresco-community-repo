@@ -24,23 +24,27 @@
  */
 package org.alfresco.web.bean.trashcan;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.repo.node.archive.NodeArchiveService;
-
 import org.alfresco.service.cmr.repository.NodeRef;
-
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 
-public class TrashcanDialogProperty
+public class TrashcanDialogProperty implements Serializable
 {
+    private static final long serialVersionUID = -8007742798807270570L;
+    
     private static final String FILTER_DATE_ALL = "all";
     private static final String FILTER_USER_ALL = "all";
 
     /** NodeArchiveService bean reference */
-    protected NodeArchiveService nodeArchiveService;
+    transient private NodeArchiveService nodeArchiveService;
 
     /** Component reference for Deleted Items RichList control */
     protected UIRichList itemsRichList;
@@ -294,8 +298,16 @@ public class TrashcanDialogProperty
         this.inProgress = inProgress;
     }
 
+    /**
+     *@return nodeArchiveService
+     */
     public NodeArchiveService getNodeArchiveService()
     {
+       //check for null for cluster environment
+        if (nodeArchiveService == null)
+        {
+           nodeArchiveService = (NodeArchiveService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "nodeArchiveService");
+        }
         return nodeArchiveService;
     }
 

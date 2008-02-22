@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
@@ -66,6 +67,8 @@ import org.apache.log4j.Logger;
  */
 public class CreateUserWizard extends BaseWizardBean
 {
+    private static final long serialVersionUID = 8008464794715380019L;
+    
     private static Logger logger = Logger.getLogger(CreateUserWizard.class);
     protected static final String ERROR = "error_person";
 
@@ -93,22 +96,22 @@ public class CreateUserWizard extends BaseWizardBean
     protected String sizeQuotaUnits = null;
 
     /** AuthenticationService bean reference */
-    private AuthenticationService authenticationService;
+    transient private AuthenticationService authenticationService;
 
     /** PersonService bean reference */
-    private PersonService personService;
+    transient private PersonService personService;
     
     /** TenantService bean reference */
-    private TenantService tenantService;
+    transient private TenantService tenantService;
 
     /** PermissionService bean reference */
-    private PermissionService permissionService;
+    transient private PermissionService permissionService;
 
     /** OwnableService bean reference */
-    private OwnableService ownableService;
+    transient private OwnableService ownableService;
     
     /** ContentUsageService bean reference */
-    private ContentUsageService contentUsageService;
+    transient private ContentUsageService contentUsageService;
     
 
     /** ref to the company home space folder */
@@ -125,6 +128,22 @@ public class CreateUserWizard extends BaseWizardBean
         this.authenticationService = authenticationService;
     }
 
+    
+    /**
+     * @return authenticationService
+     */
+    private AuthenticationService getAuthenticationService()
+    {
+     //check for null for cluster environment
+        if (authenticationService == null)
+        {
+           authenticationService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
+        }
+        return authenticationService;
+    }
+
+
+
     /**
      * @param personService The person service.
      */
@@ -133,12 +152,40 @@ public class CreateUserWizard extends BaseWizardBean
         this.personService = personService;
     }
     
+    
+    /**
+     * @return personService
+     */
+    private PersonService getPersonService()
+    {
+     //check for null for cluster environment
+        if (personService == null)
+        {
+           personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService(); 
+        }
+        return personService;
+    }
+
+
     /**
      * @param tenantService         The tenantService to set.
      */
     public void setTenantService(TenantService tenantService)
     {
-       this.tenantService = tenantService;
+        this.tenantService = tenantService;
+    }
+    
+    /**
+     * @return tenantService
+     */
+    private TenantService geTenantService()
+    {
+     //check for null for cluster environment
+        if(tenantService == null)
+        {
+           tenantService = (TenantService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "tenantService");
+        }
+        return tenantService;
     }
 
     /**
@@ -148,6 +195,19 @@ public class CreateUserWizard extends BaseWizardBean
     {
         this.permissionService = permissionService;
     }
+    
+    /**
+     * @return permissionService
+     */
+    private PermissionService getPermissionService()
+    {
+     //check for null for cluster environment
+        if (permissionService == null)
+        {
+           permissionService  = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+        }
+        return permissionService;
+    }
 
     /**
      * @param ownableService The ownableService to set.
@@ -156,6 +216,19 @@ public class CreateUserWizard extends BaseWizardBean
     {
         this.ownableService = ownableService;
     }
+    
+    /**
+     * @return ownableService
+     */
+    private OwnableService getOwnableService()
+    {
+     //check for null for cluster environment
+        if (ownableService == null)
+        {
+           ownableService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getOwnableService();
+        }
+        return ownableService;
+    }
    
     /**
      * @param contentUsageService The contentUsageService to set.
@@ -163,6 +236,19 @@ public class CreateUserWizard extends BaseWizardBean
     public void setContentUsageService(ContentUsageService contentUsageService)
     {
         this.contentUsageService = contentUsageService;
+    }
+    
+    /**
+     * @return contentUsageService
+     */
+    private ContentUsageService getContentUsageService()
+    {
+       //check for null for cluster environment       
+       if (contentUsageService == null)
+       {
+          contentUsageService = (ContentUsageService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "ContentUsageService");
+       }
+       return contentUsageService;
     }
 
     /**
@@ -198,7 +284,7 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public String getSummary()
     {
-        if (tenantService.isEnabled())
+        if (geTenantService().isEnabled())
         {      
         	try
         	{
@@ -667,22 +753,22 @@ public class CreateUserWizard extends BaseWizardBean
     {
         // Admin Authority has full permissions by default (automatic - set in the permission config)
         // give full permissions to the new user
-        this.permissionService.setPermission(homeSpaceRef, this.userName, permissionService.getAllPermission(), true);
+       getPermissionService().setPermission(homeSpaceRef, this.userName, getPermissionService().getAllPermission(), true);
 
         // by default other users will only have GUEST access to the space contents
         // or whatever is configured as the default in the web-client-xml config
         String permission = getDefaultPermission();
         if (permission != null && permission.length() != 0)
         {
-            this.permissionService.setPermission(homeSpaceRef, permissionService.getAllAuthorities(), permission, true);
+           getPermissionService().setPermission(homeSpaceRef, getPermissionService().getAllAuthorities(), permission, true);
         }
 
         // the new user is the OWNER of their own space and always has full permissions
-        this.ownableService.setOwner(homeSpaceRef, this.userName);
-        this.permissionService.setPermission(homeSpaceRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
+        getOwnableService().setOwner(homeSpaceRef, this.userName);
+        getPermissionService().setPermission(homeSpaceRef, getPermissionService().getOwnerAuthority(), getPermissionService().getAllPermission(), true);
 
         // now detach (if we did this first we could not set any permissions!)
-        this.permissionService.setInheritParentPermissions(homeSpaceRef, false);
+        getPermissionService().setInheritParentPermissions(homeSpaceRef, false);
     }
 
     /**
@@ -707,7 +793,7 @@ public class CreateUserWizard extends BaseWizardBean
         {
             if (this.password.equals(this.confirm))
             {
-                if (tenantService.isEnabled())
+                if (geTenantService().isEnabled())
                 {         
                 	checkTenantUserName();
                 }
@@ -744,16 +830,16 @@ public class CreateUserWizard extends BaseWizardBean
                 props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
 
                 // create the node to represent the Person
-                NodeRef newPerson = this.personService.createPerson(props);
+                NodeRef newPerson = getPersonService().createPerson(props);
 
                 // ensure the user can access their own Person object
-                this.permissionService.setPermission(newPerson, this.userName, permissionService.getAllPermission(), true);
+                getPermissionService().setPermission(newPerson, this.userName, getPermissionService().getAllPermission(), true);
 
                 if (logger.isDebugEnabled())
                     logger.debug("Created Person node for username: " + this.userName);
 
                 // create the ACEGI Authentication instance for the new user
-                this.authenticationService.createAuthentication(this.userName, this.password.toCharArray());
+                getAuthenticationService().createAuthentication(this.userName, this.password.toCharArray());
 
                 if (logger.isDebugEnabled())
                     logger.debug("Created User Authentication instance for username: " + this.userName);
@@ -813,7 +899,7 @@ public class CreateUserWizard extends BaseWizardBean
     	  }
        }
        
-       this.contentUsageService.setUserQuota(userName, (quota == null ? -1 : quota));
+       getContentUsageService().setUserQuota(userName, (quota == null ? -1 : quota));
     }
     
     protected long convertToBytes(long size, String units)
@@ -863,20 +949,20 @@ public class CreateUserWizard extends BaseWizardBean
     
     protected void checkTenantUserName()
     {
-        String currentDomain = tenantService.getCurrentUserDomain();
+        String currentDomain = geTenantService().getCurrentUserDomain();
         if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
-            if (! tenantService.isTenantUser(this.userName))
+            if (! geTenantService().isTenantUser(this.userName))
             {
                 // force domain onto the end of the username
-                this.userName = tenantService.getDomainUser(this.userName, currentDomain);
+                this.userName = geTenantService().getDomainUser(this.userName, currentDomain);
                 logger.warn("Added domain to username: " + this.userName);
             }
             else
             {
                 try
                 {                  
-                    tenantService.checkDomainUser(this.userName);
+                   geTenantService().checkDomainUser(this.userName);
                 }
                 catch (RuntimeException re)
                 {

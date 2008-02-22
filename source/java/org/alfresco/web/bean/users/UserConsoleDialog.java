@@ -31,6 +31,8 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class UserConsoleDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -217662039833342921L;
+
     private static final String MSG_CLOSE = "close";
 
     @Override

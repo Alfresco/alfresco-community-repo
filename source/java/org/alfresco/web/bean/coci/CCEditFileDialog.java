@@ -30,6 +30,8 @@ import org.alfresco.web.app.Application;
 
 public class CCEditFileDialog extends CheckinCheckoutDialog
 {
+    private static final long serialVersionUID = -1145049277343144264L;
+    
     public static final String LBL_CLOSE = "close";
 
     @Override

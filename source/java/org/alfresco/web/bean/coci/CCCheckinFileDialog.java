@@ -7,6 +7,8 @@ import org.alfresco.web.app.Application;
 public class CCCheckinFileDialog extends CheckinCheckoutDialog
 {
 
+   private static final long serialVersionUID = -3591701539727090905L;
+   
    private static final String MSG_CHECK_IN = "check_in";
    
    @Override

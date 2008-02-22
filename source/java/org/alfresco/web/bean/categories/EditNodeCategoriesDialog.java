@@ -45,6 +45,8 @@ import org.alfresco.web.bean.repository.Node;
  */
 public class EditNodeCategoriesDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -1879847736997772606L;
+   
    protected Node node;
    protected NodeRef addedCategory;
    protected List categories;

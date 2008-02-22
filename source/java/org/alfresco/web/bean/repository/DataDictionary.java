@@ -24,9 +24,12 @@
  */
 package org.alfresco.web.bean.repository;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -41,9 +44,11 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author gavinc
  */
-public final class DataDictionary
+public final class DataDictionary implements Serializable
 {
-   private DictionaryService dictionaryService;
+   private static final long serialVersionUID = -4922351610793587592L;
+   
+   transient private DictionaryService dictionaryService;
    private Map<QName, TypeDefinition> types = new HashMap<QName, TypeDefinition>(11, 1.0f);
 
    /**
@@ -54,6 +59,19 @@ public final class DataDictionary
    public DataDictionary(DictionaryService dictionaryService)
    {
       this.dictionaryService = dictionaryService;
+   }
+   
+   /**
+    *@return dictionaryService
+    */
+   private DictionaryService getDictionaryService()
+   {
+    //check for null for cluster environment
+      if (dictionaryService == null)
+      {
+         dictionaryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDictionaryService();
+      }
+      return dictionaryService;
    }
    
    /**
@@ -68,7 +86,7 @@ public final class DataDictionary
       
       if (typeDef == null)
       {
-         typeDef = this.dictionaryService.getType(type);
+         typeDef = getDictionaryService().getType(type);
          
          if (typeDef != null)
          {
@@ -89,7 +107,7 @@ public final class DataDictionary
     */
    public TypeDefinition getTypeDef(QName type, Collection<QName> optionalAspects)
    {
-      return this.dictionaryService.getAnonymousType(type, optionalAspects);
+      return getDictionaryService().getAnonymousType(type, optionalAspects);
    }
    
    /**

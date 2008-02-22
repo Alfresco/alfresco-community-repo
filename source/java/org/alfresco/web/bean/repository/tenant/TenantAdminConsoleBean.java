@@ -25,24 +25,30 @@
 package org.alfresco.web.bean.repository.tenant;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.repo.tenant.TenantInterpreter;
+import org.alfresco.web.app.servlet.FacesHelper;
 
 
 /**
  * Backing bean to support the Tenant Admin Console
  */
-public class TenantAdminConsoleBean
+public class TenantAdminConsoleBean implements Serializable
 {
-    // command
+    private static final long serialVersionUID = -9116623180660597894L;
+    
+   // command
     private String command = "";
     private String submittedCommand = "none";
     private long duration = 0L;
     private String result = null;
 
     // supporting repository services
-    private TenantInterpreter tenantInterpreter;
+    transient private TenantInterpreter tenantInterpreter;
 
 
     /**
@@ -51,6 +57,19 @@ public class TenantAdminConsoleBean
     public void setTenantInterpreter(TenantInterpreter tenantInterpreter)
     {
         this.tenantInterpreter = tenantInterpreter;
+    }
+    
+    /**
+     * @return tenantInterpreter
+     */
+    private TenantInterpreter geTenantInterpreter()
+    {
+     //check for null for cluster environment
+       if (tenantInterpreter == null)
+       {
+          tenantInterpreter = (TenantInterpreter) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "tenantInterpreter");
+       }
+       return tenantInterpreter;
     }
 
     /**
@@ -155,7 +174,7 @@ public class TenantAdminConsoleBean
      */
     public String getCurrentUserName()
     {
-    	return (tenantInterpreter != null) ? tenantInterpreter.getCurrentUserName() : null;
+    	return (geTenantInterpreter() != null) ? geTenantInterpreter().getCurrentUserName() : null;
     }
 
     /**
@@ -168,7 +187,7 @@ public class TenantAdminConsoleBean
         try
         {
             long startms = System.currentTimeMillis();
-            String result = (tenantInterpreter != null) ? tenantInterpreter.interpretCommand(command) : "Tenant AdminConsole is not available - check that multi-tenancy is enabled !";
+            String result = (geTenantInterpreter() != null) ? geTenantInterpreter().interpretCommand(command) : "Tenant AdminConsole is not available - check that multi-tenancy is enabled !";
             setDuration(System.currentTimeMillis() - startms);
             setResult(result);
             setCommand("");

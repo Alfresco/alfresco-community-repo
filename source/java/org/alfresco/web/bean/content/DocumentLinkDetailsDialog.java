@@ -45,6 +45,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 
 public class DocumentLinkDetailsDialog extends BaseDetailsBean implements NavigationSupport
 {
+   private static final long serialVersionUID = 4716260640608281667L;
+   
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";

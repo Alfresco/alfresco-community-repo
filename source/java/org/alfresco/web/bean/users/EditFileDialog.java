@@ -31,7 +31,9 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 public class EditFileDialog extends BaseDialogBean
 {
 
-    @Override
+    private static final long serialVersionUID = -4237199472024493269L;
+
+   @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
         // TODO Auto-generated method stub

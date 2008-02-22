@@ -36,6 +36,8 @@ import org.alfresco.web.ui.common.Utils;
 public class ChangeMyPasswordDialog extends UsersDialog
 {
 
+    private static final long serialVersionUID = 1965846039555088108L;
+
     private static final String MSG_FINISH_BUTTON = "finish_button";
 
     @Override

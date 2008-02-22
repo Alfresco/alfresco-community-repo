@@ -61,6 +61,8 @@ import org.alfresco.web.ui.common.component.UIGenericPicker;
  */
 public class AddUsersDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 4893334797091942357L;
+
    /** The id of the group to add users to */
    protected String group;
    
@@ -68,16 +70,16 @@ public class AddUsersDialog extends BaseDialogBean
    protected String groupName;
    
    /** The AuthorityService to be used by the bean */
-   protected AuthorityService authService;
+   transient private AuthorityService authService;
 
    /** personService bean reference */
-   protected PersonService personService;
+   transient private PersonService personService;
 
    /** selected users to be added to a group */
    protected List<UserAuthorityDetails> usersForGroup;
 
    /** datamodel for table of users added to group */
-   protected DataModel usersDataModel = null;
+   transient protected DataModel usersDataModel = null;
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -100,7 +102,7 @@ public class AddUsersDialog extends BaseDialogBean
       // add each selected user to the current group in turn
       for (UserAuthorityDetails wrapper : this.usersForGroup)
       {
-         this.authService.addAuthority(this.group, wrapper.getAuthority());
+         this.getAuthService().addAuthority(this.group, wrapper.getAuthority());
       }
       
       return outcome;
@@ -126,11 +128,37 @@ public class AddUsersDialog extends BaseDialogBean
       this.authService = authService;
    }
 
+   /**
+    * @return the authService
+    */
+   protected AuthorityService getAuthService()
+   {
+     //check for null in cluster environment
+      if (authService == null)
+      {
+         authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authService;
+   }
+
    public void setPersonService(PersonService personService)
    {
       this.personService = personService;
    }
    
+   /**
+    * @return the personService
+    */
+   protected PersonService getPersonService()
+   {
+      //check for null in cluster environment
+      if (personService == null)
+      {
+         personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService();
+      }
+      return personService;
+   }
+
    /**
     * @return Returns the usersDataModel.
     */
@@ -176,7 +204,7 @@ public class AddUsersDialog extends BaseDialogBean
 
                // build xpath to match available User/Person objects
                ServiceRegistry services = Repository.getServiceRegistry(context);
-               NodeRef peopleRef = personService.getPeopleContainer();
+               NodeRef peopleRef = getPersonService().getPeopleContainer();
                String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + 
                               "%', false)" + " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + 
                               "lastName, '%" + contains + "%', false)]";
@@ -254,10 +282,10 @@ public class AddUsersDialog extends BaseDialogBean
                StringBuilder label = new StringBuilder(48);
 
                // build a display label showing the user person name
-               if (this.personService.personExists(authority) == true)
+               if (this.getPersonService().personExists(authority) == true)
                {
                   // found a Person with a User authority
-                  NodeRef ref = this.personService.getPerson(authority);
+                  NodeRef ref = this.getPersonService().getPerson(authority);
                   String firstName = (String)getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
                   String lastName = (String)getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
 

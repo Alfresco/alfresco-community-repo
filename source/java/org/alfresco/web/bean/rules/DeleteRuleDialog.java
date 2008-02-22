@@ -27,7 +27,6 @@ package org.alfresco.web.bean.rules;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
@@ -36,20 +35,22 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class DeleteRuleDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 2009345695752548885L;
+   
    private static final String MSG_ERROR_DELETE_RULE = "error_delete_rule";
    private static final String MSG_DELETE_RULE = "delete_rule";
    private static final String MSG_YES = "yes";
    private static final String MSG_NO = "no";
 
-   private Rule currentRule;
-   protected RuleService ruleService;
+   transient private Rule currentRule;
+   transient private RuleService ruleService;
    private static Log logger = LogFactory.getLog(DeleteRuleDialog.class);
 
    @Override
@@ -65,7 +66,7 @@ public class DeleteRuleDialog extends BaseDialogBean
       if (logger.isDebugEnabled())
          logger.debug("Rule clicked, it's nodeRef is: " + nodeRef);
 
-      this.currentRule = this.ruleService.getRule(new NodeRef(nodeRef));
+      this.currentRule = getRuleService().getRule(new NodeRef(nodeRef));
 
    }
 
@@ -75,6 +76,19 @@ public class DeleteRuleDialog extends BaseDialogBean
    public void setRuleService(RuleService ruleService)
    {
       this.ruleService = ruleService;
+   }
+   
+   /**
+    * @return ruleService
+    */
+   protected RuleService getRuleService()
+   {
+    //check for null for cluster environment
+      if (ruleService == null)
+      {
+         ruleService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getRuleService();
+      }
+      return ruleService;
    }
 
    /**
@@ -104,7 +118,7 @@ public class DeleteRuleDialog extends BaseDialogBean
          {
             String ruleTitle = this.currentRule.getTitle();
 
-            this.ruleService.removeRule(getSpace().getNodeRef(), this.currentRule);
+            getRuleService().removeRule(getSpace().getNodeRef(), this.currentRule);
 
             // clear the current rule
             this.currentRule = null;

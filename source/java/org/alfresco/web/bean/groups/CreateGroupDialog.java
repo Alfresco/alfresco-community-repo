@@ -36,16 +36,19 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 
 public class CreateGroupDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -8074475974375860695L;
+   
    protected String parentGroup;
    protected String parentGroupName;
    protected String name;
    
    /** The AuthorityService to be used by the bean */
-   protected AuthorityService authService;
+   transient private AuthorityService authService;
    
    private static final String MSG_ERR_EXISTS = "groups_err_exists";
    private static final String MSG_ERR_NAME = "groups_err_group_name";
@@ -72,10 +75,10 @@ public class CreateGroupDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // create new Group using Authentication Service
-      String groupName = this.authService.getName(AuthorityType.GROUP, this.name);
-      if (this.authService.authorityExists(groupName) == false)
+      String groupName = this.getAuthService().getName(AuthorityType.GROUP, this.name);
+      if (this.getAuthService().authorityExists(groupName) == false)
       {
-         this.authService.createAuthority(AuthorityType.GROUP, this.parentGroup, this.name);
+         this.getAuthService().createAuthority(AuthorityType.GROUP, this.parentGroup, this.name);
       }
       else
       {
@@ -127,6 +130,18 @@ public class CreateGroupDialog extends BaseDialogBean
       this.authService = authService;
    }
    
+   /**
+    * @return the authService
+    */
+   protected AuthorityService getAuthService()
+   {
+     //check for null in cluster environment
+      if (authService == null)
+      {
+         authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authService;
+   }
    // ------------------------------------------------------------------------------
    // Helpers
 

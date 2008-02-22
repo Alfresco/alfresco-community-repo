@@ -37,6 +37,8 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
  */
 public class ShowSystemInfoDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 1328587489092603676L;
+   
    private static final String MSG_CURRENT_USER = "current_user";
    private static final String MSG_CLOSE = "close";
    private static final String MSG_VERSION = "version";

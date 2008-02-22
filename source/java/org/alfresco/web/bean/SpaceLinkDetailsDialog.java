@@ -43,6 +43,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 
 public class SpaceLinkDetailsDialog extends BaseDetailsBean implements NavigationSupport
 {
+   private static final long serialVersionUID = 8372741472120796169L;
+   
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";

@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Map;
@@ -42,9 +40,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
-import org.alfresco.web.app.servlet.BaseTemplateContentServlet.URLHelper;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.component.template.DefaultModelHelper;

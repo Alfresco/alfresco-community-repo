@@ -46,6 +46,8 @@ import org.apache.log4j.Logger;
  */
 public class EditUserWizard extends CreateUserWizard
 {
+    private static final long serialVersionUID = 7529989488476324511L;
+
     private static Logger logger = Logger.getLogger(EditUserWizard.class);
    
     protected UsersBeanProperties properties;

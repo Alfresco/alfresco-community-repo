@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -1949,7 +1947,7 @@ public class BrowseBean implements IContextListener, Serializable
             else
             {
                // if the breadcrum is in "path" mode just add the given item to the end
-               String name = Repository.getNameForNode(this.nodeService, ref);
+               String name = Repository.getNameForNode(this.getNodeService(), ref);
                location.add(new BrowseBreadcrumbHandler(ref, name));
             }
          }

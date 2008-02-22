@@ -31,6 +31,8 @@ import org.alfresco.web.app.Application;
 
 public class CCWorkingCopyMissingDialog extends CheckinCheckoutDialog
 {
+    private static final long serialVersionUID = 8067485292477557683L;
+    
     public static final String MSG_WORKING_COPY_FOR = "working_copy_for";
     public static final String LBL_CLOSE = "close";
 

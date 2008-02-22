@@ -46,6 +46,8 @@ public class CreateProjectDialog extends CreateSpaceWizard
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+   private static final long serialVersionUID = -7140719588223514104L;
+
    @Override
    public void init(Map<String, String> parameters)
    {

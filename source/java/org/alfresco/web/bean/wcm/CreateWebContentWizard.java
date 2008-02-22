@@ -688,7 +688,7 @@ public class CreateWebContentWizard extends CreateContentWizard
     */
    public List<SelectItem> getFormsList()
    {
-      Collection<Form> forms = this.formsService.getWebForms();
+      Collection<Form> forms = getFormsService().getWebForms();
       List<SelectItem> items = new ArrayList<SelectItem>(forms.size()+1);
       items.add(new SelectItem("", ""));
       for (Form form : forms)

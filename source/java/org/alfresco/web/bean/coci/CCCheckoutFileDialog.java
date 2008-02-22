@@ -42,6 +42,8 @@ import org.apache.commons.logging.LogFactory;
 
 public class CCCheckoutFileDialog extends CheckinCheckoutDialog
 {
+    private static final long serialVersionUID = 1137163500648349730L;
+    
     public static final String LBL_SAVE = "save";
     public static final String LBL_CHECKOUT = "check_out";
     

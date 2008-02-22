@@ -29,13 +29,16 @@ import javax.faces.context.FacesContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 public class TrashcanItemDetailsDialog extends TrashcanDialog
 {
+   private static final long serialVersionUID = 1767515883530860417L;
+   
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_CLOSE = "close";
    
-   protected PermissionService permissionService;
+   transient private PermissionService permissionService;
 
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
@@ -70,5 +73,18 @@ public class TrashcanItemDetailsDialog extends TrashcanDialog
    public void setPermissionService(PermissionService permissionService)
    {
       this.permissionService = permissionService;
+   }
+   
+   /**
+    *@return permissionService
+    */
+   protected PermissionService getPermissionService()
+   {
+    //check for null for cluster environment
+      if (permissionService == null)
+      {
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
+      }
+      return permissionService;
    }
 }

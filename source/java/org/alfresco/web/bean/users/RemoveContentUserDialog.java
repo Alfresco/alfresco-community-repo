@@ -37,6 +37,8 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
  */
 public class RemoveContentUserDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = -3090054828215666084L;
+
    private static final String MSG_REMOVE_USER = "remove_user";
    
    private ContentUsersBean contentUsersBean;

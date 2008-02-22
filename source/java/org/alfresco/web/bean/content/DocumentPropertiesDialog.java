@@ -78,6 +78,7 @@ public class DocumentPropertiesDialog implements Serializable
    transient private NodeService nodeService;
    transient private FileFolderService fileFolderService;
    transient private DictionaryService dictionaryService;
+   
    protected BrowseBean browseBean;
    private List<SelectItem> contentTypes;
    private Node editableNode;

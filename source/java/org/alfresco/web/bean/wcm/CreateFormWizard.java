@@ -89,6 +89,8 @@ public class CreateFormWizard extends BaseWizardBean
 
    /////////////////////////////////////////////////////////////////////////////
 
+   private static final long serialVersionUID = 4038447699556408567L;
+
    /**
     * Simple wrapper class to represent a form data renderer
     */
@@ -1113,7 +1115,7 @@ public class CreateFormWizard extends BaseWizardBean
       boolean isWebForm = true;
       // TODO - need better way to determine WCM vs ECM context
       // can create form from CreateWebProject Wizard, or from Forms DataDictionary space or Web Forms DataDictionary space     
-      if (this.navigator.getCurrentNode().getNodeRef().equals(this.formsService.getContentFormsNodeRef()))
+      if (this.navigator.getCurrentNode().getNodeRef().equals(getFormsService().getContentFormsNodeRef()))
       {
          // ECM form
          isWebForm = false;

@@ -56,13 +56,15 @@ import org.apache.commons.logging.LogFactory;
 
 public class DeleteCategoryDialog extends BaseDialogBean
 {
+    private static final long serialVersionUID = -8929785826091612856L;
+    
     private static final String DEFAULT_OUTCOME = "finish";
     private final static String MSG_DELETE_CATEGORY = "delete_category";
     private final static String MSG_DELETE = "delete";
     
     private static final String MSG_CATEGORIES = "categories";
     
-    protected CategoryService categoryService;
+    transient protected CategoryService categoryService;
     
     /** Dialog properties */
     private String name = null;
@@ -151,9 +153,17 @@ public class DeleteCategoryDialog extends BaseDialogBean
         this.description = description;
     }
     
-    public CategoryService getCategoryService()
+    /**
+     * @return the categoryService
+     */
+    private CategoryService getCategoryService()
     {
-        return categoryService;
+       //check for null in cluster environment
+       if(categoryService == null)
+       {
+          categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+       }
+       return categoryService;
     }
 
     public void setCategoryService(CategoryService categoryService)

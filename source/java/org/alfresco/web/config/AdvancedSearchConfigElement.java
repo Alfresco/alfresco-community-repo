@@ -234,8 +234,10 @@ public class AdvancedSearchConfigElement extends ConfigElementAdapter implements
     * Simple wrapper class for custom advanced search property
     * @author Kevin Roast
     */
-   public static class CustomProperty
+   public static class CustomProperty implements Serializable
    {
+      private static final long serialVersionUID = 1457092137913897740L;
+      
       CustomProperty(String type, String aspect, String property, String labelId)
       {
          Type = type;

@@ -1032,8 +1032,10 @@ public class SearchContext implements Serializable
    /**
     * Simple wrapper class for range query attribute properties 
     */
-   static class RangeProperties
+   static class RangeProperties implements Serializable
    {
+      private static final long serialVersionUID = 5627339191207625169L;
+      
       QName qname;
       String lower;
       String upper;

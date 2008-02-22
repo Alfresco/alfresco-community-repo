@@ -35,7 +35,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -47,6 +46,7 @@ import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -67,7 +67,7 @@ public class RevertAllDialog extends BaseDialogBean
    transient private AVMSyncService avmSyncService;
    transient private ActionService actionService;
    
-   protected NameMatcher nameMatcher;
+   transient private NameMatcher nameMatcher;
 
    // The virtualization server might need to be notified 
    // because one or more of the files reverted could alter 
@@ -145,6 +145,19 @@ public class RevertAllDialog extends BaseDialogBean
       this.nameMatcher = nameMatcher;
    }
    
+   /**
+    * @return nameMatcher
+    */
+   protected NameMatcher getNameMatcher()
+   {
+    //check for null for cluster environment
+      if (nameMatcher == null)
+      {
+         nameMatcher = (NameMatcher) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "globalPathExcluder");
+      }
+      return nameMatcher;
+   }   
+   
    
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#finishImpl(javax.faces.context.FacesContext, java.lang.String)
@@ -158,7 +171,7 @@ public class RevertAllDialog extends BaseDialogBean
       
       // calcluate the list of differences between the user store and the staging area
       List<AVMDifference> diffs = this.getAvmSyncService().compare(
-            -1, userStore, -1, stagingStore, this.nameMatcher);
+            -1, userStore, -1, stagingStore, getNameMatcher());
 
       List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
 

@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -39,10 +37,8 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.CIFSServerBean;
-import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskInterface;
-import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -81,7 +77,6 @@ import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.shelf.UIShelf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Bean providing access and management of the various global navigation mechanisms
@@ -385,7 +380,7 @@ public class NavigationBean implements Serializable
          }
          else
          {
-            String homeSpaceName = Repository.getNameForNode(this.nodeService, homeSpaceRef);
+            String homeSpaceName = Repository.getNameForNode(this.getNodeService(), homeSpaceRef);
             elements.add(new NavigationBreadcrumbHandler(homeSpaceRef, homeSpaceName));
             
             if (s_logger.isDebugEnabled())

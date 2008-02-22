@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean.ml;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,10 +34,10 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 
 /**
  * Dialog bean to add a new translation without content. I means, a new node is created

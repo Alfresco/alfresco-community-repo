@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
@@ -54,6 +53,8 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class EditUserDetailsDialog extends BaseDialogBean
 {
+    private static final long serialVersionUID = 8663254425262484L;
+    
     private Node person;
     protected UsersBeanProperties properties;
     private NodeRef photoRef;

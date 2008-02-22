@@ -28,11 +28,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
@@ -136,6 +136,8 @@ public class AVMNode extends Node implements Map<String, Object>
    public final static NodePropertyResolver RESOLVER_DISPLAY_PATH =
       new NodePropertyResolver()
       {
+         private static final long serialVersionUID = 368552730555134975L;
+
          public Object get(final Node node)
          {
             if (! (node instanceof AVMNode))
@@ -152,6 +154,8 @@ public class AVMNode extends Node implements Map<String, Object>
    public final static NodePropertyResolver RESOLVER_PARENT_PATH =
       new NodePropertyResolver()
       {
+         private static final long serialVersionUID = -798036430912409497L;
+
          public Object get(final Node node)
          {
             if (! (node instanceof AVMNode))

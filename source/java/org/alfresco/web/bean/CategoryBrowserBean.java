@@ -31,8 +31,8 @@ import org.alfresco.web.bean.search.SearchContext;
 
 public class CategoryBrowserBean
 {
-      public static String BEAN_NAME = "CategoryBrowserBean";
- 
+   public static String BEAN_NAME = "CategoryBrowserBean";
+
    private NodeService nodeService;
  
    private NodeRef currentCategory = null;

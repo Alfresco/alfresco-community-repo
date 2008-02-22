@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.bean.clipboard;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 import javax.faces.context.FacesContext;

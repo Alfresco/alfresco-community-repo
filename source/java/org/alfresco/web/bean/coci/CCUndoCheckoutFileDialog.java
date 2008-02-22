@@ -35,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
 
 public class CCUndoCheckoutFileDialog extends CheckinCheckoutDialog
 {
+    private static final long serialVersionUID = -6957120889259486975L;
+    
     public static final String LBL_UNDO_CHECKOUT = "undo_checkout";
     public static final String MSG_UNDO_CHECKOUT_FOR = "undo_checkout_for";
 

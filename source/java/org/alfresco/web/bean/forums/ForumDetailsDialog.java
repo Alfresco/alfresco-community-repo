@@ -45,6 +45,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 public class ForumDetailsDialog extends BaseDetailsBean implements NavigationSupport
 {
 
+   private static final long serialVersionUID = -1358474435876806449L;
+   
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";

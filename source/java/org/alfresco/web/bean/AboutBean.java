@@ -26,12 +26,6 @@ package org.alfresco.web.bean;
 
 import javax.faces.context.FacesContext;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-
-import javax.faces.context.FacesContext;
-
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -95,6 +89,7 @@ public class AboutBean extends BaseDialogBean
 
    DescriptorService getDescriptorService()
    {
+      //check for null in cluster environment  
       if (descriptorService == null)
       {
          descriptorService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDescriptorService();

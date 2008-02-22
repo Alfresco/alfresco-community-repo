@@ -133,7 +133,7 @@ public class SubmitDialog extends BaseDialogBean
    transient private AVMLockingService avmLockingService;
    transient private FormsService formsService;
    
-   protected NameMatcher nameMatcher;
+   transient private NameMatcher nameMatcher;
   
 
    /** Current workflow for dialog context */
@@ -223,6 +223,19 @@ public class SubmitDialog extends BaseDialogBean
    public void setNameMatcher(NameMatcher nameMatcher)
    {
       this.nameMatcher = nameMatcher;
+   }
+   
+   /**
+    * @return nameMatcher
+    */
+   protected NameMatcher getNameMatcher()
+   {
+    //check for null for cluster environment
+      if (nameMatcher == null)
+      {
+         nameMatcher = (NameMatcher) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "globalPathExcluder");
+      }
+      return nameMatcher;
    }
 
    /**
@@ -991,7 +1004,7 @@ public class SubmitDialog extends BaseDialogBean
             String webapp = this.avmBrowseBean.getWebapp();
             String userStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getSandbox(), webapp);
             String stagingStore = AVMUtil.buildStoreWebappPath(this.avmBrowseBean.getStagingStore(), webapp);
-            List<AVMDifference> diffs = this.getAvmSyncService().compare(-1, userStore, -1, stagingStore, nameMatcher);
+            List<AVMDifference> diffs = this.getAvmSyncService().compare(-1, userStore, -1, stagingStore, getNameMatcher());
             selected = new ArrayList<AVMNodeDescriptor>(diffs.size());
             for (AVMDifference diff : diffs)
             {

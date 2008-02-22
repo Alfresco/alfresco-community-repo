@@ -31,6 +31,8 @@ import org.alfresco.web.app.Application;
 public class TrashcanRecoveryReportDialog extends TrashcanDialog
 {
 
+    private static final long serialVersionUID = -3381444990908748991L;
+    
     private final static String MSG_CLOSE = "close";
 
     @Override

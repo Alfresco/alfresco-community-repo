@@ -38,6 +38,8 @@ import org.alfresco.web.ui.common.Utils;
 
 public class TrashcanDeleteListedItemsDialog extends TrashcanDialog
 {
+    private static final long serialVersionUID = 5576836588148974609L;
+    
     private static final String MSG_YES = "yes";
     private static final String MSG_NO = "no";
 

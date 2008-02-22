@@ -222,7 +222,7 @@ public class AVMBrowseBean implements IContextListener
    transient private FormsService formsService;
    
    /** The SearchService reference */
-   protected SearchService searchService;
+   transient private SearchService searchService;
    
    
    /**
@@ -307,6 +307,20 @@ public class AVMBrowseBean implements IContextListener
       this.searchService = searchService;
    }
    
+   /**
+    * @return searchService
+    */
+   public SearchService getSearchService()
+   {
+    //check for null for cluster environment
+      if(searchService == null)
+      {
+         searchService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSearchService();
+      }
+      return searchService;
+   }
+
+
    /**
     * Getter used by the Inline Edit XML JSP
     * 
@@ -1041,7 +1055,7 @@ public class AVMBrowseBean implements IContextListener
             sp.setLimit(searchLimit);
          }
          
-         results = this.searchService.query(sp);
+         results = getSearchService().query(sp);
          
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());
@@ -1067,7 +1081,7 @@ public class AVMBrowseBean implements IContextListener
             }
             if (path.length() > sandboxPathLength)
             {
-               AVMNodeDescriptor avmRef = this.avmService.lookup(-1, path);
+               AVMNodeDescriptor avmRef = getAvmService().lookup(-1, path);
                if (avmRef != null)
                {
                   AVMNode node = addAVMNodeResult(avmRef);

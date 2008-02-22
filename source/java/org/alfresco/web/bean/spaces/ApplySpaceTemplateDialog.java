@@ -41,6 +41,8 @@ import org.alfresco.web.ui.common.Utils;
 public class ApplySpaceTemplateDialog extends BaseDialogBean
 {
 
+    private static final long serialVersionUID = -3019234033026890265L;
+
     protected String template;
 
     private static final String DIALOG_CLOSE = "dialog:close";

@@ -274,8 +274,8 @@ public class CreateWebsiteWizard extends BaseWizardBean
          {
             String stagingStore = AVMUtil.buildStagingStoreName(avmStore);
             String stagingStoreRoot = AVMUtil.buildSandboxRootPath(stagingStore);
-            this.avmService.createDirectory(stagingStoreRoot, webapp);
-            this.avmService.addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
+            getAvmService().createDirectory(stagingStoreRoot, webapp);
+            getAvmService().addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
                                       WCMAppModel.ASPECT_WEBAPP);
          }
          
@@ -558,7 +558,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          NodeRef wfRef = wChildRef.getChildRef();
          String wfName = (String)getNodeService().getProperty(wfRef, WCMAppModel.PROP_WORKFLOW_NAME);
-         WorkflowDefinition wfDef = this.workflowService.getDefinitionByName(wfName);
+         WorkflowDefinition wfDef = getWorkflowService().getDefinitionByName(wfName);
          if (wfDef != null)
          {
             WorkflowWrapper wfWrapper = new WorkflowWrapper(wfName, wfDef.getTitle(), wfDef.getDescription());

@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.bean.ajax;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -61,8 +63,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Kevin Roast
  */
-public class PickerBean
+public class PickerBean implements Serializable
 {
+   private static final long serialVersionUID = 8950457520023294902L;
+   
    private static final String MSG_CATEGORIES = "categories";
    private static final String ID_URL = "url";
    private static final String ID_ICON = "icon";
@@ -80,10 +84,10 @@ public class PickerBean
    
    private static Log logger = LogFactory.getLog(PickerBean.class);
    
-   private CategoryService categoryService;
-   private NodeService nodeService;
-   private NodeService internalNodeService;
-   private FileFolderService fileFolderService;
+   transient private CategoryService categoryService;
+   transient private NodeService nodeService;
+   transient private NodeService internalNodeService;
+   transient private FileFolderService fileFolderService;
    
    
    /**
@@ -95,11 +99,37 @@ public class PickerBean
    }
    
    /**
+    * @return the categoryService
+    */
+   private CategoryService getCategoryService()
+   {
+      //check for null in cluster environment
+      if(categoryService == null)
+      {
+         categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+      }
+      return categoryService;
+   }
+
+   /**
     * @param nodeService         The nodeService to set
     */
    public void setNodeService(NodeService nodeService)
    {
       this.nodeService = nodeService;
+   }
+   
+   /**
+    * @return the nodeService
+    */
+   private NodeService getNodeService()
+   {
+      //check for null in cluster environment
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
    }
    
    /**
@@ -111,6 +141,19 @@ public class PickerBean
    }
    
    /**
+    * @return the internalNodeService
+    */
+   private NodeService getInternalNodeService()
+   {
+      //check for null in cluster environment
+      if (internalNodeService == null)
+      {
+         internalNodeService = (NodeService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "nodeService");
+      }
+      return internalNodeService;
+   }
+
+   /**
     * @param fileFolderService   the FileFolderService to set
     */
    public void setFileFolderService(FileFolderService fileFolderService)
@@ -118,7 +161,18 @@ public class PickerBean
       this.fileFolderService = fileFolderService;
    }
    
-   
+   /**
+    * @return the fileFolderService
+    */
+   private FileFolderService getFileFolderService()
+   {
+      if (fileFolderService == null)
+      {
+         fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
+      }
+      return fileFolderService;
+   }
+
    /**
     * Return the JSON objects representing a list of categories.
     * 
@@ -143,14 +197,14 @@ public class PickerBean
          String strParentRef = (String)params.get(PARAM_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
-            childRefs = this.categoryService.getRootCategories(
+            childRefs = this.getCategoryService().getRootCategories(
                Repository.getStoreRef(),
                ContentModel.ASPECT_GEN_CLASSIFIABLE);
          }
          else
          {
             parentRef = new NodeRef(strParentRef);
-            childRefs = this.categoryService.getChildren(
+            childRefs = this.getCategoryService().getChildren(
                   parentRef,
                   CategoryService.Mode.SUB_CATEGORIES,
                   CategoryService.Depth.IMMEDIATE);
@@ -170,7 +224,7 @@ public class PickerBean
          else
          {
             out.writeValue(ID_ID, strParentRef);
-            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), parentRef));
          }
          out.endObject();
          out.endValue();
@@ -181,7 +235,7 @@ public class PickerBean
             NodeRef nodeRef = ref.getChildRef();
             out.startObject();
             out.writeValue(ID_ID, nodeRef.toString());
-            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, nodeRef));
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), nodeRef));
             out.endObject();
          }
          out.endArray();
@@ -225,14 +279,14 @@ public class PickerBean
          String strParentRef = (String)params.get(ID_PARENT);
          if (strParentRef == null || strParentRef.length() == 0)
          {
-            childRefs = this.categoryService.getRootCategories(
+            childRefs = this.getCategoryService().getRootCategories(
                Repository.getStoreRef(),
                ContentModel.ASPECT_TAGGABLE);
          }
          else
          {
             parentRef = new NodeRef(strParentRef);
-            childRefs = this.categoryService.getChildren(
+            childRefs = this.getCategoryService().getChildren(
                   parentRef,
                   CategoryService.Mode.SUB_CATEGORIES,
                   CategoryService.Depth.IMMEDIATE);
@@ -252,7 +306,7 @@ public class PickerBean
          else
          {
             out.writeValue(ID_ID, strParentRef);
-            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), parentRef));
          }
          out.endObject();
          out.endValue();
@@ -263,7 +317,7 @@ public class PickerBean
             NodeRef nodeRef = ref.getChildRef();
             out.startObject();
             out.writeValue(ID_ID, nodeRef.toString());
-            out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, nodeRef));
+            out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), nodeRef));
             out.endObject();
          }
          out.endArray();
@@ -301,7 +355,7 @@ public class PickerBean
          {
             // TODO: check permission on the parent
             NodeRef childRef = new NodeRef(strChildRef);
-            parentRef = this.nodeService.getPrimaryParent(childRef).getParentRef();
+            parentRef = this.getNodeService().getPrimaryParent(childRef).getParentRef();
          }
          else
          {
@@ -318,14 +372,14 @@ public class PickerBean
             }
          }
          
-         List<FileInfo> folders = this.fileFolderService.listFolders(parentRef);
+         List<FileInfo> folders = this.getFileFolderService().listFolders(parentRef);
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
          out.startValue(ID_PARENT);
          out.startObject();
          out.writeValue(ID_ID, parentRef.toString());
-         out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
+         out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), parentRef));
          if (parentRef.equals(companyHomeRef))
          {
             out.writeValue(ID_ISROOT, true);
@@ -399,7 +453,7 @@ public class PickerBean
          {
             // TODO: check permission on the parent
             NodeRef childRef = new NodeRef(strChildRef);
-            parentRef = this.nodeService.getPrimaryParent(childRef).getParentRef();
+            parentRef = this.getNodeService().getPrimaryParent(childRef).getParentRef();
          }
          else
          {
@@ -429,14 +483,14 @@ public class PickerBean
             }
          }
          
-         List<FileInfo> items = this.fileFolderService.list(parentRef);
+         List<FileInfo> items = this.getFileFolderService().list(parentRef);
          
          JSONWriter out = new JSONWriter(fc.getResponseWriter());
          out.startObject();
          out.startValue(ID_PARENT);
          out.startObject();
          out.writeValue(ID_ID, parentRef.toString());
-         out.writeValue(ID_NAME, Repository.getNameForNode(this.internalNodeService, parentRef));
+         out.writeValue(ID_NAME, Repository.getNameForNode(this.getInternalNodeService(), parentRef));
          if (parentRef.equals(companyHomeRef))
          {
             out.writeValue(ID_ISROOT, true);
@@ -449,7 +503,7 @@ public class PickerBean
          
          for (FileInfo item : items)
          {
-            if (dd.isSubClass(this.internalNodeService.getType(item.getNodeRef()), ContentModel.TYPE_FOLDER))
+            if (dd.isSubClass(this.getInternalNodeService().getType(item.getNodeRef()), ContentModel.TYPE_FOLDER))
             {
                // found a folder
                out.startObject();

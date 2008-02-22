@@ -38,14 +38,14 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean implementation for the "Edit Content Wizard" dialog
  */
 public class EditContentWizard extends CreateContentWizard
 {
+   private static final long serialVersionUID = 1640754719164511019L;
+   
    private NodeRef nodeRef;
    private Form form;
 

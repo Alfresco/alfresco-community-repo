@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.bean.search;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,9 +43,11 @@ import org.alfresco.util.ExpiringValueCache;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.config.AdvancedSearchConfigElement;
 
-public class SearchProperties
+public class SearchProperties implements Serializable
 {
-    private static final String MODE_ALL = "all";
+	private static final long serialVersionUID = 8583342903708013641L;
+	
+	private static final String MODE_ALL = "all";
     private static final String LOOKIN_ALL = "all";
     private static final String SAVED_SEARCHES_USER = "user";
 
@@ -62,7 +67,7 @@ public class SearchProperties
     /**
      * lookup of custom property QName string to DataTypeDefinition for the property
      */
-    private Map<String, DataTypeDefinition> customPropertyLookup = null;
+    transient private Map<String, DataTypeDefinition> customPropertyLookup = null;
 
     /** content format list restricting searches */
     private List<SelectItem> contentFormats;
@@ -98,7 +103,7 @@ public class SearchProperties
     private List<Node> categories = new ArrayList<Node>(2);
 
     /** datamodel for table of categories to search */
-    private DataModel categoriesDataModel = new ListDataModel();
+    transient private DataModel categoriesDataModel = new ListDataModel();
 
     /** title attribute to search */
     private String title = null;
@@ -494,4 +499,11 @@ public class SearchProperties
         this.cachedSavedSearches = cachedSavedSearches;
     }
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+       in.defaultReadObject();
+       
+       categoriesDataModel = new ListDataModel();
+    }
+   
 }

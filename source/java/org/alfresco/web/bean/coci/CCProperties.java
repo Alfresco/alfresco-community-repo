@@ -25,24 +25,30 @@
 package org.alfresco.web.bean.coci;
 
 import java.io.File;
+import java.io.Serializable;
+
+import javax.faces.context.FacesContext;
 
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
-public class CCProperties
+public class CCProperties implements Serializable
 {
 
-    /** The VersionOperationsService to be used by the bean */
-    protected CheckOutCheckInService versionOperationsService;
+    private static final long serialVersionUID = -79530354521757202L;
+
+   /** The VersionOperationsService to be used by the bean */
+    transient protected CheckOutCheckInService versionOperationsService;
 
     /** The ContentService to be used by the bean */
-    protected ContentService contentService;
+    transient protected ContentService contentService;
 
     /** The WorkflowService to be used by the bean */
-    protected WorkflowService workflowService;
+    transient protected WorkflowService workflowService;
 
     /** Content of the document returned from in-line editing */
     private String editorOutput;
@@ -77,7 +83,12 @@ public class CCProperties
      */
     public CheckOutCheckInService getVersionOperationsService()
     {
-        return this.versionOperationsService;
+       //check for null in cluster environment
+       if (versionOperationsService == null)
+       {
+          versionOperationsService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCheckOutCheckInService();
+       }
+       return versionOperationsService;
     }
 
     /**
@@ -94,7 +105,12 @@ public class CCProperties
      */
     public ContentService getContentService()
     {
-        return this.contentService;
+     //check for null in cluster environment
+       if (contentService == null)
+       {
+          contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
+       }
+       return contentService;
     }
 
     /**
@@ -120,7 +136,12 @@ public class CCProperties
      */
     public WorkflowService getWorkflowService()
     {
-        return this.workflowService;
+     //check for null for cluster environment
+       if (workflowService == null)
+       {
+          workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
+       }
+       return workflowService;
     }
 
     /**

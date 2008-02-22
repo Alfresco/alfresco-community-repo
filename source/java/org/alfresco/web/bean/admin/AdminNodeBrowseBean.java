@@ -658,7 +658,7 @@ public class AdminNodeBrowseBean implements Serializable
             }
             else if (queryLanguage.equals("selectnodes"))
             {
-                List<NodeRef> nodes = getSearchService().selectNodes(getNodeRef(), query, null, namespaceService, false);
+                List<NodeRef> nodes = getSearchService().selectNodes(getNodeRef(), query, null, getNamespaceService(), false);
                 searchResults = new SearchResults(nodes);
                 return "search";
             }

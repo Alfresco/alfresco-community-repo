@@ -44,6 +44,8 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 
 public class WebSiteDetailsDialog extends BaseDetailsBean implements NavigationSupport
 {
+
+   private static final long serialVersionUID = -7951329243417867229L;
    
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";

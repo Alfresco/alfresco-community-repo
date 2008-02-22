@@ -44,6 +44,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
@@ -70,10 +71,10 @@ public class CreateContentWizard extends BaseContentWizard
    protected String content = null;
    protected List<SelectItem> createMimeTypes;
    
-   protected FormsService formsService;
+   transient protected FormsService formsService;
    protected String formName;
    protected FormProcessor.Session formProcessorSession = null;
-   protected Document instanceDataDocument = null;
+   transient protected Document instanceDataDocument = null;
    
    private static Log logger = LogFactory.getLog(CreateContentWizard.class);
    
@@ -86,9 +87,23 @@ public class CreateContentWizard extends BaseContentWizard
       this.formsService = formsService;
    }
    
+   /**
+    * @return the formsService
+    */
+   private FormsService getFormsService()
+   {
+      //check for null for cluster environment
+      if (formsService == null)
+      {
+         formsService =  (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
+      }
+      return formsService;
+   }
+   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
+
    @Override
    public String finish()
    {
@@ -294,7 +309,7 @@ public class CreateContentWizard extends BaseContentWizard
     */
    public List<SelectItem> getFormsList()
    {
-      Collection<Form> forms = this.formsService.getForms();
+      Collection<Form> forms = this.getFormsService().getForms();
       List<SelectItem> items = new ArrayList<SelectItem>(forms.size()+1);
       items.add(new SelectItem("", ""));
       for (Form form : forms)
@@ -317,7 +332,7 @@ public class CreateContentWizard extends BaseContentWizard
    public Form getForm() throws FormNotFoundException
    {
       return (this.getFormName() != null 
-              ? formsService.getForm(formName)
+              ? getFormsService().getForm(formName)
 	      : null);
    }
 

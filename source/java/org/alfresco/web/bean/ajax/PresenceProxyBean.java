@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -47,8 +48,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Mike Hatfield
  */
-public class PresenceProxyBean
+public class PresenceProxyBean implements Serializable
 {
+   private static final long serialVersionUID = -3041576848188629589L;
+   
    private static Log logger = LogFactory.getLog(PresenceProxyBean.class);
    
    @InvokeCommand.ResponseMimetype(value=MimetypeMap.MIMETYPE_HTML)

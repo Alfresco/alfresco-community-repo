@@ -31,7 +31,9 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class RemoveInvitedUserDialog extends BaseDialogBean {
-    
+
+    private static final long serialVersionUID = -7457234588814115434L;
+
     private static final String BUTTON_NO = "no";
 
     private static final String BUTTON_YES = "yes";

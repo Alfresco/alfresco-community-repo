@@ -31,16 +31,19 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class AdminConsoleDialog extends BaseDialogBean
 {
-    private static final String BUTTON_CLOSE = "close";
+   private static final long serialVersionUID = -2520599525975495006L;
+    
+   private static final String BUTTON_CLOSE = "close";
 
     @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
-    {
-        return outcome;
-    }
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
+   {
+      return outcome;
+   }
     
     @Override
-    public String getCancelButtonLabel() {
-        return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_CLOSE);
-    }
+   public String getCancelButtonLabel()
+   {
+      return Application.getMessage(FacesContext.getCurrentInstance(), BUTTON_CLOSE);
+   }
 }

@@ -36,6 +36,8 @@ import org.alfresco.web.bean.repository.Node;
 
 public class TrashcanRecoverListedItemsDialog extends TrashcanDialog
 {
+    private static final long serialVersionUID = 5500454626559426051L;
+    
     private static final String OUTCOME_RECOVERY_REPORT = "dialog:recoveryReport";
     private static final String MSG_NO = "no";
     private static final String MSG_YES = "yes";

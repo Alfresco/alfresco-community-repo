@@ -44,9 +44,11 @@ import org.alfresco.web.ui.common.Utils;
 
 public class CreateCategoryDialog extends BaseDialogBean
 {
+    private static final long serialVersionUID = 1905920932992642119L;
+
     private static final String DEFAULT_OUTCOME = "finish";
     
-    protected CategoryService categoryService;
+    transient protected CategoryService categoryService;
     
     /** Current category ref */
     private NodeRef categoryRef = null;
@@ -72,9 +74,17 @@ public class CreateCategoryDialog extends BaseDialogBean
        } 
     }
     
-    public CategoryService getCategoryService()
+    /**
+     * @return the categoryService
+     */
+    private CategoryService getCategoryService()
     {
-        return categoryService;
+       //check for null in cluster environment
+       if(categoryService == null)
+       {
+          categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+       }
+       return categoryService;
     }
 
     public void setCategoryService(CategoryService categoryService)

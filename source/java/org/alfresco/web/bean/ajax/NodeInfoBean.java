@@ -25,7 +25,6 @@
 package org.alfresco.web.bean.ajax;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

@@ -33,6 +33,8 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 
 public class EditUserRolesDialog extends BaseDialogBean {
     
+    private static final long serialVersionUID = 614541023231055676L;
+
     private static final String MSG_MODIFY_USER_ROLE = "modify_user_roles";
 
     SpaceUsersBean spaceUsersBean;

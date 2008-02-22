@@ -54,12 +54,14 @@ import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 
 public class EditCategoryDialog extends BaseDialogBean
 {
+   private static final long serialVersionUID = 3316665625854694278L;
+   
    private static final String DEFAULT_OUTCOME = "finish";
    private final static String MSG_EDIT_CATEGORY = "edit_category";
    private final static String MSG_FINISH = "finish_button";
    private static final String MSG_CATEGORIES = "categories";
 
-   protected CategoryService categoryService;
+   transient protected CategoryService categoryService;
 
    /** Action category node */
    private Node actionCategory = null;
@@ -129,8 +131,16 @@ public class EditCategoryDialog extends BaseDialogBean
       this.categoriesRichList = categoriesRichList;
    }
 
-   public CategoryService getCategoryService()
+   /**
+    * @return the categoryService
+    */
+   private CategoryService getCategoryService()
    {
+      //check for null in cluster environment
+      if(categoryService == null)
+      {
+         categoryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCategoryService();
+      }
       return categoryService;
    }
 

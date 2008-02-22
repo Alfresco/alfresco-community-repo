@@ -279,6 +279,19 @@
             </params>
          </action>
          
+         <!-- Reset deployment history action -->
+         <action id="reset_deployment_history">
+            <permissions>
+               <permission allow="true">Delete,Write,CreateChildren</permission>
+            </permissions>
+            <label-id>reset_deploy_history</label-id>
+            <image>/images/icons/remove_item.gif</image>
+            <action>#{AVMBrowseBean.resetDeploymentHistory}</action>
+            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
          
          <!-- Actions for a file in the AVM Browse screen -->
          <action-group id="avm_file_browse">
@@ -385,6 +398,7 @@
             <action idref="create_webapp" />
             <action idref="edit_website" />
             <action idref="invite_website_users" />
+            <action idref="reset_deployment_history" />
             <action idref="delete_space" />
          </action-group>
          

@@ -202,16 +202,16 @@ public final class DeploymentUtil
     * for the given web project.
     *  
     * @param webProject Web project to get test servers for 
-    * @param allocated true only returns those servers already allocated 
+    * @param availableOnly if true only returns those servers still available for deployment 
     * @return List of test servers
     */
-   public static List<NodeRef> findTestServers(NodeRef webProject, boolean allocated)
+   public static List<NodeRef> findTestServers(NodeRef webProject, boolean availableOnly)
    {
-      return findServers(webProject, false, allocated);
+      return findServers(webProject, false, availableOnly);
    }
    
    
-   private static List<NodeRef> findServers(NodeRef webProject, boolean live, boolean allocated)
+   private static List<NodeRef> findServers(NodeRef webProject, boolean live, boolean availableOnly)
    {
       FacesContext context = FacesContext.getCurrentInstance();
       NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
@@ -242,7 +242,7 @@ public final class DeploymentUtil
       query.append("\"");
       
       // if required filter the test servers
-      if (live == false && allocated == false)
+      if (live == false && availableOnly)
       {
          query.append(" AND ISNULL:\"");
          query.append(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO.toString());

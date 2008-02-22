@@ -51,6 +51,8 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
    private NodeRef targetServer;
    private String targetServerName;
    private String deployAttemptId;
+   private String url;
+   private String reason;
    private int snapshotVersion;
    private boolean started = false;
    private boolean finished = false;
@@ -63,7 +65,7 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
     * Default constructor
     */
    public DeploymentMonitor(NodeRef website, NodeRef server, int snapshotVersion, 
-            String serverName, String deployAttemptId)
+            String serverName, String deployAttemptId, String url)
    {
       this.id = ID_PREFIX + Long.toString(System.currentTimeMillis()) + this.hashCode();
       this.website = website;
@@ -71,6 +73,7 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
       this.snapshotVersion = snapshotVersion;
       this.targetServerName = serverName;
       this.deployAttemptId = deployAttemptId;
+      this.url = url;
    }
    
    // ------------------------------------------------------------------------------
@@ -104,8 +107,10 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
     */
    public void errorOccurred(Throwable err)
    {
+      this.reason = err.getMessage();
+      
       if (logger.isDebugEnabled())
-         logger.debug(this.targetServerName + ": ERROR: " + err.getMessage()); 
+         logger.debug(this.targetServerName + ": ERROR: " + this.reason); 
       
       this.successful = false;
       this.finished = true;
@@ -121,6 +126,8 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
       buffer.append(" targetServerName=").append(this.targetServerName);
       buffer.append(" snapshotVersion=").append(this.snapshotVersion);
       buffer.append(" deployAttemptId=").append(this.deployAttemptId);
+      buffer.append(" url=").append(this.url);
+      buffer.append(" reason=").append(this.reason);
       buffer.append(" started=").append(this.started);
       buffer.append(" finished=").append(this.finished);
       buffer.append(" successful=").append(this.successful).append(")");
@@ -140,6 +147,18 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
       buffer.append("\" finished=\"");
       buffer.append(this.finished);
       buffer.append("\"");
+      if (this.url != null)
+      {
+         buffer.append(" url=\"");
+         buffer.append(this.url);
+         buffer.append("\"");
+      }
+      if (this.reason != null)
+      {
+         buffer.append(" reason=\"");
+         buffer.append(this.reason);
+         buffer.append("\"");
+      }
       if (this.finished)
       {
          buffer.append(" successful=\"");
@@ -199,6 +218,22 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
    public String getDeployAttemptId()
    {
       return this.deployAttemptId;
+   }
+   
+   /**
+    * @return The URL of the server being deployed
+    */
+   public String getUrl()
+   {
+      return this.url;
+   }
+   
+   /**
+    * @return The reason for the error, null if an error has not occurred
+    */
+   public String getReason()
+   {
+      return this.reason;
    }
 
    /**

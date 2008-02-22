@@ -1186,6 +1186,15 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return null;
    }
    
+   public String cancelDeploymentServerConfig()
+   {
+      this.currentDeployServer = null;
+      this.editedDeployServerProps.clear();
+      this.inAddDeployServerMode = false;
+      
+      return null;
+   }
+   
    // ------------------------------------------------------------------------------
    // Define Web Content Workflows page
    

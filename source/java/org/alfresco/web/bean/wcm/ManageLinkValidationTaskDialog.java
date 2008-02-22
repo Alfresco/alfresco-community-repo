@@ -25,14 +25,17 @@
 package org.alfresco.web.bean.wcm;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.linkvalidation.LinkValidationReport;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.ManageTaskDialog;
@@ -52,6 +55,7 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
    
    protected String store;
    protected String webapp;
+   protected NodeRef webProjectRef;
    protected AVMBrowseBean avmBrowseBean;
    
    private static final Log logger = LogFactory.getLog(ManageLinkValidationTaskDialog.class);
@@ -76,26 +80,30 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
          this.avmBrowseBean.setLinkValidationState(null);
          this.avmBrowseBean.setLinkValidationMonitor(null);
          
-         // try and retrieve the deployment report from the workflow
+         // try and retrieve the link validation report from the workflow
          // store, if present setup the validation state on AVMBrowseBean
-         String storeName = this.workflowPackage.getStoreRef().getIdentifier();
+         this.store = this.workflowPackage.getStoreRef().getIdentifier();
+         
+         // get the web project noderef for the workflow store
+         String stagingStore = AVMUtil.getStoreId(this.store);
+         this.webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStore);
          
          if (logger.isDebugEnabled())
-            logger.debug("Retrieving link validation report from store '" + storeName + "'");
+            logger.debug("Retrieving link validation report from store '" + this.store + "'");
          
-         PropertyValue val = this.getAvmService().getStoreProperty(storeName, 
+         PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
          if (val != null)
          {
             LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
             if (report != null)
             {
-               this.store = report.getStore();
+               String reportStore = report.getStore();
                this.webapp = report.getWebapp();
                
                if (logger.isDebugEnabled())
                   logger.debug("Found link validation report for webapp '" + 
-                               AVMUtil.buildStoreWebappPath(this.store, this.webapp) + "'");
+                               AVMUtil.buildStoreWebappPath(reportStore, this.webapp) + "'");
                
                LinkValidationState state = new LinkValidationState(report);
                this.avmBrowseBean.setLinkValidationState(state);
@@ -125,13 +133,36 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
          logger.debug("Viewing link validation report for webapp '" + 
                       AVMUtil.buildStoreWebappPath(this.store, this.webapp) + "'");
       
-      Map<String, String> params = new HashMap<String, String>(1);
+      Map<String, String> params = new HashMap<String, String>(3);
       params.put("store", this.store);
       params.put("webapp", this.webapp);
       params.put("compareToStaging", "true");
       Application.getDialogManager().setupParameters(params);
       
       return "dialog:linkValidation";
+   }
+   
+   public String deploy()
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("Deploying workflow store: " + this.store);
+      
+      Map<String, String> params = new HashMap<String, String>(4);
+      params.put("store", this.store);
+      params.put("webproject", this.webProjectRef.toString());
+      params.put("calledFromTaskDialog", Boolean.TRUE.toString());
+      
+      // if a test server has already been allocated inform the dialog
+      // that an update is needed
+      NodeRef testServer = DeploymentUtil.findAllocatedTestServer(this.store);
+      if (testServer != null)
+      {
+         params.put("updateTestServer", "true");
+      }
+      
+      Application.getDialogManager().setupParameters(params);
+      
+      return "dialog:deployWebsite";
    }
    
    // ------------------------------------------------------------------------------
@@ -143,5 +174,34 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
    public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
    {
       this.avmBrowseBean = avmBrowseBean;
+   }
+   
+   /**
+    * @return Determines if there are any test servers configured for the
+    *         web project this task belongs to
+    */
+   @SuppressWarnings("unchecked")
+   public boolean getTestServersAvailable()
+   {
+      // NOTE: This method is called a lot as it is referenced as a value binding
+      //       expression in a 'rendered' attribute, we therefore cache the result
+      //       on a per request basis
+      
+      Boolean result = null;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      Map request = context.getExternalContext().getRequestMap();
+      if (request.get(AVMBrowseBean.REQUEST_BEEN_DEPLOYED_RESULT) == null)
+      {
+         List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
+         result = new Boolean(testServers != null && testServers.size() > 0);
+         request.put(AVMBrowseBean.REQUEST_BEEN_DEPLOYED_RESULT, result);
+      }
+      else
+      {
+         result = (Boolean)request.get(AVMBrowseBean.REQUEST_BEEN_DEPLOYED_RESULT);
+      }
+      
+      return result.booleanValue();
    }
 }

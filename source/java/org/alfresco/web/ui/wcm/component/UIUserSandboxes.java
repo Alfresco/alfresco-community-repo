@@ -79,6 +79,7 @@ import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIMenu;
 import org.alfresco.web.ui.common.converter.ByteSizeConverter;
 import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
@@ -119,6 +120,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private static final String ACT_SANDBOX_REFRESH = "sandbox_refresh";
    private static final String ACT_SANDBOX_DEPLOY = "sandbox_deploy";
    private static final String ACT_SANDBOX_DEPLOY_REPORT = "deployment_report_action";
+   private static final String ACT_SANDBOX_RELEASE_SERVER = "sandbox_release_test_server";
    
    private static final String ACTIONS_FILE = "avm_file_modified";
    private static final String ACTIONS_FOLDER = "avm_folder_modified";
@@ -197,6 +199,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       return "org.alfresco.faces.UserSandboxes";
    }
    
+   @SuppressWarnings("unchecked")
    public void restoreState(FacesContext context, Object state)
    {
       Object values[] = (Object[])state;
@@ -244,6 +247,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    /**
     * @see javax.faces.component.UIComponentBase#decode(javax.faces.context.FacesContext)
     */
+   @SuppressWarnings("unchecked")
    public void decode(FacesContext context)
    {
       Map requestMap = context.getExternalContext().getRequestParameterMap();
@@ -323,8 +327,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // determine whether the deploy action should be shown
          boolean deployServersConfigured = false;
-         List<ChildAssociationRef> deployToServers = nodeService.getChildAssocs(
-                     websiteRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+         List<NodeRef> deployToServers = DeploymentUtil.findTestServers(websiteRef, false);
          if (deployToServers != null && deployToServers.size() > 0)
          {
             deployServersConfigured = true;
@@ -360,6 +363,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
                   
+                  // determine if the sandbox has an allocated test server for deployment
+                  NodeRef testServer = DeploymentUtil.findAllocatedTestServer(mainStore);
+                  boolean hasAllocatedTestServer = (testServer != null);
+                  
+                  // determine if there are any previous deployment attempts
+                  List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(mainStore);
+                  boolean hasPreviousDeployments = (deployAttempts.size() > 0);
+                  
                   // for each user sandbox, generate an outer panel table
                   PanelGenerator.generatePanelStart(out,
                         context.getExternalContext().getRequestContextPath(),
@@ -391,25 +402,15 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   }
                   out.write(" (");
                   out.write(bundle.getString(userrole));
-                  out.write(")</td><td><nobr>");
+                  out.write(")</td><td><table cellpadding='4' cellspacing='0'><tr><td><nobr>");
                   
                   // Direct actions for a sandbox...
-                  Map<String, String> params = new HashMap<String, String>(6);
-                  params.put("store", mainStore);
-                  params.put("username", username);
-                  params.put("webapp", this.getWebapp());
-                  params.put("mode", "runReport");
-                  params.put("compareToStaging", "true");
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
-                        "#{DialogManager.setupParameters}", "dialog:linkValidation", null, params));
-                  out.write("&nbsp;&nbsp;");
                   
                   // Browse Sandbox
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
                         "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
-                  out.write("&nbsp;&nbsp;");
+                  out.write("</nobr></td><td><nobr>");
                   
                   // Preview Website
                   String websiteUrl = AVMUtil.buildWebappUrl(mainStore, getWebapp());
@@ -419,67 +420,101 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                         context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
                         null, null, "#{" + REQUEST_PREVIEW_REF + "}", null));
                   requestMap.remove(REQUEST_PREVIEW_REF);
-                  out.write("&nbsp;&nbsp;");
-                  
-                  // Deployment actions
-                  if (deployServersConfigured)
-                  {
-                     // if a deployment has already occurred then the next
-                     // deployment will be an update (this informs the dialog
-                     // that test server allocation checks are not needed).
-                     PropertyValue val = avmService.getStoreProperty(mainStore, 
-                              SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
-                     
-                     boolean reDeploy = (val != null);
-                     
-                     Map<String, String> dialogParams = new HashMap<String, String>(6);
-                     dialogParams.put("store", mainStore);
-                     dialogParams.put("username", username);
-                     requestMap.put(REQUEST_UPDATE_TEST_SERVER, Boolean.toString(reDeploy));
-                     dialogParams.put("updateTestServer", "#{" + REQUEST_UPDATE_TEST_SERVER + "}");
-                     Utils.encodeRecursive(context, aquireAction(
-                           context, mainStore, username, ACT_SANDBOX_DEPLOY, "/images/icons/deploy.gif",
-                           "#{DialogManager.setupParameters}", "dialog:deploySandbox", null, dialogParams));
-                     out.write("&nbsp;&nbsp;");
-                  }
-                  
-                  // View deployment report (if there are any)
-                  List<NodeRef> attempts = DeploymentUtil.findDeploymentAttempts(mainStore);
-                  if (attempts != null && attempts.size() > 0)
-                  {
-                     Utils.encodeRecursive(context, aquireAction(
-                           context, mainStore, username, ACT_SANDBOX_DEPLOY_REPORT, "/images/icons/deployment_report.gif", 
-                           "#{DialogManager.setupParameters}", "dialog:viewDeploymentReport"));
-                     out.write("&nbsp;&nbsp;");
-                  }
-                  
-                  // Refresh Sandbox
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_REFRESH, "/images/icons/reset.gif",
-                        "#{AVMBrowseBean.refreshSandbox}", null));
-                  out.write("&nbsp;&nbsp;");
-                  
+                  out.write("</nobr></td><td><nobr>");
+                                    
                   // Submit All Items
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
-                  out.write("&nbsp;&nbsp;");
+                  out.write("</nobr></td><td><nobr>");
                   
                   // Revert All Items
                   Utils.encodeRecursive(context, aquireAction(
                         context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif",
                         "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems"));
-                  out.write("&nbsp;&nbsp;");
+                  out.write("</nobr></td><td><nobr>");
                   
-                  // Delete Sandbox
-                  if (AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole))
+                  // More Actions menu
+                  UIMenu menu = findMenu(mainStore);
+                  if (menu == null)
                   {
-                     Utils.encodeRecursive(context, aquireAction(
-                           context, mainStore, username, ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
-                           "#{AVMBrowseBean.setupSandboxAction}", "dialog:deleteSandbox"));
+                     // create the menu, then the actions
+                     menu = createMenu(context, mainStore);
+                     
+                     // add the menu to this component
+                     this.getChildren().add(menu);
                   }
                   
-                  out.write("</nobr></td></tr>");
+                  // clear current menu actions then add relevant ones
+                  menu.getChildren().clear();
+                  
+                  // Check Links action
+                  Map<String, String> params = new HashMap<String, String>(6);
+                  params.put("store", mainStore);
+                  params.put("username", username);
+                  params.put("webapp", this.getWebapp());
+                  params.put("mode", "runReport");
+                  params.put("compareToStaging", "true");
+                  UIActionLink checkLinks = createAction(context, mainStore, username, 
+                           ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
+                           "#{DialogManager.setupParameters}", "dialog:linkValidation", 
+                           null, params, false);
+                  menu.getChildren().add(checkLinks);
+                  
+                  // Deploy action
+                  if (deployServersConfigured)
+                  {
+                     Map<String, String> dialogParams = new HashMap<String, String>(6);
+                     dialogParams.put("store", mainStore);
+                     dialogParams.put("username", username);
+                     requestMap.put(REQUEST_UPDATE_TEST_SERVER, Boolean.toString(hasAllocatedTestServer));
+                     dialogParams.put("updateTestServer", "#{" + REQUEST_UPDATE_TEST_SERVER + "}");
+                     UIActionLink deploy = createAction(context, mainStore, username, 
+                              ACT_SANDBOX_DEPLOY, "/images/icons/deploy.gif",
+                              "#{DialogManager.setupParameters}", "dialog:deployWebsite", 
+                              null, dialogParams, false);
+                     menu.getChildren().add(deploy);
+                  }
+
+                  // View deployment report action
+                  if (hasPreviousDeployments)
+                  {
+                     UIActionLink reports = createAction(context, mainStore, username, 
+                              ACT_SANDBOX_DEPLOY_REPORT, "/images/icons/deployment_report.gif", 
+                              "#{DialogManager.setupParameters}", "dialog:viewDeploymentReport",
+                              null, null, false);
+                     menu.getChildren().add(reports);
+                  }
+                  
+                  // Release Test Server action
+                  if (hasAllocatedTestServer)
+                  {
+                     UIActionLink releaseServer = createAction(context, mainStore, username, 
+                              ACT_SANDBOX_RELEASE_SERVER, "/images/icons/deploy_server.gif", 
+                              "#{AVMBrowseBean.releaseTestServer}", null, null, null, false);
+                     menu.getChildren().add(releaseServer);
+                  }
+                  
+                  // Refresh Sandbox action
+                  UIActionLink refresh = createAction(context, mainStore, username, 
+                           ACT_SANDBOX_REFRESH, "/images/icons/reset.gif",
+                           "#{AVMBrowseBean.refreshSandbox}", null, null, null, false);
+                  menu.getChildren().add(refresh);
+
+                  // Delete Sandbox action
+                  if (AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole))
+                  {
+                     UIActionLink delete = createAction(context, mainStore, username, 
+                              ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
+                              "#{AVMBrowseBean.setupSandboxAction}", "dialog:deleteSandbox",
+                              null, null, false);
+                     menu.getChildren().add(delete);
+                  }
+                  
+                  // render the menu
+                  Utils.encodeRecursive(context, menu);
+                  
+                  out.write("</nobr></td></tr></table></td></tr>");
                   
                   // modified items panel
                   out.write("<tr><td></td><td colspan=2>");
@@ -881,11 +916,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * 
     * @throws IOException
     */
+   @SuppressWarnings("unchecked")
    private void renderContentForms(
          FacesContext fc, ResponseWriter out, NodeRef websiteRef, String username, String storeRoot)
          throws IOException
    {
-      NodeService nodeService = getNodeService(fc);
       Map requestMap = fc.getExternalContext().getRequestMap();
       String userStorePrefix = AVMUtil.buildUserMainStoreName(storeRoot, username);
       
@@ -941,9 +976,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                                      ACT_CREATE_FORM_CONTENT,
                                      "/images/icons/new_content.gif",
                                      "#{AVMBrowseBean.createFormContent}",
-                                     null,
-                                     null,
-                                     params);
+                                     null, null, params, true);
             }
             Utils.encodeRecursive(fc, action);
             
@@ -965,8 +998,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                                      "/images/icons/search_icon.gif",
                                      "#{AVMBrowseBean.searchFormContent}",
                                      "browseSandbox",
-                                     null,
-                                     params);
+                                     null, params, true);
             }
             Utils.encodeRecursive(fc, action);
             
@@ -1006,6 +1038,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * 
     * @return UIActions component
     */
+   @SuppressWarnings("unchecked")
    private UIActions aquireUIActions(String id, String store)
    {
       UIActions uiActions = null;
@@ -1079,7 +1112,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       UIActionLink action = findAction(name, store);
       if (action == null)
       {
-         action = createAction(fc, store, username, name, icon, actionListener, outcome, url, params);
+         action = createAction(fc, store, username, name, icon, actionListener, 
+                               outcome, url, params, true);
       }
       return action;
    }
@@ -1093,6 +1127,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * 
     * @return UIActionLink component if found, else null if not created yet
     */
+   @SuppressWarnings("unchecked")
    private UIActionLink findAction(String name, String store)
    {
       UIActionLink action = null;
@@ -1119,16 +1154,19 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * @param store            Root store name for the user sandbox
     * @param username         Username of the user for the action
     * @param name             Action name - will be used for I18N message lookup
-    * @param icon             Icon to display for the actio n
+    * @param icon             Icon to display for the action
     * @param actionListener   Actionlistener for the action
     * @param outcome          Navigation outcome for the action
     * @param url              HREF URL for the action
     * @param params           Parameters name/values for the action listener args
+    * @param addAsChild       true to add the action as a child of this component
     * 
     * @return UIActionLink child component
     */
+   @SuppressWarnings("unchecked")
    private UIActionLink createAction(FacesContext fc, String store, String username, String name,
-         String icon, String actionListener, String outcome, String url, Map<String, String> params)
+         String icon, String actionListener, String outcome, String url, Map<String, String> params,
+         boolean addAsChild)
    {
       javax.faces.application.Application facesApp = fc.getApplication();
       UIActionLink control = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
@@ -1202,9 +1240,67 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          control.setTarget("new");
       }
       
-      this.getChildren().add(control);
+      if (addAsChild)
+      {
+         this.getChildren().add(control);
+      }
       
       return control;
+   }
+   
+   /**
+    * Locate a child UIMenu component by name.
+    * 
+    * @param store      Store the action component is tied to
+    * 
+    * @return UIMenu component if found, else null if not created yet
+    */
+   @SuppressWarnings("unchecked")
+   private UIMenu findMenu(String store)
+   {
+      UIMenu menu = null;
+      String menuId = "menu_" + FacesHelper.makeLegalId(store);
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Finding action Id: " + menuId);
+      
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (menuId.equals(component.getId()))
+         {
+            menu = (UIMenu)component;
+            
+            if (logger.isDebugEnabled())
+               logger.debug("...found action Id: " + menuId);
+            
+            break;
+         }
+      }
+      
+      return menu;
+   }
+   
+   /**
+    * Creates a menu component to hold the 'more actions' for a sandbox
+    * 
+    * @param context FacesContext
+    * @param store The store to create the menu for
+    * @return The UIMenu component (with no children)
+    */
+   @SuppressWarnings("unchecked")
+   private UIMenu createMenu(FacesContext context, String store)
+   {
+      UIMenu menu = (UIMenu)context.getApplication().createComponent("org.alfresco.faces.Menu");
+      
+      String id = "menu_" + FacesHelper.makeLegalId(store);
+      menu.setId(id);
+      menu.setLabel(Application.getMessage(context, "more_actions") + " ");
+      menu.getAttributes().put("itemSpacing", 4);
+      menu.getAttributes().put("image", "/images/icons/menu.gif");
+      menu.getAttributes().put("menuStyleClass", "moreActionsMenu");
+      menu.getAttributes().put("style", "white-space:nowrap; margin-left: 4px;");
+      
+      return menu;
    }
    
    private AVMService getAVMService(FacesContext fc)

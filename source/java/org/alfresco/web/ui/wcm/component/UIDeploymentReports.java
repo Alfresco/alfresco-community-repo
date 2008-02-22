@@ -150,7 +150,9 @@ public class UIDeploymentReports extends SelfRenderingComponent
          if (attempt != null)
          {
             // render the supporting JavaScript
-            renderScript(context, out);
+            out.write("<script type='text/javascript' src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/scripts/ajax/deployment.js'></script>\n");
             
             // iterate through each deployment report
             List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
@@ -202,28 +204,6 @@ public class UIDeploymentReports extends SelfRenderingComponent
    // ------------------------------------------------------------------------------
    // Helpers
    
-   private void renderScript(FacesContext context, ResponseWriter out)
-      throws IOException
-   {
-      out.write("<script type='text/javascript'>\n");
-      out.write("function toggleDeploymentDetails(icon, server) {\n");
-      out.write("   var currentState = icon.className;\n");
-      out.write("   var detailsDiv = document.getElementById(server + '-deployment-details');\n");
-      out.write("   if (currentState == 'collapsed') {\n");
-      out.write("      icon.src = '");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/expanded.gif';\n");
-      out.write("      icon.className = 'expanded';\n");
-      out.write("      if (detailsDiv != null) { detailsDiv.style.display = 'block'; }\n");
-      out.write("   } else {\n");
-      out.write("      icon.src = '");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/collapsed.gif';\n");
-      out.write("      icon.className = 'collapsed';\n");
-      out.write("      if (detailsDiv != null) { detailsDiv.style.display = 'none'; }\n");
-      out.write("   }\n}</script>\n");
-   }
-   
    private void renderReport(FacesContext context, ResponseWriter out, NodeRef deploymentReport,
             NodeService nodeService, ContentService contentService)
       throws IOException
@@ -236,15 +216,17 @@ public class UIDeploymentReports extends SelfRenderingComponent
       
       // start the surrounding panel
       PanelGenerator.generatePanelStart(out, 
-               context.getExternalContext().getRequestContextPath(), "innerwhite", "white");
+               context.getExternalContext().getRequestContextPath(), "lightstorm", "#eaeff2");
       
       // extract the information we need to display
       Map<QName, Serializable> serverProps = nodeService.getProperties(deploymentReport);
       String server = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVER);
+      boolean showServerAddress = true;
       String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAMEUSED);
       if (serverName == null || serverName.length() == 0)
       {
          serverName = server;
+         showServerAddress = false;
       }
       
       String deployType = WCMAppModel.CONSTRAINT_ALFDEPLOY;
@@ -255,14 +237,14 @@ public class UIDeploymentReports extends SelfRenderingComponent
       
       String creator = (String)serverProps.get(ContentModel.PROP_CREATOR);
       Date startTime = (Date)serverProps.get(WCMAppModel.PROP_DEPLOYSTARTTIME);
-      String started = null;
+      String started = "";
       if (startTime != null)
       {
          started = Utils.getDateTimeFormat(context).format(startTime);
       }
       
       Date endTime = (Date)serverProps.get(WCMAppModel.PROP_DEPLOYENDTIME);
-      String finished = null;
+      String finished = "";
       if (endTime != null)
       {
          finished = Utils.getDateTimeFormat(context).format(endTime);
@@ -274,7 +256,12 @@ public class UIDeploymentReports extends SelfRenderingComponent
          success = Boolean.FALSE;
       }
       
+      String url = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERURLUSED);
+      String username = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERUSERNAMEUSED);
+      String source = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATHUSED);
+      String target = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERTARGETUSED);
       String failReason = (String)serverProps.get(WCMAppModel.PROP_DEPLOYFAILEDREASON);
+      
       String content = "";
       ContentReader reader = contentService.getReader(deploymentReport, ContentModel.PROP_CONTENT);
       if (reader != null)
@@ -305,7 +292,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       out.write(".gif' /></td><td>");
       out.write("<div class='mainHeading'>");
       out.write(serverName);
-      out.write("</div><div style='margin-top: 3px;'><img src='");
+      out.write("</div><div style='margin-top: 3px; margin-bottom: 6px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/images/icons/deploy_");
       if (success.booleanValue())
@@ -326,26 +313,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write(Application.getMessage(context, "deploy_failed"));
       }
       out.write("</div>");
-      out.write("<div style='margin-top: 6px;'>");
-      out.write(Application.getMessage(context, "snapshot"));
-      out.write(":&nbsp;");
-      out.write(Integer.toString(snapshot));
-      out.write("</div>");
-      out.write("<div style='margin-top: 3px;'>");
-      out.write(Application.getMessage(context, "deploy_started"));
-      out.write(":&nbsp;");
-      out.write(started);
-      out.write("</div>");
-      out.write("<div style='margin-top: 3px;'>");
-      out.write(Application.getMessage(context, "deploy_finished"));
-      out.write(":&nbsp;");
-      out.write(finished);
-      out.write("</div>");
-      out.write("<div style='margin-top: 3px;'>");
-      out.write(Application.getMessage(context, "deployed_by"));
-      out.write(":&nbsp;");
-      out.write(creator);
-      out.write("</div>");
+      
       if (success.booleanValue() == false && failReason != null && failReason.length() > 0)
       {
          out.write("<div style='margin-top: 3px;'>");
@@ -354,11 +322,83 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write(failReason);
          out.write("</div>");
       }
+      
+      if (showServerAddress)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server"));
+         out.write(":&nbsp;");
+         out.write(server);
+         out.write("</div>");
+      }
+      
+      out.write("<div style='margin-top: 3px;'>");
+      out.write(Application.getMessage(context, "snapshot"));
+      out.write(":&nbsp;");
+      out.write(Integer.toString(snapshot));
+      out.write("</div>");
+      
+      out.write("<div style='margin-top: 3px;'>");
+      out.write(Application.getMessage(context, "deploy_started"));
+      out.write(":&nbsp;");
+      out.write(started);
+      out.write("</div>");
+      
+      out.write("<div style='margin-top: 3px;'>");
+      out.write(Application.getMessage(context, "deploy_finished"));
+      out.write(":&nbsp;");
+      out.write(finished);
+      out.write("</div>");
+      
+      out.write("<div style='margin-top: 3px;'>");
+      out.write(Application.getMessage(context, "deployed_by"));
+      out.write(":&nbsp;");
+      out.write(creator);
+      out.write("</div>");
+      
+      if (username != null)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server_username"));
+         out.write(":&nbsp;");
+         out.write(username);
+         out.write("</div>");
+      }
+      
+      if (source != null)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server_source_path"));
+         out.write(":&nbsp;");
+         out.write(source);
+         out.write("</div>");
+      }
+      
+      if (target != null)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server_target_name"));
+         out.write(":&nbsp;");
+         out.write(target);
+         out.write("</div>");
+      }
+      
+      if (success.booleanValue() == true && url != null && url.length() > 0)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server_url"));
+         out.write(":&nbsp;<a target='new' href='");
+         out.write(url);
+         out.write("'>");
+         out.write(url);
+         out.write("</a></div>");
+      }
+      
       if (content.length() > 0)
       {
          out.write("<div style='margin-top: 6px;'><img src='");
          out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/collapsed.gif' style='vertical-align: -1px; cursor: pointer;' class='collapsed' onclick=\"toggleDeploymentDetails(this, '");
+         out.write("/images/icons/collapsed.gif' style='vertical-align: -1px; cursor: pointer;' class='collapsed' onclick=\"Alfresco.toggleDeploymentDetails(this, '");
          out.write(server.replace(':', '_').replace('\\', '_'));
          out.write("');\" />&nbsp;");
          out.write(Application.getMessage(context, "details"));
@@ -374,6 +414,6 @@ public class UIDeploymentReports extends SelfRenderingComponent
       
       // finish the surrounding panel
       PanelGenerator.generatePanelEnd(out, 
-               context.getExternalContext().getRequestContextPath(), "innerwhite");
+               context.getExternalContext().getRequestContextPath(), "lightstorm");
    }
 }

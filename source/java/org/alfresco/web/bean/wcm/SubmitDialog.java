@@ -102,6 +102,7 @@ public class SubmitDialog extends BaseDialogBean
    private boolean enteringExpireDate = false;
    private boolean loadSelectedNodesFromBrowseBean = false;
    private boolean validateLinks = true;
+   private boolean autoDeploy = false;
    private Date defaultExpireDate;
    private Date launchDate;
 
@@ -627,6 +628,8 @@ public class SubmitDialog extends BaseDialogBean
                   this.workflowParams.put(WCMWorkflowModel.PROP_LAUNCH_DATE, this.launchDate);
                   this.workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS,
                            new Boolean(this.validateLinks));
+                  this.workflowParams.put(WCMWorkflowModel.PROP_AUTO_DEPLOY,
+                           new Boolean(this.autoDeploy));
                   this.workflowParams.put(WCMWorkflowModel.PROP_WEBAPP,
                            this.avmBrowseBean.getWebapp());
                   this.workflowParams.put(WCMWorkflowModel.ASSOC_WEBPROJECT,
@@ -847,10 +850,27 @@ public class SubmitDialog extends BaseDialogBean
    {
       this.validateLinks = validateLinks;
    }
+   
+   /**
+    * @return Flag to indicate whether the changes should be deployed upon approval
+    */
+   public boolean isAutoDeploy()
+   {
+      return this.autoDeploy;
+   }
+
+   /**
+    * @param autoDeploy Flag to indicate whether the changes should be deployed upon approval
+    */
+   public void setAutoDeploy(boolean autoDeploy)
+   {
+      this.autoDeploy = autoDeploy;
+   }
 
    /**
     * @return List of UIListItem object representing the available workflows for the website
     */
+   @SuppressWarnings("unchecked")
    public List<UIListItem> getWorkflowList()
    {
       if (this.workflowItems == null)

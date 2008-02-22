@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 
@@ -44,12 +45,17 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Deploys a website to one or more remote servers.
@@ -64,6 +70,7 @@ public class DeployWebsiteDialog extends BaseDialogBean
    protected String[] deployTo;
    protected String store;
    protected String deployMode;
+   protected String calledFromTaskDialog;
    protected NodeRef websiteRef;
    protected NodeRef webProjectRef;
    protected boolean updateTestServer;
@@ -94,9 +101,21 @@ public class DeployWebsiteDialog extends BaseDialogBean
          this.versionToDeploy = -1;
       }
       
+      // get the store
       this.store = parameters.get("store");
       String storeRoot = AVMUtil.buildSandboxRootPath(this.store);
       this.websiteRef = AVMNodeConverter.ToNodeRef(this.versionToDeploy, storeRoot);
+      
+      // get the web project noderef
+      String webProject = parameters.get("webproject");
+      if (webProject == null)
+      {
+         this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
+      }
+      else
+      {
+         this.webProjectRef = new NodeRef(webProject);
+      }
       
       this.deployMode = (this.versionToDeploy == -1) ? 
                WCMAppModel.CONSTRAINT_TESTSERVER : WCMAppModel.CONSTRAINT_LIVESERVER;
@@ -108,8 +127,8 @@ public class DeployWebsiteDialog extends BaseDialogBean
          this.updateTestServer = Boolean.parseBoolean(updateTestServerParam);
       }
       
+      this.calledFromTaskDialog = parameters.get("calledFromTaskDialog");
       this.avmBrowseBean.getDeploymentMonitorIds().clear();
-      this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
       
       if (logger.isDebugEnabled())
          logger.debug("Initialising dialog to deploy: " + this.websiteRef.toString());
@@ -124,6 +143,12 @@ public class DeployWebsiteDialog extends BaseDialogBean
       
       if (this.deployTo != null && this.deployTo.length > 0)
       {
+         // get the unprotected NodeService and PermissionService for this dialog otherwise
+         // 'AddChildren' permission would be required on the web project node for all users
+         WebApplicationContext wac = FacesContextUtils.getRequiredWebApplicationContext(context);
+         NodeService unprotectedNodeService = (NodeService)wac.getBean("nodeService");
+         PermissionService unprotectedPermissionService = (PermissionService)wac.getBean("permissionService");
+         
          List<String> selectedDeployToNames = new ArrayList<String>();
          
          // create a deploymentattempt node to represent this deployment
@@ -134,9 +159,13 @@ public class DeployWebsiteDialog extends BaseDialogBean
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTSTORE, this.store);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTVERSION, this.versionToDeploy);
          props.put(WCMAppModel.PROP_DEPLOYATTEMPTTIME, new Date());
-         NodeRef attempt = getNodeService().createNode(this.webProjectRef, 
+         NodeRef attempt = unprotectedNodeService.createNode(this.webProjectRef, 
                WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
                WCMAppModel.TYPE_DEPLOYMENTATTEMPT, props).getChildRef();
+         
+         // allow anyone to add child nodes to the deploymentattempt node
+         unprotectedPermissionService.setPermission(attempt, PermissionService.ALL_AUTHORITIES, 
+                  PermissionService.ADD_CHILDREN, true);
          
          // execute a deploy action for each of the selected remote servers asynchronously
          for (String targetServer : this.deployTo)
@@ -144,11 +173,12 @@ public class DeployWebsiteDialog extends BaseDialogBean
             if (targetServer.length() > 0)
             {
                NodeRef serverRef = new NodeRef(targetServer);
-               if (getNodeService().exists(serverRef))
+               if (unprotectedNodeService.exists(serverRef))
                {
                   // get all properties of the target server
-                  Map<QName, Serializable> serverProps = getNodeService().getProperties(serverRef);
+                  Map<QName, Serializable> serverProps = unprotectedNodeService.getProperties(serverRef);
                   
+                  String url = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERURL);
                   String serverUri = AVMDeployWebsiteAction.calculateServerUri(serverProps);
                   String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
                   if (serverName == null || serverName.length() == 0)
@@ -171,7 +201,7 @@ public class DeployWebsiteDialog extends BaseDialogBean
                      }
                      else
                      {
-                        getNodeService().setProperty(serverRef, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, 
+                        unprotectedNodeService.setProperty(serverRef, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, 
                                  this.store);
                      }
                   }
@@ -185,13 +215,13 @@ public class DeployWebsiteDialog extends BaseDialogBean
                   // create a deployment monitor object, store in the session, 
                   // add to avm browse bean and pass to action
                   DeploymentMonitor monitor = new DeploymentMonitor(
-                           this.websiteRef, serverRef, versionToDeploy, serverName, attemptId);
+                           this.websiteRef, serverRef, versionToDeploy, serverName, attemptId, url);
                   context.getExternalContext().getSessionMap().put(monitor.getId(), monitor);
                   this.avmBrowseBean.getDeploymentMonitorIds().add(monitor.getId());
                   
                   // create and execute the action asynchronously
                   Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-                  args.put(AVMDeployWebsiteAction.PARAM_WEBSITE, webProjectRef);
+                  args.put(AVMDeployWebsiteAction.PARAM_WEBPROJECT, webProjectRef);
                   args.put(AVMDeployWebsiteAction.PARAM_SERVER, serverRef);
                   args.put(AVMDeployWebsiteAction.PARAM_ATTEMPT, attempt);
                   args.put(AVMDeployWebsiteAction.PARAM_CALLBACK, monitor);
@@ -206,7 +236,7 @@ public class DeployWebsiteDialog extends BaseDialogBean
          }
          
          // now we know the list of selected servers set the property on the attempt node
-         getNodeService().setProperty(attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS, 
+         unprotectedNodeService.setProperty(attempt, WCMAppModel.PROP_DEPLOYATTEMPTSERVERS, 
                   (Serializable)selectedDeployToNames);
          
          // set the deploymentattempid property on the store this deployment was for
@@ -215,6 +245,10 @@ public class DeployWebsiteDialog extends BaseDialogBean
                   new PropertyValue(DataTypeDefinition.TEXT, attemptId));
          
          // close this dialog and immediately open the monitorDeployment dialog
+         Map<String, String> params = new HashMap<String, String>(2);
+         params.put("webproject", this.webProjectRef.toString());
+         params.put("calledFromTaskDialog", this.calledFromTaskDialog);
+         Application.getDialogManager().setupParameters(params);
          return "dialog:monitorDeployment";
       }
       else
@@ -238,10 +272,63 @@ public class DeployWebsiteDialog extends BaseDialogBean
       return super.getCancelButtonLabel();
    }
    
+   @Override
+   public String getContainerDescription()
+   {
+      String desc = null;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      ResourceBundle bundle = Application.getBundle(context);
+      
+      if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(this.deployMode))
+      {
+         desc = bundle.getString("deploy_snapshot_desc");
+      }
+      else
+      {
+         if (this.updateTestServer)
+         {
+            desc = bundle.getString("redeploy_sandbox_desc");
+         }
+         else
+         {
+            desc = bundle.getString("deploy_sandbox_desc");
+         }
+      }
+      
+      return desc;
+   }
+
+   @Override
+   public String getContainerTitle()
+   {
+      String title = null;
+      
+      FacesContext context = FacesContext.getCurrentInstance();
+      ResourceBundle bundle = Application.getBundle(context);
+      
+      if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(this.deployMode))
+      {
+         title = bundle.getString("deploy_snapshot_title");
+      }
+      else
+      {
+         if (this.updateTestServer)
+         {
+            title = bundle.getString("redeploy_sandbox_title");
+         }
+         else
+         {
+            title = bundle.getString("deploy_sandbox_title");
+         }
+      }
+      
+      return title;
+   }
    
    // ------------------------------------------------------------------------------
    // Bean getters and setters
-   
+
    /**
     * @param avmBrowseBean The AVM BrowseBean to set
     */

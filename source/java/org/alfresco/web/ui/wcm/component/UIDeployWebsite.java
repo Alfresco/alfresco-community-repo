@@ -26,7 +26,6 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -181,7 +180,7 @@ public class UIDeployWebsite extends UIInput
                   if (logger.isDebugEnabled())
                      logger.debug("Found deployment monitor: " + monitor);
 
-                  renderServer(context, out, nodeService, monitor.getTargetServer(), false, true, id, true);
+                  renderMonitoredServer(context, out, nodeService, monitor.getTargetServer(), id);
                }
             }
          }
@@ -202,13 +201,13 @@ public class UIDeployWebsite extends UIInput
                }
                else
                {
-                  List<NodeRef> servers = DeploymentUtil.findTestServers(webProject, false);
+                  List<NodeRef> servers = DeploymentUtil.findTestServers(webProject, true);
                   if (servers.size() > 0)
                   {
                      boolean first = true;
                      for (NodeRef server : servers)
                      {
-                        renderServer(context, out, nodeService, server, first, false, null, false);
+                        renderTestServer(context, out, nodeService, server, first);
                         first = false;
                      }
                   }
@@ -217,9 +216,14 @@ public class UIDeployWebsite extends UIInput
                      // show the none available message
                      out.write("<div class='deployServersInfo'><img src='");
                      out.write(context.getExternalContext().getRequestContextPath());
-                     out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
+                     out.write("/images/icons/info_icon.gif' />&nbsp;");
                      out.write(Application.getMessage(context, "deploy_test_server_not_available"));
-                     out.write("</div>");
+                     out.write("</div>\n");
+                     out.write("<script type='text/javascript'>\n");
+                     out.write("disableOKButton = function() { ");
+                     out.write("document.getElementById('dialog:finish-button').disabled = true; }\n");
+                     out.write("window.onload = disableOKButton;\n");
+                     out.write("</script>\n");
                   }
                }
             }
@@ -233,7 +237,7 @@ public class UIDeployWebsite extends UIInput
                   // TODO: determine if the server has already been successfully deployed to
                   boolean selected = true;
                   
-                  renderServer(context, out, nodeService, server, selected, false, null, true);
+                  renderLiveServer(context, out, nodeService, server, selected);
                }
             }
          }
@@ -416,69 +420,20 @@ public class UIDeployWebsite extends UIInput
       int pollFreq = AVMUtil.getRemoteDeploymentPollingFrequency() * 1000;
 
       // render the script to handle the progress monitoring
-      out.write("<script type='text/javascript'>\n");
-      out.write("Alfresco.DeploymentMonitor = function(ids) {\n");
-      out.write("   this.ids = ids;\n");
-      out.write("   this.url = '");
+      out.write("<script type='text/javascript' src='");
       out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/ajax/invoke/DeploymentProgressBean.getStatus?ids=' + this.ids;\n");
-      out.write("   this.failedMsg = '");
-      out.write(Application.getMessage(context, "deploy_failed"));
-      out.write("';\n");
-      out.write("   this.successMsg = '");
-      out.write(Application.getMessage(context, "deploy_successful"));
-      out.write("';\n");
-      out.write("}\n");
-      out.write("Alfresco.DeploymentMonitor.prototype = {\n");
-      out.write("   ids: null,\n");
-      out.write("   url: null,\n");
-      out.write("   failedMsg: null,\n");
-      out.write("   successMsg: null,\n");
-      out.write("   retrieveDeploymentStatus: function() {\n");
-      out.write("      YAHOO.util.Connect.asyncRequest('GET', this.url,\n");
-      out.write("         {\n");
-      out.write("            success: this.processResults,\n");
-      out.write("            failure: this.handleError,\n");
-      out.write("            scope: this\n");
-      out.write("         },\n");
-      out.write("         null);\n");
-      out.write("   },\n");
-      out.write("   processResults: function(ajaxResponse) {\n");
-      out.write("      var xml = ajaxResponse.responseXML.documentElement;\n");
-      out.write("      var statuses = xml.getElementsByTagName('target-server');\n");
-      out.write("      var noInProgress = statuses.length;\n");
-      out.write("      if (noInProgress > 0) {\n");
-      out.write("         for (var x = 0; x < noInProgress; x++) {\n");
-      out.write("            var target = statuses[x];\n");
-      out.write("            var id = target.getAttribute('id');\n");
-      out.write("            var finished = target.getAttribute('finished');\n");
-      out.write("            if (finished == 'true') {\n");
-      out.write("               var successful = target.getAttribute('successful');\n");
-      out.write("               var icon = document.getElementById(id + '_icon');\n");
-      out.write("               if (icon != null) {\n");
-      out.write("                  var image = (successful == 'true') ? 'successful' : 'failed';\n");
-      out.write("                  icon.src = '/alfresco/images/icons/deploy_' + image + '.gif';\n");
-      out.write("               }\n");
-      out.write("               var text = document.getElementById(id + '_text');\n");
-      out.write("               if (text != null) {\n");
-      out.write("                  var msg = (successful == 'true') ? this.successMsg : this.failedMsg;\n");
-      out.write("                  text.innerHTML = msg;\n");
-      out.write("               }\n");
-      out.write("            }\n");
-      out.write("         }\n");
-      out.write("         // there are still outstanding deployments, refresh in a few seconds\n");
-      out.write("         setTimeout('Alfresco.monitor.retrieveDeploymentStatus()', ");
-      out.write(Integer.toString(pollFreq));
-      out.write(");\n");
-      out.write("      }\n");
-      out.write("   },\n");
-      out.write("   handleError: function(ajaxResponse) {\n");
-      out.write("      handleErrorYahoo(ajaxResponse.status + ' ' + ajaxResponse.statusText);\n");
-      out.write("   }\n");
-      out.write("}\n");
+      out.write("/scripts/ajax/deployment.js'></script>\n");
+      
+      out.write("<script type='text/javascript'>\n");
       out.write("Alfresco.initDeploymentMonitor = function() {\n");
       out.write("   Alfresco.monitor = new Alfresco.DeploymentMonitor('");
       out.write(ids.toString());
+      out.write("', ");
+      out.write(Integer.toString(pollFreq));
+      out.write(", '");
+      out.write(Application.getMessage(context, "deploy_failed"));
+      out.write("', '");
+      out.write(Application.getMessage(context, "deploy_successful"));
       out.write("');\n");
       out.write("   Alfresco.monitor.retrieveDeploymentStatus();\n");
       out.write("}\n");
@@ -487,12 +442,139 @@ public class UIDeployWebsite extends UIInput
       out.write("</script>\n");
    }
    
-   private void renderServer(FacesContext context, ResponseWriter out, NodeService nodeService,
-            NodeRef server, boolean selected, boolean monitoring, String monitorId, 
-            boolean liveServer) throws IOException
+   private void renderLiveServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server, boolean selected) throws IOException
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
       
+      renderPanelStart(out, contextPath);
+      
+      out.write("<div class='deployPanelControl'>");
+      out.write("<input type='checkbox' name='");
+      out.write(this.getClientId(context));
+      out.write("' value='");
+      out.write(server.toString());
+      out.write("'");
+      if (selected)
+      {
+         out.write(" checked='checked'");
+      }
+      out.write(" /></div>");
+      
+      renderPanelMiddle(out, contextPath, nodeService, server, true);
+      
+      if (selected == false)
+      {
+         out.write("<div class='deployPanelServerStatus'><img src='");
+         out.write(contextPath);
+         out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
+         out.write(Application.getMessage(context, "deploy_server_not_selected"));
+         out.write("</div>");
+      }
+      
+      renderPanelEnd(out, contextPath);
+   }
+   
+   private void renderTestServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server, boolean selected) throws IOException
+   {
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      
+      renderPanelStart(out, contextPath);
+      
+      out.write("<div class='deployPanelControl'>");
+      out.write("<input type='radio' name='");
+      out.write(this.getClientId(context));
+      out.write("' value='");
+      out.write(server.toString());
+      out.write("'");
+      if (selected)
+      {
+         out.write(" checked='checked'");
+      }
+      out.write(" /></div>");
+      
+      renderPanelMiddle(out, contextPath, nodeService, server, true);
+      renderPanelEnd(out, contextPath);
+   }
+   
+   private void renderAllocatedTestServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server) throws IOException
+   {
+      String contextPath = context.getExternalContext().getRequestContextPath();
+
+      renderPanelStart(out, contextPath);
+      
+      //out.write("<div class='deployPanelNoControl'></div>");
+      
+      renderPanelMiddle(out, contextPath, nodeService, server, false);
+
+      String url = (String)nodeService.getProperty(server, WCMAppModel.PROP_DEPLOYSERVERURL);
+      if (url != null && url.length() > 0)
+      {
+         out.write("<div class='deployServersUrl'><a target='new' href='");
+         out.write(url);
+         out.write("'>");
+         out.write(url);
+         out.write("</a></div>");
+      }
+      
+      renderPanelEnd(out, contextPath);
+      
+      // render a hidden field with the value of the allocated test server
+      out.write("<input type='hidden' name='");
+      out.write(this.getClientId(context));
+      out.write("' value='");
+      out.write(server.toString());
+      out.write("' />");
+   }
+   
+   private void renderMonitoredServer(FacesContext context, ResponseWriter out, NodeService nodeService,
+            NodeRef server, String monitorId) throws IOException
+   {
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      
+      renderPanelStart(out, contextPath);
+      
+      out.write("<div class='deployPanelStatusIcon'>");
+      out.write("<img id='");
+      out.write(monitorId);
+      out.write("_icon' src='");
+      out.write(contextPath);
+      out.write("/images/icons/ajax_anim.gif' />");
+      out.write("</div>");
+      
+      renderPanelMiddle(out, contextPath, nodeService, server, true);
+      
+      out.write("<div class='deployPanelServerStatus' id='");
+      out.write(monitorId);
+      out.write("_status'>");
+      out.write(Application.getMessage(context, "deploying"));
+      out.write("</div>");
+      
+      out.write("<div class='deployPanelServerMsg' id='");
+      out.write(monitorId);
+      out.write("_msg'>");
+      out.write("</div>");
+      
+      renderPanelEnd(out, contextPath);
+   }
+   
+   private void renderPanelStart(ResponseWriter out, String contextPath) throws IOException
+   {
+      // render start of panel
+      out.write("<table cellspacing='0' cellpadding='0' border='0' width='100%'>");
+      out.write("<tr><td width='10'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/deploy_panel_start.gif' /></td>");
+      out.write("<td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x;'>");
+   }
+   
+   private void renderPanelMiddle(ResponseWriter out, String contextPath, 
+            NodeService nodeService, NodeRef server, boolean showSeparator) throws IOException
+   {
       Map<QName, Serializable> props = nodeService.getProperties(server);
       String deployType = (String)props.get(WCMAppModel.PROP_DEPLOYTYPE);
       String serverName = (String)props.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
@@ -501,48 +583,13 @@ public class UIDeployWebsite extends UIInput
          serverName = AVMDeployWebsiteAction.calculateServerUri(props);
       }
       
-      out.write("<table cellspacing='0' cellpadding='0' border='0' width='100%'>");
-      out.write("<tr><td width='10'><img src='");
-      out.write(contextPath);
-      out.write("/images/parts/deploy_panel_start.gif' /></td>");
-      out.write("<td style='background-image: url(");
-      out.write(contextPath);
-      out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x;'>");
-      if (monitoring)
+      out.write("</td>");
+      if (showSeparator)
       {
-         out.write("<div class='deployPanelStatusIcon'>");
-         out.write("<img id='");
-         out.write(monitorId);
-         out.write("_icon' src='");
+         out.write("<td width='2'><img src='");
          out.write(contextPath);
-         out.write("/images/icons/ajax_anim.gif' />");
+         out.write("/images/parts/deploy_panel_separator.gif' /></td>");
       }
-      else
-      {
-         out.write("<div class='deployPanelControl'>");
-         out.write("<input type='");
-         if (liveServer)
-         {
-            out.write("checkbox");
-         }
-         else
-         {
-            out.write("radio");
-         }
-         out.write("' name='");
-         out.write(this.getClientId(context));
-         out.write("' value='");
-         out.write(server.toString());
-         out.write("'");
-         if (selected)
-         {
-            out.write(" checked='checked'");
-         }
-         out.write(" />");
-      }
-      out.write("</div></td><td width='2'><img src='");
-      out.write(contextPath);
-      out.write("/images/parts/deploy_panel_separator.gif' /></td>");
       out.write("<td style='background-image: url(");
       out.write(contextPath);
       out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x;'>");
@@ -558,68 +605,16 @@ public class UIDeployWebsite extends UIInput
       out.write("<div class='deployPanelServerName'>");
       out.write(serverName);
       out.write("</div>");
-      if (monitoring)
-      {
-         out.write("<div class='deployPanelServerStatus' id='");
-         out.write(monitorId);
-         out.write("_text'>");
-         out.write(Application.getMessage(context, "deploying"));
-         out.write("</div>");
-      }
-      else if (selected == false && liveServer == true)
-      {
-         out.write("<div class='deployPanelServerStatus'><img src='");
-         out.write(contextPath);
-         out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
-         out.write(Application.getMessage(context, "deploy_server_not_selected"));
-         out.write("</div>");
-      }
+   }
+   
+   private void renderPanelEnd(ResponseWriter out, String contextPath) throws IOException
+   {
+      // render end of panel
       out.write("</td><td width='10'><img src='");
       out.write(contextPath);
       out.write("/images/parts/deploy_panel_end.gif' /></td></tr></table>");
       
       // add some padding under each panel
       out.write("\n<div style='padding-top:8px;'></div>\n");
-   }
-   
-   private void renderAllocatedTestServer(FacesContext context, ResponseWriter out, NodeService nodeService,
-            NodeRef server) throws IOException
-   {
-      Map<QName, Serializable> serverProps = nodeService.getProperties(server);
-      String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAME);
-      if (serverName == null || serverName.length() == 0)
-      {
-         serverName = AVMDeployWebsiteAction.calculateServerUri(serverProps);
-      }
-      
-      String pattern = Application.getMessage(context, "deploy_test_server_allocated");
-      String msg = MessageFormat.format(pattern, serverName);
-      
-      out.write("<div class='deployServersInfo'><img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/info_icon.gif' />&nbsp;");
-      out.write(msg);
-      
-      String url = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERURL);
-      if (url != null && url.length() > 0)
-      {
-         out.write("<div style='margin: 12px 0px 0px 24px;'><img src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/preview_website.gif");
-         out.write("' /><a target='new' href='");
-         out.write(url);
-         out.write("'>");
-         out.write("Preview Deployment");
-         out.write("</a></div>");
-      }
-      
-      out.write("</div>");
-      
-      // render a hidden field with the value of the allocated test server
-      out.write("<input type='hidden' name='");
-      out.write(this.getClientId(context));
-      out.write("' value='");
-      out.write(server.toString());
-      out.write("' />");
    }
 }

@@ -63,8 +63,6 @@ import org.alfresco.web.ui.repo.component.UIActions;
  */
 public class UIDeploymentServers extends UIInput
 {
-   private static final String MSG_ALF_SERVER = "deploy_add_alf_receiver";
-   private static final String MSG_FILE_SYSTEM = "deploy_add_file_receiver";
    private static final String MSG_LIVE_SERVER = "deploy_server_type_live";
    private static final String MSG_TEST_SERVER = "deploy_server_type_test";
    private static final String MSG_TYPE = "deploy_server_type";
@@ -149,7 +147,9 @@ public class UIDeploymentServers extends UIInput
          tx.begin();
          
          String contextPath = context.getExternalContext().getRequestContextPath();
-         out.write("<script type='text/javascript' src='");
+         out.write("\n<script type='text/javascript'>var MSG_PORT_MUST_BE_NUMBER = '");
+         out.write(Application.getMessage(context, "port_must_be_number"));
+         out.write("';</script>\n<script type='text/javascript' src='");
          out.write(contextPath);
          out.write("/scripts/ajax/deployment.js'></script>\n");
          out.write("<div class='deployConfig'>");
@@ -164,7 +164,7 @@ public class UIDeploymentServers extends UIInput
          {
             if (servers.size() == 0)
             {
-               out.write("<div class='deployNoServers'><img src='");
+               out.write("<div class='deployNoConfigServers'><img src='");
                out.write(contextPath);
                out.write("/images/icons/info_icon.gif' />&nbsp;");
                out.write(Application.getMessage(context, MSG_NO_DEPLOY_SERVERS));
@@ -188,7 +188,7 @@ public class UIDeploymentServers extends UIInput
          out.write("</div>");
          
          out.write("\n<script type='text/javascript'>");
-         out.write("window.onload=Alfresco.deployServerTypeChanged();");
+         out.write("window.onload=Alfresco.checkDeployConfigPage();");
          out.write("</script>");
          
          tx.commit();
@@ -510,6 +510,46 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, type);
       out.write("</td></tr>");
       
+      // create the server host field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_HOST));
+      out.write(":</td><td>");
+      UIComponent host = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, host, "deployServerHost");
+      host.getAttributes().put("styleClass", "inputField");
+      host.getAttributes().put("onkeyup", 
+               "javascript:Alfresco.checkDeployConfigButtonState();");
+      host.getAttributes().put("onchange", 
+               "javascript:Alfresco.checkDeployConfigButtonState();");
+      ValueBinding vbHost = context.getApplication().createValueBinding(
+               "#{WizardManager.bean.editedDeployServerProperties." + 
+               DeploymentServerConfig.PROP_HOST + "}");
+      host.setValueBinding("value", vbHost);
+      this.getChildren().add(host);
+      Utils.encodeRecursive(context, host);
+      out.write("</td><td><img src='");
+      out.write(contextPath);
+      out.write("/images/icons/required_field.gif' title='");
+      out.write(bundle.getString("required_field"));
+      out.write("'/></td></tr>");
+      
+      // create the server port field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_PORT));
+      out.write(":</td><td>");
+      UIComponent port = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, port, "deployServerPort");
+      port.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbPort = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_PORT + "}");
+      port.setValueBinding("value", vbPort);
+      this.getChildren().add(port);
+      Utils.encodeRecursive(context, port);
+      out.write("</td></tr>");
+      
       // create the server name field
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_NAME));
@@ -524,38 +564,6 @@ public class UIDeploymentServers extends UIInput
       name.setValueBinding("value", vbName);
       this.getChildren().add(name);
       Utils.encodeRecursive(context, name);
-      out.write("</td></tr>");
-      
-      // create the server host field
-      out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_HOST));
-      out.write(":</td><td>");
-      UIComponent host = context.getApplication().createComponent(
-               UIInput.COMPONENT_TYPE);
-      FacesHelper.setupComponentId(context, host, null);
-      host.getAttributes().put("styleClass", "inputField");
-      ValueBinding vbHost = context.getApplication().createValueBinding(
-            "#{WizardManager.bean.editedDeployServerProperties." + 
-            DeploymentServerConfig.PROP_HOST + "}");
-      host.setValueBinding("value", vbHost);
-      this.getChildren().add(host);
-      Utils.encodeRecursive(context, host);
-      out.write("</td></tr>");
-      
-      // create the server port field
-      out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_PORT));
-      out.write(":</td><td>");
-      UIComponent port = context.getApplication().createComponent(
-               UIInput.COMPONENT_TYPE);
-      FacesHelper.setupComponentId(context, port, null);
-      port.getAttributes().put("styleClass", "inputField");
-      ValueBinding vbPort = context.getApplication().createValueBinding(
-            "#{WizardManager.bean.editedDeployServerProperties." + 
-            DeploymentServerConfig.PROP_PORT + "}");
-      port.setValueBinding("value", vbPort);
-      this.getChildren().add(port);
-      Utils.encodeRecursive(context, port);
       out.write("</td></tr>");
       
       // create the server username field
@@ -658,39 +666,50 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, auto);
       out.write("</td></tr>");
       
+      // create and add the cancel button
+      out.write("<tr><td colspan='2' align='right'>");
+      UICommand cancelButton = (UICommand)context.getApplication().createComponent(
+               UICommand.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, cancelButton, null);
+      cancelButton.setValue(bundle.getString("cancel"));
+      MethodBinding cancelBinding = context.getApplication().createMethodBinding(
+                  "#{WizardManager.bean.cancelDeploymentServerConfig}", new Class[] {});
+      cancelButton.setAction(cancelBinding);
+      this.getChildren().add(cancelButton);
+      Utils.encodeRecursive(context, cancelButton);
+      out.write("&nbsp;&nbsp;");
+      
       if (edit)
       {
          // create the done button
-         out.write("<tr><td colspan='2' align='right'>");
          UICommand saveButton = (UICommand)context.getApplication().createComponent(
                   UICommand.COMPONENT_TYPE);
-         FacesHelper.setupComponentId(context, saveButton, null);
+         FacesHelper.setupComponentId(context, saveButton, "deployActionButton");
          saveButton.setValue(bundle.getString("save"));
-         MethodBinding binding = context.getApplication().createMethodBinding(
+         MethodBinding saveBinding = context.getApplication().createMethodBinding(
                      "#{WizardManager.bean.saveDeploymentServerConfig}", new Class[] {});
-         saveButton.setAction(binding);
+         saveButton.setAction(saveBinding);
          this.getChildren().add(saveButton);
          Utils.encodeRecursive(context, saveButton);
-         out.write("</td></tr>");
+         
       }
       else
       {
          // create the add button
-         out.write("<tr><td colspan='2' align='right'>");
          UICommand addButton = (UICommand)context.getApplication().createComponent(
                   UICommand.COMPONENT_TYPE);
-         FacesHelper.setupComponentId(context, addButton, null);
+         FacesHelper.setupComponentId(context, addButton, "deployActionButton");
          addButton.setValue(bundle.getString("add"));
-         MethodBinding binding = context.getApplication().createMethodBinding(
+         MethodBinding addBinding = context.getApplication().createMethodBinding(
                      "#{WizardManager.bean.addDeploymentServerConfig}", new Class[] {});
-         addButton.setAction(binding);
+         addButton.setAction(addBinding);
          this.getChildren().add(addButton);
          Utils.encodeRecursive(context, addButton);
          out.write("</td></tr>");
       }
       
       // finish off tables and div
-      out.write("</table></td></tr></table>");
+      out.write("</td></tr></table></td></tr></table>");
       PanelGenerator.generatePanelEnd(out, contextPath, "lightstorm");
       out.write("</div>");
    }

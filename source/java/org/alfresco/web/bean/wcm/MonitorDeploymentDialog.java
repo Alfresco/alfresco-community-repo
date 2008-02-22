@@ -43,6 +43,7 @@ public class MonitorDeploymentDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = -2800892205678915972L;
 
+   protected String outcome;
    protected NodeRef webProjectRef;
    
    protected AVMBrowseBean avmBrowseBean;
@@ -58,7 +59,27 @@ public class MonitorDeploymentDialog extends BaseDialogBean
       super.init(parameters);
       
       // setup context for dialog
-      this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
+      String webProject = parameters.get("webproject");
+      if (webProject == null)
+      {
+         this.webProjectRef = this.avmBrowseBean.getWebsite().getNodeRef();
+      }
+      else
+      {
+         this.webProjectRef = new NodeRef(webProject);
+      }
+      
+      // determine outcome required
+      String calledFromTaskDialog = parameters.get("calledFromTaskDialog");
+      if (calledFromTaskDialog != null && 
+          calledFromTaskDialog.equals(Boolean.TRUE.toString()))
+      {
+         outcome = "dialog:close:myalfresco";
+      }
+      else
+      {
+         outcome = "dialog:close:browseWebsite";
+      }
       
       if (logger.isDebugEnabled())
       {
@@ -76,7 +97,7 @@ public class MonitorDeploymentDialog extends BaseDialogBean
    @Override
    protected String getDefaultCancelOutcome()
    {
-      return "dialog:close:browseWebsite";
+      return this.outcome;
    }
 
    @Override

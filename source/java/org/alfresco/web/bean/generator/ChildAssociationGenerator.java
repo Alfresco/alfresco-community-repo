@@ -58,7 +58,7 @@ public class ChildAssociationGenerator extends BaseComponentGenerator
       // check disables the ok button if necessary, as the user
       // adds or removes items from the multi value list the 
       // page will be refreshed and therefore re-check the status.
-      // Only so this however id the component is not read-only
+      // But only do this if the component is not read-only
       
       if (item.isReadOnly() == false)
       {

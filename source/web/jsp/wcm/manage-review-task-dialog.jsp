@@ -65,6 +65,11 @@
 <a:panel id="resources-panel" label="#{msg.resources}"
          border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
    
+   <h:panelGroup id="resources-actions" style="margin-left: 4px;">
+      <a:actionLink id="resources-action1" value="#{msg.sandbox_deploy}" image="/images/icons/deploy.gif"
+                    action="#{DialogManager.bean.deploy}" style="margin-left: 4px;" rendered="#{DialogManager.bean.testServersAvailable}" />      
+   </h:panelGroup>
+   
    <h:outputText value="#{msg.no_resources}" rendered="#{empty DialogManager.bean.resources}" />
    
    <a:richList id="resources-list" viewMode="details" value="#{DialogManager.bean.resources}" var="r"

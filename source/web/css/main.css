@@ -766,6 +766,16 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    width: 200px;
 }
 
+.deployNoConfigServers
+{
+   margin: 26px 5px 16px 3px;
+}
+
+.deployNoConfigServers img
+{
+   vertical-align: -6px;
+}
+
 .deployServersInfo
 {
    margin: 10px 5px 16px 5px;
@@ -783,6 +793,12 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    padding-right: 16px;
 }
 
+.deployPanelNoControl
+{
+   padding-left: 21px;
+   padding-right: 21px;
+}
+
 .deployPanelStatusIcon
 {
    padding-left: 9px;
@@ -793,6 +809,15 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 {
    padding-left: 12px;
    padding-right: 12px;
+}
+
+.deployPanelServerStatus
+{
+}
+
+.deployPanelServerMsg
+{
+   margin-top: 3px;
 }
 
 .deployPanelServerName

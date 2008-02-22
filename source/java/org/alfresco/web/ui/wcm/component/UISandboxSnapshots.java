@@ -230,15 +230,14 @@ public class UISandboxSnapshots extends SelfRenderingComponent
          // determine whether the deploy action should be shown
          boolean showDeployAction = false;
          NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(sandbox);
-         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
-         List<ChildAssociationRef> deployToServers = nodeService.getChildAssocs(
-                     webProjectRef, WCMAppModel.ASSOC_DEPLOYMENTSERVER, RegexQNamePattern.MATCH_ALL);
+         List<NodeRef> deployToServers = DeploymentUtil.findLiveServers(webProjectRef);
          if (deployToServers != null && deployToServers.size() > 0)
          {
             showDeployAction = true;
          }
          
          // determine the deployment status for the website
+         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
          determineDeploymentStatus(context, webProjectRef, sandbox, nodeService, avmService);
          
          Map requestMap = context.getExternalContext().getRequestMap();
@@ -299,7 +298,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                      params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
                      params.put("store", sandbox);
                      action = createAction(context, sandbox, ACT_SNAPSHOT_DEPLOY, "/images/icons/deploy.gif",
-                           "#{DialogManager.setupParameters}", "dialog:deploySnapshot", null, params);
+                           "#{DialogManager.setupParameters}", "dialog:deployWebsite", null, params);
                   }
                   
                   Utils.encodeRecursive(context, action);

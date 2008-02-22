@@ -270,13 +270,8 @@
                  icon="/images/icons/revert_all_large.gif" title-id="revert_all_title" 
                  description-id="revert_all_desc" />
                  
-         <dialog name="deploySnapshot" page="/jsp/wcm/deploy.jsp" managed-bean="DeployWebsiteDialog"
-                 icon="/images/icons/deploy_large.gif" title-id="deploy_snapshot_title" 
-                 description-id="deploy_snapshot_desc" />
-                 
-         <dialog name="deploySandbox" page="/jsp/wcm/deploy.jsp" managed-bean="DeployWebsiteDialog"
-                 icon="/images/icons/deploy_large.gif" title-id="deploy_sandbox_title" 
-                 description-id="deploy_sandbox_desc" />
+         <dialog name="deployWebsite" page="/jsp/wcm/deploy.jsp" managed-bean="DeployWebsiteDialog"
+                 icon="/images/icons/deploy_large.gif" />
                  
          <dialog name="viewDeploymentReport" page="/jsp/wcm/deployment-report.jsp" 
                  managed-bean="ViewDeploymentReportDialog"

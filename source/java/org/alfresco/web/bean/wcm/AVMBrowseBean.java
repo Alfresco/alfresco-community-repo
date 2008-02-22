@@ -50,6 +50,8 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -113,8 +115,7 @@ public class AVMBrowseBean implements IContextListener
    
    private static final Log logger = LogFactory.getLog(AVMBrowseBean.class);
    
-   private static final String REQUEST_BEEN_DEPLOYED_KEY = "_alfBeenDeployedEvaluated";
-   private static final String REQUEST_BEEN_DEPLOYED_RESULT = "_alfBeenDeployedResult";
+   public static final String REQUEST_BEEN_DEPLOYED_RESULT = "_alfBeenDeployedResult";
    
    private static final String MSG_REVERT_SUCCESS = "revert_success";
    private static final String MSG_REVERT_SANDBOX = "revert_sandbox_success";
@@ -909,28 +910,28 @@ public class AVMBrowseBean implements IContextListener
       //       expression in a 'rendered' attribute, we therefore cache the result
       //       on a per request basis
       
-      List<NodeRef> deployAttempts = null;
+      Boolean result = null;
       
       FacesContext context = FacesContext.getCurrentInstance();
       Map request = context.getExternalContext().getRequestMap();
-      if (request.get(REQUEST_BEEN_DEPLOYED_KEY) == null)
+      if (request.get(REQUEST_BEEN_DEPLOYED_RESULT) == null)
       {
          // see if there are any deployment attempts for the staging area
          NodeRef webProjectRef = this.getWebsite().getNodeRef();
          String store = (String)nodeService.getProperty(webProjectRef, 
                   WCMAppModel.PROP_AVMSTORE);
-         deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
+         List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
          
          // add a placeholder object in the request so we don't evaluate this again for this request
-         request.put(REQUEST_BEEN_DEPLOYED_KEY, Boolean.TRUE);
-         request.put(REQUEST_BEEN_DEPLOYED_RESULT, deployAttempts);
+         result = new Boolean(deployAttempts != null && deployAttempts.size() > 0);
+         request.put(REQUEST_BEEN_DEPLOYED_RESULT, result);
       }
       else
       {
-         deployAttempts = (List<NodeRef>)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
+         result = (Boolean)request.get(REQUEST_BEEN_DEPLOYED_RESULT);
       }
       
-      return (deployAttempts != null && deployAttempts.size() > 0);
+      return result.booleanValue();
    }
    
    /**
@@ -1419,6 +1420,125 @@ public class AVMBrowseBean implements IContextListener
       // update the specified webapp in the store
       String webappPath = AVMUtil.buildStoreWebappPath(store, getWebapp());
       AVMUtil.updateVServerWebapp(webappPath, true);
+   }
+   
+   /**
+    * Releases the test server allocated to the store
+    */
+   public void releaseTestServer(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String store = params.get("store");
+      
+      if (store != null)
+      {
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
+            NodeRef testServer = DeploymentUtil.findAllocatedTestServer(store);
+            if (testServer != null)
+            {
+               getNodeService().setProperty(testServer, 
+                        WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Released test server '" + testServer + "' from store: " + store);
+            }
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+      }
+   }
+   
+   /**
+    * Removes all deploymentreport nodes associated with the web project
+    */
+   public String resetDeploymentHistory()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
+      RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
+      {
+         @SuppressWarnings("unchecked")
+         public String execute() throws Throwable
+         {
+            // just in case there are any left, iterate through any old deploymentreport 
+            // associations from the current web project and delete them.
+            List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
+                     getWebsite().getNodeRef(), WCMAppModel.ASSOC_DEPLOYMENTREPORT, 
+                     RegexQNamePattern.MATCH_ALL);
+            int count = deployReportRefs.size();
+            for (ChildAssociationRef ref : deployReportRefs)
+            {
+               NodeRef report = ref.getChildRef();
+               if (report != null)
+               {
+                  // remove the node
+                  nodeService.deleteNode(report);
+               }
+            }
+            
+            // iterate through all deploymentattempt associations from the current 
+            // web project and delete them.
+            List<ChildAssociationRef> deployAttemptRefs = nodeService.getChildAssocs(
+                     getWebsite().getNodeRef(), WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
+                     RegexQNamePattern.MATCH_ALL);
+            count += deployAttemptRefs.size();
+            for (ChildAssociationRef ref : deployAttemptRefs)
+            {
+               NodeRef attempt = ref.getChildRef();
+               if (attempt != null)
+               {
+                  // remove the node
+                  nodeService.deleteNode(attempt);
+               }
+            }
+            
+            // remove the old properties in case they are still present
+            nodeService.removeProperty(getWebsite().getNodeRef(), 
+                     WCMAppModel.PROP_DEPLOYTO);
+            nodeService.removeProperty(getWebsite().getNodeRef(), 
+                     WCMAppModel.PROP_SELECTEDDEPLOYTO);
+            nodeService.removeProperty(getWebsite().getNodeRef(), 
+                     WCMAppModel.PROP_SELECTEDDEPLOYVERSION);
+            
+            // remove the hasBeenDeployed object from the session so it gets
+            // re-evaluated (and disappears)
+            Map request = FacesContext.getCurrentInstance().
+                  getExternalContext().getRequestMap();
+            request.remove(REQUEST_BEEN_DEPLOYED_RESULT);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Removed " + count + " previous deployment attempts"); 
+            
+            return null;
+         }
+      };
+      
+      try
+      {
+         // Execute
+         txnHelper.doInTransaction(callback);
+      }
+      catch (Exception err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), 
+                  err.getMessage()), err);
+      }
+
+      return "browseWebsite";
    }
    
    /**

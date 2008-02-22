@@ -249,6 +249,11 @@
           <description>The webapp within the workflow store to check links for</description>
           <type>d:text</type>
         </property>
+        <property name="wcmwf:autoDeploy">
+          <title>Auto Deploy</title>
+          <description>Determines whether the changes should be deployed upon submission</description>
+          <type>d:boolean</type>
+        </property>
       </properties>
     </aspect>
 

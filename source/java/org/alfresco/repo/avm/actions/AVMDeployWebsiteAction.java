@@ -67,7 +67,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    public static final String NAME = "avm-deploy-website";
    public static final String FILE_SERVER_PREFIX = "\\\\";
 
-   public static final String PARAM_WEBSITE = "website";
+   public static final String PARAM_WEBPROJECT = "webproject";
    public static final String PARAM_SERVER = "server";
    public static final String PARAM_ATTEMPT = "attempt";
    public static final String PARAM_CALLBACK = "callback";
@@ -202,8 +202,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    @Override
    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
    {
-      paramList.add(new ParameterDefinitionImpl(PARAM_WEBSITE, DataTypeDefinition.NODE_REF, true,
-               getParamDisplayLabel(PARAM_WEBSITE)));
+      paramList.add(new ParameterDefinitionImpl(PARAM_WEBPROJECT, DataTypeDefinition.NODE_REF, true,
+               getParamDisplayLabel(PARAM_WEBPROJECT)));
       paramList.add(new ParameterDefinitionImpl(PARAM_SERVER, DataTypeDefinition.NODE_REF, true,
                getParamDisplayLabel(PARAM_SERVER)));
       paramList.add(new ParameterDefinitionImpl(PARAM_ATTEMPT, DataTypeDefinition.NODE_REF, false,
@@ -228,7 +228,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       }
       
       // get the NodeRef representing the website being deployed
-      NodeRef websiteRef = (NodeRef)action.getParameterValue(PARAM_WEBSITE);
+      NodeRef websiteRef = (NodeRef)action.getParameterValue(PARAM_WEBPROJECT);
       if (this.nodeService.exists(websiteRef) == false)
       {
          throw new IllegalStateException("The website NodeRef (" + websiteRef + 
@@ -268,8 +268,6 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       String sourcePath = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATH);
       String targetName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERTARGET);
       String targetPath = path;
-      
-      // TODO: determine if we need to deploy a subfolder of the website
       
       if (fileServerDeployment == false)
       {
@@ -312,6 +310,19 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          targetName = this.defaultTargetName;
       }
       
+      // determine the actual source path
+      if (sourcePath != null && sourcePath.length() > 0)
+      {
+         // make sure the path starts with /
+         if (sourcePath.startsWith("/") == false)
+         {
+            sourcePath = "/" + sourcePath;
+         }
+         
+         // append to the root path
+         path = path + sourcePath;
+      }
+      
       // take a note of the current date/time
       Date startDate = new Date();
       
@@ -336,7 +347,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          if (fileServerDeployment)
          {
             if (logger.isDebugEnabled())
-               logger.debug("Performing file server deployment to " + host + ":" + port);
+               logger.debug("Performing file server deployment to " + host + ":" + port + 
+                            " using deploymentserver: " + serverProps);
             
             // TODO: Added new NameMatcher parameter to deploy methods. It acts as a filter.
             //       Any matching path names are ignored for deployment purposes.
@@ -346,7 +358,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          else
          {
             if (logger.isDebugEnabled())
-               logger.debug("Performing Alfresco deployment to " + host + ":" + port);
+               logger.debug("Performing Alfresco deployment to " + host + ":" + port + 
+                            " using deploymentserver: " + serverProps);
             
             // TODO: Added new NameMatcher parameter to deploy methods. It acts as a filter.
             //       Any matching path names are ignored for deployment purposes.

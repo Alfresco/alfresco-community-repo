@@ -117,7 +117,7 @@ public class RegistryServiceImplTest extends TestCase
         
         assertNull("Missing key should return null value", registryService.getProperty(KEY_A_B_C_0));
         assertNull("Missing key should return null value", registryService.getProperty(KEY_A_B_C_D_0));
-        assertNull("Missing key should return null value", registryService.getProperty(KEY_X_Y_Z_0));
+        assertNull("Missing key should return null value", registryService.getProperty(KEY_DOES_NOT_EXIST));
     }
     
     public void testGetElements() throws Exception

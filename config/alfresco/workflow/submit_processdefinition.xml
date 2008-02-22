@@ -217,6 +217,7 @@
     <task-node name="submitted">
         <event type="node-enter">
            <action class="org.alfresco.repo.avm.wf.AVMSubmitPackageHandler"/>
+           <action class="org.alfresco.repo.avm.wf.AVMDeployHandler"/>
         </event>
         <task name="wcmwf:submittedTask" swimlane="initiator" />
         <transition name="" to="end" />
@@ -230,6 +231,7 @@
     
     <event type="process-end">
         <action class="org.alfresco.repo.avm.wf.AVMRemoveAllSrcWebappsHandler"/>
+        <action class="org.alfresco.repo.avm.wf.AVMReleaseTestServerHandler"/>
         <action class="org.alfresco.repo.avm.wf.AVMRemoveWFStoreHandler"/>
     </event>
 

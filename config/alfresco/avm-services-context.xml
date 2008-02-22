@@ -232,6 +232,9 @@
 		<property name="childEntryDAO">
 		    <ref bean="childEntryDAO"/>
 		</property>
+		<property name="dictionaryService">
+		    <ref bean="dictionaryService"/>
+		</property>
 	</bean>
 
 	<!-- A Local implementation of the Remote AVM interface. -->

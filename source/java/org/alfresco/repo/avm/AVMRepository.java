@@ -50,6 +50,8 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -59,9 +61,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * This or AVMStore are
@@ -117,7 +116,7 @@ public class AVMRepository
 
     private PermissionService fPermissionService;
 
-    private ApplicationContext fContext;
+    private DictionaryService fDictionaryService;
 
     // A bunch of TransactionListeners that do work for this.
 
@@ -238,6 +237,11 @@ public class AVMRepository
     public void setPermissionService(PermissionService service)
     {
         fPermissionService = service;
+    }
+
+    public void setDictionaryService(DictionaryService service)
+    {
+        fDictionaryService = service;
     }
 
     /**
@@ -2881,7 +2885,12 @@ public class AVMRepository
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         for (Map.Entry<QName, PropertyValue> entry : props.entrySet())
         {
-            properties.put(entry.getKey(), entry.getValue().getValue(entry.getKey()));
+            PropertyDefinition def = fDictionaryService.getProperty(entry.getKey());
+            if (def == null)
+            {
+                continue;
+            }
+            properties.put(entry.getKey(), entry.getValue().getValue(def.getDataType().getName()));
         }
         context.put(PermissionService.PROPERTIES, properties);
         // TODO put node type in there to.

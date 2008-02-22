@@ -39,6 +39,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -48,6 +50,8 @@ import org.alfresco.web.bean.repository.Repository;
  */
 public final class DeploymentUtil
 {
+   private static final Log logger = LogFactory.getLog(DeploymentUtil.class);
+   
    public static List<NodeRef> findDeploymentAttempts(String store)
    {
       FacesContext fc = FacesContext.getCurrentInstance();
@@ -170,8 +174,12 @@ public final class DeploymentUtil
          }
          else if (results.length() > 1)
          {
-            throw new IllegalStateException("More than one allocated test server for store '" +
-                     store + "' was found, should only be one!");
+            // get the first one and warn that we found many!
+            testServer = results.getNodeRef(0);
+            
+            if (logger.isWarnEnabled())
+               logger.warn("More than one allocated test server for store '" +
+                     store + "' was found, should only be one, first one found returned!");
          }
       }
       finally

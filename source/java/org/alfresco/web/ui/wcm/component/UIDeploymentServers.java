@@ -72,6 +72,7 @@ public class UIDeploymentServers extends UIInput
    private static final String MSG_USER = "deploy_server_username";
    private static final String MSG_PWD = "deploy_server_password";
    private static final String MSG_URL = "deploy_server_url";
+   private static final String MSG_ALLOCATED = "deploy_server_allocated";
    private static final String MSG_SOURCE = "deploy_server_source_path";
    private static final String MSG_TARGET = "deploy_server_target_name";
    private static final String MSG_AUTO_DEPLOY = "deploy_automatically";
@@ -376,8 +377,8 @@ public class UIDeploymentServers extends UIInput
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_URL));
       }
-      out.write("</td></tr></table></td>"); 
-      out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
+      out.write("</td></tr>");
+      
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_USER));
       out.write(":</td><td>");
@@ -385,7 +386,8 @@ public class UIDeploymentServers extends UIInput
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_USER));
       }
-      out.write("</td></tr>");
+      out.write("</td></tr></table></td>"); 
+      out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
       
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_SOURCE));
@@ -425,6 +427,29 @@ public class UIDeploymentServers extends UIInput
             {
                out.write(bundle.getString("no"));
             }
+         }
+         out.write("</td></tr>");
+      }
+      
+      if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(
+          server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
+      {
+         out.write("<tr><td align='right'>");
+         out.write(bundle.getString(MSG_ALLOCATED));
+         out.write(":</td><td>");
+         if (server.getProperties().get(DeploymentServerConfig.PROP_ALLOCATED_TO) != null)
+         {
+            String allocatedToTip = (String)server.getProperties().get(
+                     DeploymentServerConfig.PROP_ALLOCATED_TO);
+            out.write("<span title='");
+            out.write(allocatedToTip);
+            out.write("'>");
+            out.write(bundle.getString("yes"));
+            out.write("</span>");
+         }
+         else
+         {
+            out.write(bundle.getString("no"));
          }
          out.write("</td></tr>");
       }

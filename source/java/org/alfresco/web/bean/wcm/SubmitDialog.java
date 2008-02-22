@@ -276,6 +276,7 @@ public class SubmitDialog extends BaseDialogBean
       this.workflowSelectedValue = null;
       this.launchDate = null;
       this.validateLinks = true;
+      this.autoDeploy = false;
       this.workflowParams = null;
       this.sandboxInfo = null;
       this.virtUpdatePath = null;

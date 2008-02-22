@@ -142,6 +142,18 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
       return "dialog:linkValidation";
    }
    
+   public String viewDeployReport()
+   {
+      if (logger.isDebugEnabled())
+         logger.debug("Viewing deployment report for store: " + store);
+      
+      Map<String, String> params = new HashMap<String, String>(3);
+      params.put("store", this.store);
+      Application.getDialogManager().setupParameters(params);
+      
+      return "dialog:viewDeploymentReport";
+   }
+   
    public String deploy()
    {
       if (logger.isDebugEnabled())
@@ -203,5 +215,16 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
       }
       
       return result.booleanValue();
+   }
+   
+   /**
+    * @return Determines whether a deployment has been attempted
+    */
+   public boolean getDeployAttempted()
+   {
+      PropertyValue propVal = getAvmService().getStoreProperty(this.store, 
+               SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+      
+      return (propVal != null);
    }
 }

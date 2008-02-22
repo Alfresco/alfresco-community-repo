@@ -67,7 +67,12 @@
    
    <h:panelGroup id="resources-actions" style="margin-left: 4px;">
       <a:actionLink id="resources-action1" value="#{msg.sandbox_deploy}" image="/images/icons/deploy.gif"
-                    action="#{DialogManager.bean.deploy}" style="margin-left: 4px;" rendered="#{DialogManager.bean.testServersAvailable}" />      
+                    action="#{DialogManager.bean.deploy}" 
+                    rendered="#{DialogManager.bean.testServersAvailable}" />
+      <h:outputText id="resources-actions-padding" value="&nbsp;&nbsp;" escape="false" />
+      <a:actionLink id="resources-action2" value="#{msg.deployment_report_action}" image="/images/icons/deployment_report.gif"
+                    action="#{DialogManager.bean.viewDeployReport}" 
+                    rendered="#{DialogManager.bean.deployAttempted}" />      
    </h:panelGroup>
    
    <h:outputText value="#{msg.no_resources}" rendered="#{empty DialogManager.bean.resources}" />

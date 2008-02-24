@@ -4547,6 +4547,22 @@
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
+      <managed-property>
+         <property-name>searchService</property-name>
+         <value>#{SearchService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>dictionaryService</property-name>
+         <value>#{DictionaryService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>contentService</property-name>
+         <value>#{ContentService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

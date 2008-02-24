@@ -508,9 +508,9 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
     this.parent(xform, xformsNode);
     this._selectableTypes = "selectable_types" in params ? params["selectable_types"].split(",") : null;
     this._filterMimetypes = "filter_mimetypes" in params ? params["filter_mimetypes"].split(",") : [];
-    
-    // JanV - temp
-    this._dirPath = "dir_path" in params ? params["dir_path"] : null;
+    this._folderRestriction = "folder_restriction" in params ? params["folder_restriction"] : null;
+    this._savedSearchName = "saved_search_name" in params ? params["saved_search_name"] : null;
+    this._savedSearchContext = "saved_search_context" in params ? params["saved_search_context"] : null;
   },
 
   /////////////////////////////////////////////////////////////////
@@ -531,7 +531,9 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
                                                 this._filePicker_resizeHandler.bindAsEventListener(this),
                                                 this._selectableTypes,
                                                 this._filterMimetypes,
-                                                this._dirPath);
+                                                this._folderRestriction,
+                                                this._savedSearchName,
+                                                this._savedSearchContext);
     this.widget.render();
   },
 

@@ -22,6 +22,12 @@
               <xs:element name="image_file_picker" type="xs:anyURI">
                 <xs:annotation><xs:appinfo><alf:appearance>image_file_picker</alf:appearance></xs:appinfo></xs:annotation>
               </xs:element>
+              <xs:element name="folder_restricted_file_picker" type="xs:anyURI">
+                <xs:annotation><xs:appinfo><alf:appearance>folder_restricted_file_picker</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
+              <xs:element name="search_restricted_file_picker" type="xs:anyURI">
+                <xs:annotation><xs:appinfo><alf:appearance>search_restricted_file_picker</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
               <xs:element name="html_file_picker" type="xs:anyURI">
                 <xs:annotation><xs:appinfo><alf:appearance>html_file_picker</alf:appearance></xs:appinfo></xs:annotation>
               </xs:element>

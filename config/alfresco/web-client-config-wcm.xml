@@ -82,6 +82,32 @@
              <param name="selectable_types">wcm:avmcontent,wcm:avmfolder</param>
            </widget>
            <widget xforms-type="xf:upload" 
+                   appearance="folder_restricted_file_picker"
+                   javascript-class-name="alfresco.xforms.FilePicker">
+             <param name="selectable_types">wcm:avmcontent,wcm:avmfolder</param>
+             <!-- 
+                Uncomment parameter and set to absolute path of AVM folder to 
+                restrict file picker to.
+             <param name="folder_restriction">some-absolute-AVM-folder-path</param>
+             -->
+           </widget>
+           <widget xforms-type="xf:upload" 
+                   appearance="search_restricted_file_picker"
+                   javascript-class-name="alfresco.xforms.FilePicker">
+             <!-- 
+                Uncomment parameter and set to name of a saved 
+                search. The file picker will be restricted to the results 
+                of this saved search
+             <param name="saved_search_name">some-search-name</param>
+             -->
+             <!--
+                Uncomment and set to user or global. If set to user, then named saved search
+                is retrieved from the current user's saved search folder. If set to global
+                then named saved search is retrieved from the global saved seaches folder
+             <param name="saved_search_context">some-search-context</param>
+             -->
+           </widget>
+           <widget xforms-type="xf:upload" 
                    appearance="image_file_picker"
                    javascript-class-name="alfresco.xforms.FilePicker">
              <param name="selectable_types">wcm:avmcontent</param>

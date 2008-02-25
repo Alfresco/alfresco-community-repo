@@ -321,7 +321,7 @@ public abstract class BaseAssociationEditor extends UIInput
          else
          {
             // start outer table
-            out.write("<table border='0' cellspacing='4' cellpadding='0' class='selector'>");
+            out.write("<table border='0' cellspacing='4' cellpadding='0' class='multiValueSelector'>");
             
             if (allowMany)
             {

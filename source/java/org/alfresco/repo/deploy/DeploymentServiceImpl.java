@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +160,11 @@ public class DeploymentServiceImpl implements DeploymentService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifference(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifference(int version, String srcPath, String hostName, int port, String userName, String password, String dstPath, NameMatcher matcher, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
+    public DeploymentReport deployDifference(int version, String srcPath, String hostName,
+                                             int port, String userName, String password,
+                                             String dstPath, NameMatcher matcher, boolean createDst,
+                                             boolean dontDelete, boolean dontDo,
+                                             List<DeploymentCallback> callbacks)
     {
         DeploymentDestination dest = getLock(hostName, port);
         synchronized (dest)
@@ -170,12 +173,15 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 DeploymentReport report = new DeploymentReport();
                 AVMRemote remote = getRemote(hostName, port, userName, password);
-                if (callback != null)
+                if (callbacks != null)
                 {
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                                 new Pair<Integer, String>(version, srcPath),
                                                                 dstPath);
-                    callback.eventOccurred(event);
+                    for (DeploymentCallback callback : callbacks)
+                    {
+                        callback.eventOccurred(event);
+                    }
                 }
                 if (version < 0)
                 {
@@ -224,9 +230,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                             new Pair<Integer, String>(version, srcPath),
                                             dstPath);
                     report.add(event);
-                    if (callback != null)
+                    if (callbacks != null)
                     {
-                        callback.eventOccurred(event);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
                     }
                     if (dontDo)
                     {
@@ -234,12 +243,15 @@ public class DeploymentServiceImpl implements DeploymentService
                     }
                     copyDirectory(version, srcRoot, dstParent, remote, matcher);
                     remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-                    if (callback != null)
+                    if (callbacks != null)
                     {
                         event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                     new Pair<Integer, String>(version, srcPath),
                                                     dstPath);
-                        callback.eventOccurred(event);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
                     }
                     return report;
                 }
@@ -250,19 +262,32 @@ public class DeploymentServiceImpl implements DeploymentService
                 // The corresponding directory exists so recursively deploy.
                 try
                 {
-                    deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callback);
+                    deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callbacks);
                     remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
-                    if (callback != null)
+                    if (callbacks != null)
                     {
                         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                                     new Pair<Integer, String>(version, srcPath),
                                                                     dstPath);
-                        callback.eventOccurred(event);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
                     }
                     return report;
                 }
                 catch (AVMException e)
                 {
+                    if (callbacks != null)
+                    {
+                        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
+                                                                    new Pair<Integer, String>(version, srcPath),
+                                                                    dstPath);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
+                    }
                     try
                     {
                         if (snapshot != -1)
@@ -276,8 +301,22 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         throw new AVMException("Failed to rollback to version " + snapshot + " on " + hostName, ee);
                     }
-                    throw new AVMException("Deployment to " + hostName + "failed.", e);
+                    throw new AVMException("Deployment to " + hostName + " failed.", e);
                 }
+            }
+            catch (Exception e)
+            {
+                if (callbacks != null)
+                {
+                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
+                                                                new Pair<Integer, String>(version, srcPath),
+                                                                dstPath);
+                    for (DeploymentCallback callback : callbacks)
+                    {
+                        callback.eventOccurred(event);
+                    }
+                }
+                throw new AVMException("Deployment to " + hostName + " failed.", e);
             }
             finally
             {
@@ -300,7 +339,7 @@ public class DeploymentServiceImpl implements DeploymentService
                                      NameMatcher matcher,
                                      boolean dontDelete, boolean dontDo,
                                      DeploymentReport report,
-                                     DeploymentCallback callback)
+                                     List<DeploymentCallback> callbacks)
     {
         if (src.getGuid().equals(dst.getGuid()))
         {
@@ -321,7 +360,7 @@ public class DeploymentServiceImpl implements DeploymentService
             AVMNodeDescriptor dstNode = dstList.get(name);
             if (!excluded(matcher, srcNode.getPath(), dstNode != null ? dstNode.getPath() : null))
             {
-                deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, report, callback);
+                deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, report, callbacks);
             }
         }
         // Delete nodes that are missing in the source.
@@ -343,9 +382,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                             source,
                                             destination);
                     report.add(event);
-                    if (callback != null)
+                    if (callbacks != null)
                     {
-                        callback.eventOccurred(event);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
                     }
                     if (dontDo)
                     {
@@ -372,7 +414,7 @@ public class DeploymentServiceImpl implements DeploymentService
                                   NameMatcher matcher,
                                   boolean dontDelete, boolean dontDo,
                                   DeploymentReport report,
-                                  DeploymentCallback callback)
+                                  List<DeploymentCallback> callbacks)
     {
         // Destination does not exist.
         if (dst == null)
@@ -387,9 +429,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                                       source,
                                                       destination);
                 report.add(event);
-                if (callback != null)
+                if (callbacks != null)
                 {
-                    callback.eventOccurred(event);
+                    for (DeploymentCallback callback : callbacks)
+                    {
+                        callback.eventOccurred(event);
+                    }
                 }
                 if (dontDo)
                 {
@@ -405,9 +450,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                                         source,
                                                         destination);
             report.add(event);
-            if (callback != null)
+            if (callbacks != null)
             {
-                callback.eventOccurred(event);
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
             }
             if (dontDo)
             {
@@ -426,7 +474,7 @@ public class DeploymentServiceImpl implements DeploymentService
             // If the destination is also a directory, recursively deploy.
             if (dst.isDirectory())
             {
-                deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, report, callback);
+                deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, report, callbacks);
                 return;
             }
             Pair<Integer, String> source =
@@ -435,9 +483,12 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         source, destination);
             report.add(event);
-            if (callback != null)
+            if (callbacks != null)
             {
-                callback.eventOccurred(event);
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
             }
             if (dontDo)
             {
@@ -462,9 +513,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                                         source,
                                                         destination);
             report.add(event);
-            if (callback != null)
+            if (callbacks != null)
             {
-                callback.eventOccurred(event);
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
             }
             if (dontDo)
             {
@@ -483,9 +537,12 @@ public class DeploymentServiceImpl implements DeploymentService
                                                     source,
                                                     destination);
         report.add(event);
-        if (callback != null)
+        if (callbacks != null)
         {
-            callback.eventOccurred(event);
+            for (DeploymentCallback callback : callbacks)
+            {
+                callback.eventOccurred(event);
+            }
         }
         if (dontDo)
         {
@@ -735,40 +792,66 @@ public class DeploymentServiceImpl implements DeploymentService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName, int port, String userName, String password, String target, NameMatcher matcher, boolean createDst, boolean dontDelete, boolean dontDo, DeploymentCallback callback)
+    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName,
+                                               int port, String userName, String password,
+                                               String target, NameMatcher matcher, boolean createDst,
+                                               boolean dontDelete, boolean dontDo,
+                                               List<DeploymentCallback> callbacks)
     {
         DeploymentReport report = new DeploymentReport();
         DeploymentReceiverService service = getReceiver(hostName, port);
-        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
-                                                    new Pair<Integer, String>(version, srcPath),
-                                                    target);
-        if (callback != null)
+        String ticket = null;
+        try
         {
-            callback.eventOccurred(event);
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
+                                                        new Pair<Integer, String>(version, srcPath),
+                                                        target);
+            if (callbacks != null)
+            {
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
+            }
+            report.add(event);
+            String storeName = srcPath.substring(0, srcPath.indexOf(':'));
+            System.out.println(storeName);
+            if (version < 0)
+            {
+                version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+            }
+            ticket = service.begin(target, userName, password);
+            deployDirectoryPush(service, ticket, report, callbacks, version, srcPath, "/", matcher);
+            service.commit(ticket);
+            event = new DeploymentEvent(DeploymentEvent.Type.END,
+                                        new Pair<Integer, String>(version, srcPath),
+                                        target);
+            if (callbacks != null)
+            {
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
+            }
+            report.add(event);
+            return report;
         }
-        report.add(event);
-        String storeName = srcPath.substring(0, srcPath.indexOf(':'));
-        System.out.println(storeName);
-        if (version < 0)
+        catch (Exception e)
         {
-            version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
+                                                        new Pair<Integer, String>(version, srcPath),
+                                                        target);
+            for (DeploymentCallback callback : callbacks)
+            {
+                callback.eventOccurred(event);
+            }
+            service.abort(ticket);
+            throw new AVMException("Deployment to: " + target + " failed.", e);
         }
-        String ticket = service.begin(target, userName, password);
-        deployDirectoryPush(service, ticket, report, callback, version, srcPath, "/", matcher);
-        service.commit(ticket);
-        event = new DeploymentEvent(DeploymentEvent.Type.END,
-                                    new Pair<Integer, String>(version, srcPath),
-                                    target);
-        if (callback != null)
-        {
-            callback.eventOccurred(event);
-        }
-        report.add(event);
-        return report;
     }
 
     private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
-                                     DeploymentReport report, DeploymentCallback callback,
+                                     DeploymentReport report, List<DeploymentCallback> callbacks,
                                      int version,
                                      String srcPath, String dstPath, NameMatcher matcher)
     {
@@ -804,9 +887,12 @@ public class DeploymentServiceImpl implements DeploymentService
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                                 new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                                 newDstPath);
-                    if (callback != null)
+                    if (callbacks != null)
                     {
-                        callback.eventOccurred(event);
+                        for (DeploymentCallback callback : callbacks)
+                        {
+                            callback.eventOccurred(event);
+                        }
                     }
                     report.add(event);
                 }
@@ -818,7 +904,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
                 }
                 src = null;
                 continue;
@@ -828,7 +914,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
                 }
                 src = null;
                 continue;
@@ -846,7 +932,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     String extendedPath = extendPath(dstPath, dst.getName());
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
-                        copyFile(service, ticket, report, callback, version, src,
+                        copyFile(service, ticket, report, callbacks, version, src,
                                  extendedPath);
                     }
                     src = null;
@@ -863,7 +949,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     String extendedPath = extendPath(dstPath, dst.getName());
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
-                        deployDirectoryPush(service, ticket, report, callback, version, src.getPath(), extendPath(dstPath, dst.getName()), matcher);
+                        deployDirectoryPush(service, ticket, report, callbacks, version, src.getPath(), extendPath(dstPath, dst.getName()), matcher);
                     }
                     src = null;
                     dst = null;
@@ -871,7 +957,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 }
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callback, version, src, dstPath, matcher);
+                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
                 }
                 src = null;
                 dst = null;
@@ -884,9 +970,12 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                         new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                         newDstPath);
-            if (callback != null)
+            if (callbacks != null)
             {
-                callback.eventOccurred(event);
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
             }
             report.add(event);
             dst = null;
@@ -904,7 +993,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param dstPath
      */
     private void copyFile(DeploymentReceiverService service, String ticket,
-                          DeploymentReport report, DeploymentCallback callback, int version,
+                          DeploymentReport report, List<DeploymentCallback> callbacks, int version,
                           AVMNodeDescriptor src, String dstPath)
     {
         InputStream in = fAVMService.getFileInputStream(src);
@@ -916,9 +1005,12 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         new Pair<Integer, String>(version, src.getPath()),
                                                         dstPath);
-            if (callback != null)
+            if (callbacks != null)
             {
-                callback.eventOccurred(event);
+                for (DeploymentCallback callback : callbacks)
+                {
+                    callback.eventOccurred(event);
+                }
             }
             report.add(event);
         }
@@ -940,13 +1032,13 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param parentPath
      */
     private void copy(DeploymentReceiverService service, String ticket,
-                      DeploymentReport report, DeploymentCallback callback,
+                      DeploymentReport report, List<DeploymentCallback> callbacks,
                       int version, AVMNodeDescriptor src, String parentPath, NameMatcher matcher)
     {
         String dstPath = extendPath(parentPath, src.getName());
         if (src.isFile())
         {
-            copyFile(service, ticket, report, callback, version, src, dstPath);
+            copyFile(service, ticket, report, callbacks, version, src, dstPath);
             return;
         }
         // src is a directory.
@@ -954,9 +1046,12 @@ public class DeploymentServiceImpl implements DeploymentService
         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                     new Pair<Integer, String>(version, src.getPath()),
                                                     dstPath);
-        if (callback != null)
+        if (callbacks != null)
         {
-            callback.eventOccurred(event);
+            for (DeploymentCallback callback : callbacks)
+            {
+                callback.eventOccurred(event);
+            }
         }
         report.add(event);
         Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
@@ -964,7 +1059,7 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             if (!excluded(matcher, child.getPath(), null))
             {
-                copy(service, ticket, report, callback, version, child, dstPath, matcher);
+                copy(service, ticket, report, callbacks, version, child, dstPath, matcher);
             }
         }
     }

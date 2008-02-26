@@ -86,6 +86,7 @@ public interface WCMAppModel
     static final QName PROP_DEPLOYSERVERURL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverurl");
     static final QName PROP_DEPLOYSERVERTARGET = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertarget");
     static final QName PROP_DEPLOYSOURCEPATH = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysourcepath");
+    static final QName PROP_DEPLOYEXCLUDES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployexcludes");
     static final QName PROP_DEPLOYSERVERALLOCATEDTO = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverallocatedto");
     static final QName PROP_DEPLOYONAPPROVAL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployonapproval");
     
@@ -111,6 +112,7 @@ public interface WCMAppModel
     static final QName PROP_DEPLOYSERVERUSERNAMEUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverusernameused");
     static final QName PROP_DEPLOYSERVERTARGETUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertargetused");
     static final QName PROP_DEPLOYSOURCEPATHUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysourcepathused");
+    static final QName PROP_DEPLOYEXCLUDESUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployexcludesused");
     static final QName PROP_DEPLOYSERVERURLUSED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverurlused");
     
     // AVM webapp aspect

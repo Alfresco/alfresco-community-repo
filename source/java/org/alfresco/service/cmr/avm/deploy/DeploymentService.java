@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package org.alfresco.service.cmr.avm.deploy;
+
+import java.util.List;
 
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.util.NameMatcher;
@@ -10,7 +12,7 @@ import org.alfresco.util.NameMatcher;
  * A service to handle AVM repository to remote AVM repository deployment.
  * @author britt
  */
-public interface DeploymentService 
+public interface DeploymentService
 {
     /**
      * Deploys the differences between what is is the local source path
@@ -35,8 +37,8 @@ public interface DeploymentService
                                              boolean createDst,
                                              boolean dontDelete,
                                              boolean dontDo,
-                                             DeploymentCallback callback);
-    
+                                             List<DeploymentCallback> callback);
+
     /**
      * Get A reference to an ActionService instance on a remote Alfresco Server.
      * @param hostName
@@ -54,7 +56,7 @@ public interface DeploymentService
      * @param srcPath The path to deploy from.
      * @param hostName The hostname of the filesystem receiver.
      * @param port The port to connect to.
-     * @param userName The username for authentication 
+     * @param userName The username for authentication
      * @param password The password for authentication
      * @param dstTarget The target on the deployment receiver.
      * @param createDst Flag for whether a missing destination should be created.
@@ -68,7 +70,7 @@ public interface DeploymentService
                                                String dstTarget,
                                                NameMatcher matcher,
                                                boolean createDst,
-                                               boolean dontDelete, 
+                                               boolean dontDelete,
                                                boolean dontDo,
-                                               DeploymentCallback callback);
+                                               List<DeploymentCallback> callback);
 }

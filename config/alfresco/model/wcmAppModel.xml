@@ -322,6 +322,10 @@
                <title>Source Path</title>
                <type>d:text</type>
             </property>
+            <property name="wca:deployexcludes">
+               <title>Excludes</title>
+               <type>d:text</type>
+            </property>
             <property name="wca:deployserverallocatedto">
                <title>Allocated To</title>
                <type>d:text</type>
@@ -448,6 +452,10 @@
             </property>
             <property name="wca:deploysourcepathused">
                <title>Source Path Used</title>
+               <type>d:text</type>
+            </property>
+            <property name="wca:deployexcludesused">
+               <title>Excludes Used</title>
                <type>d:text</type>
             </property>
             <property name="wca:deployserverurlused">

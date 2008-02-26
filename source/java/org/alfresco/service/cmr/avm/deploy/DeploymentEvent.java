@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
 
@@ -33,7 +33,7 @@ import org.alfresco.util.Pair;
  * Interface for Deployment Events.
  * @author britt
  */
-public class DeploymentEvent implements Serializable 
+public class DeploymentEvent implements Serializable
 {
     private static final long serialVersionUID = 2696116904379321786L;
 
@@ -47,13 +47,14 @@ public class DeploymentEvent implements Serializable
         UPDATED,   // Overwrote the destination.
         DELETED,   // Deleted the destination node.
         START,     // A Deployment has begun.
-        END        // A Deployment has ended.
+        END,       // A Deployment has ended.
+        FAILED     // A Deployment failed.
     };
-    
+
     private Type fType;
-    
+
     private Pair<Integer, String> fSource;
-    
+
     private String fDestination;
 
     public DeploymentEvent(Type type, Pair<Integer, String> source, String destination)
@@ -62,7 +63,7 @@ public class DeploymentEvent implements Serializable
         fSource = source;
         fDestination = destination;
     }
-    
+
     /**
      * Get the type of the event.
      * @return The type.
@@ -71,7 +72,7 @@ public class DeploymentEvent implements Serializable
     {
         return fType;
     }
-    
+
     /**
      * Get the source node version and path.
      * @return
@@ -89,7 +90,7 @@ public class DeploymentEvent implements Serializable
     {
         return fDestination;
     }
-    
+
     /**
      * Get a String representation.
      */

@@ -30,6 +30,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -137,9 +138,12 @@ public class WorkingCopyAspect
             // Get the origional node
             NodeRef origNodeRef = (NodeRef)this.nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
             if (origNodeRef != null)
-            {                  
-               // Release the lock on the origional node
-               this.lockService.unlock(origNodeRef);                
+            {      
+               if (this.lockService.getLockStatus(origNodeRef).equals(LockStatus.NO_LOCK) == false)
+               {               
+                   // Release the lock on the origional node
+                   this.lockService.unlock(origNodeRef);
+               }
             }
         }
     }

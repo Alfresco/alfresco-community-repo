@@ -28,7 +28,6 @@ package org.alfresco.repo.avm.actions;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,6 +79,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    private String defaultRemoteUsername = "admin";
    private String defaultRemotePassword = "admin";
    private String defaultTargetName = "default";
+   private List<DeploymentCallback> configuredCallbacks;
    private DeploymentService deployService;
    private ContentService contentService;
    private NodeService nodeService;
@@ -175,6 +175,11 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    public void setDefaultTargetName(String defaultTargetName)
    {
       this.defaultTargetName = defaultTargetName;
+   }
+   
+   public void setCallbacks(List<DeploymentCallback> callbacks)
+   {
+      this.configuredCallbacks = callbacks;
    }
 
    /**
@@ -335,6 +340,20 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          patterns.add(excludes);
          regexMatcher.setPatterns(patterns);
       }
+      
+      // create a list of all the callback objects
+      List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
+      if (callback != null)
+      {
+         // if present add the callback passed as a parameter (usually for UI purposes)
+         callbacks.add(callback);
+      }
+      if (this.configuredCallbacks != null && this.configuredCallbacks.size() > 0)
+      {
+         // add the configured callbacks
+         callbacks.addAll(this.configuredCallbacks);
+      }
+      
       // take a note of the current date/time
       Date startDate = new Date();
 
@@ -362,13 +381,6 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                logger.debug("Performing file server deployment to " + host + ":" + port +
                             " using deploymentserver: " + serverProps);
 
-            // TODO: Added new NameMatcher parameter to deploy methods. It acts as a filter.
-            //       Any matching path names are ignored for deployment purposes.
-            List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
-            if (callback != null)
-            {
-                callbacks.add(callback);
-            }
             report = this.deployService.deployDifferenceFS(version, path, host, port,
                      remoteUsername, remotePassword, targetName, regexMatcher, true, false, false, callbacks);
          }
@@ -378,13 +390,6 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                logger.debug("Performing Alfresco deployment to " + host + ":" + port +
                             " using deploymentserver: " + serverProps);
 
-            // TODO: Added new NameMatcher parameter to deploy methods. It acts as a filter.
-            //       Any matching path names are ignored for deployment purposes.
-            List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
-            if (callback != null)
-            {
-                callbacks.add(callback);
-            }
             report = this.deployService.deployDifference(version, path, host, port,
                      remoteUsername, remotePassword, targetPath, regexMatcher, true, false, false, callbacks);
          }
@@ -393,25 +398,6 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       {
          deployError = err;
          logger.error(deployError);
-
-         // report the error to the callback object
-         // TODO: See if this can be incorporated into the DeploymentCallback I/F
-         if (callback != null)
-         {
-            // to avoid a circular dependency use reflection to call the method
-            try
-            {
-               Method method = callback.getClass().getMethod("errorOccurred", new Class[] {Throwable.class});
-               if (method != null)
-               {
-                  method.invoke(callback, new Object[] {err});
-               }
-            }
-            catch (Throwable e)
-            {
-               logger.warn("Failed to inform deployment monitor of deployment failure", e);
-            }
-         }
       }
 
       if (report != null)
@@ -472,8 +458,16 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       reportProps.put(WCMAppModel.PROP_DEPLOYSUCCESSFUL, (report != null));
       if (report == null && error != null)
       {
-         // add error message as fail reason if appropriate
-         reportProps.put(WCMAppModel.PROP_DEPLOYFAILEDREASON, error.getMessage());
+         // add error message as fail reason if appropriate (the reported
+         // exception is a wrapper so get the detail from the cause)
+         String errorMsg = error.getMessage();
+         Throwable cause = error.getCause();
+         if (cause != null)
+         {
+            errorMsg = cause.getMessage();
+         }
+         
+         reportProps.put(WCMAppModel.PROP_DEPLOYFAILEDREASON, errorMsg);
       }
       reportRef = this.nodeService.createNode(attempt,
                WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORTS,

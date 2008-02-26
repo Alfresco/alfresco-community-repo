@@ -50,6 +50,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
     
     public TransactionImpl()
     {
+        this.commitTimeMs = Long.valueOf(0);
     }
 
     @Override

@@ -56,12 +56,21 @@ public class DeploymentEvent implements Serializable
     private Pair<Integer, String> fSource;
 
     private String fDestination;
+    
+    private String fMessage;
 
     public DeploymentEvent(Type type, Pair<Integer, String> source, String destination)
     {
         fType = type;
         fSource = source;
         fDestination = destination;
+    }
+    
+    public DeploymentEvent(Type type, Pair<Integer, String> source, String destination, String message)
+    {
+        this(type, source, destination);
+        
+        fMessage = message;
     }
 
     /**
@@ -90,12 +99,28 @@ public class DeploymentEvent implements Serializable
     {
         return fDestination;
     }
+    
+    /**
+     * Get the message.
+     * @return
+     */
+    public String getMessage()
+    {
+        return fMessage;
+    }
 
     /**
      * Get a String representation.
      */
     public String toString()
     {
-        return fType + ": " + fSource + " -> " + fDestination;
+        String str = fType + ": " + fSource + " -> " + fDestination;
+        
+        if (fMessage != null)
+        {
+           str = str + " (" + fMessage + ")";
+        }
+        
+        return str;
     }
 }

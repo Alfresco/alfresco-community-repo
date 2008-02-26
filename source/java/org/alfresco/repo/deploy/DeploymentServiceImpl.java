@@ -282,7 +282,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
                                                                     new Pair<Integer, String>(version, srcPath),
-                                                                    dstPath);
+                                                                    dstPath, e.getMessage());
                         for (DeploymentCallback callback : callbacks)
                         {
                             callback.eventOccurred(event);
@@ -310,7 +310,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 {
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
                                                                 new Pair<Integer, String>(version, srcPath),
-                                                                dstPath);
+                                                                dstPath, e.getMessage());
                     for (DeploymentCallback callback : callbacks)
                     {
                         callback.eventOccurred(event);
@@ -799,10 +799,11 @@ public class DeploymentServiceImpl implements DeploymentService
                                                List<DeploymentCallback> callbacks)
     {
         DeploymentReport report = new DeploymentReport();
-        DeploymentReceiverService service = getReceiver(hostName, port);
+        DeploymentReceiverService service = null;
         String ticket = null;
         try
         {
+            service = getReceiver(hostName, port);
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                         new Pair<Integer, String>(version, srcPath),
                                                         target);
@@ -840,12 +841,17 @@ public class DeploymentServiceImpl implements DeploymentService
         {
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
                                                         new Pair<Integer, String>(version, srcPath),
-                                                        target);
+                                                        target, e.getMessage());
             for (DeploymentCallback callback : callbacks)
             {
                 callback.eventOccurred(event);
             }
-            service.abort(ticket);
+            
+            if (service != null)
+            {
+                service.abort(ticket);
+            }
+            
             throw new AVMException("Deployment to: " + target + " failed.", e);
         }
     }

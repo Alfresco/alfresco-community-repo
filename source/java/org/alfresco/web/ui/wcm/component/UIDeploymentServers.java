@@ -190,7 +190,7 @@ public class UIDeploymentServers extends UIInput
          out.write("</div>");
          
          out.write("\n<script type='text/javascript'>");
-         out.write("window.onload=Alfresco.checkDeployConfigPage();\n");
+         out.write("YAHOO.util.Event.on(window, \"load\", Alfresco.checkDeployConfigPage);");
          if (currentServer != null)
          {
             out.write("Alfresco.scrollToEditServer('");

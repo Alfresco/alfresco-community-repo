@@ -94,26 +94,21 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
          this.successful = true;
          this.finished = true;
       }
+      else if (event.getType().equals(Type.FAILED))
+      {
+         // if we get the FAILED event the deployment was unsuccessful
+         this.successful = false;
+         this.finished = true;
+         
+         this.reason = event.getMessage();
+      
+         if (logger.isDebugEnabled())
+            logger.debug(this.targetServerName + ": ERROR: " + this.reason);
+      }
       
       if (logger.isDebugEnabled())
          logger.debug(this.targetServerName + ": " + event.getType() + 
                   " " + event.getDestination());
-   }
-   
-   /**
-    * Informs the monitor an error occurred during deployment
-    * 
-    * @param err The error that caused the deployment to fail
-    */
-   public void errorOccurred(Throwable err)
-   {
-      this.reason = err.getMessage();
-      
-      if (logger.isDebugEnabled())
-         logger.debug(this.targetServerName + ": ERROR: " + this.reason); 
-      
-      this.successful = false;
-      this.finished = true;
    }
    
    @Override

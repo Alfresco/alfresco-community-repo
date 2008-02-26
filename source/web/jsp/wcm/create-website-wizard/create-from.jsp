@@ -34,7 +34,7 @@
       <f:selectItem itemValue="existing" itemLabel="#{msg.website_create_existing}:" />
    </h:selectOneRadio>
    <h:panelGroup id="grp-1">
-      <f:verbatim><div style="height:180px;*height:184px;margin-left:28px;width:90%;overflow:auto" class='selectListTable'></f:verbatim>
+      <f:verbatim><div style="height:180px;*height:184px;margin-left:28px;width:90%;overflow-x:none;overflow-y:auto" class='selectListTable'></f:verbatim>
       <a:selectList id="website-list" value="#{WizardManager.bean.sourceWebProject}" style="width:100%" itemStyleClass="selectListItem">
          <a:listItems id="website-items" value="#{WizardManager.bean.webProjectsList}" cacheValue="false" />
       </a:selectList>

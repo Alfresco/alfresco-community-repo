@@ -27,11 +27,13 @@ package org.alfresco.repo.web.scripts.portlet;
 import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.scripts.Authenticator;
@@ -54,6 +56,7 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
 
     // dependencies
     private AuthenticationService authenticationService;
+    private TransactionService transactionService;
     private Repository repository;
     
     /**
@@ -70,6 +73,14 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
     public void setRepository(Repository repository)
     {
         this.repository = repository;
+    }
+    
+    /**
+     * @param transactionService
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /* (non-Javadoc)
@@ -173,14 +184,28 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
          */
         private void createWebClientUser(PortletSession session)
         {
-            NodeRef personRef = repository.getPerson();
-            User user = new User(authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), personRef);
-            NodeRef homeRef = repository.getUserHome(personRef);
-            if (homeRef != null)
+            UserTransaction tx = null;
+            try
             {
-                user.setHomeSpaceId(homeRef.getId());
+                // start a txn as this method interacts with public services
+                tx = transactionService.getUserTransaction();
+                tx.begin();
+   
+                NodeRef personRef = repository.getPerson();
+                User user = new User(authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), personRef);
+                NodeRef homeRef = repository.getUserHome(personRef);
+                if (homeRef != null)
+                {
+                    user.setHomeSpaceId(homeRef.getId());
+                }
+                session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user, PortletSession.APPLICATION_SCOPE);
+    
+                tx.commit();
             }
-            session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user, PortletSession.APPLICATION_SCOPE);
+            catch (Throwable e)
+            {
+                try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            }
         }
         
         /**

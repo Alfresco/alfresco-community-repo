@@ -149,6 +149,7 @@
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory">
       <property name="repository" ref="webscripts.repo" />
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="transactionService" ref="TransactionService" />
    </bean>
 
    <!--  Facebook Authenticator -->

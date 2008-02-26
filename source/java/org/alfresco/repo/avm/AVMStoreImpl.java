@@ -247,10 +247,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
             */
         }
         // Clear out the new nodes.
-        List<AVMNode> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStore(this);
+        List<Long> newInRep = AVMDAOs.Instance().fAVMNodeDAO.getNewInStoreIDs(this);
         List<AVMNode> layeredNodes = new ArrayList<AVMNode>();
-        for (AVMNode newGuy : newInRep)
+        for (Long newGuyID : newInRep)
         {
+            AVMNode newGuy = AVMDAOs.Instance().fAVMNodeDAO.getByID(newGuyID);
             newGuy.setStoreNew(null);
             Layered layered = null;
             if (newGuy.getType() == AVMNodeType.LAYERED_DIRECTORY &&
@@ -284,6 +285,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 {
                     layered.setIndirectionVersion(snapShotMap.get(storeName));
                 }
+            }
+            else
+            {
+                AVMDAOs.Instance().fAVMNodeDAO.evict(newGuy);
             }
         }
         // Make up a new version record.

@@ -987,22 +987,25 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 			
 			if (logger.isDebugEnabled() == true && copiedFrom != null) {logger.debug(" >> Got the copedFrom nodeRef (" + copiedFrom.getId() + ")");};
 			
-			if (copiedFrom != null && executedRules.contains(new ExecutedRuleData(copiedFrom, rule)) == true)
+			if (copiedFrom != null)
 			{
-				if (logger.isDebugEnabled() == true)
+				if (executedRules.contains(new ExecutedRuleData(copiedFrom, rule)) == true)
 				{
-					logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this the copied from nodeRef (" + copiedFrom.getId() + ")");
+					if (logger.isDebugEnabled() == true)
+					{
+						logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this the copied from nodeRef (" + copiedFrom.getId() + ")");
+					}
+					return false;
 				}
-				return false;
-			}
-			else
-			{
-				if (logger.isDebugEnabled() == true)
+				else
 				{
-					logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") copiedFrom is not is list");
-					logger.debug("  > Checking copy");
+					if (logger.isDebugEnabled() == true)
+					{
+						logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") copiedFrom is not is list");
+						logger.debug("  > Checking copy");
+					}
+					result = checkForCopy(executedRules, copiedFrom, rule);
 				}
-				result = checkForCopy(executedRules, copiedFrom, rule);
 			}
 		}
 		else

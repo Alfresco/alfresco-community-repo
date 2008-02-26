@@ -10,22 +10,22 @@
     <class table="avm_nodes" abstract="true"
         name="AVMNodeImpl"
         proxy="AVMNode"
-        optimistic-lock="version" 
+        optimistic-lock="version"
         lazy="true">
         <cache usage="read-write"/>
         <!-- The id is set programmatically using an Issuer.  See below. -->
-        <id name="id" 
-            column="id" 
+        <id name="id"
+            column="id"
             type="long"/>
-        <!-- I suppose this would be more efficient to encode type by an int. 
+        <!-- I suppose this would be more efficient to encode type by an int.
              We'll see if using a string makes a difference. -->
-        <discriminator column="class_type" 
-                       type="string" 
+        <discriminator column="class_type"
+                       type="string"
                        length="20"/>
         <!-- We're using hibernate's own versioning scheme for concurrency control.
              I don't know how well that will play with a full Spring-JTA stack. -->
-        <version column="vers" 
-                 name="vers" 
+        <version column="vers"
+                 name="vers"
                  type="long"/>
         <!-- This should really be not null, but I haven't figured out
              the right way to build the relation so that nullability constraints
@@ -75,8 +75,8 @@
             <property name="deletedType" type="int"/>
         </subclass>
         <!-- Directories, two flavors. -->
-        <subclass name="DirectoryNodeImpl" 
-                  proxy="DirectoryNode" 
+        <subclass name="DirectoryNodeImpl"
+                  proxy="DirectoryNode"
                   abstract="true"
                   lazy="true">
             <!-- A Layered Directory is our smart symlink thingy. -->
@@ -221,7 +221,7 @@
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
        </component>
     </class>
-    <!-- Aspect name table for AVM Nodes. -->       
+    <!-- Aspect name table for AVM Nodes. -->
     <class name="AVMAspectNameImpl" proxy="AVMAspectName" table="avm_aspects">
         <id name="id" column="id" type="long">
             <generator class="native"/>
@@ -230,7 +230,7 @@
         <property name="name" column="qname" type="QName" length="200"/>
     </class>
     <!-- When a snapshot is created we stow away all of the layered
-         nodes that were frozen by the snapshot so that subsequent 
+         nodes that were frozen by the snapshot so that subsequent
          snapshots can find them and force copies. -->
     <class name="VersionLayeredNodeEntryImpl" proxy="VersionLayeredNodeEntry"
            table="avm_version_layered_node_entry">
@@ -252,9 +252,16 @@
         where an.storeNew = :store
     ]]>
     </query>
+    <query name="AVMNode.GetNewInStoreID">
+    <![CDATA[
+        select an.id
+        from AVMNodeImpl an
+        where an.storeNew = :store
+    ]]>
+    </query>
     <query name="AVMNode.GetDescendents">
     <![CDATA[
-        select hl.descendent 
+        select hl.descendent
         from HistoryLinkImpl hl
         where hl.ancestor = :node
     ]]>
@@ -295,10 +302,10 @@
     </query>
     <query name="FindOrphans">
     <![CDATA[
-        from AVMNodeImpl an 
+        from AVMNodeImpl an
         where
-            an not in ( select ce.child 
-                        from ChildEntryImpl ce ) 
+            an not in ( select ce.child
+                        from ChildEntryImpl ce )
             and an.isRoot = false
     ]]>
     </query>
@@ -311,5 +318,5 @@
         where pfn.contentURL is not null
     ]]>
     </query>
-            
+
 </hibernate-mapping>

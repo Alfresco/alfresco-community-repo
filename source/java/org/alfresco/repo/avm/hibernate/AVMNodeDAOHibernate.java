@@ -170,6 +170,17 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         return (List<AVMNode>)query.list();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#getNewInStoreIDs(org.alfresco.repo.avm.AVMStore)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Long> getNewInStoreIDs(AVMStore store)
+    {
+        Query query = getSession().getNamedQuery("AVMNode.GetNewInStoreID");
+        query.setEntity("store", store);
+        return (List<Long>)query.list();
+    }
+
     /**
      * Inappropriate hack to get Hibernate to play nice.
      */
@@ -218,5 +229,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      */
     public void evict(AVMNode node)
     {
+        getSession().flush();
+        getSession().evict(node);
     }
 }

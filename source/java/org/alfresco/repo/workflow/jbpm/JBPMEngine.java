@@ -2557,7 +2557,8 @@ public class JBPMEngine extends BPMEngine
     private QName mapNameToQName(String name)
     {
         QName qname = null;
-        String qnameStr = name.replaceFirst("_", ":");
+        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
+        String qnameStr = (name.indexOf('}') == -1) ? name.replaceFirst("_", ":") : name.replace("}", ":");
         try
         {
             qname = QName.createQName(qnameStr, this.namespaceService);
@@ -2577,7 +2578,13 @@ public class JBPMEngine extends BPMEngine
      */
     private String mapQNameToName(QName name)
     {
+        // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
+        // NOTE: Use new scheme 
         String nameStr = name.toPrefixString(this.namespaceService);
+        if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
+        {
+            return nameStr.replace(':', '}');
+        }
         return nameStr.replace(':', '_');
     }
     

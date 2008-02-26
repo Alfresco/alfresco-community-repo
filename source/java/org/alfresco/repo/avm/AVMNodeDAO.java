@@ -96,6 +96,13 @@ public interface AVMNodeDAO
     public List<AVMNode> getNewInStore(AVMStore store);
 
     /**
+     * Get the id's of all AVMNodes new in a given store.
+     * @param store
+     * @return
+     */
+    public List<Long> getNewInStoreIDs(AVMStore store);
+
+    /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush();

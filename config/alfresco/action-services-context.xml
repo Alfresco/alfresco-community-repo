@@ -413,6 +413,9 @@
         <property name="ruleService">
             <ref bean="RuleService" />
         </property>
+        <property name="runtimeRuleService">
+            <ref bean="ruleService" />
+        </property>
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property>

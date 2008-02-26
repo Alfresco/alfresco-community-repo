@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -63,6 +64,11 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     private RuleService ruleService;
     
     /**
+     * The runtime rule service
+     */
+    private RuntimeRuleService runtimeRuleService;
+    
+    /**
      * The action service
      */
     private ActionService actionService;
@@ -88,6 +94,16 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+    
+    /**
+     * Set the runtime rule service
+     * 
+     * @param runtimeRuleService the runtime rule service
+     */
+    public void setRuntimeRuleService(RuntimeRuleService runtimeRuleService)
+    {
+       this.runtimeRuleService = runtimeRuleService;
     }
     
     /**
@@ -125,7 +141,7 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                 includeInherited = includeInheritedValue.booleanValue();
             }
             
-		    // Get the rules
+		      // Get the rules
             List<Rule> rules = this.ruleService.getRules(actionedUponNodeRef, includeInherited);
             if (rules != null && rules.isEmpty() == false)
             {
@@ -140,12 +156,17 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                     if (this.dictionaryService.isSubClass(this.nodeService.getType(child), ContentModel.TYPE_SYSTEM_FOLDER) == false)
                     {
                         for (Rule rule : rules)
-                        {                     
-                            Action action = rule.getAction();
-                            if (action != null)
-                            {
-                                this.actionService.executeAction(action, child);
-                            }
+                        {       
+                           // Only reapply rules that are enabled
+                           if (rule.getRuleDisabled() == false)
+                           {
+                               Action action = rule.getAction();
+                               if (action != null)
+                               {
+                                   //this.actionService.executeAction(action, child);
+                                  this.runtimeRuleService.addRulePendingExecution(actionedUponNodeRef, child, rule);
+                               }
+                           }
                         }
                     }
                 }

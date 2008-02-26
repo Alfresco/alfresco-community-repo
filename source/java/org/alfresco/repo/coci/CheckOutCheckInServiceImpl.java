@@ -50,7 +50,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Version opertaions service implementation
+ * Version operations service implementation
  * 
  * @author Roy Wetherall
  */
@@ -105,6 +105,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     /**
      * The versionable aspect behaviour implementation
      */
+    @SuppressWarnings("unused")
     private VersionableAspect versionableAspect;
     
     /**
@@ -374,7 +375,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 if (keepCheckedOut == false)
                 {
                     // Delete the working copy
-                    this.nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
                     this.nodeService.deleteNode(workingCopyNodeRef);                            
                 }
                 else
@@ -448,7 +448,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             this.lockService.unlock(nodeRef);
             
             // Delete the working copy
-            this.nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
             this.nodeService.deleteNode(workingCopyNodeRef);
         }
         else

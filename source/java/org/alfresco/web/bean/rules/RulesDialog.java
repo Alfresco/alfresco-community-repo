@@ -41,9 +41,12 @@ import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -85,8 +88,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    private List<WrappedRule> rules;
    transient private Rule currentRule;
    private UIRichList richList;
-   transient private ActionService actionService;
-   
+   transient private ActionService actionService;   
    
    /**
     * Default constructor
@@ -176,8 +178,16 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
     */
    public void reapplyRules(ActionEvent event)
    {
-      FacesContext fc = FacesContext.getCurrentInstance();
-      
+      boolean toChildren = false;
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String toChildrenStr = params.get("toChildren");
+      if (toChildrenStr != null)
+      {
+          toChildren = new Boolean(toChildrenStr).booleanValue();
+      }
+       
+      FacesContext fc = FacesContext.getCurrentInstance();      
       UserTransaction tx = null;
       
       try
@@ -185,19 +195,15 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
          tx = Repository.getUserTransaction(fc);
          tx.begin();
          
-         // Create the the apply rules action
-         Action action = this.getActionService().createAction(ExecuteAllRulesActionExecuter.NAME);
-         
          // Set the include inherited parameter to match the current filter value
          boolean executeInherited = true;
-         if (LOCAL.equals(this.getFilterMode()) == true)
+         if (this.filterModeMode.equals(LOCAL))
          {
             executeInherited = false;
          }
-         action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, executeInherited);
          
-         // Execute the action
-         this.getActionService().executeAction(action, this.getSpace().getNodeRef());
+         // Reapply the rules
+         reapplyRules(this.getSpace().getNodeRef(), executeInherited, toChildren);
          
          // TODO how do I get the message here ...
          String msg = Application.getMessage(fc, MSG_REAPPLY_RULES_SUCCESS);
@@ -214,6 +220,30 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
          try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
+      }
+   }
+   
+   private void reapplyRules(NodeRef space, boolean executeInherited, boolean toChildren)
+   {
+      // Create the the apply rules action
+      Action action = this.getActionService().createAction(ExecuteAllRulesActionExecuter.NAME);
+      action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, executeInherited);
+       
+      // Execute the action
+      this.getActionService().executeAction(action, space);
+      
+      if (toChildren == true)
+      {
+         List <ChildAssociationRef> assocs = getNodeService().getChildAssocs(space, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+         for (ChildAssociationRef assoc : assocs)
+         {
+            NodeRef nodeRef = assoc.getChildRef();
+            QName className = getNodeService().getType(nodeRef);
+            if (getDictionaryService().isSubClass(className, ContentModel.TYPE_FOLDER) == true)
+            {
+               reapplyRules(nodeRef, executeInherited, toChildren);
+            }
+         }
       }
    }
    

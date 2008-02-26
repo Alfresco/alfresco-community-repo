@@ -638,7 +638,19 @@
          <action id="reapply-rules">
             <label-id>reapply_rules</label-id>
             <image>/images/icons/reapply_rules.gif</image>
-            <action-listener>#{RulesDialog.reapplyRules}</action-listener>
+            <action-listener>#{RulesDialog.reapplyRules}</action-listener>            
+            <params>
+               <param name="toChildren">False</param>
+            </params>            
+         </action>   
+               
+         <action id="reapply-rules-to-children">
+            <label-id>reapply_rules_to_children</label-id>
+            <image>/images/icons/reapply_rules.gif</image>
+            <action-listener>#{RulesDialog.reapplyRules}</action-listener>           
+            <params>
+               <param name="toChildren">True</param>
+            </params>
          </action>
 
          <!-- Ignore Inherited Rules -->
@@ -728,22 +740,7 @@
             <label-id>create_rule</label-id>
             <image>/images/icons/new_rule.gif</image>
             <action>wizard:createRule</action>
-         </action>
-         
-          <!-- ReApply Rules -->
-         <action id="reapply-rules">
-            <label-id>reapply_rules</label-id>
-            <image>/images/icons/reapply_rules.gif</image>
-            <action-listener>#{RulesDialog.reapplyRules}</action-listener>
-         </action>
-
-         <!-- Ignore Inherited Rules -->
-         <action id="ignore-inherited-rules">
-            <label>#{RulesDialog.ignoreInheritedRulesLabelId}</label>
-            <image>/images/icons/reapply_rules.gif</image>
-            <action-listener>#{RulesDialog.ignoreInheritedRules}</action-listener>
-         </action>
-         
+         </action>       
          
          <!-- Create a category -->
          <action id="add_category">
@@ -1034,7 +1031,8 @@
 
          <!-- Actions Menu for Manage Rules screen -->
          <action-group id="rules_actions_menu">
-            <action idref="reapply-rules" />
+            <action idref="reapply-rules" />            
+            <action idref="reapply-rules-to-children" />
             <action idref="ignore-inherited-rules" />
          </action-group>
 
@@ -1084,12 +1082,6 @@
          <action-group id="create_rule_menu">
             <action idref="create_rule"/>
          </action-group> 
-         
-         <!-- Actions Menu for Manage Rules screen -->
-         <action-group id="rules_actions_menu">
-            <action idref="reapply-rules" />
-            <action idref="ignore-inherited-rules" />
-         </action-group>
          
          <!-- Actions Menu for Manage Deleted Items screen -->
          <action-group id="manage_deleted_items_menu">

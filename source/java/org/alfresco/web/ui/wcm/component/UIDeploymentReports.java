@@ -29,7 +29,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIParameter;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -51,9 +54,12 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
+import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.repo.component.UIActions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
@@ -65,7 +71,22 @@ import org.springframework.util.StringUtils;
  */
 public class UIDeploymentReports extends SelfRenderingComponent
 {
+   // date filters
+   public static final String FILTER_DATE_TODAY       = "today";
+   public static final String FILTER_DATE_YESTERDAY   = "yesterday";
+   public static final String FILTER_DATE_WEEK        = "week";
+   public static final String FILTER_DATE_MONTH       = "month";
+   public static final String FILTER_DATE_ALL         = "all";
+   
    protected String store;
+   protected String dateFilter;
+   protected Boolean showPrevious;
+   protected NodeRef attempt;
+   
+   private static final String MSG_ATTEMPT_DATE = "deploy_attempt_date";
+   private static final String MSG_SERVERS = "deployed_to_servers";
+   private static final String MSG_SNAPSHOT = "snapshot";
+   private static final String MSG_SELECT_ATTEMPT = "select_deploy_attempt";
    
    private static Log logger = LogFactory.getLog(UIDeploymentReports.class);
    
@@ -86,14 +107,20 @@ public class UIDeploymentReports extends SelfRenderingComponent
       // standard component attributes are restored by the super class
       super.restoreState(context, values[0]);
       this.store = (String)values[1];
+      this.dateFilter = (String)values[2];
+      this.showPrevious = (Boolean)values[3];
+      this.attempt = (NodeRef)values[4];
    }
    
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[2];
+      Object values[] = new Object[5];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.store;
+      values[2] = this.dateFilter;
+      values[3] = this.showPrevious;
+      values[4] = this.attempt;
       return values;
    }
    
@@ -121,50 +148,14 @@ public class UIDeploymentReports extends SelfRenderingComponent
             throw new IllegalArgumentException("The store must be specified.");
          }
          
-         if (logger.isDebugEnabled())
-            logger.debug("Rendering deployment reports for store: " + storeName);
-         
-         NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
-         ContentService contentService = Repository.getServiceRegistry(context).getContentService();
-         AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
-         
-         PropertyValue val = avmService.getStoreProperty(storeName, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
-         String attemptId = null;
-         
-         if (val != null)
+         boolean showPrevious = getShowPrevious();
+         if (showPrevious)
          {
-            attemptId = val.getStringValue();
+            renderPreviousReports(context, out, storeName);
          }
-         
-         if (attemptId == null || attemptId.length() == 0)
+         else
          {
-            throw new IllegalStateException("Failed to retrieve deployment attempt id");
-         }
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Retrieving deployment reports for attempt id: " + attemptId);
-         
-         // get the deploymentattempt object
-         NodeRef attempt = DeploymentUtil.findDeploymentAttempt(attemptId);
-         
-         if (attempt != null)
-         {
-            // render the supporting JavaScript
-            out.write("<script type='text/javascript' src='");
-            out.write(context.getExternalContext().getRequestContextPath());
-            out.write("/scripts/ajax/deployment.js'></script>\n");
-            
-            // iterate through each deployment report
-            List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                     attempt, WCMAppModel.ASSOC_DEPLOYMENTREPORTS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef ref : deployReportRefs)
-            {
-               // render each report
-               renderReport(context, out, ref.getChildRef(), nodeService, contentService);
-            }
-            
-            // add some padding after the panels
-            out.write("\n<div style='padding-top:8px;'></div>\n");
+            renderAttempt(context, out, storeName);
          }
          
          tx.commit();
@@ -201,10 +192,262 @@ public class UIDeploymentReports extends SelfRenderingComponent
       this.store = value;
    }
    
+   /**
+    * @return The current dateFilter if previous reports are being shown
+    */
+   public String getDateFilter()
+   {
+      ValueBinding vb = getValueBinding("dateFilter");
+      if (vb != null)
+      {
+         this.dateFilter = (String)vb.getValue(getFacesContext());
+      }
+      
+      return this.dateFilter;
+   }
+   
+   /**
+    * @param value The dateFilter to use when previous reports are being shown
+    */
+   public void setDateFilter(String value)
+   {
+      this.dateFilter = value;
+   }
+   
+   /**
+    * @return true if the component should show previous reports
+    */
+   public boolean getShowPrevious()
+   {
+      ValueBinding vb = getValueBinding("showPrevious");
+      if (vb != null)
+      {
+         this.showPrevious = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      if (this.showPrevious == null)
+      {
+         this.showPrevious = Boolean.FALSE;
+      }
+      
+      return this.showPrevious.booleanValue();
+   }
+   
+   /**
+    * @param showPrevious Determines whether previous reports are shown
+    */
+   public void setShowPrevious(boolean showPrevious)
+   {
+      this.showPrevious = new Boolean(showPrevious);
+   }
+   
+   /**
+    * @return NodeRef of the deploymentattempt to show the details for 
+    */
+   public NodeRef getAttempt()
+   {
+      ValueBinding vb = getValueBinding("attempt");
+      if (vb != null)
+      {
+         this.attempt = (NodeRef)vb.getValue(getFacesContext());
+      }
+      
+      return this.attempt;
+   }
+   
+   /**
+    * @param value The NodeRef of the deploymentattempt to show the details for
+    */
+   public void setAttempt(NodeRef value)
+   {
+      this.attempt = value;
+   }
+   
    // ------------------------------------------------------------------------------
    // Helpers
    
-   private void renderReport(FacesContext context, ResponseWriter out, NodeRef deploymentReport,
+   @SuppressWarnings("unchecked")
+   protected void renderPreviousReports(FacesContext context, ResponseWriter out, String store)
+      throws IOException
+   {
+      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+      ResourceBundle bundle = Application.getBundle(context);
+      
+      List<NodeRef> deployAttempts = null;
+      String dateFilter = getDateFilter();
+      
+      if (logger.isDebugEnabled())
+         logger.debug("Rendering previous deployment reports for store '" + store +
+                  "' using dateFilter: " + dateFilter);
+      
+      if (dateFilter == null || dateFilter.equals(FILTER_DATE_ALL))
+      {
+         deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
+      }
+      else
+      {
+         // get today's date
+         Date toDate = new Date();
+         
+         // calculate the from date
+         Date fromDate;
+         if (FILTER_DATE_TODAY.equals(dateFilter))
+         {
+            fromDate = toDate;
+         }
+         else if (FILTER_DATE_YESTERDAY.equals(dateFilter))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L));
+            toDate = fromDate;
+         }
+         else if (FILTER_DATE_WEEK.equals(dateFilter))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*7L));
+         }
+         else if (FILTER_DATE_MONTH.equals(dateFilter))
+         {
+            fromDate = new Date(toDate.getTime() - (1000L*60L*60L*24L*30L));
+         }
+         else
+         {
+            throw new IllegalArgumentException("Unknown date filter mode: " + dateFilter);
+         }
+         
+         // get the filtered list of attempts
+         deployAttempts = DeploymentUtil.findDeploymentAttempts(store, fromDate, toDate);
+      }
+      
+      if (deployAttempts.size() > 0)
+      {
+         out.write("<table class='deployMoreReportsList' cellspacing='3' cellpadding='3' width='100%'>");
+         out.write("<tr><th align='left'><nobr>");
+         out.write(bundle.getString(MSG_ATTEMPT_DATE));
+         out.write("</nobr></th><th align='left'><nobr>");
+         out.write(bundle.getString(MSG_SERVERS));
+         out.write("</nobr></th><th align='left'><nobr>");
+         out.write(bundle.getString(MSG_SNAPSHOT));
+         out.write("</th></tr>");
+         
+         for (NodeRef attempt : deployAttempts)
+         {
+            Map<QName, Serializable> props = nodeService.getProperties(attempt);
+            String attemptId = (String)props.get(WCMAppModel.PROP_DEPLOYATTEMPTID);
+            Date attemptTime = (Date)props.get(WCMAppModel.PROP_DEPLOYATTEMPTTIME);
+            Integer version = (Integer)props.get(WCMAppModel.PROP_DEPLOYATTEMPTVERSION);
+            List<String> servers = (List<String>)props.get(WCMAppModel.PROP_DEPLOYATTEMPTSERVERS);
+            StringBuilder buffer = new StringBuilder();
+            if (servers != null)
+            {
+               for (String server : servers)
+               {
+                  if (buffer.length() != 0)
+                  {
+                     buffer.append(", ");
+                  }
+                  
+                  buffer.append(server);
+               }
+            }
+            
+            // format the date using the default pattern
+            String attemptDate = Utils.getDateTimeFormat(context).format(attemptTime);
+            
+            out.write("<tr><td><nobr>");
+            Utils.encodeRecursive(context, 
+                     aquireViewAttemptAction(context, attemptId, attempt, attemptDate));
+            out.write("</nobr></td><td>");
+            out.write(buffer.toString());
+            out.write("</td><td>");
+            if (version != null)
+            {
+               out.write(version.toString());
+            }
+            out.write("</td></tr>");
+         }
+         
+         out.write("</table>");
+      }
+      else
+      {
+         out.write("<div class='deployServersInfo'>");
+         out.write(Application.getMessage(context, "no_deploy_attempts"));
+         out.write("</div>\n");
+      }
+   }
+   
+   protected void renderAttempt(FacesContext context, ResponseWriter out, String store)
+      throws IOException
+   {
+      // get services required
+      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+      ContentService contentService = Repository.getServiceRegistry(context).getContentService();
+      AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
+
+      // get the attempt node to show (if any)
+      NodeRef attempt = getAttempt();
+      if (attempt == null)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("Rendering last deployment report for store: " + store);
+         
+         // get the last deployment attempt id, then locate the deploymentattempt node
+         PropertyValue val = avmService.getStoreProperty(store, SandboxConstants.PROP_LAST_DEPLOYMENT_ID);
+         String attemptId = null;
+         
+         if (val != null)
+         {
+            attemptId = val.getStringValue();
+         }
+         
+         if (attemptId == null || attemptId.length() == 0)
+         {
+            throw new IllegalStateException("Failed to retrieve deployment attempt id");
+         }
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Retrieving deploymentattempt node with attempt id: " + attemptId);
+         
+         // get the deploymentattempt object
+         attempt = DeploymentUtil.findDeploymentAttempt(attemptId);
+      }
+      
+      // if we have an attempt node, render it
+      if (attempt != null)
+      {
+         if (logger.isDebugEnabled())
+            logger.debug("Rendering deployment reports for attempt: " + attempt);
+         
+         // render the supporting JavaScript
+         out.write("<script type='text/javascript' src='");
+         out.write(context.getExternalContext().getRequestContextPath());
+         out.write("/scripts/ajax/deployment.js'></script>\n");
+         
+         // iterate through each deployment report
+         List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
+                  attempt, WCMAppModel.ASSOC_DEPLOYMENTREPORTS, RegexQNamePattern.MATCH_ALL);
+         if (deployReportRefs.size() > 0)
+         {
+            for (ChildAssociationRef ref : deployReportRefs)
+            {
+               // render each report
+               renderReport(context, out, ref.getChildRef(), nodeService, contentService);
+            }
+         }
+         else
+         {
+            out.write("<div class='deployInProgress'><img src='");
+            out.write(context.getExternalContext().getRequestContextPath());
+            out.write("/images/icons/info_icon_large.gif' />&nbsp;");
+            out.write(Application.getMessage(context, "no_deploy_reports"));
+            out.write("</div>\n");
+         }
+         
+         // add some padding after the panels
+         out.write("\n<div style='padding-top:12px;'></div>\n");
+      }
+   }
+   
+   protected void renderReport(FacesContext context, ResponseWriter out, NodeRef deploymentReport,
             NodeService nodeService, ContentService contentService)
       throws IOException
    {
@@ -260,6 +503,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       String username = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERUSERNAMEUSED);
       String source = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATHUSED);
       String target = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERTARGETUSED);
+      String excludes = (String)serverProps.get(WCMAppModel.PROP_DEPLOYEXCLUDESUSED);
       String failReason = (String)serverProps.get(WCMAppModel.PROP_DEPLOYFAILEDREASON);
       
       String content = "";
@@ -374,6 +618,15 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("</div>");
       }
       
+      if (excludes != null)
+      {
+         out.write("<div style='margin-top: 3px;'>");
+         out.write(Application.getMessage(context, "deploy_server_excludes"));
+         out.write(":&nbsp;");
+         out.write(excludes);
+         out.write("</div>");
+      }
+      
       if (target != null)
       {
          out.write("<div style='margin-top: 3px;'>");
@@ -415,5 +668,54 @@ public class UIDeploymentReports extends SelfRenderingComponent
       // finish the surrounding panel
       PanelGenerator.generatePanelEnd(out, 
                context.getExternalContext().getRequestContextPath(), "lightstorm");
+   }
+   
+   @SuppressWarnings("unchecked")
+   protected UIActionLink aquireViewAttemptAction(FacesContext context, 
+            String attemptId, NodeRef attemptRef, String attemptDate)
+   {
+      UIActionLink action = null;
+      String actionId = "va_" + attemptId;
+      
+      // try find the action as a child of this component
+      for (UIComponent component : (List<UIComponent>)getChildren())
+      {
+         if (actionId.equals(component.getId()))
+         {
+            action = (UIActionLink)component;
+            break;
+         }
+      }
+      
+      if (action == null)
+      {
+         // create the action and add as a child component
+         javax.faces.application.Application facesApp = context.getApplication();
+         action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
+         action.setId(actionId);
+         action.setValue(attemptDate);
+         action.setTooltip(Application.getMessage(context, MSG_SELECT_ATTEMPT));
+         action.setShowLink(true);
+         action.setActionListener(facesApp.createMethodBinding(
+               "#{DialogManager.bean.attemptSelected}", UIActions.ACTION_CLASS_ARGS));
+         
+         // add attemptRef param
+         UIParameter param1 = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param1.setId(actionId + "_1");
+         param1.setName("attemptRef");
+         param1.setValue(attemptRef.toString());
+         action.getChildren().add(param1);
+         
+         // add attemptDate param
+         UIParameter param2 = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+         param2.setId(actionId + "_2");
+         param2.setName("attemptDate");
+         param2.setValue(attemptDate);
+         action.getChildren().add(param2);
+         
+         this.getChildren().add(action);
+      }
+      
+      return action;
    }
 }

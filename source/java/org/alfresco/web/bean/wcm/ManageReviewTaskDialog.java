@@ -32,7 +32,6 @@ import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.linkvalidation.LinkValidationReport;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,11 +44,11 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean implementation for the "Manage Task" dialog when dealing
- * with link validation related WCM tasks.
+ * with review related WCM tasks.
  * 
  * @author gavinc
  */
-public class ManageLinkValidationTaskDialog extends ManageTaskDialog
+public class ManageReviewTaskDialog extends ManageTaskDialog
 {
    private static final long serialVersionUID = 59524560340308134L;
    
@@ -58,7 +57,7 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
    protected NodeRef webProjectRef;
    protected AVMBrowseBean avmBrowseBean;
    
-   private static final Log logger = LogFactory.getLog(ManageLinkValidationTaskDialog.class);
+   private static final Log logger = LogFactory.getLog(ManageReviewTaskDialog.class);
    
    // ------------------------------------------------------------------------------
    // Implementation
@@ -87,9 +86,6 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
          // get the web project noderef for the workflow store
          String stagingStore = AVMUtil.getStoreId(this.store);
          this.webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStore);
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Retrieving link validation report from store '" + this.store + "'");
          
          PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);
@@ -130,8 +126,8 @@ public class ManageLinkValidationTaskDialog extends ManageTaskDialog
    public String viewLinkReport()
    {
       if (logger.isDebugEnabled())
-         logger.debug("Viewing link validation report for webapp '" + 
-                      AVMUtil.buildStoreWebappPath(this.store, this.webapp) + "'");
+         logger.debug("Viewing link validation report for: " + 
+                      AVMUtil.buildStoreWebappPath(this.store, this.webapp));
       
       Map<String, String> params = new HashMap<String, String>(3);
       params.put("store", this.store);

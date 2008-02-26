@@ -747,7 +747,7 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
 
 .deployConfigServerDetailsRightCol
 {
-   margin-left: 100px;
+   margin-right: 140px;
 }
 
 .deployConfigServerForm
@@ -826,6 +826,35 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    font-size: 14px; 
    font-weight: bold; 
    padding-bottom: 2px;
+}
+
+.deployInProgress
+{
+   margin: 8px 0px 6px 6px;
+}
+
+.deployInProgress img
+{
+   vertical-align: -14px;
+}
+   
+.deployReviewTaskActions img
+{
+   margin-left: 4px;
+}
+
+.deployMoreReportsPanel
+{
+   margin: 10px 0px 0px 14px;
+}
+   
+.deployMoreReportsList
+{
+   background-color: #f5f5f5;
+   border-width: 1px;
+   border-style: solid;
+   border-color: #DDDDDD;
+   margin-bottom: 4px;
 }
 
 .summaryDropShadow 

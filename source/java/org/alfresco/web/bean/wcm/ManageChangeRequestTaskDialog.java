@@ -77,10 +77,6 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
    {
       super.init(parameters);
       
-      // reset any link validation state from other WCM task dialogs
-      this.avmBrowseBean.setLinkValidationState(null);
-      this.avmBrowseBean.setLinkValidationMonitor(null);
-      
       // reset the doResubmit flag
       this.doResubmitNow = false;
    }

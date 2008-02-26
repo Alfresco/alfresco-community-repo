@@ -75,6 +75,7 @@ public class UIDeploymentServers extends UIInput
    private static final String MSG_ALLOCATED = "deploy_server_allocated";
    private static final String MSG_SOURCE = "deploy_server_source_path";
    private static final String MSG_TARGET = "deploy_server_target_name";
+   private static final String MSG_EXCLUDES = "deploy_server_excludes";
    private static final String MSG_AUTO_DEPLOY = "deploy_automatically";
    private static final String MSG_EDIT = "edit_deploy_server";
    private static final String MSG_DELETE = "delete_deploy_server";
@@ -189,8 +190,14 @@ public class UIDeploymentServers extends UIInput
          out.write("</div>");
          
          out.write("\n<script type='text/javascript'>");
-         out.write("window.onload=Alfresco.checkDeployConfigPage();");
-         out.write("</script>");
+         out.write("window.onload=Alfresco.checkDeployConfigPage();\n");
+         if (currentServer != null)
+         {
+            out.write("Alfresco.scrollToEditServer('");
+            out.write(currentServer.getId());
+            out.write("');\n");
+         }
+         out.write("</script>\n");
          
          tx.commit();
       }
@@ -334,7 +341,7 @@ public class UIDeploymentServers extends UIInput
       out.write("</div></td></tr>");
       out.write("<tr><td colspan='3'>");
       out.write("<table cellpadding='0' cellspacing='0'>");
-      out.write("<tr><td><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsLeftCol'>");
+      out.write("<tr><td width='100%'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsLeftCol'>");
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_HOST));
       out.write(":</td><td>");
@@ -389,20 +396,29 @@ public class UIDeploymentServers extends UIInput
       out.write("</td></tr></table></td>"); 
       out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
       
-      out.write("<tr><td align='right'>");
+      out.write("<tr><td align='right'><nobr>");
       out.write(bundle.getString(MSG_SOURCE));
-      out.write(":</td><td>");
+      out.write(":</nobr></td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH));
       }
       out.write("</td></tr>");
       
+      out.write("<tr><td align='right'><nobr>");
+      out.write(bundle.getString(MSG_EXCLUDES));
+      out.write(":</nobr></td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES) != null)
+      {
+         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES));
+      }
+      out.write("</td></tr>");
+      
       if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType()))
       {
-         out.write("<tr><td align='right'>");
+         out.write("<tr><td align='right'><nobr>");
          out.write(bundle.getString(MSG_TARGET));
-         out.write(":</td><td>");
+         out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME) != null)
          {
             out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME));
@@ -413,9 +429,9 @@ public class UIDeploymentServers extends UIInput
       if (WCMAppModel.CONSTRAINT_LIVESERVER.equals(
           server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
       {
-         out.write("<tr><td align='right'>");
+         out.write("<tr><td align='right'><nobr>");
          out.write(bundle.getString(MSG_AUTO_DEPLOY));
-         out.write(":</td><td>");
+         out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL) != null)
          {
             Object obj = server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL);
@@ -434,9 +450,9 @@ public class UIDeploymentServers extends UIInput
       if (WCMAppModel.CONSTRAINT_TESTSERVER.equals(
           server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
       {
-         out.write("<tr><td align='right'>");
+         out.write("<tr><td align='right'><nobr>");
          out.write(bundle.getString(MSG_ALLOCATED));
-         out.write(":</td><td>");
+         out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_ALLOCATED_TO) != null)
          {
             String allocatedToTip = (String)server.getProperties().get(
@@ -466,7 +482,14 @@ public class UIDeploymentServers extends UIInput
       String contextPath = context.getExternalContext().getRequestContextPath();
       ResourceBundle bundle = Application.getBundle(context);
          
-      out.write("<div class='deployConfigServer'>");
+      out.write("<div class='deployConfigServer'");
+      if (edit)
+      {
+         out.write(" id='");
+         out.write(server.getId());
+         out.write("'");
+      }
+      out.write(">");
       PanelGenerator.generatePanelStart(out, contextPath, "lightstorm", "#eaeff2");
       out.write("<table width='100%'><tr><td><img class='deployConfigServerIcon' src='");
       out.write(contextPath);
@@ -654,6 +677,22 @@ public class UIDeploymentServers extends UIInput
       source.setValueBinding("value", vbSource);
       this.getChildren().add(source);
       Utils.encodeRecursive(context, source);
+      out.write("</td></tr>");
+      
+      // create the excludes field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_EXCLUDES));
+      out.write(":</td><td>");
+      UIComponent excludes = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, excludes, null);
+      excludes.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbExcludes = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_EXCLUDES + "}");
+      excludes.setValueBinding("value", vbExcludes);
+      this.getChildren().add(excludes);
+      Utils.encodeRecursive(context, excludes);
       out.write("</td></tr>");
       
       if ((edit == false && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType())) ||

@@ -274,10 +274,8 @@
                  icon="/images/icons/deploy_large.gif" />
                  
          <dialog name="viewDeploymentReport" page="/jsp/wcm/deployment-report.jsp" 
-                 managed-bean="ViewDeploymentReportDialog"
-                 title-id="deployment_report_title"
-                 icon="/images/icons/deployment_report_large.gif"  
-                 description-id="deployment_report_desc" show-ok-button="false" />
+                 managed-bean="ViewDeploymentReportDialog" icon="/images/icons/deployment_report_large.gif"  
+                 show-ok-button="false" />
                  
          <dialog name="monitorDeployment" page="/jsp/wcm/monitor-deployment.jsp" 
                  managed-bean="MonitorDeploymentDialog"
@@ -594,7 +592,16 @@
    <config evaluator="node-type" condition="wcmwf:reviewTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageLinkValidationTaskDialog" 
+                 managed-bean="ManageReviewTaskDialog" 
+                 icon="/images/icons/manage_workflow_task_large.gif" 
+                 description-id="manage_task_desc" />
+      </dialogs>
+   </config>
+   
+   <config evaluator="node-type" condition="wcmwf:parallelReviewTask">
+      <dialogs>
+         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
+                 managed-bean="ManageReviewTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />
       </dialogs>
@@ -603,7 +610,7 @@
    <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask">
       <dialogs>
          <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageLinkValidationTaskDialog" 
+                 managed-bean="ManageReviewTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />
       </dialogs>
@@ -611,7 +618,7 @@
    
    <config evaluator="node-type" condition="wcmwf:changeRequestTask">
       <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
+         <dialog name="manageTask" page="/jsp/wcm/manage-change-request-task-dialog.jsp"
                  managed-bean="ManageChangeRequestTaskDialog" 
                  icon="/images/icons/manage_workflow_task_large.gif" 
                  description-id="manage_task_desc" />

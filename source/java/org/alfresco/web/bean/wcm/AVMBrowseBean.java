@@ -1462,9 +1462,9 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
-    * Removes all deploymentreport nodes associated with the web project
+    * Deletes all deploymentreport nodes associated with the web project
     */
-   public String resetDeploymentHistory()
+   public String deleteAllDeploymentReports()
    {
       FacesContext context = FacesContext.getCurrentInstance();
       RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);

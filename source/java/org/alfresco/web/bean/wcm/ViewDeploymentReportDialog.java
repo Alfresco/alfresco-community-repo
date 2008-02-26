@@ -24,12 +24,18 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIModeList;
+import org.alfresco.web.ui.wcm.component.UIDeploymentReports;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,6 +49,10 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
    private static final long serialVersionUID = -8054466371051782132L;
    
    protected String store;
+   protected NodeRef attempt;
+   protected String attemptDate;
+   protected boolean panelExpanded = false;
+   protected String dateFilter = UIDeploymentReports.FILTER_DATE_WEEK;
    
    private static final Log logger = LogFactory.getLog(ViewDeploymentReportDialog.class);
    
@@ -55,6 +65,10 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
       super.init(parameters);
       
       this.store = parameters.get("store");
+      this.dateFilter = UIDeploymentReports.FILTER_DATE_WEEK;
+      this.panelExpanded = false;
+      this.attempt = null;
+      this.attemptDate = null;
       
       if (this.store == null || this.store.length() == 0)
       {
@@ -78,14 +92,105 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
       return outcome;
    }
    
+   @Override
+   public String getContainerDescription()
+   {
+      String desc = null;
+      
+      if (attempt == null)
+      {
+         desc = Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "deployment_report_desc");
+      }
+      else
+      {
+         desc = Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "deployment_previous_report_desc");
+      }
+         
+      return desc;
+   }
+
+   @Override
+   public String getContainerTitle()
+   {
+      String title = null;
+      
+      if (attempt == null)
+      {
+         title = Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "deployment_report_title");
+      }
+      else
+      {
+         String pattern = Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "deployment_previous_report_title");
+         title = MessageFormat.format(pattern, this.attemptDate);
+      }
+      
+      return title;
+   }
+   
+   // ------------------------------------------------------------------------------
+   // Event handlers
+
+   /**
+    * Action handler called when the Date filter is changed by the user
+    */
+   public void dateFilterChanged(ActionEvent event)
+   {
+      UIModeList filterComponent = (UIModeList)event.getComponent();
+      setDateFilter(filterComponent.getValue().toString());
+   }
+   
+   /**
+    * Action handler called when a deployment attempt is selected
+    */
+   public void attemptSelected(ActionEvent event)
+   {
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+      String attempt = params.get("attemptRef");
+      if (attempt != null && attempt.length() != 0)
+      {
+         this.attemptDate = params.get("attemptDate");
+         this.attempt = new NodeRef(attempt);
+      }
+   }
+   
+   /**
+    * Action handler called when the panel is expanded or collapsed
+    */
+   public void panelToggled(ActionEvent event)
+   {
+      this.panelExpanded = !this.panelExpanded;
+   }
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
    
-   /**
-    * @return The store to show deployment reports for
-    */
    public String getStore()
    {
       return this.store;
+   }
+
+   public String getDateFilter()
+   {
+      return this.dateFilter;
+   }
+
+   public void setDateFilter(String dateFilter)
+   {
+      this.dateFilter = dateFilter;
+   }
+
+   public NodeRef getAttempt()
+   {
+      return this.attempt;
+   }
+   
+   public boolean getPanelExpanded()
+   {
+      return this.panelExpanded;
    }
 }

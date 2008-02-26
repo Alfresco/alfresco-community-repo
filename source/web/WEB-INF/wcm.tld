@@ -208,6 +208,27 @@
          <required>false</required>
          <rtexprvalue>true</rtexprvalue>
       </attribute>
+      
+      <attribute>
+         <name>showPrevious</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>Flag to determine whether the previous reports should be shown</description>
+      </attribute>
+      
+      <attribute>
+         <name>dateFilter</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The date filter for reducing the number of reports displayed</description>
+      </attribute>
+      
+      <attribute>
+         <name>attempt</name>
+         <required>false</required>
+         <rtexprvalue>true</rtexprvalue>
+         <description>The NodeRef of the deploymentattempt to show</description>
+      </attribute>
    </tag>
    
    <tag>

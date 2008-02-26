@@ -279,14 +279,14 @@
             </params>
          </action>
          
-         <!-- Reset deployment history action -->
-         <action id="reset_deployment_history">
+         <!-- Delete all deployment reports action -->
+         <action id="delete_all_deploy_reports">
             <permissions>
                <permission allow="true">Delete,Write,CreateChildren</permission>
             </permissions>
-            <label-id>reset_deploy_history</label-id>
-            <image>/images/icons/remove_item.gif</image>
-            <action>#{AVMBrowseBean.resetDeploymentHistory}</action>
+            <label-id>delete_all_deploy_reports</label-id>
+            <image>/images/icons/delete_deploy_reports.gif</image>
+            <action>#{AVMBrowseBean.deleteAllDeploymentReports}</action>
             <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
@@ -398,7 +398,7 @@
             <action idref="create_webapp" />
             <action idref="edit_website" />
             <action idref="invite_website_users" />
-            <action idref="reset_deployment_history" />
+            <action idref="delete_all_deploy_reports" />
             <action idref="delete_space" />
          </action-group>
          

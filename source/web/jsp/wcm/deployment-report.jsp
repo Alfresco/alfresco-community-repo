@@ -32,9 +32,33 @@
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 
-<w:deploymentReports value="#{DialogManager.bean.store}" />
+<w:deploymentReports value="#{DialogManager.bean.store}" attempt="#{DialogManager.bean.attempt}" />
 
+<a:panel id="more-reports-panel" label="#{msg.more_deploy_reports}" progressive="true" styleClass="mainSubTitle"
+         border="innerwhite" bgcolor="white" titleBgcolor="white" expanded="#{DialogManager.bean.panelExpanded}" 
+         expandedActionListener="#{DialogManager.bean.panelToggled}">
+   
+   <h:outputText value="<div class='deployMoreReportsPanel'>" escape="false" />
+   <h:panelGrid id="more-reports-filter" columns="2" styleClass="deployMoreReportsList" width="100%" columnClasses=",rightHandColumn">
+      <h:graphicImage value="/images/icons/filter.gif" />
+      <a:modeList id="more-reports-filter-list" itemSpacing="2" iconColumnWidth="0" horizontal="true" 
+                  selectedLinkStyle="font-weight:bold" value="#{DialogManager.bean.dateFilter}" 
+                  actionListener="#{DialogManager.bean.dateFilterChanged}">
+         <a:listItem id="f1" value="today" label="#{msg.date_filter_today}" />
+         <a:listItem id="f2" value="yesterday" label="#{msg.date_filter_yesterday}" />
+         <a:listItem id="f3" value="week" label="#{msg.date_filter_week}" />
+         <a:listItem id="f4" value="month" label="#{msg.date_filter_month}" />
+         <a:listItem id="f5" value="all" label="#{msg.date_filter_all}" />
+      </a:modeList>
+   </h:panelGrid>
 
+   <w:deploymentReports id="more-reports-list" value="#{DialogManager.bean.store}" showPrevious="true" 
+                        dateFilter="#{DialogManager.bean.dateFilter}"  />
+   <h:outputText value="</div>" escape="false" />
+   
+</a:panel>
+
+<h:outputText value="<div style='padding-top:10px;'></div>" escape="false" />
 
 
 

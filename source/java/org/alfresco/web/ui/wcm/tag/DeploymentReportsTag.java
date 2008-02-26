@@ -36,6 +36,9 @@ import org.alfresco.web.ui.common.tag.BaseComponentTag;
 public class DeploymentReportsTag extends BaseComponentTag
 {
    private String value;
+   private String showPrevious;
+   private String dateFilter;
+   private String attempt;
    
    /**
     * @see javax.faces.webapp.UIComponentTag#getComponentType()
@@ -61,6 +64,9 @@ public class DeploymentReportsTag extends BaseComponentTag
       super.setProperties(component);
       
       setStringProperty(component, "value", this.value);
+      setStringProperty(component, "dateFilter", this.dateFilter);
+      setStringProperty(component, "attempt", this.attempt);
+      setBooleanProperty(component, "showPrevious", this.showPrevious);
    }
    
    /**
@@ -70,6 +76,9 @@ public class DeploymentReportsTag extends BaseComponentTag
    {
       super.release();
       this.value = null;
+      this.showPrevious = null;
+      this.dateFilter = null;
+      this.attempt = null;
    }
    
    /**
@@ -80,5 +89,20 @@ public class DeploymentReportsTag extends BaseComponentTag
    public void setValue(String value)
    {
       this.value = value;
+   }
+
+   public void setShowPrevious(String showPrevious)
+   {
+      this.showPrevious = showPrevious;
+   }
+
+   public void setDateFilter(String dateFilter)
+   {
+      this.dateFilter = dateFilter;
+   }
+
+   public void setAttempt(String attempt)
+   {
+      this.attempt = attempt;
    }
 }

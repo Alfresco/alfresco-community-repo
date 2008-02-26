@@ -490,7 +490,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   if (hasAllocatedTestServer)
                   {
                      UIActionLink releaseServer = createAction(context, mainStore, username, 
-                              ACT_SANDBOX_RELEASE_SERVER, "/images/icons/deploy_server.gif", 
+                              ACT_SANDBOX_RELEASE_SERVER, "/images/icons/release_server.gif", 
                               "#{AVMBrowseBean.releaseTestServer}", null, null, null, false);
                      menu.getChildren().add(releaseServer);
                   }
@@ -1298,7 +1298,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       menu.getAttributes().put("itemSpacing", 4);
       menu.getAttributes().put("image", "/images/icons/menu.gif");
       menu.getAttributes().put("menuStyleClass", "moreActionsMenu");
-      menu.getAttributes().put("style", "white-space:nowrap; margin-left: 4px;");
+      menu.getAttributes().put("style", "white-space:nowrap; margin-left: 4px; margin-right: 6px;");
       
       return menu;
    }

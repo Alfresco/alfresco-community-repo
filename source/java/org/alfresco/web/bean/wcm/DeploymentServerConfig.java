@@ -49,6 +49,7 @@ public final class DeploymentServerConfig implements Serializable
    public static final String PROP_URL = "url";
    public static final String PROP_SOURCE_PATH = "sourcePath";
    public static final String PROP_TARGET_NAME = "targetName";
+   public static final String PROP_EXCLUDES = "excludes";
    public static final String PROP_ALLOCATED_TO = "allocatedTo";
    public static final String PROP_ON_APPROVAL = "onApproval";
    
@@ -153,6 +154,11 @@ public final class DeploymentServerConfig implements Serializable
          repoProps.put(WCMAppModel.PROP_DEPLOYSOURCEPATH, (Serializable)this.props.get(PROP_SOURCE_PATH));
       }
       
+      if (this.props.get(PROP_EXCLUDES) != null && ((String)this.props.get(PROP_EXCLUDES)).length() > 0)
+      {
+         repoProps.put(WCMAppModel.PROP_DEPLOYEXCLUDES, (Serializable)this.props.get(PROP_EXCLUDES));
+      }
+      
       if (this.props.get(PROP_ALLOCATED_TO) != null && ((String)this.props.get(PROP_ALLOCATED_TO)).length() > 0)
       {
          repoProps.put(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, (Serializable)this.props.get(PROP_ALLOCATED_TO));
@@ -215,6 +221,11 @@ public final class DeploymentServerConfig implements Serializable
       if (repoProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATH) != null)
       {
          this.props.put(PROP_SOURCE_PATH, (String)repoProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATH));
+      }
+      
+      if (repoProps.get(WCMAppModel.PROP_DEPLOYEXCLUDES) != null)
+      {
+         this.props.put(PROP_EXCLUDES, (String)repoProps.get(WCMAppModel.PROP_DEPLOYEXCLUDES));
       }
       
       if (repoProps.get(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO) != null)

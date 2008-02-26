@@ -190,6 +190,16 @@ Alfresco.deployServerTypeChanged = function()
    }
 }
 
+Alfresco.scrollToEditServer = function(serverId)
+{
+   var serverForm = document.getElementById(serverId);
+   if (serverForm != null)
+   {
+      var yPos = serverForm.offsetTop;
+      window.scrollTo(0, yPos);
+   }
+}
+
 Alfresco.toggleDeploymentDetails = function(icon, server) 
 {
    var currentState = icon.className;

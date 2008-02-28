@@ -232,6 +232,10 @@
    <bean id="transformer.HtmlParser"
          class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
          parent="baseContentTransformer" />
+         
+   <bean id="transformer.MediaWikiParser"
+         class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"
+         parent="baseContentTransformer" />      
 
    <bean id="transformer.OpenOffice"
          class="org.alfresco.repo.content.transform.OpenOfficeContentTransformer"

@@ -26,6 +26,7 @@ package org.alfresco.web.bean.workflow;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,11 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -164,29 +169,36 @@ public class ReassignWorkItemDialog extends BaseDialogBean
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         // build xpath to match available User/Person objects
-         NodeRef peopleRef = getPersonService().getPeopleContainer();
-         // NOTE: see SearcherComponentTest
-         String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + "%', false)" +
-                 " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "lastName, '%" + contains + "%', false)]";
+         // Use lucene search to retrieve user details
+         String term = QueryParser.escape(contains.trim());
+         StringBuilder query = new StringBuilder(128);
+         query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:*");
+         query.append(term);
+         query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:*");
+         query.append(term);
+         query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+         query.append(term);
+         query.append("*");
+         ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
+                 Repository.getStoreRef(),
+                 SearchService.LANGUAGE_LUCENE,
+                 query.toString());
+         List<NodeRef> nodes = resultSet.getNodeRefs();
          
-         List<NodeRef> nodes = getSearchService().selectNodes(
-               peopleRef,
-               xpath,
-               null,
-               this.getNamespaceService(),
-               false);
-         
-         items = new SelectItem[nodes.size()];
-         for (int index=0; index<nodes.size(); index++)
+         ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
+         for (NodeRef personRef : nodes)
          {
-            NodeRef personRef = nodes.get(index);
-            String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-            String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
-            SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
-            items[index] = item;
+            String username = (String) getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+            if (PermissionService.GUEST_AUTHORITY.equals(username) == false)
+            {
+               String firstName = (String) getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+               String lastName = (String) getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+               itemList.add(item);
+            }
          }
+         items = new SelectItem[itemList.size()];
+         itemList.toArray(items);
          
          Arrays.sort(items);
          

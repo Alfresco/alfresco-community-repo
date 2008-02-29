@@ -34,9 +34,18 @@
 
 <w:deploymentReports value="#{DialogManager.bean.store}" attempt="#{DialogManager.bean.attempt}" />
 
-<a:panel id="more-reports-panel" label="#{msg.more_deploy_reports}" progressive="true" styleClass="mainSubTitle"
-         border="innerwhite" bgcolor="white" titleBgcolor="white" expanded="#{DialogManager.bean.panelExpanded}" 
-         expandedActionListener="#{DialogManager.bean.panelToggled}">
+<h:panelGroup id="panel-facets">
+   <f:facet name="title">
+      <a:actionLink id="back-to-last-report" value="#{msg.last_deploy_report}" showLink="false"
+                    rendered="#{DialogManager.bean.attempt != null}"
+                    image="/images/icons/deployment_report.gif" 
+                    actionListener="#{DialogManager.bean.showLastReport}" />
+   </f:facet>
+</h:panelGroup>
+
+<a:panel id="more-reports-panel" label="#{msg.more_deploy_reports}" progressive="true" facetsId="dialog-body:panel-facets"
+         styleClass="mainSubTitle" border="innerwhite" bgcolor="white" titleBgcolor="white" 
+         expanded="#{DialogManager.bean.panelExpanded}" expandedActionListener="#{DialogManager.bean.panelToggled}">
    
    <h:outputText value="<div class='deployMoreReportsPanel'>" escape="false" />
    <h:panelGrid id="more-reports-filter" columns="2" styleClass="deployMoreReportsList" width="100%" columnClasses=",rightHandColumn">
@@ -53,7 +62,7 @@
    </h:panelGrid>
 
    <w:deploymentReports id="more-reports-list" value="#{DialogManager.bean.store}" showPrevious="true" 
-                        dateFilter="#{DialogManager.bean.dateFilter}"  />
+                        dateFilter="#{DialogManager.bean.dateFilter}" />
    <h:outputText value="</div>" escape="false" />
    
 </a:panel>

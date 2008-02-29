@@ -37,10 +37,12 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -202,15 +204,21 @@ public class AddUsersDialog extends BaseDialogBean
             {
                SelectItem[] items;
 
-               // build xpath to match available User/Person objects
-               ServiceRegistry services = Repository.getServiceRegistry(context);
-               NodeRef peopleRef = getPersonService().getPeopleContainer();
-               String xpath = "*[like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + "firstName, '%" + contains + 
-                              "%', false)" + " or " + "like(@" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + 
-                              "lastName, '%" + contains + "%', false)]";
-
-               List<NodeRef> nodes = services.getSearchService().selectNodes(peopleRef, xpath, null, 
-                        services.getNamespaceService(), false);
+               // Use lucene search to retrieve user details
+               String term = QueryParser.escape(contains.trim());
+               StringBuilder query = new StringBuilder(128);
+               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:*");
+               query.append(term);
+               query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:*");
+               query.append(term);
+               query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+               query.append(term);
+               query.append("*");
+               ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
+                       Repository.getStoreRef(),
+                       SearchService.LANGUAGE_LUCENE,
+                       query.toString());            
+               List<NodeRef> nodes = resultSet.getNodeRefs();
 
                ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
                for (NodeRef personRef : nodes)
@@ -221,7 +229,7 @@ public class AddUsersDialog extends BaseDialogBean
                      String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                      String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
 
-                     SelectItem item = new SortableSelectItem(username, firstName + " " + lastName, lastName);
+                     SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
                      itemList.add(item);
                   }
                }

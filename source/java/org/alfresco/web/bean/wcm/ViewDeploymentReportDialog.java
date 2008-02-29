@@ -166,6 +166,16 @@ public class ViewDeploymentReportDialog extends BaseDialogBean
       this.panelExpanded = !this.panelExpanded;
    }
    
+   /**
+    * Action handler called when user wants to go back to the last report 
+    */
+   public void showLastReport(ActionEvent event)
+   {
+      this.attempt = null;
+      this.attemptDate = null;
+      this.panelExpanded = false;
+   }
+   
    // ------------------------------------------------------------------------------
    // Bean getters and setters
    

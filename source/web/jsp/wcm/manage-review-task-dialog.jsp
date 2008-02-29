@@ -62,17 +62,22 @@
 
 <h:outputText id="padding3" styleClass="paddingRow" value="&nbsp;" escape="false" />
 
-<a:panel id="resources-panel" label="#{msg.resources}"
-         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle">
-   
-   <h:panelGroup id="resources-actions" styleClass="deployReviewTaskActions">
-      <a:actionLink id="resources-action1" value="#{msg.sandbox_deploy}" image="/images/icons/deploy.gif"
-                    action="#{DialogManager.bean.deploy}" 
-                    rendered="#{DialogManager.bean.testServersAvailable}" />
-      <a:actionLink id="resources-action2" value="#{msg.deployment_report_action}" image="/images/icons/deployment_report.gif"
-                    action="#{DialogManager.bean.viewDeployReport}" 
-                    rendered="#{DialogManager.bean.deployAttempted}" />      
-   </h:panelGroup>
+<h:panelGroup id="resources-panel-facets">
+   <f:facet name="title">
+      <h:panelGroup id="resources-actions" styleClass="deployReviewTaskActions">
+         <a:actionLink id="resources-action1" value="#{msg.sandbox_deploy}" image="/images/icons/deploy.gif"
+                       action="#{DialogManager.bean.deploy}" showLink="false"
+                       rendered="#{DialogManager.bean.testServersAvailable}" />
+         <a:actionLink id="resources-action2" value="#{msg.deployment_report_action}" image="/images/icons/deployment_report.gif"
+                       action="#{DialogManager.bean.viewDeployReport}" showLink="false"
+                       rendered="#{DialogManager.bean.deployAttempted}" />
+      </h:panelGroup>
+   </f:facet>
+</h:panelGroup>
+
+<a:panel id="resources-panel" label="#{msg.resources}" facetsId="dialog-body:resources-panel-facets"
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" 
+         styleClass="mainSubTitle">
    
    <h:outputText value="<div>#{msg.no_resources}</div>" rendered="#{empty DialogManager.bean.resources}" />
    

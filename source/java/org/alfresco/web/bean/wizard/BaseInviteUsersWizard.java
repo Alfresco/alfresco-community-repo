@@ -44,6 +44,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
@@ -342,13 +343,20 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          
          if (filterIndex == 0)
          {
-            // build xpath to match available User/Person objects
-            NodeRef peopleRef = getPersonService().getPeopleContainer();
-            
             // Use lucene search to retrieve user details
-            String lucene = "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:firstName:*" + contains + "* " +
-                            "@" + NamespaceService.CONTENT_MODEL_PREFIX + "\\:lastName:*" + contains + "* ";
-            ResultSet resultSet = getSearchService().query(peopleRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, lucene);            
+            String term = QueryParser.escape(contains.trim());
+            StringBuilder query = new StringBuilder(128);
+            query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:*");
+            query.append(term);
+            query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:*");
+            query.append(term);
+            query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+            query.append(term);
+            query.append("*");
+            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
+                    Repository.getStoreRef(),
+                    SearchService.LANGUAGE_LUCENE,
+                    query.toString());            
             List<NodeRef> nodes = resultSet.getNodeRefs();            
             
             items = new SelectItem[nodes.size()];
@@ -369,7 +377,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
             
             List<SelectItem> results = new ArrayList<SelectItem>(groups.size());
-            String containsLower = contains.toLowerCase();
+            String containsLower = contains.trim().toLowerCase();
             int offset = PermissionService.GROUP_PREFIX.length();
             for (String group : groups)
             {

@@ -84,8 +84,7 @@ public class RepoStore implements Store, TenantDeployer
     protected FileFolderService fileService;
     protected NamespaceService namespaceService;
     protected PermissionService permissionService;
-    
-    private TenantDeployerService tenantDeployerService;
+    protected TenantDeployerService tenantDeployerService;
 
     
     /**
@@ -310,11 +309,11 @@ public class RepoStore implements Store, TenantDeployer
                         int baseDirLength = getBaseDir().length() +1;
                         List<String> documentPaths = new ArrayList<String>();
                         String scriptPath = script.getDescription().getScriptPath();
-                        NodeRef scriptNodeRef = findNodeRef(scriptPath);
+                        NodeRef scriptNodeRef = (scriptPath.length() == 0) ? getBaseNodeRef() : findNodeRef(scriptPath);
                         if (scriptNodeRef != null)
                         {
                             org.alfresco.service.cmr.repository.Path repoScriptPath = nodeService.getPath(scriptNodeRef);
-                            String id = script.getDescription().getId().substring(script.getDescription().getScriptPath().length() +1);
+                            String id = script.getDescription().getId().substring(scriptPath.length() + (scriptPath.length() > 0 ? 1 : 0));
                             String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "//*\" +QNAME:" + id + "*";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
                             List<NodeRef> nodes = resultSet.getNodeRefs();
@@ -436,7 +435,15 @@ public class RepoStore implements Store, TenantDeployer
         List<String> folderElementsList = Arrays.asList(folderElements);
         
         // create folder
-        FileInfo pathInfo = fileService.makeFolders(getBaseNodeRef(), folderElementsList, ContentModel.TYPE_FOLDER);
+        FileInfo pathInfo;
+        if (folderElementsList.size() == 0)
+        {
+            pathInfo = fileService.getFileInfo(getBaseNodeRef());
+        }
+        else
+        {
+            pathInfo = fileService.makeFolders(getBaseNodeRef(), folderElementsList, ContentModel.TYPE_FOLDER);
+        }
 
         // create file
         String fileName = pathElements[pathElements.length -1];

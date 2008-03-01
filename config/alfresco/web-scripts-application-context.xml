@@ -103,26 +103,21 @@
       <property name="scriptService" ref="scriptService" />
    </bean>
  
-   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer">
+   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer" parent="webscripts.abstractcontainer">
       <property name="name"><value>Repository</value></property>
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="permissionService" ref="permissionService" />
-      <property name="authorityService" ref="authorityService" />
-      <property name="repository" ref="webscripts.repo" />
-      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
-      
       <property name="registryFactory">
           <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
              <property name="targetBeanName"><idref local="webscripts.registry.prototype"/></property>
           </bean>
       </property>
-      
-      <property name="formatRegistry" ref="webscripts.formatregistry" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="permissionService" ref="permissionService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="repository" ref="webscripts.repo" />
+      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
       <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
-      <property name="searchPath" ref="webscripts.searchpath" />
-      <property name="configService" ref="web.config" />
       <property name="tenantDeployerService" ref="tenantAdminService" />
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>

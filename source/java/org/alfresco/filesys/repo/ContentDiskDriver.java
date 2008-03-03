@@ -844,9 +844,36 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 if ( WildCard.containsWildcards(searchFileSpec))
                 {
-                    // Check if the folder has any associated pseudo files
+                    // Get the list of pseudo files for the search path
                     
                     pseudoList = searchFolderState.getPseudoFileList();
+                    
+                    // Check if the wildcard is for all files or a subset
+                   
+                    if ( searchFileSpec.equals( "*") == false && pseudoList != null && pseudoList.numberOfFiles() > 0)
+                    {
+                        // Generate a subset of pseudo files that match the wildcard search pattern
+                        
+                        WildCard wildCard = new WildCard( searchFileSpec, false);
+                        PseudoFileList filterList = null;
+                        
+                        for ( int i = 0; i > pseudoList.numberOfFiles(); i++)
+                        {
+                            PseudoFile pseudoFile = pseudoList.getFileAt( i);
+                            if ( wildCard.matchesPattern( pseudoFile.getFileName()))
+                            {
+                                // Add the pseudo file to the filtered list
+                                
+                                if ( filterList == null)
+                                    filterList = new PseudoFileList();
+                                filterList.addFile( pseudoFile);
+                            }
+                        }
+                        
+                        // Use the filtered pseudo file list, or null if there were no matches
+                        
+                        pseudoList = filterList;
+                    }
                 }
                 else if ( results == null || results.size() == 0)
                 {

@@ -67,6 +67,8 @@ public class XmlMetadataExtracterTest extends TestCase
 {
     private static final String FILE_ALFRESCO_MODEL = "xml-metadata/alfresco-model-sample.xml";
     private static final String FILE_ECLIPSE_PROJECT = "xml-metadata/eclipse-project-sample.xml";
+    private static final String FILE_EMPTY = "xml-metadata/empty-sample.xml";
+    private static final String FILE_MALFORMED = "xml-metadata/malformed-sample.xml";
     
     private static final String CTX_LOCATION = "classpath:xml-metadata/xml-metadata-test-context.xml";
     private static final ApplicationContext ctx = new ClassPathXmlApplicationContext(CTX_LOCATION);
@@ -155,6 +157,38 @@ public class XmlMetadataExtracterTest extends TestCase
         // Check the values
         assertEquals("Repository", checkProperties.get(ContentModel.PROP_TITLE));
         assertEquals("JavaCC Nature", checkProperties.get(ContentModel.PROP_DESCRIPTION));
+    }
+    
+    public void testEmptyFile() throws Exception
+    {
+        // Get an empty file
+        ContentReader reader = getReader(FILE_EMPTY);
+        assertTrue(reader.exists());
+        
+        // Pass it to the extracter
+        PropertyMap checkProperties = new PropertyMap();
+        checkProperties.put(ContentModel.PROP_TITLE, getName());
+        xmlMetadataExtracter.extract(reader, checkProperties);
+        
+        // The map should be unaffected
+        assertNotNull("Properties changed by empty file extraction", checkProperties.get(ContentModel.PROP_TITLE));
+        assertEquals("Properties changed by empty file extraction", getName(), checkProperties.get(ContentModel.PROP_TITLE));
+    }
+    
+    public void testMalformedFile() throws Exception
+    {
+        // Get an empty file
+        ContentReader reader = getReader(FILE_MALFORMED);
+        assertTrue(reader.exists());
+        
+        // Pass it to the extracter
+        PropertyMap checkProperties = new PropertyMap();
+        checkProperties.put(ContentModel.PROP_TITLE, getName());
+        xmlMetadataExtracter.extract(reader, checkProperties);
+        
+        // The map should be unaffected
+        assertNotNull("Properties changed by malformed file extraction", checkProperties.get(ContentModel.PROP_TITLE));
+        assertEquals("Properties changed by malformed file extraction", getName(), checkProperties.get(ContentModel.PROP_TITLE));
     }
     
     public void testRootElementNameSelector() throws Exception

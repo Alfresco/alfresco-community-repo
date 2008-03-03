@@ -84,21 +84,14 @@ public class AlfrescoTimer extends Timer
         }
         
         // execute timer
-        if (username == null)
+        executeResult = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
         {
-            executeResult = super.execute(jbpmContext);
-        }
-        else
-        {
-            executeResult = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+            @SuppressWarnings("synthetic-access")
+            public Boolean doWork() throws Exception
             {
-                @SuppressWarnings("synthetic-access")
-                public Boolean doWork() throws Exception
-                {
-                    return AlfrescoTimer.super.execute(jbpmContext);
-                }
-            }, username);
-        }
+                return AlfrescoTimer.super.execute(jbpmContext);
+            }
+        }, (username == null) ? "system" : username);
         
         return executeResult;
     }

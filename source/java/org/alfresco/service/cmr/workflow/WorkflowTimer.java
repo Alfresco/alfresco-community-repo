@@ -43,6 +43,9 @@ public class WorkflowTimer
     /** Due Date */
     public Date dueDate;
 
+    /** Error */
+    public String error;
+    
     /*
      * (non-Javadoc)
      * 

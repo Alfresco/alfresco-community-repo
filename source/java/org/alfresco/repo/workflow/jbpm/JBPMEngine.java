@@ -2868,9 +2868,14 @@ public class JBPMEngine extends BPMEngine
         WorkflowTimer workflowTimer = new WorkflowTimer();
         workflowTimer.id = createGlobalId(new Long(timer.getId()).toString());
         workflowTimer.name = timer.getName();
+        workflowTimer.error = timer.getException();
         workflowTimer.dueDate = timer.getDueDate();
         workflowTimer.path = createWorkflowPath(timer.getToken());
-        workflowTimer.task = createWorkflowTask(timer.getTaskInstance());
+        TaskInstance taskInstance = timer.getTaskInstance();
+        if (taskInstance != null)
+        {
+            workflowTimer.task = createWorkflowTask(taskInstance);
+        }
         return workflowTimer;
     }
     

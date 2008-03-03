@@ -35,6 +35,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -670,6 +671,24 @@ public class IntegrityChecker
             }
             catch (Throwable e)
             {
+                // This means that integrity checking itself failed.  This is serious.
+                // There are some exceptions that can be handled by transaction retries, so
+                // we attempt to handle these and let them get out to trigger the retry.
+                // Thanks to Carina Lansing.
+                Throwable retryThrowable = RetryingTransactionHelper.extractRetryCause(e);
+                if (retryThrowable != null)
+                {
+                    // The transaction will be retrying on this, so there's no need for the aggressive
+                    // reporting that would normally happen
+                    if (e instanceof RuntimeException) 
+                    {
+                        throw (RuntimeException) e; 
+                    }
+                    else
+                    {
+                        throw new RuntimeException(e); 
+                    }
+                }
                 e.printStackTrace();
                 // log it as an error and move to next event
                 IntegrityRecord exceptionRecord = new IntegrityRecord("" + e.getMessage());

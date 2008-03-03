@@ -353,7 +353,7 @@ public class RetryingTransactionHelper
      * @param cause     the cause to examine
      * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
      */
-    private Throwable extractRetryCause(Throwable cause)
+    public static Throwable extractRetryCause(Throwable cause)
     {
         Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);
         if (retryCause == null)

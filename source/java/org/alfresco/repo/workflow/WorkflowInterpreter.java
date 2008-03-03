@@ -457,6 +457,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                     }
                 }
                 
+                List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
+                
                 if (id.equals("all"))
                 {
                     for (WorkflowDefinition def : workflowService.getAllDefinitions())
@@ -464,11 +466,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                         List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(def.id);
                         for (WorkflowInstance workflow : workflows)
                         {
-                            List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
-                            for (WorkflowTimer timer : timers)
-                            {
-                                out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name + "(" + timer.task.id + ")");
-                            }
+                            timers.addAll(workflowService.getTimers(workflow.id));
                         }
                     }
                 }
@@ -477,11 +475,22 @@ public class WorkflowInterpreter extends BaseInterpreter
                     List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(id);
                     for (WorkflowInstance workflow : workflows)
                     {
-                        List<WorkflowTimer> timers = workflowService.getTimers(workflow.id);
-                        for (WorkflowTimer timer : timers)
-                        {
-                            out.println("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id + " , task: " + timer.task.name + "(" + timer.task.id + ")");
-                        }
+                        timers.addAll(workflowService.getTimers(workflow.id));
+                    }
+                }
+                
+                for (WorkflowTimer timer : timers)
+                {
+                    out.print("id: " + timer.id + " , name: " + timer.name + " , due date: " + timer.dueDate + " , path: " + timer.path.id + " , node: " + timer.path.node.name + " , process: " + timer.path.instance.id);
+                    if (timer.task != null)
+                    {
+                        out.print(" , task: " + timer.task.name + "(" + timer.task.id + ")");
+                    }
+                    out.println();
+                    if (timer.error != null)
+                    {
+                        out.println("error executing timer id " + timer.id);
+                        out.println(timer.error);
                     }
                 }
             }

@@ -114,6 +114,19 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
             Map<QName, Serializable> destination,
             Map<String, Set<QName>> mapping)
     {
+        // Check the content length
+        if (reader.getSize() == 0)
+        {
+            // There is no content.  We don't spoof any properties so there can be nothing extracted.
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("\n" +
+                        "XML document has zero length, so bypassing extraction: \n" +
+                        "   Document: " + reader);
+            }
+            return destination;
+        }
+        
         MetadataExtracter extracter = null;
         // Select a worker
         for (ContentWorkerSelector<MetadataExtracter> selector : selectors)
@@ -122,6 +135,10 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
             try
             {
                 extracter = selector.getWorker(spawnedReader);
+            }
+            catch (Throwable e)
+            {
+                // The selector failed, so try another
             }
             finally
             {
@@ -149,8 +166,14 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
         // Did we find anything?
         if (extracter == null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("\n" +
+                        "No working metadata extractor could be found: \n" +
+                        "   Document: " + reader);
+            }
             // There will be no properties extracted
-            modifiedProperties = Collections.emptyMap();
+            modifiedProperties = destination;
         }
         else
         {
@@ -176,7 +199,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
                     "XML metadata extractor redirected: \n" +
                     "   Reader:    " + reader + "\n" +
                     "   Extracter: " + extracter + "\n" +
-                    "   Extracted: " + modifiedProperties);
+                    "   Metadata: " + modifiedProperties);
         }
         return modifiedProperties;
     }

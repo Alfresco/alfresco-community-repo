@@ -240,6 +240,11 @@
         </composite-id>
         <property name="path" type="string" length="512" column="path"/>
     </class>
+    <class name="IssuerIDImpl" proxy="IssuerID" table="avm_issuer_ids" optimistic-lock="version" lazy="false">
+        <id name="issuer" type="string" length="32" column="issuer"/>
+        <version name="version" column="version" type="long"/>
+        <property name="next" type="long" column="next" not-null="true"/>
+    </class>
     <query name="ChildEntry.DeleteByParent">
     <![CDATA[
         delete ChildEntryImpl ce

@@ -33,27 +33,79 @@ import org.alfresco.service.transaction.TransactionService;
 public class Issuer
 {
     /**
+     * How large a block of ids to grab at a time.
+     */
+    private static final int BLOCK_SIZE = 100;
+
+    /**
      * The next number to issue.
      */
     private long fNext;
-    
+
+    private long fLast;
+
     /**
      * The name of this issuer.
      */
     private String fName;
-    
-    /**
-     * The transaction service.
-     */
-    private TransactionService fTransactionService;
-    
+
+    private IssuerIDDAO fIDDAO;
+
+    private IssuerDAO fIssuerDAO;
+
+    private TransactionService fTxnService;
+
     /**
      * Default constructor.
      */
     public Issuer()
     {
+        fNext = 0;
+        fLast = 0;
     }
-    
+
+    public void setIssuerIDDAO(IssuerIDDAO dao)
+    {
+        fIDDAO = dao;
+    }
+
+    public void setIssuerDAO(IssuerDAO dao)
+    {
+        fIssuerDAO = dao;
+    }
+
+    public void setTransactionService(TransactionService service)
+    {
+        fTxnService = service;
+    }
+
+    public void init()
+    {
+        fTxnService.getRetryingTransactionHelper().doInTransaction(
+        new RetryingTransactionCallback<Object>()
+        {
+            public Object execute()
+            {
+                IssuerID issuerID = fIDDAO.get(fName);
+                if (issuerID == null)
+                {
+                    Long id = fIssuerDAO.getIssuerValue(fName);
+                    if (id == null)
+                    {
+                        id = 0L;
+                    }
+                    else
+                    {
+                        id = id + 1L;
+                    }
+                    issuerID = new IssuerIDImpl(fName, id);
+                    fIDDAO.save(issuerID);
+                }
+                return null;
+            }
+        });
+    }
+
     /**
      * Set the name of this issuer. For Spring.
      * @param name The name to set.
@@ -62,48 +114,20 @@ public class Issuer
     {
         fName = name;
     }
-    
-    public void setTransactionService(TransactionService transactionService)
-    {
-        fTransactionService = transactionService;
-    }
 
-    /**
-     * After the database is up, get our value.
-     */
-    public void initialize()
-    {
-        getNextId();
-    }
-    
     /**
      * Issue the next number.
      * @return A serial number.
      */
     public synchronized long issue()
     {
-        
-        return getNextId();
-    }
-    
-    private long getNextId()
-    {
-        class TxnWork implements RetryingTransactionCallback<Long>
+        if (fNext >= fLast)
         {
-            public Long execute() throws Exception
-            {
-                return AVMDAOs.Instance().fIssuerDAO.getIssuerValue(fName);
-            }
+            IssuerID isID = fIDDAO.get(fName);
+            fNext = isID.getNext();
+            fLast = fNext + BLOCK_SIZE;
+            isID.setNext(fLast);
         }
-        Long result = fTransactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork(), true);
-        if (result == null)
-        {
-            fNext = 0L;
-        }
-        else
-        {
-            fNext = result + 1L;
-        }
-        return fNext;
+        return fNext++;
     }
 }

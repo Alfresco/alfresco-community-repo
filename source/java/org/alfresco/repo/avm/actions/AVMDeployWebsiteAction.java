@@ -374,6 +374,9 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       DeploymentReport report = null;
       try
       {
+         // overwrite the password before logging
+         serverProps.put(WCMAppModel.PROP_DEPLOYSERVERPASSWORD, "*****");
+               
          // call the appropriate method to deploy
          if (fileServerDeployment)
          {

@@ -10,21 +10,39 @@
 		<property name="name">
 			<value>node</value>
 		</property>
-		<property name="transactionService">
-			<ref bean="transactionService"/>
-		</property>
+        <property name="issuerDAO">
+            <ref bean="issuerDAO"/>
+        </property>
+        <property name="issuerIDDAO">
+            <ref bean="issuerIDDAO"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
 	</bean>
 
 	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
 		<property name="name">
 			<value>layer</value>
 		</property>
+		<property name="issuerDAO">
+		    <ref bean="issuerDAO"/>
+		</property>
+		<property name="issuerIDDAO">
+		    <ref bean="issuerIDDAO"/>
+		</property>
 		<property name="transactionService">
-			<ref bean="transactionService"/>
+		    <ref bean="transactionService"/>
 		</property>
 	</bean>
 
 	<!-- DAOs for persistent data types -->
+
+    <bean id="issuerIDDAO" class="org.alfresco.repo.avm.hibernate.IssuerIDDAOHibernate">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
 
 	<!-- Issuers are not actual entities. More like pseudo entities. -->
 

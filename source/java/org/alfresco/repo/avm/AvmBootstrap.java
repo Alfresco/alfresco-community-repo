@@ -89,7 +89,7 @@ public class AvmBootstrap extends AbstractLifecycleBean
     {
         for (Issuer issuer : issuers)
         {
-            issuer.initialize();
+            issuer.init();
         }
         avmLockingAwareService.init();
         avmRepository.setPermissionService(permissionService);

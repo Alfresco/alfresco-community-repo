@@ -193,9 +193,9 @@ public class UIDeploymentServers extends UIInput
          out.write("YAHOO.util.Event.on(window, \"load\", Alfresco.checkDeployConfigPage);");
          if (currentServer != null)
          {
-            out.write("Alfresco.scrollToEditServer('");
+            out.write("var SCROLL_TO_SERVER_CONFIG_ID = '");
             out.write(currentServer.getId());
-            out.write("');\n");
+            out.write("';\n");
          }
          out.write("</script>\n");
          
@@ -334,7 +334,7 @@ public class UIDeploymentServers extends UIInput
       out.write(server.getDeployType());
       out.write(".gif");
       out.write("' /></td><td width='100%'><span class='deployPanelServerName'>");
-      out.write(serverName);
+      out.write(Utils.encode(serverName));
       out.write("</span></td><td><div class='deployConfigServerActions'>");
       Utils.encodeRecursive(context, aquireEditServerAction(context, server.getId()));
       Utils.encodeRecursive(context, aquireDeleteServerAction(context, server.getId()));
@@ -347,7 +347,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_HOST) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_HOST));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_HOST)));
       }
       out.write("</td></tr>");
       
@@ -382,7 +382,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_URL) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_URL));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_URL)));
       }
       out.write("</td></tr>");
       
@@ -391,7 +391,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_USER) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_USER));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_USER)));
       }
       out.write("</td></tr></table></td>"); 
       out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
@@ -401,7 +401,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</nobr></td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH)));
       }
       out.write("</td></tr>");
       
@@ -410,7 +410,7 @@ public class UIDeploymentServers extends UIInput
       out.write(":</nobr></td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES) != null)
       {
-         out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES));
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES)));
       }
       out.write("</td></tr>");
       
@@ -421,7 +421,7 @@ public class UIDeploymentServers extends UIInput
          out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME) != null)
          {
-            out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME));
+            out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME)));
          }
          out.write("</td></tr>");
       }

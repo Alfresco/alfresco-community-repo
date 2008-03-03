@@ -45,6 +45,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentMonitor;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -505,8 +506,6 @@ public class UIDeployWebsite extends UIInput
 
       renderPanelStart(out, contextPath);
       
-      //out.write("<div class='deployPanelNoControl'></div>");
-      
       renderPanelMiddle(out, contextPath, nodeService, server, false);
 
       String url = (String)nodeService.getProperty(server, WCMAppModel.PROP_DEPLOYSERVERURL);
@@ -515,7 +514,7 @@ public class UIDeployWebsite extends UIInput
          out.write("<div class='deployServersUrl'><a target='new' href='");
          out.write(url);
          out.write("'>");
-         out.write(url);
+         out.write(Utils.encode(url));
          out.write("</a></div>");
       }
       
@@ -603,7 +602,7 @@ public class UIDeployWebsite extends UIInput
       out.write(contextPath);
       out.write("/images/parts/deploy_panel_bg.gif); background-repeat: repeat-x; width: 100%;'>");
       out.write("<div class='deployPanelServerName'>");
-      out.write(serverName);
+      out.write(Utils.encode(serverName));
       out.write("</div>");
    }
    

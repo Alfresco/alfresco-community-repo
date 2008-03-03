@@ -82,7 +82,17 @@ public final class DeploymentServerConfig implements Serializable
       buffer.append(" (id=").append(this.id);
       buffer.append(" serverRef=").append(this.serverRef);
       buffer.append(" deployType=").append(this.deployType);
-      buffer.append(" props=").append(this.props).append(")");
+      
+      // copy the properties map and overwrite the password (if password is present)
+      Map<String, Object> tempProps = new HashMap<String, Object>(this.props.size());
+      tempProps.putAll(this.props);
+      if (tempProps.containsKey(PROP_PASSWORD))
+      {
+         tempProps.put(PROP_PASSWORD, "*****");
+      }
+      
+      buffer.append(" props=").append(tempProps).append(")");
+      
       return buffer.toString();
    }
    

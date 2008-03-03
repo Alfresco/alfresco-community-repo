@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
 	<classpathentry kind="src" path="config"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/Repository"/>
 	<classpathentry kind="src" path="/Core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Remote API"/>

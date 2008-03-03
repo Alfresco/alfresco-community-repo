@@ -94,7 +94,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    // wizard step names (that are referenced)
    private static final String STEP_DETAILS = "details";
-   private static final String STEP_FORMS = "forms";
    private static final String STEP_DEPLOYMENT = "deployment";
    
    private static final String MATCH_DEFAULT = ".*";
@@ -439,7 +438,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
                   repoProps);
          
          if (logger.isDebugEnabled())
-            logger.debug("Saved deploymentserver node using repo props: " + repoProps);
+         {
+            // overwrite the password property before logging
+            Map<QName, Serializable> tempProps = new HashMap<QName, Serializable>(repoProps.size());
+            tempProps.putAll(repoProps);
+            tempProps.put(WCMAppModel.PROP_DEPLOYSERVERPASSWORD, "*****");
+            
+            logger.debug("Saved deploymentserver node using repo props: " + tempProps);
+         }
       }
    }
    

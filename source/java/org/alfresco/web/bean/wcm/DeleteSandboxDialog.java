@@ -117,6 +117,8 @@ public class DeleteSandboxDialog extends BaseDialogBean
       if (username != null)
       {
          Node website = this.avmBrowseBean.getWebsite();
+         String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
+         String mainStore   = AVMUtil.buildUserMainStoreName(storeRoot, username);
          
          // remove the store reference from the website folder meta-data
          List<ChildAssociationRef> userInfoRefs = this.getNodeService().getChildAssocs(
@@ -126,14 +128,11 @@ public class DeleteSandboxDialog extends BaseDialogBean
          {
             NodeRef userInfoRef = ref.getChildRef();
             String user = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String role = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
             
             if (username.equals(user))
             {
                // found the sandbox to remove
-               String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-               String sandbox   = AVMUtil.buildUserMainStoreName(storeRoot, username);
-               String path      = AVMUtil.buildStoreWebappPath(sandbox, this.avmBrowseBean.getWebapp());
+               String path      = AVMUtil.buildStoreWebappPath(mainStore, this.avmBrowseBean.getWebapp());
 
                // Notify virtualisation server about removing this sandbox.
                //
@@ -158,21 +157,31 @@ public class DeleteSandboxDialog extends BaseDialogBean
                //       layer attached.
                
                // purge the user main sandbox store from the system
-               this.getAvmService().purgeStore(sandbox);
+               this.getAvmService().purgeStore(mainStore);
                // remove any locks this user may have
-               this.getAvmLockingService().removeStoreLocks(sandbox);
+               this.getAvmLockingService().removeStoreLocks(mainStore);
                
                // purge the user preview sandbox store from the system
-               sandbox = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
-               this.getAvmService().purgeStore(sandbox);
+               String previewStore = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
+               this.getAvmService().purgeStore(previewStore);
                // remove any locks this user may have
-               this.getAvmLockingService().removeStoreLocks(sandbox);
+               this.getAvmLockingService().removeStoreLocks(previewStore);
                
                // remove the association to this web project user meta-data
                this.getNodeService().removeChild(website.getNodeRef(), ref.getChildRef());
                
                break;
             }
+         }
+         
+         // if the sandbox is allocated to a test server release it
+         NodeRef testServer = DeploymentUtil.findAllocatedTestServer(mainStore);
+         if (testServer != null)
+         {
+            getNodeService().setProperty(testServer, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
+            
+            if (logger.isDebugEnabled())
+               logger.debug("Released test server from user sandbox: " + mainStore);
          }
       }
       

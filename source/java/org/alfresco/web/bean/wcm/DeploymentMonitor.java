@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -134,7 +135,7 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
       StringBuilder buffer = new StringBuilder("<target-server id=\"");
       buffer.append(this.getId());
       buffer.append("\" name=\"");
-      buffer.append(this.targetServerName);
+      buffer.append(Utils.encode(this.targetServerName));
       buffer.append("\" server=\"");
       buffer.append(this.targetServer);
       buffer.append("\" attempt=\"");
@@ -145,13 +146,13 @@ public class DeploymentMonitor implements DeploymentCallback, Serializable
       if (this.url != null)
       {
          buffer.append(" url=\"");
-         buffer.append(this.url);
+         buffer.append(Utils.encode(this.url));
          buffer.append("\"");
       }
       if (this.reason != null)
       {
          buffer.append(" reason=\"");
-         buffer.append(this.reason);
+         buffer.append(Utils.encode(this.reason));
          buffer.append("\"");
       }
       if (this.finished)

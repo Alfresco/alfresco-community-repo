@@ -26,6 +26,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
@@ -328,6 +331,8 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write(bundle.getString(MSG_SNAPSHOT));
          out.write("</th></tr>");
          
+         // create a list of DeploymentAttempt objects to be ordered
+         List<DeploymentAttempt> orderedAttempts = new ArrayList<DeploymentAttempt>(deployAttempts.size());
          for (NodeRef attempt : deployAttempts)
          {
             Map<QName, Serializable> props = nodeService.getProperties(attempt);
@@ -345,22 +350,30 @@ public class UIDeploymentReports extends SelfRenderingComponent
                      buffer.append(", ");
                   }
                   
-                  buffer.append(server);
+                  buffer.append(Utils.encode(server));
                }
             }
             
-            // format the date using the default pattern
-            String attemptDate = Utils.getDateTimeFormat(context).format(attemptTime);
-            
+            orderedAttempts.add(new DeploymentAttempt(attempt, attemptId, 
+                     attemptTime, buffer.toString(), version));
+         }
+         
+         // sort the list of deployment attempts
+         QuickSort sorter = new QuickSort(orderedAttempts, "date", false, 
+                  IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+         
+         for (DeploymentAttempt attempt : orderedAttempts)
+         {
             out.write("<tr><td><nobr>");
             Utils.encodeRecursive(context, 
-                     aquireViewAttemptAction(context, attemptId, attempt, attemptDate));
+                     aquireViewAttemptAction(context, attempt));
             out.write("</nobr></td><td>");
-            out.write(buffer.toString());
+            out.write(attempt.getServers());
             out.write("</td><td>");
-            if (version != null)
+            if (attempt.getVersion() != null)
             {
-               out.write(version.toString());
+               out.write(attempt.getVersion().toString());
             }
             out.write("</td></tr>");
          }
@@ -463,6 +476,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       
       // extract the information we need to display
       Map<QName, Serializable> serverProps = nodeService.getProperties(deploymentReport);
+      Long serverId = (Long)serverProps.get(ContentModel.PROP_NODE_DBID);
       String server = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVER);
       boolean showServerAddress = true;
       String serverName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERNAMEUSED);
@@ -535,7 +549,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       out.write(deployType);
       out.write(".gif' /></td><td>");
       out.write("<div class='mainHeading'>");
-      out.write(serverName);
+      out.write(Utils.encode(serverName));
       out.write("</div><div style='margin-top: 3px; margin-bottom: 6px;'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       out.write("/images/icons/deploy_");
@@ -563,7 +577,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "reason"));
          out.write(":&nbsp;");
-         out.write(failReason);
+         out.write(Utils.encode(failReason));
          out.write("</div>");
       }
       
@@ -572,7 +586,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "deploy_server"));
          out.write(":&nbsp;");
-         out.write(server);
+         out.write(Utils.encode(server));
          out.write("</div>");
       }
       
@@ -597,7 +611,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
       out.write("<div style='margin-top: 3px;'>");
       out.write(Application.getMessage(context, "deployed_by"));
       out.write(":&nbsp;");
-      out.write(creator);
+      out.write(Utils.encode(creator));
       out.write("</div>");
       
       if (username != null)
@@ -605,7 +619,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "deploy_server_username"));
          out.write(":&nbsp;");
-         out.write(username);
+         out.write(Utils.encode(username));
          out.write("</div>");
       }
       
@@ -614,7 +628,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "deploy_server_source_path"));
          out.write(":&nbsp;");
-         out.write(source);
+         out.write(Utils.encode(source));
          out.write("</div>");
       }
       
@@ -623,7 +637,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "deploy_server_excludes"));
          out.write(":&nbsp;");
-         out.write(excludes);
+         out.write(Utils.encode(excludes));
          out.write("</div>");
       }
       
@@ -632,7 +646,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 3px;'>");
          out.write(Application.getMessage(context, "deploy_server_target_name"));
          out.write(":&nbsp;");
-         out.write(target);
+         out.write(Utils.encode(target));
          out.write("</div>");
       }
       
@@ -643,7 +657,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write(":&nbsp;<a target='new' href='");
          out.write(url);
          out.write("'>");
-         out.write(url);
+         out.write(Utils.encode(url));
          out.write("</a></div>");
       }
       
@@ -652,14 +666,14 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div style='margin-top: 6px;'><img src='");
          out.write(context.getExternalContext().getRequestContextPath());
          out.write("/images/icons/collapsed.gif' style='vertical-align: -1px; cursor: pointer;' class='collapsed' onclick=\"Alfresco.toggleDeploymentDetails(this, '");
-         out.write(server.replace(':', '_').replace('\\', '_'));
+         out.write(serverId.toString());
          out.write("');\" />&nbsp;");
          out.write(Application.getMessage(context, "details"));
          out.write("</div>\n");
          out.write("<div id='");
-         out.write(server.replace(':', '_').replace('\\', '_'));
+         out.write(serverId.toString());
          out.write("-deployment-details' style='display: none; border: 1px dotted #eee; margin-left: 14px; margin-top: 4px; padding:3px;'>");
-         out.write(content);
+         out.write(Utils.encode(content));
          out.write("</div>");
       }
       out.write("\n<div style='padding-top:6px;'></div>\n");
@@ -671,11 +685,10 @@ public class UIDeploymentReports extends SelfRenderingComponent
    }
    
    @SuppressWarnings("unchecked")
-   protected UIActionLink aquireViewAttemptAction(FacesContext context, 
-            String attemptId, NodeRef attemptRef, String attemptDate)
+   protected UIActionLink aquireViewAttemptAction(FacesContext context, DeploymentAttempt attempt)
    {
       UIActionLink action = null;
-      String actionId = "va_" + attemptId;
+      String actionId = "va_" + attempt.getId();
       
       // try find the action as a child of this component
       for (UIComponent component : (List<UIComponent>)getChildren())
@@ -693,7 +706,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          javax.faces.application.Application facesApp = context.getApplication();
          action = (UIActionLink)facesApp.createComponent(UIActions.COMPONENT_ACTIONLINK);
          action.setId(actionId);
-         action.setValue(attemptDate);
+         action.setValue(attempt.getDateAsString());
          action.setTooltip(Application.getMessage(context, MSG_SELECT_ATTEMPT));
          action.setShowLink(true);
          action.setActionListener(facesApp.createMethodBinding(
@@ -703,19 +716,69 @@ public class UIDeploymentReports extends SelfRenderingComponent
          UIParameter param1 = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
          param1.setId(actionId + "_1");
          param1.setName("attemptRef");
-         param1.setValue(attemptRef.toString());
+         param1.setValue(attempt.getNodeRef().toString());
          action.getChildren().add(param1);
          
          // add attemptDate param
          UIParameter param2 = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
          param2.setId(actionId + "_2");
          param2.setName("attemptDate");
-         param2.setValue(attemptDate);
+         param2.setValue(attempt.getDateAsString());
          action.getChildren().add(param2);
          
          this.getChildren().add(action);
       }
       
       return action;
+   }
+   
+   private class DeploymentAttempt
+   {
+      private NodeRef nodeRef;
+      private String id;
+      private Date date;
+      private String servers;
+      private Integer version;
+      
+      public DeploymentAttempt(NodeRef nodeRef, String id, Date date, 
+               String servers, Integer version)
+      {
+         this.nodeRef = nodeRef;
+         this.id = id;
+         this.date = date;
+         this.servers = servers;
+         this.version = version;
+      }
+
+      public NodeRef getNodeRef()
+      {
+         return this.nodeRef;
+      }
+
+      public String getId()
+      {
+         return this.id;
+      }
+
+      public String getServers()
+      {
+         return this.servers;
+      }
+      
+      public Integer getVersion()
+      {
+         return this.version;
+      }
+      
+      public Date getDate()
+      {
+         return this.date;
+      }
+      
+      public String getDateAsString()
+      {
+         // format the date using the default pattern
+         return Utils.getDateTimeFormat(FacesContext.getCurrentInstance()).format(this.date);
+      }
    }
 }

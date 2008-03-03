@@ -106,6 +106,12 @@ Alfresco.checkDeployConfigPage = function()
       button.onclick = function() {deployActionButtonPressed = true; clear_wizard();}
       document.getElementById('wizard:wizard-body:deployServerHost').focus();
    }
+   
+   // if a scroll to id has been set, scroll there
+   if (window.SCROLL_TO_SERVER_CONFIG_ID)
+   {
+      Alfresco.scrollToEditServer(SCROLL_TO_SERVER_CONFIG_ID);
+   }
 }
 
 Alfresco.checkDeployConfigButtonState = function()

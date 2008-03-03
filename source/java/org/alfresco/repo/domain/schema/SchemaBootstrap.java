@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.ServiceRegistry;
@@ -95,6 +94,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
+    private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
@@ -230,30 +230,60 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
+     * Count applied patches.  This fails if multiple applied patch tables are found,
+     * which normally indicates that the schema view needs to be limited.
+     * 
+     * @param cfg           The Hibernate config
+     * @param connection    a valid database connection
      * @return Returns the number of applied patches
+     * @throws NoSchemaException if the table of applied patches can't be found
      */
-    private int countAppliedPatches(Connection connection) throws Exception
+    private int countAppliedPatches(Configuration cfg, Connection connection) throws Exception
     {
+        String defaultSchema = cfg.getProperty("hibernate.default_schema");
+        if (defaultSchema != null && defaultSchema.length() == 0)
+        {
+            defaultSchema = null;
+        }
+        String defaultCatalog = cfg.getProperty("hibernate.default_catalog");
+        if (defaultCatalog != null && defaultCatalog.length() == 0)
+        {
+            defaultCatalog = null;
+        }
         DatabaseMetaData dbMetadata = connection.getMetaData();
         
-        ResultSet tableRs = dbMetadata.getTables(null, null, "%", null);
+        ResultSet tableRs = dbMetadata.getTables(defaultCatalog, defaultSchema, "%", null);
         boolean newPatchTable = false;
         boolean oldPatchTable = false;
         try
         {
+            boolean multipleSchemas = false;
             while (tableRs.next())
             {
                 String tableName = tableRs.getString("TABLE_NAME");
                 if (tableName.equalsIgnoreCase("applied_patch"))
                 {
+                    if (oldPatchTable || newPatchTable)
+                    {
+                        // Found earlier
+                        multipleSchemas = true;
+                    }
                     oldPatchTable = true;
-                    break;
                 }
                 else if (tableName.equalsIgnoreCase("alf_applied_patch"))
                 {
+                    if (oldPatchTable || newPatchTable)
+                    {
+                        // Found earlier
+                        multipleSchemas = true;
+                    }
                     newPatchTable = true;
-                    break;
                 }
+            }
+            // We go through all the tables so that multiple visible schemas are detected
+            if (multipleSchemas)
+            {
+                throw new AlfrescoRuntimeException(ERR_MULTIPLE_SCHEMAS);
             }
         }
         finally
@@ -270,6 +300,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 rs.next();
                 int count = rs.getInt(1);
                 return count;
+            }
+            catch (SQLException e)
+            {
+                // This should work at least and is probably an indication of the user viewing multiple schemas
+                throw new AlfrescoRuntimeException(ERR_MULTIPLE_SCHEMAS);
             }
             finally
             {
@@ -424,7 +459,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         boolean create = false;
         try
         {
-            countAppliedPatches(connection);
+            countAppliedPatches(cfg, connection);
         }
         catch (NoSchemaException e)
         {
@@ -501,7 +536,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             boolean apply) throws Exception
     {
         // first check if there have been any applied patches
-        int appliedPatchCount = countAppliedPatches(connection);
+        int appliedPatchCount = countAppliedPatches(cfg, connection);
         if (appliedPatchCount == 0)
         {
             // This is a new schema, so upgrade scripts are irrelevant
@@ -747,7 +782,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             if (dialectClazz.equals(HSQLDialect.class))
             {
-                logger.info(I18NUtil.getMessage(WARN_DIALECT_HSQL));
+                LogUtil.info(logger, WARN_DIALECT_HSQL);
             }
             
             // Ensure that our static connection provider is used

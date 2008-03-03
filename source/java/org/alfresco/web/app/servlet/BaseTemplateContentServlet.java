@@ -25,6 +25,7 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -124,34 +126,56 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
       NodeRef nodeRef = null;
       NodeRef templateRef = null;
       
-      String contentPath = req.getParameter(ARG_CONTEXT_PATH);
-      if (contentPath != null && contentPath.length() != 0)
+      try
       {
-         // process the name based path to resolve the NodeRef
-         PathRefInfo pathInfo = resolveNamePath(getServletContext(), contentPath); 
+         String contentPath = req.getParameter(ARG_CONTEXT_PATH);
+         if (contentPath != null && contentPath.length() != 0)
+         {
+            // process the name based path to resolve the NodeRef
+            PathRefInfo pathInfo = resolveNamePath(getServletContext(), contentPath); 
+
+            nodeRef = pathInfo.NodeRef;
+         }
+         else if (tokenCount > 3)
+         {
+            // get NodeRef to the content from the URL elements
+            StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+            nodeRef = new NodeRef(storeRef, t.nextToken());
+         }
+
+         // get NodeRef to the template if supplied
+         String templatePath = req.getParameter(ARG_TEMPLATE_PATH);
+         if (templatePath != null && templatePath.length() != 0)
+         {
+            // process the name based path to resolve the NodeRef
+            PathRefInfo pathInfo = resolveNamePath(getServletContext(), templatePath); 
+
+            templateRef = pathInfo.NodeRef;
+         }
+         else if (tokenCount >= 7)
+         {
+            StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+            templateRef = new NodeRef(storeRef, t.nextToken());
+         }
+      }
+      catch (AccessDeniedException err)
+      {
+         if (redirectToLogin)
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Redirecting to login page...");
+            
+            redirectToLoginPage(req, res, getServletContext());
+         }
+         else
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("Returning 403 Forbidden error...");
+               
+            res.sendError(HttpServletResponse.SC_FORBIDDEN);
+         }
          
-         nodeRef = pathInfo.NodeRef;
-      }
-      else if (tokenCount > 3)
-      {
-         // get NodeRef to the content from the URL elements
-         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         nodeRef = new NodeRef(storeRef, t.nextToken());
-      }
-      
-      // get NodeRef to the template if supplied
-      String templatePath = req.getParameter(ARG_TEMPLATE_PATH);
-      if (templatePath != null && templatePath.length() != 0)
-      {
-         // process the name based path to resolve the NodeRef
-         PathRefInfo pathInfo = resolveNamePath(getServletContext(), templatePath); 
-         
-         templateRef = pathInfo.NodeRef;
-      }
-      else if (tokenCount >= 7)
-      {
-         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         templateRef = new NodeRef(storeRef, t.nextToken());
+         return;
       }
       
       // if no context is specified, use the template itself
@@ -293,7 +317,11 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
       while (names.hasMoreElements())
       {
          String name = (String)names.nextElement();
-         args.put(name, req.getParameter(name));
+         try
+         {
+             args.put(name, new String(req.getParameter(name).getBytes(), "UTF-8"));
+         }
+         catch (UnsupportedEncodingException err) {}
       }
       root.put("args", args);    
       

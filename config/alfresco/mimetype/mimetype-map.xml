@@ -22,6 +22,9 @@
             <extension>shtml</extension>
             <extension>body</extension>
          </mimetype>
+         <mimetype mimetype="text/mediawiki" text="true" display="MediaWiki Markup">
+         	<extension display="MediaWiki Markup" default="true">mw</extension>
+         </mimetype>         
          <mimetype mimetype="application/xhtml+xml" text="true" display="XHTML">
             <extension default="true">xhtml</extension>
          </mimetype>

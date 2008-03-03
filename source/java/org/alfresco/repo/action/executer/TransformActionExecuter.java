@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -73,6 +75,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
 	
+    /**
+     * Injected services
+     */
 	private DictionaryService dictionaryService;
 	private NodeService nodeService;
 	private ContentService contentService;
@@ -281,7 +286,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // TODO: Check failure patterns for actions.
             try
             {
-            	doTransform(ruleAction, contentReader, contentWriter);
+            	doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
             }
             catch(NoTransformerException e)
             {
@@ -299,14 +304,23 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     /**
      * Executed in a new transaction so that failures don't cause the entire transaction to rollback.
      */
-	protected void doTransform(Action ruleAction, ContentReader contentReader, ContentWriter contentWriter)	
+	protected void doTransform( Action ruleAction, 
+	                            NodeRef sourceNodeRef, ContentReader contentReader, 
+	                            NodeRef destinationNodeRef, ContentWriter contentWriter)	
 	{
         // try to pre-empt the lack of a transformer
         if (!this.contentService.isTransformable(contentReader, contentWriter))
         {
             throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
         }
-		this.contentService.transform(contentReader, contentWriter);
+        
+        // build map of options
+        Map<String, Object> options = new HashMap<String, Object>(2);
+        options.put(ContentTransformer.OPT_SOURCE_NODEREF, sourceNodeRef);
+        options.put(ContentTransformer.OPT_DESTINATION_NODEREF, destinationNodeRef);
+        
+        // transform
+		this.contentService.transform(contentReader, contentWriter, options);
 	}
 	
     /**

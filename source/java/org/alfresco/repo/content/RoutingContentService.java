@@ -444,8 +444,19 @@ public class RoutingContentService implements ContentService
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
+     * @see org.alfresco.service.cmr.repository.ContentService#transform(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter)
      */
     public void transform(ContentReader reader, ContentWriter writer)
+    {
+        // Call transform with not options
+        this.transform(reader, writer, null);
+    }
+    
+    /**
+     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
+     * @see org.alfresco.repo.content.transform.ContentTransformer
+     */
+    public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
             throws NoTransformerException, ContentIOException
     {
         // check that source and target mimetypes are available
@@ -466,7 +477,7 @@ public class RoutingContentService implements ContentService
             throw new NoTransformerException(sourceMimetype, targetMimetype);
         }
         // we have a transformer, so do it
-        transformer.transform(reader, writer);
+        transformer.transform(reader, writer, options);
         // done
     }
     

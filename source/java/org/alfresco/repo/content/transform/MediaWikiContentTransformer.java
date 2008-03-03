@@ -24,13 +24,21 @@
  */
 package org.alfresco.repo.content.transform;
 
+import info.bliki.wiki.filter.Encoder;
 import info.bliki.wiki.model.WikiModel;
+import info.bliki.wiki.tags.ATag;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.htmlcleaner.ContentToken;
 
 /**
  * MediaWiki content transformer.  Converts mediawiki markup into HTML.
@@ -41,17 +49,41 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  */
 public class MediaWikiContentTransformer extends AbstractContentTransformer
 {
-    //private static final Log logger = LogFactory.getLog(MediaWikiContentTransformer.class);
+    /** The file folder service */
+    private FileFolderService fileFolderService;
+    
+    /** The node service */
+    private NodeService nodeService;
     
     /**
-     * Only support TEXT to HTML
+     * Sets the file folder service
+     * 
+     * @param fileFolderService     the file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+    
+    /**
+     * Sets the node service
+     * 
+     * @param nodeService   the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Only support MEDIAWIKI to HTML
      */    
     public double getReliability(String sourceMimetype, String targetMimetype)
     {
-        if (!MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) ||
+        if (!MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_HTML.equals(targetMimetype))
         {
-            // only support TEXT -> HTML
+            // only support MEDIAWIKI -> HTML
             return 0.0;
         }
         else
@@ -66,10 +98,60 @@ public class MediaWikiContentTransformer extends AbstractContentTransformer
     public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
             throws Exception
     {
+        String imageURL = "{$image}";
+        String pageURL = "${title}";
+        
+        if (options.containsKey(ContentTransformer.OPT_DESTINATION_NODEREF) == true)
+        {
+            NodeRef destinationNodeRef = (NodeRef)options.get(ContentTransformer.OPT_DESTINATION_NODEREF);
+            NodeRef parentNodeRef = this.nodeService.getPrimaryParent(destinationNodeRef).getParentRef();
+            
+            StringBuffer folderPath = new StringBuffer(256);
+            List<FileInfo> fileInfos = this.fileFolderService.getNamePath(null, parentNodeRef);
+            for (FileInfo fileInfo : fileInfos)
+            {
+                folderPath.append(fileInfo.getName()).append("/");
+            }
+            
+            pageURL = "/alfresco/d/d?path=" + folderPath + "${title}.html";
+            imageURL = "/alfresco/d/d?path=" + folderPath + "Images/${image}";
+        }
+        
         // Create the wikiModel and set the title and image link URL's
-        WikiModel wikiModel = new WikiModel("${image}", "${title}");
+        AlfrescoWikiModel wikiModel = new AlfrescoWikiModel(imageURL, pageURL);
         
         // Render the wiki content as HTML
         writer.putContent(wikiModel.render(reader.getContentString()));
+    }
+    
+    private class AlfrescoWikiModel extends WikiModel
+    {
+        public AlfrescoWikiModel(String imageBaseURL, String linkBaseURL)
+        {
+            super(imageBaseURL, linkBaseURL);
+        }
+        
+        @Override
+        public void appendInternalLink(String link, String hashSection, String linkText)
+        {
+            link = link.replaceAll(":", " - ");            
+            String encodedtopic = Encoder.encodeTitleUrl(link);
+            encodedtopic = encodedtopic.replaceAll("_", " ");
+            
+            String hrefLink = fExternalWikiBaseURL.replace("${title}", encodedtopic);
+            
+            ATag aTagNode = new ATag();
+            append(aTagNode);
+            aTagNode.addAttribute("id", "w");
+            String href = hrefLink;
+            if (hashSection != null) {
+                href = href + '#' + hashSection;
+            }
+            aTagNode.addAttribute("href", href);
+            aTagNode.addObjectAttribute("wikilink", hrefLink);
+
+            ContentToken text = new ContentToken(linkText);
+            aTagNode.addChild(text);
+        }
     }
 }

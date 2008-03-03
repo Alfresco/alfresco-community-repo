@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.Map;
+
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
@@ -140,6 +142,23 @@ public interface ContentService
      */
     @Auditable(parameters = {"reader", "writer"})
     public void transform(ContentReader reader, ContentWriter writer)
+            throws NoTransformerException, ContentIOException;
+    
+
+    /**
+     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentReader)
+     * 
+     * A map of transform options can be provided.
+     * 
+     * @param reader the source content location and mimetype
+     * @param writer the target content location and mimetype
+     * @param options the options for the transformation
+     * @throws NoTransformerException if no transformer exists for the
+     *      given source and target mimetypes of the reader and writer
+     * @throws ContentIOException if the transformation fails
+     */
+    @Auditable(parameters = {"reader", "writer", "options"})
+    public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
             throws NoTransformerException, ContentIOException;
     
     /**

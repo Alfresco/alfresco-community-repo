@@ -235,7 +235,14 @@
          
    <bean id="transformer.MediaWikiParser"
          class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"
-         parent="baseContentTransformer" />      
+         parent="baseContentTransformer">
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
+      </property>
+   </bean>      
 
    <bean id="transformer.OpenOffice"
          class="org.alfresco.repo.content.transform.OpenOfficeContentTransformer"

@@ -39,6 +39,16 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 public interface ContentTransformer extends ContentWorker
 {
     /**
+     * Transform option constants
+     * 
+     * It is up to the transformation implementation whether these 
+     * options are used, but they should be considered optional and their absence 
+     * should not interfere with the execution of the transformer.
+     */
+    public static final String OPT_SOURCE_NODEREF = "sourceNodeRef";
+    public static final String OPT_DESTINATION_NODEREF = "destinationNodeRef";
+    
+    /**
      * Provides the approximate accuracy with which this transformer can
      * transform from one mimetype to another.
      * <p>

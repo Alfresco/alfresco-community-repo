@@ -88,17 +88,17 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
     public void checkReliability() throws Exception
     {
         // check reliability
-        double reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML);
+        double reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, MimetypeMap.MIMETYPE_HTML);
         assertEquals("Reliability incorrect", 1.0, reliability);   // plain text to html is 100%
         
         // check other way around
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI);
         assertEquals("Reliability incorrect", 0.0, reliability);   // html to plain text is 0%
     }
     
     public void testMediaWikiToHTML() throws Exception
     {
-       File input = File.createTempFile("mediaWikiTest", ".txt");
+       File input = File.createTempFile("mediaWikiTest", ".mw");
        FileOutputStream fos = new FileOutputStream(input);
        fos.write(WIKI_TEXT.getBytes());
        fos.close();
@@ -106,7 +106,7 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
        File output = File.createTempFile("mediaWikiTest", ".htm");
        
        ContentReader contentReader = new FileContentReader(input);
-       contentReader.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+       contentReader.setMimetype(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI);
        contentReader.setEncoding("UTF-8");
        
        ContentWriter contentWriter = new FileContentWriter(output);

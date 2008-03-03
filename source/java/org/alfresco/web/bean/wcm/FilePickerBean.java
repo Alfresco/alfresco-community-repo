@@ -491,30 +491,39 @@ public class FilePickerBean implements Serializable
                .getWebappRelativePath(currentPath));
       }
       currentNodeElement.setAttribute("type", "directory");
-
-      // TODO (Glen): This was in Ariel's code. Is this the correct
-      // image to set?
       currentNodeElement.setAttribute("image", "/images/icons/space_small.gif");
 
       filePickerDataElement.appendChild(currentNodeElement);
 
-      // if configured search name supplied (i.e. not null),
+      // if configured search name supplied (i.e. neither null nor empty),
       // then get configured search node matching given name
-      // and add the nodes from the search result to the file
-      // picker data
+      // and add the nodes from the search result to the 
+      // file-picker-data element
       if ((configSearchName != null) && (configSearchName.length() != 0))
       {
          // get node reference for named configured search
          NodeRef configuredSearchNodeRef = getConfiguredSearches(configSearchName);
 
-         // run search to get content nodes returned in search result
-         List<AVMNodeDescriptor> searchResultNodes = runConfiguredSearch(configuredSearchNodeRef);
-
-         // add elements for content nodes from search results as child nodes
-         // of the file picker data element.
-         addAVMNodesToElement(filePickerDataDoc, filePickerDataElement,
-               searchResultNodes, selectableTypes, facesContext);
-      } else
+         // if configured search node ref is null, then there is no
+         // configured search matching the name in the 'config search name'
+         // parameter, so add error message as attribute to file-picker-data
+         // element
+         if (configuredSearchNodeRef == null)
+         {
+            filePickerDataElement.setAttribute("error", MessageFormat.format(
+                  Application.getMessage(facesContext, "error_search_not_exist"),
+                  configSearchName));
+         }
+         else
+         // else node ref for named configured search is not null, then
+         // add content nodes from search results as child elements of 
+         // the file picker data element.
+         {
+            addSearchResultNodes(filePickerDataDoc, filePickerDataElement,
+                  configuredSearchNodeRef, selectableTypes, facesContext);
+         }
+      }
+      else
       {
          // add elements for child nodes of current path to file picker
          // data element if current path is not null
@@ -757,25 +766,31 @@ public class FilePickerBean implements Serializable
    }
 
    /**
-    * Add provided AVM node descriptors as child node elements to the provided
-    * parent element
+    * Add result content nodes from configured search as 
+    * child node elements to the provided parent element
     * 
     * @param doc
-    *           XML document to which the parent node belongs
+    *           XML document to which the supplied parent node belongs
     * @param parent
-    *           parent element to add given nodes as child elements
-    * @param nodes
-    *           nodes which to add as child elements to parent elements
+    *           parent element to which to add search result content nodes 
+    *           as child elements
+    * @param configuredSearchNodeRef
+    *           configured search node reference for which result content nodes 
+    *           are added as child elements to the provided parent element
     * @param selectableTypes
-    *           AVM node types which must be marked as selectable
+    *           node types which must be marked as selectable in the file
+    *           picker
     * @param facesContext
     *           faces context used to set image attribute on each child element
     */
-   private void addAVMNodesToElement(org.w3c.dom.Document doc,
-         org.w3c.dom.Element parent, List<AVMNodeDescriptor> nodes,
+   private void addSearchResultNodes(org.w3c.dom.Document doc,
+         org.w3c.dom.Element parent, NodeRef configuredSearchNodeRef,
          QName[] selectableTypes, FacesContext facesContext)
    {
-      for (AVMNodeDescriptor node : nodes)
+      // run configured search to get content nodes returned in search result
+      List<AVMNodeDescriptor> searchResultNodes = runConfiguredSearch(configuredSearchNodeRef);
+
+      for (AVMNodeDescriptor node : searchResultNodes)
       {
          // create child element representing AVM node and add to file picker
          // data element

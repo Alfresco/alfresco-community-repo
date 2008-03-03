@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.webservice.AbstractWebService;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.ContentFormat;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -236,11 +238,7 @@ public class AuthoringWebService extends AbstractWebService implements
                                     AuthoringWebService.this.namespaceService);
     
                             // Map the comments into the expected map
-                            Map<String, Serializable> mapComments = new HashMap<String, Serializable>(comments.length);
-                            for (NamedValue value : comments)
-                            {
-                                mapComments.put(value.getName(), value.getValue());
-                            }
+                            Map<String, Serializable> mapComments = convertCommnets(comments);
                             
                             Reference[] checkedIn = new Reference[nodes.size()];
                             List<Reference> listWorkingCopies = new ArrayList<Reference>(nodes.size());
@@ -290,6 +288,31 @@ public class AuthoringWebService extends AbstractWebService implements
            throw new AuthoringFault(0, e.getMessage());
         }
     }
+    
+    /**
+     * Takes the named value array that contains the comments and converts it to a Map that the underlying
+     * services can understand.
+     * 
+     * @param comments						the comments named value array
+     * @return Map<String, Serializable>	Map that can be used with the underlying services
+     */
+    private Map<String, Serializable> convertCommnets(NamedValue[] comments)
+    {
+    	// Map the comments into the expected map
+    	Map<String, Serializable> mapComments = new HashMap<String, Serializable>(comments.length);
+    	for (NamedValue value : comments)
+    	{
+    		if (value.getName().equals(VersionModel.PROP_VERSION_TYPE) == true)
+    		{
+    			mapComments.put(value.getName(), VersionType.valueOf(value.getValue()));
+    		}
+    		else
+    		{
+    			mapComments.put(value.getName(), value.getValue());
+    		}
+    	}    	
+    	return mapComments;
+    }
 
     /**
      * @see org.alfresco.repo.webservice.authoring.AuthoringServiceSoapPort#checkinExternal(org.alfresco.repo.webservice.types.Reference, org.alfresco.repo.webservice.types.NamedValue[], boolean, org.alfresco.repo.webservice.types.ContentFormat, byte[])
@@ -325,11 +348,7 @@ public class AuthoringWebService extends AbstractWebService implements
                             String contentUrl = contentWriter.getContentUrl();
                             
                             // Get the version properties map
-                            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(comments.length);
-                            for (NamedValue namedValue : comments)
-                            {
-                                versionProperties.put(namedValue.getName(), namedValue.getValue());
-                            }
+                            Map<String, Serializable> versionProperties = convertCommnets(comments);
                             
                             // CheckIn the content
                             NodeRef origNodeRef = AuthoringWebService.this.cociService.checkin(
@@ -619,11 +638,7 @@ public class AuthoringWebService extends AbstractWebService implements
                                     AuthoringWebService.this.namespaceService);
                             
                             // Map the comments into the expected map
-                            Map<String, Serializable> mapComments = new HashMap<String, Serializable>(comments.length);
-                            for (NamedValue value : comments)
-                            {
-                                mapComments.put(value.getName(), value.getValue());
-                            }
+                            Map<String, Serializable> mapComments = convertCommnets(comments);
                             
                             List<Reference> versionedReferences = new ArrayList<Reference>(nodes.size());
                             List<org.alfresco.repo.webservice.types.Version> webServiceVersions = new ArrayList<org.alfresco.repo.webservice.types.Version>(nodes.size());

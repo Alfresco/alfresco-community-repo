@@ -229,6 +229,7 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
                SandboxFactory.updateSandboxManagers(getAvmStore(), managers, username);
             }
          }
+         SandboxFactory.updateStagingAreaManagers(getAvmStore(), getNode().getNodeRef(), managers);
       }
       
       return outcome;

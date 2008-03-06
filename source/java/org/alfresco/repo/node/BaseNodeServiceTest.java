@@ -52,6 +52,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -1054,6 +1055,43 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             fail("Null property values are allowed in the map");
         }
+    }
+    
+    /**
+     * Makes a read-only transaction and then looks for a property using a non-existent QName.
+     * The QName persistence must not lazily create QNameEntity instances for queries.
+     */
+    public void testGetUnknownProperty() throws Exception
+    {
+        // commit to keep the root node
+        setComplete();
+        endTransaction();
+
+        RetryingTransactionCallback<NodeRef> createCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef nodeRef = nodeService.createNode(
+                        rootNodeRef,
+                        ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                        QName.createQName("pathA"),
+                        ContentModel.TYPE_CONTAINER).getChildRef();
+                return nodeRef;
+            }
+        };
+        final NodeRef nodeRef = retryingTransactionHelper.doInTransaction(createCallback, false, true);
+        
+        RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                QName ficticiousQName = QName.createQName(GUID.generate(), GUID.generate());
+                Serializable value = nodeService.getProperty(nodeRef, ficticiousQName);
+                assertNull("Didn't expect a value back", value);
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(testCallback, true, true);
     }
     
     /**

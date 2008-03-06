@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
 <hibernate-mapping package="org.alfresco.repo.avm">
 
-    <typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName"/>
+    <typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName" />
 
     <!-- AVMNodeBean is the abstract base for filesystem like objects.
          We're using the one table per class hierarchy strategy to implement
@@ -48,17 +48,17 @@
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
         <set name="aspects" fetch="join" lazy="false" table="avm_aspects_new" cascade="all" optimistic-lock="true">
             <cache usage="read-write"/>
-            <key column="id"/>
-            <element type="QName" not-null="true" column="name" length="200"/>
+            <key column="id" not-null="true" foreign-key="fk_avm_asp_n"/>
+            <element column="qname_id" type="long" not-null="true"/>
         </set>
         <map name="properties" fetch="join" lazy="false" table="avm_node_properties_new" cascade="all" optimistic-lock="true">
             <cache usage="read-write"/>
-            <key column="node_id" not-null="true"/>
-            <map-key type="QName" length="200" column="qname"/>
+            <key column="node_id" not-null="true" foreign-key="fk_avm_np_n"/>
+            <map-key column="qname_id" type="long" />
             <composite-element class="org.alfresco.repo.domain.PropertyValue">
-                <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+                <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
+                <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
                 <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
-                <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
                 <property name="booleanValue" column="boolean_value" type="boolean" />
                 <property name="longValue" column="long_value" type="long" />
                 <property name="floatValue" column="float_value" type="float" />
@@ -141,6 +141,33 @@
             column="current_root_id" cascade="save-update" foreign-key="fk_avm_s_root">
         </many-to-one>
     </class>
+    <class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        <many-to-one name="store" class="AVMStoreImpl" column="avm_store_id" foreign-key="fk_avm_sp_store"/>
+        <many-to-one
+                name="name"
+                class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+                column="qname_id"
+                foreign-key="fk_avm_sp_qname"
+                lazy="proxy"
+                fetch="select"
+                unique="false"
+                not-null="true"
+                cascade="none" />
+        <component class="org.alfresco.repo.domain.PropertyValue" name="value">
+            <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
+            <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
+            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
+            <property name="booleanValue" column="boolean_value" type="boolean" />
+            <property name="longValue" column="long_value" type="long" />
+            <property name="floatValue" column="float_value" type="float" />
+            <property name="doubleValue" column="double_value" type="double" />
+            <property name="stringValue" column="string_value" type="string" length="1024"/>
+            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
+       </component>
+    </class>
     <class name="VersionRootImpl" proxy="VersionRoot" table="avm_version_roots">
         <cache usage="read-write"/>
         <id name="id" column="id" type="long">
@@ -185,6 +212,20 @@
             <key-many-to-one name="mto" class="AVMNodeImpl" column="mto" foreign-key="fk_avm_ml_to"/>
         </composite-id>
     </class>
+    <!-- When a snapshot is created we stow away all of the layered
+         nodes that were frozen by the snapshot so that subsequent
+         snapshots can find them and force copies. -->
+    <class name="VersionLayeredNodeEntryImpl" proxy="VersionLayeredNodeEntry"
+           table="avm_version_layered_node_entry">
+        <composite-id>
+            <key-many-to-one name="version" class="VersionRootImpl" column="version_root_id" foreign-key="fk_avm_vlne_vr"/>
+            <key-property name="md5Sum" type="string" length="32" column="md5sum"/>
+        </composite-id>
+        <property name="path" type="string" length="512" column="path"/>
+    </class>
+    
+    <!-- DEPRECATED START -->
+    <!-- These are kept so that the AVMPropertiesPatch and AVMAspectsPatch -->
     <class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
         <id name="id" column="id" type="long">
             <generator class="native"/>
@@ -192,27 +233,9 @@
         <many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_np_node"/>
         <property name="name" column="qname" type="QName" length="200" index="idx_avm_np_name"/>
         <component class="org.alfresco.repo.domain.PropertyValue" name="value">
-            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+            <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
+            <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
-            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
-            <property name="booleanValue" column="boolean_value" type="boolean" />
-            <property name="longValue" column="long_value" type="long" />
-            <property name="floatValue" column="float_value" type="float" />
-            <property name="doubleValue" column="double_value" type="double" />
-            <property name="stringValue" column="string_value" type="string" length="1024"/>
-            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
-       </component>
-    </class>
-    <class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
-        <id name="id" column="id" type="long">
-            <generator class="native"/>
-        </id>
-        <many-to-one name="store" class="AVMStoreImpl" column="avm_store_id" foreign-key="fk_avm_sp_store"/>
-        <property name="name" column="qname" type="QName" length="200" index="idx_avm_sp_name"/>
-        <component class="org.alfresco.repo.domain.PropertyValue" name="value">
-            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
-            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
-            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
             <property name="booleanValue" column="boolean_value" type="boolean" />
             <property name="longValue" column="long_value" type="long" />
             <property name="floatValue" column="float_value" type="float" />
@@ -229,17 +252,8 @@
         <many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_asp_node"/>
         <property name="name" column="qname" type="QName" length="200"/>
     </class>
-    <!-- When a snapshot is created we stow away all of the layered
-         nodes that were frozen by the snapshot so that subsequent
-         snapshots can find them and force copies. -->
-    <class name="VersionLayeredNodeEntryImpl" proxy="VersionLayeredNodeEntry"
-           table="avm_version_layered_node_entry">
-        <composite-id>
-            <key-many-to-one name="version" class="VersionRootImpl" column="version_root_id"/>
-            <key-property name="md5Sum" type="string" length="32" column="md5sum"/>
-        </composite-id>
-        <property name="path" type="string" length="512" column="path"/>
-    </class>
+    <!-- DEPRECATED END -->
+    
     <class name="IssuerIDImpl" proxy="IssuerID" table="avm_issuer_ids" optimistic-lock="version" lazy="false">
         <id name="issuer" type="string" length="32" column="issuer"/>
         <version name="version" column="version" type="long"/>

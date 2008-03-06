@@ -7,6 +7,7 @@ import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
 import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.MapEntryDAO;
+import org.alfresco.repo.domain.QNameDAO;
 
 /**
  * This is the (shudder) global context for AVM.  It a rendezvous
@@ -43,6 +44,11 @@ public class AVMDAOs
      * The AVMNodeDAO.
      */
     public AVMNodeDAO fAVMNodeDAO;
+    
+    /**
+     * The QName DAO
+     */
+    public QNameDAO fQNameDAO;
     
     /**
      *  The AVMStore DAO.
@@ -100,6 +106,11 @@ public class AVMDAOs
     public void setNodeDAO(AVMNodeDAO nodeDAO)
     {
         fAVMNodeDAO = nodeDAO;
+    }
+
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.fQNameDAO = qnameDAO;
     }
 
     /**

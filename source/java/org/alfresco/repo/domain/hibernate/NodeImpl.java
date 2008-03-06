@@ -38,9 +38,9 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -59,10 +59,10 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private Long version;
     private Store store;
     private String uuid;
-    private QName typeQName;
-    private Set<QName> aspects;
+    private QNameEntity typeQName;
+    private Set<Long> aspects;
     private Collection<ChildAssoc> parentAssocs;
-    private Map<QName, PropertyValue> properties;
+    private Map<Long, PropertyValue> properties;
     private DbAccessControlList accessControlList;
     
     private transient ReadLock refReadLock;
@@ -71,9 +71,9 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
 
     public NodeImpl()
     {
-        aspects = new HashSet<QName>(5);
+        aspects = new HashSet<Long>(5);
         parentAssocs = new HashSet<ChildAssoc>(5);
-        properties = new HashMap<QName, PropertyValue>(5);
+        properties = new HashMap<Long, PropertyValue>(5);
         
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         refReadLock = lock.readLock();
@@ -219,17 +219,17 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         }
     }
 
-    public QName getTypeQName()
+    public QNameEntity getTypeQName()
     {
         return typeQName;
     }
 
-    public void setTypeQName(QName typeQName)
+    public void setTypeQName(QNameEntity typeQName)
     {
         this.typeQName = typeQName;
     }
 
-    public Set<QName> getAspects()
+    public Set<Long> getAspects()
     {
         return aspects;
     }
@@ -238,7 +238,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
      * For Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setAspects(Set<QName> aspects)
+    private void setAspects(Set<Long> aspects)
     {
         this.aspects = aspects;
     }
@@ -257,7 +257,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.parentAssocs = parentAssocs;
     }
 
-    public Map<QName, PropertyValue> getProperties()
+    public Map<Long, PropertyValue> getProperties()
     {
         return properties;
     }
@@ -266,7 +266,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
      * For Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setProperties(Map<QName, PropertyValue> properties)
+    private void setProperties(Map<Long, PropertyValue> properties)
     {
         this.properties = properties;
     }

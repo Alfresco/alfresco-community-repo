@@ -24,7 +24,6 @@
 package org.alfresco.repo.avm;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +35,6 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -119,8 +117,8 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(AVMStore store,
                              BasicAttributes attrs,
                              ContentData content,
-                             Map<QName, PropertyValue> props,
-                             Set<QName> aspects,
+                             Map<Long, PropertyValue> props,
+                             Set<Long> aspects,
                              DbAccessControlList acl,
                              int versionID, Long parentAcl, ACLCopyMode mode)
     {
@@ -131,7 +129,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         addProperties(props);
-        setAspects(new HashSet<QName>(aspects));
+        setAspects(new HashSet<Long>(aspects));
         if (acl != null)
         {
             setAcl(acl.getCopy(parentAcl, mode));

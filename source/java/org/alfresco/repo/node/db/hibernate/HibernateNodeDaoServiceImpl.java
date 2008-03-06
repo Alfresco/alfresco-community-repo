@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +40,14 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
@@ -120,6 +124,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
     private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
     
+    private QNameDAO qnameDAO;
     /** A cache for more performant lookups of the parent associations */
     private SimpleCache<Long, Set<Long>> parentAssocsCache;
     private boolean isDebugEnabled = logger.isDebugEnabled();
@@ -190,6 +195,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public int hashCode()
     {
         return uuid.hashCode();
+    }
+
+    /**
+     * Set the component for creating QName entities.
+     */
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
     }
 
     /**
@@ -536,12 +549,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         }
         
+        // Get the node's qname
+        QNameEntity nodeTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(nodeTypeQName);
+        
         // build a concrete node based on a bootstrap type
         Node node = new NodeImpl();
         // set other required properties
         node.setStore(store);
         node.setUuid(uuid);
-        node.setTypeQName(nodeTypeQName);
+        node.setTypeQName(nodeTypeQNameEntity);
         // persist the node
         getHibernateTemplate().save(node);
 
@@ -684,12 +700,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         // assign a random name to the node
         String randomName = GUID.generate();
+
+        // Get the association type's qname
+        QNameEntity assocTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(assocTypeQName);
+        // Get the qname components
+        NamespaceEntity assocNamespaceEntity = qnameDAO.getOrCreateNamespaceEntity(qname.getNamespaceURI());
         
         ChildAssoc assoc = new ChildAssocImpl();
-        assoc.setTypeQName(assocTypeQName);
+        assoc.setTypeQName(assocTypeQNameEntity);
         assoc.setChildNodeName(randomName);
         assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
-        assoc.setQname(qname);
+        assoc.setQnameNamespace(assocNamespaceEntity);
+        assoc.setQnameLocalName(qname.getLocalName());
         assoc.setIsPrimary(isPrimary);
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
@@ -785,7 +807,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_ID_BY_NAME)
-                    .setLong("parentId", parentNode.getId())
+                    .setParameter("parent", parentNode)
                     .setParameter("childNodeName", childNameNewShort)
                     .setLong("childNodeNameCrc", childNameNewCrc);
                 return query.uniqueResult();
@@ -804,7 +826,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             throw new DuplicateChildNodeNameException(
                     parentNode.getNodeRef(),
-                    childAssoc.getTypeQName(),
+                    childAssoc.getTypeQName().getQName(),
                     childName);
         }
         // We got past that, so we can just update the entity and know that no other transaction
@@ -831,7 +853,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PRIMARY_CHILD_NODE_STATUSES)
-                    .setLong("parentId", parentNode.getId());
+                    .setParameter("parent", parentNode);
                 return query.list();
             }
         };
@@ -848,7 +870,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS)
-                    .setLong("parentId", parentNode.getId());
+                    .setParameter("parent", parentNode);
                 return query.list();
             }
         };
@@ -865,7 +887,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS)
-                    .setLong("parentId", parentNode.getId());
+                    .setParameter("parent", parentNode);
                 return query.list();
             }
         };
@@ -882,10 +904,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                NamespaceEntity qnameNamespaceEntity = qnameDAO.getNamespaceEntity(assocQName.getNamespaceURI());
+                String qnameLocalName = assocQName.getLocalName();
+                if (qnameNamespaceEntity == null)
+                {
+                    // There can be no match;
+                    return Collections.emptyList();
+                }
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME)
-                    .setLong("parentId", parentNode.getId())
-                    .setParameter("childAssocQName", assocQName);
+                    .setParameter("parent", parentNode)
+                    .setParameter("qnameNamespace", qnameNamespaceEntity)
+                    .setParameter("qnameLocalName", qnameLocalName);
                 return query.list();
             }
         };
@@ -906,18 +936,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         NodeRef parentNodeRef = tenantService.getBaseName(parentNode.getNodeRef());
         for (Object[] row : queryResults)
         {
-            String childProtocol = (String) row[5];
-            String childIdentifier = (String) row[6];
-            String childUuid = (String) row[7];
+            String childProtocol = (String) row[6];
+            String childIdentifier = (String) row[7];
+            String childUuid = (String) row[8];
             NodeRef childNodeRef = tenantService.getBaseName(new NodeRef(new StoreRef(childProtocol, childIdentifier), childUuid));
-            QName assocTypeQName = (QName) row[0];
-            QName assocQName = (QName) row[1];
-            Boolean assocIsPrimary = (Boolean) row[2];
-            Integer assocIndex = (Integer) row[3];
+            QNameEntity assocTypeQNameEntity = (QNameEntity) row[0];
+            NamespaceEntity assocQNameNamespace = (NamespaceEntity) row[1];
+            String assocQNameLocalName = (String) row[2];
+            Boolean assocIsPrimary = (Boolean) row[3];
+            Integer assocIndex = (Integer) row[4];
             ChildAssociationRef assocRef = new ChildAssociationRef(
-                    assocTypeQName,
+                    assocTypeQNameEntity.getQName(),
                     parentNodeRef,
-                    assocQName,
+                    QName.createQName(assocQNameNamespace.getUri(), assocQNameLocalName),
                     childNodeRef,
                     assocIsPrimary.booleanValue(),
                     assocIndex.intValue());
@@ -936,12 +967,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                QNameEntity typeQNameEntity = qnameDAO.getQNameEntity(assocTypeQName);
+                NamespaceEntity qnameNamespaceEntity = qnameDAO.getNamespaceEntity(qname.getNamespaceURI());
+                String qnameLocalName = qname.getLocalName();
+                if (typeQNameEntity == null || qnameNamespaceEntity == null)
+                {
+                    // There can be no match;
+                    return null;
+                }
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS_BY_ALL)
-                    .setLong("parentId", parentNode.getId())
-                    .setLong("childId", childNode.getId())
-                    .setParameter("typeQName", assocTypeQName)
-                    .setParameter("qname", qname);
+                    .setParameter("parent", parentNode)
+                    .setParameter("child", childNode)
+                    .setParameter("typeQName", typeQNameEntity)
+                    .setParameter("qnameNamespace", qnameNamespaceEntity)
+                    .setParameter("qnameLocalName", qnameLocalName);
                 return query.uniqueResult();
             }
         };
@@ -960,12 +1000,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                QNameEntity typeQNameEntity = qnameDAO.getQNameEntity(assocTypeQName);
+                NamespaceEntity qnameNamespaceEntity = qnameDAO.getNamespaceEntity(qname.getNamespaceURI());
+                String qnameLocalName = qname.getLocalName();
+                if (typeQNameEntity == null || qnameNamespaceEntity == null)
+                {
+                    // There can be no match;
+                    return Collections.emptyList();
+                }
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOCS_BY_ALL)
-                    .setLong("parentId", parentNode.getId())
-                    .setLong("childId", childNode.getId())
-                    .setParameter("typeQName", assocTypeQName)
-                    .setParameter("qname", qname);
+                    .setParameter("parent", parentNode)
+                    .setParameter("child", childNode)
+                    .setParameter("typeQName", typeQNameEntity)
+                    .setParameter("qnameNamespace", qnameNamespaceEntity)
+                    .setParameter("qnameLocalName", qnameLocalName);
                 return query.list();
             }
         };
@@ -984,13 +1033,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                QNameEntity typeQNameEntity = qnameDAO.getQNameEntity(assocTypeQName);
+                if (typeQNameEntity == null)
+                {
+                    // There can be no match;
+                    return null;
+                }
                 String childNameLower = childName.toLowerCase();
                 String childNameShort = getShortName(childNameLower);
                 long childNameLowerCrc = getCrc(childNameLower);
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME)
-                    .setLong("parentId", parentNode.getId())
-                    .setParameter("typeQName", assocTypeQName)
+                    .setParameter("parent", parentNode)
+                    .setParameter("typeQName", typeQNameEntity)
                     .setParameter("childNodeName", childNameShort)
                     .setLong("childNodeNameCrc", childNameLowerCrc);
                 return query.uniqueResult();
@@ -1078,7 +1133,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * @return                  Returns the parent associations without any interpretation
      */
     @SuppressWarnings("unchecked")
-    private Collection<ChildAssoc> getParentAssocsInternal(Node childNode)
+    private Collection<ChildAssoc> getParentAssocsInternal(final Node childNode)
     {
         final Long childNodeId = childNode.getId();
         List<ChildAssoc> parentAssocs = null;
@@ -1125,7 +1180,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 {
                     Query query = session
                         .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_PARENT_ASSOCS)
-                        .setLong("childId", childNodeId);
+                        .setParameter("child", childNode);
                     return query.list();
                 }
             };
@@ -1240,8 +1295,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public NodeAssoc newNodeAssoc(Node sourceNode, Node targetNode, QName assocTypeQName)
     {
+        // Get the assoc type QNameEntity
+        QNameEntity assocTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(assocTypeQName);
+        
         NodeAssoc assoc = new NodeAssocImpl();
-        assoc.setTypeQName(assocTypeQName);
+        assoc.setTypeQName(assocTypeQNameEntity);
         assoc.buildAssociation(sourceNode, targetNode);
         // persist
         try
@@ -1269,7 +1327,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                         .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOCS_TO_AND_FROM)
-                        .setLong("nodeId", node.getId());
+                        .setParameter("node", node);
                 return query.list();
             }
         };
@@ -1286,11 +1344,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                QNameEntity assocTypeQNameEntity = qnameDAO.getQNameEntity(assocTypeQName);
+                if (assocTypeQNameEntity == null)
+                {
+                    // There can be no match;
+                    return null;
+                }
                 Query query = session
                         .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_ASSOC)
-                        .setLong("sourceId", sourceNode.getId())
-                        .setLong("targetId", targetNode.getId())
-                        .setParameter("assocTypeQName", assocTypeQName);
+                        .setParameter("source", sourceNode)
+                        .setParameter("target", targetNode)
+                        .setParameter("assocTypeQName", assocTypeQNameEntity);
                 return query.uniqueResult();
             }
         };
@@ -1307,7 +1371,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_TARGET_ASSOCS)
-                    .setLong("sourceId", sourceNode.getId());
+                    .setParameter("source", sourceNode);
                 return query.list();
             }
         };
@@ -1324,7 +1388,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_SOURCE_ASSOCS)
-                    .setLong("targetId", targetNode.getId());
+                    .setParameter("target", targetNode);
                 return query.list();
             }
         };
@@ -1362,7 +1426,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Node node = (Node) results.get()[0];
             // loop through all the node properties
-            Map<QName, PropertyValue> properties = node.getProperties();
+            Map<Long, PropertyValue> properties = node.getProperties();
             for (PropertyValue propertyValue : properties.values())
             {
                 // ignore nulls

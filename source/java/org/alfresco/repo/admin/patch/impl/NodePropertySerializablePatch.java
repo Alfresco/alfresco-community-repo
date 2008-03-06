@@ -33,7 +33,6 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -104,9 +103,9 @@ public class NodePropertySerializablePatch extends AbstractPatch
                     {
                         Node node = iterator.next();
                         // retrieve the node properties
-                        Map<QName, PropertyValue> properties = node.getProperties();
+                        Map<Long, PropertyValue> properties = node.getProperties();
                         // check each property
-                        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
+                        for (Map.Entry<Long, PropertyValue> entry : properties.entrySet())
                         {
                             PropertyValue propertyValue = entry.getValue();
                             if (propertyValue.getSerializableValue() == null)

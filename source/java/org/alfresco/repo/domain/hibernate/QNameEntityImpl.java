@@ -29,65 +29,47 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.NodeAssoc;
+import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.QNameEntity;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.util.EqualsHelper;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Hibernate-specific implementation of the generic node association
+ * Hibernate-specific implementation of the domain entity <b>QnameEntity</b>.
  * 
  * @author Derek Hulley
  */
-public class NodeAssocImpl implements NodeAssoc, Serializable
+public class QNameEntityImpl implements QNameEntity, Serializable
 {
-    private static final long serialVersionUID = 864534636913524867L;
+    private static final long serialVersionUID = -4211902156023915846L;
 
     private Long id;
     private Long version;
-    private Node source;
-    private Node target;
-    private QNameEntity typeQName;
-    
+    private NamespaceEntity namespace;
+    private String localName;
+
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
-    private transient AssociationRef nodeAssocRef;
+    private transient QName qname;
 
-    public NodeAssocImpl()
+    public QNameEntityImpl()
     {
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         refReadLock = lock.readLock();
         refWriteLock = lock.writeLock();
     }
-
-    public void buildAssociation(Node sourceNode, Node targetNode)
-    {
-        // add the forward associations
-        this.setTarget(targetNode);
-        this.setSource(sourceNode);
-    }
     
-    public AssociationRef getNodeAssocRef()
+    /**
+     * Lazily constructs a <code>QName</code> instance referencing this entity
+     */
+    public QName getQName()
     {
-        boolean trashReference = false;
         // first check if it is available
         refReadLock.lock();
         try
         {
-            if (nodeAssocRef != null)
+            if (qname != null)
             {
-                // double check that the parent and child node references match those of our reference
-                if (nodeAssocRef.getSourceRef() != source.getNodeRef() ||
-                        nodeAssocRef.getTargetRef() != target.getNodeRef())
-                {
-                    trashReference = true;
-                }
-                else
-                {
-                    // we are sure that the reference is correct
-                    return nodeAssocRef;
-                }
+                return qname;
             }
         }
         finally
@@ -99,32 +81,30 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         try
         {
             // double check
-            if (nodeAssocRef == null || trashReference)
+            if (qname == null )
             {
-                nodeAssocRef = new AssociationRef(
-                        getSource().getNodeRef(),
-                        this.typeQName.getQName(),
-                        getTarget().getNodeRef());
+                String namespaceUri = namespace.getUri();
+                qname = QName.createQName(namespaceUri, localName);
             }
-            return nodeAssocRef;
+            return qname;
         }
         finally
         {
             refWriteLock.unlock();
         }
     }
-
+    
+    /**
+     * @see #getStoreRef()()
+     */
     public String toString()
     {
-        StringBuffer sb = new StringBuffer(32);
-        sb.append("NodeAssoc")
-          .append("[ source=").append(source)
-          .append(", target=").append(target)
-          .append(", name=").append(getTypeQName())
-          .append("]");
-        return sb.toString();
+        return getQName().toString();
     }
-
+    
+    /**
+     * @see #getKey()
+     */
     public boolean equals(Object obj)
     {
         if (obj == null)
@@ -135,35 +115,36 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         {
             return true;
         }
-        else if (!(obj instanceof NodeAssoc))
+        else if (!(obj instanceof QNameEntity))
         {
             return false;
         }
-        NodeAssoc that = (NodeAssoc) obj;
-        return (EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
-                && EqualsHelper.nullSafeEquals(this.getTarget(), that.getTarget())
-                && EqualsHelper.nullSafeEquals(this.getSource(), that.getSource()));
+        QNameEntity that = (QNameEntity) obj;
+        return (this.getQName().equals(that.getQName()));
     }
     
+    /**
+     * @see #getKey()
+     */
     public int hashCode()
     {
-        return (typeQName == null ? 0 : typeQName.hashCode());
+        return getQName().hashCode();
     }
-
+    
     public Long getId()
     {
         return id;
     }
 
     /**
-     * For Hibernate use
+     * For Hibernate use.
      */
     @SuppressWarnings("unused")
-    private void setId(long id)
+    private void setId(Long id)
     {
         this.id = id;
     }
-
+    
     public Long getVersion()
     {
         return version;
@@ -178,21 +159,18 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         this.version = version;
     }
 
-    public Node getSource()
+    public NamespaceEntity getNamespace()
     {
-        return source;
+        return namespace;
     }
-
-    /**
-     * For internal use
-     */
-    private void setSource(Node source)
+    
+    public void setNamespace(NamespaceEntity namespace)
     {
         refWriteLock.lock();
         try
         {
-            this.source = source;
-            this.nodeAssocRef = null;
+            this.namespace = namespace;
+            this.qname = null;
         }
         finally
         {
@@ -200,40 +178,18 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         }
     }
 
-    public Node getTarget()
+    public String getLocalName()
     {
-        return target;
+        return localName;
     }
-
-    /**
-     * For internal use
-     */
-    private void setTarget(Node target)
+    
+    public void setLocalName(String localName)
     {
         refWriteLock.lock();
         try
         {
-            this.target = target;
-            this.nodeAssocRef = null;
-        }
-        finally
-        {
-            refWriteLock.unlock();
-        }
-    }
-
-    public QNameEntity getTypeQName()
-    {
-        return typeQName;
-    }
-
-    public void setTypeQName(QNameEntity typeQName)
-    {
-        refWriteLock.lock();
-        try
-        {
-            this.typeQName = typeQName;
-            this.nodeAssocRef = null;
+            this.localName = localName;
+            this.qname = null;
         }
         finally
         {

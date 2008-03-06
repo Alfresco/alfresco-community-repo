@@ -39,6 +39,7 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -105,6 +106,8 @@ public class AVMRepository
      * The Lookup Cache instance.
      */
     private LookupCache fLookupCache;
+    
+    private QNameDAO qnameDAO;
 
     private AVMStoreDAO fAVMStoreDAO;
 
@@ -214,6 +217,11 @@ public class AVMRepository
         fPurgeVersionTxnListener = listener;
     }
 
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+    
     public void setAvmStoreDAO(AVMStoreDAO dao)
     {
         fAVMStoreDAO = dao;
@@ -2318,7 +2326,7 @@ public class AVMRepository
         Map<QName, PropertyValue> results = new HashMap<QName, PropertyValue>();
         for (AVMStoreProperty prop : matches)
         {
-            results.put(prop.getName(), prop.getValue());
+            results.put(prop.getName().getQName(), prop.getValue());
         }
         return results;
     }
@@ -2346,7 +2354,7 @@ public class AVMRepository
                 pairs = new HashMap<QName, PropertyValue>();
                 results.put(storeName, pairs);
             }
-            pairs.put(prop.getName(), prop.getValue());
+            pairs.put(prop.getName().getQName(), prop.getValue());
         }
         return results;
     }
@@ -3096,7 +3104,10 @@ public class AVMRepository
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
-        return node.getProperties();
+        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
+        @SuppressWarnings("unchecked")
+        Map<QName, PropertyValue> converted = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(node.getProperties());
+        return converted;
     }
 
     public ContentData getContentDataForRead(AVMNodeDescriptor desc)
@@ -3129,8 +3140,10 @@ public class AVMRepository
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
-        Set<QName> aspects = node.getAspects();
-        return aspects;
+        Set<Long> aspectIds = node.getAspects();
+        // Convert to QNames
+        Set<QName> aspectQNames = qnameDAO.convertIdsToQNames(aspectIds);
+        return aspectQNames;
     }
 
     /**
@@ -3163,22 +3176,32 @@ public class AVMRepository
         }
         PermissionContext context = new PermissionContext(type);
         context.addDynamicAuthorityAssignment(node.getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
-        context.getAspects().addAll(node.getAspects());
-        Map<QName, PropertyValue> props = node.getProperties();
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
-        for (Map.Entry<QName, PropertyValue> entry : props.entrySet())
+        // Pass in node aspects
+        Set<Long> nodeAspectQNameIds = node.getAspects();
+        Set<QName> contextQNames = context.getAspects();
+        for (Long nodeAspectQNameId : nodeAspectQNameIds)
         {
-            PropertyDefinition def = fDictionaryService.getProperty(entry.getKey());
+            QName qname = qnameDAO.getQName(nodeAspectQNameId);
+            contextQNames.add(qname);
+        }
+        // Pass in node properties
+        Map<Long, PropertyValue> nodeProperties = node.getProperties();
+        Map<QName, Serializable> contextProperties = new HashMap<QName, Serializable>(5);
+        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
+        for (Map.Entry<Long, PropertyValue> entry : nodeProperties.entrySet())
+        {
+            QName qname = qnameDAO.getQName(entry.getKey());
+            PropertyDefinition def = fDictionaryService.getProperty(qname);
             if (def == null)
             {
-                properties.put(entry.getKey(), entry.getValue().getValue(DataTypeDefinition.ANY));
+                contextProperties.put(qname, entry.getValue().getValue(DataTypeDefinition.ANY));
             }
             else
             {
-                properties.put(entry.getKey(), entry.getValue().getValue(def.getDataType().getName()));
+                contextProperties.put(qname, entry.getValue().getValue(def.getDataType().getName()));
             }
         }
-        context.getProperties().putAll(properties);
+        context.getProperties().putAll(contextProperties);
         Long aclId = null;
         if(acl != null)
         {

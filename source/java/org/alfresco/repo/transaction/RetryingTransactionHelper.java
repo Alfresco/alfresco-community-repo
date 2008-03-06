@@ -218,7 +218,7 @@ public class RetryingTransactionHelper
             {
                 if (requiresNew)
                 {
-                    txn = txnService.getNonPropagatingUserTransaction();
+                    txn = txnService.getNonPropagatingUserTransaction(readOnly);
                 }
                 else
                 {

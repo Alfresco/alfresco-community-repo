@@ -30,7 +30,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.Node;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -46,16 +48,18 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private Long version;
     private Node parent;
     private Node child;
-    private QName typeQName;
+    private QNameEntity typeQName;
+    private NamespaceEntity qnameNamespace;
+    private String qnameLocalName;
     private String childNodeName;
     private long childNodeNameCrc;
-    private QName qName;
     private boolean isPrimary;
     private int index;
     
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
     private transient ChildAssociationRef childAssocRef;
+    private transient QName qname;
     
     public ChildAssocImpl()
     {
@@ -71,15 +75,17 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         // add the forward associations
         this.setParent(parentNode);
         this.setChild(childNode);
-//        childNode.getParentAssocs().add(this);
     }
     
     public void removeAssociation()
     {
-//        // maintain inverse assoc from child node to this instance
-//        this.getChild().getParentAssocs().remove(this);
     }
     
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method is thread-safe and lazily creates the required references, if required.
+     */
     public ChildAssociationRef getChildAssocRef()
     {
         boolean trashReference = false;
@@ -114,14 +120,51 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
             if (childAssocRef == null || trashReference)
             {
                 childAssocRef = new ChildAssociationRef(
-                        this.typeQName,
+                        this.typeQName.getQName(),
                         parent.getNodeRef(),
-                        this.qName,
+                        this.getQname(),
                         child.getNodeRef(),
                         this.isPrimary,
                         index);
             }
             return childAssocRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method is thread-safe and lazily creates the required references, if required.
+     */
+    public QName getQname()
+    {
+        // first check if it is available
+        refReadLock.lock();
+        try
+        {
+            if (qname != null)
+            {
+                return qname;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            // double check
+            if (qname == null )
+            {
+                qname = QName.createQName(qnameNamespace.getUri(), qnameLocalName);
+            }
+            return qname;
         }
         finally
         {
@@ -164,7 +207,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
           .append(", child=").append(child.getId())
           .append(", child name=").append(childNodeName)
           .append(", child name crc=").append(childNodeNameCrc)
-          .append(", assoc type=").append(getTypeQName())
+          .append(", assoc type=").append(getTypeQName().getQName())
           .append(", assoc name=").append(getQname())
           .append(", isPrimary=").append(isPrimary)
           .append("]");
@@ -278,12 +321,12 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
     
-    public QName getTypeQName()
+    public QNameEntity getTypeQName()
     {
         return typeQName;
     }
-    
-    public void setTypeQName(QName typeQName)
+
+    public void setTypeQName(QNameEntity typeQName)
     {
         refWriteLock.lock();
         try
@@ -297,6 +340,46 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
     
+    public NamespaceEntity getQnameNamespace()
+    {
+        return qnameNamespace;
+    }
+
+    public void setQnameNamespace(NamespaceEntity qnameNamespace)
+    {
+        refWriteLock.lock();
+        try
+        {
+            this.qnameNamespace = qnameNamespace;
+            this.childAssocRef = null;
+            this.qname = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public String getQnameLocalName()
+    {
+        return qnameLocalName;
+    }
+
+    public void setQnameLocalName(String qnameLocalName)
+    {
+        refWriteLock.lock();
+        try
+        {
+            this.qnameLocalName = qnameLocalName;
+            this.childAssocRef = null;
+            this.qname = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
     public String getChildNodeName()
     {
         return childNodeName;
@@ -315,25 +398,6 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     public void setChildNodeNameCrc(long crc)
     {
         this.childNodeNameCrc = crc;
-    }
-
-    public QName getQname()
-    {
-        return qName;
-    }
-
-    public void setQname(QName qname)
-    {
-        refWriteLock.lock();
-        try
-        {
-            this.qName = qname;
-            this.childAssocRef = null;
-        }
-        finally
-        {
-            refWriteLock.unlock();
-        }
     }
 
     public boolean getIsPrimary()

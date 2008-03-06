@@ -6,7 +6,6 @@
 
 <hibernate-mapping>
 
-   <typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName" />
    <typedef class="org.alfresco.repo.domain.hibernate.LocaleUserType" name="Locale" />
 
    <class
@@ -29,7 +28,8 @@
                name="store"
                class="org.alfresco.repo.domain.hibernate.StoreImpl"
                not-null="true"
-               lazy="proxy"
+               lazy="proxy" 
+               foreign-key="fk_alf_n_store"
                optimistic-lock="true"
                fetch="join">
             <column name="protocol" not-null="true" />
@@ -41,12 +41,23 @@
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
       
-      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
+      <!-- forward assoc to node type (mandatory) -->
+      <many-to-one
+            name="typeQName"
+            class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+            column="type_qname_id"
+            foreign-key="fk_alf_n_tqname"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
       <!-- forward assoc to access control list (optional) -->
       <many-to-one
             name="accessControlList"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
             column="acl_id"
+            foreign-key="fk_alf_n_acl"
             lazy="proxy"
             fetch="select"
             unique="false"
@@ -62,18 +73,18 @@
             inverse="false" 
             optimistic-lock="true"
             cascade="delete" >
-         <key column="node_id" not-null="true" />
-         <map-key column="qname" type="QName" length="200" />
+         <key column="node_id" foreign-key="fk_alf_n_prop" not-null="true" />
+         <map-key column="qname_id" type="long" />
          <composite-element class="org.alfresco.repo.domain.PropertyValue" >
-            <property name="actualType" column="actual_type" type="string" length="15" not-null="true" />
+            <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
+            <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
             <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
-            <property name="persistedType" column="persisted_type" type="string" length="15" not-null="true" />
             <property name="booleanValue" column="boolean_value" type="boolean" />
             <property name="longValue" column="long_value" type="long" />
             <property name="floatValue" column="float_value" type="float" />
             <property name="doubleValue" column="double_value" type="double" />
             <property name="stringValue" column="string_value" type="string" length="1024"/>
-            <many-to-one name="attributeValue" column="attribute_value" class="org.alfresco.repo.attributes.AttributeImpl" />
+            <many-to-one name="attributeValue" column="attribute_value" foreign-key="fk_alf_np_attr" class="org.alfresco.repo.attributes.AttributeImpl" />
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
          </composite-element>
       </map>
@@ -87,22 +98,9 @@
             sort="unsorted"
             optimistic-lock="true"
             cascade="delete" >
-         <key column="node_id" not-null="true" />
-         <element column="qname" type="QName" length="200"/>
+         <key column="node_id" foreign-key="fk_alf_n_asp" not-null="true" />
+         <element column="qname_id" type="long" not-null="true" />
       </set>
-      <!-- inverse assoc to parent childassocs -->
-<!--
-      <set
-            name="parentAssocs"
-            inverse="true" 
-            lazy="false"
-            fetch="join"
-            cascade="none"
-            optimistic-lock="true" >
-         <key column="child_node_id" />
-         <one-to-many class="org.alfresco.repo.domain.hibernate.ChildAssocImpl" />
-      </set>
--->
    </class>
 
    <class
@@ -127,6 +125,7 @@
             name="transaction"
             class="org.alfresco.repo.domain.hibernate.TransactionImpl"
             column="transaction_id"
+            foreign-key="fk_alf_ns_trans"
             lazy="proxy"
             fetch="select"
             unique="false"
@@ -137,6 +136,7 @@
             name="node"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             column="node_id"
+            foreign-key="fk_alf_ns_node"
             lazy="false"
             fetch="join"
             unique="false"
@@ -162,6 +162,7 @@
             name="parent"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             lazy="proxy"
+            foreign-key="fk_alf_ca_pnode"
             fetch="select"
             optimistic-lock="false"
             not-null="true"
@@ -172,14 +173,37 @@
       <many-to-one
             name="child" 
             lazy="proxy"
+            foreign-key="fk_alf_ca_cnode"
             fetch="select"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             optimistic-lock="false"
             not-null="true" >
          <column name="child_node_id" not-null="true"/>
       </many-to-one>
-      <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" unique-key="UIDX_CHILD_NAME" />
-      <property name="qname" column="qname" type="QName" length="255" not-null="true" />
+      <!-- forward assoc to assoc type (mandatory) -->
+      <many-to-one
+            name="typeQName"
+            class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+            column="type_qname_id"
+            foreign-key="fk_alf_ca_tqn"
+            unique-key="UIDX_CHILD_NAME"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
+      <!-- forward assoc to namespace for local QName (mandatory) -->
+      <many-to-one
+            name="qnameNamespace"
+            class="org.alfresco.repo.domain.hibernate.NamespaceEntityImpl"
+            column="qname_ns_id"
+            foreign-key="fk_alf_ca_qn_ns" 
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
+      <property name="qnameLocalName" column="qname_localname" type="string" length="200" not-null="true" index="idx_alf_ca_qn_ln" />
       <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="isPrimary" column="is_primary" />
@@ -200,6 +224,7 @@
                name="source"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
                optimistic-lock="false"
+               foreign-key="fk_alf_na_snode"
                lazy="false"
                fetch="join"
                not-null="true" >
@@ -210,12 +235,23 @@
                name="target"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
                optimistic-lock="false"
+               foreign-key="fk_alf_na_tnode"
                lazy="false"
                fetch="join"
                not-null="true" >
             <column name="target_node_id" not-null="true" />
          </many-to-one>
-         <property name="typeQName" column="type_qname" type="QName" length="255" not-null="true" />
+      <!-- forward assoc to assoc type (mandatory) -->
+      <many-to-one
+            name="typeQName"
+            class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+            column="type_qname_id"
+            foreign-key="fk_alf_na_tqn"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
@@ -235,7 +271,7 @@
          assoc.childNodeName = :newName,
          assoc.childNodeNameCrc = :newNameCrc
       where
-         assoc.id = :childAssocId
+         assoc = :childAssoc
    </query>
    
    <query name="node.GetParentAssocs">
@@ -244,7 +280,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.child.id = :childId
+         assoc.child = :child
       order by
          assoc.index,
          assoc.id
@@ -258,9 +294,9 @@
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.child as child
       where
-         assoc.parent.id = :parentId and
+         assoc.parent = :parent and
          assoc.isPrimary = true and
-         status.node.id = child.id
+         status.node = child
    </query>
    
    <query name="node.GetChildAssocsByAll">
@@ -269,10 +305,11 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent.id = :parentId and
-         assoc.child.id = :childId and
+         assoc.parent = :parent and
+         assoc.child = :child and
          assoc.typeQName = :typeQName and
-         assoc.qname = :qname
+         assoc.qnameNamespace = :qnameNamespace and
+         assoc.qnameLocalName = :qnameLocalName
       order by
          assoc.index,
          assoc.id
@@ -284,7 +321,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent.id = :parentId
+         assoc.parent = :parent
       order by
          assoc.index,
          assoc.id
@@ -296,7 +333,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent.id = :parentId and
+         assoc.parent = :parent and
          assoc.childNodeName = :childNodeName and
          assoc.childNodeNameCrc = :childNodeNameCrc
    </query>
@@ -307,7 +344,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent.id = :parentId and
+         assoc.parent = :parent and
          assoc.typeQName = :typeQName and
          assoc.childNodeName = :childNodeName and
          assoc.childNodeNameCrc = :childNodeNameCrc
@@ -319,7 +356,8 @@
    <query name="node.GetChildAssocRefs">
       select
          assoc.typeQName,
-         assoc.qname,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -331,7 +369,7 @@
          join assoc.parent as parent
          join assoc.child as child
       where
-         assoc.parent.id = :parentId
+         assoc.parent = :parent
       order by
          assoc.index,
          assoc.id
@@ -340,7 +378,8 @@
    <query name="node.GetChildAssocRefsByQName">
       select
          assoc.typeQName,
-         assoc.qname,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -352,8 +391,9 @@
          join assoc.parent as parent
          join assoc.child as child
       where
-         assoc.parent.id = :parentId and
-         assoc.qname = :childAssocQName
+         assoc.parent = :parent and
+         assoc.qnameNamespace = :qnameNamespace and
+         assoc.qnameLocalName = :qnameLocalName
       order by
          assoc.index,
          assoc.id
@@ -365,8 +405,8 @@
       from
          org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
       where
-         assoc.source.id = :sourceId and
-         assoc.target.id = :targetId and
+         assoc.source = :source and
+         assoc.target = :target and
          assoc.typeQName = :assocTypeQName
    </query>
    
@@ -376,8 +416,8 @@
       from
          org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
       where
-         assoc.source.id = :nodeId or
-         assoc.target.id = :nodeId
+         assoc.source = :node or
+         assoc.target = :node
    </query>
 
    <query name="node.GetTargetAssocs">
@@ -388,7 +428,7 @@
          join assoc.source as source
          join assoc.target as target
       where
-         assoc.source.id = :sourceId
+         assoc.source = :source
    </query>
    
    <query name="node.GetSourceAssocs">
@@ -399,7 +439,7 @@
          join assoc.source as source
          join assoc.target as target
       where
-         assoc.target.id = :targetId
+         assoc.target = :target
    </query>
    
    <query name="node.GetNodesWithPropertyValuesByActualType">
@@ -414,7 +454,7 @@
             prop.actualType = :actualTypeString or
             prop.actualType = 'SERIALIZABLE'
          ) and
-         prop.persistedType != 'NULL'
+         prop.persistedType != 0
    </query>
 
    <query name="node.patch.GetNodesWithPersistedSerializableProperties">

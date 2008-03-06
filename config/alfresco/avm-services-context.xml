@@ -101,6 +101,9 @@
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
+		<property name="qnameDAO">
+			<ref bean="qnameDAO"/>
+		</property>
 	</bean>
 
 	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.hibernate.AVMAspectNameDAOHibernate">
@@ -127,6 +130,9 @@
 		</property>
 		<property name="nodeDAO">
 			<ref bean="avmNodeDAO"/>
+		</property>
+		<property name="qnameDAO">
+			<ref bean="qnameDAO"/>
 		</property>
 		<property name="avmStoreDAO">
 			<ref bean="avmStoreDAO"/>
@@ -231,6 +237,9 @@
 		</property>
 	    <property name="purgeVersionTxnListener">
 		    <ref bean="purgeVersionTxnListener"/>
+		</property>
+		<property name="qnameDAO">
+		    <ref bean="qnameDAO"/>
 		</property>
 		<property name="avmStoreDAO">
 		    <ref bean="avmStoreDAO"/>

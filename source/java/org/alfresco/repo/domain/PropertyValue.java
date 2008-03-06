@@ -75,6 +75,12 @@ public class PropertyValue implements Cloneable, Serializable
         NULL
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(0);
+            }
+
+            @Override
             Serializable convert(Serializable value)
             {
                 return null;
@@ -83,6 +89,12 @@ public class PropertyValue implements Cloneable, Serializable
         BOOLEAN
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(1);
+            }
+
+            @Override
             Serializable convert(Serializable value)
             {
                 return DefaultTypeConverter.INSTANCE.convert(Boolean.class, value);
@@ -90,6 +102,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         INTEGER
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(2);
+            }
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -105,6 +123,12 @@ public class PropertyValue implements Cloneable, Serializable
         LONG
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(3);
+            }
+
+            @Override
             Serializable convert(Serializable value)
             {
                 return DefaultTypeConverter.INSTANCE.convert(Long.class, value);
@@ -112,6 +136,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         FLOAT
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(4);
+            }
+
             @Override
             Serializable convert(Serializable value)
             {
@@ -121,6 +151,12 @@ public class PropertyValue implements Cloneable, Serializable
         DOUBLE
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(5);
+            }
+
+            @Override
             Serializable convert(Serializable value)
             {
                 return DefaultTypeConverter.INSTANCE.convert(Double.class, value);
@@ -128,6 +164,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         STRING
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(6);
+            }
+
             /**
              * Strings longer than the maximum of 1024 characters will be serialized.
              */
@@ -154,6 +196,12 @@ public class PropertyValue implements Cloneable, Serializable
         DATE
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(7);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -167,6 +215,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         DB_ATTRIBUTE
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(8);
+            }
+
             /** class that is able to convert from persisted attributes to normal attributes */
             private AttributeConverter attributeConverter = new AttributeConverter();
             
@@ -180,6 +234,12 @@ public class PropertyValue implements Cloneable, Serializable
         SERIALIZABLE
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(9);
+            }
+
+            @Override
             Serializable convert(Serializable value)
             {
                 return value;
@@ -187,6 +247,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         MLTEXT
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(10);
+            }
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -202,6 +268,12 @@ public class PropertyValue implements Cloneable, Serializable
         CONTENT
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(11);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -215,6 +287,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         NODEREF
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(12);
+            }
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -230,6 +308,12 @@ public class PropertyValue implements Cloneable, Serializable
         CHILD_ASSOC_REF
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(13);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -243,6 +327,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         ASSOC_REF
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(14);
+            }
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -258,6 +348,12 @@ public class PropertyValue implements Cloneable, Serializable
         QNAME
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(15);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -271,6 +367,12 @@ public class PropertyValue implements Cloneable, Serializable
         },
         PATH
         {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(16);
+            }
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -286,6 +388,12 @@ public class PropertyValue implements Cloneable, Serializable
         LOCALE
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(17);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -300,6 +408,12 @@ public class PropertyValue implements Cloneable, Serializable
         VERSION_NUMBER
         {
             @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(18);
+            }
+
+            @Override
             protected ValueType getPersistedType(Serializable value)
             {
                 return ValueType.STRING;
@@ -311,6 +425,11 @@ public class PropertyValue implements Cloneable, Serializable
                 return DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, value);
             }
         };
+        
+        /**
+         * @return      Returns the manually-maintained ordinal number for the value
+         */
+        public abstract Integer getOrdinalNumber();
         
         /**
          * Override if the type gets persisted in a different format.
@@ -440,9 +559,14 @@ public class PropertyValue implements Cloneable, Serializable
     
     /** a mapping from a property type <code>QName</code> to the corresponding value type */
     private static Map<QName, ValueType> valueTypesByPropertyType;
+    /**
+     * a mapping of {@link ValueType} ordinal number to the enum.  This is manually maintained
+     * and <b>MUST NOT BE CHANGED FOR EXISTING VALUES</b>.
+     */
+    private static Map<Integer, ValueType> valueTypesByOrdinalNumber;
     static
     {
-        valueTypesByPropertyType = new HashMap<QName, ValueType>(17);
+        valueTypesByPropertyType = new HashMap<QName, ValueType>(37);
         valueTypesByPropertyType.put(DataTypeDefinition.ANY, ValueType.SERIALIZABLE);
         valueTypesByPropertyType.put(DataTypeDefinition.BOOLEAN, ValueType.BOOLEAN);
         valueTypesByPropertyType.put(DataTypeDefinition.INT, ValueType.INTEGER);
@@ -461,6 +585,21 @@ public class PropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.PATH, ValueType.PATH);
         valueTypesByPropertyType.put(DataTypeDefinition.QNAME, ValueType.QNAME);
         valueTypesByPropertyType.put(DataTypeDefinition.LOCALE, ValueType.LOCALE);
+        
+        valueTypesByOrdinalNumber = new HashMap<Integer, ValueType>(37);
+        for (ValueType valueType : ValueType.values())
+        {
+            Integer ordinalNumber = valueType.getOrdinalNumber();
+            if (valueTypesByOrdinalNumber.containsKey(ordinalNumber))
+            {
+                throw new RuntimeException("ValueType has duplicate ordinal number: " + valueType);
+            }
+            else if (ordinalNumber.intValue() == -1)
+            {
+                throw new RuntimeException("ValueType doesn't have an ordinal number: " + valueType);
+            }
+            valueTypesByOrdinalNumber.put(ordinalNumber, valueType);
+        }
     }
 
     /** the type of the property, prior to serialization persistence */
@@ -627,14 +766,19 @@ public class PropertyValue implements Cloneable, Serializable
         return sb.toString();
     }
 
-    public String getActualType()
+    public Integer getActualType()
     {
-        return actualType.toString();
+        return actualType == null ? null : actualType.getOrdinalNumber();
     }
 
-    public void setActualType(String actualType)
+    public void setActualType(Integer actualType)
     {
-        this.actualType = ValueType.valueOf(actualType);
+        ValueType type = PropertyValue.valueTypesByOrdinalNumber.get(actualType);
+        if (type == null)
+        {
+            logger.error("Unknown property actual type ordinal number: " + actualType);
+        }
+        this.actualType = type;
     }
 
     public boolean isMultiValued()
@@ -647,13 +791,18 @@ public class PropertyValue implements Cloneable, Serializable
         this.isMultiValued = isMultiValued;
     }
 
-    public String getPersistedType()
+    public Integer getPersistedType()
     {
-        return persistedType.toString();
+        return persistedType == null ? null : persistedType.getOrdinalNumber();
     }
-    public void setPersistedType(String persistedType)
+    public void setPersistedType(Integer persistedType)
     {
-        this.persistedType = ValueType.valueOf(persistedType);
+        ValueType type = PropertyValue.valueTypesByOrdinalNumber.get(persistedType);
+        if (type == null)
+        {
+            logger.error("Unknown property persisted type ordinal number: " + persistedType);
+        }
+        this.persistedType = type;
     }
     
     /**

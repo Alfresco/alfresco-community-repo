@@ -54,8 +54,21 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
      * {@link #getChild() child} nodes to maintain the inverse association sets
      */
     public void removeAssociation();
-    
+
+    /**
+     * A convenience method to get a reference to this association.
+     * 
+     * @return              Returns a reference to this association
+     */
     public ChildAssociationRef getChildAssocRef();
+
+    /**
+     * A convenience method to aggregate the qualified name's namespace and localname
+     * into a single qualified name.
+     * 
+     * @return              Returns the qualified name of the association 
+     */
+    public QName getQname();
 
     public Long getId();
 
@@ -67,17 +80,16 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     public Node getParent();
 
     public Node getChild();
+
+    /**
+     * @return              Returns the type of the association
+     */
+    public QNameEntity getTypeQName();
     
     /**
-     * @return Returns the qualified name of the association type
+     * @param typeQName     the association's dictionary type
      */
-    public QName getTypeQName();
-    
-    /**
-     * @param assocTypeQName the qualified name of the association type as defined
-     *      in the data dictionary
-     */
-    public void setTypeQName(QName assocTypeQName);
+    public void setTypeQName(QNameEntity typeQName);
 
     /**
      * @return Returns the child node name.  This may be truncated, in which case it
@@ -102,15 +114,25 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     public void setChildNodeNameCrc(long crc);
     
     /**
-     * @return Returns the qualified name of this association 
+     * @return              Returns the namespace of the association's local QName
      */
-    public QName getQname();
+    public NamespaceEntity getQnameNamespace();
+    
+    /**
+     * @param namespace     the namespace of the association's local QName
+     */
+    public void setQnameNamespace(NamespaceEntity namespace);
+    
+    /**
+     * @return              Returns the localname of the association's local QName
+     */
+    public String getQnameLocalName();
 
     /**
-     * @param qname the qualified name of the association
+     * @param localName     the localname of the association's local QName
      */
-    public void setQname(QName qname);
-
+    public void setQnameLocalName(String localName);
+    
     public boolean getIsPrimary();
 
     public void setIsPrimary(boolean isPrimary);

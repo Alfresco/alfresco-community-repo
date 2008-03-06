@@ -24,49 +24,17 @@
  */
 package org.alfresco.repo.domain;
 
-import org.alfresco.service.cmr.repository.AssociationRef;
-
 /**
- * Represents a generic association between two nodes.  The association is named
- * and bidirectional by default.
+ * Represents a persistable Namespace entity.
  * 
  * @author Derek Hulley
+ * @since 2.2
  */
-public interface NodeAssoc
+public interface NamespaceEntity
 {
-    /**
-     * Wires up the necessary bits on the source and target nodes so that the association
-     * is immediately bidirectional.
-     * <p>
-     * The association attributes still have to be set.
-     * 
-     * @param sourceNode
-     * @param targetNode
-     * 
-     * @see #setName(String)
-     */
-    public void buildAssociation(Node sourceNode, Node targetNode);
-
-    public AssociationRef getNodeAssocRef();
+    Long getId();
     
-    public Long getId();
+    String getUri();
     
-    /**
-     * @return  Returns the current version number
-     */
-    public Long getVersion();
-
-    public Node getSource();
-
-    public Node getTarget();
-
-    /**
-     * @return              Returns the type of the association
-     */
-    public QNameEntity getTypeQName();
-    
-    /**
-     * @param typeQName     the association's dictionary type
-     */
-    public void setTypeQName(QNameEntity typeQName);
+    void setUri(String namespaceUrl);
 }

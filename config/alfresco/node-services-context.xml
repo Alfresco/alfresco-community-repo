@@ -159,6 +159,9 @@
       </property>
    </bean>
    <bean id="dbNodeServiceImpl" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>

@@ -39,6 +39,7 @@
                 <!-- Alfresco Node Storage -->
                 <!--  -->
 
+                <value>org/alfresco/repo/domain/hibernate/QName.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
@@ -149,6 +150,8 @@
         <property name="hibernateProperties" ref="hibernateConfigProperties" />
         <property name="entityCacheStrategies" >
             <props>
+                <prop key="org.alfresco.repo.domain.hibernate.NamespaceEntityImpl">${cache.strategy}</prop>
+                <prop key="org.alfresco.repo.domain.hibernate.QNameEntityImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeStatusImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ChildAssocImpl">${cache.strategy}</prop>
@@ -192,6 +195,15 @@
     </bean>
 
     <!-- Hibernate-specific implementations of persistence components -->
+   <bean id="qnameDAO" class="org.alfresco.repo.domain.hibernate.HibernateQNameDAOImpl">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="qnameEntityCache">
+         <ref bean="qnameEntityCache"/>
+      </property>
+   </bean>
+
    <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
@@ -275,6 +287,9 @@
     </bean>
     
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
@@ -308,7 +323,6 @@
          </list>
       </property>
    </bean>
-
 
     <bean id="auditDao" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
         <property name="sessionFactory">

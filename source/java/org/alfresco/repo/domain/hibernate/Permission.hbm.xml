@@ -5,6 +5,9 @@
     'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
 
 <hibernate-mapping>
+
+    <typedef class="org.alfresco.repo.domain.hibernate.QNameUserType" name="QName" />
+
     <class
          name="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl"
          proxy="org.alfresco.repo.domain.DbAccessControlListChangeSet"
@@ -67,6 +70,7 @@
             name="aclChangeSet"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl"
             column="acl_change_set"
+            foreign-key="fk_alf_acl_acs"
             lazy="proxy"
             fetch="select"
             unique="false"
@@ -115,23 +119,34 @@
         <natural-id>
             <many-to-one name="permission"
                 class="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
-                column="permission_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
+                column="permission_id"
+                foreign-key="fk_alf_ace_perm"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="true"/>
             
             <many-to-one name="authority"
                 class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
-                column="authority_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
-            
-            <property name="allowed" column="allowed" type="boolean"
+                column="authority_id"
+                foreign-key="fk_alf_ace_auth"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
                 not-null="true"/>
+            
+            <property name="allowed" column="allowed" type="boolean" not-null="true"/>
             
             <property name="applies" column="applies" type="int" not-null="true"/>
             
             <many-to-one name="context"
                 class="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl"
-                column="context_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="false"/>
+                column="context_id"
+                foreign-key="fk_alf_ace_ctx"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="false"/>
         </natural-id>
         
         <version column="version" name="version" type="long"/>

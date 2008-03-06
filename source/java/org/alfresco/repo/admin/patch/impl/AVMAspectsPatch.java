@@ -31,6 +31,9 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMAspectName;
 import org.alfresco.repo.avm.AVMAspectNameDAO;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Patches from old style aspect storage for AVM to new style.
@@ -41,12 +44,18 @@ public class AVMAspectsPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.AVMAspects.result";
 
     private AVMAspectNameDAO fAVMAspectDAO;
+    private QNameDAO qnameDAO;
     
     public void setAvmAspectNameDAO(AVMAspectNameDAO dao)
     {
         fAVMAspectDAO = dao;
     }
     
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal()
      */
@@ -57,7 +66,9 @@ public class AVMAspectsPatch extends AbstractPatch
         while (iter.hasNext())
         {
             AVMAspectName aspect = iter.next();
-            aspect.getNode().getAspects().add(aspect.getName());
+            QName aspectQName = aspect.getName();
+            QNameEntity aspectQNameEntity = qnameDAO.getOrCreateQNameEntity(aspectQName);
+            aspect.getNode().getAspects().add(aspectQNameEntity.getId());
             fAVMAspectDAO.delete(aspect);
         }
         return I18NUtil.getMessage(MSG_SUCCESS);

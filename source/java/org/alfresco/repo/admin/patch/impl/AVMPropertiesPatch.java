@@ -31,6 +31,8 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMNodeProperty;
 import org.alfresco.repo.avm.AVMNodePropertyDAO;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Patch more remapping AVM properties.
@@ -40,8 +42,14 @@ public class AVMPropertiesPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.AVMProperties.result";
 
+    private QNameDAO qnameDAO;
     private AVMNodePropertyDAO fAVMNodePropertyDAO;
     
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
     public void setAvmNodePropertyDAO(AVMNodePropertyDAO dao)
     {
         fAVMNodePropertyDAO = dao;
@@ -57,7 +65,9 @@ public class AVMPropertiesPatch extends AbstractPatch
         while (iter.hasNext())
         {
             AVMNodeProperty prop = iter.next();
-            prop.getNode().getProperties().put(prop.getName(), prop.getValue());
+            QName propertyQName = prop.getName();
+            Long propertyQNameEntityId = qnameDAO.getOrCreateQNameEntity(propertyQName).getId();
+            prop.getNode().getProperties().put(propertyQNameEntityId, prop.getValue());
             fAVMNodePropertyDAO.delete(prop.getNode(), prop.getName());
         }
         return I18NUtil.getMessage(MSG_SUCCESS);

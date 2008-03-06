@@ -26,6 +26,7 @@
             name="server"
             class="org.alfresco.repo.domain.hibernate.ServerImpl"
             column="server_id"
+            foreign-key="fk_alf_txn_svr"
             lazy="proxy"
             fetch="select"
             unique="false"

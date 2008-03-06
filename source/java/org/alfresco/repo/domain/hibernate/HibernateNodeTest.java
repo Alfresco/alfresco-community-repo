@@ -37,15 +37,17 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeKey;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -60,7 +62,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.GenericJDBCException;
-import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
  * Test persistence and retrieval of Hibernate-specific implementations of the
@@ -76,6 +77,23 @@ public class HibernateNodeTest extends BaseSpringTest
     private Store store;
     private Server server;
     private Transaction transaction;
+    private NamespaceEntity cmNamespaceEntity;
+    private NamespaceEntity emptyNamespaceEntity;
+    private QNameEntity cmObjectQNameEntity;
+    private QNameEntity containerQNameEntity;
+    private QNameEntity contentQNameEntity;
+    private QNameEntity type1QNameEntity;
+    private QNameEntity type2QNameEntity;
+    private QNameEntity type3QNameEntity;
+    private QNameEntity aspect1QNameEntity;
+    private QNameEntity aspect2QNameEntity;
+    private QNameEntity aspect3QNameEntity;
+    private QNameEntity aspect4QNameEntity;
+    private QNameEntity prop1QNameEntity;
+    private QNameEntity propNameQNameEntity;
+    private QNameEntity propAuthorQNameEntity;
+    private QNameEntity propArchivedByQNameEntity;
+    private QNameEntity aspectAuditableQNameEntity;
     
     public HibernateNodeTest()
     {
@@ -101,6 +119,27 @@ public class HibernateNodeTest extends BaseSpringTest
         transaction.setServer(server);
         transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         getSession().save(transaction);
+        
+        // Create a QName for node type
+        QNameDAO qnameDAO = (QNameDAO) applicationContext.getBean("qnameDAO");
+        
+        cmNamespaceEntity = qnameDAO.getOrCreateNamespaceEntity(NamespaceService.CONTENT_MODEL_1_0_URI);
+        emptyNamespaceEntity = qnameDAO.getOrCreateNamespaceEntity("");
+        cmObjectQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.TYPE_CMOBJECT);
+        containerQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.TYPE_CONTAINER);
+        contentQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.TYPE_CONTENT);
+        type1QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "type1"));
+        type2QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "type2"));
+        type3QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "type3"));
+        aspect1QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "aspect1"));
+        aspect2QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "aspect2"));
+        aspect3QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "aspect3"));
+        aspect4QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "aspect4"));
+        prop1QNameEntity = qnameDAO.getOrCreateQNameEntity(QName.createQName(TEST_NAMESPACE, "prop1"));
+        propNameQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_NAME);
+        propAuthorQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_AUTHOR);
+        propArchivedByQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_BY);
+        aspectAuditableQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_AUDITABLE);
     }
     
     protected void onTearDownInTransaction()
@@ -121,7 +160,7 @@ public class HibernateNodeTest extends BaseSpringTest
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(GUID.generate());
-        node.setTypeQName(ContentModel.TYPE_CONTAINER);
+        node.setTypeQName(containerQNameEntity);
 
         // now it should work
 		Serializable id = getSession().save(node);
@@ -148,7 +187,7 @@ public class HibernateNodeTest extends BaseSpringTest
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(GUID.generate());
-        node.setTypeQName(ContentModel.TYPE_CONTAINER);
+        node.setTypeQName(containerQNameEntity);
         Serializable nodeId = getSession().save(node);
 
         // This should all be fine.  The node does not HAVE to have a status.
@@ -195,12 +234,12 @@ public class HibernateNodeTest extends BaseSpringTest
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(GUID.generate());
-        node.setTypeQName(ContentModel.TYPE_CONTAINER);
+        node.setTypeQName(containerQNameEntity);
         // give it a property map
-        Map<QName, PropertyValue> propertyMap = new HashMap<QName, PropertyValue>(5);
+        Map<Long, PropertyValue> propertyMap = new HashMap<Long, PropertyValue>(5);
         QName propertyQName = QName.createQName("{}A");
         PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.TEXT, "AAA");
-        propertyMap.put(propertyQName, propertyValue);
+        propertyMap.put(prop1QNameEntity.getId(), propertyValue);
         node.getProperties().putAll(propertyMap);
         // persist it
         Serializable id = getSession().save(node);
@@ -212,7 +251,7 @@ public class HibernateNodeTest extends BaseSpringTest
         propertyMap = node.getProperties();
         assertNotNull("Map not persisted", propertyMap);
         // ensure that the value is present
-        assertNotNull("Property value not present in map", QName.createQName("{}A"));
+        assertNotNull("Property value not present in map", propertyMap.get(prop1QNameEntity.getId()));
     }
 
     /**
@@ -225,19 +264,15 @@ public class HibernateNodeTest extends BaseSpringTest
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(GUID.generate());
-        node.setTypeQName(ContentModel.TYPE_CMOBJECT);
+        node.setTypeQName(cmObjectQNameEntity);
         
         // add some aspects
-        QName aspect1 = QName.createQName(TEST_NAMESPACE, "1");
-        QName aspect2 = QName.createQName(TEST_NAMESPACE, "2");
-        QName aspect3 = QName.createQName(TEST_NAMESPACE, "3");
-        QName aspect4 = QName.createQName(TEST_NAMESPACE, "4");
-        Set<QName> aspects = node.getAspects();
-        aspects.add(aspect1);
-        aspects.add(aspect2);
-        aspects.add(aspect3);
-        aspects.add(aspect4);
-        assertFalse("Set did not eliminate duplicate aspect qname", aspects.add(aspect4));
+        Set<Long> aspects = node.getAspects();
+        aspects.add(aspect1QNameEntity.getId());
+        aspects.add(aspect2QNameEntity.getId());
+        aspects.add(aspect3QNameEntity.getId());
+        aspects.add(aspect4QNameEntity.getId());
+        assertFalse("Set did not eliminate duplicate aspect qname", aspects.add(aspect4QNameEntity.getId()));
         
         // persist
         Serializable id = getSession().save(node);
@@ -258,20 +293,21 @@ public class HibernateNodeTest extends BaseSpringTest
         Node contentNode = new NodeImpl();
         contentNode.setStore(store);
         contentNode.setUuid(GUID.generate());
-        contentNode.setTypeQName(ContentModel.TYPE_CONTENT);
+        contentNode.setTypeQName(contentQNameEntity);
         Serializable contentNodeId = getSession().save(contentNode);
 
         // make a container node
         Node containerNode = new NodeImpl();
         containerNode.setStore(store);
         containerNode.setUuid(GUID.generate());
-        containerNode.setTypeQName(ContentModel.TYPE_CONTAINER);
+        containerNode.setTypeQName(containerQNameEntity);
         Serializable containerNodeId = getSession().save(containerNode);
         // create an association to the content
         ChildAssoc assoc1 = new ChildAssocImpl();
         assoc1.setIsPrimary(true);
-        assoc1.setTypeQName(QName.createQName(null, "type1"));
-        assoc1.setQname(QName.createQName(null, "number1"));
+        assoc1.setTypeQName(type1QNameEntity);
+        assoc1.setQnameNamespace(emptyNamespaceEntity);
+        assoc1.setQnameLocalName("number1");
         assoc1.setChildNodeName("number1");
         assoc1.setChildNodeNameCrc(1);
         assoc1.buildAssociation(containerNode, contentNode);
@@ -280,8 +316,9 @@ public class HibernateNodeTest extends BaseSpringTest
         // make another association between the same two parent and child nodes
         ChildAssoc assoc2 = new ChildAssocImpl();
         assoc2.setIsPrimary(true);
-        assoc2.setTypeQName(QName.createQName(null, "type2"));
-        assoc2.setQname(QName.createQName(null, "number2"));
+        assoc2.setTypeQName(type2QNameEntity);
+        assoc2.setQnameNamespace(emptyNamespaceEntity);
+        assoc2.setQnameLocalName("number2");
         assoc2.setChildNodeName("number2");
         assoc2.setChildNodeNameCrc(2);
         assoc2.buildAssociation(containerNode, contentNode);
@@ -335,31 +372,31 @@ public class HibernateNodeTest extends BaseSpringTest
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(GUID.generate());
-        node.setTypeQName(ContentModel.TYPE_CONTENT);
+        node.setTypeQName(contentQNameEntity);
         Serializable nodeId = getSession().save(node);
         
         // add some aspects to the node
-        Set<QName> aspects = node.getAspects();
-        aspects.add(ContentModel.ASPECT_AUDITABLE);
+        Set<Long> aspects = node.getAspects();
+        aspects.add(aspectAuditableQNameEntity.getId());
         
         // add some properties
-        Map<QName, PropertyValue> properties = node.getProperties();
-        properties.put(ContentModel.PROP_NAME, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        Map<Long, PropertyValue> properties = node.getProperties();
+        properties.put(propNameQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
         
         // check that the session hands back the same instance
         Node checkNode = (Node) getSession().get(NodeImpl.class, nodeId);
         assertNotNull(checkNode);
         assertTrue("Node retrieved was not same instance", checkNode == node);
         
-        Set<QName> checkAspects = checkNode.getAspects();
+        Set<Long> checkAspects = checkNode.getAspects();
         assertTrue("Aspect set retrieved was not the same instance", checkAspects == aspects);
         assertEquals("Incorrect number of aspects", 1, checkAspects.size());
-        QName checkQName = (QName) checkAspects.toArray()[0];
-        assertTrue("QName retrieved was not the same instance", checkQName == ContentModel.ASPECT_AUDITABLE);
+        Long checkQNameId = (Long) checkAspects.toArray()[0];
+        assertEquals("QName retrieved was not the same instance", aspectAuditableQNameEntity.getId(), checkQNameId);
         
-        Map<QName, PropertyValue> checkProperties = checkNode.getProperties();
+        Map<Long, PropertyValue> checkProperties = checkNode.getProperties();
         assertTrue("Propery map retrieved was not the same instance", checkProperties == properties);
-        assertTrue("Property not found", checkProperties.containsKey(ContentModel.PROP_NAME));
+        assertTrue("Property not found", checkProperties.containsKey(propNameQNameEntity.getId()));
 
         flushAndClear();
         // commit the transaction
@@ -423,7 +460,7 @@ public class HibernateNodeTest extends BaseSpringTest
                 Node node = new NodeImpl();
                 node.setStore(store);
                 node.setUuid(GUID.generate());
-                node.setTypeQName(ContentModel.TYPE_CONTENT);
+                node.setTypeQName(contentQNameEntity);
                 Long nodeId = (Long) getSession().save(node);
                 
                 // Record the ID
@@ -434,12 +471,12 @@ public class HibernateNodeTest extends BaseSpringTest
                 /* flushAndClear(); */
 
                 // add some aspects to the node
-                Set<QName> aspects = node.getAspects();
-                aspects.add(ContentModel.ASPECT_AUDITABLE);
+                Set<Long> aspects = node.getAspects();
+                aspects.add(aspectAuditableQNameEntity.getId());
                 
                 // add some properties
-                Map<QName, PropertyValue> properties = node.getProperties();
-                properties.put(ContentModel.PROP_NAME, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+                Map<Long, PropertyValue> properties = node.getProperties();
+                properties.put(propNameQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
             }
             // Commit the transaction
             txn.commit();
@@ -472,14 +509,14 @@ public class HibernateNodeTest extends BaseSpringTest
             for (Long nodeId : nodeIds)
             {
                 Node node = (Node) session.get(NodeImpl.class, nodeId);
-                Set<QName> aspects = node.getAspects();
-                Map<QName, PropertyValue> properties = node.getProperties();
-                if (!aspects.contains(ContentModel.ASPECT_AUDITABLE))
+                Set<Long> aspects = node.getAspects();
+                Map<Long, PropertyValue> properties = node.getProperties();
+                if (!aspects.contains(aspectAuditableQNameEntity.getId()))
                 {
                     // Missing the aspect
                     incorrectAspectCount++;
                 }
-                if (!properties.containsKey(ContentModel.PROP_NAME))
+                if (!properties.containsKey(propNameQNameEntity.getId()))
                 {
                     // Missing property
                     incorrectPropertyCount++;
@@ -511,10 +548,10 @@ public class HibernateNodeTest extends BaseSpringTest
         Node containerNode = new NodeImpl();
         containerNode.setStore(store);
         containerNode.setUuid(GUID.generate());
-        containerNode.setTypeQName(ContentModel.TYPE_CONTAINER);
-        containerNode.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        containerNode.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        containerNode.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        containerNode.setTypeQName(containerQNameEntity);
+        containerNode.getProperties().put(propAuthorQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        containerNode.getProperties().put(propArchivedByQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        containerNode.getAspects().add(aspectAuditableQNameEntity.getId());
         Serializable containerNodeId = getSession().save(containerNode);
         NodeKey containerNodeKey = new NodeKey(containerNode.getNodeRef());
         NodeStatus containerNodeStatus = new NodeStatusImpl();
@@ -526,10 +563,10 @@ public class HibernateNodeTest extends BaseSpringTest
         Node contentNode1 = new NodeImpl();
         contentNode1.setStore(store);
         contentNode1.setUuid(GUID.generate());
-        contentNode1.setTypeQName(ContentModel.TYPE_CONTENT);
-        contentNode1.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        contentNode1.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        contentNode1.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        contentNode1.setTypeQName(contentQNameEntity);
+        contentNode1.getProperties().put(propAuthorQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode1.getProperties().put(propArchivedByQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode1.getAspects().add(aspectAuditableQNameEntity.getId());
         Serializable contentNode1Id = getSession().save(contentNode1);
         NodeKey contentNodeKey1 = new NodeKey(contentNode1.getNodeRef());
         NodeStatus contentNodeStatus1 = new NodeStatusImpl();
@@ -541,11 +578,11 @@ public class HibernateNodeTest extends BaseSpringTest
         Node contentNode2 = new NodeImpl();
         contentNode2.setStore(store);
         contentNode2.setUuid(GUID.generate());
-        contentNode2.setTypeQName(ContentModel.TYPE_CONTENT);
+        contentNode2.setTypeQName(contentQNameEntity);
         Serializable contentNode2Id = getSession().save(contentNode2);
-        contentNode2.getProperties().put(ContentModel.PROP_AUTHOR, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        contentNode2.getProperties().put(ContentModel.PROP_ARCHIVED_BY, new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
-        contentNode2.getAspects().add(ContentModel.ASPECT_AUDITABLE);
+        contentNode2.getProperties().put(propAuthorQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode2.getProperties().put(propArchivedByQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+        contentNode2.getAspects().add(aspectAuditableQNameEntity.getId());
         NodeKey contentNodeKey2 = new NodeKey(contentNode2.getNodeRef());
         NodeStatus contentNodeStatus2 = new NodeStatusImpl();
         contentNodeStatus2.setKey(contentNodeKey2);
@@ -555,8 +592,9 @@ public class HibernateNodeTest extends BaseSpringTest
         // create an association to content 1
         ChildAssoc assoc1 = new ChildAssocImpl();
         assoc1.setIsPrimary(true);
-        assoc1.setTypeQName(QName.createQName(null, "type1"));
-        assoc1.setQname(QName.createQName(null, "number1"));
+        assoc1.setTypeQName(type1QNameEntity);
+        assoc1.setQnameNamespace(emptyNamespaceEntity);
+        assoc1.setQnameLocalName("number1");
         assoc1.setChildNodeName("number1");
         assoc1.setChildNodeNameCrc(1);
         assoc1.buildAssociation(containerNode, contentNode1);
@@ -564,8 +602,9 @@ public class HibernateNodeTest extends BaseSpringTest
         // create an association to content 2
         ChildAssoc assoc2 = new ChildAssocImpl();
         assoc2.setIsPrimary(true);
-        assoc2.setTypeQName(QName.createQName(null, "type2"));
-        assoc2.setQname(QName.createQName(null, "number2"));
+        assoc2.setTypeQName(type2QNameEntity);
+        assoc2.setQnameNamespace(emptyNamespaceEntity);
+        assoc2.setQnameLocalName("number2");
         assoc2.setChildNodeName("number2");
         assoc2.setChildNodeNameCrc(2);
         assoc2.buildAssociation(containerNode, contentNode2);
@@ -594,8 +633,9 @@ public class HibernateNodeTest extends BaseSpringTest
         contentNode2 = contentNodeStatus2.getNode();
         ChildAssoc assoc3 = new ChildAssocImpl();
         assoc3.setIsPrimary(false);
-        assoc3.setTypeQName(QName.createQName(null, "type3"));
-        assoc3.setQname(QName.createQName(null, "number3"));
+        assoc3.setTypeQName(type3QNameEntity);
+        assoc3.setQnameNamespace(emptyNamespaceEntity);
+        assoc3.setQnameLocalName("number3");
         assoc3.setChildNodeName("number3");
         assoc3.setChildNodeNameCrc(2);
         assoc3.buildAssociation(containerNode, contentNode2);  // check whether the children are pulled in for this
@@ -612,13 +652,13 @@ public class HibernateNodeTest extends BaseSpringTest
         Node parentNode = new NodeImpl();
         parentNode.setStore(store);
         parentNode.setUuid(GUID.generate());
-        parentNode.setTypeQName(ContentModel.TYPE_CONTAINER);
+        parentNode.setTypeQName(containerQNameEntity);
         Long nodeIdOne = (Long) getSession().save(parentNode);
         // Create child node
         Node childNode = new NodeImpl();
         childNode.setStore(store);
         childNode.setUuid(GUID.generate());
-        childNode.setTypeQName(ContentModel.TYPE_CONTENT);
+        childNode.setTypeQName(contentQNameEntity);
         Long nodeIdTwo = (Long) getSession().save(childNode);
         // Get them into the database
         getSession().flush();
@@ -631,8 +671,9 @@ public class HibernateNodeTest extends BaseSpringTest
             ChildAssoc assoc = new ChildAssocImpl();
             assoc.buildAssociation(parentNode, childNode);
             assoc.setIsPrimary(false);
-            assoc.setTypeQName(QName.createQName(null, "TYPE"));
-            assoc.setQname(QName.createQName(null, "" + System.nanoTime()));
+            assoc.setTypeQName(type1QNameEntity);
+            assoc.setQnameNamespace(emptyNamespaceEntity);
+            assoc.setQnameLocalName("" + System.nanoTime());
             assoc.setChildNodeName(GUID.generate());                        // It must be unique
             assoc.setChildNodeNameCrc(-1L);
             Long assocId = (Long) getSession().save(assoc);

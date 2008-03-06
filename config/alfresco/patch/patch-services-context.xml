@@ -841,6 +841,9 @@
         <property name="avmAspectNameDAO">
             <ref bean="avmAspectNameDAO"/>
         </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO"/>
+        </property>
     </bean>
 
     <bean id="patch.AVMProperties" class="org.alfresco.repo.admin.patch.impl.AVMPropertiesPatch" parent="basePatch">
@@ -851,6 +854,9 @@
         <property name="targetSchema"><value>62</value></property>
         <property name="avmNodePropertyDAO">
             <ref bean="avmNodePropertyDAO"/>
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO"/>
         </property>
     </bean>
     

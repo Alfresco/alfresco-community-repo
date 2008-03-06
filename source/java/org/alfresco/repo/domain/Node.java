@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Interface for persistent <b>node</b> objects.
@@ -64,13 +63,13 @@ public interface Node
     
     public void setUuid(String uuid);
     
-    public QName getTypeQName();
+    public QNameEntity getTypeQName();
     
-    public void setTypeQName(QName typeQName);
+    public void setTypeQName(QNameEntity typeQName);
 
-    public Set<QName> getAspects();
+    public Set<Long> getAspects();
     
-    public Map<QName, PropertyValue> getProperties();
+    public Map<Long, PropertyValue> getProperties();
 
     public DbAccessControlList getAccessControlList();
 

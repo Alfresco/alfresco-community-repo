@@ -26,7 +26,7 @@ package org.alfresco.repo.avm;
 import java.io.Serializable;
 
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.repo.domain.QNameEntity;
 
 /**
  * Simple bean to hold properties attached to AVMStores.
@@ -49,7 +49,7 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     /**
      * The name of the property.
      */
-    private QName fName;
+    private QNameEntity name;
     
     /**
      * The actual PropertyValue.
@@ -61,21 +61,19 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
     }
 
     /**
-     * Get the name of the property.
-     * @return The QName for the property.
+     * {@inheritDoc}
      */
-    public QName getName()
+    public QNameEntity getName()
     {
-        return fName;
+        return name;
     }
 
     /**
-     * Set the name of the property.
-     * @param name The QName of the property.
+     * {@inheritDoc}
      */
-    public void setName(QName name)
+    public void setName(QNameEntity name)
     {
-        fName = name;
+        this.name = name;
     }
 
     /**
@@ -144,13 +142,13 @@ class AVMStorePropertyImpl implements AVMStoreProperty, Serializable
             return false;
         }
         AVMStoreProperty o = (AVMStoreProperty)other;
-        return fStore.equals(o.getStore()) && fName.equals(o.getName());
+        return fStore.equals(o.getStore()) && name.equals(o.getName());
     }
     
     @Override
     public int hashCode()
     {
-        return fStore.hashCode() + fName.hashCode();
+        return fStore.hashCode() + name.hashCode();
     }
 }
 

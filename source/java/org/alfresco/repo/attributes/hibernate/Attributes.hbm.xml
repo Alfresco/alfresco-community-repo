@@ -14,7 +14,7 @@
         </id>
         <discriminator column="type" type="string" length="1"/>
         <version column="version" name="version" type="long"/>
-		<many-to-one name="acl" column="acl_id" foreign-key="fk_attributes_n_acl"
+		<many-to-one name="acl" column="acl_id" foreign-key="fk_alf_attr_acl"
 			class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
         <!-- A boolean valued attribute -->
         <subclass name="BooleanAttributeImpl" proxy="BooleanAttribute" lazy="false"
@@ -75,22 +75,22 @@
     <class name="GlobalAttributeEntryImpl" proxy="GlobalAttributeEntry" table="alf_global_attributes" lazy="false">
         <cache usage="read-write"/>
         <id name="name" type="string" length="160"/>
-        <many-to-one class="AttributeImpl" name="attribute" unique="true" lazy="false"/>
+        <many-to-one class="AttributeImpl" foreign-key="fk_alf_gatt_att" name="attribute" unique="true" lazy="false"/>
     </class>
     <class name="MapEntryImpl" proxy="MapEntry" lazy="false" table="alf_map_attribute_entries">
         <cache usage="read-write"/>
         <composite-id name="key" class="MapEntryKey">
-            <key-many-to-one class="MapAttributeImpl" name="map" column="map_id"/>
+            <key-many-to-one class="MapAttributeImpl" name="map" column="map_id" foreign-key="fk_alf_matt_matt"/>
             <key-property name="key" type="string" length="160" column="mkey"/>
         </composite-id>
-        <many-to-one class="AttributeImpl" name="attribute" column="attribute_id" lazy="false"/>
+        <many-to-one class="AttributeImpl" name="attribute" column="attribute_id" lazy="false" foreign-key="fk_alf_matt_att"/>
     </class>       
     <class name="ListEntryImpl" proxy="ListEntry" lazy="false" table="alf_list_attribute_entries">
         <cache usage="read-write"/>
         <composite-id name="key" class="ListEntryKey">
-            <key-many-to-one class="ListAttributeImpl" name="list" column="list_id"/>
+            <key-many-to-one class="ListAttributeImpl" name="list" column="list_id" foreign-key="fk_alf_lent_latt"/>
             <key-property name="index" type="int" column="mindex"/>
         </composite-id>
-        <many-to-one class="AttributeImpl" name="attribute" column="attribute_id" lazy="false"/>
+        <many-to-one class="AttributeImpl" name="attribute" column="attribute_id" lazy="false" foreign-key="fk_alf_lent_att"/>
     </class>
 </hibernate-mapping>

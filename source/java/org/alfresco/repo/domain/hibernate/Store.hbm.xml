@@ -25,6 +25,7 @@
       <many-to-one
             name="rootNode"
             not-null="true"
+            foreign-key="fk_alf_store_rn"
             lazy="proxy"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             fetch="select" >

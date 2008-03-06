@@ -44,6 +44,8 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
@@ -91,6 +93,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
     private static Log loggerPaths = LogFactory.getLog(DbNodeServiceImpl.class.getName() + ".paths");
     
+    private QNameDAO qnameDAO;
     private NodeDaoService nodeDaoService;
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
@@ -99,6 +102,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public DbNodeServiceImpl()
     {
         storeArchiveMap = new StoreArchiveMap();        // in case it is not set
+    }
+
+    /**
+     * Set the component for creating QName entities.
+     */
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
     }
 
     public void setNodeDaoService(NodeDaoService nodeDaoService)
@@ -426,14 +437,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<AspectDefinition> defaultAspectDefs = classDefinition.getDefaultAspects();
         
         // add all the aspects to the node
-        Set<QName> nodeAspects = node.getAspects();
+        Set<Long> nodeAspects = node.getAspects();
         for (AspectDefinition defaultAspectDef : defaultAspectDefs)
         {
-            QName aspectTypeQName = defaultAspectDef.getName();            
-            invokeBeforeAddAspect(nodeRef, aspectTypeQName);
-            nodeAspects.add(aspectTypeQName);
+            QName defaultAspectQName = defaultAspectDef.getName();
+            QNameEntity defaultAspectQNameEntity = qnameDAO.getOrCreateQNameEntity(defaultAspectDef.getName());
+            invokeBeforeAddAspect(nodeRef, defaultAspectQName);
+            nodeAspects.add(defaultAspectQNameEntity.getId());
             addDefaultPropertyValues(defaultAspectDef, properties);
-            invokeOnAddAspect(nodeRef, aspectTypeQName);
+            invokeOnAddAspect(nodeRef, defaultAspectQName);
             
             // Now add any default aspects for this aspect
             addDefaultAspects(defaultAspectDef, node, properties);
@@ -465,8 +477,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         boolean movingStore = !nodeToMoveRef.getStoreRef().equals(newParentRef.getStoreRef());
         
         // data needed for policy invocation
-        QName nodeToMoveTypeQName = nodeToMove.getTypeQName();
-        Set<QName> nodeToMoveAspects = nodeToMove.getAspects();
+        QName nodeToMoveTypeQName = nodeToMove.getTypeQName().getQName();
+        Set<Long> nodeToMoveAspects = nodeToMove.getAspects();
 
         // Invoke policy behaviour
         if (movingStore)
@@ -510,9 +522,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // invoke policy behaviour
         if (movingStore)
         {
+            Set<QName> nodeToMoveAspectQNames = new HashSet<QName>(17);
+            for (Long qnameEntityId : nodeToMoveAspects)
+            {
+                QName nodeToMoveAspectQName = qnameDAO.getQNameEntity(qnameEntityId).getQName();
+                nodeToMoveAspectQNames.add(nodeToMoveAspectQName);
+            }
             // TODO for now indicate that the node has been archived to prevent the version history from being removed
             //      in the future a onMove policy could be added and remove the need for onDelete and onCreate to be fired here
-            invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspects, true);
+            invokeOnDeleteNode(oldAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);
             invokeOnCreateNode(newAssoc.getChildAssocRef());
         }
         else
@@ -556,7 +574,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Node node = getNodeNotNull(nodeRef);
-        return node.getTypeQName();
+        return node.getTypeQName().getQName();
     }
     
     /**
@@ -575,8 +593,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policies
         invokeBeforeUpdateNode(nodeRef);
         
+        // Ensure that we have a QName entity to represent the type
+        QNameEntity typeQNameEntity = qnameDAO.getOrCreateQNameEntity(typeQName);
         // Get the node and set the new type
-        node.setTypeQName(typeQName);
+        node.setTypeQName(typeQNameEntity);
         
         // Add the default aspects to the node (update the properties with any new default values)
         Map<QName, Serializable> properties = this.getPropertiesImpl(node);
@@ -626,8 +646,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Set the property values back on the node
         setProperties(nodeRef, nodeProperties);
         
+        // Get the persistale QNameEntity for the aspect
+        QNameEntity aspectTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(aspectTypeQName);
         // physically attach the aspect to the node
-        if (node.getAspects().add(aspectTypeQName) == true)
+        if (node.getAspects().add(aspectTypeQNameEntity.getId()) == true)
         {                                
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
@@ -652,9 +674,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // get the node
         Node node = getNodeNotNull(nodeRef);
-        Set<QName> nodeAspects = node.getAspects();
+        Set<Long> nodeAspects = node.getAspects();
         
-        if (!nodeAspects.contains(aspectTypeQName))
+        // Get the persistale QNameEntity for the aspect
+        QNameEntity aspectTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(aspectTypeQName);
+        if (!nodeAspects.contains(aspectTypeQNameEntity.getId()))
         {
             // The aspect isn't present so just leave it
             return;
@@ -665,13 +689,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
         
         // remove the aspect, if present
-        node.getAspects().remove(aspectTypeQName);
+        nodeAspects.remove(aspectTypeQNameEntity.getId());
 
-        Map<QName, PropertyValue> nodeProperties = node.getProperties();
+        Map<Long, PropertyValue> nodeProperties = node.getProperties();
         Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
-        for (QName propertyName : propertyDefs.keySet())
+        for (QName propertyQName : propertyDefs.keySet())
         {
-            nodeProperties.remove(propertyName);
+            QNameEntity propertyQNameEntity = qnameDAO.getOrCreateQNameEntity(propertyQName);
+            nodeProperties.remove(propertyQNameEntity.getId());
         }
         
         // Remove child associations
@@ -680,7 +705,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (ChildAssoc childAssoc : childAssocs)
         {
             // Ignore if the association type is not defined by the aspect
-            QName childAssocQName = childAssoc.getTypeQName();
+            QName childAssocQName = childAssoc.getTypeQName().getQName();
             if (!childAssocDefs.containsKey(childAssocQName))
             {
                 continue;
@@ -695,7 +720,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (NodeAssoc nodeAssoc : nodeAssocs)
         {
             // Ignore if the association type is not defined by the aspect
-            QName nodeAssocQName = nodeAssoc.getTypeQName();
+            QName nodeAssocQName = nodeAssoc.getTypeQName().getQName();
             if (!assocDefs.containsKey(nodeAssocQName))
             {
                 continue;
@@ -717,11 +742,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @see Node#getAspects()
      */
-    public boolean hasAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
+    public boolean hasAspect(NodeRef nodeRef, QName aspectQName) throws InvalidNodeRefException, InvalidAspectException
     {
+        QNameEntity aspectQNameEntity = qnameDAO.getQNameEntity(aspectQName);
+        if (aspectQNameEntity == null)
+        {
+            // There is no persisted, fixed QName like this
+            return false;
+        }
         Node node = getNodeNotNull(nodeRef);
-        Set<QName> aspectQNames = node.getAspects();
-        boolean hasAspect = aspectQNames.contains(aspectRef);
+        Set<Long> aspectQNames = node.getAspects();
+        boolean hasAspect = aspectQNames.contains(aspectQNameEntity.getId());
         // done
         return hasAspect;
     }
@@ -729,10 +760,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Node node = getNodeNotNull(nodeRef);
-        Set<QName> aspectQNames = node.getAspects();
+        Set<Long> aspectQNameEntities = node.getAspects();
         // copy the set to ensure initialization
-        Set<QName> ret = new HashSet<QName>(aspectQNames.size());
-        ret.addAll(aspectQNames);
+        Set<QName> ret = new HashSet<QName>(aspectQNameEntities.size());
+        for (Long aspectQNameEntityId : aspectQNameEntities)
+        {
+            QNameEntity aspectQNameEntity = qnameDAO.getQNameEntity(aspectQNameEntityId);
+            ret.add(aspectQNameEntity.getQName());
+        }
         // done
         return ret;
     }
@@ -751,13 +786,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ChildAssociationRef childAssocRef = getPrimaryParent(nodeRef);
         
         // get type and aspect QNames as they will be unavailable after the delete
-        QName nodeTypeQName = node.getTypeQName();
-        Set<QName> nodeAspectQNames = node.getAspects();
+        QName nodeTypeQName = node.getTypeQName().getQName();
+        Set<Long> nodeAspectQNameEntityIds = node.getAspects();
 
+        // Get QNameEntity for subsequent checks
+        QNameEntity aspectTempQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_TEMPORARY);
+        QNameEntity aspectWorkingCopyQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_WORKING_COPY);
+        
         // check if we need to archive the node
         StoreRef archiveStoreRef = null;
-        if (nodeAspectQNames.contains(ContentModel.ASPECT_TEMPORARY) ||
-                nodeAspectQNames.contains(ContentModel.ASPECT_WORKING_COPY))
+        if (nodeAspectQNameEntityIds.contains(aspectTempQNameEntity.getId()) ||
+                nodeAspectQNameEntityIds.contains(aspectWorkingCopyQNameEntity.getId()))
         {
            // The node is either temporary or a working copy.
            // It can not be archived.
@@ -770,7 +809,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
            // remove tenant domain - to retrieve archive store from map
            archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
            // get the type and check if we need archiving
-           TypeDefinition typeDef = dictionaryService.getType(node.getTypeQName());
+           TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
            if (typeDef == null || !typeDef.isArchive() || archiveStoreRef == null)
            {
               requiresDelete = true;
@@ -782,7 +821,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // perform a normal deletion
             nodeDaoService.deleteNode(node, true);
             // Invoke policy behaviours
-            invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, false);
+            Set<QName> nodeToDeleteAspectQNames = new HashSet<QName>(17);
+            for (Long qnameEntityId : nodeAspectQNameEntityIds)
+            {
+                QName nodeToDeleteAspectQName = qnameDAO.getQNameEntity(qnameEntityId).getQName();
+                nodeToDeleteAspectQNames.add(nodeToDeleteAspectQName);
+            }
+            invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeToDeleteAspectQNames, false);
         }
         else
         {
@@ -971,14 +1016,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     private Map<QName, Serializable> getPropertiesImpl(Node node) throws InvalidNodeRefException
     {
-    	Map<QName,PropertyDefinition> propDefs = dictionaryService.getPropertyDefs(node.getTypeQName());
-    	
-        Map<QName, PropertyValue> nodeProperties = node.getProperties();
+    	Map<QName,PropertyDefinition> propDefs = dictionaryService.getPropertyDefs(node.getTypeQName().getQName());
+        Map<Long, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> ret = new HashMap<QName, Serializable>(nodeProperties.size());
         // copy values
-        for (Map.Entry<QName, PropertyValue> entry: nodeProperties.entrySet())
+        for (Map.Entry<Long, PropertyValue> entry: nodeProperties.entrySet())
         {
-            QName propertyQName = entry.getKey();
+            Long propertyQNameId = entry.getKey();
+            QName propertyQName = qnameDAO.getQNameEntity(propertyQNameId).getQName();
             PropertyValue propertyValue = entry.getValue();
             // get the property definition
             PropertyDefinition propertyDef = propDefs.get(propertyQName);
@@ -1024,28 +1069,37 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             return node.getId();
         }
         
-        Map<QName, PropertyValue> properties = node.getProperties();
-        PropertyValue propertyValue = properties.get(qname);
-        
-        // check if we need to provide a spoofed name
-        if (propertyValue == null && qname.equals(ContentModel.PROP_NAME))
+        // Get the QName entity
+        QNameEntity qnameEntity = qnameDAO.getQNameEntity(qname);
+        if (qnameEntity == null)
         {
-            return nodeRef.getId();
+            // There is no persisted, fixed QName like this
+            return null;
         }
-        
-        // get the property definition
-        PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
-        
-        if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && 
-            (propertyValue != null) && (propertyValue.getStringValue() != null))
+        else
         {
-        	propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
+            Map<Long, PropertyValue> properties = node.getProperties();
+            PropertyValue propertyValue = properties.get(qnameEntity.getId());
+            
+            // check if we need to provide a spoofed name
+            if (propertyValue == null && qname.equals(ContentModel.PROP_NAME))
+            {
+                return nodeRef.getId();
+            }
+            
+            // Convert any NodeRefs using multi-tenant translation
+            PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && 
+                (propertyValue != null) && (propertyValue.getStringValue() != null))
+            {
+                propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
+            }
+            
+            // convert to the correct type
+            Serializable value = makeSerializableValue(propertyDef, propertyValue);
+            // done
+            return value;
         }
-        
-        // convert to the correct type
-        Serializable value = makeSerializableValue(propertyDef, propertyValue);
-        // done
-        return value;
     }
 
     /**
@@ -1095,17 +1149,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         extractIntrinsicProperties(node, properties);
         
         // copy properties onto node
-        Map<QName, PropertyValue> nodeProperties = node.getProperties();
+        Map<Long, PropertyValue> nodeProperties = node.getProperties();
         nodeProperties.clear();
         
         // check the property type and copy the values across
         for (QName propertyQName : properties.keySet())
         {
+            QNameEntity propertyQNameEntity = qnameDAO.getOrCreateQNameEntity(propertyQName);
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            // Get the value to persist
             Serializable value = properties.get(propertyQName);
             // get a persistable value
             PropertyValue propertyValue = makePropertyValue(propertyDef, value);
-            nodeProperties.put(propertyQName, propertyValue);
+            nodeProperties.put(propertyQNameEntity.getId(), propertyValue);
         }
         
         // update the node status
@@ -1160,11 +1216,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         NodeRef nodeRef = node.getNodeRef();
         
-        Map<QName, PropertyValue> properties = node.getProperties();
+        Map<Long, PropertyValue> properties = node.getProperties();
         PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+        // Get the persistable key
+        QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(qname);
         // get a persistable value
         PropertyValue propertyValue = makePropertyValue(propertyDef, value);
-        properties.put(qname, propertyValue);
+        properties.put(qnameEntity.getId(), propertyValue);
             
         // update the node status
         nodeDaoService.recordChangeId(nodeRef);
@@ -1185,11 +1243,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
         
+        // Get the persistable QNameEntity
+        QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(qname);
         // Get the values before
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(node);
         // Remove the property
-        Map<QName, PropertyValue> properties = node.getProperties();
-        properties.remove(qname);
+        Map<Long, PropertyValue> properties = node.getProperties();
+        properties.remove(qnameEntity.getId());
         // Get the values afterwards
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(node);
         
@@ -1234,8 +1294,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(parentAssocs.size());
         for (ChildAssoc assoc : parentAssocs)
         {
+            QName assocTypeQName = assoc.getTypeQName().getQName();
+            QName assocQName = assoc.getQname();
             // does the qname match the pattern?
-            if (!qnamePattern.isMatch(assoc.getQname()) || !typeQNamePattern.isMatch(assoc.getTypeQName()))
+            if (!qnamePattern.isMatch(assocQName) || !typeQNamePattern.isMatch(assocTypeQName))
             {
                 // no match - ignore
                 continue;
@@ -1391,8 +1453,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocs.size());
         for (NodeAssoc assoc : assocs)
         {
+            QName assocTypeQName = assoc.getTypeQName().getQName();
             // check qname pattern
-            if (!qnamePattern.isMatch(assoc.getTypeQName()))
+            if (!qnamePattern.isMatch(assocTypeQName))
             {
                 continue;   // the assoc name doesn't match the pattern given 
             }
@@ -1410,8 +1473,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocs.size());
         for (NodeAssoc assoc : assocs)
         {
+            QName assocTypeQName = assoc.getTypeQName().getQName();
             // check qname pattern
-            if (!qnamePattern.isMatch(assoc.getTypeQName()))
+            if (!qnamePattern.isMatch(assocTypeQName))
             {
                 continue;   // the assoc name doesn't match the pattern given 
             }
@@ -1452,7 +1516,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         boolean hasParents = parentAssocs.size() > 0;
         // does the current node have a root aspect?
         boolean isRoot = hasAspect(currentNodeRef, ContentModel.ASPECT_ROOT);
-        boolean isStoreRoot = currentNode.getTypeQName().equals(ContentModel.TYPE_STOREROOT);
+        boolean isStoreRoot = currentNode.getTypeQName().getQName().equals(ContentModel.TYPE_STOREROOT);
         
         // look for a root.  If we only want the primary root, then ignore all but the top-level root.
         if (isRoot && !(primaryOnly && hasParents))  // exclude primary search with parents present
@@ -1482,8 +1546,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
             if (first != null)
             {
-                // mimic an association that would appear if the current node was below
-                // the root node
+                // mimic an association that would appear if the current node was below the root node
                 // or if first beneath the root node it will make the real thing 
                 ChildAssociationRef updateAssocRef = new ChildAssociationRef(
                        isStoreRoot ? ContentModel.ASSOC_CHILDREN : first.getRef().getTypeQName(),
@@ -1531,7 +1594,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             NodeRef childRef = tenantService.getBaseName(assoc.getChild().getNodeRef());
             boolean isPrimary = assoc.getIsPrimary();
             // build a real association reference
-            ChildAssociationRef assocRef = new ChildAssociationRef(assoc.getTypeQName(), parentRef, qname, childRef, isPrimary, -1);
+            ChildAssociationRef assocRef = new ChildAssociationRef(
+                    assoc.getTypeQName().getQName(),
+                    parentRef,
+                    qname,
+                    childRef,
+                    isPrimary,
+                    -1);
             // Ordering is not important here: We are building distinct paths upwards
             Path.Element element = new Path.ChildAssocElement(assocRef);
             // create a new path that builds on the current path
@@ -1612,41 +1681,51 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
     {
+        QNameEntity aspectQNameEntityArchived = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_ARCHIVED);
+        QNameEntity propQNameEntityOwner = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_OWNER);
+        QNameEntity propQNameEntityCreator = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_CREATOR);
+        QNameEntity propQNameArchivedBy = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_BY);
+        QNameEntity propQNameArchivedDate = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_DATE);
+        QNameEntity propQNameArchivedOriginalParentAssoc = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        
         NodeStatus nodeStatus = nodeDaoService.getNodeStatus(nodeRef, false);
         Node node = nodeStatus.getNode();
         ChildAssoc primaryParentAssoc = nodeDaoService.getPrimaryParentAssoc(node);
         
         // add the aspect
-        Set<QName> aspects = node.getAspects();
-        aspects.add(ContentModel.ASPECT_ARCHIVED);
-        Map<QName, PropertyValue> properties = node.getProperties();
+        Set<Long> aspects = node.getAspects();
+        aspects.add(aspectQNameEntityArchived.getId());
+        Map<Long, PropertyValue> properties = node.getProperties();
         PropertyValue archivedByProperty = makePropertyValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_BY),
                 AuthenticationUtil.getCurrentUserName());
-        properties.put(ContentModel.PROP_ARCHIVED_BY, archivedByProperty);
+        properties.put(propQNameArchivedBy.getId(), archivedByProperty);
         PropertyValue archivedDateProperty = makePropertyValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_DATE),
                 new Date());
-        properties.put(ContentModel.PROP_ARCHIVED_DATE, archivedDateProperty);
+        properties.put(propQNameArchivedDate.getId(), archivedDateProperty);
         PropertyValue archivedPrimaryParentNodeRefProperty = makePropertyValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
                 primaryParentAssoc.getChildAssocRef());
-        properties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
-        PropertyValue originalOwnerProperty = properties.get(ContentModel.PROP_OWNER);
-        PropertyValue originalCreatorProperty = properties.get(ContentModel.PROP_CREATOR);
+        properties.put(propQNameArchivedOriginalParentAssoc.getId(), archivedPrimaryParentNodeRefProperty);
+        PropertyValue originalOwnerProperty = properties.get(propQNameEntityOwner.getId());
+        PropertyValue originalCreatorProperty = properties.get(propQNameEntityCreator.getId());
         if (originalOwnerProperty != null || originalCreatorProperty != null)
         {
+            QNameEntity propQNameArchivedOriginalOwner = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
             properties.put(
-                    ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
+                    propQNameArchivedOriginalOwner.getId(),
                     originalOwnerProperty != null ? originalOwnerProperty : originalCreatorProperty);
         }
         
         // change the node ownership
-        aspects.add(ContentModel.ASPECT_OWNABLE);
+        QNameEntity ownableAspectQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_OWNABLE);
+        aspects.add(ownableAspectQNameEntity.getId());
         PropertyValue newOwnerProperty = makePropertyValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER),
                 AuthenticationUtil.getCurrentUserName());
-        properties.put(ContentModel.PROP_OWNER, newOwnerProperty);
+        QNameEntity propQNameOwner = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_OWNER);
+        properties.put(propQNameOwner.getId(), newOwnerProperty);
         
         // move the node
         NodeRef archiveStoreRootNodeRef = getRootNode(archiveStoreRef);
@@ -1853,33 +1932,38 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // add archived aspect
-        node.getAspects().add(ContentModel.ASPECT_ARCHIVED_ASSOCS);
+        QNameEntity archivedAssocsAspectQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_ARCHIVED_ASSOCS);
+        node.getAspects().add(archivedAssocsAspectQNameEntity.getId());
         // set properties
-        Map<QName, PropertyValue> properties = node.getProperties();
+        Map<Long, PropertyValue> properties = node.getProperties();
         
         if (archivedParentAssocRefs.size() > 0)
         {
+            QNameEntity propQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
             PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
             PropertyValue propertyValue = makePropertyValue(propertyDef, archivedParentAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS, propertyValue);
+            properties.put(propQNameEntity.getId(), propertyValue);
         }
         if (archivedChildAssocRefs.size() > 0)
         {
+            QNameEntity propQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
             PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS);
             PropertyValue propertyValue = makePropertyValue(propertyDef, archivedChildAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_CHILD_ASSOCS, propertyValue);
+            properties.put(propQNameEntity.getId(), propertyValue);
         }
         if (archivedSourceAssocRefs.size() > 0)
         {
+            QNameEntity propQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
             PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
             PropertyValue propertyValue = makePropertyValue(propertyDef, archivedSourceAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS, propertyValue);
+            properties.put(propQNameEntity.getId(), propertyValue);
         }
         if (archivedTargetAssocRefs.size() > 0)
         {
+            QNameEntity propQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
             PropertyDefinition propertyDef = dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
             PropertyValue propertyValue = makePropertyValue(propertyDef, archivedTargetAssocRefs);
-            properties.put(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS, propertyValue);
+            properties.put(propQNameEntity.getId(), propertyValue);
         }
     }
 
@@ -1899,33 +1983,41 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
+        QNameEntity aspectQNameEntityArchived = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_ARCHIVED);
+        QNameEntity propQNameEntityOwner = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_OWNER);
+        QNameEntity propQNameEntityOrigParentAssoc = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        QNameEntity propQNameEntityArchivedBy = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_BY);
+        QNameEntity propQNameEntityArchivedDate = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_DATE);
+        QNameEntity propQNameEntityOrigOwner = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
+        
         NodeStatus archivedNodeStatus = getNodeStatusNotNull(archivedNodeRef);
         Node archivedNode = archivedNodeStatus.getNode();
-        Set<QName> aspects = archivedNode.getAspects();
-        Map<QName, PropertyValue> properties = archivedNode.getProperties();
+        Set<Long> aspects = archivedNode.getAspects();
+        Map<Long, PropertyValue> properties = archivedNode.getProperties();
         // the node must be a top-level archive node
-        if (!aspects.contains(ContentModel.ASPECT_ARCHIVED))
+        if (!aspects.contains(aspectQNameEntityArchived.getId()))
         {
             throw new AlfrescoRuntimeException("The node to archive is not an archive node");
         }
         ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) makeSerializableValue(
                 dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
-                properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC));
-        PropertyValue originalOwnerProperty = properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
+                properties.get(propQNameEntityOrigParentAssoc.getId()));
+        PropertyValue originalOwnerProperty = properties.get(propQNameEntityOrigOwner.getId());
         
         // remove the archived aspect
         removeAspect(archivedNodeRef, ContentModel.ASPECT_ARCHIVED); // allow policy to fire, e.g. for DictionaryModelType
         
-        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-        properties.remove(ContentModel.PROP_ARCHIVED_BY);
-        properties.remove(ContentModel.PROP_ARCHIVED_DATE);
-        properties.remove(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
+        properties.remove(propQNameEntityOrigParentAssoc.getId());
+        properties.remove(propQNameEntityArchivedBy.getId());
+        properties.remove(propQNameEntityArchivedDate.getId());
+        properties.remove(propQNameEntityOrigOwner.getId());
         
         // restore the original ownership
         if (originalOwnerProperty != null)
         {
-            aspects.add(ContentModel.ASPECT_OWNABLE);
-            properties.put(ContentModel.PROP_OWNER, originalOwnerProperty);
+            QNameEntity ownableAspectQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.ASPECT_OWNABLE);
+            aspects.add(ownableAspectQNameEntity.getId());
+            properties.put(propQNameEntityOwner.getId(), originalOwnerProperty);
         }
         
         if (destinationParentNodeRef == null)
@@ -1958,7 +2050,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         for (NodeStatus restoreNodeStatus : restoreNodeStatusesById.values())
         {
             Node restoreNode = restoreNodeStatus.getNode();
-            restoreAssocs(restoreNode);
+            restoreAssocs(restoreNode, propQNameEntityOrigParentAssoc);
         }
         
         // the node reference has changed due to the store move
@@ -1975,11 +2067,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return restoredNodeRef;
     }
 
-    private void restoreAssocs(Node node)
+    private void restoreAssocs(Node node, QNameEntity propQNameEntityOrigParentAssoc)
     {
         NodeRef nodeRef = node.getNodeRef();
         // set properties
-        Map<QName, PropertyValue> properties = node.getProperties();
+        Map<Long, PropertyValue> properties = node.getProperties();
 
         // restore parent associations
         Collection<ChildAssociationRef> parentAssocRefs = (Collection<ChildAssociationRef>) getProperty(
@@ -2004,7 +2096,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                         assocTypeQName,
                         assocRef.getQName());
             }
-            properties.remove(ContentModel.PROP_ARCHIVED_PARENT_ASSOCS);
+            properties.remove(propQNameEntityOrigParentAssoc.getId());
         }
         
         // make sure that the node name uniqueness is enforced
@@ -2087,8 +2179,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private void setChildUniqueName(Node childNode)
     {
         // get the name property
-        Map<QName, PropertyValue> properties = childNode.getProperties();
-        PropertyValue nameValue = properties.get(ContentModel.PROP_NAME);
+        Map<Long, PropertyValue> properties = childNode.getProperties();
+        QNameEntity nameQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_NAME);
+        PropertyValue nameValue = properties.get(nameQNameEntity.getId());
         String useName = null;
         if (nameValue == null)
         {
@@ -2103,7 +2196,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Collection<ChildAssoc> parentAssocs = nodeDaoService.getParentAssocs(childNode);
         for (ChildAssoc assoc : parentAssocs)
         {
-            QName assocTypeQName = assoc.getTypeQName();
+            QName assocTypeQName = assoc.getTypeQName().getQName();
             AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
             if (!assocDef.isChild())
             {

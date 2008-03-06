@@ -49,9 +49,9 @@
         
         <!-- Links to dimensions -->
         
-        <many-to-one name="auditDate" class="org.alfresco.repo.audit.hibernate.AuditDateImpl" not-null="true" lazy="proxy" column="audit_date_id" cascade="none" optimistic-lock="true" fetch="join"/>
-        <many-to-one name="auditConfig" class="org.alfresco.repo.audit.hibernate.AuditConfigImpl" not-null="true" lazy="proxy" column="audit_conf_id" cascade="none" optimistic-lock="true" fetch="join"/>
-        <many-to-one name="auditSource" class="org.alfresco.repo.audit.hibernate.AuditSourceImpl" not-null="true" lazy="proxy" column="audit_source_id" cascade="none" optimistic-lock="true" fetch="join"/>
+        <many-to-one name="auditDate" class="org.alfresco.repo.audit.hibernate.AuditDateImpl" not-null="true" lazy="proxy" column="audit_date_id" foreign-key="fk_alf_adtf_date" cascade="none" optimistic-lock="true" fetch="join"/>
+        <many-to-one name="auditConfig" class="org.alfresco.repo.audit.hibernate.AuditConfigImpl" not-null="true" lazy="proxy" column="audit_conf_id" foreign-key="fk_alf_adtf_conf" cascade="none" optimistic-lock="true" fetch="join"/>
+        <many-to-one name="auditSource" class="org.alfresco.repo.audit.hibernate.AuditSourceImpl" not-null="true" lazy="proxy" column="audit_source_id" foreign-key="fk_alf_adtf_src" cascade="none" optimistic-lock="true" fetch="join"/>
         
     </class>
     

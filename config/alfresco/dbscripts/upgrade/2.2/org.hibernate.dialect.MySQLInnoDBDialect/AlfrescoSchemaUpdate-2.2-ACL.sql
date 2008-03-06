@@ -150,5 +150,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-ACL', 'Manually executed script upgrade V2.2: Update acl schema',
-    0, 76, -1, 77, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 84, -1, 85, null, 'UNKOWN', 1, 1, 'Script completed'
   );

@@ -101,7 +101,7 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
-    public void testRename6()
+    public void testRename6() throws Exception
     {
         try
         {
@@ -133,11 +133,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
-    public void testSpacesInStoreNames()
+    public void testSpacesInStoreNames() throws Exception
     {
         try
         {
@@ -148,11 +148,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
-    public void testHeadPathsInLayers()
+    public void testHeadPathsInLayers() throws Exception
     {
         try
         {
@@ -176,14 +176,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Minimal testing of Locking Aware service.
      */
-    public void testLockingAwareService()
+    public void testLockingAwareService() throws Exception
     {
         AVMService oldService = fService;
         fService = (AVMService)fContext.getBean("AVMLockingAwareService");
@@ -218,7 +218,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
         finally
         {
@@ -232,7 +232,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test version by date lookup.
      */
-    public void testVersionByDate()
+    public void testVersionByDate() throws Exception
     {
         try
         {
@@ -256,14 +256,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test properties.
      */
-    public void testProperties()
+    public void testProperties() throws Exception
     {
         try
         {
@@ -355,14 +355,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test getStoreVersionRootPaths().
      */
-    public void testGetStoreVersionRootPaths()
+    public void testGetStoreVersionRootPaths() throws Exception
     {
         try
         {
@@ -394,13 +394,13 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
 
 
-    public void testForceCopyDeleted()
+    public void testForceCopyDeleted() throws Exception
     {
         try
         {
@@ -413,11 +413,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
-    public void testLayerSnapshots()
+    public void testLayerSnapshots() throws Exception
     {
         try
         {
@@ -438,11 +438,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
-    public void testBranchLayerSnapshot()
+    public void testBranchLayerSnapshot() throws Exception
     {
         try
         {
@@ -475,14 +475,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test Deployment.
      */
-    public void testDeployment()
+    public void testDeployment() throws Exception
     {
         try
         {
@@ -587,11 +587,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
-    protected void runQueriesForCreateAndDeploy(String store)
+    protected void runQueriesForCreateAndDeploy(String store) throws Exception
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
 
@@ -1061,7 +1061,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test of GUIDs on AVM Nodes.
      */
-    public void testGuids()
+    public void testGuids() throws Exception
     {
         try
         {
@@ -1074,14 +1074,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the revert to version action.
      */
-    public void testRevertToVersionAction()
+    public void testRevertToVersionAction() throws Exception
     {
         try
         {
@@ -1168,14 +1168,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test version numbering.
      */
-    public void testVersionNumbering()
+    public void testVersionNumbering() throws Exception
     {
         try
         {
@@ -1197,14 +1197,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test relinking of nodes to history.
      */
-    public void testHistoryRelink()
+    public void testHistoryRelink() throws Exception
     {
         try
         {
@@ -1230,14 +1230,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test renaming a store.
      */
-    public void testRenameStore()
+    public void testRenameStore() throws Exception
     {
         try
         {
@@ -1251,14 +1251,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test copy.
      */
-    public void testCopy()
+    public void testCopy() throws Exception
     {
         try
         {
@@ -1346,7 +1346,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
@@ -1681,7 +1681,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test cyclic lookup behavior.
      */
-    public void testCyclicLookup()
+    public void testCyclicLookup() throws Exception
     {
         try
         {
@@ -1707,14 +1707,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test getting all paths for a node.
      */
-    public void testGetPaths()
+    public void testGetPaths() throws Exception
     {
         try
         {
@@ -1744,14 +1744,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test partial flatten.
      */
-    public void testPartialFlatten()
+    public void testPartialFlatten() throws Exception
     {
         try
         {
@@ -1773,14 +1773,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test getIndirection.
      */
-    public void testGetIndirection()
+    public void testGetIndirection() throws Exception
     {
         try
         {
@@ -1798,14 +1798,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the revert list action.
      */
-    public void testRevertListAction()
+    public void testRevertListAction() throws Exception
     {
         try
         {
@@ -1844,14 +1844,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the undo list action.
      */
-    public void testUndoListAction()
+    public void testUndoListAction() throws Exception
     {
         try
         {
@@ -1889,14 +1889,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the promote action.
      */
-    public void testPromoteAction()
+    public void testPromoteAction() throws Exception
     {
         try
         {
@@ -1931,14 +1931,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test a noodle update.
      */
-    public void testNoodleUpdate()
+    public void testNoodleUpdate() throws Exception
     {
         try
         {
@@ -1957,14 +1957,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the SimpleAVMSubmitAction.
      */
-    public void testSubmitAction()
+    public void testSubmitAction() throws Exception
     {
         try
         {
@@ -2005,14 +2005,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test one argument remove.
      */
-    public void testOneArgRemove()
+    public void testOneArgRemove() throws Exception
     {
         try
         {
@@ -2187,7 +2187,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test that non head version sources are update correctly.
      */
-    public void testVersionUpdate()
+    public void testVersionUpdate() throws Exception
     {
         try
         {
@@ -2215,14 +2215,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test that an update forces a snapshot on the source.
      */
-    public void testUpdateSnapshot()
+    public void testUpdateSnapshot() throws Exception
     {
         try
         {
@@ -2246,14 +2246,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test that branching forces a snapshot on the source repository.
      */
-    public void testBranchSnapshot()
+    public void testBranchSnapshot() throws Exception
     {
         try
         {
@@ -2269,14 +2269,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test bulk update.
      */
-    public void testBulkUpdate()
+    public void testBulkUpdate() throws Exception
     {
         try
         {
@@ -2319,14 +2319,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the flatten operation, with a little bit of compare and update.
      */
-    public void testFlatten()
+    public void testFlatten() throws Exception
     {
         try
         {
@@ -2355,14 +2355,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test of Descriptor indirection field.
      */
-    public void testDescriptorIndirection()
+    public void testDescriptorIndirection() throws Exception
     {
         try
         {
@@ -2383,14 +2383,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test AVMSyncService update.
      */
-    public void testUpdate()
+    public void testUpdate() throws Exception
     {
         try
         {
@@ -2540,14 +2540,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test link AVMService call.
      */
-    public void testLink()
+    public void testLink() throws Exception
     {
         try
         {
@@ -2618,14 +2618,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test goofy paths.
      */
-    public void testGoofyPaths()
+    public void testGoofyPaths() throws Exception
     {
         try
         {
@@ -2636,14 +2636,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test getting deleted names.
      */
-    public void testGetDeleted()
+    public void testGetDeleted() throws Exception
     {
         try
         {
@@ -2664,14 +2664,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test directly contained listing.
      */
-    public void testListingDirect()
+    public void testListingDirect() throws Exception
     {
         try
         {
@@ -2698,14 +2698,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test layering info.
      */
-    public void testLayeringInfo()
+    public void testLayeringInfo() throws Exception
     {
         try
         {
@@ -2743,14 +2743,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Another test of renaming in a layer.
      */
-    public void testRenameLayer2()
+    public void testRenameLayer2() throws Exception
     {
         try
         {
@@ -2836,14 +2836,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Yet another test around rename in layers.
      */
-    public void testRenameLayer3()
+    public void testRenameLayer3() throws Exception
     {
         try
         {
@@ -2893,14 +2893,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test the uncover operation.
      */
-    public void testUncover()
+    public void testUncover() throws Exception
     {
         try
         {
@@ -2969,14 +2969,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Another test of renaming in a layer.
      */
-    public void testRenameLayer4()
+    public void testRenameLayer4() throws Exception
     {
         try
         {
@@ -3031,14 +3031,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test branching within branches.
      */
-    public void testBranchesInBranches()
+    public void testBranchesInBranches() throws Exception
     {
         try
         {
@@ -3093,14 +3093,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test layers inside of layers.
      */
-    public void testLayersInLayers()
+    public void testLayersInLayers() throws Exception
     {
         try
         {
@@ -3206,14 +3206,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test behavior when one branches a layer.
      */
-    public void testLayerAndBranch()
+    public void testLayerAndBranch() throws Exception
     {
         try
         {
@@ -3303,14 +3303,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test scenario in which something is renamed from inside one independent layer to another.
      */
-    public void testRenameLayerToLayer()
+    public void testRenameLayerToLayer() throws Exception
     {
         try
         {
@@ -3355,21 +3355,21 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test Nothing. Just make sure set up works.
      */
-    public void testNothing()
+    public void testNothing() throws Exception
     {
     }
 
     /**
      * Test making a simple directory.
      */
-    public void testCreateDirectory()
+    public void testCreateDirectory() throws Exception
     {
         try
         {
@@ -3393,14 +3393,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a file.
      */
-    public void testCreateFile()
+    public void testCreateFile() throws Exception
     {
         try
         {
@@ -3472,14 +3472,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a branch.
      */
-    public void testCreateBranch()
+    public void testCreateBranch() throws Exception
     {
         try
         {
@@ -3501,14 +3501,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a layer.
      */
-    public void testCreateLayer()
+    public void testCreateLayer() throws Exception
     {
         try
         {
@@ -3532,14 +3532,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a layered file.
      */
-    public void testCreateLayeredFile()
+    public void testCreateLayeredFile() throws Exception
     {
         try
         {
@@ -3570,14 +3570,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test rename.
      */
-    public void testRename()
+    public void testRename() throws Exception
     {
         try
         {
@@ -3744,14 +3744,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test remove.
      */
-    public void testRemove()
+    public void testRemove() throws Exception
     {
         try
         {
@@ -3915,14 +3915,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test branching from one AVMStore to another.
      */
-    public void testBranchAcross()
+    public void testBranchAcross() throws Exception
     {
         try
         {
@@ -3952,14 +3952,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a layer across AVMStores.
      */
-    public void testLayerAcross()
+    public void testLayerAcross() throws Exception
     {
         try
         {
@@ -3991,14 +3991,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test rename across AVMStores.
      */
-    public void testRenameAcross()
+    public void testRenameAcross() throws Exception
     {
         try
         {
@@ -4017,14 +4017,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test COW in various circumstances.
      */
-    public void testDeepCOW()
+    public void testDeepCOW() throws Exception
     {
         try
         {
@@ -4073,14 +4073,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test branching and layering interaction.
      */
-    public void testBranchAndLayer()
+    public void testBranchAndLayer() throws Exception
     {
         try
         {
@@ -4122,14 +4122,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test basic Layering.
      */
-    public void testLayering()
+    public void testLayering() throws Exception
     {
         try
         {
@@ -4190,14 +4190,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test rename within a layer.
      */
-    public void testRenameInLayer()
+    public void testRenameInLayer() throws Exception
     {
         try
         {
@@ -4234,14 +4234,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test behavior of multiply layers not in register.
      */
-    public void testMultiLayerUnregistered()
+    public void testMultiLayerUnregistered() throws Exception
     {
         try
         {
@@ -4281,14 +4281,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test makePrimary.
      */
-    public void testMakePrimary()
+    public void testMakePrimary() throws Exception
     {
         try
         {
@@ -4339,14 +4339,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test retargeting a directory.
      */
-    public void testRetarget()
+    public void testRetarget() throws Exception
     {
         try
         {
@@ -4401,14 +4401,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test rename between branches.
      */
-    public void testRenameBranchToBranch()
+    public void testRenameBranchToBranch() throws Exception
     {
         try
         {
@@ -4463,14 +4463,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test a branch being created in a layer.
      */
-    public void testBranchIntoLayer()
+    public void testBranchIntoLayer() throws Exception
     {
         try
         {
@@ -4519,14 +4519,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test renaming into a layer.
      */
-    public void testRenameIntoLayer()
+    public void testRenameIntoLayer() throws Exception
     {
         try
         {
@@ -4576,14 +4576,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test proper indirection behavior.
      */
-    public void testIndirectionBehavior()
+    public void testIndirectionBehavior() throws Exception
     {
         try
         {
@@ -4649,14 +4649,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test reading of versioned content via a layer.
      */
-    public void testVersionedRead()
+    public void testVersionedRead() throws Exception
     {
         try
         {
@@ -4684,14 +4684,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test rename of an overlayed directory contained in an overlayed directory.
      */
-    public void testRenameLayerInLayer()
+    public void testRenameLayerInLayer() throws Exception
     {
         try
         {
@@ -4715,14 +4715,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Yet another rename from layer to layer test.
      */
-    public void testAnotherRename()
+    public void testAnotherRename() throws Exception
     {
         try
         {
@@ -4769,12 +4769,12 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
 
-    protected void runQueriesForInitialRenameStructure(String store)
+    protected void runQueriesForInitialRenameStructure(String store) throws Exception
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
 
@@ -4994,7 +4994,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test rename behavior of an overlayed file withing a layer.
      */
-    public void testFileRenameLayer()
+    public void testFileRenameLayer() throws Exception
     {
         try
         {
@@ -5021,7 +5021,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
@@ -5033,13 +5033,13 @@ public class AVMServiceTest extends AVMServiceTestBase
      * "main:/a/b/c/foo", "r"); byte [] buff = new byte[256]; assertTrue(file.read(buff) >= 20); file.close(); file =
      * fService.getRandomAccess(-1, "main:/a/b/c/bar", "rw"); for (int i = 0; i < 256; i++) { buff[i] = (byte)i; }
      * file.write(buff); file.close(); fService.createSnapshot("main", null, null); } catch (Exception e) {
-     * e.printStackTrace(System.err); fail(); } }
+     * e.printStackTrace(System.err); throw e; } }
      */
 
     /**
      * Test COW during long operations.
      */
-    public void testCOWLongOps()
+    public void testCOWLongOps() throws Exception
     {
         try
         {
@@ -5062,14 +5062,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test new lookup methods.
      */
-    public void testLookup()
+    public void testLookup() throws Exception
     {
         try
         {
@@ -5087,7 +5087,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
@@ -5095,7 +5095,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test AVMStore functions.
      */
-    public void testAVMStore()
+    public void testAVMStore() throws Exception
     {
         try
         {
@@ -5120,14 +5120,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test opacity and manipulations.
      */
-    public void testOpacity()
+    public void testOpacity() throws Exception
     {
         try
         {
@@ -5169,14 +5169,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test common ancestor.
      */
-    public void testCommonAncestor()
+    public void testCommonAncestor() throws Exception
     {
         try
         {
@@ -5195,7 +5195,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
@@ -5203,7 +5203,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test properties on stores.
      */
-    public void testStoreProperties()
+    public void testStoreProperties() throws Exception
     {
         try
         {
@@ -5235,14 +5235,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test Aspect Name storage.
      */
-    public void testAspectNames()
+    public void testAspectNames() throws Exception
     {
         try
         {
@@ -5305,14 +5305,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test case insensitivity.
      */
-    public void testCaseInsensitive()
+    public void testCaseInsensitive() throws Exception
     {
         try
         {
@@ -5330,14 +5330,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test ACLs.
      */
-    public void testACLs()
+    public void testACLs() throws Exception
     {
         try
         {
@@ -5359,14 +5359,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test FileFolderService with AVM.
      */
-    public void testFileFolderService()
+    public void testFileFolderService() throws Exception
     {
         try
         {
@@ -5398,21 +5398,21 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test overwriting without snapshots in between.
      */
-    public void testOverwrite()
+    public void testOverwrite() throws Exception
     {
         try
         {
             setupBasicTree();
             class TxnCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Object>
             {
-                public Object execute()
+                public Object execute() throws Exception
                 {
                     try
                     {
@@ -5462,8 +5462,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                     catch (IOException e)
                     {
                         e.printStackTrace();
-                        fail();
-                        return null;
+                        throw e;
                     }
                 }
             }
@@ -5475,14 +5474,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test creating a file over a ghost.
      */
-    public void testCreateOverDeleted()
+    public void testCreateOverDeleted() throws Exception
     {
         try
         {
@@ -5493,14 +5492,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test lookup and listing of deleted files.
      */
-    public void testDeleted()
+    public void testDeleted() throws Exception
     {
         try
         {
@@ -5548,14 +5547,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            
         }
     }
 
     /**
      * Test Store property querying.
      */
-    public void testStorePropertyQuerying()
+    public void testStorePropertyQuerying() throws Exception
     {
         try
         {
@@ -5581,14 +5580,14 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            
         }
     }
 
     /**
      * Test AVMSyncService resetLayer.
      */
-    public void testResetLayer()
+    public void testResetLayer() throws Exception
     {
         try
         {
@@ -5604,7 +5603,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 

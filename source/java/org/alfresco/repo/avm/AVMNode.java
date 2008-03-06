@@ -28,7 +28,6 @@ import java.util.Set;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.namespace.QName;
 
 /**
  * The Interface for versionable objects.
@@ -153,35 +152,35 @@ public interface AVMNode
 
     /**
      * Set a property.
-     * @param name The name of the property.
-     * @param value The value to set.
+     * @param qnameEntityId     the ID of the QName to set
+     * @param value             The value to set.
      */
-    public void setProperty(QName name, PropertyValue value);
+    public void setProperty(Long qnameEntityId, PropertyValue value);
 
     /**
      * Set a collection of properties on this node.
-     * @param properties The Map of QNames to PropertyValues.
+     * @param properties The Map of QName entity IDs to PropertyValues.
      */
-    public void setProperties(Map<QName, PropertyValue> properties);
+    public void setProperties(Map<Long, PropertyValue> properties);
 
     /**
      * Get a property by name.
      * @param name The name of the property to get.
      * @return A PropertyValue
      */
-    public PropertyValue getProperty(QName name);
+    public PropertyValue getProperty(Long name);
 
     /**
      * Get all the properties associated with this node.
      * @return A Map of QNames to PropertyValues.
      */
-    public Map<QName, PropertyValue> getProperties();
+    public Map<Long, PropertyValue> getProperties();
 
     /**
      * Delete a property from this node.
-     * @param name The name of the property.
+     * @param qnameEntityId         the ID of the QName to delete
      */
-    public void deleteProperty(QName name);
+    public void deleteProperty(Long qnameEntityId);
 
     /**
      * Delete all properties from this node.
@@ -232,15 +231,15 @@ public interface AVMNode
 
     /**
      * Get the Aspects that this node has.
-     * @return A Set of Aspects names.
+     * @return A Set of Aspects IDs.
      */
-    public Set<QName> getAspects();
+    public Set<Long> getAspects();
 
     /**
      * Add properties to those that already exist.
      * @param properties The properties to add.
      */
-    public void addProperties(Map<QName, PropertyValue> properties);
+    public void addProperties(Map<Long, PropertyValue> properties);
 
     /**
      * Get the Basic Attributes on this node.

@@ -234,7 +234,7 @@ public interface PermissionService
      * @return
      */
     @Auditable(parameters = { "aclID", "context", "permission" })
-    public AccessStatus hasPermission(Long aclID, Map<String, Object> context, String permission);
+    public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission);
 
     /**
      * Delete all the permission assigned to the node
@@ -306,6 +306,7 @@ public interface PermissionService
      * Get all permissions set for the current user.
      *
      * @return - A map of noderefs to permissions set
+     * @deprecated
      */
     @Auditable
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser();
@@ -315,6 +316,7 @@ public interface PermissionService
      *
      * @param authority
      * @return - A map of noderefs to permissions set
+     * @deprecated
      */
     @Auditable(parameters = { "authority" })
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority);
@@ -331,6 +333,7 @@ public interface PermissionService
      * @param includeContainingPermissions -
      *            true; do an exact match: false; search for any permission that woudl imply the one given
      * @return - the set of nodes where the user is assigned the permission
+     * @deprecated
      */
     @Auditable(parameters = { "permission", "allow", "includeContainingAuthorities", "includeContainingPermissions" })
     public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
@@ -348,6 +351,7 @@ public interface PermissionService
      * @param exactPermissionMatch -
      *            true; do an exact match: false; search for any permission that woudl imply the one given
      * @return - the set of nodes where the user is assigned the permission
+     * @deprecated
      */
     @Auditable(parameters = { "authority", "permission", "allow", "includeContainingAuthorities",
             "exactPermissionMatch" })

@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.domain;
 
+import org.alfresco.repo.security.permissions.ACEType;
+import org.alfresco.repo.security.permissions.AccessControlEntry;
+
 
 
 /**
@@ -43,16 +46,6 @@ public interface DbAccessControlEntry
      * @return  Returns the version number for optimistic locking
      */
     public Long getVersion();
-    
-    /**
-     * @return Returns the containing access control list
-     */
-    public DbAccessControlList getAccessControlList();
-    
-    /**
-     * @param acl the accession control list to which entry belongs
-     */
-    public void setAccessControlList(DbAccessControlList acl);
     
     /**
      * @return Returns the permission to which this entry applies
@@ -85,6 +78,30 @@ public interface DbAccessControlEntry
      * @param allowed
      */
     public void setAllowed(boolean allowed);
+    
+    /**
+     * Get the ACE type
+     * @return
+     */
+    public ACEType getAceType();
+    
+    /**
+     * Set the ACEType
+     * @param type
+     */
+    public void setAceType(ACEType type);
+    
+    /**
+     * Get the ACE context - may be null and may well mostly be null
+     * @return
+     */
+    public DbAccessControlEntryContext getContext();
+    
+    /**
+     * Set the ACE context
+     * @param context
+     */
+    public void setContext(DbAccessControlEntryContext context);
     
     /**
      * Helper method to delete the instance and make sure that all

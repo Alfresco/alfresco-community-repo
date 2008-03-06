@@ -27,6 +27,8 @@ package org.alfresco.repo.security.permissions.dynamic;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -34,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.EqualsHelper;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -46,33 +49,41 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
     private NodeService nodeService;
     
     
-    public boolean hasAuthority(NodeRef nodeRef, String userName)
+    public boolean hasAuthority(final NodeRef nodeRef, final String userName)
     {
-        if (lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER)
-        {
-            return true;
-        }
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
-        {
-            NodeRef original = null;
-            Serializable reference = nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
-            if (reference != null)
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>(){
+
+            public Boolean doWork() throws Exception
             {
-                original = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, reference);
-            }
-            if (original != null && nodeService.exists(original))
-            {
-                return (lockService.getLockStatus(original) == LockStatus.LOCK_OWNER);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
+                if (lockService.getLockStatus(nodeRef, userName) == LockStatus.LOCK_OWNER)
+                {
+                    return true;
+                }
+                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+                {
+                    NodeRef original = null;
+                    Serializable reference = nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
+                    if (reference != null)
+                    {
+                        original = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, reference);
+                    }
+                    if (original != null && nodeService.exists(original))
+                    {
+                        return (lockService.getLockStatus(original, userName) == LockStatus.LOCK_OWNER);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }}, AuthenticationUtil.getSystemUserName());
+        
+        
+        
     }
 
     public String getAuthority()

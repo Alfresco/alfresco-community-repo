@@ -112,16 +112,9 @@
         overflowToDisk="false"
         />
     <!-- Permission related caches -->
-    <!-- approx 1MB memory required -->
+    <!-- approx 1MB memory required -->    
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
-        maxElementsInMemory="1000"        
-        eternal="true"
-        overflowToDisk="false"
-        />
-    <!-- approx 1MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries" 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl" 
         maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
@@ -133,10 +126,31 @@
         eternal="true"
         overflowToDisk="false"
         />
-    <!-- approx 1MB memory required -->
+    <!-- approx 5MB memory required -->
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
-        maxElementsInMemory="500"          
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl" 
+        maxElementsInMemory="5000"        
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <!-- approx 1MB memory required -->    
+    <cache 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl" 
+        maxElementsInMemory="1000"        
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <!-- approx 1MB memory required -->    
+     <cache 
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl" 
+        maxElementsInMemory="1000"        
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <!-- approx 1MB memory required -->    
+    <cache 
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityAliasImpl" 
+        maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
         />
@@ -147,10 +161,10 @@
         eternal="true"
         overflowToDisk="false"
         />
-     <!-- approx 5MB memory required -->
+    <!-- approx 1MB memory required -->
     <cache 
-        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys" 
-        maxElementsInMemory="5000"
+        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl" 
+        maxElementsInMemory="500"          
         eternal="true"
         overflowToDisk="false"
         />
@@ -173,31 +187,31 @@
         eternal="true"
         overflowToDisk="false"
         />
-	<!-- Attribute Service Caches. -->
-	<cache
-	    name="org.alfresco.repo.attributes.AttributeImpl"
-	    maxElementsInMemory="5000"
-	    eternal="true"
-	    overflowToDisk="false"
-	    />
-	<cache
-	    name="org.alfresco.repo.attributes.ListEntryImpl"
-	    maxElementsInMemory="2000"
-	    eternal="true"
-	    overflowToDisk="false"
-	    />
-	<cache
-		name="org.alfresco.repo.attributes.MapEntryImpl"
-		maxElementsInMemory="2000"
-		eternal="true"
-		overflowToDisk="false"
-		/>
-	<cache
-	    name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
-	    maxElementsInMemory="1000"
-	    eternal="true"
-	    overflowToDisk="false"
-	    />
+    <!-- Attribute Service Caches. -->
+    <cache
+        name="org.alfresco.repo.attributes.AttributeImpl"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache
+        name="org.alfresco.repo.attributes.ListEntryImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache
+        name="org.alfresco.repo.attributes.MapEntryImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache
+        name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
 
     <!-- AVM caches -->
      <cache
@@ -317,7 +331,6 @@
         eternal="true"
         overflowToDisk="false"
         />
-        
         
     <!-- Web Client Config (tenant-based) -->
         

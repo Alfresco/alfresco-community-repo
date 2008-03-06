@@ -32,6 +32,7 @@ import java.util.Set;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -366,12 +367,12 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         fAspects = new HashSet<QName>(other.getAspects());
     }
     
-    protected void copyACLs(AVMNode other)
+    protected void copyACLs(AVMNode other, Long parentAcl, ACLCopyMode mode)
     {
         DbAccessControlList acl = other.getAcl();
         if (acl != null)
         {
-            setAcl(acl.getCopy());
+            setAcl(acl.getCopy(parentAcl, mode));
         }
     }
     
@@ -379,10 +380,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
      * Copy out metadata from another node.
      * @param other The other node.
      */
-    public void copyMetaDataFrom(AVMNode other)
+    public void copyMetaDataFrom(AVMNode other, Long parentAcl)
     {
         copyAspects(other);
-        copyACLs(other);
+        copyACLs(other, parentAcl, ACLCopyMode.COPY);
         copyProperties(other);
     }
     

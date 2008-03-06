@@ -46,6 +46,16 @@ public interface ModelDAO
      * @return
      */
     public Set<PermissionReference> getAllPermissions(QName type);
+    
+    
+    /**
+     * Get the permissions that can be set for the given type.
+     * 
+     * @param type - the type in the data dictionary.
+     * @param aspects
+     * @return
+     */
+    public Set<PermissionReference> getAllPermissions(QName type, Set<QName> aspects);
 
     /**
      * Get the permissions that can be set for the given node. 

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.permissions.dynamic;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -53,9 +55,16 @@ public class OwnerDynamicAuthority implements DynamicAuthority, InitializingBean
         }
     }
 
-    public boolean hasAuthority(NodeRef nodeRef, String userName)
+    public boolean hasAuthority(final NodeRef nodeRef, final String userName)
     {
-        return EqualsHelper.nullSafeEquals(ownableService.getOwner(nodeRef), userName);
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>(){
+
+            public Boolean doWork() throws Exception
+            {
+                // TODO Auto-generated method stub
+                return EqualsHelper.nullSafeEquals(ownableService.getOwner(nodeRef), userName);
+            }}, AuthenticationUtil.getSystemUserName());
+       
     }
 
     public String getAuthority()

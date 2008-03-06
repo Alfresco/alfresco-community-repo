@@ -36,6 +36,9 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -707,11 +710,11 @@ public class AVMServiceImpl implements AVMService
      */
     public List<Pair<Integer, String>> getPaths(AVMNodeDescriptor desc)
     {
-    	if (desc == null)
-    	{
-    		throw new AVMBadArgumentException("Descriptor is null.");
-    	}
-    	return fAVMRepository.getPaths(desc);
+        if (desc == null)
+        {
+            throw new AVMBadArgumentException("Descriptor is null.");
+        }
+        return fAVMRepository.getPaths(desc);
     }
 
     /* (non-Javadoc)
@@ -1406,6 +1409,28 @@ public class AVMServiceImpl implements AVMService
         recursiveCopy(srcVersion, srcDesc, dstPath, name);
     }
     
+    
+    private DbAccessControlList getAclAsSystem(final int version, final String path)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>(){
+
+            public DbAccessControlList doWork() throws Exception
+            {
+                return fAVMRepository.getACL(version, path);
+            }}, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private void setAclAsSystem(final String path, final DbAccessControlList acl)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+            public Object doWork() throws Exception
+            {
+                fAVMRepository.setACL(path, acl);
+                return null;
+            }}, AuthenticationUtil.getSystemUserName());
+    }
+    
     /**
      * Do the actual work of copying.
      * @param desc The src descriptor.
@@ -1416,6 +1441,14 @@ public class AVMServiceImpl implements AVMService
     {
         String newPath = path + '/' + name;
         AVMNodeDescriptor existing = lookup(-1, newPath);
+        DbAccessControlList parentAcl = getAclAsSystem(-1, path);
+        Long parentAclId = null;
+        if(parentAcl != null)
+        {
+            parentAclId = parentAcl.getId();
+        }
+        DbAccessControlList acl = getAclAsSystem(version, desc.getPath());
+        
         if (desc.isFile())
         {
             InputStream in = getFileInputStream(version, desc.getPath());
@@ -1423,7 +1456,12 @@ public class AVMServiceImpl implements AVMService
             {
                 removeNode(newPath);   
             }
+            // Set the acl underneath
             createFile(path, name, in);
+            if (acl != null)
+            {
+                setAclAsSystem(newPath, acl.getCopy(parentAclId, ACLCopyMode.COPY));
+            }
             ContentData cd = getContentDataForRead(version, desc.getPath());
             setEncoding(newPath, cd.getEncoding());
             setMimeType(newPath, cd.getMimetype());
@@ -1438,6 +1476,11 @@ public class AVMServiceImpl implements AVMService
             if (existing == null)
             {
                 createDirectory(path, name);
+                // Set acl before creating children as acls inherit :-)
+                if (acl != null)
+                {
+                    setAclAsSystem(newPath, acl.getCopy(parentAclId, ACLCopyMode.COPY));
+                }
             }
             Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 
             for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
@@ -1452,11 +1495,6 @@ public class AVMServiceImpl implements AVMService
         for (QName aspect : aspects)
         {
             addAspect(newPath, aspect);
-        }
-        DbAccessControlList acl = fAVMRepository.getACL(version, desc.getPath());
-        if (acl != null)
-        {
-            fAVMRepository.setACL(newPath, acl.getCopy());
         }
     }
 

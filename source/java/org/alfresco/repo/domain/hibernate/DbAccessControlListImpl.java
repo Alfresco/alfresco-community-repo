@@ -26,80 +26,102 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.DbAccessControlListChangeSet;
+import org.alfresco.repo.domain.DbAccessControlListMember;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.AccessControlEntry;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CallbackException;
+import org.hibernate.Query;
 import org.hibernate.Session;
+import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
  * The hibernate persisted class for node permission entries.
  * 
  * @author andyh
  */
-public class DbAccessControlListImpl extends LifecycleAdapter
-    implements DbAccessControlList, Serializable
+public class DbAccessControlListImpl extends LifecycleAdapter implements DbAccessControlList, Serializable
 {
+    private static AclDaoComponent s_aclDaoComponent;
+
     private static final long serialVersionUID = 3123277428227075648L;
 
     private static Log logger = LogFactory.getLog(DbAccessControlListImpl.class);
 
     private Long id;
+
     private Long version;
-    private Set<DbAccessControlEntry> entries;
+
+    private String aclId;
+
+    private long aclVersion;
+
+    private boolean latest;
+
     private boolean inherits;
-    
+
+    private int aclType;
+
+    private Long inheritedAclId;
+
+    private boolean versioned;
+
+    private DbAccessControlListChangeSet aclChangeSet;
+
+    private Long inheritsFrom;
+
+    private boolean requiresVersion;
+
+    public static void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    {
+        s_aclDaoComponent = aclDaoComponent;
+    }
+
     public DbAccessControlListImpl()
     {
-        entries = new HashSet<DbAccessControlEntry>(5);
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("DbAccessControlListImpl")
-          .append("[ id=").append(id)
-          .append(", entries=").append(entries.size())
-          .append(", inherits=").append(inherits)
-          .append("]");
+        sb.append("DbAccessControlListImpl").append("[ id=").append(id).append(", version=").append(version).append(", aclId=").append(aclId).append(", aclVersion=").append(
+                aclVersion).append(", latest=").append(latest).append(", inherits=").append(inherits).append(", aclType=").append(ACLType.getACLTypeFromId(aclType)).append(
+                ", inheritedAclId=").append(inheritedAclId).append(", versioned=").append(versioned).append(", changesetId=").append(aclChangeSet).append(", inheritsFrom=")
+                .append(inheritsFrom).append(", requiresVersion=").append(requiresVersion).append("]");
         return sb.toString();
     }
 
+    
+    
+    /**
+     * Support cascade delete of ACLs from DM nodes (which cascade delete the ACL)
+     */
     @Override
-    public boolean equals(Object o)
+    public boolean onDelete(Session session) throws CallbackException
     {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof DbAccessControlList))
-        {
-            return false;
-        }
-        DbAccessControlList other = (DbAccessControlList) o;
-
-        return (this.inherits == other.getInherits());
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return (inherits == false ? 0 : 17);
+        s_aclDaoComponent.onDeleteAccessControlList(id);
+        return super.onDelete(session);
     }
 
     public Long getId()
     {
         return id;
     }
-    
+
     /**
      * Hibernate use
      */
@@ -123,20 +145,6 @@ public class DbAccessControlListImpl extends LifecycleAdapter
         this.version = version;
     }
 
-    public Set<DbAccessControlEntry> getEntries()
-    {
-        return entries;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setEntries(Set<DbAccessControlEntry> entries)
-    {
-        this.entries = entries;
-    }
-
     public boolean getInherits()
     {
         return inherits;
@@ -147,130 +155,131 @@ public class DbAccessControlListImpl extends LifecycleAdapter
         this.inherits = inherits;
     }
 
-    /**
-     * @see #deleteEntry(String, DbPermissionKey)
-     */
-    public int deleteEntriesForAuthority(String authority)
+    public String getAclId()
     {
-        return deleteEntry(authority, null);
+        return aclId;
+    }
+
+    public void setAclId(String aclId)
+    {
+        this.aclId = aclId;
+    }
+
+    public ACLType getAclType()
+    {
+        return ACLType.getACLTypeFromId(aclType);
+    }
+
+    public void setAclType(ACLType aclType)
+    {
+        this.aclType = aclType.getId();
     }
 
     /**
-     * @see #deleteEntry(String, DbPermissionKey)
+     * Hibernate
      */
-    public int deleteEntriesForPermission(DbPermissionKey permissionKey)
+
+    private int getType()
     {
-        return deleteEntry(null, permissionKey);
+        return aclType;
     }
 
-    public int deleteEntry(String authority, DbPermissionKey permissionKey)
+    private void setType(int aclType)
     {
-        List<DbAccessControlEntry> toDelete = new ArrayList<DbAccessControlEntry>(2);
-        for (DbAccessControlEntry entry : entries)
-        {
-            if (authority != null && !authority.equals(entry.getAuthority().getRecipient()))
-            {
-                // authority is not a match
-                continue;
-            }
-            else if (permissionKey != null && !permissionKey.equals(entry.getPermission().getKey()))
-            {
-                // permission is not a match
-                continue;
-            }
-            toDelete.add(entry);
-        }
-        // delete them
-        for (DbAccessControlEntry entry : toDelete)
-        {
-            // remove from the entry list
-            entry.delete();
-        }
-        // Fix issues with deleting and adding permissions
-        // See AR-918
-        this.getSession().flush();
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Deleted " + toDelete.size() + " access entries: \n" +
-                    "   access control list: " + id + "\n" +
-                    "   authority: " + authority + "\n" +
-                    "   permission: " + permissionKey);
-        }
-        return toDelete.size();
+        this.aclType = aclType;
     }
 
-    public int deleteEntries()
+    public long getAclVersion()
     {
-        /*
-         * We don't do the full delete-remove-from-set thing here.  Just delete each child entity
-         * and then clear the entry set.
-         */
-        
-        Session session = getSession();
-        List<DbAccessControlEntry> toDelete = new ArrayList<DbAccessControlEntry>(entries);
-        // delete each entry
-        for (DbAccessControlEntry entry : toDelete)
-        {
-            session.delete(entry);
-        }
-        // clear the list
-        int count = entries.size();
-        entries.clear();
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Deleted " + count + " access entries for access control list " + this.id);
-        }
-        return count;
+        return aclVersion;
     }
 
-    public DbAccessControlEntry getEntry(String authority, DbPermissionKey permissionKey)
+    public void setAclVersion(long aclVersion)
     {
-        for (DbAccessControlEntry entry : entries)
-        {
-            DbAuthority authorityEntity = entry.getAuthority();
-            DbPermission permissionEntity = entry.getPermission();
-            // check for a match
-            if (authorityEntity.getRecipient().equals(authority)
-                    && permissionEntity.getKey().equals(permissionKey))
-            {
-                // found it
-                return entry;
-            }
-        }
-        return null;
+        this.aclVersion = aclVersion;
     }
 
-    public DbAccessControlEntryImpl newEntry(DbPermission permission, DbAuthority authority, boolean allowed)
+    public Long getInheritedAclId()
     {
-        DbAccessControlEntryImpl accessControlEntry = new DbAccessControlEntryImpl();
-        // fill
-        accessControlEntry.setAccessControlList(this);
-        accessControlEntry.setPermission(permission);
-        accessControlEntry.setAuthority(authority);
-        accessControlEntry.setAllowed(allowed);
-        // save it
-        getSession().save(accessControlEntry);
-        // maintain inverse set on the acl
-        getEntries().add(accessControlEntry);
-        // done
-        return accessControlEntry;
+        return inheritedAclId;
     }
-    
-    /**
-     * Make a copy of this ACL.
-     * @return The copy.
-     */
-    public DbAccessControlList getCopy()
+
+    public void setInheritedAclId(Long inheritedAclId)
     {
-        DbAccessControlList newAcl =
-            new DbAccessControlListImpl();
-        getSession().save(newAcl);
-        for (DbAccessControlEntry entry : entries)
+        this.inheritedAclId = inheritedAclId;
+    }
+
+    public boolean isLatest()
+    {
+        return latest;
+    }
+
+    public void setLatest(boolean latest)
+    {
+        this.latest = latest;
+    }
+
+    public boolean isVersioned()
+    {
+        return versioned;
+    }
+
+    public void setVersioned(boolean versioned)
+    {
+        this.versioned = versioned;
+    }
+
+    public DbAccessControlListChangeSet getAclChangeSet()
+    {
+        return aclChangeSet;
+    }
+
+    public void setAclChangeSet(DbAccessControlListChangeSet aclChangeSet)
+    {
+        this.aclChangeSet = aclChangeSet;
+    }
+
+    public static DbAccessControlList find(Session session)
+    {
+        // TODO: Needs to use a query
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    public Long getInheritsFrom()
+    {
+        return inheritsFrom;
+    }
+
+    public void setInheritsFrom(Long id)
+    {
+        this.inheritsFrom = id;
+    }
+
+    public DbAccessControlList getCopy(Long parentAcl, ACLCopyMode mode)
+    {
+        return s_aclDaoComponent.getDbAccessControlListCopy(this.getId(), parentAcl, mode);
+    }
+
+    public static DbAccessControlList createLayeredAcl(Long indirectedAcl)
+    {
+        SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+        properties.setAclType(ACLType.LAYERED);
+        Long id = s_aclDaoComponent.createAccessControlList(properties);
+        if (indirectedAcl != null)
         {
-            newAcl.newEntry(entry.getPermission(), entry.getAuthority(), entry.isAllowed());
+            s_aclDaoComponent.mergeInheritedAccessControlList(indirectedAcl, id);
         }
-        return newAcl;
+        return s_aclDaoComponent.getDbAccessControlList(id);
     }
+
+    public boolean getRequiresVersion()
+    {
+        return requiresVersion;
+    }
+
+    public void setRequiresVersion(boolean requiresVersion)
+    {
+        this.requiresVersion = requiresVersion;
+    }
+
 }

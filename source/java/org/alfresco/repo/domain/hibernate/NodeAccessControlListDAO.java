@@ -23,25 +23,32 @@
 
 package org.alfresco.repo.domain.hibernate;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.repo.domain.AccessControlListDAO;
+import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * The Node implementation for getting and setting ACLs.
+ * 
  * @author britt
  */
-public class NodeAccessControlListDAO extends HibernateDaoSupport implements AccessControlListDAO
+public class NodeAccessControlListDAO implements AccessControlListDAO
 {
     /**
      * The DAO for Nodes.
      */
     private NodeDaoService fNodeDAOService;
-    
+
     /**
      * Default constructor.
      */
@@ -53,10 +60,12 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
     {
         fNodeDAOService = nodeDAOService;
     }
-    
+
     /**
      * Get the ACL from a node.
-     * @param nodeRef The reference to the node.
+     * 
+     * @param nodeRef
+     *            The reference to the node.
      * @return The ACL.
      * @throws InvalidNodeRefException
      */
@@ -69,11 +78,14 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
         }
         return node.getAccessControlList();
     }
-    
+
     /**
      * Set the ACL on a node.
-     * @param nodeRef The reference to the node.
-     * @param acl The ACL.
+     * 
+     * @param nodeRef
+     *            The reference to the node.
+     * @param acl
+     *            The ACL.
      * @throws InvalidNodeRefException
      */
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
@@ -85,4 +97,53 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
         }
         node.setAccessControlList(acl);
     }
+
+    public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
+    {
+        // Nothing to do here
+    }
+
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom)
+    {
+        // Nothing to do here
+        return Collections.<AclChange> emptyList();
+    }
+
+    public Long getIndirectAcl(NodeRef nodeRef)
+    {
+        return getAccessControlList(nodeRef).getId();
+    }
+
+    public Long getInheritedAcl(NodeRef nodeRef)
+    {
+        Node node = fNodeDAOService.getNode(nodeRef);
+        ChildAssoc ca = fNodeDAOService.getPrimaryParentAssoc(node);
+        if ((ca != null) && (ca.getParent() != null))
+        {
+            DbAccessControlList acl = getAccessControlList(ca.getParent().getNodeRef());
+            if (acl != null)
+            {
+                return acl.getId();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void forceCopy(NodeRef nodeRef)
+    {
+        // nothing to do;
+    }
+
+    public   Map<ACLType, Integer> patchAcls()
+    {
+        throw new UnsupportedOperationException();
+    }
+
 }

@@ -48,6 +48,7 @@
              <ref bean="patch.schemaUpdateScript-V1.4-1" />
              <ref bean="patch.schemaUpdateScript-V1.4-2" />
              <ref bean="patch.db-V2.1-NotNullColumns" />
+             <ref bean="patch.db-V2.2-ACL" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
@@ -73,7 +74,7 @@
           </list>
        </property>
        <property name="avmLockingAwareService">
-       	 <ref bean="avmLockingAwareService"/>
+            <ref bean="avmLockingAwareService"/>
        </property>
        <property name="avmRepository">
          <ref bean="avmRepository"/>
@@ -266,27 +267,27 @@
     <import resource="classpath*:alfresco/extension/mt/mt-admin-context.xml"/>
 
     <bean id="workflowBootstrap" parent="workflowDeployer">
-		<property name="workflowDefinitions">
-			<list>
-				<props>
-					<prop key="engineId">jbpm</prop>
-					<prop key="location">alfresco/workflow/review_processdefinition.xml</prop>
-					<prop key="mimetype">text/xml</prop>
-					<prop key="redeploy">false</prop>
-				</props>
-				<props>
-					<prop key="engineId">jbpm</prop>
-					<prop key="location">alfresco/workflow/adhoc_processdefinition.xml</prop>
-					<prop key="mimetype">text/xml</prop>
-					<prop key="redeploy">false</prop>
-				</props>
-			   <props>
+        <property name="workflowDefinitions">
+            <list>
+                <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/review_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+                </props>
+                <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/adhoc_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+                </props>
+               <props>
                <!-- WCM workflow definition -->
-			    	<prop key="engineId">jbpm</prop>
-			    	<prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
-			    	<prop key="mimetype">text/xml</prop>
-			    	<prop key="redeploy">false</prop>
-			   </props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+               </props>
             <props>
                <!-- WCM workflow definition -->
                <prop key="engineId">jbpm</prop>
@@ -294,22 +295,22 @@
                <prop key="mimetype">text/xml</prop>
                <prop key="redeploy">false</prop>
             </props>
-			</list>
-		</property>
-		<property name="models">
-			<list>
+            </list>
+        </property>
+        <property name="models">
+            <list>
                <value>alfresco/workflow/workflowModel.xml</value>
                <value>alfresco/workflow/wcmWorkflowModel.xml</value>
-			</list>
-		</property>
-		<property name="labels">
-			<list>
-			   <value>alfresco/workflow/workflow-messages</value>
+            </list>
+        </property>
+        <property name="labels">
+            <list>
+               <value>alfresco/workflow/workflow-messages</value>
                <value>alfresco/workflow/wcm-workflow-messages</value>
-			</list>
-		</property>
-		<property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
-	</bean>
+            </list>
+        </property>
+        <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
+    </bean>
 
     <!-- Bootstrap any extensions -->
 
@@ -319,7 +320,7 @@
 
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="descriptor">
-	       <value>classpath:alfresco/version.properties</value>
+           <value>classpath:alfresco/version.properties</value>
        </property>
        <property name="systemBootstrap">
            <ref bean="systemBootstrap"/>
@@ -446,7 +447,7 @@
        </property>
     </bean>
 
-	<!-- Startup Message -->
+    <!-- Startup Message -->
 
     <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" >
         <property name="connection">
@@ -459,12 +460,12 @@
 
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
        <property name="descriptorService">
-	       	<ref local="descriptorComponent"/>
+           <ref local="descriptorComponent"/>
        </property>
        <property name="tenantService">
-            <ref bean="tenantService"/>
+           <ref bean="tenantService"/>
        </property>
-	</bean>
+    </bean>
 
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">

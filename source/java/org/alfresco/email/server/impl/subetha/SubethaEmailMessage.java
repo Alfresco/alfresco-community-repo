@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.mail.Address;
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -176,13 +177,13 @@ public class SubethaEmailMessage implements EmailMessage
             sentDate = new Date(); // Just anti-null stub :)
         }
 
-        parseMesagePart(mimeMessage);
+        parseMessagePart(mimeMessage);
         attachments = new EmailMessagePart[attachmentList.size()];
         attachmentList.toArray(attachments);
         attachmentList = null;
     }
 
-    private void parseMesagePart(Part messagePart)
+    private void parseMessagePart(Part messagePart)
     {
         try
         {
@@ -231,7 +232,18 @@ public class SubethaEmailMessage implements EmailMessage
                 }
                 for (int i = 0; i < count; i++)
                 {
-                    parseMesagePart(mp.getBodyPart(i));
+                    BodyPart bp = mp.getBodyPart(i);
+                    String disposition = bp.getDisposition();
+                    if (i > 0)
+                    {
+                        // It's an attachment.  Recurse.
+                        parseMessagePart(bp);
+                    }
+                    else
+                    {
+                        // It's the body
+                        addBody(messagePart);
+                    }
                 }
 
                 if (log.isDebugEnabled())
@@ -248,7 +260,7 @@ public class SubethaEmailMessage implements EmailMessage
                     log.debug("MIME_RFC822 part found. Processing inside part...");
                 }
 
-                parseMesagePart((Part) messagePart.getContent());
+                parseMessagePart((Part) messagePart.getContent());
 
                 if (log.isDebugEnabled())
                 {
@@ -281,27 +293,15 @@ public class SubethaEmailMessage implements EmailMessage
     {
         if (body != null)
         {
-            if (!MIME_PLAIN_TEXT.equals(body.getContentType()) && messagePart.isMimeType(MIME_PLAIN_TEXT))
+            attachmentList.add(new SubethaEmailMessagePart(messagePart, getPartFileName(getSubject() + " (part " + ++bodyNumber + ")", messagePart)));
+            if (log.isInfoEnabled())
             {
-                attachmentList.add(body);
-                body = new SubethaEmailMessagePart(messagePart);
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Body has been changed to the new one.");
-                }
-            }
-            else
-            {
-                attachmentList.add(new SubethaEmailMessagePart(messagePart, getPartFileName(getSubject() + " (part " + ++bodyNumber + ")", messagePart)));
-                if (log.isInfoEnabled())
-                {
-                    log.info(String.format("Attachment \"%s\" has been added.", attachmentList.get(attachmentList.size() - 1).getFileName()));
-                }
+                log.info(String.format("Attachment \"%s\" has been added.", attachmentList.get(attachmentList.size() - 1).getFileName()));
             }
         }
         else
         {
-            body = new SubethaEmailMessagePart(messagePart, getPartFileName(getSubject() + " (part " + ++bodyNumber + ")", messagePart));
+            body = new SubethaEmailMessagePart(messagePart, getPartFileName(getSubject(), messagePart));
             if (log.isDebugEnabled())
             {
                 log.debug("Boby has been added.");
@@ -319,7 +319,7 @@ public class SubethaEmailMessage implements EmailMessage
      */
     private void addAttachment(Part messagePart) throws MessagingException
     {
-        String fileName = getPartFileName(FILENAME_ATTACHMENT_PREFIX + ++attachmentNumber, messagePart);
+        String fileName = getPartFileName(FILENAME_ATTACHMENT_PREFIX + attachmentNumber, messagePart);
         attachmentList.add(new SubethaEmailMessagePart(messagePart, fileName));
         if (log.isDebugEnabled())
         {

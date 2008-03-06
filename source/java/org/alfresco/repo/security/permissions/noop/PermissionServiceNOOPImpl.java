@@ -33,9 +33,12 @@ import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
+import org.alfresco.repo.security.permissions.impl.PermissionReferenceImpl;
+import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.namespace.QName;
 
 
@@ -76,7 +79,7 @@ public class PermissionServiceNOOPImpl
      */
     public Set<AccessPermission> getPermissions(NodeRef nodeRef)
     {
-        return null;
+        return Collections.<AccessPermission>emptySet();
     }
 
     /* (non-Javadoc)
@@ -84,7 +87,7 @@ public class PermissionServiceNOOPImpl
      */
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef)
     {
-        return null;
+        return Collections.<AccessPermission>emptySet();
     }
 
     /* (non-Javadoc)
@@ -179,48 +182,48 @@ public class PermissionServiceNOOPImpl
 
     public PermissionReference getAllPermissionReference()
     {
-        throw new UnsupportedOperationException();
+        return getPermissionReference(ALL_PERMISSIONS);
     }
 
     public String getPermission(PermissionReference permissionReference)
     {
-        throw new UnsupportedOperationException();
+        return permissionReference.toString();
     }
 
     public PermissionReference getPermissionReference(QName qname, String permissionName)
     {
-        throw new UnsupportedOperationException();
+        return new PermissionReferenceImpl(qname, permissionName);
     }
 
     public PermissionReference getPermissionReference(String permissionName)
     {
-        throw new UnsupportedOperationException();
+        return new PermissionReferenceImpl(QName.createQName("uri", "local"), permissionName);
     }
 
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
-        throw new UnsupportedOperationException();
+        return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry>emptySet());
     }
 
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
-        throw new UnsupportedOperationException();
+        return Collections.<PermissionReference>emptySet();
     }
 
     public Set<PermissionReference> getSettablePermissionReferences(QName type)
     {
-        throw new UnsupportedOperationException();
+        return Collections.<PermissionReference>emptySet();
     }
 
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
     {
-        throw new UnsupportedOperationException();
+        return AccessStatus.ALLOWED;
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String, java.lang.String)
      */
-    public AccessStatus hasPermission(Long aclID, Map<String, Object> context,
+    public AccessStatus hasPermission(Long aclID, PermissionContext context,
                                       String permission)
     {
         return AccessStatus.ALLOWED;
@@ -228,12 +231,12 @@ public class PermissionServiceNOOPImpl
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
-        throw new UnsupportedOperationException();
+        
     }
 
     public void setPermission(PermissionEntry permissionEntry)
     {
-        throw new UnsupportedOperationException();
+        
     }
 
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()

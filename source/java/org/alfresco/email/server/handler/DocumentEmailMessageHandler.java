@@ -51,7 +51,7 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
 {
     private static final String forumNodeName = "EmailForum";
 
-    public void processMessage(NodeRef nodeRef, EmailMessage message)
+    public void processMessage(NodeRef contentNodeRef, EmailMessage message)
     {
         String messageSubject;
 
@@ -64,27 +64,34 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
             messageSubject = "EMPTY_SUBJECT_" + System.currentTimeMillis();
         }
         
-        QName nodeTypeQName = getNodeService().getType(nodeRef);
+        QName nodeTypeQName = getNodeService().getType(contentNodeRef);
 
         DictionaryService dictionaryService = getDictionaryService();
         if (dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
         {
-            NodeRef forumNode = getForumNode(nodeRef);
+            // Find where the content resides
+            NodeRef spaceNodeRef = getNodeService().getPrimaryParent(contentNodeRef).getParentRef();
+            
+            NodeRef forumNode = getForumNode(contentNodeRef);
 
             if (forumNode == null)
             {
-                forumNode = addForumNode(nodeRef);
+                forumNode = addForumNode(contentNodeRef);
             }
 
             // Try to find existed node
-            NodeRef topicNode = getTopicNode(forumNode, messageSubject);
+            NodeRef topicNodeRef = getTopicNode(forumNode, messageSubject);
 
-            if (topicNode == null)
+            if (topicNodeRef == null)
             {
-                topicNode = addTopicNode(forumNode, messageSubject);
+                topicNodeRef = addTopicNode(forumNode, messageSubject);
             }
 
-            addPostNode(topicNode, message);
+            // Create the post
+            NodeRef postNodeRef = addPostNode(topicNodeRef, message);
+            
+            // Add attachments
+            addAttachments(spaceNodeRef, postNodeRef, message);
         }
         else
         {

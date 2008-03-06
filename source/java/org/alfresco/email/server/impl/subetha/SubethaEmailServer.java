@@ -126,39 +126,46 @@ public class SubethaEmailServer extends EmailServer
 
         public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
         {
-            if (deliveries.size() == 1)
+            if (deliveries.size() > 0)
             {
                 Delivery delivery = deliveries.get(0);
                 processDelivery(delivery, data);
             }
-            else if (deliveries.size() > 1)
-            {
-                DeferredFileOutputStream dfos = null;
-                try
-                {
-                    dfos = new DeferredFileOutputStream(DEFAULT_DATA_DEFERRED_SIZE);
-
-                    byte[] bytes = new byte[1024 * 8];
-                    for (int len = -1; (len = data.read(bytes)) != -1;)
-                    {
-                        dfos.write(bytes, 0, len);
-                    }
-                    for (Delivery delivery : deliveries)
-                    {
-                        processDelivery(delivery, dfos.getInputStream());
-                    }
-                }
-                finally
-                {
-                    try
-                    {
-                        dfos.close();
-                    }
-                    catch (Exception e)
-                    {
-                    }
-                }
-            }
+//            Duplicate messages coming in
+//            http://www.subethamail.org/se/archive_msg.jsp?msgId=20938
+//            if (deliveries.size() == 1)
+//            {
+//                Delivery delivery = deliveries.get(0);
+//                processDelivery(delivery, data);
+//            }
+//            else if (deliveries.size() > 1)
+//            {
+//                DeferredFileOutputStream dfos = null;
+//                try
+//                {
+//                    dfos = new DeferredFileOutputStream(DEFAULT_DATA_DEFERRED_SIZE);
+//
+//                    byte[] bytes = new byte[1024 * 8];
+//                    for (int len = -1; (len = data.read(bytes)) != -1;)
+//                    {
+//                        dfos.write(bytes, 0, len);
+//                    }
+//                    for (Delivery delivery : deliveries)
+//                    {
+//                        processDelivery(delivery, dfos.getInputStream());
+//                    }
+//                }
+//                finally
+//                {
+//                    try
+//                    {
+//                        dfos.close();
+//                    }
+//                    catch (Exception e)
+//                    {
+//                    }
+//                }
+//            }
         }
 
         private void processDelivery(Delivery delivery, InputStream data) throws RejectException

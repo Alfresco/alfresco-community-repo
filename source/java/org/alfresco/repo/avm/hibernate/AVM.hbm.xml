@@ -44,7 +44,7 @@
         <property name="isRoot" column="is_root" type="boolean"/>
         <many-to-one name="storeNew" class="AVMStoreImpl" column="store_new_id" foreign-key="fk_avm_n_store"/>
         <!-- ACL -->
-        <many-to-one name="acl" column="acl_id" foreign-key="fk_avm_n_acl"
+        <many-to-one name="acl" column="acl_id" foreign-key="fk_avm_n_acl" cascade="none"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
         <set name="aspects" fetch="join" lazy="false" table="avm_aspects_new" cascade="all" optimistic-lock="true">
             <cache usage="read-write"/>

@@ -23,6 +23,8 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+
 /**
  * Base class for file objects.
  * @author britt

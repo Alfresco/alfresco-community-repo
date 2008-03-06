@@ -34,19 +34,14 @@ import java.util.Map;
 
 import javax.mail.MessagingException;
 
-import org.alfresco.email.server.EmailServerModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
-import org.alfresco.service.cmr.email.EmailMessagePart;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -140,101 +135,7 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         }
 
         // Add attachments
-        EmailMessagePart[] attachments = message.getAttachments();
-        for (EmailMessagePart attachment : attachments)
-        {
-            String fileName = attachment.getFileName();
-
-            InputStream contentIs = attachment.getContent();
-            
-            MimetypeService mimetypeService = getMimetypeService();
-            String mimetype = mimetypeService.guessMimetype(fileName);
-            String encoding = attachment.getEncoding();
-
-            NodeRef attachmentNode = addAttachment(getNodeService(), spaceNodeRef, contentNodeRef, fileName);
-            writeContent(attachmentNode, contentIs, mimetype, encoding);
-        }
-    }
-
-    /**
-     * Add new node into Alfresco repository with specified parameters. Node content isn't added. New node will be created with ContentModel.ASSOC_CONTAINS association with parent.
-     * 
-     * @param nodeService Alfresco Node Service
-     * @param parent Parent node
-     * @param name Name of the new node
-     * @return Reference to created node
-     */
-    private NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name)
-    {
-        return addContentNode(nodeService, parent, name, ContentModel.ASSOC_CONTAINS);
-    }
-
-    /**
-     * Add new node into Alfresco repository with specified parameters. Node content isn't added.
-     * 
-     * @param nodeService Alfresco Node Service
-     * @param parent Parent node
-     * @param name Name of the new node
-     * @param assocType Association type that should be set between parent node and the new one.
-     * @return Reference to created node
-     */
-    private NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType)
-    {
-        NodeRef childNodeRef = nodeService.getChildByName(parent, assocType, name);
-        if (childNodeRef != null)
-        {
-            // The node is present already.  Make sure the name csae is correct
-            nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
-        }
-        else
-        {
-            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-            contentProps.put(ContentModel.PROP_NAME, name);
-            ChildAssociationRef associationRef = nodeService.createNode(
-                    parent,
-                    assocType,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
-                    ContentModel.TYPE_CONTENT,
-                    contentProps);
-            childNodeRef = associationRef.getChildRef();
-        }
-        return childNodeRef;
-    }
-
-    /**
-     * Adds new node into Alfresco repository and mark its as an attachment.
-     * 
-     * @param nodeService Alfresco Node Service.
-     * @param folder Space/Folder to add.
-     * @param mainContentNode Main content node. Any mail is added into Alfresco as one main content node and several its attachments. Each attachment related with its main node.
-     * @param fileName File name for the attachment.
-     * @return Reference to created node.
-     */
-    private NodeRef addAttachment(NodeService nodeService, NodeRef folder, NodeRef mainContentNode, String fileName)
-    {
-        if (log.isDebugEnabled())
-        {
-            log.debug("Adding attachment node (name=" + fileName + ").");
-        }
-        
-        NodeRef attachmentNode = addContentNode(nodeService, folder, fileName);
-
-        // Remove 'attached' aspect so that we work with the document in its clean form
-        if (nodeService.hasAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED))
-        {
-            nodeService.removeAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED);
-        }
-        
-        // Add attached aspect
-        nodeService.addAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED, null);
-        // Recreate the association
-        nodeService.createAssociation(attachmentNode, mainContentNode, EmailServerModel.ASSOC_ATTACHMENT);
-        
-        if (log.isDebugEnabled())
-        {
-            log.debug("Attachment has been added.");
-        }
-        return attachmentNode;
+        addAttachments(spaceNodeRef, contentNodeRef, message);
     }
 
     /**

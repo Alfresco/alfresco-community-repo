@@ -216,7 +216,7 @@ public interface AVMNode
      * Copy metadata from another node.
      * @param other The other node.
      */
-    public void copyMetaDataFrom(AVMNode other);
+    public void copyMetaDataFrom(AVMNode other, Long parentAcl);
 
     /**
      * Get the GUID associated with this version.

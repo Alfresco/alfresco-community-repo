@@ -34,8 +34,7 @@ package org.alfresco.service.cmr.security;
  * <li>GROUP - an authority that identifies a group
  * <li>OWNER - the special authority that applies to the owner of a node
  * <li>EVERYONE - the special authority that is interpreted as everyone
- * <li>GUEST - the special authority that applies to a GUEST (An unknown,
- * unauthenticated user)
+ * <li>GUEST - the special authority that applies to a GUEST (An unknown, unauthenticated user)
  * </ol>
  * 
  * @author Andy Hind
@@ -63,6 +62,11 @@ public enum AuthorityType
         {
             return "";
         }
+
+        public int getOrderPosition()
+        {
+            return 0;
+        }
     },
 
     EVERYONE
@@ -86,6 +90,11 @@ public enum AuthorityType
         {
             return "";
         }
+
+        public int getOrderPosition()
+        {
+            return 1;
+        }
     },
     OWNER
     {
@@ -107,6 +116,11 @@ public enum AuthorityType
         public String getPrefixString()
         {
             return "";
+        }
+
+        public int getOrderPosition()
+        {
+            return 2;
         }
     },
     GUEST
@@ -130,6 +144,11 @@ public enum AuthorityType
         {
             return "";
         }
+
+        public int getOrderPosition()
+        {
+            return 3;
+        }
     },
     GROUP
     {
@@ -151,6 +170,11 @@ public enum AuthorityType
         public String getPrefixString()
         {
             return PermissionService.GROUP_PREFIX;
+        }
+
+        public int getOrderPosition()
+        {
+            return 4;
         }
     },
     ROLE
@@ -175,6 +199,11 @@ public enum AuthorityType
         {
             return PermissionService.ROLE_PREFIX;
         }
+
+        public int getOrderPosition()
+        {
+            return 5;
+        }
     },
     USER
     {
@@ -197,6 +226,11 @@ public enum AuthorityType
         {
             return "";
         }
+
+        public int getOrderPosition()
+        {
+            return 6;
+        }
     };
 
     public abstract boolean isFixedString();
@@ -206,6 +240,8 @@ public enum AuthorityType
     public abstract boolean isPrefixed();
 
     public abstract String getPrefixString();
+
+    public abstract int getOrderPosition();
 
     public boolean equals(String authority)
     {

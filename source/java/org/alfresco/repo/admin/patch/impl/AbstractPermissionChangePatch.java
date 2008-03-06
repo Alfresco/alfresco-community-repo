@@ -96,7 +96,6 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
     private static class HibernateHelper extends HibernateDaoSupport
     {
         private static final String QUERY_GET_PERMISSION = "permission.GetPermission";
-        private static final String QUERY_GET_ENTRIES_TO_CHANGE = "permission.patch.GetAccessControlEntriesToChangePermissionOn";
         
         public int createAndUpdatePermission(
                 final QName oldTypeQName,
@@ -109,7 +108,7 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
                 throw new IllegalArgumentException("Cannot move permission to itself: " + oldTypeQName + "-" + oldName);
             }
             
-            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(newTypeQName, newName);
+            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQName, oldName);
             DbPermission permission = (DbPermission) getHibernateTemplate().execute(getNewPermissionCallback);
             if (permission == null)
             {
@@ -120,58 +119,13 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
                 // save
                 getHibernateTemplate().save(permission);
             }
-            final DbPermission newPermission = permission;
-            // now update all entries that refer to the old permission
-            HibernateCallback updateEntriesCallback = new HibernateCallback()
+            else
             {
-                private static final int MAX_RESULTS = 1000;
-                @SuppressWarnings("unchecked")
-                public Object doInHibernate(Session session)
-                {
-                    int count = 0;
-                    while (true)
-                    {
-                        // flush any outstanding entities
-                        session.flush();
-                        
-                        Query query = session.getNamedQuery(HibernateHelper.QUERY_GET_ENTRIES_TO_CHANGE);
-                        query.setParameter("oldTypeQName", oldTypeQName)
-                             .setParameter("oldName", oldName)
-                             .setMaxResults(MAX_RESULTS);
-                        List<DbAccessControlEntry> entries = (List<DbAccessControlEntry>) query.list();
-                        // if there are no results, then we're done
-                        if (entries.size() == 0)
-                        {
-                            break;
-                        }
-                        for (DbAccessControlEntry entry : entries)
-                        {
-                            entry.setPermission(newPermission);
-                            count++;
-                            session.evict(entry);
-                        }
-                        // flush and evict all the entries
-                        session.flush();
-                        for (DbAccessControlEntry entry : entries)
-                        {
-                            session.evict(entry);
-                        }
-                        // next set of results
-                    }
-                    // done
-                    return count;
-                }
-            };
-            int updateCount = (Integer) getHibernateTemplate().execute(updateEntriesCallback);
-            // now delete the old permission
-            HibernateCallback getOldPermissionCallback = new GetPermissionCallback(oldTypeQName, oldName);
-            DbPermission oldPermission = (DbPermission) getHibernateTemplate().execute(getOldPermissionCallback);
-            if (oldPermission != null)
-            {
-                getHibernateTemplate().delete(oldPermission);
+                permission.setTypeQname(newTypeQName);
+                permission.setName(newName);
             }
             // done
-            return updateCount;
+            return 1;
         }
     }
 }

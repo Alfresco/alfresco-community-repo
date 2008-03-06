@@ -219,6 +219,18 @@ public interface LockService
    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
    public LockStatus getLockStatus(NodeRef nodeRef);
    
+   
+   /**
+    * Gets the lock status for the node reference relative to the current user.
+    * 
+    * @see LockService#getLockStatus(NodeRef, NodeRef)
+    * 
+    * @param nodeRef    the node reference
+    * @return           the lock status
+    */
+   @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "userName"})
+   public LockStatus getLockStatus(NodeRef nodeRef, String userName);
+   
    /**
     * Gets the lock type for the node indicated.  
     * <p>

@@ -390,7 +390,7 @@ public class LockServiceImpl implements LockService,
      * @param userName  the user name
      * @return          the lock status
      */
-    private LockStatus getLockStatus(NodeRef nodeRef, String userName)
+    public LockStatus getLockStatus(NodeRef nodeRef, String userName)
     {
         LockStatus result = LockStatus.NO_LOCK;
 

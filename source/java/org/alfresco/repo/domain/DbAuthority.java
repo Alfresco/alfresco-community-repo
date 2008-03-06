@@ -25,7 +25,6 @@
 package org.alfresco.repo.domain;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /** 
  * The interface against which recipients of permission are persisted
@@ -34,29 +33,24 @@ import java.util.Set;
 public interface DbAuthority extends Serializable 
 {
     /**
+     * Get the object id
+     * @return
+     */
+    public Long getId();
+    
+    /**
      * @return  Returns the version number for optimistic locking
      */
     public Long getVersion();
     
     /**
-     * @return Returns the recipient
+     * @return Returns the authority
      */
-    public String getRecipient();
+    public String getAuthority();
     
     /**
-     * @param recipient the authority recipient
+     * @param the authority
      */
-    public void setRecipient(String recipient);
-    
-    /**
-     * @return Returns the external keys associated with this authority
-     */
-    public Set<String> getExternalKeys();
-    
-    /**
-     * Delete the access control entries related to this authority
-     * 
-     * @return Returns the number of entries deleted
-     */
-    public int deleteEntries();
+    public void setAuthority(String authority);
+   
 }

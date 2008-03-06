@@ -54,10 +54,11 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
     /**
      * Posts content
      * 
-     * @param nodeRef Reference to node
-     * @param parser Mail parser
+     * @param nodeRef   Reference to node
+     * @param parser    Mail parser
+     * @return          Returns the new post node
      */
-    protected void addPostNode(NodeRef nodeRef, EmailMessage message)
+    protected NodeRef addPostNode(NodeRef nodeRef, EmailMessage message)
     {
         NodeService nodeService = getNodeService();
         Date now = new Date();
@@ -66,8 +67,8 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
         PropertyMap properties = new PropertyMap(3);
         properties.put(ContentModel.PROP_NAME, nodeName);
 
-        NodeRef postNode = nodeService.getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
-        if (postNode == null)
+        NodeRef postNodeRef = nodeService.getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
+        if (postNodeRef == null)
         {
             ChildAssociationRef childAssoc = nodeService.createNode(
                     nodeRef,
@@ -75,27 +76,34 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName),
                     ForumModel.TYPE_POST,
                     properties);
-            postNode = childAssoc.getChildRef();
+            postNodeRef = childAssoc.getChildRef();
         }
 
         // Add necessary aspects
         properties.clear();
         properties.put(ContentModel.PROP_TITLE, nodeName);
-        nodeService.addAspect(postNode, ContentModel.ASPECT_TITLED, properties);
+        nodeService.addAspect(postNodeRef, ContentModel.ASPECT_TITLED, properties);
         properties.clear();
         properties.put(ApplicationModel.PROP_EDITINLINE, true);
-        nodeService.addAspect(postNode, ApplicationModel.ASPECT_INLINEEDITABLE, properties);
+        nodeService.addAspect(postNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, properties);
 
         // Write content
         if (message.getBody() != null)
         {
-            writeContent(postNode, message.getBody().getContent(), message.getBody().getContentType(), message.getBody().getEncoding());
+            writeContent(
+                    postNodeRef,
+                    message.getBody().getContent(),
+                    message.getBody().getContentType(),
+                    message.getBody().getEncoding());
         }
         else
         {
-            writeContent(postNode, "<The message was empty>");
+            writeContent(postNodeRef, "<The message was empty>");
         }
-        addEmailedAspect(postNode, message);
+        addEmailedAspect(postNodeRef, message);
+        
+        // Done
+        return postNodeRef;
     }
 
     /**

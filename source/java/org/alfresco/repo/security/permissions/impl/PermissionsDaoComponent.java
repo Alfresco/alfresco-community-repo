@@ -56,7 +56,7 @@ public interface PermissionsDaoComponent
     public void deletePermissions(NodeRef nodeRef);
 
     /**
-     * Remove all permissions for the specvified authority
+     * Remove all permissions for the specified authority
      * @param authority
      */
     public void deletePermissions(String authority);

@@ -19,6 +19,7 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <namespace uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
       <namespace uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
    </namespaces>
 
@@ -286,8 +287,8 @@
    <!-- ================================================ -->
    
    <permissionSet type="cm:cmobject" expose="selected">
-   	
-   	<!-- Kept for backward compatibility - the administrator permission has   -->
+       
+       <!-- Kept for backward compatibility - the administrator permission has   -->
       <!-- been removed to aviod confusion --> 
       <permissionGroup name="Administrator" allowFullControl="true" expose="false" />
       
@@ -341,6 +342,23 @@
           <includePermissionGroup type="sys:base" permissionGroup="CreateAssociations"/>
       </permissionGroup>
        
+      <!-- avm related permissions -->
+       
+       <!-- AVM website specific roles.                                               -->
+      <permissionGroup name="ContentManager" allowFullControl="true" expose="false" />
+      
+      <permissionGroup name="ContentPublisher" allowFullControl="false" expose="false">
+         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="ContentContributor" allowFullControl="false" expose="false">
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="ContentReviewer" allowFullControl="false" expose="false">
+         <includePermissionGroup permissionGroup="Editor" type="cm:cmobject" />
+      </permissionGroup>
+       
    </permissionSet>
    
    <!-- =============================== -->
@@ -359,28 +377,72 @@
       <permissionGroup name="RecordAdministrator" extends="true" expose="false"/>
       
    </permissionSet>
+    
+    
+    <permissionSet type="cm:folder" expose="selected">
+
+      <!-- Content folder specific roles.                                                       -->
+      
+      <permissionGroup name="Coordinator" extends="true" expose="true"/>
+      <permissionGroup name="Collaborator" extends="true" expose="true"/>
+      <permissionGroup name="Contributor" extends="true" expose="true"/>
+      <permissionGroup name="Editor" extends="true" expose="true"/>
+      <permissionGroup name="Consumer" extends="true" expose="true"/>
+      <permissionGroup name="RecordAdministrator" extends="true" expose="false"/>
+      
+   </permissionSet>
    
    <!-- ========================================== -->
    <!-- Permissions specific to avm website folder -->
    <!-- ========================================== -->
    
-   <permissionSet type="wca:webfolder" expose="selected">
-
-      <!-- AVM website specific roles.                                               -->
-      <permissionGroup name="ContentManager" allowFullControl="true" expose="true" />
-      
-      <permissionGroup name="ContentPublisher" allowFullControl="false" expose="true">
-         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
-      </permissionGroup>
-      
-      <permissionGroup name="ContentContributor" allowFullControl="false" expose="true">
-         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
-      </permissionGroup>
-      
-      <permissionGroup name="ContentReviewer" allowFullControl="false" expose="true">
-         <includePermissionGroup permissionGroup="Editor" type="cm:cmobject" />
-      </permissionGroup>
-      
+   <permissionSet type="wcm:avmfolder" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wcm:avmplainfolder" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wcm:avmlayeredfolder" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wcm:avmcontent" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wcm:avmplaincontent" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wcm:avmlayeredcontent" expose="selected">                                       -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
+   </permissionSet>
+    
+   <permissionSet type="wca:webfolder" expose="selected">                                           -->
+      <permissionGroup name="ContentManager" extends="true" expose="true" />
+      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
+      <permissionGroup name="ContentContributor" extends="true" expose="true" />
+      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
    </permissionSet>
    
    <!-- ============================================== -->

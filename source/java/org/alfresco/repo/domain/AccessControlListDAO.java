@@ -23,28 +23,65 @@
 
 package org.alfresco.repo.domain;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * This abstracts the reading and writing of ACLs on nodes
- * from particular node implementations.
+ * This abstracts the reading and writing of ACLs on nodes from particular node implementations.
+ * 
  * @author britt
  */
 public interface AccessControlListDAO
 {
     /**
      * Get the ACL from a node.
-     * @param nodeRef The reference to the node.
+     * 
+     * @param nodeRef
+     *            The reference to the node.
      * @return The ACL.
      * @throws InvalidNodeRefException
      */
     public DbAccessControlList getAccessControlList(NodeRef nodeRef);
-    
+
     /**
      * Set the ACL on a node.
-     * @param nodeRef The reference to the node.
-     * @param acl The ACL.
+     * 
+     * @param nodeRef
+     *            The reference to the node.
+     * @param acl
+     *            The ACL.
      * @throws InvalidNodeRefException
      */
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl);
+
+    /**
+     * Update any associated ACLs
+     * 
+     * @param startingPoint
+     * @param chnages
+     */
+    public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes);
+
+    /**
+     * Update inheritance
+     * 
+     * @param parent
+     * @param mergeFrom
+     * @param previousId
+     * @return
+     */
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long mergeFrom);
+
+    public Long getIndirectAcl(NodeRef nodeRef);
+
+    public Long getInheritedAcl(NodeRef nodeRef);
+
+    public void forceCopy(NodeRef nodeRef);
+    
+    public Map<ACLType, Integer> patchAcls();
 }

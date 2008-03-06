@@ -232,7 +232,6 @@
         </property>
     </bean>
     
-    
     <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
         <property name="nodeDaoService">
         	<ref bean="nodeDaoService"/>
@@ -325,5 +324,10 @@
         </property>
           
     </bean>
+    
+    <!-- There is a job available to purge old deploymentattempt nodes  -->
+    <!-- from the repository. The maximum age of the node can be configured. -->
+    <!-- See the wiki (http://wiki.alfresco.com/wikiDeployment) for details -->
+    <!-- and the deployment-attempt-cleaner-context.xml.sample file. -->
     
 </beans>

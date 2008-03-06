@@ -25,14 +25,11 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.alfresco.repo.domain.DbAuthority;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 
 /**
@@ -40,20 +37,31 @@ import org.hibernate.Session;
  * 
  * @author andyh
  */
-public class DbAuthorityImpl extends LifecycleAdapter
+public class DbAuthorityImpl
     implements DbAuthority, Serializable
 {
     private static final long serialVersionUID = -5582068692208928127L;
     
     private static Log logger = LogFactory.getLog(DbAuthorityImpl.class);
 
+    private Long id;
     private Long version;
-    private String recipient;
-    private Set<String> externalKeys;
+    private String authority;
 
     public DbAuthorityImpl()
     {
-        externalKeys = new HashSet<String>();
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("DbAuthorityImpl")
+          .append("[ id=").append(id)
+          .append(", version=").append(version)
+          .append(", authority=").append(authority)
+          .append("]");
+        return sb.toString();
     }
     
     @Override
@@ -68,44 +76,27 @@ public class DbAuthorityImpl extends LifecycleAdapter
             return false;
         }
         DbAuthority other = (DbAuthority)o;
-        return this.getRecipient().equals(other.getRecipient());
+        return this.getAuthority().equals(other.getAuthority());
     }
 
     @Override
     public int hashCode()
     {
-        return getRecipient().hashCode();
+        return getAuthority().hashCode();
     }
 
-    public int deleteEntries()
+    public Long getId()
     {
-        /*
-         * This can use a delete direct to the database as well, but then care must be taken
-         * to evict the instances from the session.
-         */
-        
-        // bypass L2 cache and get all entries for this list
-        Query query = getSession()
-                .getNamedQuery(PermissionsDaoComponentImpl.QUERY_GET_AC_ENTRIES_FOR_AUTHORITY)
-                .setString("authorityRecipient", this.recipient);
-        int count = HibernateHelper.deleteDbAccessControlEntries(getSession(), query);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Deleted " + count + " access entries for access control list " + this.recipient);
-        }
-        return count;
+        return id;
     }
-
-    /**
-     * Ensures that all this access control list's entries have been deleted.
-     */
-    public boolean onDelete(Session session) throws CallbackException
+    
+    @SuppressWarnings("unused")
+    private void setId(Long id)
     {
-        deleteEntries();
-        return super.onDelete(session);
+        this.id = id;
     }
-
+    
+    
     public Long getVersion()
     {
         return version;
@@ -120,25 +111,14 @@ public class DbAuthorityImpl extends LifecycleAdapter
         this.version = version;
     }
 
-    public String getRecipient()
+    public String getAuthority()
     {
-        return recipient;
+        return authority;
     }
 
-    public void setRecipient(String recipient)
+    public void setAuthority(String authority)
     {
-       this.recipient = recipient;
-    }
-
-    public Set<String> getExternalKeys()
-    {
-        return externalKeys;
-    }
-
-    // Hibernate
-    /* package */ void setExternalKeys(Set<String> externalKeys)
-    {
-        this.externalKeys = externalKeys;
+       this.authority = authority;
     }
     
     /**
@@ -150,6 +130,7 @@ public class DbAuthorityImpl extends LifecycleAdapter
      */
     public static DbAuthority find(Session session, String authority)
     {
-        return (DbAuthority) session.get(DbAuthorityImpl.class, authority);
+        // TODO: Needs to use a query 
+        throw new UnsupportedOperationException("TODO");
     }
 }

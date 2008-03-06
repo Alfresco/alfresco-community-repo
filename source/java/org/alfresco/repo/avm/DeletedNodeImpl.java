@@ -23,6 +23,8 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
 /**
@@ -51,20 +53,21 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      * @param store The store it's being created in.
      */
     public DeletedNodeImpl(long id,
-                           AVMStore store)
+                           AVMStore store, DbAccessControlList acl)
     {
         super(id, store);
+        this.setAcl(acl);
     }
     
     public DeletedNodeImpl(DeletedNode other,
-                           AVMStore store)
+                           AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store.getAVMRepository().issueID(), store);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other);        
+        copyACLs(other, parentAcl, mode);        
     }
     
     /**
@@ -89,7 +92,13 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      */
     public AVMNode copy(Lookup lPath)
     {
-        AVMNode newMe = new DeletedNodeImpl(this, lPath.getAVMStore());
+        DirectoryNode dir = lPath.getCurrentNodeDirectory();
+        Long parentAclId = null;
+        if((dir != null) && (dir.getAcl() != null))
+        {
+            parentAclId = dir.getAcl().getId();
+        }
+        AVMNode newMe = new DeletedNodeImpl(this, lPath.getAVMStore(), parentAclId, ACLCopyMode.COPY);
         newMe.setAncestor(this);
         return newMe;
     }

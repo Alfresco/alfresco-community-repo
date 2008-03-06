@@ -96,7 +96,6 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private String model;
 
-    
     // Aprrox 6 - default size OK
     private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>();
 
@@ -122,11 +121,9 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private HashMap<String, PermissionReference> permissionReferenceMap;
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(
-            128, 1.0f);
+    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(
-            128, 1.0f);
+    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
 
     public PermissionModel()
     {
@@ -202,8 +199,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
             for (Iterator it = namespacesElement.elementIterator(NAMESPACE); it.hasNext(); /**/)
             {
                 Element nameSpaceElement = (Element) it.next();
-                nspr.registerNamespace(nameSpaceElement.attributeValue(NAMESPACE_PREFIX), nameSpaceElement
-                        .attributeValue(NAMESPACE_URI));
+                nspr.registerNamespace(nameSpaceElement.attributeValue(NAMESPACE_PREFIX), nameSpaceElement.attributeValue(NAMESPACE_URI));
             }
         }
 
@@ -290,15 +286,14 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public Set<PermissionReference> getAllPermissions(QName type)
     {
-        return getAllPermissionsImpl(type, false);
+        return getAllPermissionsImpl(type, null, false);
     }
 
     public Set<PermissionReference> getExposedPermissions(QName type)
     {
-        return getAllPermissionsImpl(type, true);
+        return getAllPermissionsImpl(type, null, true);
     }
 
-    
     private Set<PermissionReference> getAllPermissionsImpl(QName type, boolean exposedOnly)
     {
         Map<QName, Set<PermissionReference>> cache;
@@ -441,36 +436,49 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     public Set<PermissionReference> getAllPermissions(NodeRef nodeRef)
     {
-        return getExposedPermissionsImpl(nodeRef, false);
+        return getAllPermissionsImpl(nodeService.getType(nodeRef), nodeService.getAspects(nodeRef), false);
     }
 
     public Set<PermissionReference> getExposedPermissions(NodeRef nodeRef)
     {
-        return getExposedPermissionsImpl(nodeRef, true);
+        return getAllPermissionsImpl(nodeService.getType(nodeRef), nodeService.getAspects(nodeRef), true);
     }
 
-    public Set<PermissionReference> getExposedPermissionsImpl(NodeRef nodeRef, boolean exposedOnly)
+    public Set<PermissionReference> getAllPermissions(QName typeName, Set<QName> aspects)
     {
-        //
-        // TODO: cache permissions based on type and exposed flag
-        // create JMeter test to see before/after effect!
-        //
-        QName typeName = nodeService.getType(nodeRef);
+        return getAllPermissionsImpl(typeName, aspects, false);
+    }
 
+    private Set<PermissionReference> getAllPermissionsImpl(QName typeName, Set<QName> aspects, boolean exposedOnly)
+    {
         Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>(128, 1.0f);
         permissions.addAll(getAllPermissionsImpl(typeName, exposedOnly));
-        mergeGeneralAspectPermissions(permissions, exposedOnly);
-        // Add non mandatory aspects...
-        Set<QName> defaultAspects = new HashSet<QName>();
-        for (AspectDefinition aspDef : dictionaryService.getType(typeName).getDefaultAspects())
+
+        ClassDefinition cd = dictionaryService.getClass(typeName);
+        if (cd != null)
         {
-            defaultAspects.add(aspDef.getName());
-        }
-        for (QName aspect : nodeService.getAspects(nodeRef))
-        {
-            if (!defaultAspects.contains(aspect))
+            if (cd.isAspect())
             {
-                addAspectPermissions(aspect, permissions, exposedOnly);
+                // Do not merge in all general aspects
+            }
+            else
+            {
+                mergeGeneralAspectPermissions(permissions, exposedOnly);
+            }
+            Set<QName> defaultAspects = new HashSet<QName>();
+            for (AspectDefinition aspDef : cd.getDefaultAspects())
+            {
+                defaultAspects.add(aspDef.getName());
+            }
+            if (aspects != null)
+            {
+                for (QName aspect : aspects)
+                {
+                    if (!defaultAspects.contains(aspect))
+                    {
+                        addAspectPermissions(aspect, permissions, exposedOnly);
+                    }
+                }
             }
         }
         return permissions;
@@ -582,8 +590,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
                     {
                         if (pg.getTypeQName() != null)
                         {
-                            permissions.addAll(getGranteePermissions(new SimplePermissionReference(pg.getTypeQName(),
-                                    pg.getName())));
+                            permissions.addAll(getGranteePermissions(new SimplePermissionReference(pg.getTypeQName(), pg.getName())));
                         }
                         else
                         {
@@ -592,8 +599,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
                             if (parent != null)
                             {
                                 classDefinition = dictionaryService.getClass(parent);
-                                PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(
-                                        parent, pg.getName()));
+                                PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(parent, pg.getName()));
                                 if (attempt != null)
                                 {
                                     permissions.addAll(getGranteePermissions(attempt));
@@ -668,8 +674,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         PermissionGroup pg = getPermissionGroupOrNull(target);
         if (pg == null)
         {
-            throw new PermissionModelException("There is no permission group :"
-                    + target.getQName() + " " + target.getName());
+            throw new PermissionModelException("There is no permission group :" + target.getQName() + " " + target.getName());
         }
         return pg;
     }
@@ -716,8 +721,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
                 while ((parent = classDefinition.getParentName()) != null)
                 {
                     classDefinition = dictionaryService.getClass(parent);
-                    PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(parent, pg
-                            .getName()));
+                    PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(parent, pg.getName()));
                     if ((attempt != null) && (!attempt.isExtends()))
                     {
                         return attempt;
@@ -737,14 +741,12 @@ public class PermissionModel implements ModelDAO, InitializingBean
         PermissionGroup pg = getBasePermissionGroupOrNull(target);
         if (pg == null)
         {
-            throw new PermissionModelException("There is no parent for permission group :"
-                    + target.getQName() + " " + target.getName());
+            throw new PermissionModelException("There is no parent for permission group :" + target.getQName() + " " + target.getName());
         }
         return pg;
     }
-    
-    static Serializable generateKey(PermissionReference required, QName qName, Set<QName> aspectQNames,
-            RequiredPermission.On on)
+
+    static Serializable generateKey(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
     {
         LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(required.toString());
@@ -754,12 +756,9 @@ public class PermissionModel implements ModelDAO, InitializingBean
         return key;
     }
 
+    private HashMap<Serializable, Set<PermissionReference>> requiredPermissionsCache = new HashMap<Serializable, Set<PermissionReference>>(1024);
 
-    private HashMap<Serializable, Set<PermissionReference>> requiredPermissionsCache = new HashMap<Serializable, Set<PermissionReference>>(
-            1024);
-
-    public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName,
-            Set<QName> aspectQNames, RequiredPermission.On on)
+    public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
     {
         // Cache lookup as this is static
 
@@ -816,8 +815,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
      * @param aspectQNames
      * @return
      */
-    private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target,
-            RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
+    private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
     {
         HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(8, 1.0f);
         if (target == null)
@@ -829,14 +827,12 @@ public class PermissionModel implements ModelDAO, InitializingBean
             for (PermissionGroup pg : ps.getPermissionGroups())
             {
                 PermissionGroup base = getBasePermissionGroupOrNull(pg);
-                if ((target.equals(base) || target.isAllowFullControl())
-                        && (!base.isTypeRequired() || isPartOfDynamicPermissionGroup(pg, qName, aspectQNames)))
+                if ((target.equals(base) || target.isAllowFullControl()) && (!base.isTypeRequired() || isPartOfDynamicPermissionGroup(pg, qName, aspectQNames)))
                 {
                     // Add includes
                     for (PermissionReference pr : pg.getIncludedPermissionGroups())
                     {
-                        requiredPermissions.addAll(getRequirementsForPermissionGroup(
-                                getBasePermissionGroupOrNull(getPermissionGroupOrNull(pr)), on, qName, aspectQNames));
+                        requiredPermissions.addAll(getRequirementsForPermissionGroup(getBasePermissionGroupOrNull(getPermissionGroupOrNull(pr)), on, qName, aspectQNames));
                     }
                 }
             }
@@ -845,8 +841,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
                 for (PermissionReference grantedTo : p.getGrantedToGroups())
                 {
                     PermissionGroup base = getBasePermissionGroupOrNull(getPermissionGroupOrNull(grantedTo));
-                    if ((target.equals(base) || target.isAllowFullControl())
-                            && (!base.isTypeRequired() || isPartOfDynamicPermissionGroup(grantedTo, qName, aspectQNames)))
+                    if ((target.equals(base) || target.isAllowFullControl()) && (!base.isTypeRequired() || isPartOfDynamicPermissionGroup(grantedTo, qName, aspectQNames)))
                     {
                         if (on == RequiredPermission.On.NODE)
                         {
@@ -918,8 +913,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
                     while ((parent = classDefinition.getParentName()) != null)
                     {
                         classDefinition = dictionaryService.getClass(parent);
-                        PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(parent, pg
-                                .getName()));
+                        PermissionGroup attempt = getPermissionGroupOrNull(new SimplePermissionReference(parent, pg.getName()));
                         if ((attempt != null) && attempt.isAllowFullControl())
                         {
                             return true;
@@ -1023,13 +1017,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
         // Add all permissions to the unique list
         if (uniqueMap.containsKey(PermissionService.ALL_PERMISSIONS))
         {
-            throw new IllegalStateException(
-                    "There must not be a permission with the same name as the ALL_PERMISSION constant: "
-                            + PermissionService.ALL_PERMISSIONS);
+            throw new IllegalStateException("There must not be a permission with the same name as the ALL_PERMISSION constant: " + PermissionService.ALL_PERMISSIONS);
         }
-        uniqueMap.put(PermissionService.ALL_PERMISSIONS, new SimplePermissionReference(QName.createQName(
-                NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS),
-                PermissionService.ALL_PERMISSIONS));
+        uniqueMap.put(PermissionService.ALL_PERMISSIONS, new SimplePermissionReference(QName
+                .createQName(NamespaceService.SECURITY_MODEL_1_0_URI, PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS));
 
     }
 

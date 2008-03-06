@@ -27,31 +27,40 @@ package org.alfresco.repo.domain.hibernate;
 import java.io.Serializable;
 
 import org.alfresco.repo.domain.DbAccessControlEntry;
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.DbAccessControlEntryContext;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
-import org.alfresco.util.EqualsHelper;
+import org.alfresco.repo.domain.DbPermissionKey;
+import org.alfresco.repo.security.permissions.ACEType;
+import org.alfresco.service.namespace.QName;
+import org.hibernate.CallbackException;
+import org.hibernate.Session;
 
 /**
  * Persisted permission entries
  * 
  * @author andyh
  */
-public class DbAccessControlEntryImpl extends LifecycleAdapter
-    implements DbAccessControlEntry, Serializable
+public class DbAccessControlEntryImpl implements DbAccessControlEntry, Serializable
 {
     private static final long serialVersionUID = -418837862334064582L;
 
     private Long id;
+
     private Long version;
-    /** The container of these entries */
-    private DbAccessControlList accessControlList;
+
     /** The permission to which this applies (non null - all is a special string) */
     private DbPermission permission;
+
     /** The recipient to which this applies (non null - all is a special string) */
     private DbAuthority authority;
+
     /** Is this permission allowed? */
     private boolean allowed;
+
+    private int aceType;
+
+    private DbAccessControlEntryContext context;
 
     public DbAccessControlEntryImpl()
     {
@@ -62,58 +71,69 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("DbAccessControlEntryImpl")
-          .append("[ id=").append(id)
-          .append(", acl=").append(accessControlList.getId())
-          .append(", permission=").append(permission.getKey())
-          .append(", authority=").append(authority.getRecipient())
-          .append("]");
+        sb.append("DbAccessControlEntryImpl").append("[ id=").append(id).append(", version=").append(version).append(", permission=").append(permission.getKey()).append(
+                ", authority=").append(authority.getAuthority()).append(", allowed=").append(allowed).append(", authorityDeleted=").append(", aceType=")
+                .append(ACEType.getACETypeFromId(aceType)).append(", context=").append(context).append("]");
         return sb.toString();
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof DbAccessControlEntry))
-        {
-            return false;
-        }
-        DbAccessControlEntry other = (DbAccessControlEntry) o;
-        if (EqualsHelper.nullSafeEquals(id, other.getId()))
-        {
-            return true;
-        }
-        else
-        {
-            return (EqualsHelper.nullSafeEquals(this.permission, other.getPermission())
-                    && EqualsHelper.nullSafeEquals(this.authority, other.getAuthority()));
-        }
     }
 
     @Override
     public int hashCode()
     {
-        int hashCode = 0;
-        if (permission != null)
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + aceType;
+        result = PRIME * result + (allowed ? 1231 : 1237);
+        result = PRIME * result + ((authority == null) ? 0 : authority.hashCode());
+        result = PRIME * result + ((context == null) ? 0 : context.hashCode());
+        result = PRIME * result + ((permission == null) ? 0 : permission.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final DbAccessControlEntryImpl other = (DbAccessControlEntryImpl) obj;
+        if (aceType != other.aceType)
+            return false;
+        if (allowed != other.allowed)
+            return false;
+        if (authority == null)
         {
-            hashCode = hashCode * 37 + permission.hashCode();
+            if (other.authority != null)
+                return false;
         }
-        if (authority != null)
+        else if (!authority.equals(other.authority))
+            return false;
+        if (context == null)
         {
-            hashCode = hashCode * 37 + authority.hashCode();
+            if (other.context != null)
+                return false;
         }
-        return hashCode;
+        else if (!context.equals(other.context))
+            return false;
+        if (permission == null)
+        {
+            if (other.permission != null)
+                return false;
+        }
+        else if (!permission.equals(other.permission))
+            return false;
+        return true;
     }
     
+
     public Long getId()
     {
         return id;
     }
-    
+
     /**
      * For Hibernate use
      */
@@ -135,16 +155,6 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
     private void setVersion(Long version)
     {
         this.version = version;
-    }
-
-    public DbAccessControlList getAccessControlList()
-    {
-        return accessControlList;
-    }
-
-    public void setAccessControlList(DbAccessControlList nodePermissionEntry)
-    {
-        this.accessControlList = nodePermissionEntry;
     }
 
     public DbPermission getPermission()
@@ -177,12 +187,54 @@ public class DbAccessControlEntryImpl extends LifecycleAdapter
         this.allowed = allowed;
     }
 
+    public ACEType getAceType()
+    {
+        return ACEType.getACETypeFromId(aceType);
+    }
+
+    public void setAceType(ACEType aceType)
+    {
+        this.aceType = aceType.getId();
+    }
+
+    
+    @SuppressWarnings("unused")
+    private void setApplies(int applies)
+    {
+        this.aceType = applies;
+    }
+    
+    @SuppressWarnings("unused")
+    private int getApplies()
+    {
+        return aceType;
+    }
+    
+    
+    public DbAccessControlEntryContext getContext()
+    {
+        return context;
+    }
+
+    public void setContext(DbAccessControlEntryContext context)
+    {
+        this.context = context;
+    }
+
     public void delete()
     {
-        // remove the instance from the access control list
-        @SuppressWarnings("unused")
-        boolean removed = getAccessControlList().getEntries().remove(this);
-        // delete the instance
-        getSession().delete(this);
+        throw new UnsupportedOperationException("TODO");
+    }
+    
+
+
+    public static DbAccessControlEntry find(Session session, ACEType type, boolean allow, String authority, DbPermissionKey permissionKey)
+    {
+        // Query query = session
+        // .getNamedQuery(PermissionsDaoComponentImpl.QUERY_GET_PERMISSION)
+        // .setString("permissionTypeQName", qname.toString())
+        // .setString("permissionName", name);
+        // return (DbPermission) query.uniqueResult();
+        throw new UnsupportedOperationException("TODO");
     }
 }

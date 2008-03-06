@@ -24,9 +24,8 @@
  */
 package org.alfresco.repo.domain;
 
-import java.util.Set;
-
-import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
+import org.alfresco.repo.security.permissions.ACLType;
 
 
 /**
@@ -36,18 +35,34 @@ import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
  */
 public interface DbAccessControlList
 {
+    /**
+     * Get the long key
+     * @return
+     */
     public Long getId();
 
+    /**
+     * Get the ACL ID
+     * @return
+     */
+    public String getAclId();
+    
+    /**
+     * Get the ACL version
+     * @return
+     */
+    public long getAclVersion();
+    
+    /**
+     * Is this the latest version of the acl identified by the acl id string? 
+     * @return
+     */
+    public boolean isLatest();
+    
     /**
      * @return  Returns the version number for optimistic locking
      */
     public Long getVersion();
-    
-    /**
-     * 
-     * @return Returns the access control entries for this access control list 
-     */
-    public Set<DbAccessControlEntry> getEntries();
     
     /**
      * Get inheritance behaviour
@@ -56,41 +71,105 @@ public interface DbAccessControlList
     public boolean getInherits();
     
     /**
+     * Get the ACL from which this one inherits
+     * 
+     * @return
+     */
+    public Long getInheritsFrom();
+    
+    /**
+     * Get the type for this ACL
+     * 
+     * @return
+     */
+    public ACLType getAclType();
+    
+    /**
+     * Get the ACL inherited from nodes which have this ACL
+     * 
+     * @return
+     */
+    public Long getInheritedAclId();
+    
+    /**
+     * Is this ACL versioned - if not there will be no old versions of the ACL 
+     * and the long id will remain unchanged.
+     * 
+     * If an acl is versioned it can not be updated - a new copy has to be created,
+     *  
+     * @return
+     */
+    public boolean isVersioned();
+    
+    /**
+     * Set the string ACL ID (not the auto generated long)
+     * @param id
+     */
+    
+    public void setAclId(String id);
+    
+    
+    /**
+     * Set the ACL version (not the optimistic version used by hibernate)
+     * @param version
+     */
+    public void setAclVersion(long version);
+    
+    /**
+     * Set if this ACL is the latest version of the ACL as identified by getAclId()
+     * @param isLatest
+     */
+    public void setLatest(boolean isLatest);
+    
+    /**
      * Set inheritance behaviour
      * @param inherits true to set the permissions to inherit
      */
     public void setInherits(boolean inherits);
 
-    public int deleteEntriesForAuthority(String authorityKey);
-    
-    public int deleteEntriesForPermission(DbPermissionKey permissionKey);
-
-    public int deleteEntry(String authorityKey, DbPermissionKey permissionKey);
+    /**
+     * Set the ACL from which this one inherits
+     * @param id
+     */
+    public void setInheritsFrom(Long id);
     
     /**
-     * Delete the entries related to this access control list
-     * 
-     * @return Returns the number of entries deleted
+     * Set the ACL Type
+     * @param type
      */
-    public int deleteEntries();
-    
-    public DbAccessControlEntry getEntry(String authorityKey, DbPermissionKey permissionKey);
+    public void setAclType(ACLType type);
     
     /**
-     * Factory method to create an entry and wire it up.
-     * Note that the returned value may still be transient.  Saving it should  be fine, but
-     * is not required.
-     * 
-     * @param permission the mandatory permission association with this entry
-     * @param authority the mandatory authority.  Must not be transient.
-     * @param allowed allowed or disallowed.  Must not be transient.
-     * @return Returns the new entry
+     * Set the ACL that should be set when inheriting from this one.
+     * This ACL does not contain any object specific settings.
+     * @param acl
      */
-    public DbAccessControlEntryImpl newEntry(DbPermission permission, DbAuthority authority, boolean allowed);
+    public void setInheritedAclId(Long acl);
     
     /**
-     * Make a copy of this ACL (persistently)
-     * @return The copy.
+     * Set if this ACL is versioned on write
+     * @param isVersioned
      */
-    public DbAccessControlList getCopy();
+    public void setVersioned(boolean isVersioned);
+    
+    /**
+     * Set the change set
+     * @param aclChangeSet
+     */
+    public void setAclChangeSet(DbAccessControlListChangeSet aclChangeSet);
+    
+    /**
+     * Get the change set
+     * @return
+     */
+    public DbAccessControlListChangeSet getAclChangeSet();
+    
+    // Stuff to fix up in AVM
+    
+    public DbAccessControlList getCopy(Long parent, ACLCopyMode node);
+    
+    public void setRequiresVersion(boolean requiresVersion);
+    
+    public boolean getRequiresVersion();
+     
 }

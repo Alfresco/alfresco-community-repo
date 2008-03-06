@@ -313,11 +313,8 @@ public class OrphanReaper
                     // Get rid of ACL.
                     DbAccessControlList acl = node.getAcl();
                     node.setAcl(null);
-                    if (acl != null)
-                    {
-                        acl.deleteEntries();
-                        (new HibernateTemplate(fSessionFactory)).delete(acl);
-                    }
+                    // Unused acls will be garbage collected
+                    // Many acls will be shared
                     // Extra work for directories.
                     if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
                         node.getType() == AVMNodeType.LAYERED_DIRECTORY)

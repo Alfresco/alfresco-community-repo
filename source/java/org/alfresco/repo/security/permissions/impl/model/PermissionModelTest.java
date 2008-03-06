@@ -89,7 +89,8 @@ public class PermissionModelTest extends AbstractPermissionTest
                 namespacePrefixResolver), "Coordinator"));
 
         // NB This has gone from 59 to 63, I believe, because of the for new WCM roles.
-        assertEquals(63, grantees.size());
+        // 63-97 from AVM permission fix up
+        assertEquals(97, grantees.size());
     }
     
     public void testIncludePermissionGroups6()

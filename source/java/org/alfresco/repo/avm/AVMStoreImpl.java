@@ -42,6 +42,7 @@ import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -349,7 +350,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                                 // a LayeredDirectoryNode that gets its indirection from
                                 // its parent.
         {
-            newDir = new LayeredDirectoryNodeImpl((String)null, this, null);
+            newDir = new LayeredDirectoryNodeImpl((String)null, this, null, null, ACLCopyMode.INHERIT);
             ((LayeredDirectoryNodeImpl)newDir).setPrimaryIndirection(false);
             ((LayeredDirectoryNodeImpl)newDir).setLayerID(lPath.getTopLayer().getLayerID());
         }
@@ -373,7 +374,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             newDir.getProperties().putAll(properties);
         }
         DbAccessControlList acl = dir.getAcl();
-        newDir.setAcl(acl != null ? acl.getCopy() : null);
+        newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
     }
 
     /**
@@ -397,8 +398,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMExistsException("Child exists: " +  name);
         }
+        Long parentAcl = dir.getAcl() == null ? null : dir.getAcl().getId();
         LayeredDirectoryNode newDir =
-            new LayeredDirectoryNodeImpl(srcPath, this, null);
+            new LayeredDirectoryNodeImpl(srcPath, this, null, parentAcl, ACLCopyMode.INHERIT);
         if (lPath.isLayered())
         {
             // When a layered directory is made inside of a layered context,
@@ -458,7 +460,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
                 -1,
                 "UTF-8"));
         DbAccessControlList acl = dir.getAcl();
-        file.setAcl(acl != null ? acl.getCopy() : null);
+        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
         ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
         return writer.getContentOutputStream();
     }
@@ -508,7 +510,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             file.getProperties().putAll(properties);
         }
         DbAccessControlList acl = dir.getAcl();
-        file.setAcl(acl != null ? acl.getCopy() : null);
+        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
         // Yet another flush.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         ContentWriter writer = createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
@@ -541,7 +543,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         // TODO Reexamine decision to not check validity of srcPath.
         LayeredFileNodeImpl newFile =
-            new LayeredFileNodeImpl(srcPath, this);
+            new LayeredFileNodeImpl(srcPath, this, null);
         if (child != null)
         {
             newFile.setAncestor(child);
@@ -549,7 +551,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         dir.updateModTime();
         dir.putChild(name, newFile);
         DbAccessControlList acl = dir.getAcl();
-        newFile.setAcl(acl != null ? acl.getCopy() : null);
+        newFile.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
         // newFile.setVersionID(getNextVersionID());
     }
 
@@ -1431,7 +1433,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
-        node.copyMetaDataFrom(from);
+        node.copyMetaDataFrom(from, node.getAcl() == null ? null : node.getAcl().getInheritsFrom());
         node.setGuid(GUID.generate());
     }
 
@@ -1565,7 +1567,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         if (!fAVMRepository.can(lPath.getCurrentNode(), PermissionService.READ_PERMISSIONS))
         {
-            throw new AccessDeniedException("Not allowed to read permissions: " + path);
+            throw new AccessDeniedException("Not allowed to read permissions: " + path + " in "+getName());
         }
         return lPath.getCurrentNode().getAcl();
     }

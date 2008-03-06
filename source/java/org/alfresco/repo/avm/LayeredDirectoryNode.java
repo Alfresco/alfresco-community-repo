@@ -35,7 +35,7 @@ public interface LayeredDirectoryNode extends DirectoryNode, Layered
      * passed in.
      * @param path The indirection path.
      */
-    public void rawSetPrimary(String path);
+    public void rawSetPrimary(Lookup lPath, String path);
 
     /**
      * Turn this node into a primary indirection node with the indirection

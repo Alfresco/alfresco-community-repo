@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -92,7 +93,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * @param store The AVMStore.
      */
     public PlainFileNodeImpl(PlainFileNode other,
-                             AVMStore store)
+                             AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store.getAVMRepository().issueID(), store);
         // The null is OK because the Lookup argument is only use by
@@ -103,7 +104,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other);
+        copyACLs(other, parentAcl, mode);
     }
 
     // TODO Is there a reason for passing all these parameters instead
@@ -121,7 +122,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              Map<QName, PropertyValue> props,
                              Set<QName> aspects,
                              DbAccessControlList acl,
-                             int versionID)
+                             int versionID, Long parentAcl, ACLCopyMode mode)
     {
         super(store.getAVMRepository().issueID(), store);
         setContentData(content);
@@ -133,7 +134,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         setAspects(new HashSet<QName>(aspects));
         if (acl != null)
         {
-            setAcl(acl.getCopy());
+            setAcl(acl.getCopy(parentAcl, mode));
         }
     }
     
@@ -143,7 +144,13 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     public AVMNode copy(Lookup lPath)
     {
-        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, lPath.getAVMStore());
+        DirectoryNode dir = lPath.getCurrentNodeDirectory();
+        Long parentAclId = null;
+        if((dir != null) && (dir.getAcl() != null))
+        {
+            parentAclId = dir.getAcl().getId();
+        }
+        PlainFileNodeImpl newMe = new PlainFileNodeImpl(this, lPath.getAVMStore(), parentAclId, ACLCopyMode.COW);
         newMe.setAncestor(this);
         return newMe;
     }

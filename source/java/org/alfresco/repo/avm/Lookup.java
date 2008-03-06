@@ -349,6 +349,23 @@ class Lookup implements Serializable
     }
     
     /**
+     * Return the parent node of the current node in the look up context or null if there is not one yet
+     * @return
+     */
+    public DirectoryNode getCurrentNodeDirectory()
+    {
+        int position = fPosition -1;
+        if( (position >= 0) && (position < fComponents.size()))
+        {
+           return ((DirectoryNode)fComponents.get(fPosition - 1).getNode());
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
      * Get the current node we're looking at.
      * @return The current node.   
      */

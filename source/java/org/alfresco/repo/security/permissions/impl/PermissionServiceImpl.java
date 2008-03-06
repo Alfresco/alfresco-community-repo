@@ -40,6 +40,10 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessControlEntry;
+import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
@@ -53,6 +57,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -64,7 +69,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions
  * persistence.
- *
+ * 
  * @author andyh
  */
 public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
@@ -120,6 +125,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     private PolicyComponent policyComponent;
 
+    private AclDaoComponent aclDaoComponent;
+
     /*
      * Standard spring construction.
      */
@@ -172,9 +179,14 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         this.dynamicAuthorities = dynamicAuthorities;
     }
 
+    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    {
+        this.aclDaoComponent = aclDaoComponent;
+    }
+
     /**
      * Set the permissions access cache.
-     *
+     * 
      * @param accessCache
      *            a transactionally safe cache
      */
@@ -226,6 +238,10 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         if (policyComponent == null)
         {
             throw new IllegalArgumentException("Property 'policyComponent' has not been set");
+        }
+        if (aclDaoComponent == null)
+        {
+            throw new IllegalArgumentException("Property 'aclDaoComponent' has not been set");
         }
 
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
@@ -315,20 +331,20 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return permissionsDaoComponent.getPermissions(tenantService.getName(nodeRef));
     }
 
-    public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
+    public AccessStatus hasPermission(final NodeRef nodeRefIn, final PermissionReference permIn)
     {
         // If the node ref is null there is no sensible test to do - and there
         // must be no permissions
         // - so we allow it
-        if (nodeRef == null)
+        if (nodeRefIn == null)
         {
             return AccessStatus.ALLOWED;
         }
 
-        nodeRef = tenantService.getName(nodeRef);
+        final NodeRef nodeRef = tenantService.getName(nodeRefIn);
 
         // If the permission is null we deny
-        if (perm == null)
+        if (permIn == null)
         {
             return AccessStatus.DENIED;
         }
@@ -339,24 +355,36 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.ALLOWED;
         }
 
+        final PermissionReference perm;
+        if (permIn.equals(OLD_ALL_PERMISSIONS_REFERENCE))
+        {
+            perm = getAllPermissionReference();
+        }
+        else
+        {
+            perm = permIn;
+        }
+
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
         Authentication auth = authenticationComponent.getCurrentAuthentication();
-        Set<String> authorisations = getAuthorisations(auth, nodeRef);
-
-        Serializable key = generateKey(authorisations, nodeRef, perm, CacheType.HAS_PERMISSION);
-        AccessStatus status = accessCache.get(key);
-        if (status != null)
-        {
-            return status;
-        }
+        final Set<String> authorisations = getAuthorisations(auth, nodeRef);
 
         // If the node does not support the given permission there is no point
         // doing the test
-        Set<PermissionReference> available = modelDAO.getAllPermissions(nodeRef);
+        Set<PermissionReference> available = AuthenticationUtil.runAs(new RunAsWork<Set<PermissionReference>>()
+        {
+            public Set<PermissionReference> doWork() throws Exception
+            {
+                return modelDAO.getAllPermissions(nodeRef);
+            }
+
+        }, AuthenticationUtil.getSystemUserName());
+
         available.add(getAllPermissionReference());
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
 
+        final Serializable key = generateKey(authorisations, nodeRef, perm, CacheType.HAS_PERMISSION);
         if (!(available.contains(perm)))
         {
             accessCache.put(key, AccessStatus.DENIED);
@@ -368,42 +396,108 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.ALLOWED;
         }
 
-        //
-        // TODO: Dynamic permissions via evaluators
-        //
-
-        /*
-         * Does the current authentication have the supplied permission on the given node.
-         */
-
-        QName typeQname = nodeService.getType(nodeRef);
-        Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
-
-        if (perm.equals(OLD_ALL_PERMISSIONS_REFERENCE))
+        return AuthenticationUtil.runAs(new RunAsWork<AccessStatus>()
         {
-            perm = getAllPermissionReference();
-        }
-        NodeTest nt = new NodeTest(perm, typeQname, aspectQNames);
-        boolean result = nt.evaluate(authorisations, nodeRef);
-        if (log.isDebugEnabled())
-        {
-            log.debug("Permission <"
-                    + perm + "> is " + (result ? "allowed" : "denied") + " for " + authenticationComponent.getCurrentUserName() + " on node " + nodeService.getPath(nodeRef));
-        }
 
-        status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
-        accessCache.put(key, status);
-        return status;
+            public AccessStatus doWork() throws Exception
+            {
+
+                AccessStatus status = accessCache.get(key);
+                if (status != null)
+                {
+                    return status;
+                }
+
+                //
+                // TODO: Dynamic permissions via evaluators
+                //
+
+                /*
+                 * Does the current authentication have the supplied permission on the given node.
+                 */
+
+                QName typeQname = nodeService.getType(nodeRef);
+                Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
+
+                NodeTest nt = new NodeTest(perm, typeQname, aspectQNames);
+                boolean result = nt.evaluate(authorisations, nodeRef);
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Permission <"
+                            + perm + "> is " + (result ? "allowed" : "denied") + " for " + authenticationComponent.getCurrentUserName() + " on node "
+                            + nodeService.getPath(nodeRef));
+                }
+
+                status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+                accessCache.put(key, status);
+                return status;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String,
+     *      java.lang.String)
      */
-    public AccessStatus hasPermission(Long aclID, Map<String, Object> context,
-                                      String permission)
+    public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission)
     {
-        // TODO Implement.
-        return AccessStatus.ALLOWED;
+        return hasPermission(aclID, context, getPermissionReference(permission));
+    }
+
+    public AccessStatus hasPermission(Long aclId, PermissionContext context, PermissionReference permission)
+    {
+        if (aclId == null)
+        {
+            return AccessStatus.ALLOWED;
+        }
+
+        if (permission == null)
+        {
+            return AccessStatus.DENIED;
+        }
+
+        // Get the current authentications
+        // Use the smart authentication cache to improve permissions performance
+        Authentication auth = authenticationComponent.getCurrentAuthentication();
+        if (auth == null)
+        {
+            throw new IllegalStateException("Unauthenticated");
+        }
+
+        Set<String> authorisations = getAuthorisations(auth, context);
+
+        // If the node does not support the given permission there is no point
+        // doing the test
+
+        QName typeQname = context.getType();
+        Set<QName> aspectQNames = context.getAspects();
+
+        Set<PermissionReference> available = modelDAO.getAllPermissions(typeQname, aspectQNames);
+        available.add(getAllPermissionReference());
+        available.add(OLD_ALL_PERMISSIONS_REFERENCE);
+
+        if (!(available.contains(permission)))
+        {
+            return AccessStatus.DENIED;
+        }
+
+        if (authenticationComponent.getCurrentUserName().equals(authenticationComponent.getSystemUserName()))
+        {
+            return AccessStatus.ALLOWED;
+        }
+
+        if (permission.equals(OLD_ALL_PERMISSIONS_REFERENCE))
+        {
+            permission = getAllPermissionReference();
+        }
+        AclTest aclTest = new AclTest(permission, typeQname, aspectQNames);
+        boolean result = aclTest.evaluate(authorisations, aclId);
+
+        AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+        return status;
     }
 
     enum CacheType
@@ -427,7 +521,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Get the authorisations for the currently authenticated user
-     *
+     * 
      * @param auth
      * @return
      */
@@ -470,6 +564,41 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             }
         }
         auths.addAll(authorityService.getAuthorities());
+        return auths;
+    }
+
+    private Set<String> getAuthorisations(Authentication auth, PermissionContext context)
+    {
+        HashSet<String> auths = new HashSet<String>();
+        // No authenticated user then no permissions
+        if (auth == null)
+        {
+            return auths;
+        }
+        // TODO: Refactor and use the authentication service for this.
+        User user = (User) auth.getPrincipal();
+        auths.add(user.getUsername());
+        for (GrantedAuthority authority : auth.getAuthorities())
+        {
+            auths.add(authority.getAuthority());
+        }
+        auths.addAll(authorityService.getAuthorities());
+
+        if (context != null)
+        {
+            Map<String, Set<String>> dynamicAuthorityAssignments = context.getDynamicAuthorityAssignment();
+            HashSet<String> dynAuths = new HashSet<String>();
+            for (String current : auths)
+            {
+                Set<String> dynos = dynamicAuthorityAssignments.get(current);
+                if (dynos != null)
+                {
+                    dynAuths.addAll(dynos);
+                }
+            }
+            auths.addAll(dynAuths);
+        }
+
         return auths;
     }
 
@@ -612,7 +741,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     /**
      * Support class to test the permission on a node.
-     *
+     * 
      * @author Andy Hind
      */
     private class NodeTest
@@ -685,7 +814,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * External hook point
-         *
+         * 
          * @param authorisations
          * @param nodeRef
          * @return
@@ -698,7 +827,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Internal hook point for recursion
-         *
+         * 
          * @param authorisations
          * @param nodeRef
          * @param denied
@@ -943,7 +1072,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Check if we have a global permission
-         *
+         * 
          * @param authorisations
          * @return
          */
@@ -961,7 +1090,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Get the list of permissions denied for this node.
-         *
+         * 
          * @param nodeRef
          * @return
          */
@@ -1011,7 +1140,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Check that a given authentication is available on a node
-         *
+         * 
          * @param authorisations
          * @param nodeRef
          * @param denied
@@ -1041,7 +1170,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         /**
          * Is a permission granted
-         *
+         * 
          * @param pe -
          *            the permissions entry to consider
          * @param granters -
@@ -1114,8 +1243,285 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     }
 
     /**
+     * Test a permission in the context of the new ACL implementation. All components of the ACL are in the object -
+     * there is no need to walk up the parent chain. Parent conditions cna not be applied as there is no context to do
+     * this. Child conditions can not be applied as there is no context to do this
+     * 
+     * @author andyh
+     */
+
+    private class AclTest
+    {
+        /*
+         * The required permission.
+         */
+        PermissionReference required;
+
+        /*
+         * Granters of the permission
+         */
+        Set<PermissionReference> granters;
+
+        /*
+         * The additional permissions required at the node level.
+         */
+        Set<PermissionReference> nodeRequirements = new HashSet<PermissionReference>();
+
+        /*
+         * The type name of the node.
+         */
+        QName typeQName;
+
+        /*
+         * The aspects set on the node.
+         */
+        Set<QName> aspectQNames;
+
+        /*
+         * Constructor just gets the additional requirements
+         */
+        AclTest(PermissionReference required, QName typeQName, Set<QName> aspectQNames)
+        {
+            this.required = required;
+            this.typeQName = typeQName;
+            this.aspectQNames = aspectQNames;
+
+            // Set the required node permissions
+            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            {
+                nodeRequirements = modelDAO.getRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames, RequiredPermission.On.NODE);
+            }
+            else
+            {
+                nodeRequirements = modelDAO.getRequiredPermissions(required, typeQName, aspectQNames, RequiredPermission.On.NODE);
+            }
+
+            if (modelDAO.getRequiredPermissions(required, typeQName, aspectQNames, RequiredPermission.On.PARENT).size() > 0)
+            {
+                throw new IllegalStateException("Parent permissions can not be checked for an acl");
+            }
+
+            if (modelDAO.getRequiredPermissions(required, typeQName, aspectQNames, RequiredPermission.On.CHILDREN).size() > 0)
+            {
+                throw new IllegalStateException("Child permissions can not be checked for an acl");
+            }
+
+            // Find all the permissions that grant the allowed permission
+            // All permissions are treated specially.
+            granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
+            granters.addAll(modelDAO.getGrantingPermissions(required));
+            granters.add(getAllPermissionReference());
+            granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
+        }
+
+        /**
+         * Internal hook point for recursion
+         * 
+         * @param authorisations
+         * @param nodeRef
+         * @param denied
+         * @param recursiveIn
+         * @return
+         */
+        boolean evaluate(Set<String> authorisations, Long aclId)
+        {
+            // Do we defer our required test to a parent (yes if not null)
+            MutableBoolean recursiveOut = null;
+
+            // Start out true and "and" all other results
+            boolean success = true;
+
+            // Check the required permissions but not for sets they rely on
+            // their underlying permissions
+            if (modelDAO.checkPermission(required))
+            {
+
+                // We have to do the test as no parent will help us out
+                success &= hasSinglePermission(authorisations, aclId);
+
+                if (!success)
+                {
+                    return false;
+                }
+            }
+
+            // Check the other permissions required on the node
+            for (PermissionReference pr : nodeRequirements)
+            {
+                // Build a new test
+                AclTest nt = new AclTest(pr, typeQName, aspectQNames);
+                success &= nt.evaluate(authorisations, aclId);
+                if (!success)
+                {
+                    return false;
+                }
+            }
+
+            return success;
+        }
+
+        public boolean hasSinglePermission(Set<String> authorisations, Long aclId)
+        {
+            // Check global permission
+
+            if (checkGlobalPermissions(authorisations))
+            {
+                return true;
+            }
+
+            return checkRequired(authorisations, aclId);
+
+        }
+
+        /**
+         * Check if we have a global permission
+         * 
+         * @param authorisations
+         * @return
+         */
+        private boolean checkGlobalPermissions(Set<String> authorisations)
+        {
+            for (PermissionEntry pe : modelDAO.getGlobalPermissionEntries())
+            {
+                if (isGranted(pe, authorisations))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Check that a given authentication is available on a node
+         * 
+         * @param authorisations
+         * @param nodeRef
+         * @param denied
+         * @return
+         */
+        boolean checkRequired(Set<String> authorisations, Long aclId)
+        {
+            AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
+
+            if (acl == null)
+            {
+                return false;
+            }
+
+            Set<Pair<String, PermissionReference>> denied = new HashSet<Pair<String, PermissionReference>>();
+
+            // Check if each permission allows - the first wins.
+            // We could have other voting style mechanisms here
+            for (AccessControlEntry ace : acl.getEntries())
+            {
+                if (isGranted(ace, authorisations, denied))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Is a permission granted
+         * 
+         * @param pe -
+         *            the permissions entry to consider
+         * @param granters -
+         *            the set of granters
+         * @param authorisations -
+         *            the set of authorities
+         * @param denied -
+         *            the set of denied permissions/authority pais
+         * @return
+         */
+        private boolean isGranted(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> denied)
+        {
+            // If the permission entry denies then we just deny
+            if (ace.getAccessStatus() == AccessStatus.DENIED)
+            {
+                denied.add(new Pair<String, PermissionReference>(ace.getAuthority(), ace.getPermission()));
+                return false;
+            }
+
+            // The permission is allowed but we deny it as it is in the denied
+            // set
+
+            if (denied != null)
+            {
+                Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(ace.getAuthority(), required);
+                if (denied.contains(specific))
+                {
+                    return false;
+                }
+            }
+
+            // any deny denies
+
+            if (false)
+            {
+                if (denied != null)
+                {
+                    for (String auth : authorisations)
+                    {
+                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
+                        if (denied.contains(specific))
+                        {
+                            return false;
+                        }
+                        for (PermissionReference perm : granters)
+                        {
+                            specific = new Pair<String, PermissionReference>(auth, perm);
+                            if (denied.contains(specific))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If the permission has a match in both the authorities and
+            // granters list it is allowed
+            // It applies to the current user and it is granted
+            if (authorisations.contains(ace.getAuthority()) && granters.contains(ace.getPermission()))
+            {
+                {
+                    return true;
+                }
+            }
+
+            // Default deny
+            return false;
+        }
+
+        private boolean isGranted(PermissionEntry pe, Set<String> authorisations)
+        {
+            // If the permission entry denies then we just deny
+            if (pe.isDenied())
+            {
+                return false;
+            }
+
+            // If the permission has a match in both the authorities and
+            // granters list it is allowed
+            // It applies to the current user and it is granted
+            if (authorisations.contains(pe.getAuthority()) && granters.contains(pe.getPermissionReference()))
+            {
+                {
+                    return true;
+                }
+            }
+
+            // Default deny
+            return false;
+        }
+
+    }
+
+    /**
      * Helper class to store a pair of objects which may be null
-     *
+     * 
      * @author Andy Hind
      */
     private static class Pair<A, B>

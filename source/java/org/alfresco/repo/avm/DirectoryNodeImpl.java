@@ -23,6 +23,7 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;

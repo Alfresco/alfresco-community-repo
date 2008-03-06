@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -71,7 +73,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     @SuppressWarnings("unchecked")
     public PlainDirectoryNodeImpl(PlainDirectoryNode other,
-                                  AVMStore store)
+                                  AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
         super(store.getAVMRepository().issueID(), store);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
@@ -86,7 +88,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other);
+        copyACLs(other, parentAcl, mode);
     }
 
     /**
@@ -270,7 +272,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             if (child.getStoreNew() == null || child.getAncestor() != null)
             {
                 DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
-                                                    lPath.getAVMStore());
+                                                    lPath.getAVMStore(), child.getAcl());
                 AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 ghost.setAncestor(child);
@@ -314,6 +316,13 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public AVMNode copy(Lookup lPath)
     {
         DirectoryNode newMe = null;
+        
+        DirectoryNode dir = lPath.getCurrentNodeDirectory();
+        Long parentAclId = null;
+        if((dir != null) && (dir.getAcl() != null))
+        {
+            parentAclId = dir.getAcl().getId();
+        }
         // In a layered context a copy on write creates a new
         // layered directory.
         if (lPath.isLayered())
@@ -322,12 +331,12 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             // Directory that was branched into the layer and one
             // that is indirectly seen in this layer.
             newMe = new LayeredDirectoryNodeImpl(this, lPath.getAVMStore(), lPath,
-                                                 lPath.isInThisLayer());
+                                                 lPath.isInThisLayer(), parentAclId, ACLCopyMode.COPY);
             ((LayeredDirectoryNodeImpl)newMe).setLayerID(lPath.getTopLayer().getLayerID());
         }
         else
         {
-            newMe = new PlainDirectoryNodeImpl(this, lPath.getAVMStore());
+            newMe = new PlainDirectoryNodeImpl(this, lPath.getAVMStore(), parentAclId, ACLCopyMode.COW);
         }
         newMe.setAncestor(this);
         return newMe;

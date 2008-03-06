@@ -33,7 +33,7 @@
             not-null="false"
             cascade="none" />
       <property name="changeTxnId" column="change_txn_id" type="string" length="56" not-null="true" />
-      <property name="commitTimeMs" column="commit_time_ms" type="long" not-null="false" index="idx_commit_time_ms" />
+      <property name="commitTimeMs" column="commit_time_ms" type="long" not-null="false" index="idx_alf_txn_ctms" />
    </class>
 
    <class

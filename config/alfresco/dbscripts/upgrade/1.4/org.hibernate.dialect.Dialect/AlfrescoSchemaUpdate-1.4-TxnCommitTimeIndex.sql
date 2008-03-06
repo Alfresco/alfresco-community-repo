@@ -2,7 +2,6 @@
 -- Explicit index for alf_transaction.commit_time_ms (Generic Schema 1.4)
 --
 
-CREATE INDEX idx_commit_time_ms ON alf_transaction (commit_time_ms);
 UPDATE alf_transaction SET commit_time_ms = id WHERE commit_time_ms IS NULL;
 
 --

@@ -24,9 +24,9 @@ ALTER TABLE alf_access_control_list
    ADD COLUMN is_versioned BOOLEAN NOT NULL DEFAULT FALSE,
    ADD COLUMN requires_version BOOLEAN NOT NULL DEFAULT FALSE,
    ADD COLUMN acl_change_set BIGINT,
-   ADD COLUMN inherits_from BIGINT,
-   ADD INDEX FK_ACL_CH_SET (acl_change_set),
-   ADD CONSTRAINT FOREIGN KEY FK_ACL_CH_SET (acl_change_set) REFERENCES alf_acl_change_set (id);
+   ADD COLUMN inherits_from BIGINT;
+CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
+ALTER TABLE alf_access_control_list ADD CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id);
 
 UPDATE alf_access_control_list acl
    set acl_id = (acl.id);
@@ -42,13 +42,12 @@ CREATE TABLE alf_acl_member (
    ace_id BIGINT NOT NULL,
    pos INT NOT NULL,
    primary key (id),
-   unique(acl_id, ace_id, pos),
-   index FK_ACL_ID (acl_id),
-   CONSTRAINT FOREIGN KEY FK_ACL_ID (acl_id) REFERENCES alf_access_control_list (id),
-   index FK_ACE_ID (ace_id),
-   CONSTRAINT FOREIGN KEY FK_ACE_ID (ace_id) REFERENCES alf_access_control_entry (id)
+   unique(acl_id, ace_id, pos)
 ) type=InnoDB;
-
+CREATE INDEX fk_alf_aclm_acl ON alf_acl_member (acl_id);
+ALTER TABLE alf_acl_member ADD CONSTRAINT fk_alf_aclm_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id);
+CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
+ALTER TABLE alf_acl_member ADD CONSTRAINT fk_alf_aclm_ace FOREIGN KEY (ace_id) REFERENCES alf_access_control_entry (id);
 
 
 ALTER TABLE alf_access_control_entry DROP INDEX acl_id;
@@ -63,8 +62,7 @@ ALTER TABLE alf_access_control_entry
 DROP TABLE alf_auth_ext_keys;
 
 -- remove authority constraint
-ALTER TABLE alf_access_control_entry
-   DROP FOREIGN KEY FKFFF41F99B25A50BF;
+ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B25A50BF, DROP FOREIGN KEY FKFFF41F99B25A50BF;
 
 -- restructure authority
 ALTER TABLE alf_authority
@@ -72,7 +70,7 @@ ALTER TABLE alf_authority
    ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT,
    CHANGE recipient authority VARCHAR(100),
    ADD primary key (id),
-   ADD CONSTRAINT UNIQUE INDEX U_AUTH (authority);
+   ADD UNIQUE (authority);
 
 -- migrate data - fix up FK refs to authority
 UPDATE alf_access_control_entry ace
@@ -101,23 +99,28 @@ CREATE TABLE alf_authority_alias (
    auth_id BIGINT NOT NULL,
    alias_id BIGINT NOT NULL,
    primary key (id),
-   INDEX FK_ALIAS_TO_AUTH (alias_id),
-   CONSTRAINT FOREIGN KEY FK_ALIAS_TO_AUTH (alias_id) REFERENCES alf_authority (id),
-   INDEX FK_AUTH_TO_AUTH (auth_id),
-   CONSTRAINT FOREIGN KEY FK_AUTH_TO_AUTH (auth_id) REFERENCES alf_authority (id),
-   CONSTRAINT UNIQUE INDEX U_AUTH_TO_ALIAS (auth_id, alias_id)
+   UNIQUE (auth_id, alias_id)
 )  type=InnoDB;
+CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
+ALTER TABLE alf_authority_alias ADD CONSTRAINT fk_alf_autha_ali FOREIGN KEY (alias_id) REFERENCES alf_authority (id);
+CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
+ALTER TABLE alf_authority_alias ADD CONSTRAINT fk_alf_autha_aut FOREIGN KEY (auth_id) REFERENCES alf_authority (id);
 
 
 -- Tidy up unused cols on ace table and add the FK contstraint back
 -- finish take out of ACL_ID
+ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B9553F6C, DROP FOREIGN KEY FKFFF41F99B9553F6C;
+ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F9960601995, DROP FOREIGN KEY FKFFF41F9960601995;
+ALTER TABLE alf_access_control_entry DROP COLUMN acl_id, DROP COLUMN authority_id;
 ALTER TABLE alf_access_control_entry
-   DROP FOREIGN KEY FKFFF41F99B9553F6C,
-   DROP COLUMN acl_id,
-   DROP COLUMN authority_id,
-   CHANGE auth_id authority_id BIGINT NOT NULL,
-   ADD INDEX  FK_ACL_TO_AUTH (authority_id),
-   ADD CONSTRAINT FOREIGN KEY FK_ACL_TO_AUTH (authority_id) REFERENCES alf_authority (id);
+   CHANGE auth_id authority_id BIGINT NOT NULL;
+CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);
+ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_auth FOREIGN KEY (authority_id) REFERENCES alf_authority (id);
+CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
+ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_perm FOREIGN KEY (permission_id) REFERENCES alf_permission (id);
+CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
+ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id);
+   
 
 
 -- Update members to point to the first use of an access control entry

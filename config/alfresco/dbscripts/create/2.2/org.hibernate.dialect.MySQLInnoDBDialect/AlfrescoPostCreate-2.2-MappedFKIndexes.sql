@@ -1,10 +1,10 @@
 --
--- Title:      Post-Create Foreign Key indexes
+-- Title:      Post-Create Indexes
 -- Database:   MySQL
--- Since:      V2.0 Schema 63
+-- Since:      V2.2 Schema 86
 -- Author:     Derek Hulley
+--
+-- Hibernate only generates indexes on foreign key columns for MySQL.
 --
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
-
--- The MySQL dialects apply the FK indexes by default

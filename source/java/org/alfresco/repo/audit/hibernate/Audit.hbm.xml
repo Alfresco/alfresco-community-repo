@@ -24,13 +24,13 @@
         
         <!-- Fact properties -->
         
-        <property name="userId" column="user_id" type="string" length="255" not-null="true" index="adt_user_idx"/>
+        <property name="userId" column="user_id" type="string" length="255" not-null="true" index="idx_alf_adtf_usr"/>
         <property name="date" column="timestamp" type="timestamp" not-null="true"/>
         <property name="transactionId" column="transaction_id" type="string" length="56" not-null="true"/>
         <property name="sessionId" column="session_id" type="string" length="56" not-null="false"/>
-        <property name="storeProtocol" column="store_protocol" type="string" length="50" not-null="false" index="adt_store_idx"/>
-        <property name="storeId" column="store_id" type="string" length="100" not-null="false" index="adt_store_idx"/>
-        <property name="nodeUUID" column="node_uuid" type="string" length="36" not-null="false" index="adt_store_idx"/>
+        <property name="storeProtocol" column="store_protocol" type="string" length="50" not-null="false" index="idx_alf_adtf_ref"/>
+        <property name="storeId" column="store_id" type="string" length="100" not-null="false" index="idx_alf_adtf_ref"/>
+        <property name="nodeUUID" column="node_uuid" type="string" length="36" not-null="false" index="idx_alf_adtf_ref"/>
         <property name="path" column="path" type="string" length="512" not-null="false"/>
         <property name="filtered" column="filtered" type="boolean" not-null="true"/>
         <property name="returnValue" column="return_val" type="string" length="1024" not-null="false"/>
@@ -67,16 +67,16 @@
         
         <!-- Date is used as the key for look up -->
        
-        <property name="date" column="date_only" type="date"                    index="adt_date_idx" not-null="true"/>
-        <property name="dayOfYear" column="day_of_year" type="integer"     index="adt_doy_idx"  not-null="true"/>
-        <property name="dayOfMonth" column="day_of_month" type="integer"   index="adt_dom_idx"  not-null="true"/>
-        <property name="dayOfWeek" column="day_of_week" type="integer"     index="adt_dow_idx"  not-null="true"/>
-        <property name="weekOfYear" column="week_of_year" type="integer"   index="adt_woy_idx"  not-null="true"/>
-        <property name="weekOfMonth" column="week_of_month" type="integer" index="adt_wom_idx"  not-null="true"/>
-        <property name="month" column="month" type="integer"               index="adt_m_idx"    not-null="true"/>
-        <property name="quarter" column="quarter" type="integer"           index="adt_q_idx"    not-null="true"/>
-        <property name="halfYear" column="halfYear" type="integer"         index="adt_hy_idx"   not-null="true"/>
-        <property name="year" column="year" type="integer"                 index="adt_y_idx"    not-null="true"/>        
+        <property name="date" column="date_only" type="date"               index="idx_alf_adtd_dat" not-null="true"/>
+        <property name="dayOfYear" column="day_of_year" type="integer"     index="idx_alf_adtd_doy" not-null="true"/>
+        <property name="dayOfMonth" column="day_of_month" type="integer"   index="idx_alf_adtd_dom" not-null="true"/>
+        <property name="dayOfWeek" column="day_of_week" type="integer"     index="idx_alf_adtd_dow" not-null="true"/>
+        <property name="weekOfYear" column="week_of_year" type="integer"   index="idx_alf_adtd_woy" not-null="true"/>
+        <property name="weekOfMonth" column="week_of_month" type="integer" index="idx_alf_adtd_wom" not-null="true"/>
+        <property name="month" column="month" type="integer"               index="idx_alf_adtd_m"   not-null="true"/>
+        <property name="quarter" column="quarter" type="integer"           index="idx_alf_adtd_q"   not-null="true"/>
+        <property name="halfYear" column="halfYear" type="integer"         index="idx_alf_adtd_hy"  not-null="true"/>
+        <property name="year" column="year" type="integer"                 index="idx_alf_adtd_y"   not-null="true"/>        
         
     </class>
     
@@ -109,9 +109,9 @@
         <!-- The app_source_idx index is used to find the app source -->
         <!-- The look up is always the tripple, the service and method or just the method may be null -->
         
-        <property name="application" column="application" type="string" length="255" not-null="true" index="app_source_app_idx"/>
-        <property name="service" column="service" type="string" length="255" not-null="false" index="app_source_ser_idx"/>
-        <property name="method" column="method" type="string" length="255" not-null="false" index="app_source_met_idx"/>
+        <property name="application" column="application" type="string" length="255" not-null="true" index="idx_alf_adts_app"/>
+        <property name="service" column="service" type="string" length="255" not-null="false" index="idx_alf_adts_ser"/>
+        <property name="method" column="method" type="string" length="255" not-null="false" index="idx_alf_adts_met"/>
         
     </class>
     

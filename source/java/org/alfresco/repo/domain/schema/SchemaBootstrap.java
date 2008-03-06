@@ -654,7 +654,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         
         InputStream scriptInputStream = new FileInputStream(scriptFile);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(scriptInputStream, "UTF-8"));
         try
         {
             int line = 0;
@@ -695,11 +695,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     execute = true;
                     optional = false;
                 }
-                else if (sql.endsWith(";(optional)"))
+                else if (sql.endsWith("(optional)") || sql.endsWith("(OPTIONAL)"))
                 {
-                    sql = sql.substring(0, sql.length() - 11);
-                    execute = true;
-                    optional = true;
+                    // Get the end of statement
+                    int endIndex = sql.lastIndexOf(';');
+                    if (endIndex > 0)
+                    {
+                        sql = sql.substring(0, endIndex);
+                        execute = true;
+                        optional = true;
+                    }
+                    else
+                    {
+                        // Ends with "(optional)" but there is no semi-colon.
+                        // Just take it at face value and probably fail.
+                    }
                 }
                 // append to the statement being built up
                 sb.append(" ").append(sql);

@@ -10,10 +10,22 @@
 -- from the AVM nodes.
 -- PostgreSQL requires TRUE for boolean values.
 
-DELETE FROM avm_aspects WHERE qname = '{http://www.alfresco.org/model/wcmworkflow/1.0}submitted';
-DELETE FROM avm_aspects_new WHERE name = '{http://www.alfresco.org/model/wcmworkflow/1.0}submitted';
-DELETE FROM avm_node_properties WHERE qname = '{http://www.alfresco.org/model/wcmworkflow/1.0}workflowInstanceId';
-DELETE FROM avm_node_properties_new WHERE qname = '{http://www.alfresco.org/model/wcmworkflow/1.0}workflowInstanceId';
+DELETE FROM avm_aspects
+   WHERE qname = '{http://www.alfresco.org/model/wcmworkflow/1.0}submitted';
+DELETE FROM avm_aspects_new WHERE EXISTS
+(
+   SELECT q.id FROM alf_qname q
+   JOIN alf_namespace n ON (q.ns_id = n.id)
+   WHERE n.uri = 'http://www.alfresco.org/model/wcmworkflow/1.0' and q.local_name = 'submitted' AND q.id = avm_aspects_new.qname_id
+);
+DELETE FROM avm_node_properties
+   WHERE qname = '{http://www.alfresco.org/model/wcmworkflow/1.0}workflowInstanceId';
+DELETE FROM avm_node_properties_new WHERE EXISTS
+(
+   SELECT q.id FROM alf_qname q
+   JOIN alf_namespace n ON (q.ns_id = n.id)
+   WHERE n.uri = 'http://www.alfresco.org/model/wcmworkflow/1.0' and q.local_name = 'workflowInstanceId' AND q.id = avm_node_properties_new.qname_id
+);
 
 --
 -- Record script finish

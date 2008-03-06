@@ -1,4 +1,16 @@
-﻿-- Create static namespace and qname tables
+--
+-- Title:      Move static QNames and Namsespaces into a separate table
+-- Database:   MySQL
+-- Since:      V2.2 Schema 86
+-- Author:     Derek Hulley
+--
+-- Please contact support@alfresco.com if you need assistance with the upgrade.
+--
+-- This script replaces the various static QName and Namespace entries
+-- with a more efficient FK relationship to the static values.
+--
+
+-- Create static namespace and qname tables
 CREATE TABLE alf_namespace
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
@@ -18,9 +30,9 @@ CREATE TABLE alf_qname
    UNIQUE (ns_id, local_name)
 ) ENGINE=InnoDB;
 
-create index fk_alf_qname_ns on alf_qname (ns_id);
-ALTER TABLE alf_qname
-   add constraint fk_alf_qname_ns foreign key (ns_id) references alf_namespace (id);
+-- Create temporary indexes and constraints
+CREATE INDEX t_fk_alf_qn_ns on alf_qname (ns_id);
+ALTER TABLE alf_qname ADD CONSTRAINT t_fk_alf_qn_ns FOREIGN KEY (ns_id) REFERENCES alf_namespace (id);
 
 -- Create temporary table for dynamic (child) QNames
 CREATE TABLE t_qnames_dyn
@@ -28,8 +40,8 @@ CREATE TABLE t_qnames_dyn
    qname varchar(255) NOT NULL,
    namespace varchar(255)
 ) ENGINE=InnoDB;
-ALTER TABLE t_qnames_dyn ADD INDEX TQND_IDX_QN (qname);
-ALTER TABLE t_qnames_dyn ADD INDEX TQND_IDX_NS (namespace);
+CREATE INDEX tidx_qnd_qn ON t_qnames_dyn (qname);
+CREATE INDEX tidx_qnd_ns ON t_qnames_dyn (namespace);
 
 -- Populate the table with the child association paths
 INSERT INTO t_qnames_dyn (qname)
@@ -60,9 +72,9 @@ CREATE TABLE t_qnames
    namespace varchar(255),
    localname varchar(255)
 ) ENGINE=InnoDB;
-ALTER TABLE t_qnames ADD INDEX TQN_IDX_QN (qname);
-ALTER TABLE t_qnames ADD INDEX TQN_IDX_NS (namespace);
-ALTER TABLE t_qnames ADD INDEX TQN_IDX_LN (localname);
+CREATE INDEX tidx_tqn_qn ON t_qnames (qname);
+CREATE INDEX tidx_tqn_ns ON t_qnames (namespace);
+CREATE INDEX tidx_tqn_ln ON t_qnames (localname);
 
 -- Populate the table with all known static QNames
 INSERT INTO t_qnames (qname)
@@ -144,13 +156,11 @@ UPDATE alf_node n set n.type_qname_id =
 );
 ALTER TABLE alf_node DROP COLUMN type_qname;
 ALTER TABLE alf_node MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER uuid;
-ALTER TABLE alf_node ADD CONSTRAINT fk_alf_n_tqname FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_alf_n_tqname ON alf_node (type_qname_id);
 
 --
 -- DATA REPLACEMENT: alf_node_aspects.qname
 --
--- ALTER TABLE alf_node_aspects DROP PRIMARY KEY;(optional)
+ALTER TABLE alf_node_aspects DROP PRIMARY KEY; -- (optional)
 ALTER TABLE alf_node_aspects ADD COLUMN qname_id BIGINT NULL AFTER node_id;
 UPDATE alf_node_aspects na set na.qname_id =
 (
@@ -161,8 +171,6 @@ UPDATE alf_node_aspects na set na.qname_id =
 );
 ALTER TABLE alf_node_aspects DROP COLUMN qname;
 ALTER TABLE alf_node_aspects MODIFY COLUMN qname_id BIGINT NOT NULL AFTER node_id;
-ALTER TABLE alf_node_aspects ADD CONSTRAINT fk_alf_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_alf_na_qn ON alf_node_aspects (qname_id);
 ALTER TABLE alf_node_aspects ADD PRIMARY KEY (node_id, qname_id);
 
 --
@@ -179,8 +187,6 @@ UPDATE alf_node_properties np set np.qname_id =
 );
 ALTER TABLE alf_node_properties DROP COLUMN qname;
 ALTER TABLE alf_node_properties MODIFY COLUMN qname_id BIGINT NOT NULL AFTER node_id;
-ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_alf_np_qn ON alf_node_properties (qname_id);
 ALTER TABLE alf_node_properties ADD PRIMARY KEY (node_id, qname_id);
 
 --
@@ -197,9 +203,12 @@ UPDATE avm_aspects_new na set na.qname_id =
 );
 ALTER TABLE avm_aspects_new DROP COLUMN name;
 ALTER TABLE avm_aspects_new MODIFY COLUMN qname_id BIGINT NOT NULL AFTER id;
-ALTER TABLE avm_aspects_new ADD CONSTRAINT fk_avm_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_avm_na_qn ON avm_aspects_new (qname_id);
 ALTER TABLE avm_aspects_new ADD PRIMARY KEY (id, qname_id);
+
+--
+-- DATA REPLACEMENT: avm_node_properties.qname
+--
+-- This table is deprecated and made empty so there is no need to alter it
 
 --
 -- DATA REPLACEMENT: avm_node_properties_new.qname
@@ -215,8 +224,6 @@ UPDATE avm_node_properties_new np set np.qname_id =
 );
 ALTER TABLE avm_node_properties_new DROP COLUMN qname;
 ALTER TABLE avm_node_properties_new MODIFY COLUMN qname_id BIGINT NOT NULL AFTER node_id;
-ALTER TABLE avm_node_properties_new ADD CONSTRAINT fk_avm_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_avm_np_qn ON avm_node_properties_new (qname_id);
 ALTER TABLE avm_node_properties_new ADD PRIMARY KEY (node_id, qname_id);
 
 --
@@ -232,8 +239,6 @@ UPDATE avm_store_properties np set np.qname_id =
 );
 ALTER TABLE avm_store_properties DROP COLUMN qname;
 ALTER TABLE avm_store_properties MODIFY COLUMN qname_id BIGINT NOT NULL AFTER avm_store_id;
-ALTER TABLE avm_store_properties ADD CONSTRAINT fk_avm_sp_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_avm_sp_qname ON avm_store_properties (qname_id);
 
 --
 -- DATA REPLACEMENT: alf_child_assoc.type_qname
@@ -248,8 +253,6 @@ UPDATE alf_child_assoc ca set ca.type_qname_id =
 );
 ALTER TABLE alf_child_assoc DROP COLUMN type_qname;
 ALTER TABLE alf_child_assoc MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER child_node_id;
-ALTER TABLE alf_child_assoc ADD CONSTRAINT fk_alf_ca_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id);
-CREATE INDEX fk_alf_ca_tqn ON alf_child_assoc (type_qname_id);
 
 --
 -- DATA REPLACEMENT: alf_child_assoc.qname
@@ -263,12 +266,39 @@ UPDATE alf_child_assoc ca set ca.qname_ns_id =
    WHERE SUBSTR(SUBSTRING_INDEX(qname, '}', 1), 2) = ns.uri
 );
 ALTER TABLE alf_child_assoc MODIFY COLUMN qname_ns_id BIGINT NOT NULL AFTER type_qname_id;
-ALTER TABLE alf_child_assoc ADD CONSTRAINT fk_alf_ca_qn_ns FOREIGN KEY (qname_ns_id) REFERENCES alf_namespace (id);
-CREATE INDEX fk_alf_ca_qn_ns ON alf_child_assoc (qname_ns_id);
 -- LocalName
 ALTER TABLE alf_child_assoc ADD COLUMN qname_localname VARCHAR(200) NULL AFTER qname_ns_id;
-UPDATE alf_child_assoc ca set ca.qname_localname = SUBSTRING_INDEX(qname, '}', -1);
+UPDATE alf_child_assoc ca SET ca.qname_localname = SUBSTRING_INDEX(qname, '}', -1);
 ALTER TABLE alf_child_assoc MODIFY COLUMN qname_localname VARCHAR(200) NOT NULL AFTER qname_ns_id;
-CREATE INDEX idx_alf_ca_qn_ln ON alf_child_assoc (qname_localname);
 -- Drop old column
 ALTER TABLE alf_child_assoc DROP COLUMN qname;
+
+--
+-- DATA REPLACEMENT: alf_node_assoc.type_qname
+--
+ALTER TABLE alf_node_assoc ADD COLUMN type_qname_id BIGINT NULL AFTER target_node_id;
+UPDATE alf_node_assoc na set na.type_qname_id =
+(
+   SELECT q.id
+   FROM alf_qname q
+   JOIN alf_namespace ns ON (q.ns_id = ns.id)
+   WHERE CONCAT('{', ns.uri, '}', q.local_name) = na.type_qname
+);
+ALTER TABLE alf_node_assoc DROP COLUMN type_qname;
+ALTER TABLE alf_node_assoc MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER target_node_id;
+
+-- Drop the temporary indexes and constraints
+ALTER TABLE alf_qname DROP INDEX t_fk_alf_qn_ns;
+ALTER TABLE alf_qname DROP FOREIGN KEY t_fk_alf_qn_ns;
+
+--
+-- Record script finish
+--
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-QNames-2-MoveQNames';
+INSERT INTO alf_applied_patch
+  (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
+  VALUES
+  (
+    'patch.db-V2.2-QNames-2-MoveQNames', 'Manually executed script upgrade V2.2: Moved static QNames and Namespaces',
+    0, 85, -1, 86, null, 'UNKOWN', 1, 1, 'Script completed'
+  );

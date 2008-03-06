@@ -92,13 +92,21 @@
         <natural-id mutable="true">
             <many-to-one name="accessControlList"
                 class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
-                column="acl_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
+                column="acl_id"
+                foreign-key="fk_alf_aclm_acl"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="true"/>
             
             <many-to-one name="accessControlEntry"
                 class="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
-                column="ace_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
+                column="ace_id"
+                foreign-key="fk_alf_aclm_ace"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="true"/>
             
             <property name="position" column="pos" type="int"/>
         </natural-id>
@@ -230,13 +238,21 @@
         <natural-id mutable="true">
             <many-to-one name="authority"
                 class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
-                column="auth_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
+                column="auth_id"
+                foreign-key="fk_alf_autha_aut"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="true"/>
             
             <many-to-one name="alias"
                 class="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
-                column="alias_id" lazy="no-proxy" fetch="select"
-                optimistic-lock="true" not-null="true"/>
+                column="alias_id"
+                foreign-key="fk_alf_autha_ali"
+                lazy="no-proxy"
+                fetch="select"
+                optimistic-lock="true"
+                not-null="true"/>
         </natural-id>
         
         <version column="version" name="version" type="long"/>

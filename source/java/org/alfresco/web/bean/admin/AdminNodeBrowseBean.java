@@ -442,7 +442,7 @@ public class AdminNodeBrowseBean implements Serializable
             {
                Map<String, String> map = new HashMap<String, String>(2);
                map.put("name", property.getKey().toString());
-               map.put("type", property.getValue().getActualType());
+               map.put("type", property.getValue().getActualTypeString());
                String val = property.getValue().getStringValue();
                if (val == null)
                {

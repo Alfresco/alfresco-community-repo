@@ -171,6 +171,14 @@ public class RepositoryScriptProcessor implements ScriptProcessor
             return content.getReader();
         }
         
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#isSecure()
+         */
+        public boolean isSecure()
+        {
+            return false;
+        }
+
         @Override
         public String toString()
         {

@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -504,9 +507,53 @@ public class AVMSyncServiceImpl implements AVMSyncService
             recursiveCopy(parentPath, name, toLink, excluder);
             return;
         }
+       
         fAVMService.link(parentPath, name, toLink);
+        
+        String newPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
+        
+        DbAccessControlList parentAcl= getACL(parentPath);
+        DbAccessControlList acl = getACL(toLink.getPath());
+        setACL(newPath, acl == null ? null : acl.getCopy(parentAcl == null ? null : parentAcl.getId(), ACLCopyMode.COPY));
     }
 
+    /*
+     * Get acl
+     */
+    private DbAccessControlList getACL(String path)
+    {
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, path, false);
+        if (lookup != null)
+        {
+            AVMNode node = lookup.getCurrentNode();
+            return node.getAcl();
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /*
+     * Set ACL without COW
+     */
+    private void setACL(String path, DbAccessControlList acl)
+    {
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, path, false);
+        if (lookup != null)
+        {
+            AVMNode node = lookup.getCurrentNode();
+            // May be support an unwrapped getById to avoid this monkey madness
+            AVMDAOs.Instance().fAVMNodeDAO.evict(node);
+            node = AVMDAOs.Instance().fAVMNodeDAO.getByID(node.getId());
+            node.setAcl(acl);
+        }
+        else
+        {
+            return;
+        }
+    }
+    
     /**
      * Recursively copy a node into the given position.
      * @param parentPath The place to put it.
@@ -545,6 +592,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (toCopy.isFile() || toCopy.isDeleted() || toCopy.isPlainDirectory())
         {
             fAVMRepository.link(parent, name, toCopy);
+            // needs to get the acl from the new location
+            DbAccessControlList parentAcl = getACL(parent.getPath());
+            DbAccessControlList acl = getACL(toCopy.getPath());
+            setACL(newPath, acl == null ? null : acl.getCopy(parentAcl == null ? null : parentAcl.getId(), ACLCopyMode.COPY));
             return;
         }
         // Otherwise make a directory in the target parent, and recursiveCopy all the source

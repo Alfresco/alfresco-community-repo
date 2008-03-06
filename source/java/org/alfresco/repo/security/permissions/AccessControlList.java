@@ -24,9 +24,10 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface AccessControlList
+public interface AccessControlList extends Serializable
 {
     /**
      * Get the properties

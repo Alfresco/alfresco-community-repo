@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.security.permissions;
 
-public interface AccessControlEntryContext
+import java.io.Serializable;
+
+public interface AccessControlEntryContext extends Serializable
 {
     /**
      * Get the class context.

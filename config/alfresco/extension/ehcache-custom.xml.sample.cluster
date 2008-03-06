@@ -526,6 +526,20 @@
                                 replicateAsynchronously = false"/>
     </cache>
 
+    <cache
+        name="org.alfresco.cache.aclCache"
+        maxElementsInMemory="50000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
 
     <!-- Web Client Config (tenant-based) -->
         

@@ -46,6 +46,11 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 {
     // XML Constants
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7879839657714155737L;
+
     private static final String NAME = "name";
     
     private static final String EXTENDS = "extends";

@@ -24,8 +24,10 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.io.Serializable;
 
-public interface AccessControlListProperties
+
+public interface AccessControlListProperties extends Serializable
 {
     /**
      * Get the ACL ID

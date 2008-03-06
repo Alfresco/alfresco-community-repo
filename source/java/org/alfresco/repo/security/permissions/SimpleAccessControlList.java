@@ -5,6 +5,11 @@ import java.util.List;
 
 public class SimpleAccessControlList implements AccessControlList
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1859514919998903150L;
+
     private AccessControlListProperties properties;
     
     private List<AccessControlEntry> entries = new ArrayList<AccessControlEntry>();

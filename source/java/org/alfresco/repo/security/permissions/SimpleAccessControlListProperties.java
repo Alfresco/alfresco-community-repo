@@ -26,6 +26,11 @@ package org.alfresco.repo.security.permissions;
 
 public class SimpleAccessControlListProperties implements AccessControlListProperties
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6476760867405494520L;
+
     private String aclId;
     
     private ACLType aclType;

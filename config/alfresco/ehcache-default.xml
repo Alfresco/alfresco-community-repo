@@ -331,6 +331,12 @@
         eternal="true"
         overflowToDisk="false"
         />
+    <cache 
+        name="org.alfresco.cache.aclCache" 
+        maxElementsInMemory="50000"
+        eternal="true"
+        overflowToDisk="false"
+        />
         
     <!-- Web Client Config (tenant-based) -->
         
@@ -448,5 +454,5 @@
         eternal="true"
         overflowToDisk="false"
         />
-             
+
 </ehcache>

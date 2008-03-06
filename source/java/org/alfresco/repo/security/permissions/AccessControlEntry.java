@@ -24,9 +24,11 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.io.Serializable;
+
 import org.alfresco.service.cmr.security.AccessStatus;
 
-public interface AccessControlEntry extends Comparable<AccessControlEntry>
+public interface AccessControlEntry extends Comparable<AccessControlEntry>, Serializable
 {
     public Integer getPosition();
 

@@ -46,6 +46,11 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
 {
     // XML Constants
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4560426591597681329L;
+
     private static final String GRANTED_TO_GROUP = "grantedToGroup";
     
     private static final String GTG_NAME = "permissionGroup";

@@ -35,6 +35,11 @@ import org.alfresco.service.namespace.QName;
  */
 public class PermissionReferenceImpl extends AbstractPermissionReference
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8639601925783501443L;
+
     private QName qName;
     
     private String name;

@@ -27,6 +27,11 @@ package org.alfresco.repo.security.permissions;
 
 public class SimpleAccessControlEntryContext implements AccessControlEntryContext
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5679179194140822827L;
+
     private String classContext;
     
     private String KVPContext;

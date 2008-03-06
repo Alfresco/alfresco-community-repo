@@ -24,6 +24,7 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -119,6 +122,10 @@ public class AVMServicePermissionsTest extends TestCase
 
     private AVMNodeDAO avmNodeDAO;
 
+    private Object fContext;
+
+    private AVMSyncService avmSyncService;
+
     public AVMServicePermissionsTest()
     {
         super();
@@ -132,6 +139,7 @@ public class AVMServicePermissionsTest extends TestCase
 
         aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
         avmService = (AVMService) applicationContext.getBean("avmService");
+        avmSyncService = (AVMSyncService)applicationContext.getBean("AVMSyncService");
 
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE.getLocalName());
@@ -329,6 +337,210 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
+    private boolean checkCanPerformance(String user, String path, String permission, boolean allowed, int count)
+    {
+        String curentUser = AuthenticationUtil.getCurrentUserName();
+        try
+        {
+            runAs(user);
+            AVMNodeDescriptor desc = avmService.lookup(-1, path);
+            AVMNode node = avmNodeDAO.getByID(desc.getId());
+            boolean can = AVMRepository.GetInstance().can(node, permission);
+            long start = System.nanoTime();
+            for(int i = 0; i < count; i++)
+            {
+                can = AVMRepository.GetInstance().can(node, permission);
+            }
+            long end = System.nanoTime();
+            System.out.println("Can in "+((end-start)/1.0e9f));
+            return allowed ? can : !can;
+        }
+        finally
+        {
+            runAs(curentUser);
+        }
+    }
+    
+    private boolean checkHasPermissionsPerformance(String user, String path, String permission, boolean allowed, int count)
+    {
+        String curentUser = AuthenticationUtil.getCurrentUserName();
+        try
+        {
+            runAs(user);
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+            boolean can = permissionService.hasPermission(nodeRef, permission) == AccessStatus.ALLOWED;
+            long start = System.nanoTime();
+            for(int i = 0; i < count; i++)
+            {
+                can = permissionService.hasPermission(nodeRef, permission) == AccessStatus.ALLOWED;
+            }
+            long end = System.nanoTime();
+            System.out.println("Has Permission in "+((end-start)/1.0e9f));
+            return allowed ? can : !can;
+        }
+        finally
+        {
+            runAs(curentUser);
+        }
+    }
+
+    
+    
+    public void testSimpleUpdate() throws Exception
+    {
+        runAs("admin");
+        String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        try
+        {
+            buildBaseStructure(storeName);
+            avmService.createDirectory(storeName + "-layer-base:/layer-to-base", "update-dir");
+            avmService.createFile(storeName + "-layer-base:/layer-to-base/update-dir", "update-file").close();
+            
+            AVMNodeDescriptor desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base");
+            AVMNode node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList acl = node.getAcl();
+            assertNotNull(acl);
+            acl = aclDaoComponent.getDbAccessControlList(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
+            assertNotNull(acl);
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList dirAcl = node.getAcl();
+            assertNotNull(dirAcl);
+            assertTrue(acl.getId() == dirAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList fileAcl = node.getAcl();
+            assertNotNull(fileAcl);
+            assertTrue(acl.getId() == fileAcl.getId());
+            
+            
+            avmService.createSnapshot(storeName, "store", "store");
+            avmService.createSnapshot(storeName + "-layer-base", "store", "store");
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
+            
+            avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
+            
+            
+            desc = avmService.lookup(-1, storeName + ":/base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            dirAcl = node.getAcl();
+            assertNull(dirAcl);
+            
+            desc = avmService.lookup(-1, storeName + ":/base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            fileAcl = node.getAcl();
+            assertNull(fileAcl);
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            dirAcl = node.getAcl();
+            assertNotNull(dirAcl);
+            assertTrue(acl.getId() == dirAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            fileAcl = node.getAcl();
+            assertNull(fileAcl);
+        }
+        finally
+        {
+            avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+        }
+    }
+    
+    public void testUpdateWithPermissions() throws Exception
+    {
+        runAs("admin");
+        String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        try
+        {
+            buildBaseStructure(storeName);
+            
+            AVMNodeDescriptor nodeDesc = avmService.lookup(-1, storeName + ":/base");
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
+            permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+            Long baseAcl = avmNodeDAO.getByID(nodeDesc.getId()).getAcl().getId();
+            Long inheritedBaseAcl = aclDaoComponent.getInheritedAccessControlList(baseAcl);
+            
+            
+            avmService.createDirectory(storeName + "-layer-base:/layer-to-base", "update-dir");
+            avmService.createFile(storeName + "-layer-base:/layer-to-base/update-dir", "update-file").close();
+            
+            AVMNodeDescriptor desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base");
+            AVMNode node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList acl = node.getAcl();
+            assertNotNull(acl);
+            acl = aclDaoComponent.getDbAccessControlList(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
+            assertNotNull(acl);
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList dirAcl = node.getAcl();
+            assertNotNull(dirAcl);
+            assertTrue(acl.getId() == dirAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            DbAccessControlList fileAcl = node.getAcl();
+            assertNotNull(fileAcl);
+            assertTrue(acl.getId() == fileAcl.getId());
+            
+            
+            avmService.createSnapshot(storeName, "store", "store");
+            avmService.createSnapshot(storeName + "-layer-base", "store", "store");
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
+            
+            avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
+            
+            
+            desc = avmService.lookup(-1, storeName + ":/base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            dirAcl = node.getAcl();
+            assertNotNull(dirAcl);
+            assertEquals(inheritedBaseAcl, dirAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + ":/base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            fileAcl = node.getAcl();
+            assertNotNull(fileAcl);
+            assertEquals(inheritedBaseAcl, fileAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
+            node = avmNodeDAO.getByID(desc.getId());
+            dirAcl = node.getAcl();
+            assertNotNull(dirAcl);
+            assertTrue(acl.getId() == dirAcl.getId());
+            
+            desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
+            node = avmNodeDAO.getByID(desc.getId());
+            fileAcl = node.getAcl();
+            assertNotNull(fileAcl);
+            assertEquals(inheritedBaseAcl, fileAcl.getId());
+        }
+        finally
+        {
+            avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+        }
+    }
+    
     public void testComplexStore_AlterInheritance()
     {
         runAs("admin");
@@ -373,6 +585,11 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkPermission("lemur", storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
             assertTrue(checkPermission("lemur", storeName + "-layer-base:/layer-to-base", PermissionService.ALL_PERMISSIONS, true));
 
+            // performance
+            
+            checkCanPerformance("lemur", storeName + ":/base", PermissionService.READ, false, 10000);
+            checkHasPermissionsPerformance("lemur", storeName + ":/base", PermissionService.READ, false, 10000);
+            
             String[] excludeL = new String[] { storeName + "-layer-base:/layer-to-base/d-d/layer-d-a" };
             String[] excludeLL = new String[] { storeName + "-layer-layer-base:/layer-to-layer-to-base/d-d/layer-d-a" };
             String[] excludeLLL = new String[] { storeName + "-layer-layer-layer-base:/layer-to-layer-to-layer-to-base/d-d/layer-d-a" };
@@ -1432,7 +1649,7 @@ public class AVMServicePermissionsTest extends TestCase
             permissionService.setPermission(nodeRef, "publisher", "ContentPublisher", true);
             permissionService.setPermission(nodeRef, "contributor", "ContentContributor", true);
             permissionService.setPermission(nodeRef, "reviewer", "ContentReviewer", true);
-
+            
             assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
             assertEquals(definingId, avmACLDAO.getAccessControlList(nodeRef).getId());
 

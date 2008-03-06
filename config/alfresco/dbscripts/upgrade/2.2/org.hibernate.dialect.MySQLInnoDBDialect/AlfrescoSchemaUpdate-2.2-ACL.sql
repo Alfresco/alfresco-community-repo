@@ -8,7 +8,7 @@
 --
 
 -- Add index support for AVM
--- Ideally we would have the indirection in the index but it is too long for mysql
+-- Ideally we would have the indirection in the index but it is too long for mysql which needs additional options
 -- CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection, indirection(128));
 -- This matches the hibernate schema and should be good enough for the standard WCM use cases
 CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection);

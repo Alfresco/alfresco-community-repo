@@ -1268,8 +1268,8 @@
         <property name="id"><value>patch.db-V2.2-QNames-0-CreateMissingTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-0-create-missing-tables.sql</value>
         </property>
@@ -1283,8 +1283,8 @@
         <property name="id"><value>patch.db-V2.2-QNames-1-DropIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-drop-indexes-and-constraints.sql</value>
         </property>
@@ -1298,8 +1298,8 @@
         <property name="id"><value>patch.db-V2.2-QNames-2-MoveQNames</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-2-move-qnames.sql</value>
         </property>
@@ -1313,8 +1313,8 @@
         <property name="id"><value>patch.db-V2.2-QNames-3-PropTypes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-3-proptypes.sql</value>
         </property>
@@ -1328,8 +1328,8 @@
         <property name="id"><value>patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-4-extra-indexes-and-constraints.sql</value>
         </property>
@@ -1340,4 +1340,21 @@
         </property>
     </bean>
 
+	<bean id="patch.wcmPermissionPatch" class="org.alfresco.repo.admin.patch.impl.WCMPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.wcmPermissionPatch</value></property>
+        <property name="description"><value>patch.wcmPermissionPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>121</value></property>
+        <property name="targetSchema"><value>122</value></property>
+        <!-- helper beans -->
+        <property name="avmService">
+			<ref bean="avmService" />
+		</property>
+		<property name="permissionService">
+			<ref bean="permissionService" />
+		</property>
+		<property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+			<ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+		</property>
+    </bean>
 </beans>

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.DbAccessControlListChangeSet;
@@ -91,6 +92,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     static String QUERY_GET_LATEST_ACL_BY_ACLID = "permission.FindLatestAclByGuid";
 
+    /** a transactionally-safe cache to be injected */
+    private SimpleCache<Long, AccessControlList> aclCache;
+    
     private enum WriteMode
     {
         TRUNCATE_INHERITED, ADD_INHERITED, CHANGE_INHERITED, REMOVE_INHERITED, INSERT_INHERITED, COPY_UPDATE_AND_INHERIT, COPY_ONLY;
@@ -102,9 +106,18 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         DbAccessControlListImpl.setAclDaoComponent(this);
     }
 
+    
+    
+    public void setAclCache(SimpleCache<Long, AccessControlList> aclCache)
+    {
+        this.aclCache = aclCache;
+    }
+
+
+
     public DbAccessControlList getDbAccessControlList(Long id)
     {
-        if(id == null)
+        if (id == null)
         {
             return null;
         }
@@ -321,6 +334,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
         if (!acl.isLatest())
         {
+            aclCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
 
@@ -355,6 +369,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 acl.setInheritsFrom(inheritsFrom);
             }
+            aclCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else if ((acl.getAclChangeSet() == getCurrentChangeSet()) && (!requiresVersion) && (!acl.getRequiresVersion()))
@@ -388,6 +403,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 acl.setInheritsFrom(inheritsFrom);
             }
+            aclCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else
@@ -487,6 +503,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             // fix up old version
             acl.setLatest(Boolean.FALSE);
             acl.setRequiresVersion(Boolean.FALSE);
+            aclCache.remove(id);
             return new AclChangeImpl(id, created, acl.getAclType(), newAcl.getAclType());
         }
 
@@ -708,6 +725,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             // Delete acl entry
             DbAccessControlListMember member = (DbAccessControlListMember) getHibernateTemplate().get(DbAccessControlListMemberImpl.class, (Long) ids[0]);
             Long aclId = ((Long) ids[1]);
+            aclCache.remove(aclId);
             DbAccessControlList list = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, aclId);
             acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
             getHibernateTemplate().delete(member);
@@ -740,6 +758,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             getHibernateTemplate().delete(dbAuthority);
         }
 
+        // TODO: Remove affected ACLs from the cache
+
         return acls;
     }
 
@@ -762,9 +782,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             getHibernateTemplate().delete(member);
         }
-
+        aclCache.remove(id);
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<AclChange> deleteAccessControlList(final Long id)
     {
@@ -785,6 +805,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             if (acl.getInheritedAclId() != -1)
             {
                 final DbAccessControlList inherited = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, acl.getInheritedAclId());
+                // Will remove from the cache
                 getWritable(inherited.getId(), acl.getInheritsFrom(), null, null, null, true, acls, WriteMode.REMOVE_INHERITED);
                 DbAccessControlList unusedInherited = null;
                 for (AclChange change : acls)
@@ -808,6 +829,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 List<Long> inheritors = (List<Long>) getHibernateTemplate().execute(callback);
                 for (Long nextId : inheritors)
                 {
+                    // Will remove from the cache
                     getWritable(nextId, acl.getInheritsFrom(), null, null, acl.getInheritsFrom(), true, acls, WriteMode.REMOVE_INHERITED);
                 }
 
@@ -852,6 +874,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             List<Long> inheritors = (List<Long>) getHibernateTemplate().execute(callback);
             for (Long nextId : inheritors)
             {
+                // Will remove from the cache
                 getWritable(nextId, acl.getInheritsFrom(), null, null, null, true, acls, WriteMode.REMOVE_INHERITED);
             }
         }
@@ -882,6 +905,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             getHibernateTemplate().delete(acl);
         }
 
+        // remove the deleted acl from the cache
+        aclCache.remove(id);
         acls.add(new AclChangeImpl(id, null, acl.getAclType(), null));
         return acls;
     }
@@ -891,6 +916,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         List<AclChange> changes = new ArrayList<AclChange>();
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setPosition(Integer.valueOf(0));
+        // Will remove from the cache
         getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
@@ -900,6 +926,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         List<AclChange> changes = new ArrayList<AclChange>();
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setPosition(Integer.valueOf(-1));
+        // Will remove from the cache
         getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
@@ -907,6 +934,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     public List<AclChange> deleteAccessControlEntries(Long id, AccessControlEntry pattern)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
+        // Will remove from the cache
         getWritable(id, null, pattern, null, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
         return changes;
     }
@@ -917,15 +945,31 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     @SuppressWarnings("unchecked")
-    public AccessControlList getAccessControlList(final Long id)
+    public AccessControlList getAccessControlList(Long id)
+    {
+        AccessControlList acl = aclCache.get(id);
+        if(acl == null)
+        {
+            acl = getAccessControlListImpl(id);
+            aclCache.put(id, acl);
+        }
+        else
+        {
+            //System.out.println("Used cache for "+id);
+        }
+        return acl;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public AccessControlList getAccessControlListImpl(final Long id)
     {
         SimpleAccessControlList acl = new SimpleAccessControlList();
         AccessControlListProperties properties = getAccessControlListProperties(id);
-        if(properties == null)
+        if (properties == null)
         {
             return null;
         }
-        
+
         acl.setProperties(properties);
 
         HibernateCallback callback = new HibernateCallback()
@@ -964,7 +1008,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
 
         Collections.sort(entries);
-        
+
         acl.setEntries(entries);
 
         return acl;
@@ -973,7 +1017,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     public AccessControlListProperties getAccessControlListProperties(Long id)
     {
         DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
-        if(acl == null)
+        if (acl == null)
         {
             return null;
         }
@@ -1121,6 +1165,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             actualInheritedId = getInheritedAccessControlList(actualInheritedId);
         }
+        // Will remove from the cache
         getWritable(target, actualInheritedId, null, null, actualInheritedId, true, changes, WriteMode.CHANGE_INHERITED);
 
         return changes;
@@ -1229,6 +1274,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         exclude.setPosition(0);
         List<DbAccessControlEntry> toAdd = new ArrayList<DbAccessControlEntry>(1);
         toAdd.add(entry);
+        // Will remove from the cache
         getWritable(id, null, exclude, toAdd, null, true, changes, WriteMode.COPY_UPDATE_AND_INHERIT);
 
         return changes;
@@ -1247,6 +1293,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             throw new IllegalArgumentException("Fixed and global permissions can not inherit");
         case OLD:
             acl.setInherits(Boolean.TRUE);
+            aclCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1258,12 +1305,14 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         default:
             if (!acl.getInherits())
             {
+                // Will remove from the cache
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
                 acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, changes.get(0).getAfter());
                 acl.setInherits(Boolean.TRUE);
             }
             else
             {
+                // Will remove from the cache
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
             }
 
@@ -1281,7 +1330,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         case GLOBAL:
             return Collections.<AclChange> singletonList(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
         case OLD:
+
             acl.setInherits(Boolean.FALSE);
+            aclCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1314,11 +1365,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         case COW:
             aclToCopy = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, toCopy);
             aclToCopy.setRequiresVersion(true);
+            aclCache.remove(toCopy);
             inheritedId = getInheritedAccessControlList(toCopy);
             if ((inheritedId != null) && (!inheritedId.equals(toCopy)))
             {
                 DbAccessControlList inheritedAcl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, inheritedId);
                 inheritedAcl.setRequiresVersion(true);
+                aclCache.remove(inheritedId);
             }
             return toCopy;
         case REDIRECT:
@@ -1335,10 +1388,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 // This is not called on the redirecting node as only LAYERED change permissins when redirected
                 // So this needs to make a copy in the same way layered does
             case LAYERED:
-                if(toInheritFrom == null)
+                if (toInheritFrom == null)
                 {
                     return toCopy;
                 }
+                // manages cache clearing beneath
                 List<AclChange> changes = mergeInheritedAccessControlList(toInheritFrom, toCopy);
                 for (AclChange change : changes)
                 {
@@ -1420,7 +1474,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     public DbAccessControlList getDbAccessControlListCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
         Long id = getCopy(toCopy, toInheritFrom, mode);
-        if(id == null)
+        if (id == null)
         {
             return null;
         }
@@ -1468,15 +1522,17 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             return Collections.<AclChange> emptyList();
         }
+        // Manges caching
         getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
         acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, changes.get(0).getAfter());
         final Long inheritsFrom = acl.getInheritsFrom();
         acl.setInherits(Boolean.FALSE);
         // Keep inherits from so we can reinstate if required
         // acl.setInheritsFrom(-1l);
+        // Manges caching
         getWritable(acl.getId(), null, null, null, null, true, changes, WriteMode.TRUNCATE_INHERITED);
 
-        // set Inherited
+        // set Inherited - TODO: UNTESTED
 
         if ((inheritsFrom != null) && (inheritsFrom != -1) && setInheritedOnAcl)
         {

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.io.Serializable;
+
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -32,7 +34,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Andy Hind
  */
-public interface PermissionReference
+public interface PermissionReference extends Serializable
 {
 
     /**

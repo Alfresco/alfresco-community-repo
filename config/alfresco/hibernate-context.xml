@@ -260,6 +260,9 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
+	  <property name="aclCache">
+         <ref bean="aclCache" />
+      </property>
    </bean>
    
     <bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">

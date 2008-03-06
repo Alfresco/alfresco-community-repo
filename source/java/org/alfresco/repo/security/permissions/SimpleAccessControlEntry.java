@@ -29,6 +29,11 @@ import org.alfresco.service.cmr.security.AuthorityType;
 
 public class SimpleAccessControlEntry implements AccessControlEntry
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3099789485179796034L;
+
     private AccessStatus accessStatus;
     
     private ACEType aceType;

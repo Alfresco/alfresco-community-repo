@@ -125,7 +125,7 @@ public class RuleServiceCoverageTest extends TestCase
      * Category related values
      */
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/rulesystemtest";
-    private static final QName CAT_PROP_QNAME = QName.createQName(TEST_NAMESPACE, "region");
+    private static final QName CAT_PROP_QNAME = QName.createQName(TEST_NAMESPACE, "Region");
     private QName regionCategorisationQName;
     private NodeRef catContainer;
     private NodeRef catRoot;

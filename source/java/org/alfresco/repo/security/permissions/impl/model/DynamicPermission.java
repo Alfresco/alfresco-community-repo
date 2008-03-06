@@ -35,6 +35,11 @@ import org.dom4j.Element;
  */
 public class DynamicPermission extends AbstractPermission implements XMLModelInitialisable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8060533686472973313L;
+
     private static final String EVALUATOR = "evaluator";
     
     private String evaluatorFullyQualifiedClassName;

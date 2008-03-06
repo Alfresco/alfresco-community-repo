@@ -404,7 +404,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         }
     }
 
-    private StoreType getStoreType(String name)
+    public StoreType getStoreType(String name)
     {
         if (avmService.getStore(name) != null)
         {
@@ -457,7 +457,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         NAME, TYPE;
     }
 
-    private enum StoreType
+    public enum StoreType
     {
         STAGING, STAGING_PREVIEW, AUTHOR, AUTHOR_PREVIEW, WORKFLOW, WORKFLOW_PREVIEW, AUTHOR_WORKFLOW, AUTHOR_WORKFLOW_PREVIEW, UNKNOWN;
     }

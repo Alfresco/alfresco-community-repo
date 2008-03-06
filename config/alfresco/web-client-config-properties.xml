@@ -230,6 +230,12 @@
       </property-sheet>
    </config>
 
+   <config evaluator="aspect-name" condition="attachable">
+      <property-sheet>
+         <show-association name="attachments" />
+      </property-sheet>
+   </config>
+
    <config evaluator="aspect-name" condition="app:inlineeditable">
       <property-sheet>
          <show-property name="app:editInline" converter="org.alfresco.faces.BooleanLabelConverter" />

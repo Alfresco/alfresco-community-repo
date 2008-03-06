@@ -282,6 +282,14 @@
                  icon="/images/icons/deploy_large.gif" title-id="monitor_deployment_title" 
                  description-id="monitor_deployment_desc" show-ok-button="false" />
                  
+         <dialog name="deleteDeploymentReports" page="/jsp/dialog/delete.jsp" 
+                 managed-bean="DeleteDeploymentReportsDialog" icon="/images/icons/delete_large.gif"
+                 title-id="delete_all_deploy_reports" description-id="delete_reports_info" />
+                 
+         <dialog name="releaseTestServer" page="/jsp/dialog/delete.jsp" 
+                 managed-bean="ReleaseTestServerDialog" icon="/images/icons/deploy_server_large.gif"
+                 title-id="release_server_title" description-id="release_server_info" />
+                 
          <dialog name="linkValidation" page="/jsp/wcm/link-validation.jsp" 
                  managed-bean="LinkValidationDialog"
                  icon="/images/icons/link_validation_report_large.gif" 

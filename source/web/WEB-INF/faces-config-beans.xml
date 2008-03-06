@@ -4080,6 +4080,36 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Delete Deployment Reports Dialog
+      </description>
+      <managed-bean-name>DeleteDeploymentReportsDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeleteDeploymentReportsDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Release Test Server Dialog
+      </description>
+      <managed-bean-name>ReleaseTestServerDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.ReleaseTestServerDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
 
    <managed-bean>
       <description>

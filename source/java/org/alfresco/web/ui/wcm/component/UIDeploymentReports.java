@@ -371,9 +371,16 @@ public class UIDeploymentReports extends SelfRenderingComponent
             out.write("</nobr></td><td>");
             out.write(attempt.getServers());
             out.write("</td><td>");
-            if (attempt.getVersion() != null)
+            Integer version = attempt.getVersion();
+            if (version != null)
             {
-               out.write(attempt.getVersion().toString());
+               out.write(version.toString());
+               if (version.intValue() == -1)
+               {
+                  out.write("&nbsp;(");
+                  out.write(bundle.getString("current_working_version"));
+                  out.write(")");
+               }
             }
             out.write("</td></tr>");
          }
@@ -527,6 +534,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          content = reader.getContentString();
          if (content != null)
          {
+            content = Utils.encode(content);
             content = StringUtils.replace(content, "\r\n", "<br/>");
          }
          else
@@ -673,7 +681,7 @@ public class UIDeploymentReports extends SelfRenderingComponent
          out.write("<div id='");
          out.write(serverId.toString());
          out.write("-deployment-details' style='display: none; border: 1px dotted #eee; margin-left: 14px; margin-top: 4px; padding:3px;'>");
-         out.write(Utils.encode(content));
+         out.write(content);
          out.write("</div>");
       }
       out.write("\n<div style='padding-top:6px;'></div>\n");

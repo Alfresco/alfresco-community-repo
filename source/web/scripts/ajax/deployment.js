@@ -176,7 +176,7 @@ Alfresco.deployServerTypeChanged = function()
          }
          else
          {
-            autoDeployLabel.style.display = "block";
+            autoDeployLabel.style.display = "inline";
          }
       }
       
@@ -190,7 +190,7 @@ Alfresco.deployServerTypeChanged = function()
          }
          else
          {
-            autoDeployCheckbox.style.display = "block";
+            autoDeployCheckbox.style.display = "inline";
          }
       }
    }

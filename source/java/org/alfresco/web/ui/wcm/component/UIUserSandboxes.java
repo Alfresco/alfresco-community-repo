@@ -46,8 +46,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -65,8 +63,8 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.AVMNode;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.config.ClientConfigElement;
@@ -491,7 +489,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   {
                      UIActionLink releaseServer = createAction(context, mainStore, username, 
                               ACT_SANDBOX_RELEASE_SERVER, "/images/icons/release_server.gif", 
-                              "#{AVMBrowseBean.releaseTestServer}", null, null, null, false);
+                              "#{DialogManager.setupParameters}", "dialog:releaseTestServer", 
+                              null, null, false);
                      menu.getChildren().add(releaseServer);
                   }
                   

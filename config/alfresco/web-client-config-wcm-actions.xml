@@ -286,7 +286,7 @@
             </permissions>
             <label-id>delete_all_deploy_reports</label-id>
             <image>/images/icons/delete_deploy_reports.gif</image>
-            <action>#{AVMBrowseBean.deleteAllDeploymentReports}</action>
+            <action>dialog:deleteDeploymentReports</action>
             <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>

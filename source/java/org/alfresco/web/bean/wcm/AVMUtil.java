@@ -956,12 +956,12 @@ public final class AVMUtil
    }
    
    // Component Separator.
-   /*package*/ static final String STORE_SEPARATOR = "--";
+   public static final String STORE_SEPARATOR = "--";
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private
-   /*package*/ final static String STORE_WORKFLOW = "workflow";
-   private final static String STORE_PREVIEW = "preview";
+   public final static String STORE_WORKFLOW = "workflow";
+   public final static String STORE_PREVIEW = "preview";
    
    // servlet default webapp
    //    Note: this webapp is mapped to the URL path ""

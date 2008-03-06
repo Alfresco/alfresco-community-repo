@@ -48,6 +48,7 @@ import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentServerConfig;
 import org.alfresco.web.ui.common.ComponentConstants;
 import org.alfresco.web.ui.common.PanelGenerator;
@@ -76,10 +77,11 @@ public class UIDeploymentServers extends UIInput
    private static final String MSG_SOURCE = "deploy_server_source_path";
    private static final String MSG_TARGET = "deploy_server_target_name";
    private static final String MSG_EXCLUDES = "deploy_server_excludes";
-   private static final String MSG_AUTO_DEPLOY = "deploy_automatically";
+   private static final String MSG_INCLUDE_AUTO_DEPLOY = "deploy_server_include_auto_deploy";
    private static final String MSG_EDIT = "edit_deploy_server";
    private static final String MSG_DELETE = "delete_deploy_server";
    private static final String MSG_NO_DEPLOY_SERVERS = "no_deploy_servers";
+   private static final String MSG_NO_DATA = "no_data";
    
    private List<DeploymentServerConfig> servers;
    private DeploymentServerConfig currentServer;
@@ -319,6 +321,7 @@ public class UIDeploymentServers extends UIInput
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
       ResourceBundle bundle = Application.getBundle(context);
+      String noData = bundle.getString(MSG_NO_DATA);
       
       String serverName = (String)server.getProperties().get(DeploymentServerConfig.PROP_NAME);
       if (serverName == null || serverName.length() == 0)
@@ -358,6 +361,10 @@ public class UIDeploymentServers extends UIInput
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT));
       }
+      else
+      {
+         out.write(noData);
+      }
       out.write("</td></tr>");
       
       out.write("<tr><td align='right'>");
@@ -384,6 +391,10 @@ public class UIDeploymentServers extends UIInput
       {
          out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_URL)));
       }
+      else
+      {
+         out.write(noData);
+      }
       out.write("</td></tr>");
       
       out.write("<tr><td align='right'>");
@@ -392,6 +403,10 @@ public class UIDeploymentServers extends UIInput
       if (server.getProperties().get(DeploymentServerConfig.PROP_USER) != null)
       {
          out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_USER)));
+      }
+      else
+      {
+         out.write(noData);
       }
       out.write("</td></tr></table></td>"); 
       out.write("<td valign='top'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsRightCol'>");
@@ -403,6 +418,10 @@ public class UIDeploymentServers extends UIInput
       {
          out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_SOURCE_PATH)));
       }
+      else
+      {
+         out.write(noData);
+      }
       out.write("</td></tr>");
       
       out.write("<tr><td align='right'><nobr>");
@@ -411,6 +430,10 @@ public class UIDeploymentServers extends UIInput
       if (server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES) != null)
       {
          out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_EXCLUDES)));
+      }
+      else
+      {
+         out.write(noData);
       }
       out.write("</td></tr>");
       
@@ -423,6 +446,10 @@ public class UIDeploymentServers extends UIInput
          {
             out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_TARGET_NAME)));
          }
+         else
+         {
+            out.write(noData);
+         }
          out.write("</td></tr>");
       }
       
@@ -430,7 +457,7 @@ public class UIDeploymentServers extends UIInput
           server.getProperties().get(DeploymentServerConfig.PROP_TYPE)))
       {
          out.write("<tr><td align='right'><nobr>");
-         out.write(bundle.getString(MSG_AUTO_DEPLOY));
+         out.write(bundle.getString(MSG_INCLUDE_AUTO_DEPLOY));
          out.write(":</nobr></td><td>");
          if (server.getProperties().get(DeploymentServerConfig.PROP_ON_APPROVAL) != null)
          {
@@ -459,9 +486,22 @@ public class UIDeploymentServers extends UIInput
                      DeploymentServerConfig.PROP_ALLOCATED_TO);
             out.write("<span title='");
             out.write(allocatedToTip);
-            out.write("'>");
+            out.write("'><nobr>");
             out.write(bundle.getString("yes"));
-            out.write("</span>");
+            out.write("&nbsp;(");
+            if (allocatedToTip.indexOf(
+                AVMUtil.STORE_SEPARATOR + AVMUtil.STORE_WORKFLOW + "-") != -1)
+            {
+               out.write(bundle.getString("review_sandbox"));
+            }
+            else
+            {
+               String username = allocatedToTip.substring(
+                        allocatedToTip.indexOf(AVMUtil.STORE_SEPARATOR) +
+                        AVMUtil.STORE_SEPARATOR.length());
+               out.write(username);
+            }
+            out.write(")</nobr></span>");
          }
          else
          {
@@ -716,9 +756,7 @@ public class UIDeploymentServers extends UIInput
       }
       
       // create the auto deploy checkbox
-      out.write("<tr><td align='right'><span id='autoDeployLabel'>");
-      out.write(bundle.getString(MSG_AUTO_DEPLOY));
-      out.write(":</td><td>");
+      out.write("<tr><td align='right'></td><td>");
       UIComponent auto = context.getApplication().createComponent(
                UISelectBoolean.COMPONENT_TYPE);
       FacesHelper.setupComponentId(context, auto, "autoDeployCheckbox");
@@ -728,6 +766,8 @@ public class UIDeploymentServers extends UIInput
       auto.setValueBinding("value", vbAuto);
       this.getChildren().add(auto);
       Utils.encodeRecursive(context, auto);
+      out.write("<span id='autoDeployLabel'>&nbsp;");
+      out.write(bundle.getString(MSG_INCLUDE_AUTO_DEPLOY));
       out.write("</td></tr>");
       
       // create and add the cancel button

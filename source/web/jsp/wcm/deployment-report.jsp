@@ -36,7 +36,7 @@
 
 <h:panelGroup id="panel-facets">
    <f:facet name="title">
-      <a:actionLink id="back-to-last-report" value="#{msg.last_deploy_report}" showLink="false"
+      <a:actionLink id="back-to-last-report" value="#{msg.last_deploy_report}"
                     rendered="#{DialogManager.bean.attempt != null}"
                     image="/images/icons/deployment_report.gif" 
                     actionListener="#{DialogManager.bean.showLastReport}" />

@@ -50,8 +50,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -60,7 +58,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -71,7 +68,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
@@ -1420,125 +1416,6 @@ public class AVMBrowseBean implements IContextListener
       // update the specified webapp in the store
       String webappPath = AVMUtil.buildStoreWebappPath(store, getWebapp());
       AVMUtil.updateVServerWebapp(webappPath, true);
-   }
-   
-   /**
-    * Releases the test server allocated to the store
-    */
-   public void releaseTestServer(ActionEvent event)
-   {
-      UIActionLink link = (UIActionLink)event.getComponent();
-      Map<String, String> params = link.getParameterMap();
-      String store = params.get("store");
-      
-      if (store != null)
-      {
-         UserTransaction tx = null;
-         try
-         {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context, false);
-            tx.begin();
-            
-            NodeRef testServer = DeploymentUtil.findAllocatedTestServer(store);
-            if (testServer != null)
-            {
-               getNodeService().setProperty(testServer, 
-                        WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("Released test server '" + testServer + "' from store: " + store);
-            }
-            
-            tx.commit();
-         }
-         catch (Throwable err)
-         {
-            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         }
-      }
-   }
-   
-   /**
-    * Deletes all deploymentreport nodes associated with the web project
-    */
-   public String deleteAllDeploymentReports()
-   {
-      FacesContext context = FacesContext.getCurrentInstance();
-      RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
-      RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
-      {
-         @SuppressWarnings("unchecked")
-         public String execute() throws Throwable
-         {
-            // just in case there are any left, iterate through any old deploymentreport 
-            // associations from the current web project and delete them.
-            List<ChildAssociationRef> deployReportRefs = nodeService.getChildAssocs(
-                     getWebsite().getNodeRef(), WCMAppModel.ASSOC_DEPLOYMENTREPORT, 
-                     RegexQNamePattern.MATCH_ALL);
-            int count = deployReportRefs.size();
-            for (ChildAssociationRef ref : deployReportRefs)
-            {
-               NodeRef report = ref.getChildRef();
-               if (report != null)
-               {
-                  // remove the node
-                  nodeService.deleteNode(report);
-               }
-            }
-            
-            // iterate through all deploymentattempt associations from the current 
-            // web project and delete them.
-            List<ChildAssociationRef> deployAttemptRefs = nodeService.getChildAssocs(
-                     getWebsite().getNodeRef(), WCMAppModel.ASSOC_DEPLOYMENTATTEMPT, 
-                     RegexQNamePattern.MATCH_ALL);
-            count += deployAttemptRefs.size();
-            for (ChildAssociationRef ref : deployAttemptRefs)
-            {
-               NodeRef attempt = ref.getChildRef();
-               if (attempt != null)
-               {
-                  // remove the node
-                  nodeService.deleteNode(attempt);
-               }
-            }
-            
-            // remove the old properties in case they are still present
-            nodeService.removeProperty(getWebsite().getNodeRef(), 
-                     WCMAppModel.PROP_DEPLOYTO);
-            nodeService.removeProperty(getWebsite().getNodeRef(), 
-                     WCMAppModel.PROP_SELECTEDDEPLOYTO);
-            nodeService.removeProperty(getWebsite().getNodeRef(), 
-                     WCMAppModel.PROP_SELECTEDDEPLOYVERSION);
-            
-            // remove the hasBeenDeployed object from the session so it gets
-            // re-evaluated (and disappears)
-            Map request = FacesContext.getCurrentInstance().
-                  getExternalContext().getRequestMap();
-            request.remove(REQUEST_BEEN_DEPLOYED_RESULT);
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Removed " + count + " previous deployment attempts"); 
-            
-            return null;
-         }
-      };
-      
-      try
-      {
-         // Execute
-         txnHelper.doInTransaction(callback);
-      }
-      catch (Exception err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                  FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), 
-                  err.getMessage()), err);
-      }
-
-      return "browseWebsite";
    }
    
    /**

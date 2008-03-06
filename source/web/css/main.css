@@ -766,6 +766,11 @@ a.sidebarButtonLink, a.sidebarButtonLink:link, a.sidebarButtonLink:visited
    width: 200px;
 }
 
+#autoDeployLabel
+{
+   vertical-align: 3px;
+}
+
 .deployNoConfigServers
 {
    margin: 26px 5px 16px 3px;

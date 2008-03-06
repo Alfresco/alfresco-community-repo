@@ -94,7 +94,7 @@
                     it points at (true) or inheriting what it points at from its
                     container (false). -->
                 <property name="primaryIndirection"
-                    column="primary_indirection" type="boolean"/>
+                    column="primary_indirection" type="boolean" index="idx_avm_lyr_indn" />
                 <property name="opacity" column="opacity" type="boolean"/>
                 <!-- Map of names to DirectoryEntries. -->
             </subclass>

@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.namespace.QName;
@@ -48,7 +50,9 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * An interactive console for the AVM repository.
+ * 
  * @author britt
+ * @author Gavin Cornwell
  */
 public class AVMInterpreter
 {
@@ -62,6 +66,11 @@ public class AVMInterpreter
      */
     private AVMSyncService fSyncService;
 
+    /**
+     * The locking service.
+     */
+    private AVMLockingService fLockingService;
+    
     /**
      * The reader for interaction.
      */
@@ -83,6 +92,7 @@ public class AVMInterpreter
         AVMInterpreter console = new AVMInterpreter();
         console.setAvmService((AVMService)context.getBean("AVMService"));
         console.setAvmSyncService((AVMSyncService)context.getBean("AVMSyncService"));
+        console.setAvmLockingService((AVMLockingService)context.getBean("AVMLockingService"));
         BulkLoader loader = new BulkLoader();
         loader.setAvmService((AVMService)context.getBean("AVMService"));
         console.setBulkLoader(loader);
@@ -114,6 +124,15 @@ public class AVMInterpreter
     public void setAvmSyncService(AVMSyncService syncService)
     {
         fSyncService = syncService;
+    }
+    
+    /**
+     * Set the AVM locking service.
+     * @param lockService
+     */
+    public void setAvmLockingService(AVMLockingService lockService)
+    {
+        fLockingService = lockService;
     }
 
     /**
@@ -407,6 +426,56 @@ public class AVMInterpreter
                 for (final Map.Entry<QName, PropertyValue> p : properties.entrySet())
                 {
                    out.println(p.getKey() + ": " + p.getValue());
+                }
+            }
+            else if (command[0].equals("descnode"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                
+                String path = command[1];
+                
+                AVMNodeDescriptor nodeDesc = fService.lookup(Integer.parseInt(command[2]), path);
+                if (nodeDesc == null)
+                {
+                   return "Path Not Found.";
+                }
+                
+                out.println(nodeDesc.toString());
+                out.println("isDirectory: " + nodeDesc.isDirectory());
+                out.println("isFile: " + nodeDesc.isFile());
+                out.println("isPrimary: " + nodeDesc.isPrimary());
+                out.println("isOpaque: " + nodeDesc.getOpacity());
+                out.println("creator: " + nodeDesc.getCreator());
+                out.println("owner: " + nodeDesc.getOwner());
+                out.println("lastModifier: " + nodeDesc.getLastModifier());
+                out.println("created: " + new Date(nodeDesc.getCreateDate()));
+                out.println("modified: " + new Date(nodeDesc.getModDate()));
+                out.println("lastAccess: " + new Date(nodeDesc.getAccessDate()));
+                
+                // get lock information
+                String lockPath = path.substring(path.indexOf("/"));
+                String store = path.substring(0, path.indexOf(":"));
+                String mainStore = store;
+                if (store.indexOf("--") != -1)
+                {
+                   mainStore = store.substring(0, store.indexOf("--"));
+                }
+                
+                AVMLock lock = fLockingService.getLock(mainStore, lockPath);
+                out.print("lock: ");
+                if (lock != null)
+                {
+                   out.print("store = ");
+                   out.print(lock.getStore());
+                   out.print(", owners = ");
+                   out.println(lock.getOwners());
+                }
+                else
+                {
+                   out.println("No locks found");
                 }
             }
             else if (command[0].equals("deletenodeproperty"))

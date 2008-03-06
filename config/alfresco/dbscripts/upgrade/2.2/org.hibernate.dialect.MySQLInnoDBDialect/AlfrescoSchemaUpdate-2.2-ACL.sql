@@ -7,6 +7,12 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+-- Add index support for AVM
+-- Ideally we would have the indirection in the index but it is too long for mysql
+-- CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection, indirection(128));
+-- This matches the hibernate schema and should be good enough for the standard WCM use cases
+CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection);
+
 CREATE TABLE alf_acl_change_set (
    id BIGINT NOT NULL AUTO_INCREMENT,
    version BIGINT NOT NULL,
@@ -26,6 +32,7 @@ ALTER TABLE alf_access_control_list
    ADD COLUMN acl_change_set BIGINT,
    ADD COLUMN inherits_from BIGINT;
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
+CREATE INDEX idx_pm_acl_inh ON alf_access_control_list (inherits, inherits_from);
 ALTER TABLE alf_access_control_list ADD CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id);
 
 UPDATE alf_access_control_list acl

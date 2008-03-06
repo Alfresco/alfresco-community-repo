@@ -34,24 +34,6 @@
    
 	<aspects>
 
-		<aspect name="emailserver:attached">
-			<title>Attached</title>
-			<associations>
-				<association name="emailserver:attachment">
-					<title>Attachment</title>
-					<source>	
-						<mandatory>true</mandatory>
-						<many>true</many>
-					</source>
-					<target>
-						<class>cm:content</class>						
-						<mandatory>false</mandatory>
-						<many>false</many>
-					</target>
-				</association>
-			</associations>
-		</aspect>
-		
 		<aspect name="emailserver:emailed">
 			<title>Emailed</title>
 			<parent>cm:emailed</parent>

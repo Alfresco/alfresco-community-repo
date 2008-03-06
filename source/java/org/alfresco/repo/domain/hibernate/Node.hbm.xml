@@ -451,8 +451,8 @@
          node.properties prop
       where
          (
-            prop.actualType = :actualTypeString or
-            prop.actualType = 'SERIALIZABLE'
+            prop.actualType = :actualType or
+            prop.actualType = 9
          ) and
          prop.persistedType != 0
    </query>

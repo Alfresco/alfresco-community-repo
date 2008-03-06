@@ -26,13 +26,16 @@ package org.alfresco.repo.avm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.util.Pair;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import junit.framework.TestCase;
@@ -47,22 +50,22 @@ public class AVMTestRemote extends TestCase
      * The AVMRemote.
      */
     private AVMRemote fAVMRemote;
-    
+
     /**
      * The Sync service.
      */
     private AVMSyncService fAVMSync;
-    
+
     /**
      * The Authentication Service.
      */
     private AuthenticationService fAuthService;
-    
+
     /**
      * The application context.
      */
     private FileSystemXmlApplicationContext fContext;
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -85,7 +88,19 @@ public class AVMTestRemote extends TestCase
         }
         fContext.close();
     }
-    
+
+    public void testGetAPath()
+    throws Exception
+    {
+        fAVMRemote.createStore("test2932");
+        fAVMRemote.createDirectory("test2932:/", "a");
+        fAVMRemote.createFile("test2932:/a", "foo.txt").close();
+        AVMNodeDescriptor found = fAVMRemote.lookup(-1, "test2932:/a/foo.txt");
+        Pair<Integer, String> path = fAVMRemote.getAPath(found);
+        assertEquals(path.getSecond(), "test2932:/a/foo.txt");
+        explorePaths("foo--admin:/");
+    }
+
     /**
      * Do a simple hello world test.
      */
@@ -105,7 +120,23 @@ public class AVMTestRemote extends TestCase
             fail();
         }
     }
-    
+
+
+    public void explorePaths(String path)
+        throws Exception
+    {
+        Map<String, AVMNodeDescriptor> listing = fAVMRemote.getDirectoryListing(-1, path);
+        for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
+        {
+            Pair<Integer, String> childPath = fAVMRemote.getAPath(entry.getValue());
+            System.out.println(childPath);
+            if (entry.getValue().isDirectory())
+            {
+                explorePaths(entry.getValue().getPath());
+            }
+        }
+    }
+
     /**
      * Test reading and writing.
      */
@@ -118,7 +149,7 @@ public class AVMTestRemote extends TestCase
             // Create a directory.
             fAVMRemote.createDirectory("test2933:/", "a");
             // Write out a file.
-            OutputStream out = 
+            OutputStream out =
                 fAVMRemote.createFile("test2933:/a", "foo.txt");
             byte [] buff = "This is a plain old text file.\n".getBytes();
             out.write(buff);
@@ -126,7 +157,7 @@ public class AVMTestRemote extends TestCase
             out.write(buff);
             out.close();
             // Read back that file.
-            InputStream in = 
+            InputStream in =
                 fAVMRemote.getFileInputStream(-1, "test2933:/a/foo.txt");
             buff = new byte[1024];
             assertEquals(49, in.read(buff));
@@ -171,7 +202,7 @@ public class AVMTestRemote extends TestCase
             fail();
         }
     }
-    
+
     /**
      * Test a call that should return null;
      */
@@ -187,7 +218,7 @@ public class AVMTestRemote extends TestCase
             fail();
         }
     }
-    
+
     /**
      * Test the sync service.
      */

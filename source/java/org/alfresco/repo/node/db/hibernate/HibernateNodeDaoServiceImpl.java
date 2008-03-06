@@ -1406,14 +1406,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         // get the in-database string representation of the actual type
         QName typeQName = actualDataTypeDefinition.getName();
-        final String actualTypeString = PropertyValue.getActualTypeString(typeQName);
+        final int actualTypeOrdinalNumber = PropertyValue.convertToTypeOrdinal(typeQName);
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session
                   .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE)
-                  .setString("actualTypeString", actualTypeString);
+                  .setInteger("actualType", actualTypeOrdinalNumber);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };

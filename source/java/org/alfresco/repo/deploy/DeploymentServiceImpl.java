@@ -948,15 +948,12 @@ public class DeploymentServiceImpl implements DeploymentService
                 // Source is a directory.
                 if (dst.getType() == FileType.DIR)
                 {
-                    if (!dstPath.equals("/"))
-                    {
-                        service.setGuid(ticket, dstPath, src.getGuid());
-                    }
                     String extendedPath = extendPath(dstPath, dst.getName());
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
                         deployDirectoryPush(service, ticket, report, callbacks, version, src.getPath(), extendPath(dstPath, dst.getName()), matcher);
                     }
+                    service.setGuid(ticket, extendedPath, src.getGuid());
                     src = null;
                     dst = null;
                     continue;

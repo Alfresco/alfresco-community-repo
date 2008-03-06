@@ -9,24 +9,29 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-CREATE INDEX fk_alf_acl_entr ON alf_access_control_entry (acl_id);
-CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
 CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);
+CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
+CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
 
-CREATE INDEX fk_alf_attr_acl ON alf_attributes (acl_id);
+CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
+
+CREATE INDEX fk_alf_aclm_acl ON alf_acl_member (acl_id);
+CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
 
 CREATE INDEX fk_alf_adtf_src ON alf_audit_fact (audit_source_id);
 CREATE INDEX fk_alf_adtf_date ON alf_audit_fact (audit_date_id);
 CREATE INDEX fk_alf_adtf_conf ON alf_audit_fact (audit_conf_id);
 
-CREATE INDEX fk_alf_auth_ext ON alf_auth_ext_keys (id);
+CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
+CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
 
 CREATE INDEX fk_alf_ca_pnode ON alf_child_assoc (parent_node_id);
 CREATE INDEX fk_alf_ca_tqn ON alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_ca_qn_ns ON alf_child_assoc (qname_ns_id);
 CREATE INDEX fk_alf_ca_cnode ON alf_child_assoc (child_node_id);
 
-CREATE INDEX fk_alf_gatt_att ON alf_global_attributes (attribute);
+-- alf_global_attributes.attribute is declared unique.  Indexes may automatically have been created.
+CREATE INDEX fk_alf_gatt_att ON alf_global_attributes (attribute);  -- (optional)
 
 CREATE INDEX fk_alf_lent_att ON alf_list_attribute_entries (attribute_id);
 

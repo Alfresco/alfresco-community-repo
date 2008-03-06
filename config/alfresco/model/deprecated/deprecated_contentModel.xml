@@ -9,6 +9,7 @@
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+		<import uri="http://www.alfresco.org/model/emailserver/1.0" prefix="emailserver" />
    </imports>
    
    <aspects>
@@ -44,6 +45,24 @@
          </associations>
       </aspect>
             
+		<aspect name="emailserver:attached">
+			<title>Attached</title>
+			<associations>
+				<association name="emailserver:attachment">
+					<title>Attachment</title>
+					<source>	
+						<mandatory>true</mandatory>
+						<many>true</many>
+					</source>
+					<target>
+						<class>cm:content</class>						
+						<mandatory>false</mandatory>
+						<many>false</many>
+					</target>
+				</association>
+			</associations>
+		</aspect>
+		
    </aspects>
 
 </model>

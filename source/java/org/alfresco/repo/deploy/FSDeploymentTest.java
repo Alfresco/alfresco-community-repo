@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing
  */
 
@@ -28,6 +28,7 @@ package org.alfresco.repo.deploy;
 import java.io.File;
 
 import org.alfresco.repo.avm.AVMServiceTestBase;
+import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
@@ -42,6 +43,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class FSDeploymentTest extends AVMServiceTestBase
 {
     public void testBasic()
+        throws Exception
     {
         File log = new File("deplog");
         log.mkdir();
@@ -108,11 +110,20 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(5, count);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail();
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            fService.removeNode("main:/avm/hibernate");
+            fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
+            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            count = 0;
+            for (DeploymentEvent event : report)
+            {
+                System.out.println(event);
+                count++;
+            }
+            assertEquals(4, count);
         }
         finally
         {

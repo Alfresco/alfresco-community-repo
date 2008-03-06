@@ -691,17 +691,17 @@ public class PropertyValue implements Cloneable, Serializable
     }
     
     /**
-     * Given an actual type qualified name, returns the <tt>String</tt> that represents it in
-     * the database.
+     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number
+     * that represents it in the database.
      * 
      * @param typeQName the type qualified name
-     * @return Returns the <tt>String</tt> representation of the type,
-     *      e.g. <b>CONTENT</b> for type <b>d:content</b>.
+     * @return Returns the <tt>int</tt> representation of the type,
+     *      e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
      */
-    public static String getActualTypeString(QName typeQName)
+    public static int convertToTypeOrdinal(QName typeQName)
     {
         ValueType valueType = makeValueType(typeQName);
-        return valueType.toString();
+        return valueType.getOrdinalNumber();
     }
     
     @Override

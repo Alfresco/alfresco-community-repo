@@ -242,7 +242,7 @@ public class SubethaEmailMessage implements EmailMessage
                     else
                     {
                         // It's the body
-                        addBody(messagePart);
+                        addBody(bp);
                     }
                 }
 

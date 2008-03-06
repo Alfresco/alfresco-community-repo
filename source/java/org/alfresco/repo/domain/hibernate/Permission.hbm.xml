@@ -54,9 +54,9 @@
         
         <version column="version" name="version" type="long" />
 
-        <property name="inherits" column="inherits" type="boolean" not-null="true" />
+        <property name="inherits" column="inherits" type="boolean" not-null="true" index="idx_pm_acl_inh" />
         
-        <property name="inheritsFrom" column="inherits_from" type="long" not-null="false" />
+        <property name="inheritsFrom" column="inherits_from" type="long" not-null="false" index="idx_pm_acl_inh" />
         
         <property name="type" column="type" type="int" not-null="true" />    
              

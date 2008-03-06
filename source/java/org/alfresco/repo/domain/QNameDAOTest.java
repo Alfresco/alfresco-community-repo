@@ -158,18 +158,17 @@ public class QNameDAOTest extends TestCase
                         logger.debug("Failed to create QNameEntity.  Might retry.", e);
                         throw e;
                     }
-                    finally
-                    {
-                        // Notify the counter that this thread is done
-                        logger.debug("Thread " + threadName + " is DONE");
-                        doneLatch.countDown();
-                    }
                 }
                 else
                 {
-                    throw new RuntimeException("QName entity should not exist");
+                    // In the case where the threads have to wait for database connections,
+                    // it is quite possible that the entity was created as the ready latch
+                    // is released after five seconds
                 }
                 assertNotNull("QName should now exist", qnameEntity);
+                // Notify the counter that this thread is done
+                logger.debug("Thread " + threadName + " is DONE");
+                doneLatch.countDown();
                 // Done
                 return qnameEntity;
             }
@@ -201,7 +200,7 @@ public class QNameDAOTest extends TestCase
         // Let the threads go
         startLatch.countDown();
         // Wait for them all to be done (within limit of 10 seconds per thread)
-        doneLatch.await(threadCount * 10, TimeUnit.SECONDS);
+        doneLatch.await(threadCount, TimeUnit.SECONDS);
         if (doneLatch.getCount() > 0)
         {
             fail("Still waiting for threads to finish");

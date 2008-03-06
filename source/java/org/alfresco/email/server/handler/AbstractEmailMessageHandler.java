@@ -322,17 +322,11 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         }
         
         NodeRef attachmentNode = addContentNode(nodeService, folder, fileName);
-
-        // Remove 'attached' aspect so that we work with the document in its clean form
-        if (nodeService.hasAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED))
-        {
-            nodeService.removeAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED);
-        }
         
         // Add attached aspect
-        nodeService.addAspect(attachmentNode, EmailServerModel.ASPECT_ATTACHED, null);
-        // Recreate the association
-        nodeService.createAssociation(attachmentNode, mainContentNode, EmailServerModel.ASSOC_ATTACHMENT);
+        nodeService.addAspect(mainContentNode, ContentModel.ASPECT_ATTACHABLE, null);
+        // Add the association
+        nodeService.createAssociation(mainContentNode, attachmentNode, ContentModel.ASSOC_ATTACHMENTS);
         
         if (log.isDebugEnabled())
         {

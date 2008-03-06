@@ -1534,6 +1534,10 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Could not find node: " + desc);
         }
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Getting A Path for: " + desc);
+        }
         List<String> components = new ArrayList<String>();
         return recursiveGetAPath(node, components);
     }
@@ -1700,11 +1704,19 @@ public class AVMRepository
             AVMStore store = fAVMStoreDAO.getByRoot(node);
             if (store != null)
             {
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("Found path in HEAD of: " + store.getName());
+                }
                 return new Pair<Integer, String>(-1, makePath(components, store.getName()));
             }
             VersionRoot vr = fVersionRootDAO.getByRoot(node);
             if (vr != null)
             {
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("Found path in version " + vr.getVersionID() + " in: " + vr.getAvmStore().getName());
+                }
                 return new Pair<Integer, String>(vr.getVersionID(), makePath(components, vr.getAvmStore().getName()));
             }
             return null;
@@ -1713,8 +1725,12 @@ public class AVMRepository
         for (ChildEntry entry : entries)
         {
             String name = entry.getKey().getName();
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug("Found component: " + name);
+            }
             components.add(name);
-            Pair<Integer, String> path = recursiveGetAPath(entry.getKey().getParent(), components);
+            Pair<Integer, String> path = recursiveGetAPath(AVMNodeUnwrapper.Unwrap(entry.getKey().getParent()), components);
             if (path != null)
             {
                 return path;

@@ -59,7 +59,7 @@
       <version column="version" name="version" type="long" />
    </class>
 
-   <query name="qname.GetNamespaceByUri" flush-mode="never" cacheable="false">
+   <query name="qname.GetNamespaceByUri" cacheable="false">
       select
          namespace
       from
@@ -68,7 +68,7 @@
          namespace.uri = :namespaceUri
    </query>
 
-   <query name="qname.GetQNameByUriAndLocalName" flush-mode="never" cacheable="false">
+   <query name="qname.GetQNameByUriAndLocalName" cacheable="false">
       select
          qname
       from

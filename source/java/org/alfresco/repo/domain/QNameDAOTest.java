@@ -200,8 +200,8 @@ public class QNameDAOTest extends TestCase
         readyLatch.await(5, TimeUnit.SECONDS);
         // Let the threads go
         startLatch.countDown();
-        // Wait for them all to be done (within limits)
-        doneLatch.await(threadCount, TimeUnit.SECONDS);
+        // Wait for them all to be done (within limit of 10 seconds per thread)
+        doneLatch.await(threadCount * 10, TimeUnit.SECONDS);
         if (doneLatch.getCount() > 0)
         {
             fail("Still waiting for threads to finish");

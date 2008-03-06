@@ -35,6 +35,8 @@ import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -48,6 +50,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameDAO
 {
+    private static Log logger = LogFactory.getLog(HibernateQNameDAOImpl.class);
+    
     private static final String QUERY_GET_NS_BY_URI = "qname.GetNamespaceByUri";
     private static final String QUERY_GET_QNAME_BY_URI_AND_LOCALNAME = "qname.GetQNameByUriAndLocalName";
 
@@ -98,6 +102,10 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
 
     public NamespaceEntity newNamespaceEntity(String namespaceUri)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Persisting Namespace: " + namespaceUri);
+        }
         NamespaceEntity namespace = new NamespaceEntityImpl();
         namespace.setUri(namespaceUri);
         // Persist
@@ -186,6 +194,10 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
 
     public QNameEntity newQNameEntity(QName qname)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Persisting QName: " + qname);
+        }
         final String namespaceUri = qname.getNamespaceURI();
         final String localName = qname.getLocalName();
         NamespaceEntity namespace = getNamespaceEntity(namespaceUri);

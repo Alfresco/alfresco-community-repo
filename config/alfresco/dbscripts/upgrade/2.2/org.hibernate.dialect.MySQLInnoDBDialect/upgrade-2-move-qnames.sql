@@ -79,35 +79,35 @@ CREATE INDEX tidx_tqn_ln ON t_qnames (localname);
 -- Populate the table with all known static QNames
 INSERT INTO t_qnames (qname)
 (
-   SELECT type_qname FROM alf_node
+   SELECT DISTINCT type_qname FROM alf_node
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT qname FROM alf_node_aspects
+   SELECT DISTINCT qname FROM alf_node_aspects
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT qname FROM alf_node_properties
+   SELECT DISTINCT qname FROM alf_node_properties
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT name FROM avm_aspects_new
+   SELECT DISTINCT name FROM avm_aspects_new
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT qname FROM avm_node_properties_new
+   SELECT DISTINCT qname FROM avm_node_properties_new
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT qname FROM avm_store_properties
+   SELECT DISTINCT qname FROM avm_store_properties
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT type_qname FROM alf_node_assoc
+   SELECT DISTINCT type_qname FROM alf_node_assoc
 );
 INSERT INTO t_qnames (qname)
 (
-   SELECT type_qname FROM alf_child_assoc
+   SELECT DISTINCT type_qname FROM alf_child_assoc
 );
 -- Extract the namespace and localnames from the QNames
 UPDATE t_qnames SET namespace = SUBSTR(SUBSTRING_INDEX(qname, '}', 1), 2);
@@ -159,6 +159,8 @@ ALTER TABLE alf_node MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER uuid;
 
 --
 -- DATA REPLACEMENT: alf_node_aspects.qname
+-- Due to the the potentially-missing primary key on the original table, it is
+-- possible to have duplicates.  These are removed.
 --
 ALTER TABLE alf_node_aspects DROP PRIMARY KEY; -- (optional)
 ALTER TABLE alf_node_aspects ADD COLUMN qname_id BIGINT NULL AFTER node_id;
@@ -171,6 +173,33 @@ UPDATE alf_node_aspects na set na.qname_id =
 );
 ALTER TABLE alf_node_aspects DROP COLUMN qname;
 ALTER TABLE alf_node_aspects MODIFY COLUMN qname_id BIGINT NOT NULL AFTER node_id;
+CREATE TABLE t_dup_aspects
+(
+   node_id BIGINT NOT NULL,
+   qname_id BIGINT NOT NULL
+);
+INSERT INTO t_dup_aspects (node_id, qname_id)
+(
+   SELECT
+      node_id, qname_id
+   FROM
+      alf_node_aspects
+   GROUP BY
+      node_id, qname_id
+   HAVING
+      count(*) > 1
+);
+DELETE FROM alf_node_aspects na
+   USING alf_node_aspects na 
+   JOIN t_dup_aspects t ON (t.node_id = na.node_id AND t.qname_id = na.qname_id);
+INSERT INTO alf_node_aspects (node_id, qname_id)
+(
+   SELECT
+      node_id, qname_id
+   FROM
+      t_dup_aspects
+);
+DROP TABLE t_dup_aspects;
 ALTER TABLE alf_node_aspects ADD PRIMARY KEY (node_id, qname_id);
 
 --

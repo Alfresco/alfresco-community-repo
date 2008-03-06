@@ -428,6 +428,13 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -589,6 +596,13 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
         }
     }
 
@@ -742,6 +756,13 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
         }
 
     }
@@ -1622,6 +1643,8 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName+"-a-");
+            
         }
     }
 
@@ -1988,6 +2011,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName+"-a-");
         }
     }
 
@@ -2306,6 +2330,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName+"-a-");
         }
     }
 
@@ -2383,6 +2408,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName+"-a-");
         }
     }
 }

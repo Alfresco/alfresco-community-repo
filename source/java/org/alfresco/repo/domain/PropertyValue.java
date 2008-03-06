@@ -771,6 +771,14 @@ public class PropertyValue implements Cloneable, Serializable
         return actualType == null ? null : actualType.getOrdinalNumber();
     }
 
+    /**
+     * @return          Returns the actual type's String representation
+     */
+    public String getActualTypeString()
+    {
+        return actualType == null ? null : actualType.toString();
+    }
+
     public void setActualType(Integer actualType)
     {
         ValueType type = PropertyValue.valueTypesByOrdinalNumber.get(actualType);

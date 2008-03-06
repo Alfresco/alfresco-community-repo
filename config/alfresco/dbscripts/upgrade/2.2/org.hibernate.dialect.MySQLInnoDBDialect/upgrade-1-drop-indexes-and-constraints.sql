@@ -21,29 +21,29 @@ ALTER TABLE alf_acl_member DROP INDEX fk_alf_aclm_ace, DROP FOREIGN KEY fk_alf_a
 
 ALTER TABLE alf_attributes DROP INDEX fk_attributes_n_acl, DROP FOREIGN KEY fk_attributes_n_acl;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_woy_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_woy_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_date_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_date_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_y_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_y_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_q_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_q_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_m_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_m_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_dow_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_dow_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_doy_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_doy_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_dom_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_dom_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_hy_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_hy_idx;  -- (optional)
 
-ALTER TABLE alf_audit_date DROP INDEX adt_wom_idx;
+ALTER TABLE alf_audit_date DROP INDEX adt_wom_idx;  -- (optional)
 
-ALTER TABLE alf_audit_fact DROP INDEX adt_user_idx;
+ALTER TABLE alf_audit_fact DROP INDEX adt_user_idx;  -- (optional)
 
-ALTER TABLE alf_audit_fact DROP INDEX adt_store_idx;
+ALTER TABLE alf_audit_fact DROP INDEX adt_store_idx;  -- (optional)
 
 ALTER TABLE alf_audit_fact DROP INDEX FKEAD18174A0F9B8D9, DROP FOREIGN KEY FKEAD18174A0F9B8D9;
 
@@ -51,11 +51,11 @@ ALTER TABLE alf_audit_fact DROP INDEX FKEAD1817484342E39, DROP FOREIGN KEY FKEAD
 
 ALTER TABLE alf_audit_fact DROP INDEX FKEAD18174F524CFD7, DROP FOREIGN KEY FKEAD18174F524CFD7;
 
-ALTER TABLE alf_audit_source DROP INDEX app_source_app_idx;
+ALTER TABLE alf_audit_source DROP INDEX app_source_app_idx;  -- (optional)
 
-ALTER TABLE alf_audit_source DROP INDEX app_source_ser_idx;
+ALTER TABLE alf_audit_source DROP INDEX app_source_ser_idx;  -- (optional)
 
-ALTER TABLE alf_audit_source DROP INDEX app_source_met_idx;
+ALTER TABLE alf_audit_source DROP INDEX app_source_met_idx;  -- (optional)
 
 ALTER TABLE alf_child_assoc DROP INDEX FKFFC5468E8E50E582, DROP FOREIGN KEY FKFFC5468E8E50E582;
 
@@ -96,45 +96,45 @@ ALTER TABLE alf_transaction DROP INDEX idx_commit_time_ms; -- (optional)
 
 ALTER TABLE alf_transaction DROP INDEX FKB8761A3A9AE340B7, DROP FOREIGN KEY FKB8761A3A9AE340B7;
 
-ALTER TABLE avm_aspects DROP INDEX fk_avm_asp_node, DROP FOREIGN KEY fk_avm_asp_node;
+ALTER TABLE avm_aspects DROP INDEX fk_avm_asp_node, DROP FOREIGN KEY fk_avm_asp_node; --(optional)
 
 ALTER TABLE avm_aspects_new DROP INDEX FKD3FD9F95EDCD4A96, DROP FOREIGN KEY FKD3FD9F95EDCD4A96; -- (optional)
 
-ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_child, DROP FOREIGN KEY fk_avm_ce_child;
+ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_child, DROP FOREIGN KEY fk_avm_ce_child; --(optional)
 
-ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_parent, DROP FOREIGN KEY fk_avm_ce_parent;
+ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_parent, DROP FOREIGN KEY fk_avm_ce_parent; --(optional)
 
-ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_desc, DROP FOREIGN KEY fk_avm_hl_desc;
+ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_desc, DROP FOREIGN KEY fk_avm_hl_desc; --(optional)
 
-ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_ancestor, DROP FOREIGN KEY fk_avm_hl_ancestor;
+ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_ancestor, DROP FOREIGN KEY fk_avm_hl_ancestor; --(optional)
 
-ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_to, DROP FOREIGN KEY fk_avm_ml_to;
+ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_to, DROP FOREIGN KEY fk_avm_ml_to; --(optional)
 
-ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_from, DROP FOREIGN KEY fk_avm_ml_from;
+ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_from, DROP FOREIGN KEY fk_avm_ml_from; --(optional)
 
-ALTER TABLE avm_node_properties DROP INDEX idx_avm_np_name;
+ALTER TABLE avm_node_properties DROP INDEX idx_avm_np_name; --(optional)
 
-ALTER TABLE avm_node_properties DROP INDEX fk_avm_np_node, DROP FOREIGN KEY fk_avm_np_node;
+ALTER TABLE avm_node_properties DROP INDEX fk_avm_np_node, DROP FOREIGN KEY fk_avm_np_node; --(optional)
 
 ALTER TABLE avm_node_properties_new DROP INDEX FK44A37C8A6BD529F3, DROP FOREIGN KEY FK44A37C8A6BD529F3; -- (optional)
 
-ALTER TABLE avm_nodes DROP INDEX fk_avm_n_acl, DROP FOREIGN KEY fk_avm_n_acl;
+ALTER TABLE avm_nodes DROP INDEX fk_avm_n_acl, DROP FOREIGN KEY fk_avm_n_acl; --(optional)
 
-ALTER TABLE avm_nodes DROP INDEX fk_avm_n_store, DROP FOREIGN KEY fk_avm_n_store;
+ALTER TABLE avm_nodes DROP INDEX fk_avm_n_store, DROP FOREIGN KEY fk_avm_n_store; --(optional)
 
-ALTER TABLE avm_store_properties DROP INDEX idx_avm_sp_name;
+ALTER TABLE avm_store_properties DROP INDEX idx_avm_sp_name; --(optional)
 
-ALTER TABLE avm_store_properties DROP INDEX fk_avm_sp_store, DROP FOREIGN KEY fk_avm_sp_store;
+ALTER TABLE avm_store_properties DROP INDEX fk_avm_sp_store, DROP FOREIGN KEY fk_avm_sp_store; --(optional)
 
-ALTER TABLE avm_stores DROP INDEX fk_avm_s_root, DROP FOREIGN KEY fk_avm_s_root;
+ALTER TABLE avm_stores DROP INDEX fk_avm_s_root, DROP FOREIGN KEY fk_avm_s_root; --(optional)
 
 ALTER TABLE avm_version_layered_node_entry DROP INDEX FK182E672DEB9D70C, DROP FOREIGN KEY FK182E672DEB9D70C; -- (optional)
 
-ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_version;
+ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_version; --(optional)
 
-ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_root, DROP FOREIGN KEY fk_avm_vr_root;
+ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_root, DROP FOREIGN KEY fk_avm_vr_root; --(optional)
 
-ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_store, DROP FOREIGN KEY fk_avm_vr_store;
+ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_store, DROP FOREIGN KEY fk_avm_vr_store; --(optional)
 
 --
 -- Record script finish

@@ -90,8 +90,13 @@ public class ClasspathScriptLocation implements ScriptLocation
         
         return reader;
 	}
-	
-	@Override
+    
+	public boolean isSecure()
+    {
+        return true;
+    }
+
+    @Override
     public boolean equals(Object obj)
     {
         if (obj == this)

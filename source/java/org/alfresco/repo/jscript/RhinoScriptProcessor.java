@@ -52,6 +52,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
@@ -112,7 +113,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             FileCopyUtils.copy(location.getInputStream(), os);  // both streams are closed
             byte[] bytes = os.toByteArray();
             // create the script string from the byte[]
-            return executeScriptImpl(resolveScriptImports(new String(bytes)), model);
+            return executeScriptImpl(resolveScriptImports(new String(bytes)), model, location.isSecure());
         }
         catch (Throwable err)
         {
@@ -142,7 +143,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 throw new AlfrescoRuntimeException("Script Node content not found: " + nodeRef);
             }
             
-            return executeScriptImpl(resolveScriptImports(cr.getContentString()), model);
+            return executeScriptImpl(resolveScriptImports(cr.getContentString()), model, false);
         }
         catch (Throwable err)
         {
@@ -166,7 +167,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             FileCopyUtils.copy(stream, os);  // both streams are closed
             byte[] bytes = os.toByteArray();
             
-            return executeScriptImpl(resolveScriptImports(new String(bytes, "UTF-8")), model);
+            return executeScriptImpl(resolveScriptImports(new String(bytes, "UTF-8")), model, true);
         }
         catch (Throwable err)
         {
@@ -181,7 +182,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     {
         try
         {
-            return executeScriptImpl(resolveScriptImports(script), model);
+            return executeScriptImpl(resolveScriptImports(script), model, true);
         }
         catch (Throwable err)
         {
@@ -455,12 +456,13 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * 
      * @param script        The script to execute.
      * @param model         Data model containing objects to be added to the root scope.
+     * @param secure        True if the script is considered secure and may access java.* libs directly
      * 
      * @return result of the script execution, can be null.
      * 
      * @throws AlfrescoRuntimeException
      */
-    private Object executeScriptImpl(String script, Map<String, Object> origModel)
+    private Object executeScriptImpl(String script, Map<String, Object> origModel, boolean secure)
         throws AlfrescoRuntimeException
     {
         long startTime = 0;
@@ -479,9 +481,25 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // The easiest way to embed Rhino is just to create a new scope this way whenever
             // you need one. However, initStandardObjects is an expensive method to call and it
             // allocates a fair amount of memory.
-            Scriptable scope = cx.initStandardObjects();
             cx.setWrapFactory(wrapFactory);
-
+            Scriptable scope;
+            if (!secure)
+            {
+                scope = cx.initStandardObjects();
+                // remove security issue related objects - this ensures the script may not access
+                // unsecure java.* libraries or import any other classes for direct access - only
+                // the configured root host objects will be available to the script writer
+                scope.delete("Packages");
+                scope.delete("getClass");
+                scope.delete("java");
+            }
+            else
+            {
+                // allow access to all libraries and objects, including the importer
+                // @see http://www.mozilla.org/rhino/ScriptingJava.html
+                scope = new ImporterTopLevel(cx);
+            }
+            
             // there's always a model, if only to hold the util objects
             if (model == null)
             {

@@ -48,4 +48,13 @@ public interface ScriptLocation
 	 * @return	the reader
 	 */
 	Reader getReader();
+    
+    /**
+     * Returns true if the script location is considered secure - i.e. on the repository classpath.
+     * Secure scripts may access java.* libraries and instantiate pure Java objects directly. Unsecure
+     * scripts only have access to pre-configure host objects and cannot access java.* libs.
+     * 
+     * @return true if the script location is considered secure
+     */
+    boolean isSecure();
 }

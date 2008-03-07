@@ -44,7 +44,9 @@
    
    function checkButtonState()
    {
-      if (document.getElementById("dialog:dialog-body:name").value.length == 0 )
+      if (document.getElementById("dialog:dialog-body:targetStore").options.length == 0 ||
+          document.getElementById("dialog:dialog-body:name").value.length == 0 ||
+          document.getElementById("dialog:dialog-body:targetPath").value.length == 0)
       {
          document.getElementById("dialog:finish-button").disabled = true;
       }
@@ -111,15 +113,49 @@
       </td>
    </tr>
    <tr>
-      <td></td>
-      <td>
+      <td colspan="3"></td>
+   </tr>
+   <tr>
+      <td colspan="3" class="wizardSectionHeading">
          </f:verbatim>
-      	<h:outputText value="#{msg.description}:" />
+         <h:outputText value="#{msg.target}" />
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td align="middle">
+         </f:verbatim>
+         <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
          <f:verbatim>
       </td>
       <td>
          </f:verbatim>
-         <h:inputText id="description" value="#{DialogManager.bean.description}" size="35" maxlength="1024" />
+         <h:outputText value="#{msg.web_project}:" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:selectOneMenu id="targetStore" value="#{DialogManager.bean.targetStore}">
+            <f:selectItems value="#{DialogManager.bean.webProjects}" />
+         </h:selectOneMenu>
+         <f:verbatim>
+      </td>
+   </tr>
+   <tr>
+      <td align="middle">
+         </f:verbatim>
+         <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:outputText value="#{msg.target_path}:" />
+         <f:verbatim>
+      </td>
+      <td>
+         </f:verbatim>
+         <h:inputText id="targetPath" value="#{DialogManager.bean.targetPath}" size="35" maxlength="1024" 
+                      onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />
          <f:verbatim>
       </td>
    </tr>

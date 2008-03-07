@@ -140,7 +140,9 @@
       </td>
       <td>
          </f:verbatim>
-         <h:inputText id="webapp" value="#{WizardManager.bean.webapp}" size="45" maxlength="256" disabled="true" />
+         <h:selectOneMenu id="webapp" value="#{WizardManager.bean.webapp}">
+            <f:selectItems value="#{WizardManager.bean.webappsList}" />
+         </h:selectOneMenu>
          <f:verbatim>
       </td>
    </tr>

@@ -120,7 +120,7 @@
                                  <a:actionLink value="#{msg.sandbox_preview}" image="/images/icons/preview_website.gif" href="#{AVMBrowseBean.sandboxPreviewUrl}" target="new" id="act-prev" />
                               </td>
                               <r:permissionEvaluator value="#{AVMBrowseBean.currentPathNode}" allow="CreateChildren" id="eval1">
-                              <td style="padding-left:4px;white-space:nowrap" width=120>
+                              <td style="padding-left:4px;white-space:nowrap" width="140">
                                  <%-- Create actions menu --%>
                                  <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <r:actions id="acts_create" value="avm_create_menu" context="#{AVMBrowseBean.currentPathNode}" />
@@ -269,6 +269,14 @@
                               <h:outputText id="col7-txt" value="#{r.modified}">
                                  <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
                               </h:outputText>
+                           </a:column>
+                           
+                           <%-- Type column --%>
+                           <a:column id="col8" style="text-align:left">
+                              <f:facet name="header">
+                                 <a:sortLink id="col8-sort" label="#{msg.type}" value="folderType" styleClass="header"/>
+                              </f:facet>
+                              <h:outputText id="col8-text" value="#{r.folderType}"></h:outputText>
                            </a:column>
                            
                            <%-- Folder Actions column --%>

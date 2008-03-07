@@ -41,7 +41,7 @@
                   </#if>
                </div>
                <div class="webProjectFiles"> <#-- marker class for dynamic click script -->
-                  <#assign moditems = avm.getModifiedItems(storeId, username, "ROOT")>
+                  <#assign moditems = avm.getModifiedItems(storeId, username, wp.properties["wca:defaultwebapp"])>
                   <div class="fileTitleRow">My Modified Items</div>
                   <div class="fileResources">
                   <#if moditems?size != 0>

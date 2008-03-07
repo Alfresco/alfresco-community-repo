@@ -167,6 +167,10 @@
          <dialog name="deleteAvmFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderBrowseDialog"
                  icon="/images/icons/delete_large.gif" title-id="delete_folder" 
                  description-id="delete_avm_folder_info" />
+                 
+         <dialog name="deleteLayeredFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteLayeredFolderBrowseDialog"
+                 icon="/images/icons/delete_large.gif" title-id="delete_layered_folder" 
+                 description-id="delete_layered_folder_info" />
 
          <dialog name="promptForWebForm" page="/jsp/wcm/prompt-for-web-form.jsp" managed-bean="PromptForWebFormDialog"
                  icon="/images/icons/details_large.gif" title-id="prompt_for_web_form" 
@@ -175,6 +179,10 @@
          <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
                  icon="/images/icons/create_space_large.gif" title-id="create_folder" 
                  description-id="create_avm_folder_info" />
+                 
+         <dialog name="createLayeredFolder" page="/jsp/wcm/create-layered-folder-dialog.jsp" 
+                 managed-bean="CreateLayeredFolderDialog" icon="/images/icons/create_space_large.gif" 
+                 title-id="create_layered_folder" description-id="create_layered_folder_info" />
          
          <dialog name="editAvmFile" page="/jsp/wcm/edit-file.jsp" 
                  managed-bean="EditAvmFileDialog" icon="/images/icons/edit_large.gif"

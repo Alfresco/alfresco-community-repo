@@ -67,7 +67,7 @@
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowLayeredFolderEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
             <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
@@ -252,10 +252,10 @@
          
          <!-- Cut a file or folder to the clipboard -->
          <action id="cut_avm_node">
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
             <permissions>
                <permission allow="true">Delete</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowLayeredFolderEvaluator</evaluator>
             <label-id>cut</label-id>
             <image>/images/icons/cut.gif</image>
             <action-listener>#{ClipboardBean.cutNode}</action-listener>
@@ -270,6 +270,7 @@
             <permissions>
                <permission allow="true">Read</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMLayeredFolderEvaluator</evaluator>
             <label-id>copy</label-id>
             <image>/images/icons/copy.gif</image>
             <action-listener>#{ClipboardBean.copyNode}</action-listener>
@@ -288,6 +289,32 @@
             <image>/images/icons/delete_deploy_reports.gif</image>
             <action>dialog:deleteDeploymentReports</action>
             <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Create Layered Folder -->
+         <action id="create_layered_folder">
+            <permissions>
+               <permission allow="true">CreateChildren</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMStagingOnlyEvaluator</evaluator>
+            <label-id>create_layered_folder</label-id>
+            <image>/images/icons/create_space.gif</image>
+            <action>dialog:createLayeredFolder</action>
+         </action>
+         
+         <!-- Delete Layered Folder -->
+         <action id="delete_layered_folder">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMDeleteLayeredFolderEvaluator</evaluator>
+            <label-id>delete_layered_folder</label-id>
+            <image>/images/icons/delete.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:deleteAvmFolderBrowse</action>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -313,6 +340,7 @@
             <action idref="copy_avm_node" />
             <action idref="folder_details" />
             <action idref="delete_folder_browse" />
+            <action idref="delete_layered_folder" />
          </action-group>
          
          <!-- Actions for a file in Modified Files list -->
@@ -353,6 +381,7 @@
             <action idref="create_avm_content" />
             <action idref="create_folder" />
             <action idref="bulk_import" />
+            <action idref="create_layered_folder" />
          </action-group>
          
          <!-- Actions for the More Actions menu in the sandbox browse screen -->
@@ -376,6 +405,7 @@
             <action idref="cut_avm_node" />
             <action idref="copy_avm_node" />
             <action idref="delete_folder_browse" />
+            <action idref="delete_layered_folder" />
          </action-group>
          
          <!-- Actions for the Web Project Details action menu -->

@@ -3272,6 +3272,10 @@
          <property-name>formsService</property-name>
          <value>#{FormsService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -3544,6 +3548,23 @@
          <value>#{AVMBrowseBean}</value>
       </managed-property>
    </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Delete Layered then browse AVM Folder Dialog
+      </description>
+      <managed-bean-name>DeleteLayeredFolderBrowseDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.DeleteLayeredFolderBrowseDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
 
    <managed-bean>
       <description>
@@ -3576,6 +3597,27 @@
       </description>
       <managed-bean-name>CreateFolderDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.wcm.CreateFolderDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Create Layered Folder Dialog
+      </description>
+      <managed-bean-name>CreateLayeredFolderDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CreateLayeredFolderDialog</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>avmService</property-name>

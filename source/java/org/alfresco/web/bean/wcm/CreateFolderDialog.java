@@ -56,6 +56,7 @@ public class CreateFolderDialog extends BaseDialogBean
    protected AVMBrowseBean avmBrowseBean;
    
    protected String name;
+   protected String title;
    protected String description;
    
    
@@ -110,6 +111,22 @@ public class CreateFolderDialog extends BaseDialogBean
    {
       this.description = description;
    }
+   
+   /**
+    * @return Returns the title.
+    */
+   public String getTitle()
+   {
+      return this.title;
+   }
+
+   /**
+    * @param title The title to set.
+    */
+   public void setTitle(String title)
+   {
+      this.title = title;
+   }
 
    /**
     * @return Returns the name.
@@ -143,10 +160,15 @@ public class CreateFolderDialog extends BaseDialogBean
       String path = parent + '/' + this.name;
       NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
       this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
+      if (this.title != null && this.title.length() != 0)
+      {
+         this.getAvmService().setNodeProperty(path, ContentModel.PROP_TITLE, 
+                  new PropertyValue(DataTypeDefinition.TEXT, this.title));
+      }
       if (this.description != null && this.description.length() != 0)
       {
-         this.getAvmService().setNodeProperty(path, ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, this.description));
-         // this.nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
+         this.getAvmService().setNodeProperty(path, ContentModel.PROP_DESCRIPTION, 
+                  new PropertyValue(DataTypeDefinition.TEXT, this.description));
       }
       
       return outcome;

@@ -47,6 +47,7 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
@@ -1123,6 +1124,18 @@ public class AVMBrowseBean implements IContextListener
       if (avmRef.isDirectory())
       {
          node.getProperties().put("smallIcon", BrowseBean.SPACE_SMALL_DEFAULT);
+         
+         String type = "";
+         if (avmRef.getType() == AVMNodeType.LAYERED_DIRECTORY && avmRef.isPrimary())
+         {
+            type = Application.getMessage(FacesContext.getCurrentInstance(), "shared_folder");
+         }
+         else
+         {
+            type = Application.getMessage(FacesContext.getCurrentInstance(), "folder");
+         }
+         node.getProperties().put("folderType", type);
+      
          this.folders.add(node);
       }
       else

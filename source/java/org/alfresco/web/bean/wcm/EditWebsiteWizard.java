@@ -24,13 +24,16 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -43,11 +46,13 @@ import org.alfresco.web.app.AlfrescoNavigationHandler;
  */
 public class EditWebsiteWizard extends CreateWebsiteWizard
 {
+   private static final long serialVersionUID = -4856350244207566218L;
+   
+   protected AVMBrowseBean avmBrowseBean;
+
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
-   private static final long serialVersionUID = -4856350244207566218L;
-
    /**
     * Initialises the wizard
     */
@@ -64,6 +69,8 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
          throw new IllegalArgumentException("Edit Web Project wizard requires action node context.");
       }
       
+      this.webappsList = null;
+      
       loadWebProjectModel(websiteRef, true, false);
    }
    
@@ -72,6 +79,29 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    {
       // always allow Finish as we are editing existing settings
       return false;
+   }
+   
+   /**
+    * @return List of SelectItem objects representing the webapp folders present in the project
+    */
+   @Override
+   public List<SelectItem> getWebappsList()
+   {
+      if (this.webappsList == null)
+      {
+         // get directory listing to show webapps that can be selected
+         Map<String, AVMNodeDescriptor> dirs = this.getAvmService().getDirectoryListing(
+                  -1, AVMUtil.buildSandboxRootPath(this.dnsName));
+         
+         // create list of webapps
+         this.webappsList = new ArrayList<SelectItem>(dirs.size());
+         for (String dirName : dirs.keySet())
+         {
+            this.webappsList.add(new SelectItem(dirName, dirName));
+         }
+      }
+      
+      return this.webappsList;
    }
 
    /**
@@ -92,16 +122,13 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       // the existing methods can be used to apply the modified and previous settings from scratch
       clearWebProjectModel(nodeRef);
       
-      // change/create the root webapp name for the website
+      // change the root webapp name for the website
       if (this.webapp != null && this.webapp.length() != 0)
       {
-         String stagingStore = AVMUtil.buildStagingStoreName(this.dnsName);
-         String webappPath = AVMUtil.buildStoreWebappPath(stagingStore, this.webapp);
-         if (getAvmService().lookup(-1, webappPath) == null)
-         {
-            getAvmService().createDirectory(AVMUtil.buildSandboxRootPath(stagingStore), this.webapp);
-         }
          getNodeService().setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, this.webapp);
+         
+         // inform the AVMBrowseBean of the potential change
+         this.avmBrowseBean.setWebapp(this.webapp);
       }
       
       // TODO: allow change of dns name - via store rename functionality
@@ -111,6 +138,14 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       saveWebProjectModel(nodeRef);
       
       return AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
+   }
+   
+   /**
+    * @param avmBrowseBean The AVMBrowseBean to set.
+    */
+   public void setAvmBrowseBean(AVMBrowseBean avmBrowseBean)
+   {
+      this.avmBrowseBean = avmBrowseBean;
    }
    
    /**

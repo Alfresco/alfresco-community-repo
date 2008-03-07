@@ -36,6 +36,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -116,6 +117,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected String createFrom = null;
    protected String[] sourceWebProject = null;
    protected ExpiringValueCache<List<UIListItem>> webProjectsList;
+   protected List<SelectItem> webappsList;
    protected boolean isSource;
    protected boolean showAllSourceProjects;
    
@@ -939,6 +941,21 @@ public class CreateWebsiteWizard extends BaseWizardBean
    public boolean getShowAllSourceProjects()
    {
       return this.showAllSourceProjects;
+   }
+   
+   /**
+    * @return List of SelectItem objects representing the webapp folders present in the project
+    */
+   public List<SelectItem> getWebappsList()
+   {
+      if (this.webappsList == null)
+      {
+         this.webappsList = new ArrayList<SelectItem>(1);
+         
+         this.webappsList.add(new SelectItem(WEBAPP_DEFAULT, WEBAPP_DEFAULT));
+      }
+      
+      return this.webappsList;
    }
    
    /**

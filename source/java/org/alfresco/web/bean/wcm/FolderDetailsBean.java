@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.repo.avm.AVMNodeType;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 
@@ -65,6 +67,23 @@ public class FolderDetailsBean extends AVMDetailsBean
    public String getPreviewUrl()
    {
       return AVMUtil.buildAssetUrl(getAvmNode().getPath());
+   }
+   
+   /**
+    * @return true if the folder is a layered folder with a primary indirection
+    */
+   public boolean getIsPrimaryLayeredFolder()
+   {
+      boolean result = false;
+      
+      String path = getAvmNode().getPath();
+      AVMNodeDescriptor nodeDesc = getAvmService().lookup(-1, path);
+      if (nodeDesc != null)
+      {
+         result = (nodeDesc.getType() == AVMNodeType.LAYERED_DIRECTORY && nodeDesc.isPrimary());
+      }
+      
+      return result;
    }
 
    /**

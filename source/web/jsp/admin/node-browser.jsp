@@ -192,6 +192,27 @@
               <h:outputText value="#{permission.accessStatus}"/>
           </h:column>
       </h:dataTable>
+      
+      <h:dataTable id="storePermissionMasks" border="1" value="#{AdminNodeBrowseBean.storePermissionMasks}" var="permission" styleClass="nodeBrowserTable">
+          <h:column>
+              <f:facet name="header">
+                  <h:outputText value="Store Permission"/>
+              </f:facet>
+              <h:outputText value="#{permission.permission}"/>
+          </h:column>
+          <h:column>
+              <f:facet name="header">
+                  <h:outputText value="To Authority"/>
+              </f:facet>
+              <h:outputText value="#{permission.authority}"/>
+          </h:column>
+          <h:column>
+              <f:facet name="header">
+                  <h:outputText value="Access"/>
+              </f:facet>
+              <h:outputText value="#{permission.accessStatus}"/>
+          </h:column>
+      </h:dataTable>
    
       <br/>
       <h:outputText styleClass="mainTitle" value="Children"/>

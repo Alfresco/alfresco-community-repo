@@ -131,11 +131,12 @@ public class AVMWorkflowUtil extends WorkflowUtil
       
       avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(DataTypeDefinition.BOOLEAN, true));
 
-      // apply global permission to workflow package
-      // TODO: Determine appropriate permissions
-      final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      final PermissionService permissionService = services.getPermissionService();
-      permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+      // NOTE: WCM-1019: As permissions are now implemented for AVM nodes we no longer need to set permisssions here
+      //                 as they will be inherited from the store the workflow store is layered over.
+      
+      //final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      //final PermissionService permissionService = services.getPermissionService();
+      //permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
       
       return packageNodeRef;
    }

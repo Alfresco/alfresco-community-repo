@@ -61,10 +61,8 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Repository;
 
-
 // TODO: DownloadServlet - use of request parameter for property name?
 // TODO: Anyway to switch content view url link / property value text?
-
 
 /**
  * Backing bean to support the Admin Node Browser
@@ -88,22 +86,24 @@ public class AdminNodeBrowseBean implements Serializable
 
     // query and results
     private String query = null;
-    private SearchResults searchResults = new SearchResults((List<NodeRef>)null);
-    
-    // stores and node
-    transient private DataModel stores = null;
+    private SearchResults searchResults = new SearchResults((List<NodeRef>) null);
+
     private NodeRef nodeRef = null;
     private QName nodeType = null;
     private Path primaryPath = null;
+    private Boolean inheritPermissions = null;
+
+    // stores and node
+    transient private DataModel stores = null;
     transient private DataModel parents = null;
     transient private DataModel aspects = null;
     transient private DataModel properties = null;
     transient private DataModel children = null;
     transient private DataModel assocs = null;
-    private Boolean inheritPermissions = null;
     transient private DataModel permissions = null;
+    transient private DataModel permissionMasks = null;
     transient private DataModel avmStoreProps = null;
-    
+
     // supporting repository services
     transient private NodeService nodeService;
     transient private DictionaryService dictionaryService;
@@ -111,15 +111,15 @@ public class AdminNodeBrowseBean implements Serializable
     transient private NamespaceService namespaceService;
     transient private PermissionService permissionService;
     transient private AVMService avmService;
-    
+
     /**
-     * @param nodeService  node service
+     * @param nodeService node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     private NodeService getNodeService()
     {
         if (nodeService == null)
@@ -130,13 +130,13 @@ public class AdminNodeBrowseBean implements Serializable
     }
 
     /**
-     * @param searchService  search service
+     * @param searchService search service
      */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     private SearchService getSearchService()
     {
         if (searchService == null)
@@ -145,15 +145,15 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return searchService;
     }
-    
+
     /**
-     * @param dictionaryService   dictionary service
+     * @param dictionaryService dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     private DictionaryService getDictionaryService()
     {
         if (dictionaryService == null)
@@ -162,15 +162,15 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return dictionaryService;
     }
-    
+
     /**
-     * @param namespaceService   namespace service
+     * @param namespaceService namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     private NamespaceService getNamespaceService()
     {
         if (namespaceService == null)
@@ -181,13 +181,13 @@ public class AdminNodeBrowseBean implements Serializable
     }
 
     /**
-     * @param permissionService   permission service
+     * @param permissionService permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     private PermissionService getPermissionService()
     {
         if (permissionService == null)
@@ -196,7 +196,7 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return permissionService;
     }
-    
+
     /**
      * @param avmService AVM service
      */
@@ -204,7 +204,7 @@ public class AdminNodeBrowseBean implements Serializable
     {
         this.avmService = avmService;
     }
-    
+
     private AVMService getAVMService()
     {
         if (avmService == null)
@@ -217,7 +217,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Gets the list of repository stores
      * 
-     * @return  stores
+     * @return stores
      */
     public DataModel getStores()
     {
@@ -228,11 +228,11 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return stores;
     }
-    
+
     /**
      * Gets the selected node reference
      * 
-     * @return  node reference  (defaults to system store root)
+     * @return node reference (defaults to system store root)
      */
     public NodeRef getNodeRef()
     {
@@ -246,7 +246,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Sets the selected node reference
      * 
-     * @param nodeRef  node reference
+     * @param nodeRef node reference
      */
     private void setNodeRef(NodeRef nodeRef)
     {
@@ -257,17 +257,18 @@ public class AdminNodeBrowseBean implements Serializable
         nodeType = null;
         parents = null;
         aspects = null;
-        properties = null;        
+        properties = null;
         children = null;
         assocs = null;
         inheritPermissions = null;
         permissions = null;
+        permissionMasks = null;
     }
-    
+
     /**
      * Gets the current node type
      * 
-     * @return  node type
+     * @return node type
      */
     public QName getNodeType()
     {
@@ -277,11 +278,11 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return nodeType;
     }
-    
+
     /**
      * Gets the current node primary path
      * 
-     * @return  primary path
+     * @return primary path
      */
     public String getPrimaryPath()
     {
@@ -295,20 +296,20 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Gets the current node primary parent reference
      * 
-     * @return  primary parent ref
+     * @return primary parent ref
      */
     public NodeRef getPrimaryParent()
     {
         getPrimaryPath();
         Path.Element element = primaryPath.last();
-        NodeRef parentRef = ((Path.ChildAssocElement)element).getRef().getParentRef();
+        NodeRef parentRef = ((Path.ChildAssocElement) element).getRef().getParentRef();
         return parentRef;
     }
 
     /**
      * Gets the current node aspects
      * 
-     * @return  node aspects
+     * @return node aspects
      */
     public DataModel getAspects()
     {
@@ -319,11 +320,11 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return aspects;
     }
-        
+
     /**
      * Gets the current node parents
      * 
-     * @return  node parents
+     * @return node parents
      */
     public DataModel getParents()
     {
@@ -332,13 +333,13 @@ public class AdminNodeBrowseBean implements Serializable
             List<ChildAssociationRef> parentRefs = getNodeService().getParentAssocs(getNodeRef());
             parents = new ListDataModel(parentRefs);
         }
-        return parents;        
+        return parents;
     }
-    
+
     /**
      * Gets the current node properties
      * 
-     * @return  properties
+     * @return properties
      */
     public DataModel getProperties()
     {
@@ -358,7 +359,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Gets whether the current node inherits its permissions from a parent node
      * 
-     * @return  true => inherits permissions
+     * @return true => inherits permissions
      */
     public boolean getInheritPermissions()
     {
@@ -368,11 +369,11 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return inheritPermissions.booleanValue();
     }
-    
+
     /**
      * Gets the current node permissions
      * 
-     * @return  the permissions
+     * @return the permissions
      */
     public DataModel getPermissions()
     {
@@ -393,11 +394,35 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return permissions;
     }
-    
+
+    /**
+     * Gets the current node permissions
+     * 
+     * @return the permissions
+     */
+    public DataModel getStorePermissionMasks()
+    {
+        if (permissionMasks == null)
+        {
+            if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            {
+                List<AccessPermission> nodePermissions = new ArrayList<AccessPermission>(getPermissionService().getAllSetPermissions(nodeRef.getStoreRef()));
+                permissionMasks = new ListDataModel(nodePermissions);
+            }
+            else
+            {
+                List<NoStoreMask> noReadPermissions = new ArrayList<NoStoreMask>(1);
+                noReadPermissions.add(new NoStoreMask());
+                permissionMasks = new ListDataModel(noReadPermissions);
+            }
+        }
+        return permissionMasks;
+    }
+
     /**
      * Gets the current node children
      * 
-     * @return  node children
+     * @return node children
      */
     public DataModel getChildren()
     {
@@ -412,7 +437,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Gets the current node associations
      * 
-     * @return  associations
+     * @return associations
      */
     public DataModel getAssocs()
     {
@@ -423,12 +448,12 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return assocs;
     }
-    
+
     public boolean getInAVMStore()
     {
         return nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM);
     }
-    
+
     public DataModel getAVMStoreProperties()
     {
         if (avmStoreProps == null)
@@ -437,32 +462,32 @@ public class AdminNodeBrowseBean implements Serializable
             String store = nodeRef.getStoreRef().getIdentifier();
             Map<QName, PropertyValue> props = getAVMService().getStoreProperties(store);
             List<Map<String, String>> storeProperties = new ArrayList<Map<String, String>>();
-            
+
             for (Map.Entry<QName, PropertyValue> property : props.entrySet())
             {
-               Map<String, String> map = new HashMap<String, String>(2);
-               map.put("name", property.getKey().toString());
-               map.put("type", property.getValue().getActualTypeString());
-               String val = property.getValue().getStringValue();
-               if (val == null)
-               {
-                  val = "null";
-               }
-               map.put("value", val);
-               
-               storeProperties.add(map);
+                Map<String, String> map = new HashMap<String, String>(2);
+                map.put("name", property.getKey().toString());
+                map.put("type", property.getValue().getActualTypeString());
+                String val = property.getValue().getStringValue();
+                if (val == null)
+                {
+                    val = "null";
+                }
+                map.put("value", val);
+
+                storeProperties.add(map);
             }
-            
+
             avmStoreProps = new ListDataModel(storeProperties);
         }
-       
+
         return avmStoreProps;
     }
 
     /**
      * Gets the current query language
      * 
-     * @return  query language 
+     * @return query language
      */
     public String getQueryLanguage()
     {
@@ -472,37 +497,37 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Sets the current query language
      * 
-     * @param queryLanguage  query language
+     * @param queryLanguage query language
      */
     public void setQueryLanguage(String queryLanguage)
     {
         this.queryLanguage = queryLanguage;
     }
-    
+
     /**
      * Gets the current query
      * 
-     * @return  query statement
+     * @return query statement
      */
     public String getQuery()
     {
         return query;
     }
-    
+
     /**
      * Set the current query
      * 
-     * @param query   query statement
+     * @param query query statement
      */
     public void setQuery(String query)
     {
         this.query = query;
     }
-    
+
     /**
      * Gets the list of available query languages
      * 
-     * @return  query languages
+     * @return query languages
      */
     public List getQueryLanguages()
     {
@@ -512,33 +537,33 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Gets the current search results
      * 
-     * @return  search results
+     * @return search results
      */
     public SearchResults getSearchResults()
     {
         return searchResults;
     }
-    
+
     /**
      * Action to select a store
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectStore()
     {
-        StoreRef storeRef = (StoreRef)getStores().getRowData();
+        StoreRef storeRef = (StoreRef) getStores().getRowData();
         NodeRef rootNode = getNodeService().getRootNode(storeRef);
         setNodeRef(rootNode);
-        
+
         this.avmStoreProps = null;
-        
+
         return "success";
     }
 
     /**
      * Action to select stores list
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectStores()
     {
@@ -549,7 +574,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Action to select primary path
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectPrimaryPath()
     {
@@ -557,26 +582,26 @@ public class AdminNodeBrowseBean implements Serializable
         setNodeRef(nodeRef);
         return "success";
     }
-    
+
     /**
      * Action to select primary parent
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectPrimaryParent()
     {
         setNodeRef(getPrimaryParent());
         return "success";
     }
-    
+
     /**
      * Action to select parent
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectParent()
     {
-        ChildAssociationRef assocRef = (ChildAssociationRef)getParents().getRowData();
+        ChildAssociationRef assocRef = (ChildAssociationRef) getParents().getRowData();
         NodeRef parentRef = assocRef.getParentRef();
         setNodeRef(parentRef);
         return "success";
@@ -585,11 +610,11 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Action to select association To node
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectToNode()
     {
-        AssociationRef assocRef = (AssociationRef)getAssocs().getRowData();
+        AssociationRef assocRef = (AssociationRef) getAssocs().getRowData();
         NodeRef targetRef = assocRef.getTargetRef();
         setNodeRef(targetRef);
         return "success";
@@ -598,38 +623,38 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Action to select node property
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectNodeProperty()
     {
-        Property property = (Property)getProperties().getRowData();
-        Property.Value value = (Property.Value)property.getValues().getRowData();
-        NodeRef nodeRef = (NodeRef)value.getValue();
+        Property property = (Property) getProperties().getRowData();
+        Property.Value value = (Property.Value) property.getValues().getRowData();
+        NodeRef nodeRef = (NodeRef) value.getValue();
         setNodeRef(nodeRef);
         return "success";
     }
-    
+
     /**
      * Action to select child
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectChild()
     {
-        ChildAssociationRef assocRef = (ChildAssociationRef)getChildren().getRowData();
+        ChildAssociationRef assocRef = (ChildAssociationRef) getChildren().getRowData();
         NodeRef childRef = assocRef.getChildRef();
         setNodeRef(childRef);
         return "success";
     }
-    
+
     /**
      * Action to select search result node
      * 
-     * @return  next action
+     * @return next action
      */
     public String selectResultNode()
     {
-        ChildAssociationRef assocRef = (ChildAssociationRef)searchResults.getRows().getRowData();
+        ChildAssociationRef assocRef = (ChildAssociationRef) searchResults.getRows().getRowData();
         NodeRef childRef = assocRef.getChildRef();
         setNodeRef(childRef);
         return "success";
@@ -638,7 +663,7 @@ public class AdminNodeBrowseBean implements Serializable
     /**
      * Action to submit search
      * 
-     * @return  next action
+     * @return next action
      */
     public String submitSearch()
     {
@@ -662,12 +687,12 @@ public class AdminNodeBrowseBean implements Serializable
                 searchResults = new SearchResults(nodes);
                 return "search";
             }
-            
+
             // perform search
             searchResults = new SearchResults(getSearchService().query(getNodeRef().getStoreRef(), queryLanguage, query));
             return "search";
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             FacesContext context = FacesContext.getCurrentInstance();
             FacesMessage message = new FacesMessage();
@@ -677,28 +702,32 @@ public class AdminNodeBrowseBean implements Serializable
             return "error";
         }
     }
-    
+
     /**
      * Property wrapper class
      */
     public class Property
     {
         private QName name;
+
         private boolean isCollection = false;
+
         private DataModel values;
+
         private String datatype;
+
         private String residual;
-    
+
         /**
          * Construct
          * 
-         * @param name  property name
-         * @param value  property values
+         * @param name property name
+         * @param value property values
          */
         public Property(QName name, Serializable value)
         {
             this.name = name;
-            
+
             PropertyDefinition propDef = getDictionaryService().getProperty(name);
             if (propDef != null)
             {
@@ -709,14 +738,14 @@ public class AdminNodeBrowseBean implements Serializable
             {
                 residual = "true";
             }
-            
+
             // handle multi/single values
             // TODO: perhaps this is not the most efficient way - lots of list creations
             List<Value> values = new ArrayList<Value>();
             if (value instanceof Collection)
             {
                 isCollection = true;
-                for (Serializable multiValue : (Collection<Serializable>)value)
+                for (Serializable multiValue : (Collection<Serializable>) value)
                 {
                     values.add(new Value(multiValue));
                 }
@@ -727,31 +756,31 @@ public class AdminNodeBrowseBean implements Serializable
             }
             this.values = new ListDataModel(values);
         }
-        
+
         /**
          * Gets the property name
          * 
-         * @return  name
+         * @return name
          */
         public QName getName()
         {
             return name;
         }
-        
+
         /**
          * Gets the property data type
          * 
-         * @return  data type
+         * @return data type
          */
         public String getDataType()
         {
             return datatype;
         }
-        
+
         /**
          * Gets the property value
          * 
-         * @return  value
+         * @return value
          */
         public DataModel getValues()
         {
@@ -761,34 +790,33 @@ public class AdminNodeBrowseBean implements Serializable
         /**
          * Determines whether the property is residual
          * 
-         * @return  true => property is not defined in dictionary
+         * @return true => property is not defined in dictionary
          */
         public String getResidual()
         {
             return residual;
         }
-        
+
         /**
          * Determines whether the property is of ANY type
          * 
-         * @return  true => is any
+         * @return true => is any
          */
         public boolean isAny()
         {
             return (datatype == null) ? false : datatype.equals(DataTypeDefinition.ANY.toString());
         }
-        
+
         /**
          * Determines whether the property is a collection
          * 
-         * @return  true => is collection
+         * @return true => is collection
          */
         public boolean isCollection()
         {
             return isCollection;
         }
-        
-        
+
         /**
          * Value wrapper
          */
@@ -799,27 +827,27 @@ public class AdminNodeBrowseBean implements Serializable
             /**
              * Construct
              * 
-             * @param value  value
+             * @param value value
              */
             public Value(Serializable value)
             {
                 this.value = value;
             }
-            
+
             /**
              * Gets the value
              * 
-             * @return  the value
+             * @return the value
              */
             public Serializable getValue()
             {
                 return value;
             }
-            
+
             /**
              * Gets the value datatype
              * 
-             * @return  the value datatype
+             * @return the value datatype
              */
             public String getDataType()
             {
@@ -837,11 +865,11 @@ public class AdminNodeBrowseBean implements Serializable
                 }
                 return datatype;
             }
-            
+
             /**
              * Gets the download url (for content properties)
              * 
-             * @return  url
+             * @return url
              */
             public String getUrl()
             {
@@ -850,33 +878,33 @@ public class AdminNodeBrowseBean implements Serializable
                 url += "?property=" + name;
                 return url;
             }
-            
+
             /**
              * Determines whether the value is content
              * 
-             * @return  true => is content
+             * @return true => is content
              */
             public boolean isContent()
             {
                 String datatype = getDataType();
                 return (datatype == null) ? false : datatype.equals(DataTypeDefinition.CONTENT.toString());
             }
-            
+
             /**
              * Determines whether the value is a node ref
              * 
-             * @return  true => is node ref
+             * @return true => is node ref
              */
             public boolean isNodeRef()
             {
                 String datatype = getDataType();
                 return (datatype == null) ? false : datatype.equals(DataTypeDefinition.NODE_REF.toString()) || datatype.equals(DataTypeDefinition.CATEGORY.toString());
             }
-            
+
             /**
              * Determines whether the value is null
              * 
-             * @return  true => value is null
+             * @return true => value is null
              */
             public boolean isNullValue()
             {
@@ -891,37 +919,57 @@ public class AdminNodeBrowseBean implements Serializable
     public static class NoReadPermissionGranted implements Serializable
     {
         private static final long serialVersionUID = -6256369557521402921L;
-        
+
         public String getPermission()
         {
             return PermissionService.READ_PERMISSIONS;
         }
-        
+
         public String getAuthority()
         {
             return "[Current Authority]";
         }
-        
+
         public String getAccessStatus()
         {
             return "Not Granted";
         }
     }
-    
+
+    public static class NoStoreMask implements Serializable
+    {
+        private static final long serialVersionUID = -6256369557521402921L;
+
+        public String getPermission()
+        {
+            return "All <No Mask>";
+        }
+
+        public String getAuthority()
+        {
+            return "All";
+        }
+
+        public String getAccessStatus()
+        {
+            return "Allowed";
+        }
+    }
+
     /**
      * Wrapper class for Search Results
      */
     public class SearchResults implements Serializable
     {
         private static final long serialVersionUID = 7402906720039176001L;
-        
+
         private int length = 0;
         private SerialListDataModel rows;
 
         /**
          * Construct
          * 
-         * @param resultSet  query result set
+         * @param resultSet query result set
          */
         public SearchResults(ResultSet resultSet)
         {
@@ -932,11 +980,11 @@ public class AdminNodeBrowseBean implements Serializable
                 length = resultSet.length();
             }
         }
-        
+
         /**
          * Construct
          * 
-         * @param resultSet  query result set
+         * @param resultSet query result set
          */
         public SearchResults(List<NodeRef> resultSet)
         {
@@ -957,7 +1005,7 @@ public class AdminNodeBrowseBean implements Serializable
         /**
          * Gets the row count
          * 
-         * @return  count of rows
+         * @return count of rows
          */
         public int getLength()
         {
@@ -967,17 +1015,16 @@ public class AdminNodeBrowseBean implements Serializable
         /**
          * Gets the rows
          * 
-         * @return  the rows
+         * @return the rows
          */
         public DataModel getRows()
         {
             return rows;
         }
-        
+
         private class SerialListDataModel extends ListDataModel implements Serializable
         {
             private static final long serialVersionUID = 4154583769762846020L;
         }
     }
-    
 }

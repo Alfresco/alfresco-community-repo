@@ -199,8 +199,11 @@ public final class SandboxFactory
        //     apply READ permissions for all users
        NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(storeName));
        permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+       // Set store permission mask
+       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
        
        // Apply sepcific user permissions as set on the web project
+       // All these will be masked out
        List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
                webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
        for (ChildAssociationRef ref : userInfoRefs)
@@ -218,6 +221,7 @@ public final class SandboxFactory
    public static void updateStagingAreaManagers(String storeId, 
            NodeRef webProjectNodeRef, final List<String> managers)
    {
+       // The stores have the mask set in updateSandboxManagers
        String storeName = AVMUtil.buildStagingStoreName(storeId);
        ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
        PermissionService permissionService = services.getPermissionService();
@@ -282,16 +286,16 @@ public final class SandboxFactory
                                         JNDIConstants.DIR_DEFAULT_WWW);
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(userStoreName));
       
-      // TODO: Apply access mask to the store and ACls to the staging area
+      // Apply access mask to the store (ACls are applie to the staging area)
       
       // apply the user role permissions to the sandbox
-      //permissionService.setPermission(dirRef, username, role, true);
-      //permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
+      permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
       // apply the manager role permission for each manager in the web project
-      //for (String manager : managers)
-      //{
-      //   permissionService.setPermission(dirRef, manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
-      //}
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      }
       
       // tag the store with the store type
       avmService.setStoreProperty(userStoreName,
@@ -330,15 +334,16 @@ public final class SandboxFactory
                                         JNDIConstants.DIR_DEFAULT_WWW);
       dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(previewStoreName));
       
-      //    TODO: Apply access mask to the store 
+      // Apply access mask to the store (ACls are applied to the staging area)
+      
       // apply the user role permissions to the sandbox
-      //permissionService.setPermission(dirRef, username, role, true);
-      //permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
+      permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
       // apply the manager role permission for each manager in the web project
-      //for (String manager : managers)
-      //{
-      //   permissionService.setPermission(dirRef, manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
-      //}
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      }
       
       // tag the store with the store type
       avmService.setStoreProperty(previewStoreName,
@@ -513,21 +518,21 @@ public final class SandboxFactory
       final String userStoreName    = AVMUtil.buildUserMainStoreName(storeId, username);
       final String previewStoreName = AVMUtil.buildUserPreviewStoreName(storeId, username);
       
-      // TODO: Fix to apply application mask to the stores and ACLs to the staging area
+      // Apply masks to the stores
       
       // apply the manager role permission to the user main sandbox for each manager
-      //NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(userStoreName));
-      //for (String manager : managers)
-      //{
-      //   permissionService.setPermission(dirRef, manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
-      //}
+      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(userStoreName));
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      }
       
       // apply the manager role permission to the user preview sandbox for each manager
-      //dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(previewStoreName));
-      //for (String manager : managers)
-      //{
-      //   permissionService.setPermission(dirRef, manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
-      // }
+      dirRef = AVMNodeConverter.ToNodeRef(-1, AVMUtil.buildStoreRootPath(previewStoreName));
+      for (String manager : managers)
+      {
+         permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      }
    }
    
    /**

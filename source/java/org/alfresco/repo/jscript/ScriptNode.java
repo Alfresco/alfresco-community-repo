@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -53,7 +51,6 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -81,7 +78,6 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.UniqueTag;
 import org.mozilla.javascript.Wrapper;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Node class implementation, specific for use by ScriptService as part of the object model.
@@ -830,6 +826,40 @@ public class ScriptNode implements Serializable, Scopeable
         }
         else
         {
+            return "";
+        }
+    }
+
+    public String jsGet_downloadUrl()
+    {
+        return getDownloadUrl();
+    }
+    
+    /**
+     * @return The WebDav cm:name based path to the content for the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getWebdavUrl()
+    {
+        try
+        {
+            List<FileInfo> paths = this.services.getFileFolderService().getNamePath(null, getNodeRef());
+            
+            // build up the webdav url
+            StringBuilder path = new StringBuilder(128);
+            path.append("/webdav");
+            
+            // build up the path skipping the first path as it is the root folder
+            for (int i=1; i<paths.size(); i++)
+            {
+                path.append("/")
+                    .append(URLEncoder.encode(paths.get(i).getName()));
+            }
+            return path.toString();
+        }
+        catch (FileNotFoundException nodeErr)
+        {
+            // cannot build path if file no longer exists
             return "";
         }
     }

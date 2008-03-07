@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.StaleStateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -124,7 +125,8 @@ public class RetryingTransactionAdvice implements MethodInterceptor
                         t instanceof DeadlockLoserDataAccessException ||
                         t instanceof StaleObjectStateException ||
                         t instanceof LockAcquisitionException ||
-                        t instanceof StaleStateException)
+                        t instanceof StaleStateException ||
+                        t instanceof ConstraintViolationException)
                     {
                         shouldRetry = true;
                         try

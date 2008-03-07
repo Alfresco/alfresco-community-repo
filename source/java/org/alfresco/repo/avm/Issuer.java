@@ -87,9 +87,9 @@ public class Issuer
             public Object execute()
             {
                 IssuerID issuerID = fIDDAO.get(fName);
-                if (issuerID == null)
+                Long id = fIssuerDAO.getIssuerValue(fName);
+                if (issuerID == null || id == null || id >= issuerID.getNext())
                 {
-                    Long id = fIssuerDAO.getIssuerValue(fName);
                     if (id == null)
                     {
                         id = 0L;
@@ -98,8 +98,15 @@ public class Issuer
                     {
                         id = id + 1L;
                     }
-                    issuerID = new IssuerIDImpl(fName, id);
-                    fIDDAO.save(issuerID);
+                    if (issuerID == null)
+                    {
+                        issuerID = new IssuerIDImpl(fName, id);
+                        fIDDAO.save(issuerID);
+                    }
+                    else
+                    {
+                        issuerID.setNext(id);
+                    }
                 }
                 return null;
             }
@@ -123,11 +130,46 @@ public class Issuer
     {
         if (fNext >= fLast)
         {
-            IssuerID isID = fIDDAO.get(fName);
-            fNext = isID.getNext();
-            fLast = fNext + BLOCK_SIZE;
-            isID.setNext(fLast);
+            BlockGetter getter = new BlockGetter();
+            Thread thread = new Thread(getter);
+            thread.start();
+            try
+            {
+                thread.join();
+            }
+            catch (InterruptedException e)
+            {
+                // Do nothing.
+            }
+            fNext = getter.fNext;
+            fLast = getter.fLast;
         }
         return fNext++;
+    }
+
+    private class BlockGetter implements Runnable
+    {
+        public long fNext;
+
+        public long fLast;
+
+        /* (non-Javadoc)
+         * @see java.lang.Runnable#run()
+         */
+        public void run()
+        {
+            fTxnService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
+            {
+                public Object execute()
+                {
+                    IssuerID isID = fIDDAO.get(fName);
+                    fNext = isID.getNext();
+                    fLast = fNext + BLOCK_SIZE;
+                    isID.setNext(fLast);
+                    return null;
+                }
+            });
+        }
     }
 }

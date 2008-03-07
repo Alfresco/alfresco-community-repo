@@ -1334,6 +1334,11 @@ public class SubmitDialog extends BaseDialogBean
          this.descriptor = descriptor;
       }
 
+      public boolean getFile()
+      {
+         return this.descriptor.isFile();
+      }
+      
       public boolean getExpirable()
       {
          return this.descriptor.isFile() && (this.descriptor.isDeleted() == false);

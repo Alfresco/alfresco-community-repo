@@ -241,12 +241,14 @@
             </f:facet>
             <f:facet name="small-icon">
                <h:panelGroup>
-                  <a:actionLink id="col10-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" styleClass="inlineAction" rendered="#{!r.deleted}" />
-                  <h:graphicImage id="col10-icon2" title="#{r.name}" url="#{r.icon}" styleClass="inlineAction" rendered="#{r.deleted}" />
+                  <a:actionLink id="col10-icon1" value="#{r.name}" href="#{r.url}" target="new" image="#{r.icon}" showLink="false" 
+                                styleClass="inlineAction" rendered="#{!r.deleted && r.file}" />
+                  <h:graphicImage id="col10-icon2" title="#{r.name}" url="#{r.icon}" styleClass="inlineAction" 
+                                  rendered="#{r.deleted || !r.file}" style="vertical-align: -5px;"  />
                </h:panelGroup>
             </f:facet>
-            <a:actionLink id="col10-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted}" />
-            <h:outputText id="col10-name2" value="#{r.name}" rendered="#{r.deleted}" />
+            <a:actionLink id="col10-name1" value="#{r.name}" href="#{r.url}" target="new" rendered="#{!r.deleted && r.file}" />
+            <h:outputText id="col10-name2" value="#{r.name}" rendered="#{r.deleted || !r.file}" />
          </a:column>
          
          <%-- Description column --%>

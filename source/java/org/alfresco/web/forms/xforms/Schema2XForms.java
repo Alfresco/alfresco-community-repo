@@ -2468,13 +2468,13 @@ public class Schema2XForms implements Serializable
                if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MINLENGTH))
                {
                   result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                        NamespaceService.ALFRESCO_PREFIX + ":minlength",
+                                        NamespaceService.ALFRESCO_PREFIX + ":minLength",
                                         controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MINLENGTH));
                }
                if (controlType.isDefinedFacet(XSSimpleTypeDefinition.FACET_MAXLENGTH))
                {
                   result.setAttributeNS(NamespaceService.ALFRESCO_URI,
-                                        NamespaceService.ALFRESCO_PREFIX + ":maxlength",
+                                        NamespaceService.ALFRESCO_PREFIX + ":maxLength",
                                         controlType.getLexicalFacetValue(XSSimpleTypeDefinition.FACET_MAXLENGTH));
                }
             }

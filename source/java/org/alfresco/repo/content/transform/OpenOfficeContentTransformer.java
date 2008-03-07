@@ -192,7 +192,7 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
         if (targetFormat == null)
         {
             // target format is not recognised
-            throw new ContentIOException("No OpenOffice document format for target extension: " + sourceExtension);
+            throw new ContentIOException("No OpenOffice document format for target extension: " + targetExtension);
         }
         // get the family of the target document
         DocumentFamily sourceFamily = sourceFormat.getFamily();

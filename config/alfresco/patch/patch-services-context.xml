@@ -1339,8 +1339,8 @@
             </list>
         </property>
     </bean>
-
-	<bean id="patch.wcmPermissionPatch" class="org.alfresco.repo.admin.patch.impl.WCMPermissionPatch" parent="basePatch" >
+    
+    <bean id="patch.wcmPermissionPatch" class="org.alfresco.repo.admin.patch.impl.WCMPermissionPatch" parent="basePatch" >
         <property name="id"><value>patch.wcmPermissionPatch</value></property>
         <property name="description"><value>patch.wcmPermissionPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1348,13 +1348,36 @@
         <property name="targetSchema"><value>122</value></property>
         <!-- helper beans -->
         <property name="avmService">
-			<ref bean="avmService" />
-		</property>
-		<property name="permissionService">
-			<ref bean="permissionService" />
-		</property>
-		<property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-			<ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
-		</property>
+            <ref bean="avmService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
     </bean>
+
+    <bean id="patch.avmWebProjectInheritPermissions" class="org.alfresco.repo.admin.patch.impl.AVMWebProjectInheritPermissionsPatch" parent="basePatch">
+        <property name="id"><value>patch.avmWebProjectInheritPermissions</value></property>
+        <property name="description"><value>patch.avmWebProjectInheritPermissions.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>122</value></property>
+        <property name="targetSchema"><value>123</value></property>
+        <property name="spacesImporterBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.wcmPermissionPatch" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

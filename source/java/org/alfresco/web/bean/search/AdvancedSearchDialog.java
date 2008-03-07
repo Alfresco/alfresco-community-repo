@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean.search;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -888,14 +887,12 @@ public class AdvancedSearchDialog extends BaseDialogBean
                {
                   // attempt to create folder for this user for first time
                   // create the preferences Node for this user
-                  Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
-                  props.put(ContentModel.PROP_NAME, user.getUserName());
                   ChildAssociationRef childRef = getNodeService().createNode(
                         globalRef,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.APP_MODEL_1_0_URI, QName.createValidLocalName(user.getUserName())),
                         ContentModel.TYPE_FOLDER,
-                        props);
+                        null);
                   
                   properties.setUserSearchesRef(childRef.getChildRef());
                }

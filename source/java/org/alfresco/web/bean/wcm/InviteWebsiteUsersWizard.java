@@ -148,6 +148,13 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
          {
             this.userGroupRoles.add(new UserGroupRole(currentUser, AVMUtil.ROLE_CONTENT_MANAGER, null));
             managers.add(currentUser);
+            
+            // assign permissions explicitly for the current user
+            this.getPermissionService().setPermission(
+                     nodeRef,
+                     currentUser,
+                     AVMUtil.ROLE_CONTENT_MANAGER,
+                     true);
          }
       }
       else
@@ -198,6 +205,8 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
             {
                SandboxInfo info = SandboxFactory.createUserSandbox(
                      getAvmStore(), managers, userAuth, userRole.getRole());
+               
+               SandboxFactory.addStagingAreaUser(getAvmStore(), userAuth, userRole.getRole());
                
                this.sandboxInfoList.add(info);
                

@@ -280,6 +280,9 @@ public class CreateWebsiteWizard extends BaseWizardBean
                                       WCMAppModel.ASPECT_WEBAPP);
          }
          
+         // now the sandbox is created set the permissions masks for the store
+         SandboxFactory.setStagingPermissionMasks(avmStore);
+         
          // set the property on the node to reference the root AVM store
          getNodeService().setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
          

@@ -114,7 +114,7 @@ var ProjectPresence =
       switch(provider)
       {
          case "skype":
-            statusURL = "http://mystatus.skype.com/" + username + ".txt";
+            statusURL = "http://mystatus.skype.com/" + username + ".txt.en";
             break;
          case "yahoo":
             statusURL = "http://opi.yahoo.com/online?u=" + username + "&m=t&t=1";

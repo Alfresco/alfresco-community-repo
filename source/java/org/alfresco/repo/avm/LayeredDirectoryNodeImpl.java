@@ -46,7 +46,7 @@ import org.alfresco.util.Pair;
  * A layered directory node. A layered directory node points at an underlying directory, which may or may not exist. The
  * visible contents of a layered directory node is the contents of the underlying node pointed at plus those nodes added
  * to or modified in the layered directory node minus those nodes which have been deleted in the layered directory node.
- * 
+ *
  * @author britt
  */
 class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirectoryNode
@@ -87,7 +87,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Make a new one from a specified indirection path.
-     * 
+     *
      * @param indirection
      *            The indirection path to set.
      * @param store
@@ -150,7 +150,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Kind of copy constructor, sort of.
-     * 
+     *
      * @param other
      *            The LayeredDirectoryNode we are copied from.
      * @param repos
@@ -190,7 +190,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Construct one from a PlainDirectoryNode. Called when a COW is performed in a layered context.
-     * 
+     *
      * @param other
      *            The PlainDirectoryNode.
      * @param store
@@ -227,7 +227,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     /**
      * Create a new layered directory based on a directory we are being named from that is in not in the layer of the
      * source lookup.
-     * 
+     *
      * @param dir
      *            The directory
      * @param store
@@ -262,7 +262,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Is this a primary indirection node.
-     * 
+     *
      * @return Whether this is a primary indirection.
      */
     public boolean getPrimaryIndirection()
@@ -272,7 +272,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Set the primary indirection state of this.
-     * 
+     *
      * @param has
      *            Whether this is a primary indirection node.
      */
@@ -283,7 +283,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the indirection path.
-     * 
+     *
      * @return The indirection path.
      */
     public String getIndirection()
@@ -293,7 +293,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the underlying path in the Lookup's context.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return The underlying path.
@@ -309,7 +309,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the underlying version in the lookup path context.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return The effective underlying version.
@@ -329,7 +329,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the layer id.
-     * 
+     *
      * @return The layer id.
      */
     public long getLayerID()
@@ -339,7 +339,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Set the layer id.
-     * 
+     *
      * @param id
      *            The id to set.
      */
@@ -350,7 +350,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Copy on write logic.
-     * 
+     *
      * @param lPath
      * @return The copy or null.
      */
@@ -386,7 +386,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Insert a child node without COW.
-     * 
+     *
      * @param name
      *            The name to give the child.
      */
@@ -409,7 +409,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Does this node directly contain the indicated node.
-     * 
+     *
      * @param node
      *            The node we are checking.
      * @return Whether node is directly contained.
@@ -421,7 +421,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get a listing of the virtual contents of this directory.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return A Map from names to nodes. This is a sorted Map.
@@ -443,7 +443,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                         entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
                     {
-                        if (!AVMRepository.GetInstance().can(entry.getValue(), PermissionService.READ_CHILDREN))
+                        if (!AVMRepository.GetInstance().can(lookup.getAVMStore(), entry.getValue(), PermissionService.READ_CHILDREN))
                         {
                             continue;
                         }
@@ -457,7 +457,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(entry.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(lPath.getAVMStore(), entry.getChild(), PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -476,7 +476,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get a listing of the nodes directly contained by a directory.
-     * 
+     *
      * @param lPath
      *            The Lookup to this directory.
      * @return A Map of names to nodes.
@@ -489,7 +489,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(entry.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(lPath != null ? lPath.getAVMStore() : null, entry.getChild(), PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -504,7 +504,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the direct contents of this directory.
-     * 
+     *
      * @param dir
      *            The descriptor that describes us.
      * @param includeDeleted
@@ -521,7 +521,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (childNode.getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 childNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(childNode, PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(null, childNode, PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -538,7 +538,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get a listing from a directory node descriptor.
-     * 
+     *
      * @param dir
      *            The directory node descriptor.
      * @param includeDeleted
@@ -565,7 +565,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                         entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
                     {
-                        if (!AVMRepository.GetInstance().can(entry.getValue(), PermissionService.READ_CHILDREN))
+                        if (!AVMRepository.GetInstance().can(null, entry.getValue(), PermissionService.READ_CHILDREN))
                         {
                             continue;
                         }
@@ -583,7 +583,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(null, child.getChild(), PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -603,7 +603,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the names of nodes deleted in this directory.
-     * 
+     *
      * @return A List of names.
      */
     public List<String> getDeletedNames()
@@ -622,7 +622,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Lookup a child by name.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @param name
@@ -673,7 +673,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Lookup a child using a node descriptor as context.
-     * 
+     *
      * @param mine
      *            The node descriptor for this,
      * @param name
@@ -722,7 +722,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Directly remove a child. Do not COW. Do not pass go etc.
-     * 
+     *
      * @param lPath
      *            The lookup that arrived at this.
      * @param name
@@ -778,7 +778,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the type of this node.
-     * 
+     *
      * @return The type of this node.
      */
     public int getType()
@@ -788,7 +788,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * For diagnostics. Get a String representation.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return A String representation.
@@ -800,7 +800,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Set the primary indirection. No COW. Cascade resetting of acls also does not COW
-     * 
+     *
      * @param path
      *            The indirection path.
      */
@@ -815,7 +815,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         fPrimaryIndirection = true;
         // Need to change the permission we point to ....
         if (fIndirection != null)
-        {   
+        {
             if ((getAcl() == null) || (getAcl().getAclType() == ACLType.LAYERED))
             {
                 DbAccessControlList acl = null;
@@ -936,7 +936,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Make this node become a primary indirection. COW.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      */
@@ -952,7 +952,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Make this point at a new target.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      */
@@ -967,7 +967,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Let anything behind name in this become visible.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @param name
@@ -993,7 +993,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the descriptor for this node.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return A descriptor.
@@ -1021,7 +1021,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the descriptor for this node.
-     * 
+     *
      * @param lPath
      *            The Lookup.
      * @return A descriptor.
@@ -1038,7 +1038,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get a descriptor for this.
-     * 
+     *
      * @param parentPath
      *            The parent path.
      * @param name
@@ -1069,7 +1069,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Set the indirection.
-     * 
+     *
      * @param indirection
      */
     public void setIndirection(String indirection)
@@ -1079,7 +1079,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Does nothing because LayeredDirectoryNodes can't be roots.
-     * 
+     *
      * @param isRoot
      */
     public void setIsRoot(boolean isRoot)
@@ -1088,7 +1088,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the opacity of this.
-     * 
+     *
      * @return The opacity.
      */
     public boolean getOpacity()
@@ -1098,7 +1098,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Set the opacity of this, ie, whether it blocks things normally seen through its indirection.
-     * 
+     *
      * @param opacity
      */
     public void setOpacity(boolean opacity)
@@ -1108,7 +1108,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Link a node with the given id into this directory.
-     * 
+     *
      * @param lPath
      *            The Lookup for this.
      * @param name
@@ -1157,7 +1157,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Remove name without leaving behind a deleted node.
-     * 
+     *
      * @param name
      *            The name of the child to flatten.
      */
@@ -1177,7 +1177,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.alfresco.repo.avm.LayeredDirectoryNode#setIndirectionVersion(int)
      */
     public void setIndirectionVersion(Integer version)
@@ -1194,7 +1194,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
 
     /**
      * Get the indirection version.
-     * 
+     *
      * @return The indirection version.
      */
     public Integer getIndirectionVersion()

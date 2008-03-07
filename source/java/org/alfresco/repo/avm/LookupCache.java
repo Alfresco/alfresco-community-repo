@@ -132,7 +132,7 @@ public class LookupCache
         // before the end.
         for (int i = 0; i < path.size() - 1; i++)
         {
-            if (!AVMRepository.GetInstance().can(dir, PermissionService.READ_CHILDREN))
+            if (!AVMRepository.GetInstance().can(null, dir, PermissionService.READ_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to read children: " + path.get(i));
             }
@@ -151,7 +151,7 @@ public class LookupCache
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
-        if (!AVMRepository.GetInstance().can(dir, PermissionService.READ_CHILDREN))
+        if (!AVMRepository.GetInstance().can(null, dir, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read children: " + path.get(path.size() - 1));
         }

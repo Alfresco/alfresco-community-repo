@@ -52,13 +52,13 @@ public interface AVMStore
      * Get the primary key.
      */
     public long getId();
-    
+
     /**
      * This returns the next version in this store that will be snapshotted.
      * @return The next version to be snapshotted.
      */
     public int getNextVersionID();
-    
+
     /**
      * This gets the last extant version id.
      */
@@ -71,12 +71,24 @@ public interface AVMStore
     public void setNewRoot(DirectoryNode root);
 
     /**
+     * Get the Acl associated with this store.
+     * @return
+     */
+    public DbAccessControlList getStoreAcl();
+
+    /**
+     * Set the acl on this store.
+     * @param acl
+     */
+    public void setStoreAcl(DbAccessControlList acl);
+
+    /**
      * Snapshots this store.  This sets all nodes in the
      * the store to the should be copied state, and creates
      * a new version root.
      * @param tag The short description.
      * @param description The long description.
-     * @param snapShotMap Keeps track of snapshot ids for all stores that 
+     * @param snapShotMap Keeps track of snapshot ids for all stores that
      * end up snapshotted, possibly recursively.
      * @return The map of all implicitely and explicitely snapshotted stores.
      */
@@ -105,7 +117,7 @@ public interface AVMStore
      * @return An OutputStream.
      */
     public OutputStream createFile(String path, String name);
-    
+
     /**
      * Create a file with the given contents.
      * @param path The path to the containing directory.
@@ -129,15 +141,15 @@ public interface AVMStore
      * @return An InputStream
      */
     public InputStream getInputStream(int version, String path);
-    
+
     /**
      * Get a ContentReader from a file.
      * @param version The version to look under.
      * @param path The path to the file.
      * @return A ContentReader
      */
-    public ContentReader getContentReader(int version, String path);    
-    
+    public ContentReader getContentReader(int version, String path);
+
     /**
      * Get a listing of the designated directory.
      * @param version The version to look under.
@@ -145,9 +157,9 @@ public interface AVMStore
      * @param includeDeleted Whether to see Deleted nodes.
      * @return A listing.
      */
-    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path, 
+    public SortedMap<String, AVMNodeDescriptor> getListing(int version, String path,
                                                            boolean includeDeleted);
-    
+
     /**
      * Get the list of nodes directly contained in a directory.
      * @param version The version to look under.
@@ -165,21 +177,21 @@ public interface AVMStore
      * @return A List of names.
      */
     public List<String> getDeleted(int version, String path);
-    
+
     /**
      * Get an output stream to a file.
      * @param path The path to the file.
      * @return An OutputStream
      */
     public OutputStream getOutputStream(String path);
-    
+
     /**
      * Get a ContentWriter to a file.
      * @param path The path to the file.
      * @return A ContentWriter.
      */
     public ContentWriter createContentWriter(String path);
-    
+
     /**
      * Remove a node and all of its contents.
      * @param path The path to the node's parent directory.
@@ -196,16 +208,16 @@ public interface AVMStore
 
     // TODO This is problematic.  As time goes on this returns
     // larger and larger data sets.  Perhaps what we should do is
-    // provide methods for getting versions by date range, n most 
+    // provide methods for getting versions by date range, n most
     // recent etc.
     /**
      * Get all the version for this AVMStore.
      * @return A Set of all versions.
      */
     public List<VersionDescriptor> getVersions();
-    
+
     /**
-     * Get the versions from between the given dates. From or to 
+     * Get the versions from between the given dates. From or to
      * may be null but not both.
      * @param from The earliest date.
      * @param to The latest date.
@@ -258,7 +270,7 @@ public interface AVMStore
      * @param target The new target path.
      */
     public void retargetLayeredDirectory(String path, String target);
-    
+
     /**
      * Get the root directory of this AVMStore.
      * @return The root directory.
@@ -271,31 +283,31 @@ public interface AVMStore
      * @return The specified root or null.
      */
     public AVMNodeDescriptor getRoot(int version);
-    
+
     /**
      * Get the name of this store.
      * @return The name.
      */
     public String getName();
-    
+
     /**
      * Set the name of the store.
      * @param name To Set.
      */
     public void setName(String name);
-    
+
     /**
      * Purge all the nodes reachable only by the given version.
      * @param version
      */
     public void purgeVersion(int version);
-    
+
     /**
      * Get the descriptor for this.
      * @return The descriptor.
      */
     public AVMStoreDescriptor getDescriptor();
-    
+
     /**
      * Set the opacity of a layered directory. An opaque directory hides
      * what is pointed at by its indirection.
@@ -303,7 +315,7 @@ public interface AVMStore
      * @param opacity True is opaque; false is not.
      */
     public void setOpacity(String path, boolean opacity);
-    
+
     /**
      * Set a property on a node.
      * @param path The path to the node.
@@ -311,14 +323,14 @@ public interface AVMStore
      * @param value The value to set.
      */
     public void setNodeProperty(String path, QName name, PropertyValue value);
-    
+
     /**
      * Set a collection of properties on a node.
      * @param path The path to the node.
      * @param properties The Map of QNames to PropertyValues.
      */
     public void setNodeProperties(String path, Map<QName, PropertyValue> properties);
-    
+
     /**
      * Get a property by name.
      * @param version The version to look under.
@@ -327,20 +339,20 @@ public interface AVMStore
      * @return A PropertyValue or null if not found.
      */
     public PropertyValue getNodeProperty(int version, String path, QName name);
-    
+
     /**
      * Delete a single property from a node.
      * @param path The path to the node.
      * @param name The name of the property.
      */
     public void deleteNodeProperty(String path, QName name);
-    
+
     /**
      * Delete all properties from a node.
      * @param path The path to the node.
      */
     public void deleteNodeProperties(String path);
-    
+
     /**
      * Get all the properties associated with a node.
      * @param version The version to look under.
@@ -348,39 +360,39 @@ public interface AVMStore
      * @return A Map of QNames to PropertyValues.
      */
     public Map<QName, PropertyValue> getNodeProperties(int version, String path);
-    
+
     /**
      * Set a property on this store. Replaces if property already exists.
      * @param name The QName of the property.
      * @param value The actual PropertyValue.
      */
     public void setProperty(QName name, PropertyValue value);
-    
+
     /**
      * Set a group of properties on this store. Replaces any property that exists.
      * @param properties A Map of QNames to PropertyValues to set.
      */
     public void setProperties(Map<QName, PropertyValue> properties);
-    
+
     /**
      * Get a property by name.
      * @param name The QName of the property to fetch.
      * @return The PropertyValue or null if non-existent.
      */
     public PropertyValue getProperty(QName name);
-    
+
     /**
      * Get all the properties associated with this node.
      * @return A Map of the properties.
      */
     public Map<QName, PropertyValue> getProperties();
-    
+
     /**
      * Delete a property.
      * @param name The name of the property to delete.
      */
     public void deleteProperty(QName name);
-    
+
     /**
      * Get the ContentData on a file.
      * @param version The version to look under.
@@ -388,35 +400,35 @@ public interface AVMStore
      * @return The ContentData corresponding to the file.
      */
     public ContentData getContentDataForRead(int version, String path);
-    
+
     /**
      * Get the ContentData for writing.
      * @param path The path to the file.
      * @return The ContentData object.
      */
     public ContentData getContentDataForWrite(String path);
-    
+
     /**
      * Set the ContentData for a file.
      * @param path The path to the file.
      * @param data The ContentData to set.
      */
     public void setContentData(String path, ContentData data);
-    
+
     /**
      * Set meta data, aspects, properties, acls, from another node.
      * @param path The path to the node to set metadata on.
      * @param from The node to get the metadata from.
      */
     public void setMetaDataFrom(String path, AVMNode from);
-    
+
     /**
      * Add an aspect to a node.
      * @param path The path to the node.
      * @param aspectName The name of the aspect.
      */
     public void addAspect(String path, QName aspectName);
-    
+
     /**
      * Get all aspects on a given node.
      * @param version The version to look under.
@@ -424,14 +436,14 @@ public interface AVMStore
      * @return A List of the QNames of the aspects.
      */
     public Set<QName> getAspects(int version, String path);
-    
+
     /**
      * Remove an aspect and all its properties from a node.
      * @param path The path to the node.
      * @param aspectName The name of the aspect.
      */
     public void removeAspect(String path, QName aspectName);
-    
+
     /**
      * Does a given node have a given aspect.
      * @param version The version to look under.
@@ -440,14 +452,14 @@ public interface AVMStore
      * @return Whether the node has the aspect.
      */
     public boolean hasAspect(int version, String path, QName aspectName);
-    
+
     /**
      * Set the ACL on a node.
      * @param path The path to the node.
      * @param acl The ACL to set.
      */
     public void setACL(String path, DbAccessControlList acl);
-    
+
     /**
      * Get the ACL on a node.
      * @param version The version to look under.
@@ -455,7 +467,7 @@ public interface AVMStore
      * @return The ACL.
      */
     public DbAccessControlList getACL(int version, String path);
-    
+
     /**
      * Link a node intro a directory, directly.
      * @param parentPath The path to the directory.
@@ -473,21 +485,21 @@ public interface AVMStore
      * @param toRevertTo The descriptor of the version to revert to.
      */
     public void revert(String path, String name, AVMNodeDescriptor toRevertTo);
-    
+
     /**
      * Set the GUID on a node.
      * @param path
      * @param guid
      */
     public void setGuid(String path, String guid);
-    
+
     /**
      * Set the encoding of a file.
      * @param path
      * @param encoding
      */
     public void setEncoding(String path, String encoding);
-    
+
     /**
      * Set the mime type of a file.
      * @param path

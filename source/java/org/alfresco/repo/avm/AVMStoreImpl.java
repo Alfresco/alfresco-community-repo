@@ -102,6 +102,11 @@ public class AVMStoreImpl implements AVMStore, Serializable
     private long fVers;
 
     /**
+     * Acl for this store.
+     */
+    private DbAccessControlList fACL;
+
+    /**
      * The AVMRepository.
      */
     transient private AVMRepository fAVMRepository;
@@ -337,7 +342,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -454,7 +459,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -496,7 +501,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -563,7 +568,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + dstPath + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + dstPath);
         }
@@ -645,7 +650,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.READ_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -668,7 +673,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.READ_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -715,7 +720,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.READ_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -747,7 +752,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.DELETE_CHILDREN))
+        if (!fAVMRepository.can(this, dir, PermissionService.DELETE_CHILDREN))
         {
             throw new AVMNotFoundException("Not allowed to write: " + path);
         }
@@ -776,7 +781,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("Not a layered directory: " + dirPath);
         }
-        if (!fAVMRepository.can(node, PermissionService.DELETE_CHILDREN))
+        if (!fAVMRepository.can(this, node, PermissionService.DELETE_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + dirPath);
         }
@@ -875,7 +880,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             root = AVMDAOs.Instance().fAVMNodeDAO.getAVMStoreRoot(this, version);
         }
-        if (!fAVMRepository.can(root, PermissionService.READ_CHILDREN))
+        if (!fAVMRepository.can(this, root, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read: " + fName + "@" + version);
         }
@@ -924,7 +929,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             return null;
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.READ_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -957,7 +962,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMException("Not in a layered context: " + path);
         }
-        if (!fAVMRepository.can(dir, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, dir, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -982,7 +987,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMException("Not in a layered context: " + path);
         }
-        if (!fAVMRepository.can(dir, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, dir, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -1006,6 +1011,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
     public String getName()
     {
         return fName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMStore#getAcl()
+     */
+    public DbAccessControlList getStoreAcl()
+    {
+        return fACL;
+    }
+
+    public void setStoreAcl(DbAccessControlList acl)
+    {
+        fACL = acl;
     }
 
     /**
@@ -1117,7 +1135,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.delete(vRoot);
         AVMNode root = vRoot.getRoot();
-        if (!fAVMRepository.can(root, PermissionService.DELETE_CHILDREN))
+        if (!fAVMRepository.can(null, root, PermissionService.DELETE_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to purge: " + fName + "@" + version);
         }
@@ -1164,7 +1182,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("Not a LayeredDirectoryNode.");
         }
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -1187,7 +1205,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -1210,7 +1228,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -1244,7 +1262,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.READ_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -1277,7 +1295,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.READ_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -1302,12 +1320,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
         node.setGuid(GUID.generate());
-        
+
         // convert the QName
         QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getQNameEntity(name);
         if (qnameEntity == null)
@@ -1332,7 +1350,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
@@ -1425,7 +1443,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("File Expected.");
         }
-        if (!fAVMRepository.can(node, PermissionService.READ_CONTENT))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_CONTENT))
         {
             throw new AccessDeniedException("Not allowed to read: " + path);
         }
@@ -1452,7 +1470,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("File Expected.");
         }
-        if (!fAVMRepository.can(node, PermissionService.WRITE_CONTENT))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_CONTENT))
         {
             throw new AccessDeniedException("Not allowed to write content: " + path);
         }
@@ -1500,7 +1518,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found: " + path);
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
@@ -1521,14 +1539,14 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
         // Convert the aspect QNames to entities
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
         Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(aspectName).getId();
-        // Convert the 
+        // Convert the
         node.getAspects().add(qnameEntityId);
         node.setGuid(GUID.generate());
     }
@@ -1547,7 +1565,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.READ_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + path);
         }
@@ -1570,7 +1588,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
@@ -1607,7 +1625,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.READ_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + path);
         }
@@ -1637,7 +1655,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.CHANGE_PERMISSIONS))
+        if (!fAVMRepository.can(this, node, PermissionService.CHANGE_PERMISSIONS))
         {
             throw new AccessDeniedException("Not allowed to change permissions: " + path);
         }
@@ -1658,7 +1676,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
-        if (!fAVMRepository.can(lPath.getCurrentNode(), PermissionService.READ_PERMISSIONS))
+        if (!fAVMRepository.can(this, lPath.getCurrentNode(), PermissionService.READ_PERMISSIONS))
         {
             throw new AccessDeniedException("Not allowed to read permissions: " + path + " in "+getName());
         }
@@ -1679,7 +1697,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + parentPath + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(null, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to add children: " + parentPath);
         }
@@ -1702,8 +1720,8 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path " + path + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
-        if (!fAVMRepository.can(dir, PermissionService.DELETE_CHILDREN) ||
-            !fAVMRepository.can(dir, PermissionService.ADD_CHILDREN))
+        if (!fAVMRepository.can(null, dir, PermissionService.DELETE_CHILDREN) ||
+            !fAVMRepository.can(null, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to revert: " + path);
         }
@@ -1727,7 +1745,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         QNameEntity revertedQNameEntity = qnameDAO.getOrCreateQNameEntity(WCMModel.ASPECT_REVERTED);
         toLink.getAspects().add(revertedQNameEntity.getId());
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
-        
+
         QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getOrCreateQNameEntity(WCMModel.PROP_REVERTED_ID);
         toLink.setProperty(qnameEntity.getId(), value);
     }
@@ -1743,7 +1761,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Path not found: " + path);
         }
         AVMNode node = lPath.getCurrentNode();
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
@@ -1765,7 +1783,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("Not a File: " + path);
         }
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
@@ -1788,7 +1806,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AVMWrongTypeException("Not a File: " + path);
         }
-        if (!fAVMRepository.can(node, PermissionService.WRITE_PROPERTIES))
+        if (!fAVMRepository.can(this, node, PermissionService.WRITE_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }

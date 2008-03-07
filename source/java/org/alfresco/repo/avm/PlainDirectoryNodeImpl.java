@@ -116,7 +116,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(lPath.getAVMStore(), child.getChild(), PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -170,7 +170,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(child.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(null, child.getChild(), PermissionService.READ_CHILDREN))
                 {
                     continue;
                 }
@@ -316,7 +316,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public AVMNode copy(Lookup lPath)
     {
         DirectoryNode newMe = null;
-        
+
         DirectoryNode dir = lPath.getCurrentNodeDirectory();
         Long parentAclId = null;
         if((dir != null) && (dir.getAcl() != null))

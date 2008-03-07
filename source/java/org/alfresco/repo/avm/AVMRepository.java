@@ -69,7 +69,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * This or AVMStore are the implementors of the operations specified by AVMService.
- * 
+ *
  * @author britt
  */
 public class AVMRepository
@@ -106,7 +106,7 @@ public class AVMRepository
      * The Lookup Cache instance.
      */
     private LookupCache fLookupCache;
-    
+
     private QNameDAO qnameDAO;
 
     private AVMStoreDAO fAVMStoreDAO;
@@ -158,7 +158,7 @@ public class AVMRepository
 
     /**
      * Set the node issuer. For Spring.
-     * 
+     *
      * @param nodeIssuer
      *            The issuer.
      */
@@ -169,7 +169,7 @@ public class AVMRepository
 
     /**
      * Set the layer issuer. For Spring.
-     * 
+     *
      * @param layerIssuer
      *            The issuer.
      */
@@ -188,7 +188,7 @@ public class AVMRepository
 
     /**
      * Set the Lookup Cache instance.
-     * 
+     *
      * @param cache
      *            The instance to set.
      */
@@ -221,7 +221,7 @@ public class AVMRepository
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     public void setAvmStoreDAO(AVMStoreDAO dao)
     {
         fAVMStoreDAO = dao;
@@ -264,7 +264,7 @@ public class AVMRepository
 
     /**
      * Create a file.
-     * 
+     *
      * @param path
      *            The path to the containing directory.
      * @param name
@@ -292,7 +292,7 @@ public class AVMRepository
 
     /**
      * Create a file with the given File as content.
-     * 
+     *
      * @param path
      *            The path to the containing directory.
      * @param name
@@ -322,7 +322,7 @@ public class AVMRepository
 
     /**
      * Create a new directory.
-     * 
+     *
      * @param path
      *            The path to the containing directory.
      * @param name
@@ -351,7 +351,7 @@ public class AVMRepository
     /**
      * Create a new directory. This assumes that the parent is already copied and therefore should only be used with
      * great care.
-     * 
+     *
      * @param parent
      *            The parent node.
      * @param name
@@ -369,7 +369,7 @@ public class AVMRepository
         {
             throw new AVMWrongTypeException("Not a directory.");
         }
-        if (!can(node, PermissionService.CREATE_CHILDREN))
+        if (!can(null, node, PermissionService.CREATE_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write in: " + parent);
         }
@@ -403,7 +403,7 @@ public class AVMRepository
 
     /**
      * Create a new layered directory.
-     * 
+     *
      * @param srcPath
      *            The target indirection for the new layered directory.
      * @param dstPath
@@ -438,7 +438,7 @@ public class AVMRepository
 
     /**
      * Create a new layered file.
-     * 
+     *
      * @param srcPath
      *            The target indirection for the new layered file.
      * @param dstPath
@@ -468,7 +468,7 @@ public class AVMRepository
 
     /**
      * Create a new AVMStore.
-     * 
+     *
      * @param name
      *            The name to give the new AVMStore.
      */
@@ -489,7 +489,7 @@ public class AVMRepository
 
     /**
      * Create a new branch.
-     * 
+     *
      * @param version
      *            The version to branch off.
      * @param srcPath
@@ -553,7 +553,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             DirectoryNode dirNode = (DirectoryNode)dPath.getCurrentNode();
-            if (!can(dirNode, PermissionService.ADD_CHILDREN))
+            if (!can(dstRepo, dirNode, PermissionService.ADD_CHILDREN))
             {
                 throw new AccessDeniedException("Not permitted to add children: " + dstPath);
             }
@@ -562,9 +562,9 @@ public class AVMRepository
             // We do different things depending on what kind of thing we're
             // branching from. I'd be considerably happier if we disallowed
             // certain scenarios, but Jon won't let me :P (bhp).
-            
+
             Long parentAcl = dirNode.getAcl() == null ? null : dirNode.getAcl().getId();
-            
+
             if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
                 dstNode = new PlainDirectoryNodeImpl((PlainDirectoryNode)srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
@@ -614,7 +614,7 @@ public class AVMRepository
 
     /**
      * Get an output stream to a file.
-     * 
+     *
      * @param path
      *            The full path to the file.
      * @return An OutputStream.
@@ -642,7 +642,7 @@ public class AVMRepository
 
     /**
      * Get a content reader from a file node.
-     * 
+     *
      * @param version
      *            The version of the file.
      * @param path
@@ -670,7 +670,7 @@ public class AVMRepository
 
     /**
      * Get a ContentWriter to a file node.
-     * 
+     *
      * @param path
      *            The path to the file.
      * @return A ContentWriter.
@@ -698,7 +698,7 @@ public class AVMRepository
 
     /**
      * Rename a node.
-     * 
+     *
      * @param srcPath
      *            Source containing directory.
      * @param srcName
@@ -735,7 +735,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             srcDir = (DirectoryNode)sPath.getCurrentNode();
-            if (!can(srcDir, PermissionService.DELETE_CHILDREN) || !can(srcDir, PermissionService.ADD_CHILDREN))
+            if (!can(srcRepo, srcDir, PermissionService.DELETE_CHILDREN) || !can(srcRepo, srcDir, PermissionService.ADD_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to read or write: " + srcPath);
             }
@@ -766,7 +766,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             DirectoryNode dstDir = (DirectoryNode)dPath.getCurrentNode();
-            if (!can(dstDir, PermissionService.ADD_CHILDREN))
+            if (!can(dstRepo, dstDir, PermissionService.ADD_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to write: " + dstPath);
             }
@@ -776,9 +776,9 @@ public class AVMRepository
             {
                 throw new AVMExistsException("Node exists: " + dstName);
             }
-            
+
             Long parentAcl = dstDir.getAcl() == null ? null : dstDir.getAcl().getId();
-            
+
             AVMNode dstNode = null;
             // We've passed the check, so we can go ahead and do the rename.
             if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -881,7 +881,7 @@ public class AVMRepository
 
     /**
      * Uncover a deleted name in a layered directory.
-     * 
+     *
      * @param dirPath
      *            The path to the layered directory.
      * @param name
@@ -909,7 +909,7 @@ public class AVMRepository
 
     /**
      * Create a snapshot of a single AVMStore.
-     * 
+     *
      * @param store
      *            The name of the repository.
      * @param tag
@@ -937,7 +937,7 @@ public class AVMRepository
 
     /**
      * Remove a node and everything underneath it.
-     * 
+     *
      * @param path
      *            The path to the containing directory.
      * @param name
@@ -965,7 +965,7 @@ public class AVMRepository
 
     /**
      * Get rid of all content that lives only in the given AVMStore. Also removes the AVMStore.
-     * 
+     *
      * @param name
      *            The name of the AVMStore to purge.
      */
@@ -981,7 +981,7 @@ public class AVMRepository
         fLookupCache.onDelete(name);
         AVMNode root = store.getRoot();
         // TODO Probably a special PermissionService.PURGE is needed.
-        if (!can(root, PermissionService.DELETE_CHILDREN))
+        if (!can(store, root, PermissionService.DELETE_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to purge: " + name);
         }
@@ -1007,7 +1007,7 @@ public class AVMRepository
 
     /**
      * Remove all content specific to a AVMRepository and version.
-     * 
+     *
      * @param name
      *            The name of the AVMStore.
      * @param version
@@ -1028,7 +1028,7 @@ public class AVMRepository
 
     /**
      * Get an input stream from a file.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1061,7 +1061,7 @@ public class AVMRepository
         {
             throw new AVMWrongTypeException(desc + " is not a File.");
         }
-        if (!can(node, PermissionService.READ_CONTENT))
+        if (!can(null, node, PermissionService.READ_CONTENT))
         {
             throw new AccessDeniedException("Not allowed to read content: " + desc);
         }
@@ -1077,7 +1077,7 @@ public class AVMRepository
 
     /**
      * Get a listing of a directory.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1108,7 +1108,7 @@ public class AVMRepository
 
     /**
      * Get the list of nodes directly contained in a directory.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1137,7 +1137,7 @@ public class AVMRepository
 
     /**
      * Get the list of nodes directly contained in a directory.
-     * 
+     *
      * @param dir
      *            The descriptor to the directory node.
      * @param includeDeleted
@@ -1152,7 +1152,7 @@ public class AVMRepository
         {
             throw new AVMBadArgumentException("Invalid Node.");
         }
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to read children: " + dir);
         }
@@ -1170,7 +1170,7 @@ public class AVMRepository
 
     /**
      * Get a directory listing from a directory node descriptor.
-     * 
+     *
      * @param dir
      *            The directory node descriptor.
      * @return A SortedMap listing.
@@ -1190,7 +1190,7 @@ public class AVMRepository
             {
                 throw new AVMWrongTypeException("Not a directory.");
             }
-            if (!can(node, PermissionService.READ_CHILDREN))
+            if (!can(null, node, PermissionService.READ_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to read children: " + dir);
             }
@@ -1206,7 +1206,7 @@ public class AVMRepository
 
     /**
      * Get the names of deleted nodes in a directory.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1234,7 +1234,7 @@ public class AVMRepository
 
     /**
      * Get descriptors of all AVMStores.
-     * 
+     *
      * @return A list of all descriptors.
      */
     @SuppressWarnings("unchecked")
@@ -1251,7 +1251,7 @@ public class AVMRepository
 
     /**
      * Get a descriptor for an AVMStore.
-     * 
+     *
      * @param name
      *            The name to get.
      * @return The descriptor.
@@ -1268,7 +1268,7 @@ public class AVMRepository
 
     /**
      * Get all version for a given AVMStore.
-     * 
+     *
      * @param name
      *            The name of the AVMStore.
      * @return A Set will all the version ids.
@@ -1285,7 +1285,7 @@ public class AVMRepository
 
     /**
      * Get the set of versions between (inclusive) of the given dates. From or to may be null but not both.
-     * 
+     *
      * @param name
      *            The name of the AVMRepository.
      * @param from
@@ -1306,7 +1306,7 @@ public class AVMRepository
 
     /**
      * Issue a node id.
-     * 
+     *
      * @return The new id.
      */
     public long issueID()
@@ -1316,7 +1316,7 @@ public class AVMRepository
 
     /**
      * Issue a new layer id.
-     * 
+     *
      * @return The new id.
      */
     public long issueLayerID()
@@ -1326,7 +1326,7 @@ public class AVMRepository
 
     /**
      * Get the indirection path for a layered node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1354,7 +1354,7 @@ public class AVMRepository
 
     /**
      * Get the next version id for the given AVMStore.
-     * 
+     *
      * @param name
      *            The name of the AVMStore.
      * @return The next version id.
@@ -1371,7 +1371,7 @@ public class AVMRepository
 
     /**
      * Get the latest extant snapshotted version id.
-     * 
+     *
      * @param name
      *            The store name.
      */
@@ -1387,7 +1387,7 @@ public class AVMRepository
 
     /**
      * Get an AVMStore by name.
-     * 
+     *
      * @param name
      *            The name of the AVMStore.
      * @return The AVMStore.
@@ -1400,7 +1400,7 @@ public class AVMRepository
 
     /**
      * Get a descriptor for an AVMStore root.
-     * 
+     *
      * @param version
      *            The version to get.
      * @param name
@@ -1420,7 +1420,7 @@ public class AVMRepository
     // TODO Fix this awful mess regarding cycle detection.
     /**
      * Lookup a node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1465,7 +1465,7 @@ public class AVMRepository
 
     /**
      * Lookup a descriptor from a directory descriptor.
-     * 
+     *
      * @param dir
      *            The directory descriptor.
      * @param name
@@ -1488,7 +1488,7 @@ public class AVMRepository
                 throw new AVMWrongTypeException("Not a directory.");
             }
             DirectoryNode dirNode = (DirectoryNode)node;
-            if (!can(dirNode, PermissionService.READ_CHILDREN))
+            if (!can(null, dirNode, PermissionService.READ_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to read children: " + dir);
             }
@@ -1502,7 +1502,7 @@ public class AVMRepository
 
     /**
      * Get all the paths to a particular node.
-     * 
+     *
      * @param desc
      *            The node descriptor.
      * @return The list of version, paths.
@@ -1522,7 +1522,7 @@ public class AVMRepository
 
     /**
      * Get a single valid path for a node.
-     * 
+     *
      * @param desc
      *            The node descriptor.
      * @return A version, path
@@ -1544,7 +1544,7 @@ public class AVMRepository
 
     /**
      * Get all paths for a node reachable by HEAD.
-     * 
+     *
      * @param desc
      *            The node descriptor.
      * @return A List of all the version, path Pairs that match.
@@ -1564,7 +1564,7 @@ public class AVMRepository
 
     /**
      * Gets all the pass from to the given node starting from the give version root.
-     * 
+     *
      * @param version
      *            The version root.
      * @param node
@@ -1581,7 +1581,7 @@ public class AVMRepository
 
     /**
      * Helper to get all version paths.
-     * 
+     *
      * @param node
      *            The current node we are examining.
      * @param components
@@ -1595,7 +1595,7 @@ public class AVMRepository
      */
     private void recursiveGetVersionPaths(AVMNode node, List<String> components, List<String> paths, DirectoryNode root, String storeName)
     {
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             return;
         }
@@ -1617,7 +1617,7 @@ public class AVMRepository
 
     /**
      * Get all paths in a particular store in the head version for a particular node.
-     * 
+     *
      * @param desc
      *            The node descriptor.
      * @param store
@@ -1644,7 +1644,7 @@ public class AVMRepository
 
     /**
      * Do the actual work.
-     * 
+     *
      * @param node
      *            The current node.
      * @param components
@@ -1655,7 +1655,7 @@ public class AVMRepository
     private void recursiveGetPaths(AVMNode node, List<String> components,
                                    List<Pair<Integer, String>> paths)
     {
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             return;
         }
@@ -1686,7 +1686,7 @@ public class AVMRepository
 
     /**
      * Do the work of getting one path for a node.
-     * 
+     *
      * @param node
      *            The node to get the path of.
      * @param components
@@ -1695,7 +1695,7 @@ public class AVMRepository
      */
     private Pair<Integer, String> recursiveGetAPath(AVMNode node, List<String> components)
     {
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             return null;
         }
@@ -1742,7 +1742,7 @@ public class AVMRepository
 
     /**
      * Do the actual work.
-     * 
+     *
      * @param node
      *            The current node.
      * @param components
@@ -1753,7 +1753,7 @@ public class AVMRepository
     private void recursiveGetHeadPaths(AVMNode node, List<String> components,
                                        List<Pair<Integer, String>> paths)
     {
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             return;
         }
@@ -1780,7 +1780,7 @@ public class AVMRepository
 
     /**
      * Do the actual work.
-     * 
+     *
      * @param node
      *            The current node.
      * @param components
@@ -1792,7 +1792,7 @@ public class AVMRepository
                                               List<Pair<Integer, String>> paths, DirectoryNode root,
                                               String storeName)
     {
-        if (!can(node, PermissionService.READ_CHILDREN))
+        if (!can(null, node, PermissionService.READ_CHILDREN))
         {
             return;
         }
@@ -1814,7 +1814,7 @@ public class AVMRepository
 
     /**
      * Add a path to the list.
-     * 
+     *
      * @param components
      *            The path name components.
      * @param version
@@ -1832,7 +1832,7 @@ public class AVMRepository
 
     /**
      * Alternate version.
-     * 
+     *
      * @param components
      * @param storeName
      * @param paths
@@ -1845,7 +1845,7 @@ public class AVMRepository
 
     /**
      * Helper for generating paths.
-     * 
+     *
      * @param components
      *            The path components.
      * @param storeName
@@ -1872,7 +1872,7 @@ public class AVMRepository
 
     /**
      * Get information about layering of a path.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1895,7 +1895,7 @@ public class AVMRepository
             {
                 throw new AVMNotFoundException("Path not found.");
             }
-            if (!can(lookup.getCurrentNode(), PermissionService.READ_PROPERTIES))
+            if (!can(store, lookup.getCurrentNode(), PermissionService.READ_PROPERTIES))
             {
                 throw new AccessDeniedException("Not allowed to read properties: " + path);
             }
@@ -1911,7 +1911,7 @@ public class AVMRepository
 
     /**
      * Lookup a directory specifically.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -1951,7 +1951,7 @@ public class AVMRepository
 
     /**
      * Utility to split a path, foo:bar/baz into its repository and path parts.
-     * 
+     *
      * @param path
      *            The fully qualified path.
      * @return The repository name and the repository path.
@@ -1968,7 +1968,7 @@ public class AVMRepository
 
     /**
      * Make a directory into a primary indirection.
-     * 
+     *
      * @param path
      *            The full path.
      */
@@ -1994,7 +1994,7 @@ public class AVMRepository
 
     /**
      * Change what a layered directory points at.
-     * 
+     *
      * @param path
      *            The full path to the layered directory.
      * @param target
@@ -2022,7 +2022,7 @@ public class AVMRepository
 
     /**
      * Get the history chain for a node.
-     * 
+     *
      * @param desc
      *            The node to get history of.
      * @param count
@@ -2036,7 +2036,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Not found.");
         }
-        if (!can(node, PermissionService.READ_PROPERTIES))
+        if (!can(null, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
@@ -2052,7 +2052,7 @@ public class AVMRepository
             {
                 break;
             }
-            if (!can(node, PermissionService.READ_PROPERTIES))
+            if (!can(null, node, PermissionService.READ_PROPERTIES))
             {
                 break;
             }
@@ -2063,7 +2063,7 @@ public class AVMRepository
 
     /**
      * Set the opacity of a layered directory. An opaque directory hides the things it points to via indirection.
-     * 
+     *
      * @param path
      *            The path to the layered directory.
      * @param opacity
@@ -2091,7 +2091,7 @@ public class AVMRepository
 
     /**
      * Set a property on a node.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param name
@@ -2121,7 +2121,7 @@ public class AVMRepository
 
     /**
      * Set a collection of properties at once.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param properties
@@ -2149,7 +2149,7 @@ public class AVMRepository
 
     /**
      * Get a property by name for a node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2179,7 +2179,7 @@ public class AVMRepository
 
     /**
      * Get a Map of all the properties of a node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2207,7 +2207,7 @@ public class AVMRepository
 
     /**
      * Delete a single property from a node.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param name
@@ -2235,7 +2235,7 @@ public class AVMRepository
 
     /**
      * Delete all properties on a node.
-     * 
+     *
      * @param path
      *            The path to the node.
      */
@@ -2261,7 +2261,7 @@ public class AVMRepository
 
     /**
      * Set a property on a store. Overwrites if property exists.
-     * 
+     *
      * @param store
      *            The AVMStore.
      * @param name
@@ -2281,7 +2281,7 @@ public class AVMRepository
 
     /**
      * Set a group of properties on a store. Overwrites any properties that exist.
-     * 
+     *
      * @param store
      *            The AVMStore.
      * @param props
@@ -2299,7 +2299,7 @@ public class AVMRepository
 
     /**
      * Get a property from a store.
-     * 
+     *
      * @param store
      *            The name of the store.
      * @param name
@@ -2322,7 +2322,7 @@ public class AVMRepository
 
     /**
      * Queries a given store for properties with keys that match a given pattern.
-     * 
+     *
      * @param store
      *            The name of the store.
      * @param keyPattern
@@ -2349,7 +2349,7 @@ public class AVMRepository
 
     /**
      * Queries all AVM stores for properties with keys that match a given pattern.
-     * 
+     *
      * @param keyPattern
      *            The sql 'like' pattern, inserted into a QName.
      * @return A List of Pairs of Store name, Map.Entry.
@@ -2377,7 +2377,7 @@ public class AVMRepository
 
     /**
      * Get all the properties for a store.
-     * 
+     *
      * @param store
      *            The name of the Store.
      * @return A Map of all the properties.
@@ -2398,7 +2398,7 @@ public class AVMRepository
 
     /**
      * Delete a property from a store.
-     * 
+     *
      * @param store
      *            The name of the store.
      * @param name
@@ -2417,7 +2417,7 @@ public class AVMRepository
     /**
      * Get the common ancestor of two nodes if one exists. Unfortunately this is a quadratic problem, taking time
      * proportional to the product of the lengths of the left and right history chains.
-     * 
+     *
      * @param left
      *            The first node.
      * @param right
@@ -2436,11 +2436,11 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found.");
         }
-        if (!can(lNode, PermissionService.READ_PROPERTIES))
+        if (!can(null, lNode, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + left);
         }
-        if (!can(rNode, PermissionService.READ_PROPERTIES))
+        if (!can(null, rNode, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + right);
         }
@@ -2492,7 +2492,7 @@ public class AVMRepository
 
     /**
      * Get the ContentData for a file.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2516,7 +2516,7 @@ public class AVMRepository
 
     /**
      * Get the ContentData for a file for writing.
-     * 
+     *
      * @param path
      *            The path to the file.
      * @return The ContentData object.
@@ -2544,7 +2544,7 @@ public class AVMRepository
 
     /**
      * Set the ContentData on a file.
-     * 
+     *
      * @param path
      *            The path to the file.
      * @param data
@@ -2572,7 +2572,7 @@ public class AVMRepository
 
     /**
      * Get the single instance of AVMRepository.
-     * 
+     *
      * @return The single instance.
      */
     public static AVMRepository GetInstance()
@@ -2607,7 +2607,7 @@ public class AVMRepository
 
     /**
      * Add an aspect to an AVM Node.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param aspectName
@@ -2635,7 +2635,7 @@ public class AVMRepository
 
     /**
      * Get all the aspects on an AVM node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2663,7 +2663,7 @@ public class AVMRepository
 
     /**
      * Remove an aspect and all associated properties from a node.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param aspectName
@@ -2691,7 +2691,7 @@ public class AVMRepository
 
     /**
      * Does a node have a particular aspect.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2721,7 +2721,7 @@ public class AVMRepository
 
     /**
      * Set the ACL on a node.
-     * 
+     *
      * @param path
      *            The path to the node.
      * @param acl
@@ -2749,7 +2749,7 @@ public class AVMRepository
 
     /**
      * Get the ACL on a node.
-     * 
+     *
      * @param version
      *            The version to look under.
      * @param path
@@ -2777,7 +2777,7 @@ public class AVMRepository
 
     /**
      * Link a node into a directory, directly.
-     * 
+     *
      * @param parentPath
      *            The path to the parent.
      * @param name
@@ -2809,7 +2809,7 @@ public class AVMRepository
     /**
      * This is the danger version of link. It must be called on a copied and unsnapshotted directory. It blithely
      * inserts a child without checking if a child exists with a conflicting name.
-     * 
+     *
      * @param parent
      *            The parent directory.
      * @param name
@@ -2829,7 +2829,7 @@ public class AVMRepository
         {
             throw new AVMException("Directory has not already been copied.");
         }
-        if (!can(dir, PermissionService.ADD_CHILDREN))
+        if (!can(null, dir, PermissionService.ADD_CHILDREN))
         {
             throw new AccessDeniedException("Not allowed to write: " + parent);
         }
@@ -2838,7 +2838,7 @@ public class AVMRepository
 
     /**
      * Remove name without leaving behind a deleted node. Dangerous if used unwisely.
-     * 
+     *
      * @param path
      *            The path to the layered directory.
      * @param name
@@ -2866,7 +2866,7 @@ public class AVMRepository
             {
                 throw new AVMWrongTypeException("Not a Layered Directory.");
             }
-            if (!can(node, PermissionService.DELETE_CHILDREN))
+            if (!can(store, node, PermissionService.DELETE_CHILDREN))
             {
                 throw new AccessDeniedException("Not allowed to write in: " + path);
             }
@@ -2881,7 +2881,7 @@ public class AVMRepository
 
     /**
      * Force a copy on write.
-     * 
+     *
      * @param path
      *            The path to force.
      */
@@ -2915,7 +2915,7 @@ public class AVMRepository
 
     /**
      * Rename a store.
-     * 
+     *
      * @param sourceName
      *            The original name.
      * @param destName
@@ -2951,7 +2951,7 @@ public class AVMRepository
     /**
      * Revert a head path to a given version. This works by cloning the version to revert to, and then linking that new
      * version into head. The reverted version will have the previous head version as ancestor.
-     * 
+     *
      * @param path
      *            The path to the parent directory.
      * @param name
@@ -2981,7 +2981,7 @@ public class AVMRepository
 
     /**
      * Set the GUID on a node.
-     * 
+     *
      * @param path
      * @param guid
      */
@@ -3007,7 +3007,7 @@ public class AVMRepository
 
     /**
      * Set the encoding on a node.
-     * 
+     *
      * @param path
      * @param encoding
      */
@@ -3033,7 +3033,7 @@ public class AVMRepository
 
     /**
      * Set the mime type on a node.
-     * 
+     *
      * @param path
      * @param encoding
      */
@@ -3072,7 +3072,7 @@ public class AVMRepository
 
     /**
      * Do the actual work.
-     * 
+     *
      * @param node
      *            The current node.
      * @param components
@@ -3083,7 +3083,7 @@ public class AVMRepository
     private void recursiveGetStoreVersionPaths(String storeName, AVMNode node, int version, List<String> components,
                                                List<String> paths)
     {
-        if (!can(node, PermissionService.READ))
+        if (!can(null, node, PermissionService.READ))
         {
             return;
         }
@@ -3116,7 +3116,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found: " + desc);
         }
-        if (!can(node, PermissionService.READ_PROPERTIES))
+        if (!can(null, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
@@ -3133,7 +3133,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found: " + desc);
         }
-        if (!can(node, PermissionService.READ_CONTENT))
+        if (!can(null, node, PermissionService.READ_CONTENT))
         {
             throw new AccessDeniedException("Not allowed to read: " + desc);
         }
@@ -3152,7 +3152,7 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Node not found: " + desc);
         }
-        if (!can(node, PermissionService.READ_PROPERTIES))
+        if (!can(null, node, PermissionService.READ_PROPERTIES))
         {
             throw new AccessDeniedException("Not allowed to read properties: " + desc);
         }
@@ -3164,15 +3164,16 @@ public class AVMRepository
 
     /**
      * Evaluate permission on a node. I've got a bad feeling about this...
-     * 
+     * @param store
      * @param node
      * @param permission
+     *
      * @return
      */
-    public boolean can(AVMNode node, String permission)
+    public boolean can(AVMStore store, AVMNode node, String permission)
     {
         DbAccessControlList acl = node.getAcl();
-       
+
         QName type;
         if (node.getType() == AVMNodeType.PLAIN_DIRECTORY)
         {
@@ -3223,7 +3224,46 @@ public class AVMRepository
         {
             aclId = acl.getId();
         }
+        if (store != null)
+        {
+            DbAccessControlList storeAcl = store.getStoreAcl();
+            if (storeAcl != null)
+            {
+                Long storeAclID = storeAcl.getId();
+                context.getAdditionalContext().put("STORE_ACL_ID", storeAclID);
+            }
+        }
         return fPermissionService.hasPermission(aclId, context, permission)
             == AccessStatus.ALLOWED;
+    }
+
+    /**
+     * Set the acl on a store.
+     * @param storeName
+     * @param acl
+     */
+    public void setStoreAcl(String storeName, DbAccessControlList acl)
+    {
+        AVMStore store = getAVMStoreByName(storeName);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found: " + storeName);
+        }
+        store.setStoreAcl(acl);
+    }
+
+    /**
+     * Get the ACL on a store.
+     * @param storeName
+     * @return
+     */
+    public DbAccessControlList getStoreAcl(String storeName)
+    {
+        AVMStore store = getAVMStoreByName(storeName);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found: " + storeName);
+        }
+        return store.getStoreAcl();
     }
 }

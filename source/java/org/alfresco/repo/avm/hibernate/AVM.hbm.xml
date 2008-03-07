@@ -140,6 +140,9 @@
         <many-to-one name="root" class="DirectoryNodeImpl"
             column="current_root_id" cascade="save-update" foreign-key="fk_avm_s_root">
         </many-to-one>
+        <!-- ACL -->
+        <many-to-one name="storeAcl" column="acl_id" foreign-key="fk_avm_s_acl" cascade="none"
+            class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
     </class>
     <class name="AVMStorePropertyImpl" proxy="AVMStoreProperty" table="avm_store_properties">
         <id name="id" column="id" type="long">
@@ -223,7 +226,7 @@
         </composite-id>
         <property name="path" type="string" length="512" column="path"/>
     </class>
-    
+
     <!-- DEPRECATED START -->
     <!-- These are kept so that the AVMPropertiesPatch and AVMAspectsPatch -->
     <class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
@@ -253,11 +256,11 @@
         <property name="name" column="qname" type="QName" length="200"/>
     </class>
     <!-- DEPRECATED END -->
-    
+
     <class name="IssuerIDImpl" proxy="IssuerID" table="avm_issuer_ids" optimistic-lock="version" lazy="false">
         <id name="issuer" type="string" length="32" column="issuer"/>
         <version name="version" column="version" type="long"/>
-        <property name="next" type="long" column="next" not-null="true"/>
+        <property name="next" type="long" column="next_id" not-null="true"/>
     </class>
     <query name="ChildEntry.DeleteByParent">
     <![CDATA[

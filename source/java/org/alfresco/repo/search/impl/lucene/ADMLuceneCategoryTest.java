@@ -192,16 +192,16 @@ public class ADMLuceneCategoryTest extends TestCase
        
        
         
-        catRBase = nodeService.createNode(catRoot, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "Region"), ContentModel.TYPE_CATEGORY).getChildRef();
+        catRBase = nodeService.createNode(catRoot, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "region"), ContentModel.TYPE_CATEGORY).getChildRef();
         catROne = nodeService.createNode(catRBase, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "Europe"), ContentModel.TYPE_CATEGORY).getChildRef();
         catRTwo = nodeService.createNode(catRBase, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "RestOfWorld"), ContentModel.TYPE_CATEGORY).getChildRef();
         catRThree = nodeService.createNode(catRTwo, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "US"), ContentModel.TYPE_CATEGORY).getChildRef();
         
-        nodeService.addChild(catRoot, catRBase, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "InvestmentRegion"));
-        nodeService.addChild(catRoot, catRBase, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "MarketingRegion"));
+        nodeService.addChild(catRoot, catRBase, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "investmentRegion"));
+        nodeService.addChild(catRoot, catRBase, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "marketingRegion"));
         
         
-        catACBase = nodeService.createNode(catRoot, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "AssetClass"), ContentModel.TYPE_CATEGORY).getChildRef();
+        catACBase = nodeService.createNode(catRoot, ContentModel.ASSOC_CATEGORIES, QName.createQName(TEST_NAMESPACE, "assetClass"), ContentModel.TYPE_CATEGORY).getChildRef();
         catACOne = nodeService.createNode(catACBase, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "Fixed"), ContentModel.TYPE_CATEGORY).getChildRef();
         catACTwo = nodeService.createNode(catACBase, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "Equity"), ContentModel.TYPE_CATEGORY).getChildRef();
         catACThree = nodeService.createNode(catACTwo, ContentModel.ASSOC_SUBCATEGORIES, QName.createQName(TEST_NAMESPACE, "SpecialEquity"), ContentModel.TYPE_CATEGORY).getChildRef();
@@ -277,7 +277,7 @@ public class ADMLuceneCategoryTest extends TestCase
         model.createImport(NamespaceService.DICTIONARY_MODEL_1_0_URI, NamespaceService.DICTIONARY_MODEL_PREFIX);
         model.createImport(NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.CONTENT_MODEL_PREFIX);
         
-        regionCategorisationQName = QName.createQName(TEST_NAMESPACE, "Region");
+        regionCategorisationQName = QName.createQName(TEST_NAMESPACE, "region");
         M2Aspect generalCategorisation = model.createAspect("test:" + regionCategorisationQName.getLocalName());
         generalCategorisation.setParentName("cm:" + ContentModel.ASPECT_CLASSIFIABLE.getLocalName());
         M2Property genCatProp = generalCategorisation.createProperty("test:region");
@@ -289,7 +289,7 @@ public class ADMLuceneCategoryTest extends TestCase
         genCatProp.setTokenisedInIndex(false);
         genCatProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
-        assetClassCategorisationQName = QName.createQName(TEST_NAMESPACE, "AssetClass");
+        assetClassCategorisationQName = QName.createQName(TEST_NAMESPACE, "assetClass");
         M2Aspect assetClassCategorisation = model.createAspect("test:" + assetClassCategorisationQName.getLocalName());
         assetClassCategorisation.setParentName("cm:" + ContentModel.ASPECT_CLASSIFIABLE.getLocalName());
         M2Property acProp = assetClassCategorisation.createProperty("test:assetClass");
@@ -301,7 +301,7 @@ public class ADMLuceneCategoryTest extends TestCase
         acProp.setTokenisedInIndex(false);
         acProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
-        investmentRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "InvestmentRegion");
+        investmentRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "investmentRegion");
         M2Aspect investmentRegionCategorisation = model.createAspect("test:" + investmentRegionCategorisationQName.getLocalName());
         investmentRegionCategorisation.setParentName("cm:" + ContentModel.ASPECT_CLASSIFIABLE.getLocalName());
         M2Property irProp = investmentRegionCategorisation.createProperty("test:investmentRegion");
@@ -313,7 +313,7 @@ public class ADMLuceneCategoryTest extends TestCase
         irProp.setTokenisedInIndex(false);
         irProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
-        marketingRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "MarketingRegion");
+        marketingRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "marketingRegion");
         M2Aspect marketingRegionCategorisation = model.createAspect("test:" + marketingRegionCategorisationQName.getLocalName());
         marketingRegionCategorisation.setParentName("cm:" + ContentModel.ASPECT_CLASSIFIABLE.getLocalName());
         M2Property mrProp =  marketingRegionCategorisation.createProperty("test:marketingRegion");
@@ -388,7 +388,7 @@ public class ADMLuceneCategoryTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\" AND (PATH:\"/test:AssetClass/test:Equity/member\" PATH:\"/test:MarketingRegion/member\")", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\" AND (PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\")", null, null);
         //printPaths(results);
         assertEquals(9, results.length());
         results.close();
@@ -415,13 +415,13 @@ public class ADMLuceneCategoryTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
         ResultSet results;
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:MarketingRegion\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion\"", null, null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:MarketingRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null, null);
         //printPaths(results);
         assertEquals(6, results.length());
         results.close();
@@ -438,72 +438,72 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/member\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null, null);
         assertEquals(1, results.length());
         results.close();
         
         
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/test:Fixed\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/test:Equity\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Equity\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Fixed\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:*\"", null, null);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass//test:*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass//test:*\"", null, null);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
         //printPaths(results);
         assertEquals(8, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\"", null, null);
         //printPaths(results);
         assertEquals(8, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/test:SpecialEquity/member//.\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//.\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/test:SpecialEquity/member//*\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member//*\"", null, null);
         assertEquals(0, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/test:SpecialEquity/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/test:SpecialEquity/member\"", null, null);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:AssetClass/test:Equity/member\" AND +PATH:\"/test:AssetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Equity/member\" AND +PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
         //printPaths(results);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/member\" PATH:\"/test:AssetClass/test:Fixed/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:assetClass/test:Fixed/member\"", null, null);
         //printPaths(results);
         assertEquals(13, results.length());
         results.close();
@@ -512,52 +512,52 @@ public class ADMLuceneCategoryTest extends TestCase
         
         assertEquals(4, nodeService.getChildAssocs(catRoot).size());
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:Region\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region\"", null, null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:Region/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/member\"", null, null);
         //printPaths(results);
         assertEquals(1, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:Region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:Europe/member\"", null, null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:Region/test:RestOfWorld/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region/test:RestOfWorld/member\"", null, null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:Region//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:region//member\"", null, null);
         //printPaths(results);
         assertEquals(5, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:InvestmentRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:investmentRegion//member\"", null, null);
         //printPaths(results);
         assertEquals(5, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:MarketingRegion//member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:marketingRegion//member\"", null, null);
         //printPaths(results);
         assertEquals(6, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:AssetClass/test:Fixed/member\" AND +PATH:\"/test:Region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/test:assetClass/test:Fixed/member\" AND +PATH:\"/test:region/test:Europe/member\"", null, null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/test:Fixed/member\" AND +PATH:\"/cm:categoryContainer/cm:categoryRoot/test:Region/test:Europe/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "+PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/test:Fixed/member\" AND +PATH:\"/cm:categoryContainer/cm:categoryRoot/test:region/test:Europe/member\"", null, null);
         //printPaths(results);
         assertEquals(2, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:AssetClass/test:Equity/member\" PATH:\"/test:MarketingRegion/member\"", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/test:assetClass/test:Equity/member\" PATH:\"/test:marketingRegion/member\"", null, null);
         //printPaths(results);
         assertEquals(9, results.length());
         results.close();
@@ -585,11 +585,11 @@ public class ADMLuceneCategoryTest extends TestCase
         
         ResultSet 
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/*\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/*\" ", null, null);
         assertEquals(3, results.length());
         results.close();
         
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:AssetClass/member\" ", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/cm:categoryContainer/cm:categoryRoot/test:assetClass/member\" ", null, null);
         assertEquals(1, results.length());
         results.close();
         
@@ -629,7 +629,7 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(2, result.size());
         
         
-        result = impl.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE);
+        result = impl.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE);
         assertEquals(2, result.size());
       
         
@@ -666,42 +666,42 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY).size());
         assertEquals(17, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY).size());
         assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
-        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
         assertEquals(7, categoryService.getClassificationAspects().size());
-        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
+        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
 
-        NodeRef newRoot = categoryService.createRootCategory(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "AssetClass"), "Fruit");
+        NodeRef newRoot = categoryService.createRootCategory(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "assetClass"), "Fruit");
         tx.commit();
         tx = transactionService.getUserTransaction();
         tx.begin();
-        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(4, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(4, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
      
         NodeRef newCat = categoryService.createCategory(newRoot, "Banana");
         tx.commit();
         tx = transactionService.getUserTransaction();
         tx.begin();
-        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(5, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(5, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
      
         categoryService.deleteCategory(newCat);
         tx.commit();
         tx = transactionService.getUserTransaction();
         tx.begin();
-        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(4, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(4, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
      
         categoryService.deleteCategory(newRoot);
         tx.commit();
         tx = transactionService.getUserTransaction();
         tx.begin();
-        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
-        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
+        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
      
         
         tx.rollback();

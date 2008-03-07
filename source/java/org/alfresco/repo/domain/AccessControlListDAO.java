@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * This abstracts the reading and writing of ACLs on nodes from particular node implementations.
@@ -84,4 +85,8 @@ public interface AccessControlListDAO
     public void forceCopy(NodeRef nodeRef);
     
     public Map<ACLType, Integer> patchAcls();
+
+    public DbAccessControlList getAccessControlList(StoreRef storeRef);
+    
+    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl);
 }

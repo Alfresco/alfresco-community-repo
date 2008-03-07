@@ -48,7 +48,9 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 
 /**
@@ -814,7 +816,26 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
     
+    private DbAccessControlList getStoreAclAsSystem(final String storeName)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>(){
+
+            public DbAccessControlList doWork() throws Exception
+            {
+                return fAVMRepository.getStoreAcl(storeName);
+            }}, AuthenticationUtil.getSystemUserName());
+    }
     
+    private void setStoreAclAsSystem(final String storeName, final DbAccessControlList acl)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+            public Object doWork() throws Exception
+            {
+                fAVMRepository.setStoreAcl(storeName, acl);
+                return null;
+            }}, AuthenticationUtil.getSystemUserName());
+    }
     
     private DbAccessControlList getAclAsSystem(final int version, final String path)
     {
@@ -836,4 +857,30 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 return null;
             }}, AuthenticationUtil.getSystemUserName());
     }
+
+    public DbAccessControlList getAccessControlList(StoreRef storeRef)
+    {
+        try
+        {
+            return getStoreAclAsSystem(storeRef.getIdentifier());
+        }
+        catch (AVMException e)
+        {
+            throw new InvalidStoreRefException(storeRef);
+        }
+    }
+    
+    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl)
+    {
+        try
+        {
+            setStoreAclAsSystem(storeRef.getIdentifier(), acl);
+        }
+        catch (AVMException e)
+        {
+            throw new InvalidStoreRefException(storeRef);
+        }
+    }
+    
+    
 }

@@ -3230,13 +3230,29 @@ public class AVMRepository
             if (storeAcl != null)
             {
                 Long storeAclID = storeAcl.getId();
-                context.getAdditionalContext().put("STORE_ACL_ID", storeAclID);
+                context.setStoreAcl(storeAclID);
             }
         }
         return fPermissionService.hasPermission(aclId, context, permission)
             == AccessStatus.ALLOWED;
     }
 
+    public boolean can(String storeName, int version, String path, String permission)
+    {
+        Lookup lookup = AVMRepository.GetInstance().lookup(version, path, true);
+        if (lookup != null)
+        {
+            AVMNode node = lookup.getCurrentNode();
+            AVMStore store = getAVMStoreByName(storeName);
+            return can(store, node, permission);
+        }
+        else
+        {
+            // Does not exist => allowed
+            return true;
+        }
+    }
+    
     /**
      * Set the acl on a store.
      * @param storeName

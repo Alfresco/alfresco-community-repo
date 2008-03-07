@@ -31,6 +31,7 @@ import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 
 /**
@@ -137,4 +138,45 @@ public interface PermissionsDaoComponent
      * @return - the set of matching nodes
      */
     public Set<NodeRef> findNodeByPermission(String authority, PermissionReference permission, boolean allow);
+
+    /**
+     * Delete entries from a permission mask on a store by authority
+     * 
+     * @param storeRef
+     * @param authority
+     */
+    public void deletePermissions(StoreRef storeRef, String authority);
+
+    /**
+     * Remove part of a permission mask from a store
+     * 
+     * @param storeRef
+     * @param authority
+     * @param perm
+     */
+    public void deletePermission(StoreRef storeRef, String authority, PermissionReference perm);
+
+    /**
+     * Remove all permission masks from a store
+     * 
+     * @param storeRef
+     */
+    public void deletePermissions(StoreRef storeRef);
+
+    /**
+     * Set part of a permission mask on a store.
+     * 
+     * @param storeRef
+     * @param authority
+     * @param permission
+     * @param allow
+     */
+    public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow);
+
+    /**
+     * Get permission masks set on a store
+     * @param storeRef
+     * @return
+     */
+    public NodePermissionEntry getPermissions(StoreRef storeRef);
 }

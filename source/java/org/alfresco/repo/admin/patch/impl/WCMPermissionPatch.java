@@ -46,9 +46,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Remove ACLs on all but staging area stores On staging area stores, set ACls according to the users and roles as set
- * on the web site
- * 
- * Note: runs as the system user
+ * on the web site Note: runs as the system user
  * 
  * @author andyh
  */
@@ -61,7 +59,7 @@ public class WCMPermissionPatch extends AbstractPatch
     AVMService avmService;
 
     PermissionService permissionService;
-    
+
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
@@ -88,6 +86,7 @@ public class WCMPermissionPatch extends AbstractPatch
             /* Set permissions in staging */
             case STAGING:
                 setStagingAreaPermissions(store);
+                setStagingAreaMasks(store);
                 // TODO: mark read only
                 break;
             /* Clear permissions */
@@ -97,9 +96,11 @@ public class WCMPermissionPatch extends AbstractPatch
             case AUTHOR_WORKFLOW_PREVIEW:
                 // TODO: add app access control
                 clearPermissions(store);
+                setSandBoxMasks(store);
                 break;
             case STAGING_PREVIEW:
                 clearPermissions(store);
+                setStagingAreaMasks(store);
                 // TODO: mark read only
                 break;
             case WORKFLOW:
@@ -109,7 +110,6 @@ public class WCMPermissionPatch extends AbstractPatch
             /* non WCM stores - nothing to do */
             case UNKNOWN:
             default:
-                break;
             }
         }
 
@@ -122,7 +122,7 @@ public class WCMPermissionPatch extends AbstractPatch
     private void clearPermissions(AVMStoreDescriptor store)
     {
         AVMNodeDescriptor www = avmService.lookup(-1, store.getName() + ":/www");
-        if(www.isLayeredDirectory() && www.isPrimary())
+        if (www.isLayeredDirectory() && www.isPrimary())
         {
             // throw away any acl
             AVMRepository.GetInstance().setACL(store.getName() + ":/www", null);
@@ -130,7 +130,6 @@ public class WCMPermissionPatch extends AbstractPatch
             avmService.retargetLayeredDirectory(store.getName() + ":/www", www.getIndirection());
         }
     }
-    
 
     private void setStagingAreaPermissions(AVMStoreDescriptor store)
     {
@@ -143,8 +142,8 @@ public class WCMPermissionPatch extends AbstractPatch
 
         if (pValue != null)
         {
-            NodeRef webProjectNodeRef = (NodeRef)pValue.getValue(DataTypeDefinition.NODE_REF);
-            
+            NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
+
             // Apply sepcific user permissions as set on the web project
             List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
@@ -156,6 +155,77 @@ public class WCMPermissionPatch extends AbstractPatch
                 permissionService.setPermission(dirRef, username, userrole, true);
             }
         }
+    }
+
+    private void setStagingAreaMasks(AVMStoreDescriptor store)
+    {
+        NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, store.getName() + ":/www");
+        permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+
+    }
+
+    private void setSandBoxMasks(AVMStoreDescriptor sandBoxStore)
+    {
+        // get the settings from the staging store ...
+
+        String owner = extractOwner(sandBoxStore.getName());
+        String stagingAreaName = extractStagingAreaName(sandBoxStore.getName());
+
+        QName propQName = QName.createQName(null, ".web_project.noderef");
+
+        NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, sandBoxStore.getName() + ":/www");
+
+        PropertyValue pValue = avmService.getStoreProperty(stagingAreaName, propQName);
+
+        permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        
+        if (pValue != null)
+        {
+            NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
+
+            // Apply sepcific user permissions as set on the web project
+            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : userInfoRefs)
+            {
+                NodeRef userInfoRef = ref.getChildRef();
+                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+
+                if (username.equals(owner))
+                {
+                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
+                }
+                else if (userrole.equals("ContentManager"))
+                {
+                    permissionService.setPermission(dirRef.getStoreRef(), username, userrole, true);
+                }
+            }
+        }
+    }
+
+    private String extractOwner(String name)
+    {
+        int start = name.indexOf("--");
+        if (start == -1)
+        {
+            throw new UnsupportedOperationException(name);
+        }
+        int end = name.indexOf("--", start + 1);
+        if (end == -1)
+        {
+            return name.substring(start+2);
+        }
+        return name.substring(start + 2, end);
+    }
+
+    private String extractStagingAreaName(String name)
+    {
+        int index = name.indexOf("--");
+        if (index == -1)
+        {
+            throw new UnsupportedOperationException(name);
+        }
+        return name.substring(0, index);
     }
 
 }

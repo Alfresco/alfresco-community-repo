@@ -75,7 +75,7 @@ import junit.framework.TestCase;
 
 /**
  * Specifically test AVM permissions with the updated ACL schema
- *
+ * 
  * @author andyh
  */
 public class AVMServicePermissionsTest extends TestCase
@@ -139,7 +139,7 @@ public class AVMServicePermissionsTest extends TestCase
 
         aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
         avmService = (AVMService) applicationContext.getBean("avmService");
-        avmSyncService = (AVMSyncService)applicationContext.getBean("AVMSyncService");
+        avmSyncService = (AVMSyncService) applicationContext.getBean("AVMSyncService");
 
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE.getLocalName());
@@ -328,7 +328,9 @@ public class AVMServicePermissionsTest extends TestCase
             runAs(user);
             AVMNodeDescriptor desc = avmService.lookup(-1, path);
             AVMNode node = avmNodeDAO.getByID(desc.getId());
-            boolean can = AVMRepository.GetInstance().can(null, node, permission);
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+            AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(nodeRef.getStoreRef().getIdentifier());
+            boolean can = AVMRepository.GetInstance().can(store, node, permission);
             return allowed ? can : !can;
         }
         finally
@@ -345,14 +347,17 @@ public class AVMServicePermissionsTest extends TestCase
             runAs(user);
             AVMNodeDescriptor desc = avmService.lookup(-1, path);
             AVMNode node = avmNodeDAO.getByID(desc.getId());
-            boolean can = AVMRepository.GetInstance().can(null, node, permission);
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+            AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(nodeRef.getStoreRef().getIdentifier());
+            boolean can = AVMRepository.GetInstance().can(store, node, permission);
             long start = System.nanoTime();
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 can = AVMRepository.GetInstance().can(null, node, permission);
             }
             long end = System.nanoTime();
-            System.out.println("Can in "+((end-start)/1.0e9f));
+            System.out.println("Can in " + ((end - start) / 10e9f / count));
+            System.out.println("Can per second " + (1 / ((end - start) / 10e9f / count)));
             return allowed ? can : !can;
         }
         finally
@@ -370,12 +375,13 @@ public class AVMServicePermissionsTest extends TestCase
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
             boolean can = permissionService.hasPermission(nodeRef, permission) == AccessStatus.ALLOWED;
             long start = System.nanoTime();
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 can = permissionService.hasPermission(nodeRef, permission) == AccessStatus.ALLOWED;
             }
             long end = System.nanoTime();
-            System.out.println("Has Permission in "+((end-start)/1.0e9f));
+            System.out.println("Has Permission in " + ((end - start) / 10e9f / count));
+            System.out.println("Has Permission per second " + (1 / ((end - start) / 10e9f / count)));
             return allowed ? can : !can;
         }
         finally
@@ -384,7 +390,114 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
+    public boolean checkHasPermission(String user, NodeRef nodeRef, String permission, boolean allowed)
+    {
+        String curentUser = AuthenticationUtil.getCurrentUserName();
+        try
+        {
+            runAs(user);
+            boolean can = permissionService.hasPermission(nodeRef, permission) == AccessStatus.ALLOWED;
+            return allowed ? can : !can;
+        }
+        finally
+        {
+            runAs(curentUser);
+        }
+    }
+    
+    public void testStoreAcls() throws Exception
+    {
+        runAs("admin");
+        String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        try
+        {
+            buildBaseStructure(storeName);
 
+            AVMNodeDescriptor nodeDesc = avmService.lookup(-1, storeName + ":/base");
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
+            permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            
+            permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            
+            permissionService.deletePermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS);
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+     
+            permissionService.deletePermissions(nodeRef.getStoreRef());
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            
+
+            permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.READ, true);
+            permissionService.setPermission(nodeRef.getStoreRef(), "lemur", PermissionService.ALL_PERMISSIONS, true);
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 3);
+            
+            permissionService.clearPermission(nodeRef.getStoreRef(), "andy");
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 1);
+            
+            permissionService.clearPermission(nodeRef.getStoreRef(), "lemur");
+            
+            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            
+        }
+        finally
+        {
+            avmService.purgeStore(storeName);
+            avmService.purgeStore(storeName + "-layer-base");
+            avmService.purgeStore(storeName + "-layer-a");
+            avmService.purgeStore(storeName + "-layer-b");
+            avmService.purgeStore(storeName + "-layer-c");
+            avmService.purgeStore(storeName + "-layer-d");
+            avmService.purgeStore(storeName + "-layer-layer-base");
+            avmService.purgeStore(storeName + "-layer-layer-layer-base");
+        }
+
+    }
 
     public void testSimpleUpdate() throws Exception
     {
@@ -415,14 +528,12 @@ public class AVMServicePermissionsTest extends TestCase
             assertNotNull(fileAcl);
             assertTrue(acl.getId() == fileAcl.getId());
 
-
             avmService.createSnapshot(storeName, "store", "store");
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
 
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
-
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");
             node = avmNodeDAO.getByID(desc.getId());
@@ -472,7 +583,6 @@ public class AVMServicePermissionsTest extends TestCase
             Long baseAcl = avmNodeDAO.getByID(nodeDesc.getId()).getAcl().getId();
             Long inheritedBaseAcl = aclDaoComponent.getInheritedAccessControlList(baseAcl);
 
-
             avmService.createDirectory(storeName + "-layer-base:/layer-to-base", "update-dir");
             avmService.createFile(storeName + "-layer-base:/layer-to-base/update-dir", "update-file").close();
 
@@ -495,14 +605,12 @@ public class AVMServicePermissionsTest extends TestCase
             assertNotNull(fileAcl);
             assertTrue(acl.getId() == fileAcl.getId());
 
-
             avmService.createSnapshot(storeName, "store", "store");
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
 
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
-
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");
             node = avmNodeDAO.getByID(desc.getId());
@@ -1860,7 +1968,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName+"-a-");
+            avmService.purgeStore(storeName + "-a-");
 
         }
     }
@@ -2228,7 +2336,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName+"-a-");
+            avmService.purgeStore(storeName + "-a-");
         }
     }
 
@@ -2547,7 +2655,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName+"-a-");
+            avmService.purgeStore(storeName + "-a-");
         }
     }
 
@@ -2625,7 +2733,7 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
-            avmService.purgeStore(storeName+"-a-");
+            avmService.purgeStore(storeName + "-a-");
         }
     }
 }

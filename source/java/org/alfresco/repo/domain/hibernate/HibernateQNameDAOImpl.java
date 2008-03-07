@@ -164,6 +164,14 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
                 // We found something, so we can add it to the cache
                 qnameEntityCache.put(qname, id);
             }
+            else
+            {
+                qnameEntityCache.put(qname, -1L);
+            }
+        }
+        else if(id == -1L)
+        {
+            return null;
         }
         else
         {

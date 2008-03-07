@@ -75,9 +75,11 @@ ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B25A50BF, DROP FOREIGN
 ALTER TABLE alf_authority
    DROP PRIMARY KEY,
    ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT,
+   ADD COLUMN crc BIGINT,
    CHANGE recipient authority VARCHAR(100),
    ADD primary key (id),
-   ADD UNIQUE (authority);
+   ADD UNIQUE (authority, crc);
+CREATE INDEX idx_authority on alf_authority (authority);
 
 -- migrate data - fix up FK refs to authority
 UPDATE alf_access_control_entry ace

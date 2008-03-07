@@ -36,6 +36,8 @@ import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -54,6 +56,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -283,6 +286,17 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return accessPermissions;
     }
 
+    public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef)
+    {
+        HashSet<AccessPermission> accessPermissions = new HashSet<AccessPermission>();
+        NodePermissionEntry nodePremissionEntry = getSetPermissions(storeRef);
+        for (PermissionEntry pe : nodePremissionEntry.getPermissionEntries())
+        {
+            accessPermissions.add(new AccessPermissionImpl(getPermission(pe.getPermissionReference()), pe.getAccessStatus(), pe.getAuthority()));
+        }
+        return accessPermissions;
+    }
+
     private Set<AccessPermission> getAllPermissionsImpl(NodeRef nodeRef, boolean includeTrue, boolean includeFalse)
     {
         String userName = authenticationComponent.getCurrentUserName();
@@ -331,6 +345,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return permissionsDaoComponent.getPermissions(tenantService.getName(nodeRef));
     }
 
+    public NodePermissionEntry getSetPermissions(StoreRef storeRef)
+    {
+        return permissionsDaoComponent.getPermissions(storeRef);
+    }
+
     public AccessStatus hasPermission(final NodeRef nodeRefIn, final PermissionReference permIn)
     {
         // If the node ref is null there is no sensible test to do - and there
@@ -349,11 +368,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
+        // AVM nodes - test for existence underneath
+        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        {
+            return doAvmCan(nodeRef, permIn);
+        }
+        
         // Allow permissions for nodes that do not exist
         if (!nodeService.exists(nodeRef))
         {
             return AccessStatus.ALLOWED;
         }
+
+      
 
         final PermissionReference perm;
         if (permIn.equals(OLD_ALL_PERMISSIONS_REFERENCE))
@@ -436,6 +463,16 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     }
 
+    private AccessStatus doAvmCan(NodeRef nodeRef, PermissionReference permission)
+    {
+        org.alfresco.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        int version = avmVersionPath.getFirst();
+        String path = avmVersionPath.getSecond();
+        boolean result = AVMRepository.GetInstance().can(nodeRef.getStoreRef().getIdentifier(), version, path, permission.getName());
+        AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+        return status;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -493,11 +530,22 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             permission = getAllPermissionReference();
         }
-        AclTest aclTest = new AclTest(permission, typeQname, aspectQNames);
-        boolean result = aclTest.evaluate(authorisations, aclId);
 
+        boolean result;
+        if (context.getStoreAcl() == null)
+        {
+            AclTest aclTest = new AclTest(permission, typeQname, aspectQNames);
+            result = aclTest.evaluate(authorisations, aclId);
+        }
+        else
+        {
+            Set<String> storeAuthorisations = getAuthorisations(auth, (PermissionContext)null);
+            AclTest aclTest = new AclTest(permission, typeQname, aspectQNames);
+            result = aclTest.evaluate(authorisations, aclId) && aclTest.evaluate(storeAuthorisations, context.getStoreAcl());
+        }
         AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
         return status;
+
     }
 
     enum CacheType
@@ -606,6 +654,43 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public void clearPermission(StoreRef storeRef, String authority)
+    {
+        permissionsDaoComponent.deletePermissions(storeRef, authority);
+        accessCache.clear();
+
+    }
+
+    public void deletePermission(StoreRef storeRef, String authority, String perm)
+    {
+        deletePermission(storeRef, authority, getPermissionReference(perm));
+    }
+
+    public void deletePermission(StoreRef storeRef, String authority, PermissionReference perm)
+    {
+        permissionsDaoComponent.deletePermission(storeRef, authority, perm);
+        accessCache.clear();
+    }
+
+    public void deletePermissions(StoreRef storeRef)
+    {
+        permissionsDaoComponent.deletePermissions(storeRef);
+        accessCache.clear();
+
+    }
+
+    public void setPermission(StoreRef storeRef, String authority, String perm, boolean allow)
+    {
+        setPermission(storeRef, authority, getPermissionReference(perm), allow);
+    }
+
+    public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow)
+    {
+        permissionsDaoComponent.setPermission(storeRef, authority, permission, allow);
+        accessCache.clear();
+
     }
 
     public void deletePermissions(NodeRef nodeRef)

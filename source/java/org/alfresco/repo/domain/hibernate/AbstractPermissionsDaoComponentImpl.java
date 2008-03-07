@@ -34,12 +34,14 @@ import java.util.Set;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACEType;
+import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.SimpleAccessControlEntry;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
@@ -48,6 +50,7 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.util.GUID;
@@ -267,6 +270,30 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             return snpe;
         }
     }
+    
+    private SimpleNodePermissionEntry createSimpleNodePermissionEntry(StoreRef storeRef)
+    {
+        DbAccessControlList acl = getACLDAO(storeRef).getAccessControlList(storeRef);
+        if (acl == null)
+        {
+            // there isn't an access control list for the node - spoof a null one
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptySet());
+            return snpe;
+        }
+        else
+        {
+            AccessControlList info = aclDaoComponent.getAccessControlList(acl.getId());
+
+            HashSet<SimplePermissionEntry> spes = new HashSet<SimplePermissionEntry>(info.getEntries().size(), 1.0f);
+            for (AccessControlEntry entry : info.getEntries())
+            {
+                SimplePermissionEntry spe = new SimplePermissionEntry(null, entry.getPermission(), entry.getAuthority(), entry.getAccessStatus());
+                spes.add(spe);
+            }
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, acl.getInherits(), spes);
+            return snpe;
+        }
+    }
 
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
@@ -454,6 +481,117 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         all.addAll(report.getChanges());
         all.addAll(changes);
         getACLDAO(nodeRef).updateChangedAcls(nodeRef, all);
+    }
+
+    
+    
+    public void deletePermission(StoreRef storeRef, String authority, PermissionReference permission)
+    {
+        DbAccessControlList acl = getAccessControlList(storeRef);
+        if(acl == null)
+        {
+            return;
+        }
+        acl = getMutableAccessControlList(storeRef);
+        SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
+        pattern.setAuthority(authority);
+        pattern.setPermission(permission);
+        aclDaoComponent.deleteAccessControlEntries(acl.getId(), pattern);
+    }
+
+    private DbAccessControlList getMutableAccessControlList(StoreRef storeRef)
+    {
+        DbAccessControlList acl = getACLDAO(storeRef).getAccessControlList(storeRef);
+        if(acl == null)
+        {
+            SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+            properties.setAclType(ACLType.DEFINING);
+            properties.setVersioned(false);
+            properties.setInherits(false);
+            // Accept default versioning
+            Long id = aclDaoComponent.createAccessControlList(properties);
+            acl = aclDaoComponent.getDbAccessControlList(id);
+            getACLDAO(storeRef).setAccessControlList(storeRef, acl);
+        }
+        return acl;
+    }
+
+    private AccessControlListDAO getACLDAO(StoreRef storeRef)
+    {
+        AccessControlListDAO ret = fProtocolToACLDAO.get(storeRef.getProtocol());
+        if (ret == null)
+        {
+            return fDefaultACLDAO;
+        }
+        return ret;
+    }
+
+    private DbAccessControlList getAccessControlList(StoreRef storeRef)
+    {
+       return getACLDAO(storeRef).getAccessControlList(storeRef);
+    }
+
+    public void deletePermissions(StoreRef storeRef, String authority)
+    {
+        DbAccessControlList acl = getAccessControlList(storeRef);
+        if(acl == null)
+        {
+            return;
+        }
+        acl = getMutableAccessControlList(storeRef);
+        SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
+        pattern.setAuthority(authority);
+        aclDaoComponent.deleteAccessControlEntries(acl.getId(), pattern);
+    }
+
+    public void deletePermissions(StoreRef storeRef)
+    {
+        getACLDAO(storeRef).setAccessControlList(storeRef, null);   
+    }
+
+    public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow)
+    {
+        DbAccessControlList acl = getMutableAccessControlList(storeRef);
+    
+        SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
+        entry.setAuthority(authority);
+        entry.setPermission(permission);
+        entry.setAccessStatus(allow ? AccessStatus.ALLOWED : AccessStatus.DENIED);
+        entry.setAceType(ACEType.ALL);
+        aclDaoComponent.setAccessControlEntry(acl.getId(), entry); 
+    }
+
+    
+    
+    public NodePermissionEntry getPermissions(StoreRef storeRef)
+    {
+        // Create the object if it is not found.
+        // Null objects are not cached in hibernate
+        // If the object does not exist it will repeatedly query to check its
+        // non existence.
+        NodePermissionEntry npe = null;
+        DbAccessControlList acl = null;
+        try
+        {
+            acl = getAccessControlList(storeRef);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            // Do nothing.
+        }
+
+        if (acl == null)
+        {
+            // there isn't an access control list for the node - spoof a null one
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptySet());
+            npe = snpe;
+        }
+        else
+        {
+            npe = createSimpleNodePermissionEntry(storeRef);
+        }
+       
+        return npe;
     }
 
     protected abstract CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, DbAccessControlList existing);

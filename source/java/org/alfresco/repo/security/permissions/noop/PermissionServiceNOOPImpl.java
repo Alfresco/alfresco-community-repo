@@ -36,6 +36,7 @@ import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.permissions.impl.PermissionReferenceImpl;
 import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionContext;
@@ -258,4 +259,31 @@ public class PermissionServiceNOOPImpl
     {
         return Collections.<NodeRef>emptySet();
     }
+
+    public void clearPermission(StoreRef storeRef, String authority)
+    {
+        
+    }
+
+    public void deletePermission(StoreRef storeRef, String authority, String permission)
+    {
+        
+    }
+
+    public void deletePermissions(StoreRef storeRef)
+    {
+        
+    }
+
+    public void setPermission(StoreRef storeRef, String authority, String permission, boolean allow)
+    {
+        
+    }
+
+    public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef)
+    {
+        return Collections.<AccessPermission>emptySet();
+    }
+    
+    
 }

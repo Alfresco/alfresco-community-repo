@@ -27,6 +27,7 @@ package org.alfresco.repo.security.permissions.impl.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +98,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private String model;
 
     // Aprrox 6 - default size OK
-    private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>();
+    private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>(128, 1.0f);
 
     // Global permissions - default size OK
     private Set<GlobalPermissionEntry> globalPermissions = new HashSet<GlobalPermissionEntry>();
@@ -105,13 +106,13 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private AccessStatus defaultPermission;
 
     // Cache granting permissions
-    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>(128, 1.0f);
+    private HashMap<PermissionReference, Set<PermissionReference>> grantingPermissions = new HashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f);
 
     // Cache grantees
-    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>(128, 1.0f);
+    private HashMap<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>(256, 1.0f);
 
     // Cache the mapping of extended groups to the base
-    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(128, 1.0f);
+    private HashMap<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(256, 1.0f);
 
     private HashMap<String, PermissionReference> uniqueMap;
 
@@ -121,9 +122,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private HashMap<String, PermissionReference> permissionReferenceMap;
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
+    private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(256, 1.0f);
 
-    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(128, 1.0f);
+    private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(256, 1.0f);
+
+    private Collection<QName> allAspects;
 
     public PermissionModel()
     {
@@ -226,6 +229,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
             globalPermissions.add(globalPermission);
         }
+        
+        // Cache all aspect list
+        
+        allAspects =  dictionaryService.getAllAspects();
     }
 
     /*
@@ -308,7 +315,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         Set<PermissionReference> permissions = cache.get(type);
         if (permissions == null)
         {
-            permissions = new LinkedHashSet<PermissionReference>(128, 1.0f);
+            permissions = new LinkedHashSet<PermissionReference>(256, 1.0f);
             ClassDefinition cd = dictionaryService.getClass(type);
             if (cd != null)
             {
@@ -428,12 +435,12 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private void mergeGeneralAspectPermissions(Set<PermissionReference> target, boolean exposedOnly)
     {
-        for (QName aspect : dictionaryService.getAllAspects())
+        for (QName aspect : allAspects)
         {
             mergePermissions(target, aspect, exposedOnly, false);
         }
     }
-
+    
     public Set<PermissionReference> getAllPermissions(NodeRef nodeRef)
     {
         return getAllPermissionsImpl(nodeService.getType(nodeRef), nodeService.getAspects(nodeRef), false);
@@ -451,20 +458,14 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissionsImpl(QName typeName, Set<QName> aspects, boolean exposedOnly)
     {
-        Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>(128, 1.0f);
+        Set<PermissionReference> permissions = new LinkedHashSet<PermissionReference>(256, 1.0f);
+        
+        ClassDefinition cd = dictionaryService.getClass(typeName);
         permissions.addAll(getAllPermissionsImpl(typeName, exposedOnly));
 
-        ClassDefinition cd = dictionaryService.getClass(typeName);
+     
         if (cd != null)
         {
-            if (cd.isAspect())
-            {
-                // Do not merge in all general aspects
-            }
-            else
-            {
-                mergeGeneralAspectPermissions(permissions, exposedOnly);
-            }
             Set<QName> defaultAspects = new HashSet<QName>();
             for (AspectDefinition aspDef : cd.getDefaultAspects())
             {
@@ -500,7 +501,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private Set<PermissionReference> getGrantingPermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
         permissions.add(permissionReference);
         for (PermissionSet ps : permissionSets.values())
         {
@@ -573,7 +574,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
     private Set<PermissionReference> getGranteePermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
         permissions.add(permissionReference);
         for (PermissionSet ps : permissionSets.values())
         {
@@ -636,7 +637,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private Set<PermissionReference> getAllPermissions()
     {
-        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(128, 1.0f);
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())
@@ -817,7 +818,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
      */
     private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
     {
-        HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(8, 1.0f);
+        HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(16, 1.0f);
         if (target == null)
         {
             return requiredPermissions;
@@ -960,11 +961,11 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
     private void buildUniquePermissionMap()
     {
-        Set<String> excluded = new HashSet<String>(64, 1.0f);
-        uniqueMap = new HashMap<String, PermissionReference>(128, 1.0f);
-        permissionReferenceMap = new HashMap<String, PermissionReference>(128, 1.0f);
-        permissionGroupMap = new HashMap<PermissionReference, PermissionGroup>(64, 1.0f);
-        permissionMap = new HashMap<PermissionReference, Permission>(32, 1.0f);
+        Set<String> excluded = new HashSet<String>(128, 1.0f);
+        uniqueMap = new HashMap<String, PermissionReference>(256, 1.0f);
+        permissionReferenceMap = new HashMap<String, PermissionReference>(256, 1.0f);
+        permissionGroupMap = new HashMap<PermissionReference, PermissionGroup>(128, 1.0f);
+        permissionMap = new HashMap<PermissionReference, Permission>(64, 1.0f);
         for (PermissionSet ps : permissionSets.values())
         {
             for (PermissionGroup pg : ps.getPermissionGroups())

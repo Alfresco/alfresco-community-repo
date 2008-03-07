@@ -193,13 +193,15 @@
         lazy="false"
         optimistic-lock="version" >
         
-         <id name="id" column="id" type="long" >
+        <id name="id" column="id" type="long" >
             <generator class="native" />
         </id>
         
         <version column="version" name="version" type="long" />
         
-        <property name="authority" column="authority" type="string" length="100" unique="true"/>
+        <property name="authority" column="authority" type="string" length="100" unique-key="uidx_auth_name" index="idx_authority" />
+		
+		<property name="crc" column="crc" type="long" unique-key="uidx_auth_name" /> 
 
     </class>
     
@@ -317,7 +319,7 @@
 
    <query name="permission.GetAcesAndAclsByAuthority" cacheable="true">
        select
-         aclmem.id, acl.id, ace.id
+         aclmem.id, acl.id, ace.id, authority.authority
        from
          org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl as aclmem
          join aclmem.accessControlList as acl

@@ -36,6 +36,7 @@ import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * The Node implementation for getting and setting ACLs.
@@ -146,4 +147,15 @@ public class NodeAccessControlListDAO implements AccessControlListDAO
         throw new UnsupportedOperationException();
     }
 
+    public DbAccessControlList getAccessControlList(StoreRef storeRef)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    
 }

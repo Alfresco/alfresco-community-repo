@@ -25,31 +25,27 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
-
+import org.alfresco.util.EqualsHelper;
 
 /**
  * This class provides common support for hash code and equality.
  * 
  * @author andyh
  */
-public abstract class AbstractNodePermissionEntry implements
-        NodePermissionEntry
+public abstract class AbstractNodePermissionEntry implements NodePermissionEntry
 {
 
     public AbstractNodePermissionEntry()
     {
         super();
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(200);
-        sb.append("NodePermissionEntry")
-          .append("[ node=").append(getNodeRef())
-          .append(", entries=").append(getPermissionEntries())
-          .append(", inherits=").append(inheritPermissions())
-          .append("]");
+        sb.append("NodePermissionEntry").append("[ node=").append(getNodeRef()).append(", entries=").append(getPermissionEntries()).append(", inherits=").append(
+                inheritPermissions()).append("]");
         return sb.toString();
     }
 
@@ -66,14 +62,21 @@ public abstract class AbstractNodePermissionEntry implements
         }
         AbstractNodePermissionEntry other = (AbstractNodePermissionEntry) o;
 
-        return this.getNodeRef().equals(other.getNodeRef())
-                && (this.inheritPermissions() == other.inheritPermissions())
-                && (this.getPermissionEntries().equals(other.getPermissionEntries()));
+        return EqualsHelper.nullSafeEquals(this.getNodeRef(), other.getNodeRef()) &&
+               EqualsHelper.nullSafeEquals(this.inheritPermissions(), other.inheritPermissions()) && 
+               EqualsHelper.nullSafeEquals(this.getPermissionEntries(), other.getPermissionEntries());
     }
 
     @Override
     public int hashCode()
     {
-        return getNodeRef().hashCode();
+        if (getNodeRef() != null)
+        {
+            return getNodeRef().hashCode();
+        }
+        else
+        {
+            return 0;
+        }
     }
 }

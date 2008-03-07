@@ -52,5 +52,18 @@ public interface DbAuthority extends Serializable
      * @param the authority
      */
     public void setAuthority(String authority);
+    
+    /**
+     * Use a crc to enforce case sensitive unique key
+     * @param crc
+     */
+    public void setCrc(Long crc);
+    
+    /**
+     * Get the CRC
+     * 
+     * @return
+     */
+    public Long getCrc();
    
 }

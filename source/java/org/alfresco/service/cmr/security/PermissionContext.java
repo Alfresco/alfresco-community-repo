@@ -44,6 +44,8 @@ public class PermissionContext
     
     private Map<String, Object> additionalContext = new HashMap<String, Object>();
     
+    private Long storeAcl = null;
+    
     public PermissionContext(QName type)
     {
         this.type = type;
@@ -83,6 +85,16 @@ public class PermissionContext
     public QName getType()
     {
         return type;
+    }
+
+    public Long getStoreAcl()
+    {
+        return storeAcl;
+    }
+
+    public void setStoreAcl(Long storeAcl)
+    {
+        this.storeAcl = storeAcl;
     }
     
     

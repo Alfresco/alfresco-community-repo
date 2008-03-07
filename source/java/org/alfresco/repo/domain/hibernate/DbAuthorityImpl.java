@@ -29,7 +29,6 @@ import java.io.Serializable;
 import org.alfresco.repo.domain.DbAuthority;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.CallbackException;
 import org.hibernate.Session;
 
 /**
@@ -37,45 +36,44 @@ import org.hibernate.Session;
  * 
  * @author andyh
  */
-public class DbAuthorityImpl
-    implements DbAuthority, Serializable
+public class DbAuthorityImpl implements DbAuthority, Serializable
 {
     private static final long serialVersionUID = -5582068692208928127L;
-    
+
     private static Log logger = LogFactory.getLog(DbAuthorityImpl.class);
 
     private Long id;
+
     private Long version;
+
     private String authority;
+
+    private Long crc;
 
     public DbAuthorityImpl()
     {
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("DbAuthorityImpl")
-          .append("[ id=").append(id)
-          .append(", version=").append(version)
-          .append(", authority=").append(authority)
-          .append("]");
+        sb.append("DbAuthorityImpl").append("[ id=").append(id).append(", version=").append(version).append(", authority=").append(authority).append("]");
         return sb.toString();
     }
-    
+
     @Override
     public boolean equals(Object o)
     {
-        if(this == o)
+        if (this == o)
         {
             return true;
         }
-        if(!(o instanceof DbAuthority))
+        if (!(o instanceof DbAuthority))
         {
             return false;
         }
-        DbAuthority other = (DbAuthority)o;
+        DbAuthority other = (DbAuthority) o;
         return this.getAuthority().equals(other.getAuthority());
     }
 
@@ -89,17 +87,27 @@ public class DbAuthorityImpl
     {
         return id;
     }
-    
+
     @SuppressWarnings("unused")
     private void setId(Long id)
     {
         this.id = id;
     }
-    
-    
+
+    @SuppressWarnings("unused")
+    public void setCrc(Long crc)
+    {
+        this.crc = crc;
+    }
+
     public Long getVersion()
     {
         return version;
+    }
+
+    public Long getCrc()
+    {
+        return crc;
     }
 
     /**
@@ -118,19 +126,21 @@ public class DbAuthorityImpl
 
     public void setAuthority(String authority)
     {
-       this.authority = authority;
+        this.authority = authority;
     }
-    
+
     /**
      * Helper method to find an authority based on its natural key
      * 
-     * @param session the Hibernate session to use
-     * @param authority the authority name
+     * @param session
+     *            the Hibernate session to use
+     * @param authority
+     *            the authority name
      * @return Returns an existing instance or null if not found
      */
     public static DbAuthority find(Session session, String authority)
     {
-        // TODO: Needs to use a query 
+        // TODO: Needs to use a query
         throw new UnsupportedOperationException("TODO");
     }
 }

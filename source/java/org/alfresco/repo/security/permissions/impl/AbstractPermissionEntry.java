@@ -54,14 +54,17 @@ public abstract class AbstractPermissionEntry implements PermissionEntry
         AbstractPermissionEntry other = (AbstractPermissionEntry) o;
         return EqualsHelper.nullSafeEquals(this.getNodeRef(), other.getNodeRef())
                 && EqualsHelper.nullSafeEquals(this.getPermissionReference(), other.getPermissionReference())
-                && EqualsHelper.nullSafeEquals(this.getAuthority(), other.getAuthority())
-                && EqualsHelper.nullSafeEquals(this.getAccessStatus(), other.getAccessStatus());
+                && EqualsHelper.nullSafeEquals(this.getAuthority(), other.getAuthority()) && EqualsHelper.nullSafeEquals(this.getAccessStatus(), other.getAccessStatus());
     }
 
     @Override
     public int hashCode()
     {
-        int hashCode = getNodeRef().hashCode();
+        int hashCode = 0;
+        if (getNodeRef() != null)
+        {
+            getNodeRef().hashCode();
+        }
         if (getPermissionReference() != null)
         {
             hashCode = hashCode * 37 + getPermissionReference().hashCode();
@@ -70,9 +73,9 @@ public abstract class AbstractPermissionEntry implements PermissionEntry
         {
             hashCode = hashCode * 37 + getAuthority().hashCode();
         }
-        if(getAccessStatus() != null)
+        if (getAccessStatus() != null)
         {
-           hashCode = hashCode * 37 + getAccessStatus().hashCode();
+            hashCode = hashCode * 37 + getAccessStatus().hashCode();
         }
         return hashCode;
     }
@@ -81,13 +84,9 @@ public abstract class AbstractPermissionEntry implements PermissionEntry
     public String toString()
     {
         StringBuilder sb = new StringBuilder(200);
-        sb.append("PermissionEntry")
-          .append("[ authority=").append(getAuthority())
-          .append(", permission=").append(getPermissionReference())
-          .append(", access=").append(getAccessStatus())
-          .append("]");
+        sb.append("PermissionEntry").append("[ authority=").append(getAuthority()).append(", permission=").append(getPermissionReference()).append(", access=").append(
+                getAccessStatus()).append("]");
         return sb.toString();
     }
-    
 
 }

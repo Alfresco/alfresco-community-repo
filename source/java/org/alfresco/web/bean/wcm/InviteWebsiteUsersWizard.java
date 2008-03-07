@@ -114,6 +114,10 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
    {
       super.finishImpl(context, outcome);
       
+      // break the permissions inheritance on the node so that only assigned users can access it
+      NodeRef nodeRef = this.getNode().getNodeRef();
+      this.getPermissionService().setInheritParentPermissions(nodeRef, false);
+      
       // create a sandbox for each user appropriately with permissions based on role
       // build a list of managers who will have full permissions on ALL staging areas
       List<String> managers = new ArrayList<String>(4);

@@ -272,9 +272,23 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     reindexAllAncestors(difference.getDestinationPath());
                 }
                 // Existing delete
-                else if (srcDesc.isDeleted() && dstDesc.isDeleted())
+                else if (srcDesc.isDeleted())
                 {
-                    // Nothing to do for this case
+                    if ((dstDesc == null) || dstDesc.isDeleted())
+                    {
+                        // Nothing to do for this case - both are deleted/not there
+                    }
+                    else
+                    {
+                        // We are back from the dead ...the node used to be deleted
+                        // Treat as new
+                        index(difference.getDestinationPath());
+                        if (dstDesc.isDirectory())
+                        {
+                            indexDirectory(dstDesc);
+                        }
+                        reindexAllAncestors(difference.getDestinationPath());
+                    }
                 }
                 // Anything else then we reindex
                 else
@@ -425,7 +439,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 StringBuilder xpathBuilder = new StringBuilder();
                 for (int i = 0; i < simplePath.size(); i++)
                 {
-                    xpathBuilder.append("/{}").append(simplePath.get(i));
+                    xpathBuilder.append("/{}").append(ISO9075.encode(simplePath.get(i)));
                 }
                 String xpath = xpathBuilder.toString();
 

@@ -91,13 +91,13 @@
    <!-- Edition service -->
    <bean name="editionService" class="org.alfresco.repo.model.ml.EditionServiceImpl" >
       <property name="nodeService">
-         <ref bean="NodeService" />
+         <ref bean="nodeService" />
       </property>
       <property name="versionService">
-         <ref bean="VersionService" />
+         <ref bean="versionService" />
       </property>
       <property name="multilingualContentService">
-         <ref bean="MultilingualContentService" />
+         <ref bean="multilingualContentService" />
       </property>
       <property name="versionNodeService">
          <ref bean="versionNodeService" />
@@ -109,7 +109,7 @@
          <ref bean="nodeArchiveService" />
       </property>
       <property name="fileFolderService">
-         <ref bean="FileFolderService" />
+         <ref bean="fileFolderService" />
       </property>
    </bean>
 

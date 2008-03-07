@@ -35,7 +35,7 @@ import java.util.zip.CRC32;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.apache.commons.codec.binary.Hex;
-import org.doomdark.uuid.UUIDGenerator;
+import org.safehaus.uuid.UUIDGenerator;
 
 /**
  * Store tickets in memory. They can be distributed in a cluster via the cache

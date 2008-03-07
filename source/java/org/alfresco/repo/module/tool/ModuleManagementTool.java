@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
-import org.doomdark.uuid.UUIDGenerator;
+import org.safehaus.uuid.UUIDGenerator;
 
 import de.schlichtherle.io.DefaultRaesZipDetector;
 import de.schlichtherle.io.File;

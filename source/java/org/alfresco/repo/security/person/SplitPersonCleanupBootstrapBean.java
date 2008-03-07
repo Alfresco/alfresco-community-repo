@@ -29,7 +29,7 @@ import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.doomdark.uuid.UUID;
+import org.safehaus.uuid.UUID;
 import org.springframework.context.ApplicationEvent;
 
 /**

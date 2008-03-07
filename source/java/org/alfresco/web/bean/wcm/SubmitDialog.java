@@ -714,7 +714,7 @@ public class SubmitDialog extends BaseDialogBean
          {
             // lookup the previous child and get its contents
             final List<AVMNodeDescriptor> history = getAvmService().getHistory(desc, 2);
-            if (history.size() == 1)
+            if (history.size() <= 1)
             {
                return;
             }

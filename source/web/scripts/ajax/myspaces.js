@@ -33,7 +33,7 @@ var MySpaces = {
          // is responsible for rendering just the contents of the main panel div
          YAHOO.util.Connect.asyncRequest(
             "GET",
-            MySpaces.ServiceContext + '/ui/myspacespanel?p='+MySpaces.Path+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
+            MySpaces.ServiceContext + '/ui/myspacespanel?p='+encodeURI(MySpaces.Path)+'&f='+MySpaces.Filter+'&h='+MySpaces.Home,
             {
                success: function(response)
                {

@@ -1358,8 +1358,8 @@
         </property>
     </bean>
 
-    <bean id="patch.avmWebProjectInheritPermissions" class="org.alfresco.repo.admin.patch.impl.AVMWebProjectInheritPermissionsPatch" parent="basePatch">
-        <property name="id"><value>patch.avmWebProjectInheritPermissions</value></property>
+    <bean id="patch.avmWebProjectInheritPermissions02" class="org.alfresco.repo.admin.patch.impl.AVMWebProjectInheritPermissionsPatch" parent="basePatch">
+        <property name="id"><value>patch.avmWebProjectInheritPermissions02</value></property>
         <property name="description"><value>patch.avmWebProjectInheritPermissions.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>122</value></property>
@@ -1379,5 +1379,5 @@
             </list>
         </property>
     </bean>
-
+    
 </beans>

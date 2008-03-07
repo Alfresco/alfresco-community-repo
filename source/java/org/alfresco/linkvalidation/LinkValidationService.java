@@ -39,6 +39,13 @@ public interface LinkValidationService
     public void onBootstrap();
     public void onShutdown();
 
+    /**
+    *  Returns the poll interval (in milliseconds) used to check 
+    *  for new snapshots in staging.
+    */
+    public int getPollInterval();
+
+
     //-------------------------------------------------------------------------
     /**
     *  This function is applied to a webapp in staging, and is just a 
@@ -105,43 +112,13 @@ public interface LinkValidationService
                                         throws  AVMNotFoundException,
                                                 SocketException;
 
-    //-------------------------------------------------------------------------
-    /**
-    *  Fetches a manifest of all hyperlinks broken by files
-    *  deleted in a HrefDifference.   Files and hrefs in this
-    *  manifest will be in the namespace of the src in the
-    *  HrefDifference.  For example, suppose the "test"
-    *  web project had a ROOT webapp with a link within
-    *  "moo.html" that pointed to: "hamlet.html".
-    *  Now suppose that user 'alice' proposes to delete "hamlet.html".
-    *  Because 'alice' is the 'src' and staging is the 'dst'
-    *  in the HrefDifference, all files and hyperlinks appear from
-    *  the perspective of the main working store within
-    *  alice's sandbox.  Thus, the broken link info is as follows:
-    *
-    * <pre>
-    *  File containing broken link:
-    *     test--alice:/www/avm_webapps/ROOT/moo.html
-    *
-    *  Broken link:
-    *   http://alice.test.www--sandbox.version--v-1.127-0-0-1.ip.alfrescodemo.net:8180/hamlet.html
-    * </pre>
-    *
-    * @param hdiff The difference between two webapps obtained
-    *              by calling getHrefDifference().
-    */
-    //-------------------------------------------------------------------------
-    public HrefManifest getHrefManifestBrokenByDelete(HrefDifference hdiff);
-
-
-
 
     //-------------------------------------------------------------------------
     /**
     *  Fetches a manifest of all hyperlinks broken in new or modified files in
-    *  an HrefDifference.  Similar to getHrefManifestBrokenByDelete(),
-    *  the entries in this manifest are in the 'src' namespace of the
-    *  HrefDifference operation (i.e.:  files & urls from alice, not staging).
+    *  an HrefDifference.  The entries in this manifest are in the 'src' 
+    *  namespace of the HrefDifference operation 
+    * (i.e.:  files & urls from alice, not staging).
     *
     * @param hdiff The difference between two webapps obtained
     *              by calling getHrefDifference().

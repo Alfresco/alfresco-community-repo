@@ -24,6 +24,7 @@
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
+                <value>classpath:alfresco/jndi.properties</value>
             </list>
         </property>
     </bean>
@@ -54,14 +55,17 @@
     <!-- Custom MBeanServer -->
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
-    <bean id="registry"   class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
+    <bean id="registry"   
+          class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
+          lazy-init="true">
         <property name="port" value="${alfresco.rmi.services.port}"/>
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
     <bean id="serverConnector" 
           class="org.springframework.jmx.support.ConnectorServerFactoryBean"
-          depends-on="registry">
+          depends-on="registry"
+          lazy-init="true"> 
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>

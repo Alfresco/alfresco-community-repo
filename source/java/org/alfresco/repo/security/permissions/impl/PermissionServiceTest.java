@@ -112,13 +112,13 @@ public class PermissionServiceTest extends AbstractPermissionTest
         AuthenticationUtil.setSystemUserAsCurrentUser();
         try
         {
-            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED);
             assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED);
             assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
             assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED);
-            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CANCEL_CHECK_OUT) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CANCEL_CHECK_OUT) == AccessStatus.ALLOWED);
             assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CHECK_OUT) == AccessStatus.ALLOWED);
-            assertFalse(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.COORDINATOR) == AccessStatus.ALLOWED);
+            assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.COORDINATOR) == AccessStatus.ALLOWED);
         }
         finally
         {

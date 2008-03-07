@@ -49,6 +49,10 @@ import org.springframework.core.Ordered;
 public class      RuntimeSystemPropertiesSetter 
        implements BeanFactoryPostProcessor, Ordered
 {
+    private static org.apache.commons.logging.Log log=
+                org.apache.commons.logging.LogFactory.getLog( 
+                    RuntimeSystemPropertiesSetter.class );
+
     // default: just before PropertyPlaceholderConfigurer
     private int order = Integer.MAX_VALUE - 1;  
 
@@ -61,14 +65,38 @@ public class      RuntimeSystemPropertiesSetter
         String path=null;
         try 
         {
+            // Typically, the value of 'path' will be something like:
+            //
+            //     $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco/alfresco-jmxrmi.password
+            // or: $TOMCAT_HOME/shared/classes/alfresco/alfresco-jmxrmi.password
+            //
+            // However, if WCM isn't installed there won't be a JMX password file.
+            // Therefore, while it's important to choke on bad paths, a missing
+            // password file must be acceptable -- it just means that WCM virtualization
+            // will be disabled later when org.alfresco.mbeans.VirtServerRegistry
+            // refuses to bring up the serverConnector bean.
+
             path = loader.getResource("alfresco/alfresco-jmxrmi.password").toURI().getPath();
         }
         catch (java.net.URISyntaxException e ) { e.printStackTrace(); }
+        catch (Exception e ) 
+        { 
+            if ( log.isWarnEnabled() )
+                 log.warn( 
+                 "Could not find alfresco-jmxrmi.password on classpath");
+        }
 
-        String alfresco_jmx_dir =  
-               path.substring(0,path.lastIndexOf("/alfresco-jmxrmi.password"));
+        if ( path == null ) { System.setProperty("alfresco.jmx.dir", ""); }
+        else
+        {
+            String alfresco_jmx_dir =   
+                   path.substring(0,path.lastIndexOf("/alfresco-jmxrmi.password"));
 
-        System.setProperty("alfresco.jmx.dir", alfresco_jmx_dir);
+            // The value of 'alfresco.jmx.dir' will be something like:
+            // $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco
+
+            System.setProperty("alfresco.jmx.dir", alfresco_jmx_dir);
+        }
     }
     public void setOrder(int order) { this.order = order; }
     public int getOrder()           { return order; }               

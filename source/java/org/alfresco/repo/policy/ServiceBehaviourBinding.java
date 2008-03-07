@@ -83,7 +83,7 @@ public class ServiceBehaviourBinding implements BehaviourBinding
     @Override
     public String toString()
     {
-        return "ServiceBinding[service=" + this + "]";
+        return "ServiceBinding[service=" + service + "]";
     }
 
 }

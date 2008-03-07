@@ -327,13 +327,14 @@
          assoc.id
    </query>
    
-   <query name="node.GetChildAssocIdByShortName">
+   <query name="node.GetChildAssocIdByTypeAndName">
       select
          assoc.id
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
          assoc.parent = :parent and
+         assoc.typeQName = :typeQName and
          assoc.childNodeName = :childNodeName and
          assoc.childNodeNameCrc = :childNodeNameCrc
    </query>

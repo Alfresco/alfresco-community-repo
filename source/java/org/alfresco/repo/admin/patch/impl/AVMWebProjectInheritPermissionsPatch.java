@@ -24,16 +24,21 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.util.List;
+
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Patch to break the inheritance of permissions on AVM Web Project Folders.
@@ -81,7 +86,23 @@ public class AVMWebProjectInheritPermissionsPatch extends AbstractPatch
             rs = searchService.query(sp);
             for (ResultSetRow row : rs)
             {
+                // break permission inheritance for the Web Project nodes
                 this.permissionService.setInheritParentPermissions(row.getNodeRef(), false);
+                
+                // ensure that permissions are explicitly assigned for all Content Manager roles
+                List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(
+                        row.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef ref : userInfoRefs)
+                {
+                    NodeRef userInfoRef = ref.getChildRef();
+                    String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                    String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                    
+                    if ("ContentManager".equals(userrole))
+                    {
+                        this.permissionService.setPermission(row.getNodeRef(), username, "ContentManager", true);
+                    }
+                }
             }
         }
         finally

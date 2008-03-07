@@ -99,7 +99,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_PRIMARY_CHILD_NODE_STATUSES = "node.GetPrimaryChildNodeStatuses";
     private static final String QUERY_GET_CHILD_ASSOCS = "node.GetChildAssocs";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
-    private static final String QUERY_GET_CHILD_ASSOC_ID_BY_NAME = "node.GetChildAssocIdByShortName";
+    private static final String QUERY_GET_CHILD_ASSOC_ID_TYPE_AND_BY_NAME = "node.GetChildAssocIdByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
@@ -772,42 +772,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         }
         
-        /*
-         * The parent node is explicitly locked.  A query is then issued to ensure that there
-         * are no duplicates in the index on the child assoc table.  The child association is
-         * then modified, although not directly in the database.  The lock guards against other
-         * transactions modifying the unique index without this transaction's knowledge.
-         */
         final Node parentNode = childAssoc.getParent();
-//        if (loggerChildAssoc.Enabled())
-//        {
-//            loggerChildAssoc.debug(
-//                    "Locking parent node for modifying child assoc: \n" +
-//                    "   Parent:      " + parentNode + "\n" +
-//                    "   Child Assoc: " + childAssoc + "\n" +
-//                    "   New Name:    " + childNameNew);
-//        }
-//        for (int i = 0; i < maxLockRetries; i++)
-//        {
-//            try
-//            {
-//                getSession().lock(parentNode, LockMode.UPGRADE);
-//                // The lock was good, proceed
-//                break;
-//            }
-//            catch (LockAcquisitionException e) {}
-//            catch (ConcurrencyFailureException e) {}
-//            // We can retry after a short pause that gets potentially longer each time
-//            try { Thread.sleep(randomWaitTime.nextInt(500 * i + 500)); } catch (InterruptedException ee) {}
-//        }
+        final QNameEntity assocTypeQName = childAssoc.getTypeQName();
         // We have the lock, so issue the query to check
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_ID_BY_NAME)
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_ID_TYPE_AND_BY_NAME)
                     .setParameter("parent", parentNode)
+                    .setParameter("typeQName", assocTypeQName)
                     .setParameter("childNodeName", childNameNewShort)
                     .setLong("childNodeNameCrc", childNameNewCrc);
                 return query.uniqueResult();
@@ -822,15 +797,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 logger.debug(
                         "Duplicate child association detected: \n" +
                         "   Existing Child Assoc: " + childAssocIdExisting + "\n" +
-                        "   Assoc Name:           " + childName);
+                        "   Child Name:           " + childName);
             }
             throw new DuplicateChildNodeNameException(
                     parentNode.getNodeRef(),
                     childAssoc.getTypeQName().getQName(),
                     childName);
         }
-        // We got past that, so we can just update the entity and know that no other transaction
-        // can lock the parent.
+        // We got past that, so we can just update the entity
         childAssoc.setChildNodeName(childNameNewShort);
         childAssoc.setChildNodeNameCrc(childNameNewCrc);
         

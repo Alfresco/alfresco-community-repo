@@ -1418,7 +1418,6 @@
                     <value>getHrefManifest</value>
                     <value>getBrokenHrefManifest</value>
                     <value>getHrefDifference</value>
-                    <value>getHrefManifestBrokenByDelete</value>
                     <value>getHrefManifestBrokenByNewOrMod</value>
                     <value>getHrefsDependentUponFile</value>
             </list>

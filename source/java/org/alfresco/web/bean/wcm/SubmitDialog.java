@@ -46,6 +46,7 @@ import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -471,9 +472,13 @@ public class SubmitDialog extends BaseDialogBean
       List<ItemWrapper> items = getSubmitItems();
 
       // construct diffs for selected items for submission
-      String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
-      String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
-      List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
+      final String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
+      final String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
+      final List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
+      final AVMSyncService syncService = this.getAvmSyncService();
+      final String submitLabel = this.label;
+      final String submitComment = this.comment;
+      
       String storeId = this.avmBrowseBean.getWebProject().getStoreId();
       for (ItemWrapper wrapper : items)
       {
@@ -498,9 +503,23 @@ public class SubmitDialog extends BaseDialogBean
          }
       }
       // write changes to layer so files are marked as modified
-      this.getAvmSyncService().update(diffs, null, true, true, false, false, this.label, this.comment);
-      AVMDAOs.Instance().fAVMNodeDAO.flush();
-      getAvmSyncService().flatten(sandboxPath, stagingPath);
+      
+      
+      // Submit is done as system as the staging store is read only
+      // We could add support to runIgnoringStoreACls
+      AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+      {
+           public Object doWork() throws Exception
+           {
+               syncService.update(diffs, null, true, true, false, false, submitLabel, submitComment);
+               AVMDAOs.Instance().fAVMNodeDAO.flush();
+               getAvmSyncService().flatten(sandboxPath, stagingPath);
+               return null;
+           }
+      }, AuthenticationUtil.getSystemUserName());
+      
+      
+    
       // if we get this far return the default outcome
       return this.getDefaultFinishOutcome();
    }

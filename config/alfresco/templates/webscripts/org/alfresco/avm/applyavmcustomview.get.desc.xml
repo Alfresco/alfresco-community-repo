@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Apply AVM Custom View</shortname>
+  <description>Simple UI to help apply a WebScript based custom view to an AVM folder</description>
+  <url>/avm/applyavmcustomview</url>
+  <format default="html">extension</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

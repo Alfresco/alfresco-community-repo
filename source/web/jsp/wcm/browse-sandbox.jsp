@@ -188,6 +188,21 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
                </tr>
                
+               <%-- Custom Template View --%>
+               <a:panel id="custom-wrapper-panel" rendered="#{AVMBrowseBean.hasCustomView && AVMBrowseBean.searchContext == null}">
+               <tr valign=top>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
+                  <td style="padding:4px">
+                     <a:panel id="custom-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle"
+                              label="#{msg.custom_view}" progressive="true">
+                        <r:webScript id="webscript" scriptUrl="#{AVMBrowseBean.currentNodeWebscript}" context="#{AVMBrowseBean.customWebscriptContext}" rendered="#{AVMBrowseBean.hasWebscriptView}" />
+                        <r:template id="template" template="#{AVMBrowseBean.currentNodeTemplate}" model="#{AVMBrowseBean.templateModel}" rendered="#{!AVMBrowseBean.hasWebscriptView && AVMBrowseBean.hasTemplateView}" />
+                     </a:panel>
+                  </td>
+                  <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_6.gif)" width=4></td>
+               </tr>
+               </a:panel>
+               
                <%-- Details - Folders --%>
                <tr valign=top>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>

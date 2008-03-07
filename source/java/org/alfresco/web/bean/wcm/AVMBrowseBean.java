@@ -45,6 +45,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.linkvalidation.HrefValidationProgress;
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeType;
@@ -59,14 +60,19 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -208,19 +214,22 @@ public class AVMBrowseBean implements IContextListener
    protected NavigationBean navigator;
    
    /** AVM service bean reference */
-   transient private AVMService avmService;
+   transient protected AVMService avmService;
 
    /** AVM sync service bean reference */
-   transient private AVMSyncService avmSyncService;
+   transient protected AVMSyncService avmSyncService;
    
    /** Action service bean reference */
-   transient private ActionService actionService;
+   transient protected ActionService actionService;
 
    /** The FormsService reference */
-   transient private FormsService formsService;
+   transient protected FormsService formsService;
    
    /** The SearchService reference */
    transient private SearchService searchService;
+   
+   /** The PermissionService reference */
+   transient protected PermissionService permissionService;
    
    
    /**
@@ -280,6 +289,20 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * Getter used by the Inline Edit XML JSP
+    * 
+    * @return The NodeService
+    */
+   public NodeService getNodeService()
+   {
+      if (nodeService == null)
+      {
+         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+      }
+      return nodeService;
+   }
+   
+   /**
     * Set the workflow service
     * @param service The workflow service instance.
     */
@@ -320,17 +343,20 @@ public class AVMBrowseBean implements IContextListener
 
 
    /**
-    * Getter used by the Inline Edit XML JSP
-    * 
-    * @return The NodeService
+    * @param permissionService The PermissionService to set.
     */
-   public NodeService getNodeService()
+   public void setPermissionService(PermissionService permissionService)
    {
-      if (nodeService == null)
+      this.permissionService = permissionService;
+   }
+   
+   protected PermissionService getPermissionService()
+   {
+      if (permissionService == null)
       {
-         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+         permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
       }
-      return nodeService;
+      return permissionService;
    }
 
    /**
@@ -888,6 +914,90 @@ public class AVMBrowseBean implements IContextListener
       this.location = location;
    }
    
+      /**
+    * @return true if the current node has a custom view available
+    */
+   public boolean getHasCustomView()
+   {
+      return getHasWebscriptView() || getHasTemplateView();
+   }
+   
+   /**
+    * @return true if the current node has a Template based custom view available
+    */
+   public boolean getHasTemplateView()
+   {
+      AVMNode node = getCurrentPathNode();
+      if (node.hasAspect(ContentModel.ASPECT_TEMPLATABLE))
+      {
+         NodeRef templateRef = (NodeRef)node.getProperties().get(ContentModel.PROP_TEMPLATE);
+         return (templateRef != null && this.getNodeService().exists(templateRef) &&
+                 getPermissionService().hasPermission(templateRef, PermissionService.READ) == AccessStatus.ALLOWED);
+      }
+      return false;
+   }
+   
+   /**
+    * @return true if the current node has a Webscript based custom view available
+    */
+   public boolean getHasWebscriptView()
+   {
+      AVMNode node = getCurrentPathNode();
+      if (node.hasAspect(ContentModel.ASPECT_WEBSCRIPTABLE))
+      {
+         return (node.getProperties().get(ContentModel.PROP_WEBSCRIPT) != null);
+      }
+      return false;
+   }
+   
+   /**
+    * @return the NodeRef.toString() for the current node Template custom view if it has one 
+    */
+   public String getCurrentNodeTemplate()
+   {
+      NodeRef ref = (NodeRef)getCurrentPathNode().getProperties().get(ContentModel.PROP_TEMPLATE);
+      return ref != null ? ref.toString() : null;
+   }
+   
+   /**
+    * @return the service url for the current node Webscript custom view if it has one 
+    */
+   public String getCurrentNodeWebscript()
+   {
+      return (String)getCurrentPathNode().getProperties().get(ContentModel.PROP_WEBSCRIPT);
+   }
+   
+   /**
+    * Returns a model for use by a template on a space Dashboard page.
+    * 
+    * @return model containing current current space info.
+    */
+   @SuppressWarnings("unchecked")
+   public Map getTemplateModel()
+   {
+      HashMap model = new HashMap(4, 1.0f);
+      
+      model.put("space", getCurrentPathNode().getNodeRef());
+      model.put("path", getCurrentPathNode().getPath());
+      model.put(TemplateService.KEY_IMAGE_RESOLVER, 
+            new TemplateImageResolver() 
+            {
+               public String resolveImagePathForName(String filename, FileTypeImageSize size)
+               {
+                  return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+               }
+            });
+      
+      return model;
+   }
+   
+   public Map getCustomWebscriptContext()
+   {
+       HashMap model = new HashMap(2, 1.0f);
+       model.put("path", getCurrentPathNode().getPath());
+       return model;
+   }
+   
    /**
     * @return true if the current user has the manager role in the current website
     */
@@ -915,7 +1025,7 @@ public class AVMBrowseBean implements IContextListener
       {
          // see if there are any deployment attempts for the staging area
          NodeRef webProjectRef = this.getWebsite().getNodeRef();
-         String store = (String)nodeService.getProperty(webProjectRef, 
+         String store = (String)getNodeService().getProperty(webProjectRef, 
                   WCMAppModel.PROP_AVMSTORE);
          List<NodeRef> deployAttempts = DeploymentUtil.findDeploymentAttempts(store);
          

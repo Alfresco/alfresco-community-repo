@@ -40,7 +40,6 @@ import javax.faces.validator.ValidatorException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -71,6 +70,7 @@ public class CreateUserWizard extends BaseWizardBean
     
     private static Logger logger = Logger.getLogger(CreateUserWizard.class);
     protected static final String ERROR = "error_person";
+    protected static final String ERROR_DOMAIN_MISMATCH = "error_domain_mismatch";
 
     protected static final String QUOTA_UNITS_KB = "kilobyte";
     protected static final String QUOTA_UNITS_MB = "megabyte";
@@ -178,7 +178,7 @@ public class CreateUserWizard extends BaseWizardBean
     /**
      * @return tenantService
      */
-    private TenantService geTenantService()
+    private TenantService getTenantService()
     {
      //check for null for cluster environment
         if(tenantService == null)
@@ -278,24 +278,37 @@ public class CreateUserWizard extends BaseWizardBean
         this.sizeQuota = null;
         this.sizeQuotaUnits = "";
     }
-
+    
+    @Override
+    public String next()
+    {
+       String stepName = Application.getWizardManager().getCurrentStepName();
+       
+       if ("summary".equals(stepName))
+       {
+           FacesContext context = FacesContext.getCurrentInstance();
+           
+           if (! this.password.equals(this.confirm))
+           {
+               Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
+           }
+          
+           checkTenantUserName();
+           
+           if (context.getMessages().hasNext())
+           {
+               Application.getWizardManager().getState().setCurrentStep(Application.getWizardManager().getCurrentStep() - 1);
+           }
+       }
+       
+       return super.next();
+    }
+    
     /**
      * @return Returns the summary data for the wizard.
      */
     public String getSummary()
     {
-        if (geTenantService().isEnabled())
-        {      
-        	try
-        	{
-        		checkTenantUserName();
-        	}
-        	catch (Exception e)
-        	{
-        		// TODO - ignore for now, but ideally should handle earlier
-        	}
-        }
-        
         ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
         
         String homeSpaceLabel = this.homeSpaceName;
@@ -791,13 +804,19 @@ public class CreateUserWizard extends BaseWizardBean
         // TODO: implement create new Person object from specified details
         try
         {
-            if (this.password.equals(this.confirm))
+            if (! this.password.equals(this.confirm))
             {
-                if (geTenantService().isEnabled())
-                {         
-                	checkTenantUserName();
-                }
-            	
+                Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
+                outcome = null;
+            }
+            
+            if (checkTenantUserName() == false)
+            {         
+                outcome = null;
+            }
+            
+            if (outcome != null)
+            {
                 // create properties for Person type from submitted Form data
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
                 props.put(ContentModel.PROP_USERNAME, this.userName);
@@ -853,11 +872,6 @@ public class CreateUserWizard extends BaseWizardBean
                 {
                 	putSizeQuotaProperty(this.userName, this.sizeQuota, this.sizeQuotaUnits);
                 }
-            }
-            else
-            {
-                Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
-                outcome = null;
             }
             invalidateUserList();
         }
@@ -947,28 +961,33 @@ public class CreateUserWizard extends BaseWizardBean
        return new Pair<Long, String>(size, units);
     }
     
-    protected void checkTenantUserName()
+    public boolean checkTenantUserName()
     {
-        String currentDomain = geTenantService().getCurrentUserDomain();
-        if (! currentDomain.equals(TenantService.DEFAULT_DOMAIN))
-        {
-            if (! geTenantService().isTenantUser(this.userName))
+        if (getTenantService().isEnabled())
+        {         
+            String currentDomain = getTenantService().getCurrentUserDomain();
+            
+            // note: getTenantService().getUserDomain(this.userName) checks whether tenant exists or not, which is not required here
+            String userDomain = TenantService.DEFAULT_DOMAIN;
+            int idx = this.userName.indexOf(TenantService.SEPARATOR);
+            if ((idx != -1) && (idx < (userName.length()-1)))
+            {
+                userDomain = userName.substring(idx+1);
+            }
+            
+            if ((! currentDomain.equals(TenantService.DEFAULT_DOMAIN)) && (userDomain.equals(TenantService.DEFAULT_DOMAIN)))
             {
                 // force domain onto the end of the username
-                this.userName = geTenantService().getDomainUser(this.userName, currentDomain);
+                this.userName = getTenantService().getDomainUser(this.userName, currentDomain);
                 logger.warn("Added domain to username: " + this.userName);
             }
-            else
+            else if (! currentDomain.equals(userDomain))
             {
-                try
-                {                  
-                   geTenantService().checkDomainUser(this.userName);
-                }
-                catch (RuntimeException re)
-                {
-                    throw new AuthenticationException("User must belong to same domain as admin: " + currentDomain);
-                }
+                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), ERROR_DOMAIN_MISMATCH), currentDomain, userDomain));
+                return false;
             }
-        } 
+        }
+        
+        return true;
     }
 }

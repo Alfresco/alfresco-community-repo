@@ -94,7 +94,7 @@ public class UISidebar extends SelfRenderingComponent
       
       // render the start of the header panel
       String cxPath = context.getExternalContext().getRequestContextPath();
-      out.write("<table cellspacing='0' cellpadding='0' style='background-color: #ffffff;'>" + 
+      out.write("<table cellspacing='0' cellpadding='0' style='background-color: #ffffff;' width='100%'>" + 
                 "<tr><td style='width: 5px; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_top_grey_begin.gif)' valign='top'>" +
@@ -210,7 +210,7 @@ public class UISidebar extends SelfRenderingComponent
                 "<tr><td style='height: 12px; width: 5px;'><img src='");
       out.write(cxPath);
       out.write("/images/parts/sidebar_bottom_grey_begin.gif' width='5' height='12' alt=''/></td>" + 
-                "<td style='width: 100%; background-image: url(");
+                "<td style='_width: 100%; background-image: url(");
       out.write(cxPath);
       out.write("/images/parts/sidebar_bottom_grey_bg.gif)'>" +
                 "<img src='");

@@ -83,6 +83,7 @@ CREATE INDEX fk_avm_n_store ON avm_nodes (store_new_id);
 CREATE INDEX fk_avm_sp_qname ON avm_store_properties (qname_id);
 CREATE INDEX fk_avm_sp_store ON avm_store_properties (avm_store_id);
 
+CREATE INDEX fk_avm_s_acl ON avm_stores (acl_id);
 CREATE INDEX fk_avm_s_root ON avm_stores (current_root_id);
 
 CREATE INDEX fk_avm_vlne_vr ON avm_version_layered_node_entry (version_root_id);

@@ -124,7 +124,7 @@
 	   </property>
 	</bean>
 
-	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs">
+	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs" factory-method="Instance">
 		<property name="issuerDAO">
 			<ref bean="issuerDAO"/>
 		</property>

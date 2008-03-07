@@ -1049,7 +1049,15 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public int getLastVersionID()
     {
-        return AVMDAOs.Instance().fVersionRootDAO.getMaxVersionID(this);
+        Integer lastVersionId = AVMDAOs.Instance().fVersionRootDAO.getMaxVersionID(this);
+        if (lastVersionId == null)
+        {
+            return 0;
+        }
+        else
+        {
+            return lastVersionId.intValue();
+        }
     }
 
     /**
@@ -1159,9 +1167,15 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public AVMStoreDescriptor getDescriptor()
     {
-        return new AVMStoreDescriptor(fName,
-                getProperty(ContentModel.PROP_CREATOR).getStringValue(),
-                ((Date)getProperty(ContentModel.PROP_CREATED).getValue(DataTypeDefinition.DATE)).getTime());
+        // Get the creator ensuring that nulls are not hit
+        PropertyValue creatorValue = getProperty(ContentModel.PROP_CREATOR);
+        String creator = creatorValue == null ? "system" : (String) creatorValue.getValue(DataTypeDefinition.TEXT);
+        creator = (creator == null) ? "system" : creator;
+        // Get the created date ensuring that nulls are not hit
+        PropertyValue createdValue = getProperty(ContentModel.PROP_CREATED);
+        Date created = createdValue == null ? (new Date()) : (Date) createdValue.getValue(DataTypeDefinition.DATE);
+        created = (created == null) ? (new Date()) : created;
+        return new AVMStoreDescriptor(fName, creator, created.getTime());
     }
 
     /**

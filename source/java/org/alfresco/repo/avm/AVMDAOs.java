@@ -19,11 +19,10 @@ public class AVMDAOs
     /**
      * The single instance of an AVMContext.
      */
-    private static AVMDAOs fgInstance;
+    private static final AVMDAOs fgInstance = new AVMDAOs();
     
-    AVMDAOs()
+    private AVMDAOs()
     {
-        fgInstance = this;
     }
 
     /**

@@ -45,6 +45,7 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -62,14 +63,12 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.fileupload.FileItem;
@@ -443,10 +442,9 @@ public class FilePickerBean implements Serializable
 
          filePickerDataElement.setAttribute("error", MessageFormat.format(
                Application.getMessage(facesContext, "error_not_found"),
-               currentPath.substring(currentPath.lastIndexOf("/") + 1,
-                     currentPath.length()),
-               (currentPath.lastIndexOf("/") == 0 ? "/" : currentPath
-                     .substring(0, currentPath.lastIndexOf("/")))));
+               "'" + currentPath.substring(currentPath.lastIndexOf("/") + 1, currentPath.length()) + "'",
+               (currentPath.lastIndexOf("/") == 0 ? "/" : currentPath.substring(
+                     0, currentPath.lastIndexOf("/")))));
 
          // If folder restriction has been set, since the derived
          // current path is invalid just set it to null
@@ -519,8 +517,19 @@ public class FilePickerBean implements Serializable
          // add content nodes from search results as child elements of 
          // the file picker data element.
          {
-            addSearchResultNodes(filePickerDataDoc, filePickerDataElement,
-                  configuredSearchNodeRef, selectableTypes, facesContext);
+            try
+            {
+               addSearchResultNodes(filePickerDataDoc, filePickerDataElement,
+                     configuredSearchNodeRef, selectableTypes, facesContext);
+            }
+            // if searcher exception thrown whilst getting search results,
+            // then add error message as attribute to file-picker-data element
+            catch (SearcherException e)
+            {
+               filePickerDataElement.setAttribute("error", MessageFormat.format(
+                     Application.getMessage(facesContext, "error_retrieving_search_results"),
+                     configSearchName, e.getMessage()));
+            }
          }
       }
       else
@@ -789,6 +798,13 @@ public class FilePickerBean implements Serializable
    {
       // run configured search to get content nodes returned in search result
       List<AVMNodeDescriptor> searchResultNodes = runConfiguredSearch(configuredSearchNodeRef);
+      
+      // if there are no search results (i.e. null) throw exception
+      if (searchResultNodes == null)
+      {
+         throw new SearcherException("No results returned by search query.\n"
+                     + "Search node reference: " + configuredSearchNodeRef);
+      }
 
       for (AVMNodeDescriptor node : searchResultNodes)
       {

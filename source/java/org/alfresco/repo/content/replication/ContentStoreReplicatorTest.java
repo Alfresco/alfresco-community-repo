@@ -86,7 +86,7 @@ public class ContentStoreReplicatorTest extends TestCase
         // wait a second
         synchronized(this)
         {
-            this.wait(1000L);
+            this.wait(5000L);
         }
         
         assertTrue("Target store doesn't have content added to source",

@@ -262,8 +262,10 @@ public class MultilingualManageDialog extends BaseDialogBean
                 mapNode.put("language", lgge);
                 mapNode.put("url", DownloadContentServlet.generateBrowserURL(nodeRef, mapNode.getName()));
 
-                mapNode.put("notEmpty", new Boolean(!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION)));
-                mapNode.put("userHasRight", new Boolean(canNewEdtion));
+                boolean isEmpty = new Boolean(getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION));
+                
+                mapNode.put("notEmpty", !isEmpty);
+                mapNode.put("userHasRight", new Boolean(canNewEdtion && !isEmpty));
                 // add the client side version to the list
                 translations.add(mapNode);
              }

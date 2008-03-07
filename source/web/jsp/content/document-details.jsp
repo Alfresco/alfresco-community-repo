@@ -225,7 +225,7 @@
                                              Start the new edition wizard from this translation
                                           --%>
             <h:outputText id="space" value=" " />
-            <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.notEmpty && r.userHasRight}">
+            <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.userHasRight}">
                <f:param name="lang" value="#{r.language}" />
             </a:actionLink>
          </a:column>
@@ -254,7 +254,7 @@
    <%-- Action - Add Translation --%>
    <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="evalApply">
       <f:verbatim>
-         <div style="padding: 16px"></f:verbatim><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" /><f:verbatim></div>
+         <div style="padding: 16px"></f:verbatim><a:actionLink id="act-make-multilingual" value="#{msg.make_multilingual}" action="dialog:makeMultilingual" showLink="true" image="/images/icons/make_ml.gif" rendered="#{DialogManager.bean.locked == false && DialogManager.bean.workingCopy == false}"/><f:verbatim></div>
       </f:verbatim>
    </r:permissionEvaluator>
 </a:panel>

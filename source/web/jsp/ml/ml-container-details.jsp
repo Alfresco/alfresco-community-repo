@@ -54,22 +54,29 @@
                </r:permissionEvaluator>
             </f:facet>
          </h:panelGroup> 
-         <a:panel label="#{msg.properties}" facetsId="dialog:dialog-body:ml-props-panel-facets" id="ml-properties-panel" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
-            expanded='#{DialogManager.bean.panels["ml-properties-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
-
-
+         <a:panel label="#{msg.properties}" facetsId="dialog:dialog-body:ml-props-panel-facets" id="ml-properties-panel" progressive="true" 
+                  border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"
+                  expanded='#{DialogManager.bean.panels["ml-properties-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
             <h:outputText styleClass="nodeWorkflowInfoTitle" />
-            <r:propertySheetGrid id="ml-container-props-sheet" value="#{DialogManager.bean.document}" var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel" externalConfig="true" cellpadding="2" cellspacing="2" mode="view" />
+            <r:propertySheetGrid id="ml-container-props-sheet" value="#{DialogManager.bean.document}" 
+                                 var="mlContainerProps" columns="1" labelStyleClass="propertiesLabel" 
+                                 externalConfig="true" cellpadding="2" cellspacing="2" mode="view" />
          </a:panel> 
+         
          <f:verbatim>
             <div style="padding: 4px"></div>
          </f:verbatim> 
+         
          <%-- list of translations --%> 
-         <a:panel label="#{msg.translations}" id="ml-translation-panel" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" expanded='#{DialogManager.bean.panels["ml-translation-panel"]}'
-            expandedActionListener="#{DialogManager.bean.expandPanel}">
+         <a:panel label="#{msg.translations}" id="ml-translation-panel" progressive="true" 
+                  border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" 
+                  titleBgcolor="white" expanded='#{DialogManager.bean.panels["ml-translation-panel"]}'
+                  expandedActionListener="#{DialogManager.bean.expandPanel}">
 
-            <a:richList id="TranslationList" viewMode="details" value="#{DialogManager.bean.translations}" var="r" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10" initialSortColumn="Name"
-               initialSortDescending="false">
+            <a:richList id="TranslationList" viewMode="details" value="#{DialogManager.bean.translations}" var="r" 
+                        styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
+                        altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10" initialSortColumn="Name"
+                        initialSortDescending="false">
 
                <%-- Icon details view mode --%>
                <a:column id="col20" primary="true" width="20" style="padding:2px;">
@@ -105,7 +112,7 @@
                                                 Start the new edition wizard from this translation
                                           --%>
                   <h:outputText id="space" value=" " />
-                  <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.notEmpty && r.userHasRight}">
+                  <a:actionLink id="new-edition-from" value="#{msg.new_edition}" action="wizard:newEditionFrom" actionListener="#{NewEditionWizard.skipFirstStep}" rendered="#{r.userHasRight}">
                      <f:param id="par1" name="lang" value="#{r.language}" />
                   </a:actionLink>
                </a:column>
@@ -113,14 +120,18 @@
                <a:dataPager id="pager" styleClass="pager" />
             </a:richList>
          </a:panel> 
+         
          <f:verbatim>
             <div style="padding: 4px"></div>
          </f:verbatim> 
+         
          <%--
          Editions details
          --%> 
-         <a:panel label="#{msg.editions}" id="ml-editions-panel" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" expanded='#{DialogManager.bean.panels["ml-editions-panel"]}'
-            expandedActionListener="#{DialogManager.bean.expandPanel}">
+         <a:panel label="#{msg.editions}" id="ml-editions-panel" progressive="true" 
+                  border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" 
+                  titleBgcolor="white" expanded='#{DialogManager.bean.panels["ml-editions-panel"]}'
+                  expandedActionListener="#{DialogManager.bean.expandPanel}">
 
             <a:richList id="EditionTitle" viewMode="details" value="#{DialogManager.bean.emptyListAndInitEditions}" var="ed" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%" initialSortDescending="true">
 
@@ -198,10 +209,13 @@
                   <div style="padding-left: 25">
                </f:verbatim>
 
-               <a:panel label="#{msg.related_content}" id="ml-versions-panel${idx}" progressive="true" expanded="false" expandedActionListener="#{DialogManager.bean.expandPanel}" styleClass="nodeWorkflowInfoTitle">
+               <a:panel label="#{msg.related_content}" id="ml-versions-panel${idx}" progressive="true" expanded="false" 
+                        expandedActionListener="#{DialogManager.bean.expandPanel}" styleClass="nodeWorkflowInfoTitle">
 
-                  <a:richList id="ml-versions-list${idx}" viewMode="details" value="#{DialogManager.bean.currentSingleEditionBean.translations}" var="tr" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-                     pageSize="10" initialSortColumn="versionName" initialSortDescending="true" style="padding-left:12px;padding-top:10px;">
+                  <a:richList id="ml-versions-list${idx}" viewMode="details" value="#{DialogManager.bean.currentSingleEditionBean.translations}" 
+                              var="tr" styleClass="recordSet" headerStyleClass="recordSetHeader" 
+                              rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%" 
+                              pageSize="10" initialSortColumn="versionName" initialSortDescending="true" style="padding-left:12px;padding-top:10px;">
 
                      <%-- Icon details view mode --%>
                      <a:column id="column-view-mode${idx}" primary="true" width="20" style="padding:2px;">
@@ -275,7 +289,7 @@
          <%-- Document Actions --%> 
          <a:panel label="#{msg.actions}" id="actions-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" style="text-align:center" progressive="true" expanded='#{DialogManager.bean.panels["actions-panel"]}'
             expandedActionListener="#{DialogManager.bean.expandPanel}">
-            <r:actions id="actions_doc" value="multilingual_details_actions" context="#{DialogManager.bean.document}" verticalSpacing="3" style="white-space:nowrap" />
+            <r:actions id="actions_doc" value="multilingual_details_actions" context="#{DialogManager.bean.documentMlContainer}" verticalSpacing="3" style="white-space:nowrap" />
          </a:panel><f:verbatim>
          </td>
       </tr>

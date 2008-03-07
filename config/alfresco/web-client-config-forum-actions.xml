@@ -72,6 +72,18 @@
             </params>
          </action>
          
+        <!-- Discuss multilingual content e.g. jump to Forums view for this node -->
+        <action id="create_forum_ml_node">
+            <evaluator>org.alfresco.web.action.evaluator.CreateForumMLNodeEvaluator</evaluator>
+            <label-id>start_discussion</label-id>
+            <image>/images/icons/create_forum.gif</image>
+            <action>dialog:createDiscussion</action>
+            <action-listener>#{DialogManager.setupParameters}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+        </action>
+
          <!-- Create a Forums space -->
          <action id="create_forums">
             <permissions>
@@ -231,6 +243,12 @@
             <action idref="create_forum_node" />
          </action-group>
          
+         <!-- Actions Menu for Multilingual Document Details screen -->
+         <action-group id="multilingual_details_actions">
+            <action idref="create_forum_ml_node" />
+            <action idref="discuss_node" />
+         </action-group>
+
          <!-- Actions Menu for Space Details screen -->
          <action-group id="space_details_actions">
             <action idref="discuss_node" />

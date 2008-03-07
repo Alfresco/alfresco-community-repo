@@ -89,6 +89,34 @@ public class PermissionServiceTest extends AbstractPermissionTest
         allowAndyReadChildren = new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED);
     }
 
+    public void testRunAsRealAndEffectiveUsers()
+    {
+        runAs("admin");
+
+        final NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        runAs("andy");
+        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+        
+        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+
+            public Object doWork() throws Exception
+            {
+                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+                
+                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                return null;
+            }}, "admin");
+        
+        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+    }
+    
     public void testDefaultModelPermissions()
     {
         runAs("admin");

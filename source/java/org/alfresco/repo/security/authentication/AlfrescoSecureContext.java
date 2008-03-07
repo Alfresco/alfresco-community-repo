@@ -1,0 +1,91 @@
+/*
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.security.authentication;
+
+import net.sf.acegisecurity.Authentication;
+import net.sf.acegisecurity.context.security.SecureContext;
+
+/**
+ * Extensions for the Alfresco security context.
+ * 
+ * This is based on the Linux model and supports real, effective and stored authorities
+ * 
+ * The real authority is used for auditing and reporting who the user is etc.
+ * The effective authority is used for permission checks.
+ * 
+ * RunAs support leaves the real authority and changes only the effective authority
+ * That means "special" code can run code as system but still be audited as Joe
+ * 
+ * In the future scrips etc can support a setUId flag and run as the owner of the script.
+ * If the script chooses to do this ....
+ * A method invocation could do the same (after entry security checks)
+ * 
+ * TODO: extent runAs to take a nodeRef context - it can then set the stored atc and set this as effective if required.
+ * 
+ * @author andyh
+ *
+ */
+public interface AlfrescoSecureContext extends SecureContext
+{
+    /**
+     * Get the effective authentication - used for permission checks
+     * @return
+     */
+    public Authentication getEffectiveAuthentication();
+    
+    /**
+     * Get the real authenticaiton - used for auditing and everything else
+     * @return
+     */
+    public Authentication getRealAuthentication();
+    
+    /**
+     * Get the store authentication - used for setuid scripts and methods
+     * @return
+     */
+    public Authentication getStoredAuthentication();
+    
+    /**
+     * Set the effective authentication held by the context
+     * 
+     * @param effictiveAuthentication
+     */
+    public void setEffectiveAuthentication(Authentication effictiveAuthentication);
+    
+    /**
+     * Set the real authentication held by the context
+     * 
+     * @param realAuthentication
+     */
+    public void setRealAuthentication(Authentication realAuthentication);
+    
+    /**
+     * Set the stored authentication held by the context
+     * 
+     * @param storedAuthentication
+     */
+    public void setStoredAuthentication(Authentication storedAuthentication);
+    
+}

@@ -53,7 +53,7 @@ public abstract class AuthenticationUtil
     }
 
     public static final String SYSTEM_USER_NAME = "System";
-    
+
     private static boolean mtEnabled = false;
 
     private AuthenticationUtil()
@@ -63,32 +63,47 @@ public abstract class AuthenticationUtil
 
     public static void setMtEnabled(boolean mtEnabled)
     {
-    	if (! AuthenticationUtil.mtEnabled)
-    	{
-    		AuthenticationUtil.mtEnabled = mtEnabled;
-    	}
+        if (!AuthenticationUtil.mtEnabled)
+        {
+            AuthenticationUtil.mtEnabled = mtEnabled;
+        }
     }
-    
+
     public static boolean isMtEnabled()
     {
         return AuthenticationUtil.mtEnabled;
     }
-    
+
     public static Authentication setCurrentUser(String userName)
     {
         return setCurrentUser(userName, getDefaultUserDetails(userName));
     }
 
+    public static Authentication setCurrentRealUser(String userName)
+    {
+        return setCurrentRealUser(userName, getDefaultUserDetails(userName));
+    }
+
+    public static Authentication setCurrentEffectiveUser(String userName)
+    {
+        return setCurrentEffectiveUser(userName, getDefaultUserDetails(userName));
+    }
+
+    public static Authentication setCurrentStoredUser(String userName)
+    {
+        return setCurrentStoredUser(userName, getDefaultUserDetails(userName));
+    }
+
     /**
      * Explicitly set the current user to be authenticated.
      * 
-     * @param userName - String user id
-     * @param providedDetails - provided details for the user
-     * 
+     * @param userName -
+     *            String user id
+     * @param providedDetails -
+     *            provided details for the user
      * @return Authentication
      */
-    public static Authentication setCurrentUser(String userName, UserDetails providedDetails)
-            throws AuthenticationException
+    public static Authentication setCurrentUser(String userName, UserDetails providedDetails) throws AuthenticationException
     {
         if (userName == null)
         {
@@ -97,40 +112,99 @@ public abstract class AuthenticationUtil
 
         try
         {
-            UserDetails ud = null;
-            if (userName.equals(SYSTEM_USER_NAME))
-            {
-                GrantedAuthority[] gas = new GrantedAuthority[1];
-                gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
-                ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
-            }
-            else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
-            {
-                GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
-            }
-            else
-            {
-                if (providedDetails.getUsername().equals(userName))
-                {
-                    ud = providedDetails;
-                }
-                else
-                {
-                    throw new AuthenticationException("Provided user details do not match the user name");
-                }
-            }
-
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud
-                    .getAuthorities());
-            auth.setDetails(ud);
-            auth.setAuthenticated(true);
+            UsernamePasswordAuthenticationToken auth = getAuthenticationToken(userName, providedDetails);
             return setCurrentAuthentication(auth);
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {
             throw new AuthenticationException(ae.getMessage(), ae);
         }
+    }
+
+    public static Authentication setCurrentRealUser(String userName, UserDetails providedDetails) throws AuthenticationException
+    {
+        if (userName == null)
+        {
+            throw new AuthenticationException("Null user name");
+        }
+
+        try
+        {
+            UsernamePasswordAuthenticationToken auth = getAuthenticationToken(userName, providedDetails);
+            return setCurrentRealAuthentication(auth);
+        }
+        catch (net.sf.acegisecurity.AuthenticationException ae)
+        {
+            throw new AuthenticationException(ae.getMessage(), ae);
+        }
+    }
+
+    public static Authentication setCurrentEffectiveUser(String userName, UserDetails providedDetails) throws AuthenticationException
+    {
+        if (userName == null)
+        {
+            throw new AuthenticationException("Null user name");
+        }
+
+        try
+        {
+            UsernamePasswordAuthenticationToken auth = getAuthenticationToken(userName, providedDetails);
+            return setCurrentEffectiveAuthentication(auth);
+        }
+        catch (net.sf.acegisecurity.AuthenticationException ae)
+        {
+            throw new AuthenticationException(ae.getMessage(), ae);
+        }
+    }
+
+    public static Authentication setCurrentStoredUser(String userName, UserDetails providedDetails) throws AuthenticationException
+    {
+        if (userName == null)
+        {
+            throw new AuthenticationException("Null user name");
+        }
+
+        try
+        {
+            UsernamePasswordAuthenticationToken auth = getAuthenticationToken(userName, providedDetails);
+            return setCurrentStoredAuthentication(auth);
+        }
+        catch (net.sf.acegisecurity.AuthenticationException ae)
+        {
+            throw new AuthenticationException(ae.getMessage(), ae);
+        }
+    }
+
+    private static UsernamePasswordAuthenticationToken getAuthenticationToken(String userName, UserDetails providedDetails)
+    {
+        UserDetails ud = null;
+        if (userName.equals(SYSTEM_USER_NAME))
+        {
+            GrantedAuthority[] gas = new GrantedAuthority[1];
+            gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
+            ud = new User(SYSTEM_USER_NAME, "", true, true, true, true, gas);
+        }
+        else if (userName.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+        {
+            GrantedAuthority[] gas = new GrantedAuthority[0];
+            ud = new User(PermissionService.GUEST_AUTHORITY.toLowerCase(), "", true, true, true, true, gas);
+        }
+        else
+        {
+            if (providedDetails.getUsername().equals(userName))
+            {
+                ud = providedDetails;
+            }
+            else
+            {
+                throw new AuthenticationException("Provided user details do not match the user name");
+            }
+        }
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud.getAuthorities());
+        auth.setDetails(ud);
+        auth.setAuthenticated(true);
+        return auth;
     }
 
     /**
@@ -163,51 +237,130 @@ public abstract class AuthenticationUtil
         else
         {
             Context context = ContextHolder.getContext();
-            SecureContext sc = null;
-            if ((context == null) || !(context instanceof SecureContext))
+            AlfrescoSecureContext sc = null;
+            if ((context == null) || !(context instanceof AlfrescoSecureContext))
             {
-                sc = new SecureContextImpl();
+                sc = new AlfrescoSecureContextImpl();
                 ContextHolder.setContext(sc);
             }
             else
             {
-                sc = (SecureContext) context;
+                sc = (AlfrescoSecureContext) context;
             }
             authentication.setAuthenticated(true);
+            // Sets real and effective
             sc.setAuthentication(authentication);
 
             // Support for logging tenant domain / username (via log4j NDC)
             String userName = SYSTEM_USER_NAME;
             if (authentication.getPrincipal() instanceof UserDetails)
             {
-                userName = ((UserDetails) authentication.getPrincipal()).getUsername();            
+                userName = ((UserDetails) authentication.getPrincipal()).getUsername();
             }
-            
+
             logNDC(userName);
-            
+
             return authentication;
         }
     }
-    
+
     public static void logNDC(String userName)
     {
         NDC.remove();
-        
+
         if (isMtEnabled())
         {
             int idx = userName.indexOf(TenantService.SEPARATOR);
-            if ((idx != -1) && (idx < (userName.length()-1)))
+            if ((idx != -1) && (idx < (userName.length() - 1)))
             {
-                NDC.push("Tenant:"+userName.substring(idx+1)+" User:"+userName.substring(0,idx));
+                NDC.push("Tenant:" + userName.substring(idx + 1) + " User:" + userName.substring(0, idx));
             }
             else
             {
-                NDC.push("User:"+userName);
+                NDC.push("User:" + userName);
             }
         }
         else
         {
-            NDC.push("User:"+userName);
+            NDC.push("User:" + userName);
+        }
+    }
+
+    public static Authentication setCurrentRealAuthentication(Authentication authentication)
+    {
+        if (authentication == null)
+        {
+            clearCurrentSecurityContext();
+            return null;
+        }
+        else
+        {
+            Context context = ContextHolder.getContext();
+            AlfrescoSecureContext sc = null;
+            if ((context == null) || !(context instanceof AlfrescoSecureContext))
+            {
+                sc = new AlfrescoSecureContextImpl();
+                ContextHolder.setContext(sc);
+            }
+            else
+            {
+                sc = (AlfrescoSecureContext) context;
+            }
+            authentication.setAuthenticated(true);
+            sc.setRealAuthentication(authentication);
+            return authentication;
+        }
+    }
+
+    public static Authentication setCurrentEffectiveAuthentication(Authentication authentication)
+    {
+        if (authentication == null)
+        {
+            clearCurrentSecurityContext();
+            return null;
+        }
+        else
+        {
+            Context context = ContextHolder.getContext();
+            AlfrescoSecureContext sc = null;
+            if ((context == null) || !(context instanceof AlfrescoSecureContext))
+            {
+                sc = new AlfrescoSecureContextImpl();
+                ContextHolder.setContext(sc);
+            }
+            else
+            {
+                sc = (AlfrescoSecureContext) context;
+            }
+            authentication.setAuthenticated(true);
+            sc.setEffectiveAuthentication(authentication);
+            return authentication;
+        }
+    }
+
+    public static Authentication setCurrentStoredAuthentication(Authentication authentication)
+    {
+        if (authentication == null)
+        {
+            clearCurrentSecurityContext();
+            return null;
+        }
+        else
+        {
+            Context context = ContextHolder.getContext();
+            AlfrescoSecureContext sc = null;
+            if ((context == null) || !(context instanceof AlfrescoSecureContext))
+            {
+                sc = new AlfrescoSecureContextImpl();
+                ContextHolder.setContext(sc);
+            }
+            else
+            {
+                sc = (AlfrescoSecureContext) context;
+            }
+            authentication.setAuthenticated(true);
+            sc.setStoredAuthentication(authentication);
+            return authentication;
         }
     }
 
@@ -219,12 +372,55 @@ public abstract class AuthenticationUtil
      */
     public static Authentication getCurrentAuthentication() throws AuthenticationException
     {
+        return getCurrentRealAuthentication();
+    }
+
+    /**
+     * Get the current real authentication context
+     * 
+     * @return Authentication
+     * @throws AuthenticationException
+     */
+    public static Authentication getCurrentRealAuthentication() throws AuthenticationException
+    {
         Context context = ContextHolder.getContext();
-        if ((context == null) || !(context instanceof SecureContext))
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
         {
             return null;
         }
-        return ((SecureContext) context).getAuthentication();
+        return ((AlfrescoSecureContext) context).getRealAuthentication();
+    }
+
+    /**
+     * Get the current effective authentication context
+     * 
+     * @return Authentication
+     * @throws AuthenticationException
+     */
+    public static Authentication getCurrentEffectiveAuthentication() throws AuthenticationException
+    {
+        Context context = ContextHolder.getContext();
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
+        {
+            return null;
+        }
+        return ((AlfrescoSecureContext) context).getEffectiveAuthentication();
+    }
+
+    /**
+     * Get the current stored authentication context
+     * 
+     * @return Authentication
+     * @throws AuthenticationException
+     */
+    public static Authentication getCurrentStoredAuthentication() throws AuthenticationException
+    {
+        Context context = ContextHolder.getContext();
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
+        {
+            return null;
+        }
+        return ((AlfrescoSecureContext) context).getStoredAuthentication();
     }
 
     /**
@@ -235,12 +431,52 @@ public abstract class AuthenticationUtil
      */
     public static String getCurrentUserName() throws AuthenticationException
     {
+        return getCurrentRealUserName();
+    }
+
+    public static String getCurrentRealUserName() throws AuthenticationException
+    {
         Context context = ContextHolder.getContext();
-        if ((context == null) || !(context instanceof SecureContext))
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
         {
             return null;
         }
-        return getUserName(((SecureContext) context).getAuthentication());
+        AlfrescoSecureContext ctx = (AlfrescoSecureContext) context;
+        if (ctx.getRealAuthentication() == null)
+        {
+            return null;
+        }
+        return getUserName(ctx.getRealAuthentication());
+    }
+
+    public static String getCurrentEffectiveUserName() throws AuthenticationException
+    {
+        Context context = ContextHolder.getContext();
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
+        {
+            return null;
+        }
+        AlfrescoSecureContext ctx = (AlfrescoSecureContext) context;
+        if (ctx.getEffectiveAuthentication() == null)
+        {
+            return null;
+        }
+        return getUserName(ctx.getEffectiveAuthentication());
+    }
+
+    public static String getCurrentStoredUserName() throws AuthenticationException
+    {
+        Context context = ContextHolder.getContext();
+        if ((context == null) || !(context instanceof AlfrescoSecureContext))
+        {
+            return null;
+        }
+        AlfrescoSecureContext ctx = (AlfrescoSecureContext) context;
+        if (ctx.getStoredAuthentication() == null)
+        {
+            return null;
+        }
+        return getUserName(ctx.getStoredAuthentication());
     }
 
     /**
@@ -304,33 +540,42 @@ public abstract class AuthenticationUtil
     }
 
     /**
-     * Execute a unit of work as a given user.  The thread's authenticated user will be
-     * returned to its normal state after the call.
+     * Execute a unit of work as a given user. The thread's authenticated user will be returned to its normal state
+     * after the call.
      * 
-     * @param runAsWork     the unit of work to do
-     * @param uid           the user ID
-     * @return              Returns the work's return value
+     * @param runAsWork
+     *            the unit of work to do
+     * @param uid
+     *            the user ID
+     * @return Returns the work's return value
      */
     public static <R> R runAs(RunAsWork<R> runAsWork, String uid)
     {
-        String currentUser = AuthenticationUtil.getCurrentUserName();
+        String effectiveUser = AuthenticationUtil.getCurrentEffectiveUserName();
+        String realUser = AuthenticationUtil.getCurrentRealUserName();
 
         R result = null;
         try
         {
-            if ((currentUser != null) && (isMtEnabled()))
+
+            if ((realUser != null) && (isMtEnabled()))
             {
-                int idx = currentUser.indexOf(TenantService.SEPARATOR);
-            if ((idx != -1) && (idx < (currentUser.length()-1)))
-            {
+                int idx = realUser.indexOf(TenantService.SEPARATOR);
+                if ((idx != -1) && (idx < (realUser.length() - 1)))
+                {
                     if (uid.equals(AuthenticationUtil.getSystemUserName()))
                     {
-                        uid = uid + TenantService.SEPARATOR + currentUser.substring(idx+1);
+                        uid = uid + TenantService.SEPARATOR + realUser.substring(idx + 1);
                     }
                 }
             }
-            
-            AuthenticationUtil.setCurrentUser(uid);
+
+            if (realUser == null)
+            {
+                AuthenticationUtil.setCurrentRealUser(uid);
+            }
+            AuthenticationUtil.setCurrentEffectiveUser(uid);
+
             result = runAsWork.doWork();
             return result;
         }
@@ -349,10 +594,13 @@ public abstract class AuthenticationUtil
         }
         finally
         {
-            AuthenticationUtil.clearCurrentSecurityContext();
-            if (currentUser != null)
+            if (realUser == null)
             {
-                AuthenticationUtil.setCurrentUser(currentUser);
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+            else
+            {
+                AuthenticationUtil.setCurrentEffectiveUser(effectiveUser);
             }
         }
     }

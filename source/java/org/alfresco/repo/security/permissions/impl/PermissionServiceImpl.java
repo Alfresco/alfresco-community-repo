@@ -392,9 +392,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             perm = permIn;
         }
 
+        if(AuthenticationUtil.getCurrentEffectiveUserName() == null)
+        {
+            return AccessStatus.DENIED;
+        }
+        
+        if(AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+        {
+            return AccessStatus.ALLOWED;
+        }
+        
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
-        Authentication auth = authenticationComponent.getCurrentAuthentication();
+        Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
         final Set<String> authorisations = getAuthorisations(auth, nodeRef);
 
         // If the node does not support the given permission there is no point
@@ -496,9 +506,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
+        if(AuthenticationUtil.getCurrentEffectiveUserName() == null)
+        {
+            return AccessStatus.DENIED;
+        }
+        
+        if(AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+        {
+            return AccessStatus.ALLOWED;
+        }
+        
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
-        Authentication auth = authenticationComponent.getCurrentAuthentication();
+        Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
         if (auth == null)
         {
             throw new IllegalStateException("Unauthenticated");

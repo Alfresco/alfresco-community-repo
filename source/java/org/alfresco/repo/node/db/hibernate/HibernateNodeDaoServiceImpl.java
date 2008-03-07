@@ -1517,10 +1517,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             public Object doInHibernate(Session session)
             {
+                QNameEntity propQNameEntity = qnameDAO.getQNameEntity(propQName);
+                if (propQNameEntity == null)
+                {
+                    // There is nothing like this
+                    return Collections.emptyList();
+                }
                 Query query = session.getNamedQuery(QUERY_NODES_WITH_PROPERTY_STRING_VALUE_FOR_STORE);
                 query.setString("protocol", storeRef.getProtocol())
                      .setString("identifier", tenantService.getName(storeRef.getIdentifier()))
-                     .setParameter("propQName", propQName)
+                     .setParameter("propQNameId", propQNameEntity.getId())
                      .setString("propStringValue", propStringValue)
                      .setReadOnly(true);
                 return query.list();

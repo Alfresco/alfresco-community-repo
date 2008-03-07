@@ -618,6 +618,9 @@ public class PersonServiceImpl implements PersonService,
     {
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
                 .get(ContentModel.PROP_USERNAME));
+        
+        tenantService.checkDomainUser(userName);
+        
         properties.put(ContentModel.PROP_USERNAME, userName);
         
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);

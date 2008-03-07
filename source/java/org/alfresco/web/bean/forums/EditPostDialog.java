@@ -65,7 +65,7 @@ public class EditPostDialog extends CreatePostDialog
          String htmlContent = reader.getContentString();
          if (htmlContent != null)
          {
-            this.content = StringUtils.replace(htmlContent, "<br/>", "\r\n");
+            this.content = StringUtils.replace(htmlContent, "<br>", "\r\n");
          }
       }
    }

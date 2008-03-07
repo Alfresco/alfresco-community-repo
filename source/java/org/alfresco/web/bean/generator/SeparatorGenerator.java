@@ -35,6 +35,6 @@ public class SeparatorGenerator extends HtmlSeparatorGenerator
    {
       // For the standard separator just show a <hr/> element
       
-      this.html = "<div style='margin-top: 6px; margin-bottom: 6px;'><hr/></div>";
+      this.html = "<div style='margin-top: 6px; margin-bottom: 6px;'><hr></div>";
    }
 }

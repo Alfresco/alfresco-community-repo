@@ -121,7 +121,7 @@ public class ErrorBean implements Serializable
          // format the message for HTML display
          message = message.replaceAll("<", "&lt;");
          message = message.replaceAll(">", "&gt;");
-         message = message.replaceAll("\n", "<br/>");
+         message = message.replaceAll("\n", "<br>");
       }
       
       return message;
@@ -144,7 +144,7 @@ public class ErrorBean implements Serializable
          trace = stringWriter.toString();
          trace = trace.replaceAll("<", "&lt;");
          trace = trace.replaceAll(">", "&gt;");
-         trace = trace.replaceAll("\n", "<br/>");
+         trace = trace.replaceAll("\n", "<br>");
       }
       
       return trace;

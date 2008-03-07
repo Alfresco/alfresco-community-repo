@@ -25,10 +25,13 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketException;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -39,6 +42,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -125,6 +130,8 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       String attachToken = t.nextToken();
       boolean attachment = URL_ATTACH.equals(attachToken) || URL_ATTACH_LONG.equals(attachToken);
       
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
+      
       // get or calculate the noderef and filename to download as
       NodeRef nodeRef;
       String filename;
@@ -153,8 +160,34 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          // build noderef from the appropriate URL elements
          nodeRef = new NodeRef(storeRef, id);
          
-         // filename is last remaining token
-         filename = t.nextToken();
+         if (tokenCount > 6)
+         {
+            // found additional relative path elements i.e. noderefid/images/file.txt
+            // this allows a url to reference siblings nodes via a cm:name based relative path
+            // solves the issue with opening HTML content containing relative URLs in HREF or IMG tags etc.
+            List<String> paths = new ArrayList<String>(tokenCount - 5);
+            while (t.hasMoreTokens())
+            {
+               paths.add(URLDecoder.decode(t.nextToken()));
+            }
+            filename = paths.get(paths.size() - 1);
+
+            try
+            {
+               NodeRef parentRef = serviceRegistry.getNodeService().getPrimaryParent(nodeRef).getParentRef();
+               FileInfo fileInfo = serviceRegistry.getFileFolderService().resolveNamePath(parentRef, paths);
+               nodeRef = fileInfo.getNodeRef();
+            }
+            catch (FileNotFoundException e)
+            {
+               throw new AlfrescoRuntimeException("Unable to find node reference by relative path:" + uri);
+            }
+         }
+         else
+         {
+            // filename is last remaining token
+            filename = t.nextToken();
+         }
       }
       
       // get qualified of the property to get content from - default to ContentModel.PROP_CONTENT
@@ -174,7 +207,6 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       }
       
       // get the services we need to retrieve the content
-      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       NodeService nodeService = serviceRegistry.getNodeService();
       ContentService contentService = serviceRegistry.getContentService();
       PermissionService permissionService = serviceRegistry.getPermissionService();
@@ -209,13 +241,15 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          long modifiedSince = req.getDateHeader("If-Modified-Since");
          if (modifiedSince > 0L)
          {
-             // round the date to the ignore millisecond value which is not supplied by header
-             long modDate = (modified.getTime() / 1000L) * 1000L;
-             if (modDate <= modifiedSince)
-             {
-                 res.setStatus(304);
-                 return;
-             }
+            // round the date to the ignore millisecond value which is not supplied by header
+            long modDate = (modified.getTime() / 1000L) * 1000L;
+            if (modDate <= modifiedSince)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Returning 304 Not Modified.");
+               res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+               return;
+            }
          }
          res.setDateHeader("Last-Modified", modified.getTime());
          
@@ -258,9 +292,85 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          // get the content and stream directly to the response output stream
          // assuming the repo is capable of streaming in chunks, this should allow large files
          // to be streamed directly to the browser response stream.
+         res.setHeader("Accept-Ranges", "bytes");
          try
          {
-            reader.getContent( res.getOutputStream() );
+            boolean processedRange = false;
+            String range = req.getHeader("Content-Range");
+            if (range == null)
+            {
+               range = req.getHeader("Range");
+            }
+            if (range != null)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Found content range header: " + range);
+               // return the specific set of bytes as requested in the content-range header
+               /* Examples of byte-content-range-spec values, assuming that the entity contains total of 1234 bytes:
+                     The first 500 bytes:
+                      bytes 0-499/1234
+
+                     The second 500 bytes:
+                      bytes 500-999/1234
+
+                     All except for the first 500 bytes:
+                      bytes 500-1233/1234 */
+               /* 'Range' header example:
+                      bytes=10485760-20971519 */
+               try
+               {
+                  if (range.length() > 6)
+                  {
+                     StringTokenizer r = new StringTokenizer(range.substring(6), "-/");
+                     if (r.countTokens() >= 2)
+                     {
+                        long start = Long.parseLong(r.nextToken());
+                        long end = Long.parseLong(r.nextToken());
+                        
+                        res.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                        res.setHeader("Content-Range", range);
+                        res.setHeader("Content-Length", Long.toString(((end-start)+1L)));
+                        
+                        InputStream is = null;
+                        try
+                        {
+                           is = reader.getContentInputStream();
+                           if (start != 0) is.skip(start);
+                           long span = (end-start)+1;
+                           long total = 0;
+                           int read = 0;
+                           byte[] buf = new byte[((int)span) < 8192 ? (int)span : 8192];
+                           while ((read = is.read(buf)) != 0 && total < span)
+                           {
+                              total += (long)read;
+                              res.getOutputStream().write(buf, 0, (int)read);
+                           }
+                           res.getOutputStream().close();
+                           processedRange = true;
+                        }
+                        finally
+                        {
+                           if (is != null) is.close();
+                        }
+                     }
+                  }
+               }
+               catch (NumberFormatException nerr)
+               {
+                  // processedRange flag will stay false if this occurs
+               }
+            }
+            if (processedRange == false)
+            {
+               // As per the spec:
+               //  If the server ignores a byte-range-spec because it is syntactically
+               //  invalid, the server SHOULD treat the request as if the invalid Range
+               //  header field did not exist.
+               long size = reader.getSize();
+               res.setHeader("Content-Range", "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
+               res.setHeader("Content-Length", Long.toString(size));
+               reader.getContent( res.getOutputStream() );
+            }
          }
          catch (SocketException e1)
          {

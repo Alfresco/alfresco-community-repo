@@ -618,7 +618,7 @@ public class ForumsBean implements IContextListener
          StringBuilder replyPosterHTML = new StringBuilder("<td valign='top'>");
          replyPosterHTML.append("<img src='");
          replyPosterHTML.append(contextPath);
-         replyPosterHTML.append("/images/icons/user_large.gif' /><br/>");
+         replyPosterHTML.append("/images/icons/user_large.gif' /><br>");
          replyPosterHTML.append((String)replyToNode.getProperties().get("creator"));
          replyPosterHTML.append("</td>");
          
@@ -1230,7 +1230,7 @@ public class ForumsBean implements IContextListener
          out.write("<td><table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
          out.write("<td valign='top'><img src='");
          out.write(contextPath);
-         out.write("/images/icons/user_large.gif'/><br/>");
+         out.write("/images/icons/user_large.gif'/><br>");
          out.write((String)node.getProperties().get("creator"));
          out.write("</td><td width='100%'>");
          
@@ -1240,7 +1240,7 @@ public class ForumsBean implements IContextListener
          renderBodyContents(context, primaryColumn);
          renderBubbleBottom(out, contextPath, colour);
          
-         out.write("</td><td><div style='width:32px;' /></td></table></td>");
+         out.write("</td><td><div style='width:32px;'></div></td></table></td>");
       }
       
       /**
@@ -1260,7 +1260,7 @@ public class ForumsBean implements IContextListener
          String colour = "yellow";
          
          out.write("<td width='100%'><table border='0' cellpadding='0' cellspacing='0' width='100%'><tr>");
-         out.write("<td><div style='width:32px;' /></td><td width='100%'>");
+         out.write("<td><div style='width:32px;'></div></td><td width='100%'>");
          
          renderBubbleTop(out, contextPath, colour, "#FFF5A3");
          renderHeaderContents(context, out, primaryColumn, actionsColumn, columns); 
@@ -1270,7 +1270,7 @@ public class ForumsBean implements IContextListener
          
          out.write("</td><td valign='top'><img src='");
          out.write(contextPath);
-         out.write("/images/icons/user_large.gif'/><br/>");
+         out.write("/images/icons/user_large.gif'/><br>");
          out.write((String)node.getProperties().get("creator"));
          out.write("</td></table></td>");
       }

@@ -341,6 +341,8 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
+         List<SelectItem> results = new ArrayList<SelectItem>();
+         
          if (filterIndex == 0)
          {
             // Use lucene search to retrieve user details
@@ -358,16 +360,18 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
                     SearchService.LANGUAGE_LUCENE,
                     query.toString());            
             List<NodeRef> nodes = resultSet.getNodeRefs();            
-            
-            items = new SelectItem[nodes.size()];
+
             for (int index=0; index<nodes.size(); index++)
             {
                NodeRef personRef = nodes.get(index);
                String firstName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                String lastName = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
                String username = (String)this.getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
-               SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
-               items[index] = item;
+               if (username != null)
+               {
+                  SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+                  results.add(item);
+               }
             }
          }
          else
@@ -375,8 +379,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             // groups - simple text based match on name
             Set<String> groups = getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
             groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
-            
-            List<SelectItem> results = new ArrayList<SelectItem>(groups.size());
+
             String containsLower = contains.trim().toLowerCase();
             int offset = PermissionService.GROUP_PREFIX.length();
             for (String group : groups)
@@ -386,10 +389,10 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
                   results.add(new SortableSelectItem(group, group.substring(offset), group));
                }
             }
-            items = new SelectItem[results.size()];
-            results.toArray(items);
          }
          
+         items = new SelectItem[results.size()];
+         results.toArray(items);
          Arrays.sort(items);
          
          // commit the transaction

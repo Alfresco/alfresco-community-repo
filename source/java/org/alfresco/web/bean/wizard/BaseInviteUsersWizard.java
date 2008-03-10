@@ -348,11 +348,11 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             // Use lucene search to retrieve user details
             String term = QueryParser.escape(contains.trim());
             StringBuilder query = new StringBuilder(128);
-            query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:*");
+            query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
             query.append(term);
-            query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:*");
+            query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
             query.append(term);
-            query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+            query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
             query.append(term);
             query.append("*");
             ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(

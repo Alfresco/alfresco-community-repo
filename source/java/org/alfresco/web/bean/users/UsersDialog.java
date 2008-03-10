@@ -325,11 +325,11 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             for (StringTokenizer t = new StringTokenizer(search, " "); t.hasMoreTokens(); /**/)
             {
                String term = QueryParser.escape(t.nextToken());
-               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:*");
+               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
                query.append(term);
-               query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:*");
+               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
                query.append(term);
-               query.append("* @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
                query.append(term);
                query.append("*");
             }

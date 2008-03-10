@@ -131,7 +131,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
          else
          {
             // output surrounding table and style if necessary
-            out.write("<table cellspacing='2' cellpadding='1' border='0' width='100%'");
+            out.write("<table cellspacing='2' cellpadding='1' border='0'");
             if (this.getAttributes().get("style") != null)
             {
                out.write(" style=\"");

@@ -201,8 +201,17 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
       Map request = context.getExternalContext().getRequestMap();
       if (request.get(AVMBrowseBean.REQUEST_BEEN_DEPLOYED_RESULT) == null)
       {
-         List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
-         result = new Boolean(testServers != null && testServers.size() > 0);
+         result = Boolean.FALSE;
+         
+         if (this.webProjectRef != null)
+         {
+            List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
+            if (testServers != null)
+            {
+               result = new Boolean(testServers != null && testServers.size() > 0);
+            }
+         }
+         
          request.put(AVMBrowseBean.REQUEST_BEEN_DEPLOYED_RESULT, result);
       }
       else

@@ -1234,7 +1234,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.formsDataModel = new ListDataModel();
       }
       
-      this.formsDataModel.setWrappedData(this.forms);
+      // only set the wrapped data once otherwise the row index gets reset
+      if (this.formsDataModel.getWrappedData() == null)
+      {
+         this.formsDataModel.setWrappedData(this.forms);
+      }
       
       return this.formsDataModel;
    }
@@ -1341,7 +1345,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
     */
    public void setupWorkflowAction(ActionEvent event)
    {
-      setActionWorkflow( (WorkflowConfiguration)this.workflowsDataModel.getRowData() );
+      setActionWorkflow( (WorkflowConfiguration)this.getWorkflowsDataModel().getRowData());
    }
    
    /**
@@ -1374,7 +1378,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.workflowsDataModel = new ListDataModel();
       }
       
-      this.workflowsDataModel.setWrappedData(this.workflows);
+      // only set the wrapped data once otherwise the row index gets reset
+      if (this.workflowsDataModel.getWrappedData() == null)
+      {
+         this.workflowsDataModel.setWrappedData(this.workflows);
+      }
       
       return this.workflowsDataModel;
    }

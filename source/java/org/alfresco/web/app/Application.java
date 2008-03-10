@@ -643,6 +643,11 @@ public class Application
             {
                locale = I18NUtil.parseLocale(strLocale);
             }
+            else
+            {
+               // failing that, use the server default locale
+               locale = Locale.getDefault();
+            }
          }
          else
          {
@@ -688,6 +693,11 @@ public class Application
             if (strLocale != null)
             {
                locale = I18NUtil.parseLocale(strLocale);
+            }
+            else
+            {
+               // failing that, use the server default locale
+               locale = Locale.getDefault();
             }
          }
          else

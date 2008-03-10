@@ -232,8 +232,10 @@
             <!-- this dashlet 'tasks-todo' is also shown by default for all users -->
             <dashlet id="tasks-todo" label-id="my_tasks_todo_title" description-id="my_tasks_todo_desc"
                   jsp="/jsp/workflow/tasks-todo-dashlet.jsp" allow-narrow="false" />
-            <dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
+            <!-- Not enabled by default
+			<dashlet id="tasks-active" label-id="tasks_active_title" description-id="tasks_active_desc"
                   jsp="/jsp/workflow/tasks-active-dashlet.jsp" allow-narrow="false" />
+			-->
             <dashlet id="pooled-tasks" label-id="pooled_tasks_title" description-id="pooled_tasks_desc"
                   jsp="/jsp/workflow/pooled-tasks-todo-dashlet.jsp" allow-narrow="false" />
             <dashlet id="tasks-completed" label-id="my_tasks_completed_title" description-id="my_tasks_completed_desc"

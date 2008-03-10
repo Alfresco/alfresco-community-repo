@@ -149,8 +149,14 @@ public class AVMServiceTestBase extends TestCase
                 }
             );
         }
-        fService.createStore("main");
-        fLockingService.addWebProject("main");
+        if (fService.getStore("main") == null)
+        {
+            fService.createStore("main");
+        }
+        if (!fLockingService.getWebProjects().contains("main"))
+        {
+            fLockingService.addWebProject("main");
+        }
         fStartTime = System.currentTimeMillis();
     }
 

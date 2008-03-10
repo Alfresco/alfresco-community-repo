@@ -692,6 +692,34 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Unexpected number of nodes present", 1, count);
     }
     
+    public void testLargeStrings() throws Exception
+    {
+        StringBuilder sb = new StringBuilder(2056);
+        for (int i = 0; i < 1024; i++)
+        {
+            sb.append("\u1234");
+        }
+        String longString = sb.toString();
+        int len = longString.length();
+        
+        // Create a normal node
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
+        // fill properties
+        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
+        fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
+        
+        // create node for real
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("MyContent"),
+                TYPE_QNAME_TEST_CONTENT,
+                properties).getChildRef();
+        
+        // Modify name using the long string
+        nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, longString);
+    }
+    
     /**
      * @see #ASPECT_QNAME_TEST_TITLED
      */

@@ -354,6 +354,14 @@
             and an.isRoot = false
     ]]>
     </query>
+    <query name="FindOrphans2">
+    <![CDATA[
+        select an
+        from ChildEntryImpl ce
+        right outer join ce.child an
+        where ce.child is null and an.isRoot = false
+    ]]>
+    </query>
     <query name="PlainFileNode.GetContentUrls">
     <![CDATA[
         select

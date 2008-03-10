@@ -77,5 +77,8 @@ public interface CopyServicePolicies
 				NodeRef destinationRef,
                 boolean copyToNewNode,
 				Map<NodeRef, NodeRef> copyMap);
+		
+		static Arg ARG_0 = Arg.KEY;
+        static Arg ARG_1 = Arg.KEY; 
 	}
 }

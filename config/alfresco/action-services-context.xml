@@ -519,7 +519,7 @@
          <value>admin</value>
       </property>
       <property name="defaultAlfrescoRmiPort">
-         <value>50500</value>
+         <value>${alfresco.rmi.services.port}</value>
       </property>
       <property name="defaultReceiverRmiPort">
          <value>44100</value>

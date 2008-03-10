@@ -148,7 +148,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     @SuppressWarnings("unchecked")
     public List<AVMNode> getOrphans(int batchSize)
     {
-        Query query = getSession().getNamedQuery("FindOrphans");
+        Query query = getSession().getNamedQuery("FindOrphans2");
         query.setMaxResults(batchSize);
         return (List<AVMNode>)query.list();
     }

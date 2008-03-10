@@ -206,6 +206,8 @@ public class AVMBrowseBean implements IContextListener
    
    private SearchContext searchContext = null;
    
+   private String searchOrigin;
+   
    /** The NodeService to be used by the bean */
    transient private NodeService nodeService;
    
@@ -1393,6 +1395,7 @@ public class AVMBrowseBean implements IContextListener
          setCurrentPath(null);
          setAvmActionNode(null);
          this.allItemsAction = false;
+         this.searchOrigin = null;
       }
       
       this.websiteQuery = null;
@@ -1533,8 +1536,11 @@ public class AVMBrowseBean implements IContextListener
       {
          // normal downloadable document
          outcome = "dialog:editAvmFile";
-      }
          
+         // we need to mark the file as modified so it gets a lock
+         this.getAvmService().forceCopy(avmPath);
+      }
+      
       logger.debug("outcome " + outcome + " for path " + path);
          
       FacesContext fc = FacesContext.getCurrentInstance();
@@ -1740,6 +1746,10 @@ public class AVMBrowseBean implements IContextListener
       // set the search context - when the view is refreshed, this will be detected and
       // the search results mode of the AVM Browse screen will be displayed 
       this.searchContext = searchContext;
+      
+      // set the search origin so that when the search is closed we know
+      // to go back to the website view and not the browse view (WCM-1007)
+      this.searchOrigin = "formContent";
    }
    
    /**
@@ -1883,6 +1893,15 @@ public class AVMBrowseBean implements IContextListener
    {
       this.searchContext = null;
       resetFileFolderLists();
+      
+      if (this.searchOrigin != null)
+      {
+         // if the search was from elsewhere navigate back to the website view
+         this.searchOrigin = null;
+         
+         FacesContext fc = FacesContext.getCurrentInstance();
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "browseWebsite");
+      }
    }
    
    

@@ -2804,10 +2804,6 @@ public class Schema2XForms implements Serializable
                                        typeName);
          }
          final StringList lexicalPatterns = ((XSSimpleTypeDefinition)controlType).getLexicalPattern();
-         for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength(); i++)
-         {
-            constraints.add("chiba:match(., '" + lexicalPatterns.item(i) + "',null)");
-         }
       }
 
       final short constraintType =

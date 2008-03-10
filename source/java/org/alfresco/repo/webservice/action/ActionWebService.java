@@ -669,30 +669,33 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         
         // Set the parameters
         NamedValue[] namedValues = webServiceAction.getParameters();
-        for (NamedValue namedValue : namedValues)
+        if (namedValues != null)
         {
-            // Get the type of the property
-            DataTypeDefinition propertyType = null;
-            ActionDefinition actionDefintion = this.actionService.getActionDefinition(action.getActionDefinitionName());
-            ParameterDefinition propertyDefintion = actionDefintion.getParameterDefintion(namedValue.getName());
-            if (propertyDefintion != null)
+            for (NamedValue namedValue : namedValues)
             {
-                propertyType = this.dictionaryService.getDataType(propertyDefintion.getType());
+                // Get the type of the property
+                DataTypeDefinition propertyType = null;
+                ActionDefinition actionDefintion = this.actionService.getActionDefinition(action.getActionDefinitionName());
+                ParameterDefinition propertyDefintion = actionDefintion.getParameterDefintion(namedValue.getName());
+                if (propertyDefintion != null)
+                {
+                    propertyType = this.dictionaryService.getDataType(propertyDefintion.getType());
+                }
+                
+                // Convert the value into the correct type
+                Serializable value = null;
+                if (propertyType != null)
+                {
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
+                }
+                else
+                {
+                    value = namedValue.getValue();
+                }
+                
+                // Set the parameter
+                action.setParameterValue(namedValue.getName(), value);
             }
-            
-            // Convert the value into the correct type
-            Serializable value = null;
-            if (propertyType != null)
-            {
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
-            }
-            else
-            {
-                value = namedValue.getValue();
-            }
-            
-            // Set the parameter
-            action.setParameterValue(namedValue.getName(), value);
         }
         
         // Set the conditions
@@ -752,30 +755,33 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         
         // Set the condition parameters
         NamedValue[] namedValues = webServiceCondition.getParameters();
-        for (NamedValue namedValue : namedValues)
+        if (namedValues != null)
         {
-            // Get the type of the property
-            DataTypeDefinition propertyType = null;
-            ActionConditionDefinition actionConditionDefintion = this.actionService.getActionConditionDefinition(actionCondition.getActionConditionDefinitionName());
-            ParameterDefinition propertyDefintion = actionConditionDefintion.getParameterDefintion(namedValue.getName());
-            if (propertyDefintion != null)
+            for (NamedValue namedValue : namedValues)
             {
-                propertyType = this.dictionaryService.getDataType(propertyDefintion.getType());
+                // Get the type of the property
+                DataTypeDefinition propertyType = null;
+                ActionConditionDefinition actionConditionDefintion = this.actionService.getActionConditionDefinition(actionCondition.getActionConditionDefinitionName());
+                ParameterDefinition propertyDefintion = actionConditionDefintion.getParameterDefintion(namedValue.getName());
+                if (propertyDefintion != null)
+                {
+                    propertyType = this.dictionaryService.getDataType(propertyDefintion.getType());
+                }
+                
+                // Convert the value into the correct type
+                Serializable value = null;
+                if (propertyType != null)
+                {
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
+                }
+                else
+                {
+                    value = namedValue.getValue();
+                }
+                
+                // Set the parameter
+                actionCondition.setParameterValue(namedValue.getName(), value);
             }
-            
-            // Convert the value into the correct type
-            Serializable value = null;
-            if (propertyType != null)
-            {
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propertyType, namedValue.getValue());
-            }
-            else
-            {
-                value = namedValue.getValue();
-            }
-            
-            // Set the parameter
-            actionCondition.setParameterValue(namedValue.getName(), value);
         }
         
         return actionCondition;
@@ -1025,6 +1031,8 @@ public class ActionWebService extends AbstractWebService implements ActionServic
         }
         catch (Throwable exception)
         {
+            exception.printStackTrace();
+            
             if (logger.isDebugEnabled())
             {
                 logger.error("Unexpected error occurred", exception);

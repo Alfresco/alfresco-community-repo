@@ -50,7 +50,7 @@
 
          <complexType name="Condition">
             <sequence>
-               <element name="id" type="xsd:string"/>
+               <element name="id" type="xsd:string" nillable="true"/>
                <element name="conditionName" type="xsd:string"/>
                <element name="invertCondition" type="xsd:boolean"/>
                <element name="parameters" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0" nillable="true"/>

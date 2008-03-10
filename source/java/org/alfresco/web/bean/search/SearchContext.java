@@ -200,7 +200,7 @@ public class SearchContext implements Serializable
             if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
             {
                // as a single quoted phrase
-               String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
+               String quotedSafeText = '"' + text.substring(1, text.length() - 1) + '"';
                fullTextBuf.append("TEXT:").append(quotedSafeText);
                nameAttrBuf.append("@").append(nameAttr).append(":").append(quotedSafeText);
                for (QName qname : this.simpleSearchAdditionalAttrs)
@@ -512,11 +512,10 @@ public class SearchContext implements Serializable
       else
       {
          // phrase multi-word search
-         String safeValue = QueryParser.escape(value);
          if (andOp) buf.append('+');
          else if (notOp) buf.append('-');
          buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
-            .append(safeValue).append('"').append(' ');
+            .append(value).append('"').append(' ');
       }
    }
    

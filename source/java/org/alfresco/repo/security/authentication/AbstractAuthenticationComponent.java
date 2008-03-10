@@ -96,7 +96,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.transactionService = transactionService;
     }
-    
+
     public TransactionService getTransactionService()
     {
         return transactionService;
@@ -141,13 +141,20 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
                 public Authentication execute() throws Throwable
                 {
-                    NodeRef userNode = personService.getPerson(userName);
-                    if (userNode != null)
+                    if (personService.personExists(userName))
                     {
-                        // Get the person name and use that as the current user to line up with permission checks
-                        String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                        return setCurrentUserImpl(personName);
-
+                        NodeRef userNode = personService.getPerson(userName);
+                        if (userNode != null)
+                        {
+                            // Get the person name and use that as the current user to line up with permission checks
+                            String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                            return setCurrentUserImpl(personName);
+                        }
+                        else
+                        {
+                            // Set using the user name
+                            return setCurrentUserImpl(userName);
+                        }
                     }
                     else
                     {

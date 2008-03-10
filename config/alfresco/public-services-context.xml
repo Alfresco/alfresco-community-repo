@@ -830,7 +830,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <value>sessionSizeResourceInterceptor</value>
+                <value>avmSessionSizeResourceInterceptor</value>
             </list>
         </property>
     </bean>

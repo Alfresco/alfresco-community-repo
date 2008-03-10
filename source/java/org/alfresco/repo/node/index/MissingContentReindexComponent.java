@@ -99,7 +99,10 @@ public class MissingContentReindexComponent extends AbstractReindexComponent
 
         // search for it in the index, sorting with youngest first
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TEXT:" + AbstractLuceneIndexerImpl.NOT_INDEXED_CONTENT_MISSING);
+        sp.setQuery(
+                "TEXT:" + AbstractLuceneIndexerImpl.NOT_INDEXED_CONTENT_MISSING +
+                " TEXT: " + AbstractLuceneIndexerImpl.NOT_INDEXED_TRANSFORMATION_FAILED +
+                " TEXT: " + AbstractLuceneIndexerImpl.NOT_INDEXED_NO_TRANSFORMATION);
         sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_DESCENDING);
         ResultSet results = null;
         try
@@ -121,6 +124,7 @@ public class MissingContentReindexComponent extends AbstractReindexComponent
                     }
                 };
                 transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork);
+                count++;
                 // check if we have to break out
                 if (isShuttingDown())
                 {

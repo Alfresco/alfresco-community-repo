@@ -30,8 +30,14 @@ import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
+import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -44,6 +50,8 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
 {
     private static final String INFO_CONNECTION_VERIFIED = "system.openoffice.info.connection_verified";
     private static final String ERR_CONNECTION_FAILED = "system.openoffice.err.connection_failed";
+    private static final String ERR_CONNECTION_LOST = "system.openoffice.err.connection_lost";
+    private static final String ERR_CONNECTION_REMADE = "system.openoffice.err.connection_remade";
     
     private static Log logger = LogFactory.getLog(OpenOfficeConnectionTester.class);
     
@@ -104,25 +112,14 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
      */
     private synchronized void checkConnection()
     {
-        PropertyCheck.mandatory(this, "connection", connection);
         String connectedMessage = I18NUtil.getMessage(INFO_CONNECTION_VERIFIED);
-        if (connection.isConnected())
+        boolean connected = testAndConnect();
+        OpenOfficeConnectionTesterJob.wasConnected = Boolean.valueOf(connected);
+        if (connected)
         {
             // the connection is fine
-            logger.info(connectedMessage);
+            logger.debug(connectedMessage);
             return;
-        }
-        // attempt to make the connection
-        try
-        {
-            connection.connect();
-            // that worked
-            logger.info(connectedMessage);
-            return;
-        }
-        catch (ConnectException e)
-        {
-            // no luck
         }
         // now we have to either fail or report the connection
         String msg = I18NUtil.getMessage(ERR_CONNECTION_FAILED);
@@ -133,6 +130,112 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
         else
         {
             logger.warn(msg);
+        }
+    }
+    
+    public boolean testAndConnect()
+    {
+        PropertyCheck.mandatory(this, "connection", connection);
+        if (connection.isConnected())
+        {
+            // the connection is fine
+            return true;
+        }
+        // attempt to make the connection
+        try
+        {
+            connection.connect();
+            // that worked
+            return true;
+        }
+        catch (ConnectException e)
+        {
+            // No luck
+            return false;
+        }
+    }
+
+    /**
+     * Quartz job that checks an OpenOffice connection.
+     * 
+     * @author Derek Hulley
+     * @since 2.1.2
+     */
+    public static class OpenOfficeConnectionTesterJob implements Job
+    {
+        private static volatile Boolean wasConnected;
+        
+        public OpenOfficeConnectionTesterJob()
+        {
+        }
+
+        /**
+         * Check the connection.
+         * @see OpenOfficeConnectionTester#checkConnection()
+         */
+        public synchronized void execute(JobExecutionContext context) throws JobExecutionException
+        {
+            /*
+             * Synchronized just in case of overzelous triggering.
+             */
+            
+            JobDataMap jobData = context.getJobDetail().getJobDataMap();
+            // Get the connecion tester
+            Object openOfficeConnectionTesterObj = jobData.get("openOfficeConnectionTester");
+            if (openOfficeConnectionTesterObj == null || !(openOfficeConnectionTesterObj instanceof OpenOfficeConnectionTester))
+            {
+                throw new AlfrescoRuntimeException("OpenOfficeConnectionJob data must contain valid 'openOfficeConnectionTester' reference");
+            }
+            OpenOfficeConnectionTester openOfficeConnectionTester = (OpenOfficeConnectionTester) openOfficeConnectionTesterObj;
+            
+            // Get the extractor and transformer registries.  These are not mandatory.
+            Object metadataExractorRegistryObj = jobData.get("metadataExractorRegistry");
+            MetadataExtracterRegistry metadataExtracterRegistry = null;
+            if (metadataExractorRegistryObj != null && (metadataExractorRegistryObj instanceof MetadataExtracterRegistry))
+            {
+                metadataExtracterRegistry = (MetadataExtracterRegistry) metadataExractorRegistryObj;
+            }
+            Object contentTransformerRegistryObj = jobData.get("contentTransformerRegistry");
+            ContentTransformerRegistry contentTransformerRegistry = null;
+            if (contentTransformerRegistryObj != null && (contentTransformerRegistryObj instanceof ContentTransformerRegistry))
+            {
+                contentTransformerRegistry = (ContentTransformerRegistry) contentTransformerRegistryObj;
+            }
+            
+            // Now ping the connection.  It doesn't matter if it fails or not.
+            boolean connected = openOfficeConnectionTester.testAndConnect();
+            // Now log, if necessary
+            if (OpenOfficeConnectionTesterJob.wasConnected == null)
+            {
+                // This is the first pass
+            }
+            else if (OpenOfficeConnectionTesterJob.wasConnected.booleanValue() == connected)
+            {
+                // Nothing changed since last time
+            }
+            else
+            {
+                if (connected)
+                {
+                    // This is reported as a warning as admins must be aware that it is bouncing
+                    logger.info(I18NUtil.getMessage(ERR_CONNECTION_REMADE));
+                }
+                else
+                {
+                    logger.error(I18NUtil.getMessage(ERR_CONNECTION_LOST));
+                }
+                // The value changed so ensure that the registries are bounced
+                if (metadataExtracterRegistry != null)
+                {
+                    metadataExtracterRegistry.resetCache();
+                }
+                if (contentTransformerRegistry != null)
+                {
+                    contentTransformerRegistry.resetCache();
+                }
+            }
+            // Record the state
+            OpenOfficeConnectionTesterJob.wasConnected = Boolean.valueOf(connected);
         }
     }
 }

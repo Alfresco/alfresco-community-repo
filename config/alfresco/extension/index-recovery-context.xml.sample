@@ -3,12 +3,8 @@
 
 <beans>
 
-    <!-- Forces the reindexing of nodes where content may have been missing before -->
-    <!--
-       This component can be triggered at intervals where asynchronous content sharing
-       between clustered servers has been set up.
-    -->
-    <bean id="missingContentReindexTrigger" class="org.alfresco.util.TriggerBean">
+    <!-- Forces the reindexing of content where full text extraction has previously failed -->
+    <bean id="missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -17,7 +13,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="indexRecoveryComponent">
-                            <ref bean="missingContentReindexComponent" />
+                            <ref bean="missingFullTextReindexComponent" />
                         </entry>
                     </map>
                 </property>
@@ -26,12 +22,8 @@
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        <!-- Give the server 5 minutes and then check for missing content -->
-        <property name="startDelayMinutes">
-            <value>5</value>
-        </property>
-        <property name="repeatCount">
-            <value>0</value>
+        <property name="cronExpression">
+            <value>0 0 21 * * ?</value>
         </property>
     </bean>
 

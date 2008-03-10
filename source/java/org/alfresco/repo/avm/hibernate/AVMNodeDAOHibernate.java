@@ -245,10 +245,16 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      */
     public void clear()
     {
-        fgLogger.error(getSession().getStatistics());
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug(getSession().getStatistics());
+        }
         getSession().flush();
         getSession().clear();
-        fgLogger.error(getSession().getStatistics());
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug(getSession().getStatistics());
+        }
     }
 
     /* (non-Javadoc)

@@ -143,10 +143,16 @@
         </property>
     </bean>
     
-   <!-- Missing Content -->
-   <!-- Bean that attempts to index content that was previously missing -->
+   <!-- Failed FTS reindexer -->
+   <!--
+      Bean that triggers full text indexing for content that was previously flagged with:
+        nitf: Not Indexed Transformation Failed
+        nicm: Not Indexed Content Missing
+        nint: Not Indexed No Transformation
+      Use a CronTriggerBean and Quartz scheduler to trigger as required
+   -->
    <bean
-         id="missingContentReindexComponent"
+         id="missingFullTextReindexComponent"
          class="org.alfresco.repo.node.index.MissingContentReindexComponent"
          parent="indexRecoveryComponentBase">
    </bean>

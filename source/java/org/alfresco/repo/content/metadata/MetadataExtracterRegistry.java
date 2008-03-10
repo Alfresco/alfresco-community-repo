@@ -67,6 +67,23 @@ public class MetadataExtracterRegistry
         extracterCacheReadLock = extractionCacheLock.readLock();
         extracterCacheWriteLock = extractionCacheLock.writeLock();
     }
+    
+    /**
+     * Force the registry to drop its cache of extractors.  This is useful for the case where an extractor
+     * becomes available only after the registry has initialized the cache.
+     */
+    public void resetCache()
+    {
+        extracterCacheWriteLock.lock();
+        try
+        {
+            extracterCache.clear();
+        }
+        finally
+        {
+            extracterCacheWriteLock.unlock();
+        }
+    }
 
     /**
      * Register an instance of an extracter for use

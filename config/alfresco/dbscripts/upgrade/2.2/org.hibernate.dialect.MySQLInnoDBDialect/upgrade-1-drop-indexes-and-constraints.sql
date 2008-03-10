@@ -21,6 +21,7 @@ ALTER TABLE alf_acl_member DROP INDEX fk_alf_aclm_acl, DROP FOREIGN KEY fk_alf_a
 
 ALTER TABLE alf_acl_member DROP INDEX fk_alf_aclm_ace, DROP FOREIGN KEY fk_alf_aclm_ace;
 
+-- Table might not exist
 ALTER TABLE alf_attributes DROP INDEX fk_attributes_n_acl, DROP FOREIGN KEY fk_attributes_n_acl;  -- (optional)
 
 ALTER TABLE alf_audit_date DROP INDEX adt_woy_idx;  -- (optional)
@@ -153,11 +154,11 @@ ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_store, DROP FOREIGN KEY fk_av
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-QNames-1-DropIndexesAndConstraints';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-1-DropIndexesAndConstraints';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES
   (
-    'patch.db-V2.2-QNames-1-DropIndexesAndConstraints', 'Manually executed script upgrade V2.2: Remove pre-2.2 indexes and constraints',
+    'patch.db-V2.2-1-DropIndexesAndConstraints', 'Manually executed script upgrade V2.2: Remove pre-2.2 indexes and constraints',
     0, 85, -1, 86, null, 'UNKOWN', 1, 1, 'Script completed'
   );

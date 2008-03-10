@@ -776,6 +776,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     ActionModel.TYPE_ACTION,
 					props).getChildRef();
 			
+			// Update the created details and the node reference
+	        ((ActionImpl)action).setCreator((String)this.nodeService.getProperty(actionNodeRef, ContentModel.PROP_CREATOR));
+	        ((ActionImpl)action).setCreatedDate((Date)this.nodeService.getProperty(actionNodeRef, ContentModel.PROP_CREATED));
+	        ((ActionImpl)action).setNodeRef(actionNodeRef);
+			
 			saveActionImpl(actionNodeRef, action);
 		}
 	}

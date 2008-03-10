@@ -1276,8 +1276,8 @@
         </property>
     </bean>
     
-    <bean id="patch.db-V2.2-QNames-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-QNames-0-CreateMissingTables</value></property>
+    <bean id="patch.db-V2.2-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-0-CreateMissingTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
@@ -1291,8 +1291,8 @@
             </list>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-QNames-1-DropIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-QNames-1-DropIndexesAndConstraints</value></property>
+    <bean id="patch.db-V2.2-1-DropIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-1-DropIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
@@ -1302,12 +1302,12 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-QNames-0-CreateMissingTables" />
+                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
             </list>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-QNames-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-QNames-2-MoveQNames</value></property>
+    <bean id="patch.db-V2.2-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-2-MoveQNames</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
@@ -1317,12 +1317,12 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-QNames-1-DropIndexesAndConstraints" />
+                <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
             </list>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-QNames-3-PropTypes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-QNames-3-PropTypes</value></property>
+    <bean id="patch.db-V2.2-3-PropTypes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-3-PropTypes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
@@ -1332,12 +1332,12 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-QNames-2-MoveQNames" />
+                <ref bean="patch.db-V2.2-2-MoveQNames" />
             </list>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints</value></property>
+    <bean id="patch.db-V2.2-4-ExtraIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-4-ExtraIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
@@ -1347,7 +1347,22 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-QNames-3-PropTypes" />
+                <ref bean="patch.db-V2.2-3-PropTypes" />
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.db-V2.2-5-MappedFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-5-MappedFKIndexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>121</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-5-mapped-fk-indexes.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
             </list>
         </property>
     </bean>

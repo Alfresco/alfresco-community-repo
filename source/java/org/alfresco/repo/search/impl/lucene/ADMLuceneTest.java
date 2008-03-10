@@ -3879,6 +3879,22 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("ISNULL:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"");
+        results = searcher.query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("ISNOTNULL:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"");
+        results = searcher.query(sp);
+        assertEquals(0, results.length());
+        results.close();
 
         // Test non field queries
 

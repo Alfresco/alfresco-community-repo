@@ -92,7 +92,7 @@ public class AuditDateImpl implements AuditDate
     /**
      * The year
      */
-    private int year;
+    private int fullYear;
 
     protected AuditDateImpl()
     {
@@ -105,9 +105,6 @@ public class AuditDateImpl implements AuditDate
         setDate(date);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getDate()
-     */
     public Date getDate()
     {
         return date;
@@ -131,12 +128,9 @@ public class AuditDateImpl implements AuditDate
         this.setQuarter((getMonth()/3));
         this.setWeekOfMonth(cal.get(Calendar.WEEK_OF_MONTH));
         this.setWeekOfYear(cal.get(Calendar.WEEK_OF_YEAR));
-        this.setYear(cal.get(Calendar.YEAR));
+        this.setFullYear(cal.get(Calendar.YEAR));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getDayOfYear()
-     */
     public int getDayOfYear()
     {
         return dayOfYear;
@@ -147,9 +141,6 @@ public class AuditDateImpl implements AuditDate
         this.dayOfYear = dayOfYear;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getDayOfMonth()
-     */
     public int getDayOfMonth()
     {
         return dayOfMonth;
@@ -160,9 +151,6 @@ public class AuditDateImpl implements AuditDate
         this.dayOfMonth = dayOfMonth;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getDayOfWeek()
-     */
     public int getDayOfWeek()
     {
         return dayOfWeek;
@@ -173,9 +161,6 @@ public class AuditDateImpl implements AuditDate
         this.dayOfWeek = dayOfWeek;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getHalfYear()
-     */
     public int getHalfYear()
     {
         return halfYear;
@@ -186,9 +171,6 @@ public class AuditDateImpl implements AuditDate
         this.halfYear = halfYear;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getId()
-     */
     public long getId()
     {
         return id;
@@ -199,9 +181,6 @@ public class AuditDateImpl implements AuditDate
         this.id = id;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getMonth()
-     */
     public int getMonth()
     {
         return month;
@@ -212,9 +191,6 @@ public class AuditDateImpl implements AuditDate
         this.month = month;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getQuarter()
-     */
     public int getQuarter()
     {
         return quarter;
@@ -225,9 +201,6 @@ public class AuditDateImpl implements AuditDate
         this.quarter = quarter;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getWeekOfMonth()
-     */
     public int getWeekOfMonth()
     {
         return weekOfMonth;
@@ -238,9 +211,6 @@ public class AuditDateImpl implements AuditDate
         this.weekOfMonth = weekOfMonth;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getWeekOfYear()
-     */
     public int getWeekOfYear()
     {
         return weekOfYear;
@@ -251,17 +221,14 @@ public class AuditDateImpl implements AuditDate
         this.weekOfYear = weekOfYear;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.hibernate.AuditDate#getYear()
-     */
-    public int getYear()
+    public int getFullYear()
     {
-        return year;
+        return fullYear;
     }
 
-    protected void setYear(int year)
+    protected void setFullYear(int year)
     {
-        this.year = year;
+        this.fullYear = year;
     }
 
     @Override

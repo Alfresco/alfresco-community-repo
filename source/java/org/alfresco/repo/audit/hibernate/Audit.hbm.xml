@@ -75,8 +75,8 @@
         <property name="weekOfMonth" column="week_of_month" type="integer" index="idx_alf_adtd_wom" not-null="true"/>
         <property name="month" column="month" type="integer"               index="idx_alf_adtd_m"   not-null="true"/>
         <property name="quarter" column="quarter" type="integer"           index="idx_alf_adtd_q"   not-null="true"/>
-        <property name="halfYear" column="halfYear" type="integer"         index="idx_alf_adtd_hy"  not-null="true"/>
-        <property name="year" column="year" type="integer"                 index="idx_alf_adtd_y"   not-null="true"/>        
+        <property name="halfYear" column="half_year" type="integer"        index="idx_alf_adtd_hy"  not-null="true"/>
+        <property name="fullYear" column="full_year" type="integer"        index="idx_alf_adtd_fy"  not-null="true"/>        
         
     </class>
     

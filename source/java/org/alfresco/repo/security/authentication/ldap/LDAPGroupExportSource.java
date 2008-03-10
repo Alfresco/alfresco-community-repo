@@ -85,6 +85,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
     private boolean errorOnMissingMembers = false;
 
+    private boolean errorOnDuplicateGID = false;
+
     private QName viewRef;
 
     private QName viewId;
@@ -168,6 +170,11 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         this.errorOnMissingUID = errorOnMissingUID;
     }
 
+    public void setErrorOnDuplicateGID(boolean errorOnDuplicateGID)
+    {
+        this.errorOnDuplicateGID = errorOnDuplicateGID;
+    }
+
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
@@ -185,8 +192,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
     }
 
-    private void buildXML(HashSet<Group> rootGroups, HashMap<String, Group> lookup,
-            HashSet<SecondaryLink> secondaryLinks, XMLWriter writer)
+    private void buildXML(HashSet<Group> rootGroups, HashMap<String, Group> lookup, HashSet<SecondaryLink> secondaryLinks, XMLWriter writer)
     {
 
         Collection<String> prefixes = namespaceService.getPrefixes();
@@ -195,8 +201,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         try
         {
             AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName
-                    .toPrefixString(), null, ContentModel.TYPE_PERSON.toPrefixString(namespaceService));
+            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName.toPrefixString(), null, ContentModel.TYPE_PERSON
+                    .toPrefixString(namespaceService));
 
             writer.startDocument();
 
@@ -209,8 +215,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 }
             }
 
-            writer.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, "view",
-                    NamespaceService.REPOSITORY_VIEW_PREFIX + ":" + "view", new AttributesImpl());
+            writer.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, "view", NamespaceService.REPOSITORY_VIEW_PREFIX + ":" + "view", new AttributesImpl());
 
             // Create group structure
 
@@ -234,8 +239,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 }
             }
 
-            writer.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, "view", NamespaceService.REPOSITORY_VIEW_PREFIX
-                    + ":" + "view");
+            writer.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, "view", NamespaceService.REPOSITORY_VIEW_PREFIX + ":" + "view");
 
             writer.endDocument();
         }
@@ -246,42 +250,34 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
 
     }
 
-    private void addSecondarylink(HashMap<String, Group> lookup, SecondaryLink sl, XMLWriter writer)
-            throws SAXException
+    private void addSecondarylink(HashMap<String, Group> lookup, SecondaryLink sl, XMLWriter writer) throws SAXException
     {
 
         String fromId = lookup.get(sl.from).guid;
         String toId = lookup.get(sl.to).guid;
 
         AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null,
-                fromId);
+        attrs.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null, fromId);
 
-        writer.startElement(viewRef.getNamespaceURI(), viewRef.getLocalName(),
-                viewRef.toPrefixString(namespaceService), attrs);
+        writer.startElement(viewRef.getNamespaceURI(), viewRef.getLocalName(), viewRef.toPrefixString(namespaceService), attrs);
 
-        writer.startElement(viewAssociations.getNamespaceURI(), viewAssociations.getLocalName(), viewAssociations
-                .toPrefixString(namespaceService), new AttributesImpl());
+        writer.startElement(viewAssociations.getNamespaceURI(), viewAssociations.getLocalName(), viewAssociations.toPrefixString(namespaceService), new AttributesImpl());
 
-        writer.startElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(),
-                ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService), new AttributesImpl());
+        writer.startElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(), ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService),
+                new AttributesImpl());
 
         AttributesImpl attrsRef = new AttributesImpl();
-        attrsRef.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null,
-                toId);
-        attrsRef.addAttribute(childQName.getNamespaceURI(), childQName.getLocalName(), childQName.toPrefixString(),
-                null, QName.createQName(ContentModel.USER_MODEL_URI, sl.to).toPrefixString(namespaceService));
+        attrsRef.addAttribute(viewIdRef.getNamespaceURI(), viewIdRef.getLocalName(), viewIdRef.toPrefixString(), null, toId);
+        attrsRef.addAttribute(childQName.getNamespaceURI(), childQName.getLocalName(), childQName.toPrefixString(), null, QName.createQName(ContentModel.USER_MODEL_URI, sl.to)
+                .toPrefixString(namespaceService));
 
-        writer.startElement(viewRef.getNamespaceURI(), viewRef.getLocalName(),
-                viewRef.toPrefixString(namespaceService), attrsRef);
+        writer.startElement(viewRef.getNamespaceURI(), viewRef.getLocalName(), viewRef.toPrefixString(namespaceService), attrsRef);
 
         writer.endElement(viewRef.getNamespaceURI(), viewRef.getLocalName(), viewRef.toPrefixString(namespaceService));
 
-        writer.endElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(),
-                ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService));
+        writer.endElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(), ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService));
 
-        writer.endElement(viewAssociations.getNamespaceURI(), viewAssociations.getLocalName(), viewAssociations
-                .toPrefixString(namespaceService));
+        writer.endElement(viewAssociations.getNamespaceURI(), viewAssociations.getLocalName(), viewAssociations.toPrefixString(namespaceService));
 
         writer.endElement(viewRef.getNamespaceURI(), viewRef.getLocalName(), viewRef.toPrefixString(namespaceService));
 
@@ -292,14 +288,12 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
         QName nodeUUID = QName.createQName("sys:node-uuid", namespaceService);
 
         AttributesImpl attrs = new AttributesImpl();
-        attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName
-                .toPrefixString(), null, QName.createQName(ContentModel.USER_MODEL_URI, group.gid).toPrefixString(
-                namespaceService));
+        attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName.toPrefixString(), null, QName.createQName(ContentModel.USER_MODEL_URI,
+                group.gid).toPrefixString(namespaceService));
         attrs.addAttribute(viewId.getNamespaceURI(), viewId.getLocalName(), viewId.toPrefixString(), null, group.guid);
 
-        writer.startElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(),
-                ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
-                        .toPrefixString(namespaceService), attrs);
+        writer.startElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(), ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
+                .toPrefixString(namespaceService), attrs);
 
         if ((authorityDAO != null) && authorityDAO.authorityExists(group.gid))
         {
@@ -308,43 +302,37 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
             {
                 String uguid = authorityDAO.getAuthorityNodeRefOrNull(group.gid).getId();
 
-                writer.startElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
-                        .toPrefixString(namespaceService), new AttributesImpl());
+                writer.startElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID.toPrefixString(namespaceService), new AttributesImpl());
 
                 writer.characters(uguid.toCharArray(), 0, uguid.length());
 
-                writer.endElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID
-                        .toPrefixString(namespaceService));
+                writer.endElement(nodeUUID.getNamespaceURI(), nodeUUID.getLocalName(), nodeUUID.toPrefixString(namespaceService));
             }
         }
 
-        writer.startElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME
-                .getLocalName(), ContentModel.PROP_AUTHORITY_NAME.toPrefixString(namespaceService),
-                new AttributesImpl());
+        writer.startElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME.getLocalName(), ContentModel.PROP_AUTHORITY_NAME
+                .toPrefixString(namespaceService), new AttributesImpl());
 
         writer.characters(group.gid.toCharArray(), 0, group.gid.length());
 
-        writer.endElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME
-                .getLocalName(), ContentModel.PROP_AUTHORITY_NAME.toPrefixString(namespaceService));
+        writer.endElement(ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI(), ContentModel.PROP_AUTHORITY_NAME.getLocalName(), ContentModel.PROP_AUTHORITY_NAME
+                .toPrefixString(namespaceService));
 
         if (group.members.size() > 0)
         {
-            writer.startElement(ContentModel.PROP_MEMBERS.getNamespaceURI(), ContentModel.PROP_MEMBERS.getLocalName(),
-                    ContentModel.PROP_MEMBERS.toPrefixString(namespaceService), new AttributesImpl());
+            writer.startElement(ContentModel.PROP_MEMBERS.getNamespaceURI(), ContentModel.PROP_MEMBERS.getLocalName(), ContentModel.PROP_MEMBERS.toPrefixString(namespaceService),
+                    new AttributesImpl());
 
             for (String member : group.members)
             {
-                writer.startElement(viewValueQName.getNamespaceURI(), viewValueQName.getLocalName(), viewValueQName
-                        .toPrefixString(namespaceService), new AttributesImpl());
+                writer.startElement(viewValueQName.getNamespaceURI(), viewValueQName.getLocalName(), viewValueQName.toPrefixString(namespaceService), new AttributesImpl());
 
                 writer.characters(member.toCharArray(), 0, member.length());
 
-                writer.endElement(viewValueQName.getNamespaceURI(), viewValueQName.getLocalName(), viewValueQName
-                        .toPrefixString(namespaceService));
+                writer.endElement(viewValueQName.getNamespaceURI(), viewValueQName.getLocalName(), viewValueQName.toPrefixString(namespaceService));
             }
 
-            writer.endElement(ContentModel.PROP_MEMBERS.getNamespaceURI(), ContentModel.PROP_MEMBERS.getLocalName(),
-                    ContentModel.PROP_MEMBERS.toPrefixString(namespaceService));
+            writer.endElement(ContentModel.PROP_MEMBERS.getNamespaceURI(), ContentModel.PROP_MEMBERS.getLocalName(), ContentModel.PROP_MEMBERS.toPrefixString(namespaceService));
         }
 
         for (Group child : group.children)
@@ -352,9 +340,8 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
             addgroup(lookup, child, writer);
         }
 
-        writer.endElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(),
-                ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
-                        .toPrefixString(namespaceService));
+        writer.endElement(ContentModel.TYPE_AUTHORITY_CONTAINER.getNamespaceURI(), ContentModel.TYPE_AUTHORITY_CONTAINER.getLocalName(), ContentModel.TYPE_AUTHORITY_CONTAINER
+                .toPrefixString(namespaceService));
 
     }
 
@@ -362,17 +349,15 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
     {
         AttributesImpl attrs = new AttributesImpl();
 
-        writer.startElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(),
-                ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService), attrs);
+        writer.startElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(), ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService),
+                attrs);
 
         addRootGroup(lookup, group, writer);
 
-        writer.endElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(),
-                ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService));
+        writer.endElement(ContentModel.ASSOC_MEMBER.getNamespaceURI(), ContentModel.ASSOC_MEMBER.getLocalName(), ContentModel.ASSOC_MEMBER.toPrefixString(namespaceService));
     }
 
-    private void buildGroupsAndRoots(HashSet<Group> rootGroups, HashMap<String, Group> lookup,
-            HashSet<SecondaryLink> secondaryLinks)
+    private void buildGroupsAndRoots(HashSet<Group> rootGroups, HashMap<String, Group> lookup, HashSet<SecondaryLink> secondaryLinks)
     {
         InitialDirContext ctx = null;
         try
@@ -392,9 +377,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 {
                     if (errorOnMissingGID)
                     {
-                        throw new ExportSourceImporterException(
-                                "Group returned by group search does not have mandatory group id attribute "
-                                        + attributes);
+                        throw new ExportSourceImporterException("Group returned by group search does not have mandatory group id attribute " + attributes);
                     }
                     else
                     {
@@ -404,12 +387,24 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                 }
                 String gid = (String) gidAttribute.get(0);
 
-                Group group = lookup.get(gid);
+                Group group = lookup.get("GROUP_" + gid);
                 if (group == null)
                 {
                     group = new Group(gid);
                     lookup.put(group.gid, group);
                     rootGroups.add(group);
+                }
+                else
+                {
+                    if (errorOnDuplicateGID)
+                    {
+                        throw new ExportSourceImporterException("Duplicate group id found for " + gid);
+                    }
+                    else
+                    {
+                        s_logger.warn("Duplicate gid found for " + gid + " -> merging definitions");
+                        // Currently we will merge the two definitions together we do not support duplciate GIDs
+                    }
                 }
                 Attribute memAttribute = attributes.get(memberAttribute);
                 // check for null
@@ -486,8 +481,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                         {
                             if (errorOnMissingMembers)
                             {
-                                throw new ExportSourceImporterException("Failed to find attribute objectclass for DN "
-                                        + dn);
+                                throw new ExportSourceImporterException("Failed to find attribute objectclass for DN " + dn);
                             }
                             else
                             {
@@ -520,14 +514,11 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     {
                                         if (errorOnMissingGID)
                                         {
-                                            throw new ExportSourceImporterException(
-                                                    "Group missing group id attribute DN ="
-                                                            + dn + "  att = " + groupIdAttributeName);
+                                            throw new ExportSourceImporterException("Group missing group id attribute DN =" + dn + "  att = " + groupIdAttributeName);
                                         }
                                         else
                                         {
-                                            s_logger.warn("Group missing group id attribute DN ="
-                                                    + dn + "  att = " + groupIdAttributeName);
+                                            s_logger.warn("Group missing group id attribute DN =" + dn + "  att = " + groupIdAttributeName);
                                             continue;
                                         }
                                     }
@@ -539,8 +530,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     {
                                         throw e;
                                     }
-                                    s_logger.warn("Failed to resolve group identifier "
-                                            + groupIdAttributeName + " for distinguished name: " + dn);
+                                    s_logger.warn("Failed to resolve group identifier " + groupIdAttributeName + " for distinguished name: " + dn);
                                     id = "Unknown sub group";
                                 }
                                 break;
@@ -555,14 +545,11 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     {
                                         if (errorOnMissingUID)
                                         {
-                                            throw new ExportSourceImporterException(
-                                                    "User missing user id attribute DN ="
-                                                            + dn + "  att = " + userIdAttributeName);
+                                            throw new ExportSourceImporterException("User missing user id attribute DN =" + dn + "  att = " + userIdAttributeName);
                                         }
                                         else
                                         {
-                                            s_logger.warn("User missing user id attribute DN ="
-                                                    + dn + "  att = " + userIdAttributeName);
+                                            s_logger.warn("User missing user id attribute DN =" + dn + "  att = " + userIdAttributeName);
                                             continue;
                                         }
                                     }
@@ -574,8 +561,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                     {
                                         throw e;
                                     }
-                                    s_logger.warn("Failed to resolve group identifier "
-                                            + userIdAttributeName + " for distinguished name: " + dn);
+                                    s_logger.warn("Failed to resolve group identifier " + userIdAttributeName + " for distinguished name: " + dn);
                                     id = "Unknown member";
                                 }
                                 break;
@@ -606,7 +592,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 {
                                     if (errorOnMissingMembers)
                                     {
-                                    throw new ExportSourceImporterException("Failed to find child group " + id);
+                                        throw new ExportSourceImporterException("Failed to find child group " + id);
                                     }
                                     else
                                     {
@@ -617,8 +603,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 {
                                     if (s_logger.isDebugEnabled())
                                     {
-                                        s_logger.debug("...       Primary created from "
-                                                + group.gid + " to " + child.gid);
+                                        s_logger.debug("...       Primary created from " + group.gid + " to " + child.gid);
                                     }
                                     group.children.add(child);
                                     rootGroups.remove(child);
@@ -627,8 +612,7 @@ public class LDAPGroupExportSource implements ExportSource, InitializingBean
                                 {
                                     if (s_logger.isDebugEnabled())
                                     {
-                                        s_logger.debug("...      Secondary created from "
-                                                + group.gid + " to " + child.gid);
+                                        s_logger.debug("...      Secondary created from " + group.gid + " to " + child.gid);
                                     }
                                     secondaryLinks.add(new SecondaryLink(group.gid, child.gid));
                                 }

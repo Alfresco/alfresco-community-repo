@@ -1,6 +1,6 @@
 --
 -- Title:      Create additional indexes and constraints
--- Database:   MySQL
+-- Database:   Generic
 -- Since:      V2.2 Schema 86
 -- Author:     Derek Hulley
 --
@@ -21,9 +21,9 @@ CREATE INDEX idx_alf_adtd_dow ON alf_audit_date (day_of_week);
 
 CREATE INDEX idx_alf_adtd_m ON alf_audit_date (month);
 
-CREATE INDEX idx_alf_adtd_hy ON alf_audit_date (halfYear);
+CREATE INDEX idx_alf_adtd_hy ON alf_audit_date (half_year);
 
-CREATE INDEX idx_alf_adtd_y ON alf_audit_date (year);
+CREATE INDEX idx_alf_adtd_fy ON alf_audit_date (full_year);
 
 CREATE INDEX idx_alf_adtd_dat ON alf_audit_date (date_only);
 
@@ -73,11 +73,11 @@ CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id);
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-4-ExtraIndexesAndConstraints';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES
   (
-    'patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints', 'Manually executed script upgrade V2.2: Created additional indexes and constraints',
+    'patch.db-V2.2-4-ExtraIndexesAndConstraints', 'Manually executed script upgrade V2.2: Created additional indexes and constraints',
     0, 85, -1, 86, null, 'UNKOWN', 1, 1, 'Script completed'
   );

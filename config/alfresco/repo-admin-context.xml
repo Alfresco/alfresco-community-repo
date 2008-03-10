@@ -53,29 +53,4 @@
         </property>
    </bean>  
     
-   <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
-
-      <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="contentService" ref="ContentService"/>      
-      <property name="searchService" ref="SearchService"/>
-      <property name="transactionService" ref="transactionComponent"/>
-      <property name="namespaceService" ref="namespaceService"/>
-      <property name="nodeService" ref="NodeService"/>
-      <property name="messageService" ref="messageService"/>
-      <property name="tenantDeployerService" ref="tenantAdminService"/>
-         
-      <property name="repositoryModelsLocations">
-         <list>
-            <ref bean="customModelsRepositoryLocation" />
-         </list>        
-      </property>
-         
-      <property name="repositoryMessagesLocations">
-         <list>
-            <ref bean="customMessagesRepositoryLocation" />
-         </list>        
-      </property>
-           
-   </bean>
-
 </beans>

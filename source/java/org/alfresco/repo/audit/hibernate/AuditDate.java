@@ -33,82 +33,59 @@ import java.util.Date;
  */
 public interface AuditDate
 {
-
     /**
-     * Get the date 
-     * 
-     * @return
+     * @return      the date object
      */
     public abstract Date getDate();
 
     /**
-     * Get the day of the year.
-     * 
-     * @return
+     * @return      the day of the year
      */
     public abstract int getDayOfYear();
 
     /**
-     * Get the day of the month.
-     * 
-     * @return
+     * @return      the day of the month
      */
     public abstract int getDayOfMonth();
 
     /**
-     * Get the day of the week
-     * 
-     * @return
+     * @return      the day of the week
      */
     public abstract int getDayOfWeek();
 
     /**
-     * Get the half year;
-     * 
-     * @return
+     * @return      the half year
      */
     public abstract int getHalfYear();
 
     
     /**
-     * Get the surrogate key
-     * 
-     * @return
+     * @return      the surrogate key
      */
     public abstract long getId();
 
     /**
-     * Get the month
-     * 
-     * @return
+     * @return      the month of the year
      */
     public abstract int getMonth();
 
     /**
-     * Get the quarter
-     * 
-     * @return
+     * @return      the quarter in the year
      */
     public abstract int getQuarter();
 
     /**
-     * Get the week of the month. 
-     * 
-     * @return
+     * @return      the week of the month
      */
     public abstract int getWeekOfMonth();
 
     /**
-     * Get the week of the year.
-     * 
-     * @return
+     * @return      the week of the year
      */
     public abstract int getWeekOfYear();
 
     /** 
-     * Get the year.
-     * @return
+     * @return      the full year
      */
-    public abstract int getYear();
-
+    public abstract int getFullYear();
 }

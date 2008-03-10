@@ -826,32 +826,6 @@
         </property>
     </bean>
 
-    <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-        <property name="models">
-            <list>
-                <value>alfresco/model/defaultCustomModel.xml</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap" init-method="bootstrap">
-        <property name="dictionaryDAO">
-            <ref local="dictionaryDAO"/>
-        </property>
-        <property name="contentService">
-            <ref bean="contentService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="searchService"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent"/>
-        </property>
-    </bean>
-
     <!--                 -->
     <!-- Copy Service    -->
     <!--                 -->

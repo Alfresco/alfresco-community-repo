@@ -49,15 +49,16 @@
              <ref bean="patch.schemaUpdateScript-V1.4-2" />
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL" />
-             <ref bean="patch.db-V2.2-QNames-0-CreateMissingTables" />
-             <ref bean="patch.db-V2.2-QNames-1-DropIndexesAndConstraints" />
-             <ref bean="patch.db-V2.2-QNames-2-MoveQNames" />
-             <ref bean="patch.db-V2.2-QNames-3-PropTypes" />
+             <ref bean="patch.db-V2.2-0-CreateMissingTables" />
+             <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
+             <ref bean="patch.db-V2.2-2-MoveQNames" />
+             <ref bean="patch.db-V2.2-3-PropTypes" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
           <list>
-             <ref bean="patch.db-V2.2-QNames-4-ExtraIndexesAndConstraints" />
+             <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
+             <ref bean="patch.db-V2.2-5-MappedFKIndexes" />
              <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
              <ref bean="patch.db-V2.1-JBPMData" />
              <ref bean="patch.db-V2.1-VersionColumns2" />
@@ -92,6 +93,32 @@
           <ref bean="avmLockingService"/>
        </property>
     </bean>
+
+    <!-- Load models -->
+   <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
+
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="contentService" ref="ContentService"/>      
+      <property name="searchService" ref="SearchService"/>
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="tenantDeployerService" ref="tenantAdminService"/>
+         
+      <property name="repositoryModelsLocations">
+         <list>
+            <ref bean="customModelsRepositoryLocation" />
+         </list>        
+      </property>
+         
+      <property name="repositoryMessagesLocations">
+         <list>
+            <ref bean="customMessagesRepositoryLocation" />
+         </list>        
+      </property>
+           
+   </bean>
 
     <!-- Bootstrap Files -->
     <bean id="systemInfoBootstrap" parent="systemInfoImporter">

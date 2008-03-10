@@ -21,7 +21,7 @@
       </id>
       <!-- Namespace URL must be unique -->
       <natural-id mutable="true">
-         <property name="uri" column="uri" type="string" length="100" not-null="true" />
+         <property name="safeUri" column="uri" type="string" length="100" not-null="true" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
@@ -65,7 +65,7 @@
       from
          org.alfresco.repo.domain.hibernate.NamespaceEntityImpl as namespace
       where
-         namespace.uri = :namespaceUri
+         namespace.safeUri = :namespaceUri
    </query>
 
    <query name="qname.GetQNameByUriAndLocalName" cacheable="false">
@@ -75,7 +75,7 @@
          org.alfresco.repo.domain.hibernate.QNameEntityImpl as qname
          join qname.namespace as namespace
       where
-         namespace.uri = :namespaceUri and
+         namespace.safeUri = :namespaceUri and
          qname.localName = :localName
    </query>
 

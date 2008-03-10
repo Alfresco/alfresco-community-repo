@@ -37,10 +37,12 @@ import org.alfresco.repo.domain.QNameEntity;
 public class NamespaceEntityImpl implements NamespaceEntity, Serializable
 {
     private static final long serialVersionUID = -6781559184013949845L;
+    
+    protected static final String EMPTY_URI_SUBSTITUTE = ".empty";
 
     private Long id;
     private Long version;
-    private String uri;
+    private String safeUri;
 
     public NamespaceEntityImpl()
     {
@@ -51,7 +53,7 @@ public class NamespaceEntityImpl implements NamespaceEntity, Serializable
      */
     public String toString()
     {
-        return uri;
+        return getUri();
     }
     
     /**
@@ -80,7 +82,7 @@ public class NamespaceEntityImpl implements NamespaceEntity, Serializable
      */
     public int hashCode()
     {
-        return uri.hashCode();
+        return safeUri.hashCode();
     }
     
     public Long getId()
@@ -102,22 +104,33 @@ public class NamespaceEntityImpl implements NamespaceEntity, Serializable
         return version;
     }
 
-    /**
-     * For Hibernate use
-     */
+    /** For Hibernate use */
     @SuppressWarnings("unused")
     private void setVersion(Long version)
     {
         this.version = version;
     }
 
+    /** For Hibernate use */
+    @SuppressWarnings("unused")
+    private String getSafeUri()
+    {
+        return safeUri;
+    }
+
+    /** For Hibernate use */
+    private void setSafeUri(String safeUri)
+    {
+        this.safeUri = safeUri;
+    }
+
     public String getUri()
     {
-        return uri;
+        return safeUri.equals(EMPTY_URI_SUBSTITUTE) ? "" : safeUri;
     }
     
     public void setUri(String uri)
     {
-        this.uri = uri;
+        setSafeUri(uri.length() == 0 ? EMPTY_URI_SUBSTITUTE : uri);
     }
 }

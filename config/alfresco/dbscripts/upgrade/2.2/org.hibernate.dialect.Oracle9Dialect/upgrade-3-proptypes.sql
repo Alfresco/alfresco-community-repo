@@ -1,6 +1,6 @@
 --
 -- Title:      Replace property type descriptors with numerical equivalents
--- Database:   MySQL
+-- Database:   Oracle
 -- Since:      V2.2 Schema 86
 -- Author:     Derek Hulley
 --
@@ -10,7 +10,7 @@
 -- Create temporary mapping for property types
 CREATE TABLE t_prop_types
 (
-   type_name VARCHAR(15) NOT NULL,
+   type_name VARCHAR2(15) NOT NULL,
    type_id INTEGER NOT NULL,
    PRIMARY KEY (type_name)
 );
@@ -35,8 +35,8 @@ INSERT INTO t_prop_types values ('LOCALE', 17);
 INSERT INTO t_prop_types values ('VERSION_NUMBER', 18);
 
 -- Modify the alf_node_properties table
-ALTER TABLE alf_node_properties ADD COLUMN actual_type_n INTEGER NULL AFTER qname_id;
-ALTER TABLE alf_node_properties ADD COLUMN persisted_type_n INTEGER NULL AFTER actual_type_n;
+ALTER TABLE alf_node_properties ADD ( actual_type_n NUMBER(10,0) NULL );
+ALTER TABLE alf_node_properties ADD ( persisted_type_n NUMBER(10,0) NULL );
 
 UPDATE alf_node_properties p SET p.actual_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.actual_type);
 UPDATE alf_node_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.persisted_type);
@@ -44,12 +44,12 @@ UPDATE alf_node_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_p
 ALTER TABLE alf_node_properties DROP COLUMN actual_type;
 ALTER TABLE alf_node_properties DROP COLUMN persisted_type;
 
-ALTER TABLE alf_node_properties MODIFY COLUMN actual_type_n INTEGER NOT NULL AFTER qname_id;
-ALTER TABLE alf_node_properties MODIFY COLUMN persisted_type_n INTEGER NOT NULL AFTER actual_type_n;
+ALTER TABLE alf_node_properties MODIFY ( actual_type_n NUMBER(10,0) NOT NULL );
+ALTER TABLE alf_node_properties MODIFY ( persisted_type_n NUMBER(10,0) NOT NULL );
 
 -- Modify the avm_node_properties_new table
-ALTER TABLE avm_node_properties_new ADD COLUMN actual_type_n INTEGER NULL AFTER qname_id;
-ALTER TABLE avm_node_properties_new ADD COLUMN persisted_type_n INTEGER NULL AFTER actual_type_n;
+ALTER TABLE avm_node_properties_new ADD ( actual_type_n NUMBER(10,0) NULL );
+ALTER TABLE avm_node_properties_new ADD ( persisted_type_n NUMBER(10,0) NULL );
 
 UPDATE avm_node_properties_new p SET p.actual_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.actual_type);
 UPDATE avm_node_properties_new p SET p.persisted_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.persisted_type);
@@ -57,12 +57,12 @@ UPDATE avm_node_properties_new p SET p.persisted_type_n = (SELECT t.type_id FROM
 ALTER TABLE avm_node_properties_new DROP COLUMN actual_type;
 ALTER TABLE avm_node_properties_new DROP COLUMN persisted_type;
 
-ALTER TABLE avm_node_properties_new MODIFY COLUMN actual_type_n INTEGER NOT NULL AFTER qname_id;
-ALTER TABLE avm_node_properties_new MODIFY COLUMN persisted_type_n INTEGER NOT NULL AFTER actual_type_n;
+ALTER TABLE avm_node_properties_new MODIFY ( actual_type_n NUMBER(10,0) NOT NULL );
+ALTER TABLE avm_node_properties_new MODIFY ( persisted_type_n NUMBER(10,0) NOT NULL );
 
 -- Modify the avm_store_properties table
-ALTER TABLE avm_store_properties ADD COLUMN actual_type_n INTEGER NULL AFTER qname_id;
-ALTER TABLE avm_store_properties ADD COLUMN persisted_type_n INTEGER NULL AFTER actual_type_n;
+ALTER TABLE avm_store_properties ADD ( actual_type_n NUMBER(10,0) NULL );
+ALTER TABLE avm_store_properties ADD ( persisted_type_n NUMBER(10,0) NULL );
 
 UPDATE avm_store_properties p SET p.actual_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.actual_type);
 UPDATE avm_store_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.persisted_type);
@@ -70,12 +70,12 @@ UPDATE avm_store_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_
 ALTER TABLE avm_store_properties DROP COLUMN actual_type;
 ALTER TABLE avm_store_properties DROP COLUMN persisted_type;
 
-ALTER TABLE avm_store_properties MODIFY COLUMN actual_type_n INTEGER NOT NULL AFTER qname_id;
-ALTER TABLE avm_store_properties MODIFY COLUMN persisted_type_n INTEGER NOT NULL AFTER actual_type_n;
+ALTER TABLE avm_store_properties MODIFY ( actual_type_n NUMBER(10,0) NOT NULL );
+ALTER TABLE avm_store_properties MODIFY ( persisted_type_n NUMBER(10,0) NOT NULL );
 
 -- Modify the avm_node_properties table
-ALTER TABLE avm_node_properties ADD COLUMN actual_type_n INTEGER NULL AFTER qname;
-ALTER TABLE avm_node_properties ADD COLUMN persisted_type_n INTEGER NULL AFTER actual_type_n;
+ALTER TABLE avm_node_properties ADD ( actual_type_n NUMBER(10,0) NULL );
+ALTER TABLE avm_node_properties ADD ( persisted_type_n NUMBER(10,0) NULL );
 
 UPDATE avm_node_properties p SET p.actual_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.actual_type);
 UPDATE avm_node_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_prop_types t WHERE t.type_name = p.persisted_type);
@@ -83,8 +83,8 @@ UPDATE avm_node_properties p SET p.persisted_type_n = (SELECT t.type_id FROM t_p
 ALTER TABLE avm_node_properties DROP COLUMN actual_type;
 ALTER TABLE avm_node_properties DROP COLUMN persisted_type;
 
-ALTER TABLE avm_node_properties MODIFY COLUMN actual_type_n INTEGER NOT NULL AFTER qname;
-ALTER TABLE avm_node_properties MODIFY COLUMN persisted_type_n INTEGER NOT NULL AFTER actual_type_n;
+ALTER TABLE avm_node_properties MODIFY ( actual_type_n NUMBER(10,0) NOT NULL );
+ALTER TABLE avm_node_properties MODIFY ( persisted_type_n NUMBER(10,0) NOT NULL );
 
 -- Remove temporary table
 DROP TABLE t_prop_types;

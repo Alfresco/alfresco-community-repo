@@ -79,9 +79,11 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         {
             public Object doInHibernate(Session session)
             {
+                String oracleSafeUri = (namespaceUri.length() == 0) ? NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE : namespaceUri;
+                
                 Query query = session
                     .getNamedQuery(HibernateQNameDAOImpl.QUERY_GET_NS_BY_URI)
-                    .setString("namespaceUri", namespaceUri);
+                    .setString("namespaceUri", oracleSafeUri);
                 return query.uniqueResult();
             }
         };
@@ -150,9 +152,12 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
             {
                 public Object doInHibernate(Session session)
                 {
+                    String namespaceUri = qname.getNamespaceURI();
+                    String oracleSafeUri = (namespaceUri.length() == 0) ? NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE : namespaceUri;
+                    
                     Query query = session
                         .getNamedQuery(HibernateQNameDAOImpl.QUERY_GET_QNAME_BY_URI_AND_LOCALNAME)
-                        .setString("namespaceUri", qname.getNamespaceURI())
+                        .setString("namespaceUri", oracleSafeUri)
                         .setString("localName", qname.getLocalName());
                     return query.uniqueResult();
                 }

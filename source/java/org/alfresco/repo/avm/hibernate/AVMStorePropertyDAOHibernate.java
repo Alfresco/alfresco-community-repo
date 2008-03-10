@@ -130,7 +130,7 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
                 "join name.namespace namespace " +
                 "where " +
                 "asp.store = :store and " +
-                "namespace.uri like :uri and " +
+                "namespace.safeUri like :uri and " +
                 "name.localName like :localName");
         query.setEntity("store", store);
         query.setParameter("uri", uri);
@@ -164,7 +164,7 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
                     "join asp.name name " +
                     "join name.namespace namespace " +
                     "where " +
-                    "namespace.uri like :uri and " +
+                    "namespace.safeUri like :uri and " +
                     "name.localName like :localName");
             query.setParameter("uri", uri);
             query.setParameter("localName", localName);

@@ -274,7 +274,11 @@ public class PatchServiceImpl implements PatchService
             // perform actual execution
             try
             {
-                logger.info(I18NUtil.getMessage(MSG_APPLYING_PATCH, patch.getId(), patch.getDescription()));
+                String msg = I18NUtil.getMessage(
+                        MSG_APPLYING_PATCH,
+                        patch.getId(),
+                        I18NUtil.getMessage(patch.getDescription()));
+                logger.info(msg);
                 report = patch.apply();
                 success = true;
             }

@@ -10,9 +10,9 @@
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
    </imports>
    
-   <namespaces>
-      <namespace uri="http://www.alfresco.org/test/lucenetest" prefix="test"/>
-   </namespaces>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/test/lucenetest" prefix="test"/>
+    </namespaces>
 
     <types>
         <type name="test:testSuperType">
@@ -331,6 +331,18 @@
       <aspect name="test:testAspect">
          <title>Titled</title>
          <parent>test:testSuperAspect</parent>
+			<properties>
+				<property name="test:aspectProperty">
+					<type>d:text</type>
+					<mandatory>false</mandatory>
+					<multiple>false</multiple>
+					<index enabled="true">
+						<atomic>true</atomic>
+						<stored>true</stored>
+						<tokenised>true</tokenised>
+					</index>
+				</property>
+	     </properties>
       </aspect>
    </aspects>
 

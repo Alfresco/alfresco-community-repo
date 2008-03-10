@@ -1,6 +1,6 @@
 --
 -- Title:      Update for permissions schema changes
--- Database:   MySQL InnoDB
+-- Database:   Oracle
 -- Since:      V2.2 Schema 85
 -- Author:     Andy Hind
 --
@@ -8,23 +8,24 @@
 --
 
 CREATE TABLE alf_acl_change_set (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   primary key (id)
-) ENGINE=InnoDB;
+   id NUMBER(19,0) NOT NULL,
+   version NUMBER(19,0) NOT NULL,
+   PRIMARY KEY (id)
+);
 
 
 -- Add to ACL
-ALTER TABLE alf_access_control_list
-   ADD COLUMN type INT NOT NULL DEFAULT 0,
-   ADD COLUMN latest BOOLEAN NOT NULL DEFAULT TRUE,
-   ADD COLUMN acl_id VARCHAR(36) NOT NULL DEFAULT 'UNSET',
-   ADD COLUMN acl_version BIGINT NOT NULL DEFAULT 1,
-   ADD COLUMN inherited_acl BIGINT,
-   ADD COLUMN is_versioned BOOLEAN NOT NULL DEFAULT FALSE,
-   ADD COLUMN requires_version BOOLEAN NOT NULL DEFAULT FALSE,
-   ADD COLUMN acl_change_set BIGINT,
-   ADD COLUMN inherits_from BIGINT;
+ALTER TABLE alf_access_control_list ADD (
+   type NUMBER(10,0) DEFAULT 0 NOT NULL,
+   latest NUMBER(1,0) DEFAULT 1 NOT NULL,
+   acl_id VARCHAR2(36 CHAR) DEFAULT 'UNSET' NOT NULL,
+   acl_version NUMBER(19,0) DEFAULT 1 NOT NULL,
+   inherited_acl NUMBER(19,0),
+   is_versioned NUMBER(1,0) DEFAULT 0 NOT NULL,
+   requires_version NUMBER(1,0) DEFAULT 0 NOT NULL,
+   acl_change_set NUMBER(19,0),
+   inherits_from NUMBER(19,0)
+);
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
 ALTER TABLE alf_access_control_list ADD CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id);
 CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
@@ -37,73 +38,80 @@ ALTER TABLE alf_access_control_list
 
 -- Create ACL member list
 CREATE TABLE alf_acl_member (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   acl_id BIGINT NOT NULL,
-   ace_id BIGINT NOT NULL,
-   pos INT NOT NULL,
+   id NUMBER(19,0) NOT NULL,
+   version NUMBER(19,0) NOT NULL,
+   acl_id NUMBER(19,0) NOT NULL,
+   ace_id NUMBER(19,0) NOT NULL,
+   pos NUMBER(10,0) NOT NULL,
    primary key (id),
-   unique(acl_id, ace_id, pos)
-) ENGINE=InnoDB;
+   unique (acl_id, ace_id, pos)
+);
 CREATE INDEX fk_alf_aclm_acl ON alf_acl_member (acl_id);
 ALTER TABLE alf_acl_member ADD CONSTRAINT fk_alf_aclm_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id);
 CREATE INDEX fk_alf_aclm_ace ON alf_acl_member (ace_id);
 ALTER TABLE alf_acl_member ADD CONSTRAINT fk_alf_aclm_ace FOREIGN KEY (ace_id) REFERENCES alf_access_control_entry (id);
 
 
-ALTER TABLE alf_access_control_entry DROP INDEX acl_id;
+ALTER TABLE alf_access_control_entry DROP UNIQUE (acl_id, permission_id, authority_id);
 
 -- Extend ACE
-ALTER TABLE alf_access_control_entry
-   ADD COLUMN auth_id BIGINT NOT NULL DEFAULT -1,
-   ADD COLUMN applies INT NOT NULL DEFAULT 0,
-   ADD COLUMN context_id BIGINT;
+ALTER TABLE alf_access_control_entry ADD (
+   auth_id NUMBER(19,0) DEFAULT -1 NOT NULL,
+   applies NUMBER(10,0) DEFAULT 0 NOT NULL,
+   context_id NUMBER(19,0)
+);
 
 -- remove unused
 DROP TABLE alf_auth_ext_keys;
 
 -- remove authority constraint
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B25A50BF, DROP FOREIGN KEY FKFFF41F99B25A50BF; -- (optional)
+DROP INDEX FKFFF41F99B25A50BF;
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT FKFFF41F99B25A50BF; -- (optional)
 
 -- restructure authority
-ALTER TABLE alf_authority
-   DROP PRIMARY KEY,
-   ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT,
-   ADD COLUMN crc BIGINT,
-   CHANGE recipient authority VARCHAR(100),
-   ADD primary key (id),
-   ADD UNIQUE (authority, crc);
+ALTER TABLE alf_authority DROP PRIMARY KEY;
+ALTER TABLE alf_authority ADD (
+   id number(19,0) DEFAULT 0 NOT NULL,
+   crc NUMBER(19,0)
+);
+UPDATE alf_authority SET id = hibernate_sequence.nextval;
+ALTER TABLE alf_authority RENAME COLUMN recipient TO authority;
+ALTER TABLE alf_authority MODIFY (
+   authority VARCHAR(100)
+);
+ALTER TABLE alf_authority ADD PRIMARY KEY (id);
+ALTER TABLE alf_authority ADD UNIQUE (authority, crc);
 CREATE INDEX idx_alf_auth_aut on alf_authority (authority);
 
 -- migrate data - fix up FK refs to authority
 UPDATE alf_access_control_entry ace
-   set auth_id = (select id from alf_authority a where a.authority = ace.authority_id);
+   SET auth_id = (SELECT id FROM alf_authority a WHERE a.authority = ace.authority_id);
 
 
 -- migrate data - build equivalent ACL entries
-INSERT INTO alf_acl_member (version, acl_id, ace_id, pos)
-   select 1, acl_id, id, 0 from alf_access_control_entry;
+INSERT INTO alf_acl_member (id, version, acl_id, ace_id, pos)
+   select hibernate_sequence.nextval, 1, acl_id, id, 0 from alf_access_control_entry;
 
 -- Create ACE context
 CREATE TABLE alf_ace_context (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   class_context VARCHAR(1024),
-   property_context VARCHAR(1024),
-   kvp_context VARCHAR(1024),
-   primary key (id)
- ) ENGINE=InnoDB;
+   id NUMBER(19,0) NOT NULL,
+   version NUMBER(19,0) NOT NULL,
+   class_context VARCHAR2(1024 CHAR),
+   property_context VARCHAR2(1024 CHAR),
+   kvp_context VARCHAR2(1024 CHAR),
+   PRIMARY KEY (id)
+);
 
 
 -- Create auth aliases table
 CREATE TABLE alf_authority_alias (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   auth_id BIGINT NOT NULL,
-   alias_id BIGINT NOT NULL,
-   primary key (id),
-   UNIQUE (auth_id, alias_id)
-)  ENGINE=InnoDB;
+    id NUMBER(19,0) NOT NULL,
+    version NUMBER(19,0) NOT NULL,
+    auth_id NUMBER(19,0) NOT NULL,
+    alias_id NUMBER(19,0) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (auth_id, alias_id)
+);
 CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 ALTER TABLE alf_authority_alias ADD CONSTRAINT fk_alf_autha_ali FOREIGN KEY (alias_id) REFERENCES alf_authority (id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
@@ -112,11 +120,15 @@ ALTER TABLE alf_authority_alias ADD CONSTRAINT fk_alf_autha_aut FOREIGN KEY (aut
 
 -- Tidy up unused cols on ace table and add the FK contstraint back
 -- finish take out of ACL_ID
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B9553F6C, DROP FOREIGN KEY FKFFF41F99B9553F6C;
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F9960601995, DROP FOREIGN KEY FKFFF41F9960601995;
-ALTER TABLE alf_access_control_entry DROP COLUMN acl_id, DROP COLUMN authority_id;
-ALTER TABLE alf_access_control_entry
-   CHANGE auth_id authority_id BIGINT NOT NULL;
+DROP INDEX FKFFF41F99B9553F6C;
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT FKFFF41F99B9553F6C;
+DROP INDEX FKFFF41F9960601995;
+ALTER TABLE alf_access_control_entry DROP CONSTRAINT FKFFF41F9960601995;
+ALTER TABLE alf_access_control_entry DROP (
+   acl_id,
+   authority_id
+);
+ALTER TABLE alf_access_control_entry RENAME COLUMN auth_id TO authority_id;
 CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);
 ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_auth FOREIGN KEY (authority_id) REFERENCES alf_authority (id);
 CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
@@ -138,8 +150,14 @@ UPDATE alf_acl_member mem
 
 -- Remove duplicate aces the mysql way (as you can not use the deleted table in the where clause ...)
 
-CREATE TABLE tmp_to_delete SELECT ace.id FROM alf_acl_member mem RIGHT OUTER JOIN alf_access_control_entry ace ON mem.ace_id = ace.id WHERE mem.ace_id IS NULL;
-DELETE FROM alf_access_control_entry ace USING alf_access_control_entry ace JOIN tmp_to_delete t ON ace.id = t.id;
+CREATE TABLE tmp_to_delete (
+   id NUMBER(19,0) NOT NULL,
+   PRIMARY KEY (id)
+);
+INSERT INTO tmp_to_delete (
+   SELECT ace.id FROM alf_acl_member mem RIGHT OUTER JOIN alf_access_control_entry ace ON mem.ace_id = ace.id WHERE mem.ace_id IS NULL
+);
+DELETE FROM alf_access_control_entry ace WHERE ace.id IN (SELECT id FROM tmp_to_delete);
 DROP TABLE tmp_to_delete;
 
 -- Add constraint for duplicate acls

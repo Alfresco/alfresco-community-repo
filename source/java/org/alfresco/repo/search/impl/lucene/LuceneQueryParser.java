@@ -49,6 +49,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.impl.lucene.query.PathQuery;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -507,9 +508,11 @@ public class LuceneQueryParser extends QueryParser
                 PropertyDefinition pd = dictionaryService.getProperty(qname);
                 if (pd != null)
                 {
-                    QName container = pd.getContainerClass().getName();
+                    ClassDefinition containerClass = pd.getContainerClass();
+                    QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
-                    Query typeQuery = getFieldQuery("TYPE", container.toString());
+                    String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
+                    Query typeQuery = getFieldQuery(classType, container.toString());
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
@@ -531,9 +534,11 @@ public class LuceneQueryParser extends QueryParser
                 PropertyDefinition pd = dictionaryService.getProperty(qname);
                 if (pd != null)
                 {
-                    QName container = pd.getContainerClass().getName();
+                    ClassDefinition containerClass = pd.getContainerClass();
+                    QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
-                    Query typeQuery = getFieldQuery("TYPE", container.toString());
+                    String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
+                    Query typeQuery = getFieldQuery(classType, container.toString());
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {

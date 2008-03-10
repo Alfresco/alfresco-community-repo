@@ -261,7 +261,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
                 value = getStringValue(document, xpathExpression);
             }
             // Put the value
-            rawProperties.put(documentProperty, value);
+            super.putRawValue(documentProperty, value, rawProperties);
         }
         // Done
         return rawProperties;

@@ -220,6 +220,10 @@
           class="org.alfresco.linkvalidation.LinkValidationServiceImpl"
           lazy-init="true"
           init-method="register">
+
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent"/>
+        </property>
         <property name="attributeService">
             <ref bean="AttributeService"/>
         </property>

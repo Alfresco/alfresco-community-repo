@@ -254,9 +254,11 @@ public class RetryingTransactionHelper
                 {
                     if (count != 0)
                     {
-                        logger.debug(
-                                "Transaction succeeded after " + count +
-                                " retries on thread " + Thread.currentThread().getName());
+                        logger.debug("\n" +
+                                "Transaction succeeded: \n" +
+                                "   Thread: " + Thread.currentThread().getName() + "\n" +
+                                "   Txn:    " + txn + "\n" +
+                                "   Iteration: " + count);
                     }
                 }
                 return result;
@@ -276,6 +278,16 @@ public class RetryingTransactionHelper
                                 "Exception from transactional callback: " + cb,
                                 e);
                     }
+                }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\n" +
+                    		"Transaction commit failed: \n" +
+                    		"   Thread: " + Thread.currentThread().getName() + "\n" +
+                    		"   Txn:    " + txn + "\n" +
+                    		"   Iteration: " + count + "\n" +
+                    		"   Exception follows:",
+                    		e);
                 }
                 // Rollback if we can.
                 if (txn != null)

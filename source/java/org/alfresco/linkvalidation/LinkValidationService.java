@@ -27,12 +27,11 @@
 
 package org.alfresco.linkvalidation;
 
+import java.net.SocketException;
 import java.util.List;
-
+import javax.net.ssl.SSLException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.util.NameMatcher;
-import java.net.SocketException;
-import javax.net.ssl.SSLException;
 
 public interface LinkValidationService
 {

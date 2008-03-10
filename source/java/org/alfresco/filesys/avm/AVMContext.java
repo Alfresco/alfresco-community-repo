@@ -23,8 +23,6 @@
 
 package org.alfresco.filesys.avm;
 
-import java.util.Map;
-
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.state.FileState;
@@ -37,9 +35,6 @@ import org.alfresco.repo.avm.CreateStoreCallback;
 import org.alfresco.repo.avm.CreateVersionCallback;
 import org.alfresco.repo.avm.PurgeStoreCallback;
 import org.alfresco.repo.avm.PurgeVersionCallback;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -58,7 +53,7 @@ public class AVMContext extends AlfrescoContext
     private static final Log logger = LogFactory.getLog(AVMContext.class);
     
 	// Constants
-	//
+	// 
 	// Version id that indicates the head version
 	
 	public static final int VERSION_HEAD	= -1;
@@ -246,6 +241,7 @@ public class AVMContext extends AlfrescoContext
     	
     	return showStore;
     }
+    
     /**
      * Close the filesystem context
      */

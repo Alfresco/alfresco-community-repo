@@ -868,6 +868,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             throw new FileNotFoundException(params.getPath());
         }
+        catch (AVMLockingException ex)
+        {
+        	throw new AccessDeniedException(params.getPath());
+        }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+        	throw new AccessDeniedException(params.getPath());
+        }
     }
 
     /**
@@ -967,6 +975,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
         	throw new AccessDeniedException(params.getPath());
         }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+        	throw new AccessDeniedException(params.getPath());
+        }
 
         // Return the file
 
@@ -1039,6 +1051,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             throw new IOException("Invalid path, " + dir);
         }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+        	throw new AccessDeniedException("Access denied, " + dir);
+        }
     }
 
     /**
@@ -1104,6 +1120,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         catch (AVMLockingException ex)
         {
         	throw new AccessDeniedException("File locked, " + name);
+        }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+        	throw new AccessDeniedException("Access denied, " + name);
         }
     }
 
@@ -1493,6 +1513,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             throw new FileNotFoundException(params.getPath());
         }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+            throw new FileNotFoundException(params.getPath());
+        }
 
         // Return the file
 
@@ -1614,6 +1638,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         catch (AVMExistsException ex)
         {
             throw new FileExistsException("Destination exists, " + newName);
+        }
+        catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+        	throw new AccessDeniedException("Access denied, " + oldName);
         }
     }
 

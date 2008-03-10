@@ -24,8 +24,11 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -33,6 +36,8 @@ import org.alfresco.util.resource.MethodResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
+import org.hibernate.engine.CollectionKey;
+import org.hibernate.engine.EntityKey;
 import org.hibernate.stat.SessionStatistics;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -133,7 +138,8 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
         if ((entityCount + collectionCount) > threshold)
         {
             session.flush();
-            session.clear();
+            selectivelyClear(session, stats);
+            // session.clear();
             if (logger.isDebugEnabled())
             {
                 String msg = String.format(
@@ -141,6 +147,30 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
                         entityCount,
                         collectionCount);
                 logger.debug(msg);
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void selectivelyClear(Session session, SessionStatistics stats)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.error(stats);
+        }
+        Set<EntityKey> keys = new HashSet<EntityKey>((Set<EntityKey>)stats.getEntityKeys());
+        for (EntityKey key : keys)
+        {
+            // This should probably be configurable but frankly the nauseous extrusion of Gavin King's
+            // programmatic alimentary tract (hibernate) will go away before this could make a difference.
+            if (!key.getEntityName().startsWith("org.alfresco"))
+            {
+                continue;
+            }
+            Object val = session.get(key.getEntityName(), key.getIdentifier());
+            if (val != null)
+            {
+                session.evict(val);
             }
         }
     }

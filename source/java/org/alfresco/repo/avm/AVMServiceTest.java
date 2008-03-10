@@ -535,7 +535,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         try
         {
-            // layers are not ye indexed
+            // layers are not yet indexed
             setupBasicTree();
             fService.createStore("layer");
             fService.createDirectory("layer:/", "root");

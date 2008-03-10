@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.GUID;
@@ -115,6 +116,7 @@ public class JBPMTransactionTemplate extends JbpmTemplate
             if (context == null)
             {
                 context = super.getContext();
+                SessionSizeResourceManager.setDisableInTransaction();
                 AlfrescoTransactionSupport.bindResource(JBPM_CONTEXT_KEY, context);
                 AlfrescoTransactionSupport.bindListener(this);
     
@@ -156,24 +158,6 @@ public class JBPMTransactionTemplate extends JbpmTemplate
      */
     public void beforeCommit(boolean readOnly)
     {
-    }
-
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
-     */
-    public void beforeCompletion()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-     */
-    public void afterCommit()
-    {
         JbpmContext context = (JbpmContext)AlfrescoTransactionSupport.getResource(JBPM_CONTEXT_KEY);
         if (context != null)
         {
@@ -182,6 +166,22 @@ public class JBPMTransactionTemplate extends JbpmTemplate
             if (logger.isDebugEnabled())
                 logger.debug("Detached (commit) JBPM Context from transaction " + AlfrescoTransactionSupport.getTransactionId());
         }
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
+     */
+    public void beforeCompletion()
+    {
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
+     */
+    public void afterCommit()
+    {
     }
 
     

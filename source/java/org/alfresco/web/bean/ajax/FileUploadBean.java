@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.servlet.BaseServlet;
@@ -166,8 +167,8 @@ public class FileUploadBean implements Serializable
                if (Repository.extractMetadata(fc, cr, contentProps))
                {
                   author = (String)(contentProps.get(ContentModel.PROP_AUTHOR));
-                  title = (String)(contentProps.get(ContentModel.PROP_TITLE));
-                  description = (String)(contentProps.get(ContentModel.PROP_DESCRIPTION));
+                  title = DefaultTypeConverter.INSTANCE.convert(String.class, contentProps.get(ContentModel.PROP_TITLE));
+                  description = DefaultTypeConverter.INSTANCE.convert(String.class, contentProps.get(ContentModel.PROP_DESCRIPTION));
                }
                
                // default the title to the file name if not set

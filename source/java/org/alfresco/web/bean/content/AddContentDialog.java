@@ -45,6 +45,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
@@ -81,8 +82,8 @@ public class AddContentDialog extends BaseContentWizard
       if (Repository.extractMetadata(FacesContext.getCurrentInstance(), cr, contentProps))
       {
          this.author = (String)(contentProps.get(ContentModel.PROP_AUTHOR));
-         this.title = (String)(contentProps.get(ContentModel.PROP_TITLE));
-         this.description = (String)(contentProps.get(ContentModel.PROP_DESCRIPTION));
+         this.title = DefaultTypeConverter.INSTANCE.convert(String.class, contentProps.get(ContentModel.PROP_TITLE));
+         this.description = DefaultTypeConverter.INSTANCE.convert(String.class, contentProps.get(ContentModel.PROP_DESCRIPTION));
       }
       
       // default the title to the file name if not set

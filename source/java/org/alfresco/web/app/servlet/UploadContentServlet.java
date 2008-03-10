@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.app.servlet;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -164,7 +165,8 @@ public class UploadContentServlet extends BaseServlet
         PermissionService permissionService = serviceRegistry.getPermissionService();
         MimetypeService mimetypeService = serviceRegistry.getMimetypeService();
         
-        InputStream inputStream = req.getInputStream();
+        InputStream is = req.getInputStream();
+        BufferedInputStream inputStream = new BufferedInputStream(is);
 
         // Sort out the mimetype
         String mimetype = req.getParameter(ARG_MIMETYPE);

@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -122,10 +121,10 @@ public class ContentWebService extends AbstractWebService implements
             // Work out what the server, port and context path are
             HttpServletRequest req = (HttpServletRequest)MessageContext.getCurrentContext().getProperty(HTTPConstants.MC_HTTP_SERVLETREQUEST);
     
-            String address = req.getLocalName();
+            String address = req.getServerName();
             if (req.getLocalPort() != 80)
             {
-                address = address + ":" + req.getLocalPort();
+                address = address + ":" + req.getServerPort(); 
             }
     
             // Get the file name

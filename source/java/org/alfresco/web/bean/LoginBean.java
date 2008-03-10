@@ -27,6 +27,7 @@ package org.alfresco.web.bean;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.faces.application.FacesMessage;
@@ -374,6 +375,7 @@ public class LoginBean implements Serializable
       
       // need to capture this value before invalidating the session
       boolean externalAuth = isAlfrescoAuth();
+      Locale language = Application.getLanguage(context);
       
       // Invalidate Session for this user.
       if (Application.inPortalServer() == false)
@@ -407,12 +409,8 @@ public class LoginBean implements Serializable
       Map session = context.getExternalContext().getSessionMap();
       session.put(AuthenticationHelper.SESSION_INVALIDATED, true);
       
-      // set language to last used
-      String language = preferences.getLanguage();
-      if (language != null && language.length() != 0)
-      {
-         Application.setLanguage(context, language);
-      }
+      // set language to last used on the login page
+      Application.setLanguage(context, language.toString());
       
       return externalAuth ? "logout" : "relogin";
    }

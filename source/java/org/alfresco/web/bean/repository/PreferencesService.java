@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.repository;
 
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpSession;
 
 import org.alfresco.web.app.Application;
 
@@ -57,15 +58,16 @@ public final class PreferencesService
    public static Preferences getPreferences(FacesContext fc)
    {
       User user = Application.getCurrentUser(fc);
-      return getPreferences(user);
+      return user != null ? user.getPreferences(fc) : null;
    }
    
    /**
     * @param user User instance
     * @return The Preferences for the current User instance.
     */
-   public static Preferences getPreferences(User user)
+   public static Preferences getPreferences(HttpSession session)
    {
-      return user.getPreferences();
+      User user = Application.getCurrentUser(session);
+      return user != null ? user.getPreferences(session.getServletContext()) : null;
    }
 }

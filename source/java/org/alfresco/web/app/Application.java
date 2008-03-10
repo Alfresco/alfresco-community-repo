@@ -25,6 +25,7 @@
 package org.alfresco.web.app;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -47,12 +49,15 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.SidebarBean;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.alfresco.web.bean.dialog.DialogManager;
+import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.config.LanguagesConfigElement;
 import org.apache.commons.logging.Log;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -555,6 +560,7 @@ public class Application
    }
    
    /**
+<<<<<<< .working
     * @return the Projects folder name
     */
    public static String getProjectsFolderName(ServletContext context)
@@ -572,6 +578,9 @@ public class Application
    
    /**
     * Set the language locale for the current user context
+=======
+    * Set the language locale for the current user session.
+>>>>>>> .merge-right.r8121
     * 
     * @param context        FacesContext for current user
     * @param code           The ISO locale code to set
@@ -589,20 +598,27 @@ public class Application
       
       // clear the current message bundle - so it's reloaded with new locale
       context.getExternalContext().getSessionMap().remove(MESSAGE_BUNDLE);
+      
+      // Set the current locale in the server thread
+      I18NUtil.setLocale(locale);
    }
    
    /**
-    * Set the language locale for the current user session
+    * Set the language locale for the current user session.
     * 
     * @param session        HttpSession for current user
     * @param code           The ISO locale code to set
     */
+   @Deprecated
    public static void setLanguage(HttpSession session, String code)
    {
       Locale locale = I18NUtil.parseLocale(code);
       
       session.setAttribute(LOCALE, locale);
       session.removeAttribute(MESSAGE_BUNDLE);
+      
+      // Set the current locale in the server thread
+      I18NUtil.setLocale(locale);
    }
    
    /**
@@ -610,12 +626,45 @@ public class Application
     * 
     * @param context        FacesContext for the current user
     * 
-    * @return Current language Locale set or the VM default if none set
+    * @return Current language Locale set or the VM default if none set - never null
     */
-   public static Locale getLanguage(FacesContext context)
+   public static Locale getLanguage(FacesContext fc)
    {
-      Locale locale = (Locale)context.getExternalContext().getSessionMap().get(LOCALE);
-      return locale != null ? locale : Locale.getDefault();
+      Locale locale = (Locale)fc.getExternalContext().getSessionMap().get(LOCALE);
+      if (locale == null)
+      {
+         // first check saved user preferences
+         String strLocale = null;
+         if (getCurrentUser(fc) != null)
+         {
+            strLocale = (String)PreferencesService.getPreferences(fc).getValue(
+                     UserPreferencesBean.PREF_INTERFACELANGUAGE);
+            if (strLocale != null)
+            {
+               locale = I18NUtil.parseLocale(strLocale);
+            }
+         }
+         else
+         {
+            // else get from web-client config - the first item in the configured list of languages
+            Config config = Application.getConfigService(fc).getConfig("Languages");
+            LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+                  LanguagesConfigElement.CONFIG_ELEMENT_ID);
+            List<String> languages = langConfig.getLanguages();
+            if (languages != null && languages.size() != 0)
+            {
+               locale = I18NUtil.parseLocale(languages.get(0));
+            }
+            else
+            {
+               // failing that, use the server default locale
+               locale = Locale.getDefault();
+            }
+         }
+         // save in user session
+         fc.getExternalContext().getSessionMap().put(LOCALE, locale);
+      }
+      return locale;
    }
    
    /**
@@ -623,12 +672,45 @@ public class Application
     * 
     * @param session        HttpSession for the current user
     * 
-    * @return Current language Locale set or the VM default if none set
+    * @return Current language Locale set or the VM default if none set - never null
     */
    public static Locale getLanguage(HttpSession session)
    {
       Locale locale = (Locale)session.getAttribute(LOCALE);
-      return locale != null ? locale : Locale.getDefault();
+      if (locale == null)
+      {
+         // first check saved user preferences
+         String strLocale = null;
+         if (getCurrentUser(session) != null)
+         {
+            strLocale = (String)PreferencesService.getPreferences(session).getValue(
+                     UserPreferencesBean.PREF_INTERFACELANGUAGE);
+            if (strLocale != null)
+            {
+               locale = I18NUtil.parseLocale(strLocale);
+            }
+         }
+         else
+         {
+            // else get from web-client config - the first item in the configured list of languages
+            Config config = Application.getConfigService(session.getServletContext()).getConfig("Languages");
+            LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+                  LanguagesConfigElement.CONFIG_ELEMENT_ID);
+            List<String> languages = langConfig.getLanguages();
+            if (languages != null && languages.size() != 0)
+            {
+               locale = I18NUtil.parseLocale(languages.get(0));
+            }
+            else
+            {
+               // failing that, use the server default locale
+               locale = Locale.getDefault();
+            }
+         }
+         // save in user session
+         session.setAttribute(LOCALE, locale);
+      }
+      return locale;
    }
    
    /**
@@ -636,12 +718,33 @@ public class Application
     * 
     * @param session        PortletSession for the current user
     * 
-    * @return Current language Locale set or the VM default if none set
+    * @return Current language Locale set or the VM default if none set - never null
     */
    public static Locale getLanguage(PortletSession session)
    {
       Locale locale = (Locale)session.getAttribute(LOCALE);
-      return locale != null ? locale : Locale.getDefault();
+      if (locale == null)
+      {
+         // get from web-client config - the first item in the configured list of languages
+         WebApplicationContext ctx = (WebApplicationContext)session.getPortletContext().getAttribute(
+            WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+         Config config = ((ConfigService)ctx.getBean(Application.BEAN_CONFIG_SERVICE)).getConfig("Languages");
+         LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+               LanguagesConfigElement.CONFIG_ELEMENT_ID);
+         List<String> languages = langConfig.getLanguages();
+         if (languages != null && languages.size() != 0)
+         {
+            locale = I18NUtil.parseLocale(languages.get(0));
+         }
+         else
+         {
+            // failing that, use the server default locale
+            locale = Locale.getDefault();
+         }
+         // save in user session
+         session.setAttribute(LOCALE, locale);
+      }
+      return locale;
    }
    
    /**

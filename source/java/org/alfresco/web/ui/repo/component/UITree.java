@@ -32,6 +32,8 @@ import javax.faces.component.UIComponentBase;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.web.ui.common.Utils;
+
 /**
  * JSF component that renders an AJAX based tree for browsing the 
  * repository.
@@ -405,7 +407,7 @@ public class UITree extends UIComponentBase
          xml.append("<node ref=\"");
          xml.append(this.nodeRef);
          xml.append("\" name=\"");
-         xml.append(this.name);
+         xml.append(Utils.encode(this.name));
          xml.append("\" icon=\"");
          xml.append(this.icon);
          xml.append("\"/>");

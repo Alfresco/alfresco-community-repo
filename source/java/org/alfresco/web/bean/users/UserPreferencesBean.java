@@ -34,7 +34,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.config.Config;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -58,17 +57,14 @@ public class UserPreferencesBean implements Serializable
    private static final long serialVersionUID = -1262481849503163054L;
 
    private static final String PREF_STARTLOCATION = "start-location";
-
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
+   public static final String PREF_INTERFACELANGUAGE = "interface-language";
 
    /** 
     * Remplacement message for set the filter at 'all languages'. 
     * Must be considered as a null value.
     */
    public static final String MSG_CONTENTALLLANGUAGES = "content_all_languages";
-
-   /** language locale selection */
-   private String language = null;
 
    /** content language locale selection */
    private String contentFilterLanguage = null;
@@ -87,48 +83,31 @@ public class UserPreferencesBean implements Serializable
     */
    public SelectItem[] getLanguages()
    {
-      // Get the item selection list
-      SelectItem[] items = getLanguageItems();
-      // Change the current language
-      if (this.language == null)
-      {
-         // first try to get the language that the current user is using
-         Locale lastLocale = Application.getLanguage(FacesContext.getCurrentInstance());
-         if (lastLocale != null)
-         {
-            this.language = lastLocale.toString();
-         }
-         // else we default to the first item in the list
-         else if (items.length > 0)
-         {
-            this.language = (String) items[0].getValue();
-         }
-         else
-         {
-            throw new AlfrescoRuntimeException("The language list is empty");
-         }
-      }
-      return items;
+      // Get the item selection list for the list of languages
+      return getLanguageItems();
    }
 
    /**
-    * @return Returns the language selection.
+    * @return Returns the language selection for the current user session.
     */
    public String getLanguage()
    {
-      return this.language;
+      return Application.getLanguage(FacesContext.getCurrentInstance()).toString();
    }
-
+   
    /**
     * @param language       The language selection to set.
     */
    public void setLanguage(String language)
    {
-      this.language = language;
+      // set the language for the current session
       Application.setLanguage(FacesContext.getCurrentInstance(), language);
 
-      // Set the current locale in the server
-      I18NUtil.setLocale(I18NUtil.parseLocale(language));
+      // save user preference
+      if (Application.getCurrentUser(FacesContext.getCurrentInstance()) != null)
+      {
+         PreferencesService.getPreferences().setValue(PREF_INTERFACELANGUAGE, language);
+      }
    }
 
    /**

@@ -96,14 +96,16 @@ else
 		PersonService personService = (PersonService)context.getBean("personService");
       NodeRef guestRef = personService.getPerson(PermissionService.GUEST_AUTHORITY);
       user = new User(authService.getCurrentUserName(), authService.getCurrentTicket(), guestRef);
+      session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
       
       // ensure construction of the FacesContext before attemping a service call
 	   FacesContext fc = FacesHelper.getFacesContext(request, response, application);
-	   String preference = (String)PreferencesService.getPreferences(user).getValue("start-location");
+	   String preference = (String)PreferencesService.getPreferences(session).getValue("start-location");
 	   if (preference != null)
 	   {
 	      location = preference;
 	   }
+	   session.removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
       
       tx.commit();
    }

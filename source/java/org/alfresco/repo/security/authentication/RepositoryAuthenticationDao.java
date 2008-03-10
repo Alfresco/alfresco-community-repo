@@ -40,8 +40,10 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -68,6 +70,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private DictionaryService dictionaryService;
 
     private SearchService searchService;
+    
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     private PasswordEncoder passwordEncoder;
 
@@ -96,6 +100,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     public void setTenantService(TenantService tenantService)
@@ -175,7 +184,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
             for (ResultSetRow row : rs)
             {
 
-                NodeRef nodeRef = row.getNodeRef();
+                final NodeRef nodeRef = row.getNodeRef();
                 if (nodeService.exists(nodeRef))
                 {
                     String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
@@ -191,7 +200,26 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                             }
                             else
                             {
-                                throw new AlfrescoRuntimeException("Found more than one user for "+searchUserName+ " (case sensitive)");
+                                try
+                                {
+                                    this.retryingTransactionHelper.doInTransaction(
+                                        new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                                        {
+                                            public Object execute()
+                                                    throws Throwable
+                                            {
+                                                // Delete the extra user node references
+                                                RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
+                                                
+                                                return null;
+                                            }
+                                            
+                                        }, false, true);
+                                }
+                                catch (InvalidNodeRefException exception)
+                                {
+                                    // Ignore this exception as the node has already been deleted
+                                }
                             }
                         }
                     }
@@ -205,7 +233,26 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                             }
                             else
                             {
-                                throw new AlfrescoRuntimeException("Found more than one user for "+searchUserName+ " (case insensitive)");
+                                try
+                                {
+                                    this.retryingTransactionHelper.doInTransaction(
+                                        new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                                        {
+                                            public Object execute()
+                                                    throws Throwable
+                                            {
+                                                // Delete the extra user node references
+                                                RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
+                                                
+                                                return null;
+                                            }
+                                            
+                                        }, false, true);
+                                }
+                                catch (InvalidNodeRefException exception)
+                                {
+                                    // Ignore this exception as the node has already been deleted
+                                }
                             }
                         }
                     }

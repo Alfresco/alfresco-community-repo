@@ -89,7 +89,10 @@
        </property>
        <property name="searchService">
            <ref bean="admSearchService" />
-       </property>
+       </property>       
+      <property name="retryingTransactionHelper">
+          <ref bean="retryingTransactionHelper"/>
+      </property>
        <property name="userNamesAreCaseSensitive">
           <value>${user.name.caseSensitive}</value>
        </property>

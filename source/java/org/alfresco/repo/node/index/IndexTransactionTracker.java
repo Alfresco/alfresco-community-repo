@@ -257,6 +257,18 @@ found:
                 }
                 continue;
             }
+            else if (voidTxn.getCommitTimeMs() == null)
+            {
+                // http://issues.alfresco.com/browse/AR-2041
+                // An object was found, but sometimes it is still not fully formed.
+                // Perhaps it's the direct request by ID that gives back an uncommitted transaction.
+                // So this transaction is very likely to become live soon but we just leave it until it does.
+                // When the issue has been seen, there have not been any committed transactions with null commit times.
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Void is visible but not live: " + voidTxn);
+                }
+            }
             else
             {
                 if (logger.isDebugEnabled())

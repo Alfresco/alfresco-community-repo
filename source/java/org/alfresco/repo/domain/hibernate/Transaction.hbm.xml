@@ -65,6 +65,17 @@
          server.ipAddress = :ipAddress
    </query>
 
+   <query name="txn.GetTxnById">
+      select
+         txn
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+      where
+         txn.id = :txnId
+      order by
+         txn.commitTimeMs
+   </query>
+
    <query name="txn.GetTxnsByCommitTimeAsc">
       <![CDATA[
       select

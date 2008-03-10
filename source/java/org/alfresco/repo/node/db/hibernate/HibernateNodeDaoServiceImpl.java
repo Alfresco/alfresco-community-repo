@@ -1515,6 +1515,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /*
      * Queries for transactions
      */
+    private static final String QUERY_GET_TXN_BY_ID = "txn.GetTxnById";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_ASC = "txn.GetTxnsByCommitTimeAsc";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_DESC = "txn.GetTxnsByCommitTimeDesc";
     private static final String QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE = "txn.GetTxnUpdateCountForStore";
@@ -1523,9 +1524,21 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_TXN_CHANGES_FOR_STORE = "txn.GetTxnChangesForStore";
     private static final String QUERY_GET_TXN_CHANGES = "txn.GetTxnChanges";
     
-    public Transaction getTxnById(long txnId)
+    public Transaction getTxnById(final long txnId)
     {
-        return (Transaction) getSession().get(TransactionImpl.class, new Long(txnId));
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXN_BY_ID);
+                query.setLong("txnId", txnId)
+                     .setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Transaction txn = (Transaction) getHibernateTemplate().execute(callback);
+        // done
+        return txn;
     }
     
     @SuppressWarnings("unchecked")

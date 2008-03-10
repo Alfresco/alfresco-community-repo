@@ -45,6 +45,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.linkvalidation.HrefValidationProgress;
+import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -104,6 +105,7 @@ import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Bean backing up the AVM specific browse screens
@@ -228,9 +230,11 @@ public class AVMBrowseBean implements IContextListener
    /** The SearchService reference */
    transient private SearchService searchService;
    
+   /** The LinkValidationService */
+   transient private LinkValidationService linkValidationService;
+
    /** The PermissionService reference */
    transient protected PermissionService permissionService;
-   
    
    /**
     * Default Constructor
@@ -318,6 +322,22 @@ public class AVMBrowseBean implements IContextListener
          workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
       }
       return workflowService;
+   }
+   
+   public void setLinkValidationService(LinkValidationService service)
+   {
+      this.linkValidationService = service;
+   }
+   
+   protected LinkValidationService getLinkValidationService()
+   {
+      if (linkValidationService == null)
+      {
+         linkValidationService = (LinkValidationService)FacesContextUtils.getRequiredWebApplicationContext(
+                  FacesContext.getCurrentInstance()).getBean("LinkValidationService");
+      }
+      
+      return this.linkValidationService;
    }
    
    /**
@@ -674,6 +694,14 @@ public class AVMBrowseBean implements IContextListener
    public void setLinkValidationState(LinkValidationState state)
    {
       this.linkValidationState = state;
+   }
+   
+   /**
+    * @return Determines whether the link validation service is enabled
+    */
+   public boolean isLinkValidationEnabled()
+   {
+      return (this.getLinkValidationService().getPollInterval() > 0);
    }
 
    public List<AVMNodeDescriptor> getNodesForSubmit()

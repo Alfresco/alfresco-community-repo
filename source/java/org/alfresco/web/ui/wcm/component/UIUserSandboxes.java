@@ -63,6 +63,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
@@ -303,7 +304,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(FacesContext.getCurrentInstance(), true);
+         tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
          NodeRef websiteRef = getValue();
@@ -322,6 +323,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // sort the user list alphabetically and insert the current user at the top of the list 
          List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
+         
+         // determine whether the check links action should be shown
+         boolean linkValidationEnabled = true;
+         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(context, "AVMBrowseBean");
+         if (avmBrowseBean != null)
+         {
+            linkValidationEnabled = avmBrowseBean.isLinkValidationEnabled();
+         }
          
          // determine whether the deploy action should be shown
          boolean deployServersConfigured = false;
@@ -447,17 +456,20 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   menu.getChildren().clear();
                   
                   // Check Links action
-                  Map<String, String> params = new HashMap<String, String>(6);
-                  params.put("store", mainStore);
-                  params.put("username", username);
-                  params.put("webapp", this.getWebapp());
-                  params.put("mode", "runReport");
-                  params.put("compareToStaging", "true");
-                  UIActionLink checkLinks = createAction(context, mainStore, username, 
-                           ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
-                           "#{DialogManager.setupParameters}", "dialog:linkValidation", 
-                           null, params, false);
-                  menu.getChildren().add(checkLinks);
+                  if (linkValidationEnabled)
+                  {
+                     Map<String, String> params = new HashMap<String, String>(6);
+                     params.put("store", mainStore);
+                     params.put("username", username);
+                     params.put("webapp", this.getWebapp());
+                     params.put("mode", "runReport");
+                     params.put("compareToStaging", "true");
+                     UIActionLink checkLinks = createAction(context, mainStore, username, 
+                              ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
+                              "#{DialogManager.setupParameters}", "dialog:linkValidation", 
+                              null, params, false);
+                     menu.getChildren().add(checkLinks);
+                  }
                   
                   // Deploy action
                   if (deployServersConfigured)

@@ -3396,6 +3396,10 @@
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
+         <property-name>linkValidationService</property-name>
+         <value>#{LinkValidationService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
       </managed-property>

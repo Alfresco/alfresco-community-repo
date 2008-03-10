@@ -16,6 +16,9 @@
         <property name="mutableAuthenticationService">
             <ref bean="authenticationServiceImplAlfresco"/>
         </property>
+        <property name="sysAdminCache">
+            <ref bean="sysAdminCache"/>
+        </property>
     </bean>
     
     <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ChainingAuthenticationComponentImpl">
@@ -41,6 +44,9 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponentImplAlfresco"/>
         </property>
+        <property name="sysAdminCache">
+            <ref bean="sysAdminCache"/>
+        </property>
     </bean>
     
     <bean id="authenticationDaoAlfresco" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
@@ -54,7 +60,10 @@
             <ref bean="namespaceService"/>
         </property>
         <property name="searchService">
-            <ref bean="searchService"/>
+            <ref bean="admSearchService"/>
+        </property>
+        <property name="retryingTransactionHelper">
+          <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="userNamesAreCaseSensitive">
             <value>${user.name.caseSensitive}</value>
@@ -74,6 +83,15 @@
         <property name="allowGuestLogin">
             <value>true</value>
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
     </bean>
     
     <!-- JAAS -->
@@ -88,6 +106,9 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponentImplJAAS"/>
         </property>
+        <property name="sysAdminCache">
+            <ref bean="sysAdminCache"/>
+        </property>
     </bean>
     
     <bean id="authenticationComponentImplJAAS" class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent">
@@ -96,6 +117,15 @@
         </property>
         <property name="jaasConfigEntryName">
             <value>Alfresco</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
         </property>
     </bean>
     

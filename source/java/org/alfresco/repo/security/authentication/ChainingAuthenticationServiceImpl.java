@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * This class implements a simple chaining authentication service.
@@ -51,7 +52,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
  * 
  * @author Andy Hind
  */
-public class ChainingAuthenticationServiceImpl implements AuthenticationService
+public class ChainingAuthenticationServiceImpl extends AbstractAuthenticationService
 {
 
     private List<AuthenticationService> authenticationServices;
@@ -157,6 +158,7 @@ public class ChainingAuthenticationServiceImpl implements AuthenticationService
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
+        preAuthenticationCheck(userName);
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
@@ -175,6 +177,7 @@ public class ChainingAuthenticationServiceImpl implements AuthenticationService
 
     public void authenticateAsGuest() throws AuthenticationException
     {
+        preAuthenticationCheck(PermissionService.GUEST_AUTHORITY);
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
@@ -409,6 +412,59 @@ public class ChainingAuthenticationServiceImpl implements AuthenticationService
             domains.addAll(mutableAuthenticationService.getDomiansThatAllowUserPasswordChanges());
         }
         return domains;
+    }
+
+    @Override
+    public Set<String> getUsersWithTickets(boolean nonExpiredOnly)
+    {
+        HashSet<String> users = new HashSet<String>();
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            if(authService instanceof AbstractAuthenticationService)
+            {
+                users.addAll( ((AbstractAuthenticationService)authService).getUsersWithTickets(nonExpiredOnly));
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public int countTickets(boolean nonExpiredOnly)
+    {
+        int count = 0;
+        for(TicketComponent tc : getTicketComponents())
+        {
+            count += tc.countTickets(nonExpiredOnly);
+        }
+        return count;
+    }
+
+    @Override
+    public int invalidateTickets(boolean nonExpiredOnly)
+    {
+        int count = 0;
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            if(authService instanceof AbstractAuthenticationService)
+            {
+                count += ((AbstractAuthenticationService)authService).invalidateTickets(nonExpiredOnly);
+            }
+        }
+        return count;
+    }
+
+    @Override
+    public Set<TicketComponent> getTicketComponents()
+    {
+        Set<TicketComponent> tcs = new HashSet<TicketComponent>();
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            if(authService instanceof AbstractAuthenticationService)
+            {
+                tcs.addAll(((AbstractAuthenticationService)authService).getTicketComponents());
+            }
+        }
+        return tcs;
     }
 
 }

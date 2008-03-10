@@ -814,9 +814,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         if (transformer == null)
                         {
                             // log it
-                            if (s_logger.isDebugEnabled())
+                            if (s_logger.isInfoEnabled())
                             {
-                                s_logger.debug("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                s_logger.info("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN + " at "+nodeService.getPath(nodeRef));
                             }
                             // don't index from the reader
                             readerReady = false;
@@ -853,9 +853,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             catch (ContentIOException e)
                             {
                                 // log it
-                                if (s_logger.isDebugEnabled())
+                                if (s_logger.isInfoEnabled())
                                 {
-                                    s_logger.debug("Not indexed: Transformation failed", e);
+                                    s_logger.info("Not indexed: Transformation failed at "+nodeService.getPath(nodeRef), e);
                                 }
                                 // don't index from the reader
                                 readerReady = false;
@@ -899,10 +899,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 // URL not present (null reader) or no content at the URL (file missing)
                 {
                     // log it
-                    if (s_logger.isDebugEnabled())
+                    if (s_logger.isInfoEnabled())
                     {
-                        s_logger.debug("Not indexed: Content Missing \n"
-                                + "   node: " + nodeRef + "\n" + "   reader: " + reader + "\n" + "   content exists: "
+                        s_logger.info("Not indexed: Content Missing \n"
+                                + "   node: " + nodeRef  + " at "+nodeService.getPath(nodeRef)+ "\n" + "   reader: " + reader + "\n" + "   content exists: "
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing

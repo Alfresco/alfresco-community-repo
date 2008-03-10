@@ -25,14 +25,11 @@
 package org.alfresco.repo.security.authentication;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 
-public class AuthenticationServiceImpl implements AuthenticationService
+public class AuthenticationServiceImpl extends AbstractAuthenticationService
 {
     MutableAuthenticationDao authenticationDao;
 
@@ -48,22 +45,11 @@ public class AuthenticationServiceImpl implements AuthenticationService
     
     private boolean allowsUserPasswordChange = true;
     
-    // SysAdmin cache - used to cluster certain JMX operations
-    private SimpleCache<String, Object> sysAdminCache;
-    private final static String KEY_SYSADMIN_ALLOWED_USERS = "sysAdminCache.authAllowedUsers"; // List<String>
-    private final static String KEY_SYSADMIN_MAX_USERS = "sysAdminCache.authMaxUsers"; // Integer
-
-    
     public AuthenticationServiceImpl()
     {
         super();
     }
     
-    public void setSysAdminCache(SimpleCache<String, Object> sysAdminCache)
-    {
-        this.sysAdminCache = sysAdminCache;
-    }
-
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
@@ -124,22 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService
     {
         try
         {
-            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
-            clearCurrentSecurityContext();
-        	List<String> allowedUsers = (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
-           
-        	if ((allowedUsers != null) && (! allowedUsers.contains(userName)))
-			{
-				throw new AuthenticationDisallowedException("Username not allowed: " + userName);
-			}
-        	
-        	Integer maxUsers = (Integer)sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
-        	
-        	if ((maxUsers != null) && (maxUsers != -1) && (ticketComponent.getUsersWithTickets(true).size() >= maxUsers))
-        	{
-        		throw new AuthenticationMaxUsersException("Max users exceeded: " + maxUsers);
-        	}
-        	
+            preAuthenticationCheck(userName);
         	authenticationComponent.authenticate(userName, password);
         }
         catch(AuthenticationException ae)
@@ -170,29 +141,6 @@ public class AuthenticationServiceImpl implements AuthenticationService
     public Set<String> getUsersWithTickets(boolean nonExpiredOnly)
     {
     	return ticketComponent.getUsersWithTickets(nonExpiredOnly);
-    }
-    
-    public void setAllowedUsers(List<String> allowedUsers)
-    {
-    	sysAdminCache.put(KEY_SYSADMIN_ALLOWED_USERS, allowedUsers);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<String> getAllowedUsers()
-    {
-    	return (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
-    }
-    
-    public void setMaxUsers(int maxUsers)
-    {
-    	sysAdminCache.put(KEY_SYSADMIN_MAX_USERS, new Integer(maxUsers));
-    }
-    
-    @SuppressWarnings("unchecked")
-    public int getMaxUsers()
-    {
-    	Integer maxUsers = (Integer)sysAdminCache.get(KEY_SYSADMIN_MAX_USERS);
-    	return (maxUsers == null ? -1 : maxUsers.intValue());
     }
 
     public void invalidateTicket(String ticket) throws AuthenticationException
@@ -250,15 +198,10 @@ public class AuthenticationServiceImpl implements AuthenticationService
     @SuppressWarnings("unchecked")
     public void authenticateAsGuest() throws AuthenticationException
     {
-    	List<String> allowedUsers = (List<String>)sysAdminCache.get(KEY_SYSADMIN_ALLOWED_USERS);
-        
-    	if ((allowedUsers != null) && (! allowedUsers.contains(PermissionService.GUEST_AUTHORITY)))
-		{
-			throw new AuthenticationException("Guest authentication is not allowed");
-		}
-
+        preAuthenticationCheck(PermissionService.GUEST_AUTHORITY);
         authenticationComponent.setGuestUserAsCurrentUser();
         ticketComponent.clearCurrentTicket();
+        ticketComponent.getCurrentTicket(PermissionService.GUEST_AUTHORITY); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public boolean guestUserAuthenticationAllowed()
@@ -347,7 +290,9 @@ public class AuthenticationServiceImpl implements AuthenticationService
         }
     }
 
-   
-
-    
+    @Override
+    public Set<TicketComponent> getTicketComponents()
+    {
+        return Collections.singleton(ticketComponent);
+    }
 }

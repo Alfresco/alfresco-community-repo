@@ -34,6 +34,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
+import org.alfresco.util.GUID;
 import org.apache.commons.codec.binary.Hex;
 import org.safehaus.uuid.UUIDGenerator;
 
@@ -56,6 +57,8 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     private Duration validDuration;
 
     private boolean oneOff;
+    
+    private String guid;
 
     private SimpleCache<String, Ticket> ticketsCache; // Can't use Ticket as it's private
 
@@ -66,6 +69,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     public InMemoryTicketComponentImpl()
     {
         super();
+        guid = GUID.generate();
     }
 
     /**
@@ -234,6 +238,37 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         }
     }
 
+
+    @Override
+    public int hashCode()
+    {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + ((guid == null) ? 0 : guid.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final InMemoryTicketComponentImpl other = (InMemoryTicketComponentImpl) obj;
+        if (guid == null)
+        {
+            if (other.guid != null)
+                return false;
+        }
+        else if (!guid.equals(other.guid))
+            return false;
+        return true;
+    }
+    
+    
     /**
      * Ticket
      * @author andyh

@@ -169,7 +169,7 @@ public final class AuthenticationHelper
                   NodeRef guestHomeRef = (NodeRef)nodeService.getProperty(guestRef, ContentModel.PROP_HOMEFOLDER);
                   
                   // check that the home space node exists - else Guest cannot proceed
-                  if (nodeService.exists(guestHomeRef) == false)
+                  if (guestHomeRef == null || nodeService.exists(guestHomeRef) == false)
                   {
                      // cannot login as Guest as Home is missing - return to login screen
                      logger.warn("Unable to locate Guest Home space - may have been deleted?");

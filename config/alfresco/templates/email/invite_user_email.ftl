@@ -1,6 +1,6 @@
 You have been invited to '${space.name}' by ${person.properties.firstName}<#if person.properties.lastName?exists> ${person.properties.lastName}</#if>.
 
-You will have the role of: ${role}
+<#if role?exists>You will have the role of: ${role}</#if>
 
 You can view the space through the Alfresco client:
 <#assign ref=space.nodeRef>

@@ -209,20 +209,24 @@ public final class Repository
    {
       String name = null;
       
-      // try to find a display "name" property for this node
-      Object nameProp = nodeService.getProperty(ref, ContentModel.PROP_NAME);
-      if (nameProp != null)
-      {
-         name = nameProp.toString();
-      }
-      else
-      {
-         // revert to using QName if not found
-         QName qname = nodeService.getPrimaryParent(ref).getQName();
-         if (qname != null)
-         {
-            name = qname.getLocalName();
-         }
+      // Check that node reference still exists
+      if (nodeService.exists(ref) == true)
+      {      
+          // try to find a display "name" property for this node
+          Object nameProp = nodeService.getProperty(ref, ContentModel.PROP_NAME);
+          if (nameProp != null)
+          {
+             name = nameProp.toString();
+          }
+          else
+          {
+             // revert to using QName if not found
+             QName qname = nodeService.getPrimaryParent(ref).getQName();
+             if (qname != null)
+             {
+                name = qname.getLocalName();
+             }
+          }
       }
       
       return name;

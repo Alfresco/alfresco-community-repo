@@ -1391,7 +1391,13 @@ public class BrowseBean implements IContextListener, Serializable
    public void closeSearch(ActionEvent event)
    {
       // set the current node Id ready for page refresh
-      this.navigator.setCurrentNodeId( this.navigator.getCurrentNodeId() );
+      String currentNodeId = this.navigator.getCurrentNodeId();
+      this.navigator.setCurrentNodeId(currentNodeId);
+      
+      // setup dispatch context so we go back to the right place
+      NodeRef currentNodeRef = new NodeRef(Repository.getStoreRef(), currentNodeId);
+      Node currentNode = new Node(currentNodeRef);
+      this.navigator.setupDispatchContext(currentNode);
    }
 
    /**

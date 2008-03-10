@@ -38,8 +38,8 @@
    
    function pageLoaded()
    {
-      document.getElementById("dialog:dialog-body:subject").focus();
-      okEnabled = !document.getElementById("dialog:finish-button").disabled;
+      document.getElementById("wizard:wizard-body:subject").focus();
+      okEnabled = !document.getElementById("wizard:finish-button").disabled;
       checkButtonState();
    }
    
@@ -47,13 +47,13 @@
    {
       if (okEnabled)
       {
-         if (document.getElementById("dialog:dialog-body:subject").value.length == 0)
+         if (document.getElementById("wizard:wizard-body:subject").value.length == 0)
          {
-            document.getElementById("dialog:finish-button").disabled = true;
+            document.getElementById("wizard:finish-button").disabled = true;
          }
          else
          {
-            document.getElementById("dialog:finish-button").disabled = false;
+            document.getElementById("wizard:finish-button").disabled = false;
          }
       }
    }

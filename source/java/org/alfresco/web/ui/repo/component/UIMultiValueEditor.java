@@ -24,6 +24,7 @@
  */
 package org.alfresco.web.ui.repo.component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -369,7 +370,16 @@ public class UIMultiValueEditor extends UIInput
       }
    }
    
-   
+   @Override
+   public void encodeChildren(FacesContext context) throws IOException
+   {
+      // if we need to hide the wrapped component don't encode the children
+      if (this.getRendersChildren() == false)
+      {
+         super.encodeChildren(context);
+      }
+   }
+
    /**
     * @see javax.faces.component.UIComponent#getRendersChildren()
     */

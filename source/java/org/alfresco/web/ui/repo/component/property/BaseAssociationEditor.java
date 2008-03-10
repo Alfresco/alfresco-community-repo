@@ -44,6 +44,7 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -991,22 +992,19 @@ public abstract class BaseAssociationEditor extends UIInput
             
             if (contains != null && contains.length() > 0)
             {
-               String safeContains = Utils.remove(contains.trim(), "\"");
+               String safeContains = QueryParser.escape(contains.trim());
                
                // if the association's target is the person type search on the 
                // firstName and lastName properties instead of the name property
                if (type.equals(ContentModel.TYPE_PERSON.toString()))
-               {
-                  query.append(" AND (@");
-                  String firstName = Repository.escapeQName(QName.createQName(
-                        NamespaceService.CONTENT_MODEL_1_0_URI, "firstName"));
-                  query.append(firstName);
-                  query.append(":*" + safeContains + "*");
-                  query.append(" OR @");
-                  String lastName = Repository.escapeQName(QName.createQName(
-                        NamespaceService.CONTENT_MODEL_1_0_URI, "lastName"));
-                  query.append(lastName);
-                  query.append(":*" + safeContains + "*)");
+               {                
+                   query.append(" AND (@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+                   query.append(safeContains);
+                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
+                   query.append(safeContains);
+                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+                   query.append(safeContains);
+                   query.append("*)");
                }
                else
                {

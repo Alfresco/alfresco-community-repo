@@ -920,19 +920,27 @@ public class AVMRepository
      */
     public Map<String, Integer> createSnapshot(String storeName, String tag, String description)
     {
-        AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
-        AVMStore store = getAVMStoreByName(storeName);
-        if (store == null)
+        try
         {
-            throw new AVMNotFoundException("Store not found.");
+            fAVMNodeDAO.noCache();
+            AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
+            AVMStore store = getAVMStoreByName(storeName);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found.");
+            }
+            Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
+            for (Map.Entry<String, Integer> entry : result.entrySet())
+            {
+                fLookupCache.onSnapshot(entry.getKey());
+                fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
+            }
+            return result;
         }
-        Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
-        for (Map.Entry<String, Integer> entry : result.entrySet())
+        finally
         {
-            fLookupCache.onSnapshot(entry.getKey());
-            fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
+            fAVMNodeDAO.yesCache();
         }
-        return result;
     }
 
     /**

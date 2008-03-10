@@ -39,6 +39,8 @@ import org.alfresco.repo.domain.DbAccessControlListChangeSet;
 import org.alfresco.repo.domain.DbAccessControlListMember;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -54,6 +56,7 @@ import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -93,6 +96,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     static String QUERY_GET_LATEST_ACL_BY_ACLID = "permission.FindLatestAclByGuid";
 
+    /** Access to QName entities */
+    private QNameDAO qnameDAO;
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
 
@@ -105,6 +110,14 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     {
         super();
         DbAccessControlListImpl.setAclDaoComponent(this);
+    }
+
+    /**
+     * Set the DAO for accessing QName entities
+     */
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
     }
 
     public void setAclCache(SimpleCache<Long, AccessControlList> aclCache)
@@ -1002,8 +1015,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 context.setPropertyContext(member.getAccessControlEntry().getContext().getPropertyContext());
                 entry.setContext(context);
             }
-            SimplePermissionReference permissionRefernce = new SimplePermissionReference(member.getAccessControlEntry().getPermission().getTypeQname(), member
-                    .getAccessControlEntry().getPermission().getName());
+            DbPermission perm = member.getAccessControlEntry().getPermission();
+            SimplePermissionReference permissionRefernce = new SimplePermissionReference(perm.getTypeQName().getQName(), perm.getName());
             entry.setPermission(permissionRefernce);
             entry.setPosition(member.getPosition());
 
@@ -1176,6 +1189,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     }
 
+    @SuppressWarnings("unchecked")
     public List<AclChange> setAccessControlEntry(Long id, final AccessControlEntry ace)
     {
         DbAccessControlList target = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
@@ -1222,13 +1236,17 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
         // Find permission
 
+        final QName permissionQName = ace.getPermission().getQName();
+        final String permissionName = ace.getPermission().getName();
+        final QNameEntity permissionQNameEntity = qnameDAO.getOrCreateQNameEntity(permissionQName);
+        
         callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session.getNamedQuery(QUERY_GET_PERMISSION);
-                query.setParameter("permissionTypeQName", ace.getPermission().getQName());
-                query.setParameter("permissionName", ace.getPermission().getName());
+                query.setParameter("permissionTypeQName", permissionQNameEntity);
+                query.setParameter("permissionName", permissionName);
                 return query.uniqueResult();
             }
         };
@@ -1236,8 +1254,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         if (permission == null)
         {
             DbPermissionImpl newPermission = new DbPermissionImpl();
-            newPermission.setTypeQname(ace.getPermission().getQName());
-            newPermission.setName(ace.getPermission().getName());
+            newPermission.setTypeQName(permissionQNameEntity);
+            newPermission.setName(permissionName);
             permission = newPermission;
             getHibernateTemplate().save(newPermission);
         }
@@ -1536,6 +1554,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return avmNodeIds;
     }
 
+    @SuppressWarnings("unchecked")
     private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, DbAccessControlList acl)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1583,8 +1602,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     context.setPropertyContext(member.getAccessControlEntry().getContext().getPropertyContext());
                     entry.setContext(context);
                 }
-                SimplePermissionReference permissionRefernce = new SimplePermissionReference(member.getAccessControlEntry().getPermission().getTypeQname(), member
-                        .getAccessControlEntry().getPermission().getName());
+                DbPermission perm = member.getAccessControlEntry().getPermission();
+                SimplePermissionReference permissionRefernce = new SimplePermissionReference(perm.getTypeQName().getQName(), perm.getName());
                 entry.setPermission(permissionRefernce);
                 entry.setPosition(Integer.valueOf(0));
 
@@ -1676,11 +1695,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
             if (pattern.getPermission() != null)
             {
-                if ((pattern.getPermission().getQName() != null) && (!pattern.getPermission().getQName().equals(entry.getPermission().getTypeQname())))
+                final QName patternQName = pattern.getPermission().getQName();
+                if ((patternQName != null) && (!patternQName.equals(entry.getPermission().getTypeQName().getQName())))
                 {
                     return false;
                 }
-                if ((pattern.getPermission().getName() != null) && (!pattern.getPermission().getName().equals(entry.getPermission().getName())))
+                final String patternName = pattern.getPermission().getName();
+                if ((patternName != null) && (!patternName.equals(entry.getPermission().getName())))
                 {
                     return false;
                 }

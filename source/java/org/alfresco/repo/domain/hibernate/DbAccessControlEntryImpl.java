@@ -32,8 +32,6 @@ import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
 import org.alfresco.repo.security.permissions.ACEType;
-import org.alfresco.service.namespace.QName;
-import org.hibernate.CallbackException;
 import org.hibernate.Session;
 
 /**
@@ -71,9 +69,15 @@ public class DbAccessControlEntryImpl implements DbAccessControlEntry, Serializa
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("DbAccessControlEntryImpl").append("[ id=").append(id).append(", version=").append(version).append(", permission=").append(permission.getKey()).append(
-                ", authority=").append(authority.getAuthority()).append(", allowed=").append(allowed).append(", authorityDeleted=").append(", aceType=")
-                .append(ACEType.getACETypeFromId(aceType)).append(", context=").append(context).append("]");
+        sb.append("DbAccessControlEntryImpl")
+          .append("[ id=").append(id)
+          .append(", version=").append(version)
+          .append(", permission=").append(permission.getKey())
+          .append(", authority=").append(authority.getAuthority())
+          .append(", allowed=").append(allowed)
+          .append(", aceType=").append(ACEType.getACETypeFromId(aceType))
+          .append(", context=").append(context)
+          .append("]");
         return sb.toString();
     }
 

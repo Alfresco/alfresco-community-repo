@@ -92,9 +92,11 @@
                 <property name="indirectionVersion" type="int" column="indirection_version"/>
                 <!-- This marks a layered directory as either knowing itself what
                     it points at (true) or inheriting what it points at from its
-                    container (false). -->
+                    container (false).
+                    Ideally we would have the column 'indirection' in the index but it is too long.
+                -->
                 <property name="primaryIndirection"
-                    column="primary_indirection" type="boolean" index="idx_avm_lyr_indn" />
+                    column="primary_indirection" type="boolean" index="idx_avm_n_pi" />
                 <property name="opacity" column="opacity" type="boolean"/>
                 <!-- Map of names to DirectoryEntries. -->
             </subclass>
@@ -278,6 +280,27 @@
     <![CDATA[
         select an.id
         from AVMNodeImpl an
+        where an.storeNew = :store
+    ]]>
+    </query>
+    <query name="AVMNode.ClearNewInStore">
+    <![CDATA[
+        update versioned AVMNodeImpl an
+        set an.storeNew = null
+        where an.storeNew = :store
+    ]]>
+    </query>
+    <query name="AVMNode.GetNewLayeredDirectory">
+    <![CDATA[
+        select an.id
+        from LayeredDirectoryNodeImpl an
+        where an.storeNew = :store
+    ]]>
+    </query>
+    <query name="AVMNode.GetNewLayeredFile">
+    <![CDATA[
+        select an.id
+        from LayeredFileNodeImpl an
         where an.storeNew = :store
     ]]>
     </query>

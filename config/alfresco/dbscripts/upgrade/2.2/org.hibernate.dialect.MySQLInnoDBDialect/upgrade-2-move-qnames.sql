@@ -109,6 +109,10 @@ INSERT INTO t_qnames (qname)
 (
    SELECT DISTINCT type_qname FROM alf_child_assoc
 );
+INSERT INTO t_qnames (qname)
+(
+   SELECT DISTINCT type_qname FROM alf_permission
+);
 -- Extract the namespace and localnames from the QNames
 UPDATE t_qnames SET namespace = SUBSTR(SUBSTRING_INDEX(qname, '}', 1), 2);
 UPDATE t_qnames SET localname = SUBSTRING_INDEX(qname, '}', -1);
@@ -315,6 +319,20 @@ UPDATE alf_node_assoc na set na.type_qname_id =
 );
 ALTER TABLE alf_node_assoc DROP COLUMN type_qname;
 ALTER TABLE alf_node_assoc MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER target_node_id;
+
+--
+-- DATA REPLACEMENT: alf_permission.type_qname
+--
+ALTER TABLE alf_permission ADD COLUMN type_qname_id BIGINT NULL AFTER id;
+UPDATE alf_permission p set p.type_qname_id =
+(
+   SELECT q.id
+   FROM alf_qname q
+   JOIN alf_namespace ns ON (q.ns_id = ns.id)
+   WHERE CONCAT('{', ns.uri, '}', q.local_name) = p.type_qname
+);
+ALTER TABLE alf_permission DROP COLUMN type_qname;
+ALTER TABLE alf_permission MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER id;
 
 -- Drop the temporary indexes and constraints
 ALTER TABLE alf_qname DROP INDEX t_fk_alf_qn_ns;

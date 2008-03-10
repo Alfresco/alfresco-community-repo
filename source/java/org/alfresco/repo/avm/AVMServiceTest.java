@@ -569,6 +569,7 @@ public class AVMServiceTest extends AVMServiceTestBase
     /**
      * Test Deployment.
      */
+/*
     public void testDeployment() throws Exception
     {
         try
@@ -673,7 +674,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             throw e;
         }
     }
-
+*/
     protected void runQueriesForCreateAndDeploy(String store) throws Exception
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);

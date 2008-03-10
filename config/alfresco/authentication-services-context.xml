@@ -170,6 +170,15 @@
         <property name="allowGuestLogin">
             <value>true</value>
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
     </bean>
 
 
@@ -184,6 +193,16 @@
         <property name="accept">
             <value>true</value>
         </property>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>    
     </bean>
     -->
 
@@ -374,7 +393,7 @@
         <!-- The period for which tickets are valid in XML duration format. -->
         <!-- The default is P1H for one hour.                               -->
         <property name="validDuration">
-            <value>P1H</value>
+            <value>PT1H</value>
         </property>
         <!-- Do tickets expire or live for ever?                            -->
         <property name="ticketsExpire">

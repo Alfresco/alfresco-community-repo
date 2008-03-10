@@ -103,6 +103,19 @@ public interface AVMNodeDAO
     public List<Long> getNewInStoreIDs(AVMStore store);
 
     /**
+     * Clear newInStore field for a store. (Snapshot)
+     * @param store
+     */
+    public void clearNewInStore(AVMStore store);
+
+    /**
+     * Get any new layered entries in a store.
+     * @param store
+     * @return
+     */
+    public List<Long> getNewLayeredInStoreIDs(AVMStore store);
+
+    /**
      * Inappropriate hack to get Hibernate to play nice.
      */
     public void flush();
@@ -111,25 +124,40 @@ public interface AVMNodeDAO
      * Get a batch
      * @return An iterator over all nodes.
      */
-    List<AVMNode> getEmptyGUIDS(int count);
+    public List<AVMNode> getEmptyGUIDS(int count);
 
     /**
      * Get a batch of LayeredDirectories which have null indirectionVersions.
      * @param count
      * @return
      */
-    List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count);
+    public List<LayeredDirectoryNode> getNullVersionLayeredDirectories(int count);
 
     /**
      * Get a batch of LayeredFiles which have null indirectionVersions.
      * @param count
      * @return
      */
-    List<LayeredFileNode> getNullVersionLayeredFiles(int count);
+    public List<LayeredFileNode> getNullVersionLayeredFiles(int count);
 
     /**
      * Evict an AVMNode that is no longer going to be used.
      * @param node
      */
     public void evict(AVMNode node);
+
+    /**
+     * Clear the hibernate session cache.
+     */
+    public void clear();
+
+    /**
+     * Turn off 2nd level caching.
+     */
+    public void noCache();
+
+    /**
+     * Turn on 2nd level caching.
+     */
+    public void yesCache();
 }

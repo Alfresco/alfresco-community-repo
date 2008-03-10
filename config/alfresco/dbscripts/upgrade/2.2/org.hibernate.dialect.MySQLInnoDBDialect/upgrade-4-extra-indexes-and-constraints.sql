@@ -41,6 +41,9 @@ CREATE INDEX idx_alf_ca_qn_ln ON alf_child_assoc (qname_localname);
 
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms);
 
+ -- The was 'idx_avm_lyr_indn'.  Rename it if you have the old name.
+CREATE INDEX idx_avm_n_pi on avm_nodes (primary_indirection);
+
 CREATE INDEX idx_avm_np_name ON avm_node_properties (qname);
 
 CREATE INDEX idx_avm_vr_version ON avm_version_roots (version_id);
@@ -48,6 +51,8 @@ CREATE INDEX idx_avm_vr_version ON avm_version_roots (version_id);
 --
 -- Explicit indexes and constraints not declared in the mappings
 --
+
+CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 
 CREATE INDEX fk_alf_na_qn ON alf_node_aspects (qname_id);
 ALTER TABLE alf_node_aspects ADD CONSTRAINT fk_alf_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);

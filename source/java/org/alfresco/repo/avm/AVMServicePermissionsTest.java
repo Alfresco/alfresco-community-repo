@@ -520,13 +520,13 @@ public class AVMServicePermissionsTest extends TestCase
             node = avmNodeDAO.getByID(desc.getId());
             DbAccessControlList dirAcl = node.getAcl();
             assertNotNull(dirAcl);
-            assertTrue(acl.getId() == dirAcl.getId());
+            assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());
             DbAccessControlList fileAcl = node.getAcl();
             assertNotNull(fileAcl);
-            assertTrue(acl.getId() == fileAcl.getId());
+            assertEquals(acl.getId(), fileAcl.getId());
 
             avmService.createSnapshot(storeName, "store", "store");
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
@@ -549,7 +549,7 @@ public class AVMServicePermissionsTest extends TestCase
             node = avmNodeDAO.getByID(desc.getId());
             dirAcl = node.getAcl();
             assertNotNull(dirAcl);
-            assertTrue(acl.getId() == dirAcl.getId());
+            assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());
@@ -597,13 +597,13 @@ public class AVMServicePermissionsTest extends TestCase
             node = avmNodeDAO.getByID(desc.getId());
             DbAccessControlList dirAcl = node.getAcl();
             assertNotNull(dirAcl);
-            assertTrue(acl.getId() == dirAcl.getId());
+            assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());
             DbAccessControlList fileAcl = node.getAcl();
             assertNotNull(fileAcl);
-            assertTrue(acl.getId() == fileAcl.getId());
+            assertEquals(acl.getId(), fileAcl.getId());
 
             avmService.createSnapshot(storeName, "store", "store");
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
@@ -628,7 +628,7 @@ public class AVMServicePermissionsTest extends TestCase
             node = avmNodeDAO.getByID(desc.getId());
             dirAcl = node.getAcl();
             assertNotNull(dirAcl);
-            assertTrue(acl.getId() == dirAcl.getId());
+            assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());

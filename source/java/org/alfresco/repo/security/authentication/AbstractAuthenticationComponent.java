@@ -32,8 +32,14 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * This class abstract the support required to set up and query the Acegi context for security enforcement. There are
@@ -49,6 +55,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private Boolean allowGuestLogin = null;
     
     private TenantService tenantService;
+
+    private PersonService personService;
+
+    private NodeService nodeService;
+
+    private TransactionService transactionService;
 
     public AbstractAuthenticationComponent()
     {
@@ -70,6 +82,26 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     	this.tenantService = tenantService;
     }
 
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
+    public TransactionService getTransactionService()
+    {
+        return transactionService;
+    }
+
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         // Support guest login from the login screen
@@ -84,9 +116,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Default unsupported authentication implementation 
-     *  - as of 2.1 this is the best way to implement your own authentication component as it will support guest login
-     *  - prior to this direct over ride for authenticate(String , char[]) was used. This will still work.
+     * Default unsupported authentication implementation - as of 2.1 this is the best way to implement your own
+     * authentication component as it will support guest login - prior to this direct over ride for authenticate(String ,
+     * char[]) was used. This will still work.
      * 
      * @param userName
      * @param password
@@ -96,6 +128,37 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         throw new UnsupportedOperationException();
     }
 
+    public Authentication setCurrentUser(final String userName) throws AuthenticationException
+    {
+        if (AuthenticationUtil.getSystemUserName().equals(userName))
+        {
+            return setCurrentUserImpl(userName);
+        }
+        else
+        {
+            return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Authentication>()
+            {
+
+                public Authentication execute() throws Throwable
+                {
+                    NodeRef userNode = personService.getPerson(userName);
+                    if (userNode != null)
+                    {
+                        // Get the person name and use that as the current user to line up with permission checks
+                        String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                        return setCurrentUserImpl(personName);
+
+                    }
+                    else
+                    {
+                        // Set using the user name
+                        return setCurrentUserImpl(userName);
+                    }
+                }
+            }, false, false);
+        }
+    }
+
     /**
      * Explicitly set the current user to be authenticated.
      * 
@@ -103,7 +166,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      *            String
      * @return Authentication
      */
-    public Authentication setCurrentUser(String userName) throws AuthenticationException
+    private Authentication setCurrentUserImpl(String userName) throws AuthenticationException
     {
         if (userName == null)
         {

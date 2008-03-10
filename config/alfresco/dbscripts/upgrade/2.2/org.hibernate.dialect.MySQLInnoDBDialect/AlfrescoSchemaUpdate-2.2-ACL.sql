@@ -7,12 +7,6 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
--- Add index support for AVM
--- Ideally we would have the indirection in the index but it is too long for mysql which needs additional options
--- CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection, indirection(128));
--- This matches the hibernate schema and should be good enough for the standard WCM use cases
-CREATE INDEX idx_avm_lyr_indn on avm_nodes (primary_indirection);
-
 CREATE TABLE alf_acl_change_set (
    id BIGINT NOT NULL AUTO_INCREMENT,
    version BIGINT NOT NULL,
@@ -32,8 +26,8 @@ ALTER TABLE alf_access_control_list
    ADD COLUMN acl_change_set BIGINT,
    ADD COLUMN inherits_from BIGINT;
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
-CREATE INDEX idx_pm_acl_inh ON alf_access_control_list (inherits, inherits_from);
 ALTER TABLE alf_access_control_list ADD CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id);
+CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 
 UPDATE alf_access_control_list acl
    set acl_id = (acl.id);
@@ -69,7 +63,7 @@ ALTER TABLE alf_access_control_entry
 DROP TABLE alf_auth_ext_keys;
 
 -- remove authority constraint
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B25A50BF, DROP FOREIGN KEY FKFFF41F99B25A50BF;
+ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B25A50BF, DROP FOREIGN KEY FKFFF41F99B25A50BF; -- (optional)
 
 -- restructure authority
 ALTER TABLE alf_authority
@@ -79,7 +73,7 @@ ALTER TABLE alf_authority
    CHANGE recipient authority VARCHAR(100),
    ADD primary key (id),
    ADD UNIQUE (authority, crc);
-CREATE INDEX idx_authority on alf_authority (authority);
+CREATE INDEX idx_alf_auth_aut on alf_authority (authority);
 
 -- migrate data - fix up FK refs to authority
 UPDATE alf_access_control_entry ace

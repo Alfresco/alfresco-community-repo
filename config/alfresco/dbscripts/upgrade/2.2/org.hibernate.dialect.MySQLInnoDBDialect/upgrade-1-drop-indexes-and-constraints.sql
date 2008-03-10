@@ -15,6 +15,8 @@ ALTER TABLE alf_access_control_entry DROP INDEX fk_alf_ace_auth, DROP FOREIGN KE
 
 ALTER TABLE alf_access_control_list DROP INDEX fk_alf_acl_acs, DROP FOREIGN KEY fk_alf_acl_acs;
 
+ALTER TABLE alf_access_control_list DROP INDEX idx_alf_acl_inh;
+
 ALTER TABLE alf_acl_member DROP INDEX fk_alf_aclm_acl, DROP FOREIGN KEY fk_alf_aclm_acl;
 
 ALTER TABLE alf_acl_member DROP INDEX fk_alf_aclm_ace, DROP FOREIGN KEY fk_alf_aclm_ace;
@@ -56,6 +58,12 @@ ALTER TABLE alf_audit_source DROP INDEX app_source_app_idx;  -- (optional)
 ALTER TABLE alf_audit_source DROP INDEX app_source_ser_idx;  -- (optional)
 
 ALTER TABLE alf_audit_source DROP INDEX app_source_met_idx;  -- (optional)
+
+ALTER TABLE alf_authority DROP INDEX idx_alf_auth_aut;
+
+ALTER TABLE alf_authority_alias DROP INDEX fk_alf_autha_ali, DROP FOREIGN KEY fk_alf_autha_ali;
+
+ALTER TABLE alf_authority_alias DROP INDEX fk_alf_autha_aut, DROP FOREIGN KEY fk_alf_autha_aut;
 
 ALTER TABLE alf_child_assoc DROP INDEX FKFFC5468E8E50E582, DROP FOREIGN KEY FKFFC5468E8E50E582;
 
@@ -108,6 +116,8 @@ ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_desc, DROP FOREIGN KEY fk_avm
 
 ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_ancestor, DROP FOREIGN KEY fk_avm_hl_ancestor; --(optional)
 
+ALTER TABLE avm_history_links DROP INDEX idx_avm_hl_revpk; --(optional)
+
 ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_to, DROP FOREIGN KEY fk_avm_ml_to; --(optional)
 
 ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_from, DROP FOREIGN KEY fk_avm_ml_from; --(optional)
@@ -122,6 +132,8 @@ ALTER TABLE avm_nodes DROP INDEX fk_avm_n_acl, DROP FOREIGN KEY fk_avm_n_acl; --
 
 ALTER TABLE avm_nodes DROP INDEX fk_avm_n_store, DROP FOREIGN KEY fk_avm_n_store; --(optional)
 
+ALTER TABLE avm_nodes DROP INDEX idx_avm_n_pi; --(optional)
+
 ALTER TABLE avm_store_properties DROP INDEX idx_avm_sp_name; --(optional)
 
 ALTER TABLE avm_store_properties DROP INDEX fk_avm_sp_store, DROP FOREIGN KEY fk_avm_sp_store; --(optional)
@@ -131,6 +143,8 @@ ALTER TABLE avm_stores DROP INDEX fk_avm_s_root, DROP FOREIGN KEY fk_avm_s_root;
 ALTER TABLE avm_version_layered_node_entry DROP INDEX FK182E672DEB9D70C, DROP FOREIGN KEY FK182E672DEB9D70C; -- (optional)
 
 ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_version; --(optional)
+
+ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_revuq; --(optional)
 
 ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_root, DROP FOREIGN KEY fk_avm_vr_root; --(optional)
 

@@ -169,6 +169,9 @@
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
         </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
+        </property>
     </bean>
     <bean id="patch.guestUser" class="org.alfresco.repo.admin.patch.impl.GuestUserPatch" parent="basePatch" >
         <property name="id"><value>patch.guestUser</value></property>
@@ -210,6 +213,9 @@
         <!-- helper beans -->
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
         <property name="dependsOn">
             <list>
@@ -278,6 +284,9 @@
         <property name="targetSchema"><value>7</value></property>
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
         <property name="dependsOn">
             <list>
@@ -1239,6 +1248,9 @@
         <!-- helper beans -->
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
         <property name="dependsOn" >
             <list>

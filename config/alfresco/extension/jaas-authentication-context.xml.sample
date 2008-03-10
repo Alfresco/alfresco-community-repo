@@ -15,6 +15,15 @@
         <property name="jaasConfigEntryName">
             <value>Alfresco</value>
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>    
     </bean>
 
     <!-- DAO that rejects changes - JAAS is read only at the moment.      -->

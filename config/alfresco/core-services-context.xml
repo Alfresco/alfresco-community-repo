@@ -130,40 +130,90 @@
 
     <!-- Log4J Hierarchy -->
     <bean id="log4jHierarchy" class="org.apache.log4j.jmx.HierarchyDynamicMBean"/>
-    
+
     <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" init-method="init">
     	<property name="log4jHierarchy" ref="log4jHierarchy"/>
 
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-        <!-- Incorporate supplementary log4j.properties files                     -->
-        <!--                                                                      -->
-        <!--   Properties in these files will augment/override                    -->
-        <!--   those within WEB-INF/classes/log4j.properties                      -->
-        <!--                                                                      -->
-        <!--   This mechanism allows modules to have their own local              -->
-        <!--   log4j.properties file within:                                      -->
-        <!--                                                                      -->
-        <!--      WEB-INF/classes/alfresco/module/{module.id}/log4j.properties    -->
-        <!--                                                                      -->
-        <!--   Where:  module.id is whatever value is set within the AMP's        -->
-        <!--           'module.properties' file.                                  -->
-        <!--                                                                      -->
-        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  -->
-        <property name="overriding_log4j_properties">   
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+        <!-- Supplementary log4j.properties files                                       -->
+        <!--                                                                            -->
+        <!--   Log4j settings specified here augment/override the webapp's main         -->
+        <!--   log4j configuration file:   WEB-INF/classes/log4j.properties             -->
+        <!--                                                                            -->
+        <!--   This allows modules to maintain their own log4j.properties file,         -->
+        <!--   which is typically deployed to:                                          -->
+        <!--      WEB-INF/classes/alfresco/module/{module.id}/log4j.properties          -->
+        <!--                                                                            -->
+        <!--   Where:  module.id is whatever value is set within the AMP's              -->
+        <!--           'module.properties' file.                                        -->
+        <!--                                                                            -->
+        <!--   Example:                                                                 -->
+        <!--      WEB-INF/classes/alfresco/module/com.example.x.Y/log4j.properties      -->
+        <!--                                                                            -->
+        <!--   Those who wish to configure log4j properties in Alfresco extensions      -->
+        <!--   that aren't packaged as AMP modules can create log4j.properties file     -->
+        <!--   of the form:  {name}-log4j.properties and place it within some           -->
+        <!--   alfresco/extension directory on the server's classpath.                  -->
+        <!--                                                                            -->
+        <!--   For example:                                                             -->
+        <!--      WEB-INF/classes/alfresco/extension/SIMPLE_EXAMPLE-log4j.properties    -->
+        <!--                                                                            -->
+        <!--   That said, you are strongly encouraged to use the modular form           -->
+        <!--   (i.e.: the first one), and use the AMP mechanism for packaging           -->
+        <!--   whenever possible.  This makes customizations easier to manage.          -->
+        <!--   Note:  {name}-log4j.properties files override/augment the                -->
+        <!--          log4j.properties files packaged within modules.                   -->
+        <!--                                                                            -->
+        <!--   Developers may also wish to maintain a dev-log4j.properties file         -->
+        <!--   outside of the webapp.  This allows for changing log4j settings          -->
+        <!--   without touching the "shipping product", or any of a customer's          -->
+        <!--   local settings.  Your optional dev-log4j.properties file should be       -->
+        <!--   in some alfresco/extension directory within the server's classpath,      -->
+        <!--   and outside the webapp itself (so you don't accidentally delete it).     -->
+        <!--   Note:  the dev-log4j.properties file augments/overrides all others.      -->
+        <!--                                                                            -->
+        <!--   Example:                                                                 -->
+        <!--      $TOMCAT_HOME/shared/classes/alfresco/extension/dev-log4j.properties   -->
+        <!--                                                                            -->
+        <!--                                                                            -->
+        <!-- Best practices:                                                            -->
+        <!--                                                                            -->
+        <!--   Local customizations/licences are kept outside of the webapp.            -->
+        <!--   Example:                                                                 -->
+        <!--      $TOMCAT_HOME/shared/classes/alfresco/extension/...-log4j.properties   -->
+        <!--                                                                            -->
+        <!--   Shipping config files should be kept/installed within webapp:            -->
+        <!--   Example:                                                                 -->
+        <!--      WEB-INF/classes/alfresco/extension/...-log4j.properties               -->
+        <!--                                                                            -->
+        <!--   A dev-log4j.properties file should never be used in an ongoing           -->
+        <!--   during production, nor packaged as a part of any product.                -->
+        <!--                                                                            -->
+        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  -->
+        <property name="overriding_log4j_properties">
             <list>
+                <!-- NOTE: value entries are listed from lowest precedence to highest.  -->
+
+                <!--  Installed  AMP modules  -->
                 <value>classpath*:alfresco/module/*/log4j.properties</value>
+
+                <!--  Other installed extensions  -->
+                <value>classpath*:alfresco/extension/*-log4j.properties</value>
+
+                <!--  private developer overrides -->
+                <value>classpath*:alfresco/extension/dev-log4j.properties</value>
             </list>
         </property>
     </bean>
-    
-    
-    <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">       
+
+
+    <bean id="RepoServerMgmt" class="org.alfresco.repo.admin.RepoServerMgmt">
         <property name="transactionService"><ref bean="transactionService"/></property>
         <property name="authenticationService"><ref bean="authenticationService"/></property>
         <property name="maxUsers"><value>${server.maxusers}</value></property>
         <property name="singleUserOnly"><value>${server.singleuseronly.name}</value></property>
     </bean>
-    
+
 
     <!-- Datasource bean -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">

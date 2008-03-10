@@ -28,12 +28,9 @@ import java.io.Serializable;
 
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.CallbackException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 
 /**
@@ -45,14 +42,9 @@ public class DbPermissionImpl implements DbPermission, Serializable
 {
     private static final long serialVersionUID = -6352566900815035461L;
 
-    private static Log logger = LogFactory.getLog(DbPermissionImpl.class);
-
     private Long id;
-
     private Long version;
-
-    private QName typeQname;
-
+    private QNameEntity typeQName;
     private String name;
 
     public DbPermissionImpl()
@@ -64,8 +56,12 @@ public class DbPermissionImpl implements DbPermission, Serializable
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("DbPermissionImpl").append("[ id=").append(id).append(", version=").append(version).append(", typeQname=").append(typeQname).append(", name=").append(getName())
-                .append("]");
+        sb.append("DbPermissionImpl")
+          .append("[ id=").append(id)
+          .append(", version=").append(version)
+          .append(", typeQName=").append(typeQName.getQName())
+          .append(", name=").append(getName())
+          .append("]");
         return sb.toString();
     }
 
@@ -81,13 +77,13 @@ public class DbPermissionImpl implements DbPermission, Serializable
             return false;
         }
         DbPermission other = (DbPermission) o;
-        return (EqualsHelper.nullSafeEquals(typeQname, other.getTypeQname())) && (EqualsHelper.nullSafeEquals(name, other.getName()));
+        return (EqualsHelper.nullSafeEquals(typeQName, other.getTypeQName())) && (EqualsHelper.nullSafeEquals(name, other.getName()));
     }
 
     @Override
     public int hashCode()
     {
-        return typeQname.hashCode() + (37 * name.hashCode());
+        return typeQName.hashCode() + (37 * name.hashCode());
     }
 
     public Long getId()
@@ -118,14 +114,14 @@ public class DbPermissionImpl implements DbPermission, Serializable
         this.version = version;
     }
 
-    public QName getTypeQname()
+    public QNameEntity getTypeQName()
     {
-        return typeQname;
+        return typeQName;
     }
 
-    public void setTypeQname(QName typeQname)
+    public void setTypeQName(QNameEntity typeQName)
     {
-        this.typeQname = typeQname;
+        this.typeQName = typeQName;
     }
 
     public String getName()
@@ -140,7 +136,7 @@ public class DbPermissionImpl implements DbPermission, Serializable
 
     public DbPermissionKey getKey()
     {
-        return new DbPermissionKey(typeQname, name);
+        return new DbPermissionKey(typeQName.getQName(), name);
     }
 
     /**

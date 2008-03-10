@@ -24,11 +24,10 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.List;
-
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
@@ -56,6 +55,11 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
         this.helper.setSessionFactory(sessionFactory);
     }
 
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        helper.setQnameDAO(qnameDAO);
+    }
+
     /**
      * Helper method to rename (move) a permission.  This involves checking for the existence of the
      * new permission and then moving all the entries to point to the new permission.
@@ -74,11 +78,11 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
     /** Helper to get a permission entity */
     private static class GetPermissionCallback implements HibernateCallback
     {
-        private QName typeQName;
+        private QNameEntity typeQNameEntity;
         private String name;
-        public GetPermissionCallback(QName typeQName, String name)
+        public GetPermissionCallback(QNameEntity typeQNameEntity, String name)
         {
-            this.typeQName = typeQName;
+            this.typeQNameEntity = typeQNameEntity;
             this.name = name;
         }
         public Object doInHibernate(Session session)
@@ -87,7 +91,7 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
             session.flush();
             
             Query query = session.getNamedQuery(HibernateHelper.QUERY_GET_PERMISSION);
-            query.setParameter("permissionTypeQName", typeQName)
+            query.setParameter("permissionTypeQName", typeQNameEntity)
                  .setString("permissionName", name);
             return query.uniqueResult();
         }
@@ -97,6 +101,13 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
     {
         private static final String QUERY_GET_PERMISSION = "permission.GetPermission";
         
+        private QNameDAO qnameDAO;
+        
+        public void setQnameDAO(QNameDAO qnameDAO)
+        {
+            this.qnameDAO = qnameDAO;
+        }
+
         public int createAndUpdatePermission(
                 final QName oldTypeQName,
                 final String oldName,
@@ -108,20 +119,24 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
                 throw new IllegalArgumentException("Cannot move permission to itself: " + oldTypeQName + "-" + oldName);
             }
             
-            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQName, oldName);
+            // Get the QName entities
+            QNameEntity oldTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(oldTypeQName);
+            QNameEntity newTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(newTypeQName);
+            
+            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQNameEntity, oldName);
             DbPermission permission = (DbPermission) getHibernateTemplate().execute(getNewPermissionCallback);
             if (permission == null)
             {
                 // create the permission
                 permission = new DbPermissionImpl();
-                permission.setTypeQname(newTypeQName);
+                permission.setTypeQName(newTypeQNameEntity);
                 permission.setName(newName);
                 // save
                 getHibernateTemplate().save(permission);
             }
             else
             {
-                permission.setTypeQname(newTypeQName);
+                permission.setTypeQName(newTypeQNameEntity);
                 permission.setName(newName);
             }
             // done

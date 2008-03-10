@@ -260,6 +260,9 @@
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
 	  <property name="aclCache">
          <ref bean="aclCache" />
       </property>

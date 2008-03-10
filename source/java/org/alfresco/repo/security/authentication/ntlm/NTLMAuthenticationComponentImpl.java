@@ -118,12 +118,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     
     private PassthruReaperThread m_reaperThread;
     
-    // Person service, used to map passthru usernames to Alfresco person names
-    
-    private PersonService m_personService;
-    private NodeService m_nodeService;
-    private TransactionService m_transactionService;
-    
     /**
      * Passthru Session Reaper Thread
      */
@@ -468,36 +462,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     }
     
     /**
-     * Set the person service
-     * 
-     * @param personService PersonService
-     */
-    public final void setPersonService(PersonService personService)
-    {
-        m_personService = personService;
-    }
-    
-    /**
-     * Set the node service
-     * 
-     * @param nodeService NodeService
-     */
-    public final void setNodeService(NodeService nodeService)
-    {
-        m_nodeService = nodeService;
-    }
-    
-    /**
-     * Set the transaction service
-     * 
-     * @param transService TransactionService
-     */
-    public final void setTransactionService(TransactionService transService)
-    {
-        m_transactionService = transService;
-    }
-
-    /**
      * Return the authentication session timeout, in milliseconds
      * 
      * @return long
@@ -693,31 +657,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             
             // Map the passthru username to an Alfresco person
             
-            NodeRef userNode = m_personService.getPerson(username);
-            if ( userNode != null)
-            {
-                // Get the person name and use that as the current user to line up with permission checks
-                
-                String personName = (String) m_nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                setCurrentUser(personName);
-                
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Setting current user using person " + personName + " (username " + username + ")");
-            }
-            else
-            {
-                // Set using the user name
-                
-              
-                setCurrentUser( username);
-                
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Setting current user using username " + username);
-            }
+            setCurrentUser( username);
             
             // Debug
             
@@ -875,35 +815,13 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
 
                 // Wrap the service calls in a transaction
                 
-            	tx = m_transactionService.getUserTransaction( false);
+            	tx = getTransactionService().getUserTransaction( false);
             	tx.begin();
             	
                 // Map the passthru username to an Alfresco person
                 
-                NodeRef userNode = m_personService.getPerson(username);
-                if ( userNode != null)
-                {
-                    // Get the person name and use that as the current user to line up with permission checks
+                setCurrentUser( username);
                     
-                    String personName = (String) m_nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                    setCurrentUser(personName);
-                    
-                    // DEBUG
-                    
-                    if ( logger.isDebugEnabled())
-                        logger.debug("Setting current user using person " + personName + " (username " + username + ")");
-                }
-                else
-                {
-                    // Set using the user name
-                    
-                    setCurrentUser( username);
-                    
-                    // DEBUG
-                    
-                    if ( logger.isDebugEnabled())
-                        logger.debug("Setting current user using username " + username);
-                }
             }
             catch (NoSuchPersonException ex)
             {

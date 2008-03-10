@@ -33,7 +33,12 @@ import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.LayeredDirectoryNode;
 import org.alfresco.repo.avm.LayeredFileNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.Query;
+import org.hibernate.impl.SessionImpl;
+import org.hibernate.stat.SessionStatistics;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -43,6 +48,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 class AVMNodeDAOHibernate extends HibernateDaoSupport implements
         AVMNodeDAO
 {
+    private static Log fgLogger = LogFactory.getLog(AVMNodeDAOHibernate.class);
+
     /**
      * Do nothing constructor.
      */
@@ -231,5 +238,58 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     {
         getSession().flush();
         getSession().evict(node);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#clear()
+     */
+    public void clear()
+    {
+        fgLogger.error(getSession().getStatistics());
+        getSession().flush();
+        getSession().clear();
+        fgLogger.error(getSession().getStatistics());
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#noCache()
+     */
+    public void noCache()
+    {
+        getSession().getSessionFactory().evict(AVMNodeImpl.class);
+        getSession().setCacheMode(CacheMode.IGNORE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#yesCache()
+     */
+    public void yesCache()
+    {
+        getSession().setCacheMode(CacheMode.NORMAL);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#clearNewInStore(org.alfresco.repo.avm.AVMStore)
+     */
+    public void clearNewInStore(AVMStore store)
+    {
+        Query query = getSession().getNamedQuery("AVMNode.ClearNewInStore");
+        query.setEntity("store", store);
+        query.executeUpdate();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.avm.AVMNodeDAO#getNewLayeredInStoreIDs(org.alfresco.repo.avm.AVMStore)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Long> getNewLayeredInStoreIDs(AVMStore store)
+    {
+        Query query = getSession().getNamedQuery("AVMNode.GetNewLayeredDirectory");
+        query.setEntity("store", store);
+        List<Long> ids = (List<Long>)query.list();
+        query = getSession().getNamedQuery("AVMNode.GetNewLayeredFile");
+        query.setEntity("store", store);
+        ids.addAll((List<Long>)query.list());
+        return ids;
     }
 }

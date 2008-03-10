@@ -10,12 +10,14 @@ var OfficeNavigation =
    CREATE_SPACE_TEMPLATE: 16,
    OVERLAY_ANIM_LENGTH: 300,
    OVERLAY_OPACITY: 0.7,
+   documentNames: [],
    
    init: function()
    {
       $('overlayPanel').setStyle('opacity', 0);
       OfficeNavigation.setupToggles();
       OfficeNavigation.setupCreateSpace();
+      OfficeNavigation.getDocumentNames();
 
       // Did we arrive here from the "Create collaboration space" shortcut?      
       if (window.queryObject.cc)
@@ -104,6 +106,16 @@ var OfficeNavigation =
       panel.defaultHeight = 0;
       panel.setStyle('display', 'block');
       panel.setStyle('height', panel.defaultHeight);
+   },
+
+   getDocumentNames: function()
+   {
+      OfficeNavigation.documentNames = [];
+      
+      $$("#documentList .notVersionable").each(function(doc, i)
+      {
+         OfficeNavigation.documentNames.push(doc.getText());
+      });
    },
    
    showCreateSpace: function()
@@ -223,16 +235,20 @@ var OfficeNavigation =
          transition: Fx.Transitions.linear,
          onComplete: function()
          {
-            $('saveFilename').addEvent('keydown', function(event)
+            $('saveFilename').addEvent('keypress', function(event)
             {
                event = new Event(event);
                if (event.key == 'enter')
                {
                   OfficeNavigation.saveOK();
+                  event.stop();
+                  $('saveFilename').removeEvent('keypress');
                }
                else if (event.key == 'esc')
                {
                   OfficeNavigation.saveCancel();
+                  event.stop();
+                  $('saveFilename').removeEvent('keypress');
                }
             });
             $('saveFilename').focus();
@@ -240,17 +256,43 @@ var OfficeNavigation =
       }).start({'opacity': 1});
 
       this.fxOverlay.start(OfficeNavigation.OVERLAY_OPACITY);
-      this.popupPanel = panel;
-      this.popupPanel.currentPath = currentPath;
+      if (panel != null)
+      {
+         this.popupPanel = panel;
+         this.popupPanel.currentPath = currentPath;
+      }
    },
    
    saveOK: function()
    {
+		// Shortcut for double-event firing issue
+		if (this.popupPanel == null)
+		{
+			return;
+		}
+		
       var filename = $('saveFilename').value;
       var currentPath = this.popupPanel.currentPath;
+      var cancelSave = false;
+      
       if (filename.length > 0)
       {
-         window.external.saveToAlfrescoAs(currentPath, filename);
+         // Trying to save over an existing non-versionable doc?
+         OfficeNavigation.documentNames.each(function(doc, i)
+         {
+            if ((doc == filename) || (doc == filename + ".doc"))
+            {
+               if (!confirm("The document exists and is not versionable. Overwrite this file?"))
+               {
+                  cancelSave = true;
+               }
+            }
+         });
+         
+         if (!cancelSave)
+         {
+            window.external.saveToAlfrescoAs(currentPath, filename);
+         }
       }
       OfficeNavigation.saveCancel();
    },

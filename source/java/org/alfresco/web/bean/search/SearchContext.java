@@ -502,21 +502,10 @@ public class SearchContext implements Serializable
     */
    private static void processSearchAttribute(QName qname, String value, StringBuilder buf, boolean andOp, boolean notOp)
    {
-      if (value.indexOf(' ') == -1)
-      {
-         if (andOp) buf.append('+');
-         else if (notOp) buf.append('-');
-         buf.append('@').append(Repository.escapeQName(qname)).append(":")
-            .append(SearchContext.escape(value)).append(' ');
-      }
-      else
-      {
-         // phrase multi-word search
-         if (andOp) buf.append('+');
-         else if (notOp) buf.append('-');
-         buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
-            .append(value).append('"').append(' ');
-      }
+      if (andOp) buf.append('+');
+      else if (notOp) buf.append('-');
+      buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
+         .append(value).append("\" ");
    }
    
    /**
@@ -530,9 +519,9 @@ public class SearchContext implements Serializable
     */
    private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf)
    {
-      textBuf.append("TEXT:").append(SearchContext.escape(value));
-      attrBuf.append("@").append(qname).append(":")
-             .append(SearchContext.escape(value));
+      textBuf.append("TEXT:\"").append(value).append('"');
+      attrBuf.append('@').append(qname).append(":\"")
+             .append(value).append('"');
    }
    
    /**

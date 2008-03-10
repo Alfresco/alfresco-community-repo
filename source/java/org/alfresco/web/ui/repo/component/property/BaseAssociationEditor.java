@@ -992,7 +992,7 @@ public abstract class BaseAssociationEditor extends UIInput
             
             if (contains != null && contains.length() > 0)
             {
-               String safeContains = QueryParser.escape(contains.trim());
+               String safeContains = contains.trim();
                
                // if the association's target is the person type search on the 
                // firstName and lastName properties instead of the name property
@@ -1002,9 +1002,9 @@ public abstract class BaseAssociationEditor extends UIInput
                    query.append(safeContains);
                    query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
                    query.append(safeContains);
-                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+                   query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:\"");
                    query.append(safeContains);
-                   query.append("*)");
+                   query.append("*\")");
                }
                else
                {
@@ -1012,7 +1012,7 @@ public abstract class BaseAssociationEditor extends UIInput
                   String nameAttr = Repository.escapeQName(QName.createQName(
                         NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
                   query.append(nameAttr);
-                  query.append(":*" + safeContains + "*");
+                  query.append(":\"*" + safeContains + "*\"");
                }
             }
             

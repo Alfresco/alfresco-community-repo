@@ -267,7 +267,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
       UserTransaction tx = null;
       try
       {
-         tx = Repository.getUserTransaction(context, true);
+         tx = Repository.getUserTransaction(context);
          tx.begin();
 
          Map<QName, Serializable> props = properties.getNodeService().getProperties(properties.getPerson().getNodeRef());

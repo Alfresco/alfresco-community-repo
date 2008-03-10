@@ -155,10 +155,10 @@
             <#assign versionRow=versionRow+1>
          <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
             <td valign="top">
-               <a title="Open ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
+               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
             </td>
             <td>
-               <a title="Open ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
+               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
                Author: ${record.creator}<br />
                Date: ${record.createdDate?datetime}<br />
             <#if record.description?exists>

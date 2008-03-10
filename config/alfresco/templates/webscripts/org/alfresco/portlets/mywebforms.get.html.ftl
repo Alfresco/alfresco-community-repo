@@ -28,6 +28,7 @@
             <#assign storeId=wp.properties["wca:avmstore"]>
             <#assign username=person.properties.userName>
             <#assign sandbox=avm.userSandboxStore(storeId, username)>
+            <#if avm.lookupStore(sandbox)?exists>
             <div class="webProjectRow">
                <div class="webProjectTitle">
                   <a class="webPreviewLink" href="${avm.websiteUserSandboxUrl(storeId, username)}" target="new"><img src="${url.context}/images/icons/website_large.gif" width=32 height=32 border=0><span class="websiteLink">${wp.name}</span></a>
@@ -56,6 +57,7 @@
                </#if>
                </div>
             </div>
+            </#if>
          </#if>
       </#list>
    </#list>

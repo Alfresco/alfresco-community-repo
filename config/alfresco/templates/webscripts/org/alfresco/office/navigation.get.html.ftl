@@ -140,6 +140,7 @@
 <#assign documentsFound = 0>
 <#list thisSpace.children?sort_by('name') as child>
    <#if child.isDocument>
+      <#assign isVersionable = (hasAspect(child, "cm:versionable") == 1)>
       <#assign documentsFound = documentsFound + 1>
       <#assign relativePath = (child.displayPath?substring(chLen+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
@@ -152,7 +153,7 @@
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold">${child.name}</span></a>
+            <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name}</span></a>
       <#else>
             <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name}</span></a>
       </#if>

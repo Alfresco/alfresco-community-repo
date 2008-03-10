@@ -38,7 +38,7 @@ import org.hibernate.Session;
  */
 public class AuditFactImpl implements AuditFact
 {
-    private long id;
+    private Long id;
 
     private AuditDate auditDate;
 
@@ -378,12 +378,12 @@ public class AuditFactImpl implements AuditFact
      * 
      * @see org.alfresco.repo.audit.hibernate.AuditFact#getId()
      */
-    public long getId()
+    public Long getId()
     {
         return id;
     }
 
-    protected void setId(long id)
+    protected void setId(Long id)
     {
         this.id = id;
     }
@@ -586,19 +586,5 @@ public class AuditFactImpl implements AuditFact
     public void setUserId(String userId)
     {
         this.userId = userId;
-    }
-
-    /**
-     * Helper method to get all the audit entries for a node.
-     */
-    @SuppressWarnings("unchecked")
-    public static List<AuditFact> getAuditTrail(Session session, NodeRef nodeRef)
-    {
-        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_TRAIL);
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_PROTOCOL, nodeRef.getStoreRef().getProtocol());
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_STORE_ID, nodeRef.getStoreRef().getIdentifier());
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_NODE_ID, nodeRef.getId());
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_NODE_REF, "%"+nodeRef.toString()+"%");
-        return (List<AuditFact>) query.list();
     }
 }

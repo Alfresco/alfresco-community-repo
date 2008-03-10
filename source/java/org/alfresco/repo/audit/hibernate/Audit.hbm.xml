@@ -124,6 +124,15 @@
             audit_date.id = (select max(audit_date_2.id) from  org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date_2)
     </query>
     
+    <query name="audit.GetAuditDate">
+        select
+            audit_date
+        from
+            org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date
+        where
+            audit_date.id = (select max(audit_date_2.id) from  org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date_2 where audit_date_2.date = :date)
+    </query>
+    
     <query name="audit.GetLatestAuditConfig">
         select
             audit_config

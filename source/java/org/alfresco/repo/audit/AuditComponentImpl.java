@@ -35,6 +35,7 @@ import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
@@ -43,13 +44,14 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment these filters are ignired. TODO: Respect audit internal - at the
- * moment audit internal is fixed to false.
+ * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment
+ * these filters are ignired. TODO: Respect audit internal - at the moment audit internal is fixed to false.
  * 
  * @author Andy Hind
  */
@@ -79,7 +81,7 @@ public class AuditComponentImpl implements AuditComponent
 
     private AuditDAO auditDAO;
 
-    private AuditDAO auditFailedDAO;
+    private TransactionService transactionService;
 
     private AuditModel auditModel;
 
@@ -91,7 +93,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Default constructor
-     *
      */
     public AuditComponentImpl()
     {
@@ -113,7 +114,8 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for recording auditable information when no exception occurs.
-     * @param auditDAO 
+     * 
+     * @param auditDAO
      */
     public void setAuditDAO(AuditDAO auditDAO)
     {
@@ -122,11 +124,12 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for recording failed actions - this is done in another transaction.
+     * 
      * @param auditFailedDAO
      */
-    public void setAuditFailedDAO(AuditDAO auditFailedDAO)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.auditFailedDAO = auditFailedDAO;
+        this.transactionService = transactionService;
     }
 
     /**
@@ -141,6 +144,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the helper used to identify public services
+     * 
      * @param publicServiceIdentifier
      */
     public void setPublicServiceIdentifier(PublicServiceIdentifier publicServiceIdentifier)
@@ -148,8 +152,9 @@ public class AuditComponentImpl implements AuditComponent
         this.publicServiceIdentifier = publicServiceIdentifier;
     }
 
-    /** 
+    /**
      * Set the audit model.
+     * 
      * @param auditModel
      */
     public void setAuditModel(AuditModel auditModel)
@@ -161,7 +166,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         if ((auditFlag.get() == null) || (!auditFlag.get().booleanValue()))
         {
-            if (auditModel instanceof AuditEntry && ((AuditEntry)auditModel).getEnabled() == TrueFalseUnset.TRUE)
+            if (auditModel instanceof AuditEntry && ((AuditEntry) auditModel).getEnabled() == TrueFalseUnset.TRUE)
             {
                 boolean auditInternal = (auditModel.getAuditInternalServiceMethods(mi) == TrueFalseUnset.TRUE);
                 try
@@ -217,8 +222,7 @@ public class AuditComponentImpl implements AuditComponent
                         {
                             s_logger.debug("Unannotated service method " + serviceName + "." + methodName);
                         }
-                        if (method.getDeclaringClass().isInterface()
-                                && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
+                        if (method.getDeclaringClass().isInterface() && method.getDeclaringClass().isAnnotationPresent(PublicService.class))
                         {
                             throw new RuntimeException("Unannotated service method " + serviceName + "." + methodName);
                         }
@@ -249,13 +253,16 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Internal audit of a method invocation
-     * @param mi - the method to audit
+     * 
+     * @param mi -
+     *            the method to audit
      * @return - the return object from the audited method
-     * @throws Throwable - any Throwable that can be thrown by th audtied method.
+     * @throws Throwable -
+     *             any Throwable that can be thrown by th audtied method.
      */
     public Object auditImpl(MethodInvocation mi) throws Throwable
     {
-        AuditState auditInfo = new AuditState(auditConfiguration);
+        final AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -265,7 +272,15 @@ public class AuditComponentImpl implements AuditComponent
             auditMode = postInvocation(auditMode, auditInfo, mi, o);
             if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.SUCCESS))
             {
-                auditDAO.audit(auditInfo);
+                RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        auditDAO.audit(auditInfo);
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, false);
             }
             return o;
         }
@@ -276,7 +291,16 @@ public class AuditComponentImpl implements AuditComponent
             {
                 try
                 {
-                    auditFailedDAO.audit(auditInfo);
+                    RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Throwable
+                        {
+                            auditDAO.audit(auditInfo);
+                            return null;
+                        }
+                    };
+
+                    transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, true);
                 }
                 catch (Throwable tt)
                 {
@@ -288,13 +312,14 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
-     * Helper method to set auditable properties and to determine if auditing is required when an exception is caught in the audited method.
+     * Helper method to set auditable properties and to determine if auditing is required when an exception is caught in
+     * the audited method.
      * 
      * @param auditMode
      * @param auditInfo
      * @param mi
      * @param t
-     * @return - the audit mode 
+     * @return - the audit mode
      */
     private AuditMode onError(AuditMode auditMode, AuditState auditInfo, MethodInvocation mi, Throwable t)
     {
@@ -308,7 +333,8 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
-     * Helper method to set audited information after method invocation and to determine if auditing should take place based on the method return value.
+     * Helper method to set audited information after method invocation and to determine if auditing should take place
+     * based on the method return value.
      * 
      * @param auditMode
      * @param auditInfo
@@ -355,8 +381,7 @@ public class AuditComponentImpl implements AuditComponent
                 else
                 {
                     s_logger.warn("Key argument is not a node, store or child assoc ref for return object on "
-                            + publicServiceIdentifier.getPublicServiceName(mi) + "." + mi.getMethod().getName()
-                            + " it is " + returnObject.getClass().getName());
+                            + publicServiceIdentifier.getPublicServiceName(mi) + "." + mi.getMethod().getName() + " it is " + returnObject.getClass().getName());
                 }
             }
         }
@@ -373,7 +398,8 @@ public class AuditComponentImpl implements AuditComponent
     }
 
     /**
-     * Set auditable information and determine if auditing is required before method invocation. This would normally be based on the method arguments.
+     * Set auditable information and determine if auditing is required before method invocation. This would normally be
+     * based on the method arguments.
      * 
      * @param auditMode
      * @param auditInfo
@@ -484,8 +510,7 @@ public class AuditComponentImpl implements AuditComponent
                 Serializable[] serArgs = new Serializable[mi.getArguments().length];
                 for (int i = 0; i < mi.getArguments().length; i++)
                 {
-                    if ((auditable.recordable() == null)
-                            || (auditable.recordable().length <= i) || auditable.recordable()[i])
+                    if ((auditable.recordable() == null) || (auditable.recordable().length <= i) || auditable.recordable()[i])
                     {
                         if (mi.getArguments()[i] == null)
                         {
@@ -522,8 +547,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         if (mi.getArguments().length <= position)
         {
-            s_logger.warn("Auditable annotation on "
-                    + serviceName + "." + methodName + " references non existant argument");
+            s_logger.warn("Auditable annotation on " + serviceName + "." + methodName + " references non existant argument");
         }
     }
 
@@ -532,7 +556,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     public void audit(String source, String description, NodeRef key, Object... args)
     {
-        AuditState auditInfo = new AuditState(auditConfiguration);
+        final AuditState auditInfo = new AuditState(auditConfiguration);
         // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
@@ -540,7 +564,15 @@ public class AuditComponentImpl implements AuditComponent
             auditMode = onApplicationAudit(auditMode, auditInfo, source, description, key, args);
             if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.SUCCESS))
             {
-                auditDAO.audit(auditInfo);
+                RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        auditDAO.audit(auditInfo);
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, false);
             }
         }
         catch (Throwable t)
@@ -550,7 +582,16 @@ public class AuditComponentImpl implements AuditComponent
             {
                 try
                 {
-                    auditFailedDAO.audit(auditInfo);
+                    RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Throwable
+                        {
+                            auditDAO.audit(auditInfo);
+                            return null;
+                        }
+                    };
+
+                    transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, true);
                 }
                 catch (Throwable tt)
                 {
@@ -566,8 +607,7 @@ public class AuditComponentImpl implements AuditComponent
         return auditDAO.getAuditTrail(nodeRef);
     }
 
-    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source, String description,
-            NodeRef key, Object... args)
+    private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source, String description, NodeRef key, Object... args)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, source, description, key, args);
 
@@ -626,8 +666,7 @@ public class AuditComponentImpl implements AuditComponent
         return effectiveAuditMode;
     }
 
-    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, Throwable t, String source,
-            String description, NodeRef key, Object... args)
+    private AuditMode onError(AuditMode auditMode, AuditState auditInfo, Throwable t, String source, String description, NodeRef key, Object... args)
     {
         if ((auditMode == AuditMode.ALL) || (auditMode == AuditMode.FAIL))
         {

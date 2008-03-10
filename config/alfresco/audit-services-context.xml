@@ -21,8 +21,8 @@
         <property name="auditDAO">
             <ref bean="auditDao"/>
         </property>
-         <property name="auditFailedDAO">
-            <ref bean="auditFailedDao"/>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
         </property>
         <property name="auditConfiguration">
             <ref bean="auditConfiguration"/>
@@ -66,22 +66,5 @@
         </property>
     </bean>
     
-    <!-- The audit DAO wapped to use another TX so we can log exceptions -->
-    
-    <bean id='auditFailedDao' class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.audit.AuditDAO</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="auditDao" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}, PROPAGATION_REQUIRES_NEW</prop>
-            </props>
-        </property>
-    </bean>
+  
 </beans>

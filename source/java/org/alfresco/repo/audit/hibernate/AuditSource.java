@@ -28,7 +28,7 @@ public interface AuditSource
 {
     public String getApplication();
 
-    public long getId();
+    public Long getId();
   
     public String getMethod();
 

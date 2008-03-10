@@ -45,5 +45,5 @@ public interface AuditConfig
      * 
      * @return
      */
-    public abstract long getId();
+    public abstract Long getId();
 }

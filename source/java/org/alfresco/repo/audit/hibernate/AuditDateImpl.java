@@ -42,7 +42,7 @@ public class AuditDateImpl implements AuditDate
     /**
      * Surrogate key
      */
-    private long id;
+    private Long id;
 
     /**
      * The date
@@ -171,12 +171,12 @@ public class AuditDateImpl implements AuditDate
         this.halfYear = halfYear;
     }
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
 
-    protected void setId(long id)
+    protected void setId(Long id)
     {
         this.id = id;
     }
@@ -250,15 +250,6 @@ public class AuditDateImpl implements AuditDate
     public int hashCode()
     {
        return this.date.hashCode();
-    }
-
-    /**
-     * Helper method to get the latest audit date
-     */
-    public static AuditDate getLatestDate(Session session)
-    {
-        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_LAST_AUDIT_DATE);
-        return (AuditDate) query.uniqueResult();
     }
     
 }

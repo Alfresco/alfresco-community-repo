@@ -62,7 +62,7 @@ public interface AuditDate
     /**
      * @return      the surrogate key
      */
-    public abstract long getId();
+    public abstract Long getId();
 
     /**
      * @return      the month of the year

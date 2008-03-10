@@ -33,7 +33,7 @@ public class AuditSourceImpl implements AuditSource
     /**
      * The surrogate key
      */
-    private long id;
+    private Long id;
 
     /**
      * The auditing application (System for method audits)
@@ -65,12 +65,12 @@ public class AuditSourceImpl implements AuditSource
         this.application = application;
     }
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
 
-    protected void setId(long id)
+    protected void setId(Long id)
     {
         this.id = id;
     }
@@ -95,22 +95,6 @@ public class AuditSourceImpl implements AuditSource
         this.service = service;
     }
 
-    public static AuditSource getApplicationSource(Session session, String application)
-    {
-        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE);
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_APP, application);
-        return (AuditSource) query.uniqueResult();
-    }
-
-    public static AuditSource getApplicationSource(Session session, String application, String service,
-            String method)
-    {
-        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_METHOD_SOURCE);
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_APP, application);
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_SER, service);
-        query.setParameter(HibernateAuditDAO.QUERY_AUDIT_APP_SOURCE_MET, method);
-        return (AuditSource) query.uniqueResult();
-    }
 
     @Override
     public boolean equals(Object o)

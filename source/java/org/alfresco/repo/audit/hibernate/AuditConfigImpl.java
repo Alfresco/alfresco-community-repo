@@ -34,7 +34,7 @@ public class AuditConfigImpl implements AuditConfig, InitializingBean
     /**
      * The hibernate generated internal key.
      */
-    private long id;
+    private Long id;
 
     /**
      * The URL to the content that contains the configuration file
@@ -75,7 +75,7 @@ public class AuditConfigImpl implements AuditConfig, InitializingBean
      * 
      * @see org.alfresco.repo.audit.hibernate.AuditContig#getId()
      */
-    public long getId()
+    public Long getId()
     {
         return id;
     }
@@ -87,18 +87,9 @@ public class AuditConfigImpl implements AuditConfig, InitializingBean
      */
 
     @SuppressWarnings("unused")
-    private void setId(long id)
+    private void setId(Long id)
     {
         this.id = id;
-    }
-
-    /**
-     * Helper method to get the latest audit config
-     */
-    public static AuditConfig getLatestConfig(Session session)
-    {
-        Query query = session.getNamedQuery(HibernateAuditDAO.QUERY_LAST_AUDIT_CONFIG);
-        return (AuditConfig) query.uniqueResult();
     }
 
     @Override

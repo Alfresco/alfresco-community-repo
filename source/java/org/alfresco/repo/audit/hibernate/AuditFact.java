@@ -57,7 +57,7 @@ public interface AuditFact
 
     public abstract String getHostInetAddress();
 
-    public abstract long getId();
+    public abstract Long getId();
 
     public abstract String getMessage();
 

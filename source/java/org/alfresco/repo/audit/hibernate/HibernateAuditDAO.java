@@ -28,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -47,18 +48,23 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.Duration;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.mapping.Column;
 import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -74,42 +80,38 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
      */
     private static Log s_logger = LogFactory.getLog(HibernateAuditDAO.class);
 
-    public static final String QUERY_LAST_AUDIT_DATE = "audit.GetLatestAuditDate";
+    private static final String QUERY_LAST_AUDIT_DATE = "audit.GetLatestAuditDate";
 
-    public static final String QUERY_LAST_AUDIT_CONFIG = "audit.GetLatestAuditConfig";
+    private static final String QUERY_AUDIT_DATE = "audit.GetAuditDate";
 
-    public static final String QUERY_AUDIT_APP_SOURCE = "audit.GetAuditSourceByApplication";
+    private static final String QUERY_LAST_AUDIT_CONFIG = "audit.GetLatestAuditConfig";
 
-    public static final String QUERY_AUDIT_METHOD_SOURCE = "audit.GetAuditSourceByApplicationServiceMethod";
+    private static final String QUERY_AUDIT_APP_SOURCE = "audit.GetAuditSourceByApplication";
 
-    public static final String QUERY_AUDIT_APP_SOURCE_APP = "application";
+    private static final String QUERY_AUDIT_METHOD_SOURCE = "audit.GetAuditSourceByApplicationServiceMethod";
 
-    public static final String QUERY_AUDIT_APP_SOURCE_SER = "service";
+    private static final String QUERY_AUDIT_APP_SOURCE_APP = "application";
 
-    public static final String QUERY_AUDIT_APP_SOURCE_MET = "method";
+    private static final String QUERY_AUDIT_APP_SOURCE_SER = "service";
 
-    public static final String QUERY_AUDIT_TRAIL = "audit.GetAuditTrailForNode";
+    private static final String QUERY_AUDIT_APP_SOURCE_MET = "method";
 
-    public static final String QUERY_AUDIT_PROTOCOL = "protocol";
+    private static final String QUERY_AUDIT_TRAIL = "audit.GetAuditTrailForNode";
 
-    public static final String QUERY_AUDIT_STORE_ID = "store_id";
+    private static final String QUERY_AUDIT_PROTOCOL = "protocol";
 
-    public static final String QUERY_AUDIT_NODE_ID = "node_id";
+    private static final String QUERY_AUDIT_STORE_ID = "store_id";
 
-    public static final String QUERY_AUDIT_NODE_REF = "nodeRef";
+    private static final String QUERY_AUDIT_NODE_ID = "node_id";
+
+    private static final String QUERY_AUDIT_NODE_REF = "nodeRef";
+
+    private static final String QUERY_AUDIT_DATE_PARAM = "date";
 
     /** a uuid identifying this unique instance */
     private String uuid;
 
     private ContentStore contentStore;
-
-    private ThreadLocal<AuditConfiguration> auditConfiguration = new ThreadLocal<AuditConfiguration>();
-
-    private ThreadLocal<Long> auditConfigImplId = new ThreadLocal<Long>();
-
-    private ThreadLocal<Long> auditDateImplId = new ThreadLocal<Long>();
-
-    private ThreadLocal<HashMap<SourceKey, Long>> sourceIds = new ThreadLocal<HashMap<SourceKey, Long>>();
 
     private LocalSessionFactoryBean localSessionFactory;
 
@@ -181,7 +183,6 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
 
         if (args != null)
         {
-            int length;
             switch (args.length)
             {
             default:
@@ -199,25 +200,26 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
             }
         }
 
-        auditFact.setClientInetAddress(auditInfo.getClientAddress() == null ? null : auditInfo.getClientAddress().toString());
+        auditFact.setClientInetAddress(getStringOrNull(auditInfo.getClientAddress(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "clientInetAddress")));
         auditFact.setDate(auditInfo.getDate());
-        auditFact.setException(auditInfo.getThrowable() == null ? null : auditInfo.getThrowable().getMessage());
+        auditFact.setException(getStringOrNull((auditInfo.getThrowable() == null ? null : auditInfo.getThrowable().getMessage()), getColumnLength(
+                "org.alfresco.repo.audit.hibernate.AuditFactImpl", "exception")));
         auditFact.setFail(auditInfo.isFail());
         auditFact.setFiltered(auditInfo.isFiltered());
-        auditFact.setHostInetAddress(auditInfo.getHostAddress() == null ? null : auditInfo.getHostAddress().toString());
-        auditFact.setMessage(auditInfo.getMessage());
-        auditFact.setNodeUUID(auditInfo.getKeyGUID());
-        auditFact.setPath(auditInfo.getPath());
-        auditFact.setReturnValue(auditInfo.getReturnObject() == null ? null : auditInfo.getReturnObject().toString());
+        auditFact.setHostInetAddress(getStringOrNull(auditInfo.getHostAddress(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "hostInetAddress")));
+        auditFact.setMessage(getStringOrNull(auditInfo.getMessage(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "message")));
+        auditFact.setNodeUUID(getStringOrNull(auditInfo.getKeyGUID(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "nodeUUID")));
+        auditFact.setPath(getStringOrNull(auditInfo.getPath(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "path")));
+        auditFact.setReturnValue(getStringOrNull(auditInfo.getReturnObject(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "returnValue")));
         // auditFact.setSerialisedURL()
-        auditFact.setSessionId(auditInfo.getSessionId());
+        auditFact.setSessionId(getStringOrNull(auditInfo.getSessionId(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "sessionId")));
         if (auditInfo.getKeyStore() != null)
         {
-            auditFact.setStoreId(auditInfo.getKeyStore().getIdentifier());
-            auditFact.setStoreProtocol(auditInfo.getKeyStore().getProtocol());
+            auditFact.setStoreId(getStringOrNull(auditInfo.getKeyStore().getIdentifier(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "storeId")));
+            auditFact.setStoreProtocol(getStringOrNull(auditInfo.getKeyStore().getProtocol(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "storeProtocol")));
         }
-        auditFact.setTransactionId(auditInfo.getTxId());
-        auditFact.setUserId(auditInfo.getUserIdentifier());
+        auditFact.setTransactionId(getStringOrNull(auditInfo.getTxId(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "transactionId")));
+        auditFact.setUserId(getStringOrNull(auditInfo.getUserIdentifier(), getColumnLength("org.alfresco.repo.audit.hibernate.AuditFactImpl", "userId")));
 
         // Save
         getSession().save(auditFact);
@@ -235,7 +237,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug(entityName + " "+propertyName+ " is of length " + length);
+            s_logger.debug(entityName + " " + propertyName + " is of length " + length);
         }
         return length;
     }
@@ -251,7 +253,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
             try
             {
                 String answer = o.toString();
-                if((size > -1) && (answer.length() > size))
+                if ((size > -1) && (answer.length() > size))
                 {
                     answer = answer.substring(0, size);
                 }
@@ -260,7 +262,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
             catch (Throwable t)
             {
                 String answer = "Throwable in toString implementation for " + o.getClass() + " was " + t.getMessage();
-                if((size > -1) && (answer.length() > size))
+                if ((size > -1) && (answer.length() > size))
                 {
                     answer = answer.substring(0, size);
                 }
@@ -269,54 +271,42 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
     }
 
-    private AuditSource getAuditSource(AuditState auditInfo)
+    private AuditSource getAuditSource(final AuditState auditInfo)
     {
-        AuditSource auditSourceImpl;
 
-        SourceKey sourceKey = new SourceKey(auditInfo.getAuditApplication(), auditInfo.getAuditService(), auditInfo.getAuditMethod());
-        if (sourceIds.get() == null)
-        {
-            sourceIds.set(new HashMap<SourceKey, Long>());
-        }
-        Long id = sourceIds.get().get(sourceKey);
-        if (id != null)
-        {
-            auditSourceImpl = (AuditSource) getSession().get(AuditSourceImpl.class, id.longValue());
-            if (auditSourceImpl != null)
-            {
-                return auditSourceImpl;
-            }
-        }
+        AuditSource auditSourceImpl;
 
         if ((auditInfo.getAuditService() != null)
                 && (auditInfo.getAuditService().length() > 0) && (auditInfo.getAuditMethod() != null) && (auditInfo.getAuditMethod().length() > 0))
         {
-            auditSourceImpl = AuditSourceImpl.getApplicationSource(getSession(), auditInfo.getAuditApplication(), auditInfo.getAuditService(), auditInfo.getAuditMethod());
+            auditSourceImpl = queryApplicationSource(auditInfo.getAuditApplication(), auditInfo.getAuditService(), auditInfo.getAuditMethod());
             if (auditSourceImpl == null)
             {
                 auditSourceImpl = new AuditSourceImpl();
                 auditSourceImpl.setApplication(auditInfo.getAuditApplication());
                 auditSourceImpl.setService(auditInfo.getAuditService());
                 auditSourceImpl.setMethod(auditInfo.getAuditMethod());
-                getSession().save(auditSourceImpl);
+                Long id = (Long) getSession().save(auditSourceImpl);
             }
         }
         else
         {
-            auditSourceImpl = AuditSourceImpl.getApplicationSource(getSession(), auditInfo.getAuditApplication());
+            auditSourceImpl = queryApplicationSource(auditInfo.getAuditApplication());
             if (auditSourceImpl == null)
             {
                 auditSourceImpl = new AuditSourceImpl();
                 auditSourceImpl.setApplication(auditInfo.getAuditApplication());
-                getSession().save(auditSourceImpl);
+                Long id = (Long) getSession().save(auditSourceImpl);
             }
         }
-        sourceIds.get().put(sourceKey, Long.valueOf(auditSourceImpl.getId()));
+
         return auditSourceImpl;
+
     }
 
-    private AuditDate getAuditDate(AuditState auditInfo)
+    private AuditDate getAuditDate(final AuditState auditInfo)
     {
+
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(auditInfo.getDate());
         cal.set(Calendar.MILLISECOND, 0);
@@ -326,99 +316,96 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         Date required = cal.getTime();
 
         AuditDate auditDate;
-        if (auditDateImplId.get() == null)
+
+        auditDate = queryLatestDate(required);
+        if (auditDate == null)
         {
-            auditDate = AuditDateImpl.getLatestDate(getSession());
+            auditDate = queryLatestDate();
             if (auditDate == null)
             {
                 // The first entry ever so we just make it
                 auditDate = new AuditDateImpl(auditInfo.getDate());
-                getSession().save(auditDate);
+                Long id = (Long) getSession().save(auditDate);
             }
-            auditDateImplId.set(Long.valueOf(auditDate.getId()));
+            else
+            {
+                if (required.compareTo(auditDate.getDate()) < 0)
+                {
+                    auditDate = new AuditDateImpl(required);
+                    Long id = (Long) getSession().save(auditDate);
+                }
+                else if (required.compareTo(auditDate.getDate()) == 0)
+                {
+                    // no action
+                }
+                else
+                {
+                    while (!required.equals(auditDate.getDate()))
+                    {
+                        Date nextDate = Duration.add(auditDate.getDate(), new Duration("P1D"));
+                        auditDate = new AuditDateImpl(nextDate);
+                        Long id = (Long) getSession().save(auditDate);
+
+                    }
+                }
+            }
         }
         else
         {
-            auditDate = (AuditDate) getSession().get(AuditDateImpl.class, auditDateImplId.get().longValue());
-            if ((auditDate == null) || (!required.equals(auditDate.getDate())))
-            {
-                auditDate = AuditDateImpl.getLatestDate(getSession());
-                if (auditDate == null)
-                {
-                    // The first entry ever so we just make it
-                    auditDate = new AuditDateImpl(auditInfo.getDate());
-                    getSession().save(auditDate);
-                }
-                auditDateImplId.set(Long.valueOf(auditDate.getId()));
-            }
-        }
-        while (!required.equals(auditDate.getDate()))
-        {
-            Date nextDate = Duration.add(auditDate.getDate(), new Duration("P1D"));
-            auditDate = new AuditDateImpl(nextDate);
-            getSession().save(auditDate);
-            auditDateImplId.set(Long.valueOf(auditDate.getId()));
+            // no action
         }
         return auditDate;
+
     }
 
-    private AuditConfig getAuditConfig(AuditState auditInfo)
+    private AuditConfig getAuditConfig(final AuditState auditInfo)
     {
+
         AuditConfig auditConfig;
-        if ((auditConfiguration.get() == null) || (auditConfiguration.get() != auditInfo.getAuditConfiguration()))
+        auditConfig = queryLatestConfig(getSession());
+        if (auditConfig == null)
         {
-            auditConfig = AuditConfigImpl.getLatestConfig(getSession());
-            if (auditConfig == null)
+            auditConfig = createNewAuditConfigImpl(auditInfo);
+        }
+        else
+        {
+
+            InputStream current = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
+            ContentReader reader = contentStore.getReader(auditConfig.getConfigURL());
+            reader.setMimetype(MimetypeMap.MIMETYPE_XML);
+            reader.setEncoding("UTF-8");
+            InputStream last = new BufferedInputStream(reader.getContentInputStream());
+            int currentValue = -2;
+            int lastValue = -2;
+            try
             {
+                while ((currentValue != -1) && (lastValue != -1) && (currentValue == lastValue))
+                {
+                    currentValue = current.read();
+                    lastValue = last.read();
+
+                }
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to read and validate current audit configuration against the last", e);
+            }
+            if (currentValue != lastValue)
+            {
+                // Files are different - require a new entry
                 auditConfig = createNewAuditConfigImpl(auditInfo);
             }
             else
             {
-                InputStream current = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
-                ContentReader reader = contentStore.getReader(auditConfig.getConfigURL());
-                reader.setMimetype(MimetypeMap.MIMETYPE_XML);
-                reader.setEncoding("UTF-8");
-                InputStream last = new BufferedInputStream(reader.getContentInputStream());
-                int currentValue = -2;
-                int lastValue = -2;
-                try
-                {
-                    while ((currentValue != -1) && (lastValue != -1) && (currentValue == lastValue))
-                    {
-                        currentValue = current.read();
-                        lastValue = last.read();
+                // No change
+            }
+        }
 
-                    }
-                }
-                catch (IOException e)
-                {
-                    throw new AlfrescoRuntimeException("Failed to read and validate current audit configuration against the last", e);
-                }
-                if (currentValue != lastValue)
-                {
-                    // Files are different - require a new entry
-                    auditConfig = createNewAuditConfigImpl(auditInfo);
-                }
-                else
-                {
-                    // No change
-                }
-            }
-            auditConfigImplId.set(Long.valueOf(auditConfig.getId()));
-            auditConfiguration.set(auditInfo.getAuditConfiguration());
-        }
-        else
-        {
-            auditConfig = (AuditConfig) getSession().get(AuditConfigImpl.class, auditConfigImplId.get().longValue());
-            if (auditConfig == null)
-            {
-                auditConfig = createNewAuditConfigImpl(auditInfo);
-            }
-        }
         return auditConfig;
+
     }
 
-    private AuditConfigImpl createNewAuditConfigImpl(AuditState auditInfo)
+    private AuditConfig createNewAuditConfigImpl(final AuditState auditInfo)
     {
         AuditConfigImpl auditConfig = new AuditConfigImpl();
         InputStream is = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
@@ -429,6 +416,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         String contentUrl = writer.getContentUrl();
         auditConfig.setConfigURL(contentUrl);
         getSession().save(auditConfig);
+
         return auditConfig;
     }
 
@@ -544,7 +532,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         {
             return Collections.<AuditInfo> emptyList();
         }
-        List<? extends AuditFact> internalTrail = AuditFactImpl.getAuditTrail(getSession(), nodeRef);
+        List<? extends AuditFact> internalTrail = queryAuditTrail(nodeRef);
 
         ArrayList<AuditInfo> answer = new ArrayList<AuditInfo>(internalTrail.size());
         for (AuditFact auditFact : internalTrail)
@@ -553,6 +541,76 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
             answer.add(info);
         }
         return answer;
+    }
+
+    /**
+     * Helper method to get the latest audit config
+     */
+    public static AuditConfig queryLatestConfig(Session session)
+    {
+        Query query = session.getNamedQuery(QUERY_LAST_AUDIT_CONFIG);
+        return (AuditConfig) query.uniqueResult();
+    }
+
+    /**
+     * Helper method to get the latest audit date
+     */
+    public AuditDate queryLatestDate()
+    {
+        Query query = getSession().getNamedQuery(QUERY_LAST_AUDIT_DATE);
+        return (AuditDate) query.uniqueResult();
+    }
+
+    /**
+     * Helper method to get all the audit entries for a node.
+     */
+    @SuppressWarnings("unchecked")
+    public List<AuditFact> queryAuditTrail(NodeRef nodeRef)
+    {
+        Query query = getSession().getNamedQuery(QUERY_AUDIT_TRAIL);
+        query.setParameter(QUERY_AUDIT_PROTOCOL, nodeRef.getStoreRef().getProtocol());
+        query.setParameter(QUERY_AUDIT_STORE_ID, nodeRef.getStoreRef().getIdentifier());
+        query.setParameter(QUERY_AUDIT_NODE_ID, nodeRef.getId());
+        query.setParameter(QUERY_AUDIT_NODE_REF, "%" + nodeRef.toString() + "%");
+        return (List<AuditFact>) query.list();
+    }
+
+    /**
+     * Helper method to get the application source
+     * 
+     * @param application
+     * @return
+     */
+    public AuditSource queryApplicationSource(String application)
+    {
+        Query query = getSession().getNamedQuery(QUERY_AUDIT_APP_SOURCE);
+        query.setParameter(QUERY_AUDIT_APP_SOURCE_APP, application);
+        return (AuditSource) query.uniqueResult();
+    }
+
+    /**
+     * Helper method to get the application source
+     * 
+     * @param application
+     * @return
+     */
+    public AuditSource queryApplicationSource(String application, String service, String method)
+    {
+        Query query = getSession().getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_METHOD_SOURCE);
+        query.setParameter(QUERY_AUDIT_APP_SOURCE_APP, application);
+        query.setParameter(QUERY_AUDIT_APP_SOURCE_SER, service);
+        query.setParameter(QUERY_AUDIT_APP_SOURCE_MET, method);
+        return (AuditSource) query.uniqueResult();
+    }
+
+    /**
+     * Helper method to get the latest audit date
+     */
+    public AuditDate queryLatestDate(Date date)
+    {
+        Query query = getSession().getNamedQuery(HibernateAuditDAO.QUERY_AUDIT_DATE);
+        query.setParameter(QUERY_AUDIT_DATE_PARAM, date);
+        return (AuditDate) query.uniqueResult();
     }
 
 }

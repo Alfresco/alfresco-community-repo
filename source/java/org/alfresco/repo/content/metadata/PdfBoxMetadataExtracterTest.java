@@ -16,6 +16,7 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         super.setUp();
         extracter = new PdfBoxMetadataExtracter();
+        extracter.setDictionaryService(dictionaryService);
         extracter.register();
     }
 

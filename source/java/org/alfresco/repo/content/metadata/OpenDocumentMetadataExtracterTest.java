@@ -15,6 +15,7 @@ public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracter
     {
         super.setUp();
         extracter = new OpenDocumentMetadataExtracter();
+        extracter.setDictionaryService(dictionaryService);
         extracter.register();
     }
 

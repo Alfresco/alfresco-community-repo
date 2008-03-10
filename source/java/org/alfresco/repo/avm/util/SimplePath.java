@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.avm.util;
 
@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Holds a simple path.
  * @author britt
  */
-public class SimplePath implements Serializable 
+public class SimplePath implements Serializable
 {
     private static final long serialVersionUID = 2696828491008988470L;
 
@@ -17,7 +17,7 @@ public class SimplePath implements Serializable
      * The names of the path's components.
      */
     private String [] fNames;
-    
+
     /**
      * Construct a new one from a string.
      * @param path The String representation of the path.
@@ -39,7 +39,7 @@ public class SimplePath implements Serializable
         }
         fNames = path.split("/+");
     }
-    
+
     /**
      * Get the component name at index.
      * @param index The index of the component to get.
@@ -49,7 +49,7 @@ public class SimplePath implements Serializable
     {
         return fNames[index];
     }
-    
+
     /**
      * Get the number of components in this path.
      * @return The number of components.
@@ -63,7 +63,7 @@ public class SimplePath implements Serializable
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object obj) 
+    public boolean equals(Object obj)
     {
         if (this == obj)
         {
@@ -80,7 +80,7 @@ public class SimplePath implements Serializable
         }
         for (int i = 0; i < fNames.length; i++)
         {
-            if (!fNames[i].equals(o.fNames[i]))
+            if (!fNames[i].equalsIgnoreCase(o.fNames[i]))
             {
                 return false;
             }
@@ -92,12 +92,12 @@ public class SimplePath implements Serializable
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode() 
+    public int hashCode()
     {
         int hash = 0;
         for (String name : fNames)
         {
-            hash += name.hashCode();
+            hash += name.toLowerCase().hashCode();
         }
         return hash;
     }
@@ -106,7 +106,7 @@ public class SimplePath implements Serializable
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString() 
+    public String toString()
     {
         StringBuilder builder = new StringBuilder();
         for (String name : fNames)

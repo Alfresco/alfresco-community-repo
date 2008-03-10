@@ -480,6 +480,11 @@ public interface NodeService
     /**
      * Get the node with the given name within the context of the parent node.  The name
      * is case-insensitive as Alfresco has to support case-insensitive clients as standard.
+     * <p>
+     * That API method getChildByName only works for associations that don't allow duplicate child names.
+     * See <b>cm:folder</b> and the <b>duplicate</b> tag.  Child associations without this allow duplicate
+     * child names and therefore it is possible to have multiple children with the same name stored against
+     * the given association type.
      * 
      * @param nodeRef the parent node - usuall a <b>container</b>
      * @param assocTypeQName the type of the association

@@ -514,7 +514,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
     {
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
-        SortedMap<String, AVMNodeDescriptor> listing = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> listing = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
         for (ChildEntry child : children)
         {
             AVMNode childNode = child.getChild();
@@ -551,7 +551,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        SortedMap<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
         // If we are not opaque, get the underlying base listing.
         if (!fOpacity)
         {

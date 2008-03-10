@@ -27,21 +27,33 @@ package org.alfresco.repo.content.metadata;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -88,15 +100,19 @@ import org.apache.commons.logging.LogFactory;
 abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";
+    private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
     
     protected static Log logger = LogFactory.getLog(AbstractMappingMetadataExtracter.class);
     
     private MetadataExtracterRegistry registry;
     private MimetypeService mimetypeService;
+    private DictionaryService dictionaryService;
     private boolean initialized;
     
     private Set<String> supportedMimetypes;
     private OverwritePolicy overwritePolicy;
+    private boolean failOnTypeConversion;
+    private Set<DateFormat> supportedDateFormats;
     private Map<String, Set<QName>> mapping;
     private boolean inheritDefaultMapping;
 
@@ -124,6 +140,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         this.supportedMimetypes = supportedMimetypes;
         // Set defaults
         overwritePolicy = OverwritePolicy.PRAGMATIC;
+        failOnTypeConversion = true;
+        supportedDateFormats = new HashSet<DateFormat>(0);
         mapping = null;                     // The default will be fetched
         inheritDefaultMapping = false;      // Any overrides are complete 
         initialized = false;
@@ -156,7 +174,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         return mimetypeService;
     }
-    
+
+    /**
+     * @param dictionaryService     the dictionary service to determine which data conversions are necessary
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     /**
      * Set the mimetypes that are supported by the extracter.
      * 
@@ -210,6 +236,46 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setOverwritePolicy(String overwritePolicyStr)
     {
         this.overwritePolicy = OverwritePolicy.valueOf(overwritePolicyStr);
+    }
+
+    /**
+     * Set whether the extractor should discard metadata that fails to convert to the target type
+     * defined in the data dictionary model.  This is <tt>true</tt> by default i.e. if the data
+     * extracted is not compatible with the target model then the extraction will fail.  If this is
+     * <tt>false<tt> then any extracted data that fails to convert will be discarded.
+     * 
+     * @param failOnTypeConversion      <tt>false</tt> to discard properties that can't get converted
+     *                                  to the dictionary-defined type, or <tt>true</tt> (default)
+     *                                  to fail the extraction if the type doesn't convert
+     */
+    public void setFailOnTypeConversion(boolean failOnTypeConversion)
+    {
+        this.failOnTypeConversion = failOnTypeConversion;
+    }
+
+    /**
+     * Set the date formats, over and above the {@link ISO8601DateFormat ISO8601 format}, that will
+     * be supported for string to date conversions.  The supported syntax is described by the
+     * {@link http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html SimpleDateFormat Javadocs}.
+     * 
+     * @param supportedDateFormats      a list of supported date formats.
+     */
+    public void setSupportedDateFormats(List<String> supportedDateFormats)
+    {
+        this.supportedDateFormats = new HashSet<DateFormat>(5);
+        for (String dateFormatStr : supportedDateFormats)
+        {
+            try
+            {
+                DateFormat df = new SimpleDateFormat(dateFormatStr);
+                this.supportedDateFormats.add(df);
+            }
+            catch (Throwable e)
+            {
+                // No good
+                throw new AlfrescoRuntimeException("Unable to set supported date format: " + dateFormatStr, e);
+            }
+        }
     }
 
     /**
@@ -347,6 +413,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * 
      * @see #setMappingProperties(Properties)
      */
+    @SuppressWarnings("unchecked")
     protected Map<String, Set<QName>> readMappingProperties(Properties mappingProperties)
     {
         Map<String, String> namespacesByPrefix = new HashMap<String, String>(5);
@@ -562,6 +629,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Map<String, Serializable> rawMetadata = extractRaw(reader);
             // Convert to system properties (standalone)
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
+            // Convert the properties according to the dictionary types
+            systemProperties = convertSystemPropertyValues(systemProperties);
             // Now use the proper overwrite policy
             changedProperties = overwritePolicy.applyProperties(systemProperties, destination);
         }
@@ -629,6 +698,131 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
+     * Converts all values according to their dictionary-defined type.  This uses the
+     * {@link #setFailOnTypeConversion(boolean) failOnTypeConversion flag} to determine how failures
+     * are handled i.e. if values fail to convert, the process may discard the property.
+     * 
+     * @param systemProperties  the values keyed to system property names
+     * @return                  Returns a modified map of properties that have been converted.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<QName, Serializable> convertSystemPropertyValues(Map<QName, Serializable> systemProperties)
+    {
+        Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(systemProperties.size() + 7);
+        for (Map.Entry<QName, Serializable> entry : systemProperties.entrySet())
+        {
+            QName propertyQName = entry.getKey();
+            Serializable propertyValue = entry.getValue();
+            // Get the property definition
+            PropertyDefinition propertyDef = (dictionaryService == null) ? null : dictionaryService.getProperty(propertyQName);
+            if (propertyDef == null)
+            {
+                // There is nothing in the DD about this so just transfer it
+                convertedProperties.put(propertyQName, propertyValue);
+                continue;
+            }
+            // It is in the DD, so attempt the conversion
+            DataTypeDefinition propertyTypeDef = propertyDef.getDataType();
+            Serializable convertedPropertyValue = null;
+            
+            try
+            {
+                // Attempt to make any date conversions
+                if (propertyTypeDef.getName().equals(DataTypeDefinition.DATE) || propertyTypeDef.getName().equals(DataTypeDefinition.DATETIME))
+                {
+                    if (propertyValue instanceof Collection)
+                    {
+                        convertedPropertyValue = (Serializable) makeDates((Collection) propertyValue);
+                    }
+                    else if (propertyValue instanceof String)
+                    {
+                        convertedPropertyValue = makeDate((String) propertyValue);
+                    }
+                }
+                else
+                {
+                    if (propertyValue instanceof Collection)
+                    {
+                        convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
+                                propertyTypeDef,
+                                (Collection) propertyValue);
+                    }
+                    else
+                    {
+                        convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
+                                propertyTypeDef,
+                                propertyValue);
+                    }
+                }
+                convertedProperties.put(propertyQName, convertedPropertyValue);
+            }
+            catch (TypeConversionException e)
+            {
+                // Do we just absorb this or is it a problem?
+                if (failOnTypeConversion)
+                {
+                    throw AlfrescoRuntimeException.create(
+                            e,
+                            ERR_TYPE_CONVERSION,
+                            this,
+                            propertyQName,
+                            propertyTypeDef.getName(),
+                            propertyValue);
+                }
+            }
+        }
+        // Done
+        return convertedProperties;
+    }
+
+    /**
+     * Convert a collection of date <tt>String</tt> to <tt>Date</tt> objects
+     */
+    private Collection<Date> makeDates(Collection<String> dateStrs)
+    {
+        List<Date> dates = new ArrayList<Date>(dateStrs.size());
+        for (String dateStr : dateStrs)
+        {
+            Date date = makeDate(dateStr);
+            dates.add(date);
+        }
+        return dates;
+    }
+    
+    /**
+     * Convert a date <tt>String</tt> to a <tt>Date</tt> object
+     */
+    private Date makeDate(String dateStr)
+    {
+        Date date = null;
+        try
+        {
+            date = DefaultTypeConverter.INSTANCE.convert(Date.class, dateStr);
+        }
+        catch (TypeConversionException e)
+        {
+            // Try one of the other formats
+            for (DateFormat df : this.supportedDateFormats)
+            {
+                try
+                {
+                    date = df.parse(dateStr);
+                }
+                catch (ParseException ee)
+                {
+                    // Didn't work
+                }
+            }
+            if (date == null)
+            {
+                // Still no luck
+                throw new TypeConversionException("Unable to convert string to date: " + dateStr);
+            }
+        }
+        return date;
+    }
+    
+    /**
      * Adds a value to the map if it is non-trivial.  A value is trivial if
      * <ul>
      *   <li>it is null</li>
@@ -646,6 +840,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @param destination   the map to put values into
      * @return              Returns <tt>true</tt> if set, otherwise <tt>false</tt>
      */
+    @SuppressWarnings("unchecked")
     protected boolean putRawValue(String key, Serializable value, Map<String, Serializable> destination)
     {
         if (value == null)

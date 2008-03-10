@@ -145,6 +145,9 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService" />
       </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
    </bean>
    
    <!-- Content Metadata Extracters -->

@@ -695,7 +695,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     private SortedMap<String, AVMNodeDescriptor>
         translateListing(Map<String, AVMNode> listing, Lookup lPath)
     {
-        SortedMap<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> results = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
         for (String name : listing.keySet())
         {
             // TODO consider doing this at a lower level.

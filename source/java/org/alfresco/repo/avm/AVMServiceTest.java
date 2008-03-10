@@ -68,6 +68,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -96,7 +97,7 @@ import org.alfresco.util.Pair;
 
 /**
  * Big test of AVM behavior.
- * 
+ *
  * @author britt
  */
 public class AVMServiceTest extends AVMServiceTestBase
@@ -611,6 +612,15 @@ public class AVMServiceTest extends AVMServiceTestBase
             System.out.println(report);
             runQueriesForCreateAndDeploy("target");
             assertEquals(fService.lookup(-1, "main:/a/b/biz").getGuid(), fService.lookup(-1, "target:/a/b/biz").getGuid());
+            fService.removeNode("main:/a/b/c/foo");
+            fService.createFile("main:/a/b/c", "Foo").close();
+            ContentWriter writer = fService.getContentWriter("main:/a/b/c/Foo");
+            writer.setEncoding("UTF-8");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.putContent("I am main:/a/b/c/foo");
+            report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", matcher, false, false, false, null);
+            System.out.println(report);
+            assertEquals(DeploymentEvent.Type.UPDATED, report.iterator().next().getType());
             fService.removeNode("main:/a/b/c/foo");
             report = depService.deployDifference(-1, "main:/a", "localhost", 50500, "admin", "admin", "target:/a", matcher, false, true, false, null);
             runQueriesForCreateAndDeploy("target");
@@ -5531,7 +5541,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     /**
      * Test async indexing.
-     * 
+     *
      * @throws Exception
      */
     public void testAsyncIndex() throws Exception

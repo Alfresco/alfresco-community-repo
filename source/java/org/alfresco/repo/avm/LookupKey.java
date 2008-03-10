@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.avm;
 
@@ -19,22 +19,22 @@ public class LookupKey implements Serializable
      * The name of the store.
      */
     private String fStoreName;
-    
+
     /**
      * The path being looked up.
      */
     private SimplePath fPath;
-    
+
     /**
      * The version being looked up.
      */
     private int fVersion;
-    
+
     /**
      * Whether the lookup is a write lookup.
      */
     private boolean fWrite;
-    
+
     /**
      * Whether the lookup includes deleted nodes.
      */
@@ -48,7 +48,7 @@ public class LookupKey implements Serializable
      * @param write Whether this is a write lookup.
      * @param includeDeleted Whether this lookup should include deleted items.
      */
-    public LookupKey(int version, 
+    public LookupKey(int version,
                      SimplePath path,
                      String storeName,
                      boolean write,
@@ -60,7 +60,7 @@ public class LookupKey implements Serializable
         fWrite = write;
         fIncludeDeleted = includeDeleted;
     }
-    
+
     public LookupKey(LookupKey other)
     {
         fVersion = other.fVersion;
@@ -69,7 +69,7 @@ public class LookupKey implements Serializable
         fWrite = other.fWrite;
         fIncludeDeleted = other.fIncludeDeleted;
     }
-    
+
     /**
      * Set the writeness of this key.
      */
@@ -86,7 +86,7 @@ public class LookupKey implements Serializable
     {
         return fStoreName;
     }
-    
+
     /**
      * Is this a write lookup.
      * @return Whether this is a write lookup.
@@ -95,12 +95,12 @@ public class LookupKey implements Serializable
     {
         return fWrite;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object obj) 
+    public boolean equals(Object obj)
     {
         if (this == obj)
         {
@@ -111,7 +111,7 @@ public class LookupKey implements Serializable
             return false;
         }
         LookupKey o = (LookupKey)obj;
-        return fStoreName.equals(o.fStoreName) &&
+        return fStoreName.equalsIgnoreCase(o.fStoreName) &&
                fVersion == o.fVersion &&
                fPath.equals(o.fPath) &&
                fWrite == o.fWrite &&
@@ -122,9 +122,9 @@ public class LookupKey implements Serializable
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode() 
+    public int hashCode()
     {
-        int hash = fStoreName.hashCode();
+        int hash = fStoreName.toLowerCase().hashCode();
         hash += fPath.hashCode();
         hash += fVersion;
         hash += fWrite ? 1 : 0;
@@ -136,8 +136,8 @@ public class LookupKey implements Serializable
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString() 
+    public String toString()
     {
         return fStoreName + ":" + fPath + "-" + fVersion + "-" + fWrite + "-" + fIncludeDeleted;
-    }   
+    }
 }

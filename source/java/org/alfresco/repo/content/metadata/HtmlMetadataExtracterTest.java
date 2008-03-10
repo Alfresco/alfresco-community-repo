@@ -38,6 +38,7 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         super.setUp();
         extracter = new HtmlMetadataExtracter();
+        extracter.setDictionaryService(dictionaryService);
         extracter.register();
     }
 

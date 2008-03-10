@@ -14,7 +14,7 @@
 
 
     <!-- load common properties -->
-    <bean id="repository-properties" 
+    <bean id="repository-properties"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
@@ -24,7 +24,7 @@
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/version.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
-                <value>classpath:alfresco/jndi.properties</value>
+                <!-- <value>classpath:alfresco/jndi.properties</value> -->
             </list>
         </property>
     </bean>
@@ -38,7 +38,7 @@
     <!--        "repository-properties" in a dev-context.xml    -->
     <!--        or custom-db-and-data-context.xml file.         -->
 
-    <bean id="shared-properties" 
+    <bean id="shared-properties"
           class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
@@ -55,17 +55,17 @@
     <!-- Custom MBeanServer -->
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
-    <bean id="registry"   
+    <bean id="registry"
           class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
           lazy-init="true">
         <property name="port" value="${alfresco.rmi.services.port}"/>
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
-    <bean id="serverConnector" 
+    <bean id="serverConnector"
           class="org.springframework.jmx.support.ConnectorServerFactoryBean"
           depends-on="registry"
-          lazy-init="true"> 
+          lazy-init="true">
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
@@ -94,7 +94,7 @@
     </bean>
 
     <!-- MBeans registered with alfrescoMBeanServer -->
-    <bean id="VirtServerRegistry" 
+    <bean id="VirtServerRegistry"
           class="org.alfresco.mbeans.VirtServerRegistry"
           init-method="initialize" >
 
@@ -113,10 +113,10 @@
         <!--    the servers run have read access to the password files    -->
         <!--    (e.g.:  under Unix, chmod them to "400").                 -->
 
-        <property name="passwordFile" 
+        <property name="passwordFile"
                   value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
 
-        <property name="accessFile"   
+        <property name="accessFile"
                   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
     </bean>
 
@@ -189,7 +189,7 @@
             <value>false</value>
         </property>
     </bean>
-    
+
     <!-- Characterset decoder -->
     <bean id="charset.finder" class="org.alfresco.repo.content.encoding.ContentCharsetFinder">
       <property name="defaultCharset">
@@ -218,7 +218,7 @@
             <value>${server.transaction.allow-writes}</value>
         </property>
     </bean>
-    
+
     <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
         <property name="transactionService">
             <ref bean="transactionService"/>
@@ -236,7 +236,7 @@
             <value>false</value>
         </property>
     </bean>
-    
+
     <bean id="readOnlyTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
         <property name="propagationBehaviorName">
             <value>PROPAGATION_REQUIRED</value>
@@ -354,7 +354,7 @@
             <ref bean="indexerAndSearcherFactory" />
         </property>
     </bean>
-	
+
 	<bean id="admSearchService" class="org.alfresco.repo.search.SearcherComponent">
         <property name="indexerAndSearcherFactory">
             <ref bean="admLuceneIndexerAndSearcherFactory" />
@@ -417,7 +417,7 @@
 			<value>5</value>
 		</property>
     </bean>
-	
+
 
     <!-- Indexer and searchers for lucene -->
     <bean id="admLuceneIndexerAndSearcherFactory"
@@ -477,7 +477,7 @@
 			<ref bean="indexThreadPoolExecutor"></ref>
 		</property>
     </bean>
-	
+
 	<!-- Indexer and searchers for lucene -->
     <bean id="avmLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
@@ -545,7 +545,7 @@
 			<ref bean="indexThreadPoolExecutor"></ref>
 		</property>
     </bean>
-	
+
 
     <!-- Indexer and searchers for lucene -->
     <bean id="luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
@@ -666,7 +666,6 @@
     <!--                 -->
 
     <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl">
-    
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
@@ -676,7 +675,21 @@
         <property name="prefixesCache">
             <ref bean="prefixesCache"/>
         </property>
-        
+    </bean>
+
+    <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
+        <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO" />
+        </property>
+        <property name="namespaceDAO">
+            <ref bean="namespaceDAO" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
     </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
@@ -731,12 +744,12 @@
                 <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>
                 <value>alfresco/model/wcmAppModel.xml</value>
-                
+
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/action/actionModel.xml</value>
                 <value>org/alfresco/repo/rule/ruleModel.xml</value>
                 <value>org/alfresco/repo/version/version_model.xml</value>
-                
+
                 <!-- Email model -->
                 <value>alfresco/model/emailServerModel.xml</value>
                 
@@ -768,6 +781,24 @@
             <list>
                 <value>alfresco/model/defaultCustomModel.xml</value>
             </list>
+        </property>
+    </bean>
+
+    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap" init-method="bootstrap">
+        <property name="dictionaryDAO">
+            <ref local="dictionaryDAO"/>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
+        <property name="searchService">
+            <ref bean="searchService"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent"/>
         </property>
     </bean>
 
@@ -843,7 +874,7 @@
             <ref bean="LockService" />
         </property>
     </bean>
-    
+
     <bean id="discussableAspect" class="org.alfresco.repo.forum.DiscussableAspect" init-method="init">
         <property name="policyComponent">
             <ref bean="policyComponent" />
@@ -875,13 +906,13 @@
             </props>
         </property>
     </bean>
-    
+
 	 <bean id="luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
         <property name="indexerAndSearcherFactory">
            <ref bean="indexerAndSearcherFactory" />
         </property>
      </bean>
-	
+
     <!-- Bean to backup Lucene indexes -->
     <bean id="luceneIndexBackupComponent"
           class="org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupComponent">
@@ -904,7 +935,7 @@
     <!--                -->
     <!-- Thread Pool    -->
     <!--                -->
-    
+
     <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true">
         <property name="corePoolSize">
             <value>2</value>
@@ -951,7 +982,7 @@
             <ref bean="multilingualContentService" />
         </property>
     </bean>
-    
+
     <!-- Empty translation -->
     <bean id="emptyTranslationAspect" class="org.alfresco.repo.model.ml.EmptyTranslationAspect" init-method="init">
         <property name="policyComponent">
@@ -981,7 +1012,7 @@
             <ref bean="policyComponent" />
         </property>
     </bean>
-    
+
     <!-- Temporary Aspect -->
     <bean id="temporaryAspect" class="org.alfresco.repo.node.TemporaryAspect" init-method="init">
         <property name="policyComponent">
@@ -995,7 +1026,7 @@
             <ref bean="nodeService" />
         </property>
     </bean>
-    
+
     <!-- Registry service -->
     <bean id="registryService" class="org.alfresco.repo.admin.registry.RegistryServiceImpl" init-method="init">
         <property name="authenticationComponent">

@@ -61,6 +61,10 @@ ALTER TABLE avm_aspects_new ADD CONSTRAINT fk_avm_na_qn FOREIGN KEY (qname_id) R
 CREATE INDEX fk_avm_np_qn ON avm_node_properties_new (qname_id);
 ALTER TABLE avm_node_properties_new ADD CONSTRAINT fk_avm_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
+CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
+
+CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id); 
+
 --
 -- Record script finish
 --

@@ -23,8 +23,6 @@
 package org.alfresco.repo.content.metadata;
 
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
-import net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection;
-
 
 /**
  * @author Jesper Steen Møller
@@ -42,6 +40,7 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
         
         extracter = new OpenOfficeMetadataExtracter();
         extracter.setMimetypeService(mimetypeMap);
+        extracter.setDictionaryService(dictionaryService);
         extracter.setConnection(connection);
         extracter.init();
     }

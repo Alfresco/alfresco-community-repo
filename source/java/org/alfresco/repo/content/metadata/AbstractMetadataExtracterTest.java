@@ -36,7 +36,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
@@ -57,6 +59,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     protected static final String QUICK_CREATOR = "Nevin Nollop";
 
     protected MimetypeMap mimetypeMap;
+    protected DictionaryService dictionaryService;
 
     protected abstract MetadataExtracter getExtracter();
 
@@ -67,12 +70,13 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     public void setUp() throws Exception
     {
         this.mimetypeMap = (MimetypeMap) ctx.getBean("mimetypeService");
+        this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
     }
-
+    
     /**
      * Check that all objects are present
      */
@@ -123,9 +127,11 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     {
         assertEquals(
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
-                QUICK_TITLE, properties.get(ContentModel.PROP_TITLE));
+                QUICK_TITLE,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
         assertEquals(
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
-                QUICK_DESCRIPTION, properties.get(ContentModel.PROP_DESCRIPTION));
+                QUICK_DESCRIPTION,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
 }

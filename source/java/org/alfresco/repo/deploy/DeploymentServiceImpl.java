@@ -70,6 +70,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 
 /**
@@ -78,6 +80,8 @@ import org.springframework.remoting.rmi.RmiProxyFactoryBean;
  */
 public class DeploymentServiceImpl implements DeploymentService
 {
+    private static Log fgLogger = LogFactory.getLog(DeploymentServiceImpl.class);
+
     /**
      * Class to hold Deployment destination information.
      * Used as a lock to serialize deployments to the same
@@ -121,6 +125,11 @@ public class DeploymentServiceImpl implements DeploymentService
         public int hashCode()
         {
             return fHost.hashCode() + fPort;
+        }
+
+        public String toString()
+        {
+            return fHost;
         }
     };
 
@@ -169,6 +178,10 @@ public class DeploymentServiceImpl implements DeploymentService
         DeploymentDestination dest = getLock(hostName, port);
         synchronized (dest)
         {
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug("Deploying to Remote Alfresco at " + dest);
+            }
             try
             {
                 DeploymentReport report = new DeploymentReport();
@@ -178,6 +191,10 @@ public class DeploymentServiceImpl implements DeploymentService
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                                 new Pair<Integer, String>(version, srcPath),
                                                                 dstPath);
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug(event);
+                    }
                     for (DeploymentCallback callback : callbacks)
                     {
                         callback.eventOccurred(event);
@@ -229,6 +246,10 @@ public class DeploymentServiceImpl implements DeploymentService
                         new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                             new Pair<Integer, String>(version, srcPath),
                                             dstPath);
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug(event);
+                    }
                     report.add(event);
                     if (callbacks != null)
                     {
@@ -248,6 +269,10 @@ public class DeploymentServiceImpl implements DeploymentService
                         event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                     new Pair<Integer, String>(version, srcPath),
                                                     dstPath);
+                        if (fgLogger.isDebugEnabled())
+                        {
+                            fgLogger.debug(event);
+                        }
                         for (DeploymentCallback callback : callbacks)
                         {
                             callback.eventOccurred(event);
@@ -269,6 +294,10 @@ public class DeploymentServiceImpl implements DeploymentService
                         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                                     new Pair<Integer, String>(version, srcPath),
                                                                     dstPath);
+                        if (fgLogger.isDebugEnabled())
+                        {
+                            fgLogger.debug(event);
+                        }
                         for (DeploymentCallback callback : callbacks)
                         {
                             callback.eventOccurred(event);
@@ -381,6 +410,10 @@ public class DeploymentServiceImpl implements DeploymentService
                         new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                             source,
                                             destination);
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug(event);
+                    }
                     report.add(event);
                     if (callbacks != null)
                     {
@@ -428,6 +461,10 @@ public class DeploymentServiceImpl implements DeploymentService
                 DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                       source,
                                                       destination);
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug(event);
+                }
                 report.add(event);
                 if (callbacks != null)
                 {
@@ -449,6 +486,10 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         source,
                                                         destination);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             report.add(event);
             if (callbacks != null)
             {
@@ -482,6 +523,10 @@ public class DeploymentServiceImpl implements DeploymentService
             String destination = dst.getPath();
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         source, destination);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             report.add(event);
             if (callbacks != null)
             {
@@ -512,6 +557,10 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.UPDATED,
                                                         source,
                                                         destination);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             report.add(event);
             if (callbacks != null)
             {
@@ -536,6 +585,10 @@ public class DeploymentServiceImpl implements DeploymentService
         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.UPDATED,
                                                     source,
                                                     destination);
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug(event);
+        }
         report.add(event);
         if (callbacks != null)
         {
@@ -798,6 +851,10 @@ public class DeploymentServiceImpl implements DeploymentService
                                                boolean dontDelete, boolean dontDo,
                                                List<DeploymentCallback> callbacks)
     {
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Deploying To FileSystem Reciever on " + hostName + " to target " + target);
+        }
         DeploymentReport report = new DeploymentReport();
         DeploymentReceiverService service = null;
         String ticket = null;
@@ -807,6 +864,10 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
                                                         new Pair<Integer, String>(version, srcPath),
                                                         target);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             if (callbacks != null)
             {
                 for (DeploymentCallback callback : callbacks)
@@ -893,6 +954,10 @@ public class DeploymentServiceImpl implements DeploymentService
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                                 new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                                 newDstPath);
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug(event);
+                    }
                     if (callbacks != null)
                     {
                         for (DeploymentCallback callback : callbacks)
@@ -915,7 +980,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 src = null;
                 continue;
             }
-            int diff = src.getName().compareTo(dst.getName());
+            int diff = src.getName().compareToIgnoreCase(dst.getName());
             if (diff < 0)
             {
                 if (!excluded(matcher, src.getPath(), null))
@@ -973,6 +1038,10 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                                         new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
                                                         newDstPath);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             if (callbacks != null)
             {
                 for (DeploymentCallback callback : callbacks)
@@ -1008,6 +1077,10 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         new Pair<Integer, String>(version, src.getPath()),
                                                         dstPath);
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug(event);
+            }
             if (callbacks != null)
             {
                 for (DeploymentCallback callback : callbacks)
@@ -1049,6 +1122,10 @@ public class DeploymentServiceImpl implements DeploymentService
         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                     new Pair<Integer, String>(version, src.getPath()),
                                                     dstPath);
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug(event);
+        }
         if (callbacks != null)
         {
             for (DeploymentCallback callback : callbacks)

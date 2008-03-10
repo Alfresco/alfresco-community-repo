@@ -778,7 +778,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             return false;
         }
         // layer and underlying must match for flattening to be useful.
-        if (!layer.getIndirection().equals(underlying.getPath()))
+        if (!layer.getIndirection().equalsIgnoreCase(underlying.getPath()))
         {
             return false;
         }

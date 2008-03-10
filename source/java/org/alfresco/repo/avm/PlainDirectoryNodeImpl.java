@@ -163,7 +163,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         {
             throw new AVMBadArgumentException("Path is null.");
         }
-        SortedMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>();
+        SortedMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
         List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
         for (ChildEntry child : children)
         {

@@ -15,6 +15,7 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         super.setUp();
         extracter = new OfficeMetadataExtracter();
+        extracter.setDictionaryService(dictionaryService);
         extracter.register();
     }
 

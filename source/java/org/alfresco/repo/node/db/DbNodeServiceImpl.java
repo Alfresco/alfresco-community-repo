@@ -1028,12 +1028,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // get the property definition
             PropertyDefinition propertyDef = propDefs.get(propertyQName);
             
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && 
-                (propertyValue != null) && (propertyValue.getStringValue() != null))
-            {
-            	propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
-            }
-            
             // convert to the correct type
             Serializable value = makeSerializableValue(propertyDef, propertyValue);
             // copy across
@@ -1089,11 +1083,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             
             // Convert any NodeRefs using multi-tenant translation
             PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.NODE_REF)) && 
-                (propertyValue != null) && (propertyValue.getStringValue() != null))
-            {
-                propertyValue.setStringValue(tenantService.getBaseName(new NodeRef(propertyValue.getStringValue())).toString());
-            }
             
             // convert to the correct type
             Serializable value = makeSerializableValue(propertyDef, propertyValue);

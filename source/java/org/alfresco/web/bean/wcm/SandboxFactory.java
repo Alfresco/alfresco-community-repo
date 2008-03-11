@@ -226,6 +226,7 @@ public final class SandboxFactory
       // Set store permission masks
       String currentUser = Application.getCurrentUser(context).getUserName();
       permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.CHANGE_PERMISSIONS, true);
+      permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.READ_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
    }
    
@@ -245,6 +246,8 @@ public final class SandboxFactory
            // give the manager change permissions permission in the staging area store
            permissionService.setPermission(dirRef.getStoreRef(), manager, 
                     PermissionService.CHANGE_PERMISSIONS, true);
+           permissionService.setPermission(dirRef.getStoreRef(), manager, 
+                   PermissionService.READ_PERMISSIONS, true);
        }
    }
    

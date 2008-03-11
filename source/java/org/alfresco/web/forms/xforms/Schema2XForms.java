@@ -38,6 +38,7 @@ import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.impl.xs.SchemaSymbols;
 import org.apache.xerces.xs.*;
 import org.chiba.xml.dom.DOMUtil;
 import org.chiba.xml.ns.NamespaceConstants;
@@ -2804,7 +2805,33 @@ public class Schema2XForms implements Serializable
                                        typeName);
          }
          final StringList lexicalPatterns = ((XSSimpleTypeDefinition)controlType).getLexicalPattern();
-         for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength(); i++)
+         
+         // NOTE: from glen.johnson@alfresco.com
+         // Workaround to fix issue WCM-952
+         //
+         // I added expression '&& !typeName.equals(SchemaSymbols.ATTVAL_INTEGER')
+         // onto the end of loop condition expression below.
+         //
+         // This is to stop the pattern matching constraint (using deprecated chiba:match() function)
+         // from being generated into binding elements that are linked to "xs:integer"
+         // elements (in the xform instance)
+         //
+         // If this pattern match constraint is indeed added to the binding element linked to
+         // a "xs:integer" element in the xform instance, then a value is always required
+         // for that element - even if the corresponding schema has minOccurs="0" for
+         // that element i.e. it causes a value to be required for "optional" xs:integer
+         // elements.
+         //
+         // Note that the chiba:match() function is unsupported and will be removed from Chiba
+         // in the future, so a solution enabling its complete removal will need to be found.
+         // I do not see why it has been included here. The Schema inside the xform 
+         // model should take care of most validation needs.
+         // In the past, when I have completely removed this constraint (see CHK-2333), restrictions
+         // using <xs:pattern> in the Schema fail to get enforced -
+         // Causing the failure of org.alfresco.web.forms.xforms.Schema2XFormsTest.testConstraint()
+         //
+         for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength()
+               && !typeName.equals(SchemaSymbols.ATTVAL_INTEGER); i++)
          {
             constraints.add("chiba:match(., '" + lexicalPatterns.item(i) + "',null)");
          }

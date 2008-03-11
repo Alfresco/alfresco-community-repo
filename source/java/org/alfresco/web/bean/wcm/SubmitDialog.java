@@ -1142,6 +1142,15 @@ public class SubmitDialog extends BaseDialogBean
                      this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
                               fid.getForm().getDefaultWorkflowParameters()));
                   }
+                  
+                  // See WCM-1090 ACT-1551
+                  // cannot depend on renditions of the form instance to contain the present
+                  // node. Add it here if it hasn't been added by the above process.
+                  if (!submittedPaths.contains(node.getPath()))
+                  {
+                     this.submitItems.add(new ItemWrapper(node));
+                     submittedPaths.add(node.getPath());
+                  }
                }
             }
          }

@@ -29,7 +29,10 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.AccessControlListDAO;
+import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * Migrate permissions from the OLD format to defining, shared and layered
@@ -40,11 +43,22 @@ public class AVMPermissionsPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.updateAvmPermissions.result";
     
     private AccessControlListDAO accessControlListDao;
+
+    private AclDaoComponentImpl aclDaoComponent;
     
     @Override
     protected String applyInternal() throws Exception
     {
+        Long toDo = aclDaoComponent.getAVMHeadNodeCount();
+        Long maxId = aclDaoComponent.getMaxAclId();
+
+        Thread progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+        progressThread.start();
+        
         Map<ACLType, Integer> summary = accessControlListDao.patchAcls();
+        
+        progressThread.interrupt();
+        progressThread.join();
         
         // build the result message
         String msg = I18NUtil.getMessage(MSG_SUCCESS, summary.get(ACLType.DEFINING), summary.get(ACLType.LAYERED));
@@ -57,4 +71,57 @@ public class AVMPermissionsPatch extends AbstractPatch
         this.accessControlListDao = accessControlListDao;
     }
 
+    public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
+    {
+        this.aclDaoComponent = aclDaoComponent;
+    }
+    
+    
+    private class ProgressWatcher implements Runnable
+    {
+        private boolean running = true;
+
+        Long toDo;
+
+        Long max;
+
+        ProgressWatcher(Long toDo, Long max)
+        {
+            this.toDo = toDo;
+            this.max = max;
+        }
+
+        public void run()
+        {
+            while (running)
+            {
+                try
+                {
+                    Thread.sleep(60000);
+                }
+                catch (InterruptedException e)
+                {
+                    running = false;
+                }
+
+                if (running)
+                {
+                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    txHelper.setMaxRetries(1);
+                    Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+
+                        public Long execute() throws Throwable
+                        {
+                            return aclDaoComponent.getAVMNodeCountWithNewACLS(max);
+                        }
+                    }, true, true);
+
+                    reportProgress(toDo, done);
+                }
+            }
+        }
+
+    }
+    
 }

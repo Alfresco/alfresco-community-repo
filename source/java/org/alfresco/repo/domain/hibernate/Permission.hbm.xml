@@ -378,6 +378,53 @@
        where acl.aclId = :aclId and latest = true
    </query>
     
+   <!-- Note this query will not count correctly and is only an estimate -->
+   <!-- It assumes there are no pending changes in layers -->
+   <query name="permission.GetAVMHeadNodeCount">
+   <![CDATA[
+        select count(*)
+        from HistoryLinkImpl hl
+        right outer join hl.ancestor an 
+        where hl.ancestor is null  
+   ]]>
+   </query>
+    
+   <query name="permission.GetAVMHeadNodeCountWherePermissionsHaveChanged">
+    <![CDATA[
+        select count(*)
+        from org.alfresco.repo.avm.AVMNodeImpl node
+        where node.acl.id > :above
+    ]]>
+    </query>
+    
+    
+    <query name="permission.GetMaxAclId">
+    <![CDATA[
+        select
+         max(acl.id)
+       from 
+         org.alfresco.repo.domain.hibernate.DbAccessControlListImpl as acl
+    ]]>
+    </query>
+    
+    <query name="permission.GetLayeredDirectories">
+    <![CDATA[
+        select
+          node.id, node.indirection, node.indirectionVersion
+        from org.alfresco.repo.avm.LayeredDirectoryNodeImpl node
+        where node.primaryIndirection = true
+    ]]>
+    </query>
+    
+    <query name="permission.GetLayeredFiles">
+    <![CDATA[
+        select
+          node.id, node.indirection, node.indirectionVersion
+        from org.alfresco.repo.avm.LayeredFileNodeImpl node
+    ]]>
+    </query>
+    
+    
     <!--
        
    <query name="permission.GetAccessControlEntriesForAuthority">

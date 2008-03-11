@@ -33,6 +33,9 @@
        <property name="maximumStringLength">
           <value>${system.maximumStringLength}</value>
        </property>
+       <property name="hibernateMaxExecutions">
+          <value>${system.hibernateMaxExecutions}</value>
+       </property>
        <property name="updateSchema">
           <value>${db.schema.update}</value>
        </property>

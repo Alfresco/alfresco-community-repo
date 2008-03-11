@@ -34,6 +34,8 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -69,6 +71,10 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
     private AclDaoComponent aclDaoComponent;
 
+    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
+
+    private HibernateSessionHelper hibernateSessionHelper;
+
     /**
      * Default constructory.
      */
@@ -89,6 +95,16 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
     public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
+    }
+
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    {
+        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
+    }
+
+    public void setHibernateSessionHelper(HibernateSessionHelper hibernateSessionHelper)
+    {
+        this.hibernateSessionHelper = hibernateSessionHelper;
     }
 
     public Long getIndirectAcl(NodeRef nodeRef)
@@ -233,37 +249,46 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         {
             inherited = aclDaoComponent.getInheritedAccessControlList(after);
         }
-        updateChangedAclsImpl(startingPoint, changes, SetMode.ALL, inherited, after);
+        Map<Long, Set<Long>> indirections = buildIndirections();
+        updateChangedAclsImpl(startingPoint, changes, SetMode.ALL, inherited, after, indirections);
     }
 
-    private void updateChangedAclsImpl(NodeRef startingPoint, List<AclChange> changes, SetMode mode, Long inherited, Long setAcl)
+    private void updateChangedAclsImpl(NodeRef startingPoint, List<AclChange> changes, SetMode mode, Long inherited, Long setAcl, Map<Long, Set<Long>> indirections)
     {
-        HashMap<Long, Long> changeMap = new HashMap<Long, Long>();
-        HashSet<Long> unchangedSet = new HashSet<Long>();
-        for (AclChange change : changes)
+        hibernateSessionHelper.mark();
+        try
         {
-            if (change.getBefore() == null)
+            HashMap<Long, Long> changeMap = new HashMap<Long, Long>();
+            HashSet<Long> unchangedSet = new HashSet<Long>();
+            for (AclChange change : changes)
             {
-                // null is treated using the inherited acl
+                if (change.getBefore() == null)
+                {
+                    // null is treated using the inherited acl
+                }
+                else if (!change.getBefore().equals(change.getAfter()))
+                {
+                    changeMap.put(change.getBefore(), change.getAfter());
+                }
+                else
+                {
+                    unchangedSet.add(change.getBefore());
+                }
             }
-            else if (!change.getBefore().equals(change.getAfter()))
-            {
-                changeMap.put(change.getBefore(), change.getAfter());
-            }
-            else
-            {
-                unchangedSet.add(change.getBefore());
-            }
-        }
-        unchangedSet.add(inherited);
-        unchangedSet.add(setAcl);
+            unchangedSet.add(inherited);
+            unchangedSet.add(setAcl);
 
-        if (inherited != null)
-        {
-            updateReferencingLayeredAcls(startingPoint, inherited);
+            if (inherited != null)
+            {
+                updateReferencingLayeredAcls(startingPoint, inherited, indirections);
+            }
+            updateInheritedChangedAcls(startingPoint, changeMap, unchangedSet, inherited, mode, indirections);
+            updateLayeredAclsChangedByInheritance(changes, changeMap, unchangedSet, indirections);
         }
-        updateInheritedChangedAcls(startingPoint, changeMap, unchangedSet, inherited, mode);
-        updateLayeredAclsChangedByInheritance(changes, changeMap, unchangedSet);
+        finally
+        {
+            hibernateSessionHelper.resetAndRemoveMark();
+        }
     }
 
     public void forceCopy(NodeRef nodeRef)
@@ -283,10 +308,33 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         {
             throw new InvalidNodeRefException(nodeRef);
         }
-
     }
 
-    private void updateReferencingLayeredAcls(NodeRef node, Long inherited)
+    private Map<Long, Set<Long>> buildIndirections()
+    {
+        Map<Long, Set<Long>> answer = new HashMap<Long, Set<Long>>();
+
+        List<Indirection> indirections = aclDaoComponent.getAvmIndirections();
+        for (Indirection indirection : indirections)
+        {
+            AVMNodeDescriptor toDesc = fAVMService.lookup(indirection.getToVersion(), indirection.getTo(), true);
+            if (toDesc != null)
+            {
+                Long toId = Long.valueOf(toDesc.getId());
+                Set<Long> referees = answer.get(toId);
+                if (referees == null)
+                {
+                    referees = new HashSet<Long>();
+                    answer.put(toId, referees);
+                }
+                referees.add(indirection.getFrom());
+            }
+        }
+
+        return answer;
+    }
+
+    private void updateReferencingLayeredAcls(NodeRef node, Long inherited, Map<Long, Set<Long>> indirections)
     {
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(node);
         int version = avmVersionPath.getFirst();
@@ -304,42 +352,39 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             else
             {
-                List<Pair<Integer, String>> paths = fAVMService.getHeadPaths(descriptor);
-                for (Pair<Integer, String> current : paths)
+                Set<Long> avmNodeIds = indirections.get(Long.valueOf(descriptor.getId()));
+                if (avmNodeIds != null)
                 {
-                    List<Long> avmNodeIds = aclDaoComponent.getAvmNodesByIndirection(current.getSecond());
                     for (Long id : avmNodeIds)
                     {
                         // need to fix up inheritance as is has changed
                         AVMNodeDescriptor layerDesc = new AVMNodeDescriptor(null, null, 0, null, null, null, 0, 0, 0, id, null, 0, null, 0, false, 0, false, 0, 0);
+
                         List<Pair<Integer, String>> layerPaths = fAVMRepository.getHeadPaths(layerDesc);
                         // Update all locations with the updated ACL
+
                         for (Pair<Integer, String> layerPath : layerPaths)
                         {
-                            AVMNodeDescriptor test = fAVMService.lookup(-1, layerPath.getSecond());
-                            if (test.isPrimary())
+                            DbAccessControlList target = getAclAsSystem(-1, layerPath.getSecond());
+                            if (target != null)
                             {
-                                DbAccessControlList target = getAclAsSystem(-1, layerPath.getSecond());
-                                if (target != null)
+                                if (target.getAclType() == ACLType.LAYERED)
                                 {
-                                    if (target.getAclType() == ACLType.LAYERED)
-                                    {
-                                        fAVMService.forceCopy(layerPath.getSecond());
+                                    fAVMService.forceCopy(layerPath.getSecond());
 
-                                        List<AclChange> layeredChanges = aclDaoComponent.mergeInheritedAccessControlList(inherited, target.getId());
-                                        NodeRef layeredNode = AVMNodeConverter.ToNodeRef(-1, layerPath.getSecond());
-                                        for (AclChange change : layeredChanges)
+                                    List<AclChange> layeredChanges = aclDaoComponent.mergeInheritedAccessControlList(inherited, target.getId());
+                                    NodeRef layeredNode = AVMNodeConverter.ToNodeRef(-1, layerPath.getSecond());
+                                    for (AclChange change : layeredChanges)
+                                    {
+                                        if (change.getBefore().equals(target.getId()))
                                         {
-                                            if (change.getBefore().equals(target.getId()))
+                                            Long newInherited = null;
+                                            if (change.getAfter() != null)
                                             {
-                                                Long newInherited = null;
-                                                if (change.getAfter() != null)
-                                                {
-                                                    newInherited = aclDaoComponent.getInheritedAccessControlList(change.getAfter());
-                                                }
-                                                updateChangedAclsImpl(layeredNode, layeredChanges, SetMode.DIRECT_ONLY, newInherited, change.getAfter());
-                                                break;
+                                                newInherited = aclDaoComponent.getInheritedAccessControlList(change.getAfter());
                                             }
+                                            updateChangedAclsImpl(layeredNode, layeredChanges, SetMode.DIRECT_ONLY, newInherited, change.getAfter(), indirections);
+                                            break;
                                         }
                                     }
                                 }
@@ -355,7 +400,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    private void updateLayeredAclsChangedByInheritance(List<AclChange> changes, HashMap<Long, Long> changeMap, Set<Long> unchanged)
+    private void updateLayeredAclsChangedByInheritance(List<AclChange> changes, HashMap<Long, Long> changeMap, Set<Long> unchanged, Map<Long, Set<Long>> indirections)
     {
         for (AclChange change : changes)
         {
@@ -375,14 +420,16 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                         // No need to force COW - any inherited ACL will have COWED if the top ACL required it
                         setAclAsSystem(path.getSecond(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
                         NodeRef layeredNode = AVMNodeConverter.ToNodeRef(-1, path.getSecond());
-                        updateInheritedChangedAcls(layeredNode, changeMap, unchanged, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), SetMode.DIRECT_ONLY);
+                        updateInheritedChangedAcls(layeredNode, changeMap, unchanged, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), SetMode.DIRECT_ONLY,
+                                indirections);
                     }
                 }
             }
         }
     }
 
-    private void updateInheritedChangedAcls(NodeRef startingPoint, HashMap<Long, Long> changeMap, Set<Long> unchanged, Long unsetAcl, SetMode mode)
+    private void updateInheritedChangedAcls(NodeRef startingPoint, HashMap<Long, Long> changeMap, Set<Long> unchanged, Long unsetAcl, SetMode mode,
+            Map<Long, Set<Long>> indirections)
     {
         // Walk children and fix up any that reference the given list ..
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(startingPoint);
@@ -404,9 +451,10 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 if (descriptor.isLayeredDirectory())
                 {
-                    setInheritanceForDirectChildren(descriptor, changeMap, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, descriptor.getPath()).getId()));
+                    setInheritanceForDirectChildren(descriptor, changeMap, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, descriptor.getPath()).getId()),
+                            indirections);
                 }
-                fixUpAcls(descriptor, changeMap, unchanged, unsetAcl, mode);
+                fixUpAcls(descriptor, changeMap, unchanged, unsetAcl, mode, indirections);
             }
         }
         catch (AVMException e)
@@ -415,9 +463,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    private void fixUpAcls(AVMNodeDescriptor descriptor, Map<Long, Long> changes, Set<Long> unchanged, Long unsetAcl, SetMode mode)
+    private void fixUpAcls(AVMNodeDescriptor descriptor, Map<Long, Long> changes, Set<Long> unchanged, Long unsetAcl, SetMode mode, Map<Long, Set<Long>> indirections)
     {
-        DbAccessControlList acl = getAclAsSystem(-1, descriptor.getPath()); 
+        DbAccessControlList acl = getAclAsSystem(-1, descriptor.getPath());
         Long id = null;
         if (acl != null)
         {
@@ -429,7 +477,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             // No need to force COW - ACL should have COWed if required
             setAclAsSystem(descriptor.getPath(), aclDaoComponent.getDbAccessControlList(unsetAcl));
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, descriptor.getPath());
-            updateReferencingLayeredAcls(nodeRef, unsetAcl);
+            updateReferencingLayeredAcls(nodeRef, unsetAcl, indirections);
         }
         else if (changes.containsKey(id))
         {
@@ -466,16 +514,24 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             for (AVMNodeDescriptor child : children.values())
             {
-                fixUpAcls(child, changes, unchanged, unsetAcl, mode);
+                hibernateSessionHelper.mark();
+                try
+                {
+                    fixUpAcls(child, changes, unchanged, unsetAcl, mode, indirections);
+                }
+                finally
+                {
+                    hibernateSessionHelper.resetAndRemoveMark();
+                }
             }
         }
 
     }
 
-    private void setInheritanceForDirectChildren(AVMNodeDescriptor descriptor, Map<Long, Long> changeMap, Long mergeFrom)
+    private void setInheritanceForDirectChildren(AVMNodeDescriptor descriptor, Map<Long, Long> changeMap, Long mergeFrom, Map<Long, Set<Long>> indirections)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-        setFixedAcls(descriptor, mergeFrom, changes, SetMode.DIRECT_ONLY, false);
+        setFixedAcls(descriptor, mergeFrom, changes, SetMode.DIRECT_ONLY, false, indirections);
         for (AclChange change : changes)
         {
             if (!change.getBefore().equals(change.getAfter()))
@@ -498,9 +554,10 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         String path = avmVersionPath.getSecond();
         try
         {
+            Map<Long, Set<Long>> indirections = buildIndirections();
             List<AclChange> changes = new ArrayList<AclChange>();
             AVMNodeDescriptor descriptor = fAVMService.lookup(version, path);
-            setFixedAcls(descriptor, mergeFrom, changes, SetMode.ALL, false);
+            setFixedAcls(descriptor, mergeFrom, changes, SetMode.ALL, false, indirections);
             return changes;
 
         }
@@ -510,7 +567,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    public void setFixedAcls(AVMNodeDescriptor descriptor, Long mergeFrom, List<AclChange> changes, SetMode mode, boolean set)
+    public void setFixedAcls(AVMNodeDescriptor descriptor, Long mergeFrom, List<AclChange> changes, SetMode mode, boolean set, Map<Long, Set<Long>> indirections)
     {
         if (descriptor == null)
         {
@@ -527,7 +584,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 if (previous == null)
                 {
                     NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, descriptor.getPath());
-                    updateReferencingLayeredAcls(nodeRef, mergeFrom);
+                    updateReferencingLayeredAcls(nodeRef, mergeFrom, indirections);
                 }
             }
 
@@ -554,8 +611,15 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                     if (acl == null)
                     {
-                        setFixedAcls(child, mergeFrom, changes, mode, true);
-
+                        hibernateSessionHelper.mark();
+                        try
+                        {
+                            setFixedAcls(child, mergeFrom, changes, mode, true, indirections);
+                        }
+                        finally
+                        {
+                            hibernateSessionHelper.resetAndRemoveMark();
+                        }
                     }
                     else if (acl.getAclType() == ACLType.LAYERED)
                     {
@@ -573,16 +637,32 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                         {
                             if (change.getBefore().equals(acl.getId()))
                             {
-                                setAclAsSystem(child.getPath(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
-                                setFixedAcls(child, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), newChanges, SetMode.DIRECT_ONLY, false);
-                                changes.addAll(newChanges);
-                                break;
+                                hibernateSessionHelper.mark();
+                                try
+                                {
+                                    setAclAsSystem(child.getPath(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
+                                    setFixedAcls(child, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), newChanges, SetMode.DIRECT_ONLY, false, indirections);
+                                    changes.addAll(newChanges);
+                                    break;
+                                }
+                                finally
+                                {
+                                    hibernateSessionHelper.resetAndRemoveMark();
+                                }
                             }
                         }
                     }
                     else
                     {
-                        setFixedAcls(child, mergeFrom, changes, mode, true);
+                        hibernateSessionHelper.mark();
+                        try
+                        {
+                            setFixedAcls(child, mergeFrom, changes, mode, true, indirections);
+                        }
+                        finally
+                        {
+                            hibernateSessionHelper.resetAndRemoveMark();
+                        }
                     }
 
                 }
@@ -599,11 +679,31 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
     {
         CounterSet result = new CounterSet();
         List<AVMStoreDescriptor> stores = fAVMService.getStores();
+        Map<Long, Set<Long>> indirections = buildIndirections();
         for (AVMStoreDescriptor store : stores)
         {
             AVMNodeDescriptor root = fAVMService.getStoreRoot(-1, store.getName());
-            CounterSet update = fixOldAvmAcls(root);
-            result.add(update);
+            CounterSet update;
+            switch (avmSnapShotTriggeredIndexingMethodInterceptor.getStoreType(store.getName()))
+            {
+            case AUTHOR:
+            case AUTHOR_PREVIEW:
+            case AUTHOR_WORKFLOW:
+            case AUTHOR_WORKFLOW_PREVIEW:
+            case STAGING:
+            case STAGING_PREVIEW:
+            case WORKFLOW:
+            case WORKFLOW_PREVIEW:
+                AVMNodeDescriptor www = fAVMService.lookup(-1, store.getName() + ":/www");
+                update = fixOldAvmAcls(www, false, indirections);
+                result.add(update);
+                break;
+            case UNKNOWN:
+            default:
+                update = fixOldAvmAcls(root, true, indirections);
+                result.add(update);
+            }
+
         }
 
         HashMap<ACLType, Integer> toReturn = new HashMap<ACLType, Integer>();
@@ -614,20 +714,32 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         toReturn.put(ACLType.OLD, Integer.valueOf(result.get(ACLType.OLD).getCounter()));
         toReturn.put(ACLType.SHARED, Integer.valueOf(result.get(ACLType.SHARED).getCounter()));
         return toReturn;
-
     }
 
-    private CounterSet fixOldAvmAcls(AVMNodeDescriptor node)
+    private CounterSet fixOldAvmAcls(AVMNodeDescriptor node, boolean searchDirectories, Map<Long, Set<Long>> indirections)
+    {
+        hibernateSessionHelper.mark();
+        try
+        {
+            return fixOldAvmAclsImpl(node, searchDirectories, indirections);
+        }
+        finally
+        {
+            hibernateSessionHelper.resetAndRemoveMark();
+        }
+    }
+
+    private CounterSet fixOldAvmAclsImpl(AVMNodeDescriptor node, boolean searchDirectories, Map<Long, Set<Long>> indirections)
     {
         CounterSet result = new CounterSet();
         // Do the children first
 
-        if (node.isDirectory())
+        if (searchDirectories && node.isDirectory())
         {
             Map<String, AVMNodeDescriptor> children = fAVMRepository.getListingDirect(node, true);
             for (AVMNodeDescriptor child : children.values())
             {
-                CounterSet update = fixOldAvmAcls(child);
+                CounterSet update = fixOldAvmAcls(child, searchDirectories, indirections);
                 result.add(update);
             }
         }
@@ -660,7 +772,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 List<AclChange> changes = new ArrayList<AclChange>();
 
-                setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(id), changes, SetMode.DIRECT_ONLY, false);
+                setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(id), changes, SetMode.DIRECT_ONLY, false, indirections);
 
                 for (AclChange change : changes)
                 {
@@ -706,7 +818,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             List<AclChange> changes = new ArrayList<AclChange>();
 
-            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false);
+            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false, indirections);
 
             for (AclChange change : changes)
             {
@@ -746,7 +858,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             List<AclChange> changes = new ArrayList<AclChange>();
 
-            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false);
+            setFixedAcls(node, aclDaoComponent.getInheritedAccessControlList(getAclAsSystem(-1, node.getPath()).getId()), changes, SetMode.DIRECT_ONLY, false, indirections);
 
             for (AclChange change : changes)
             {
@@ -815,47 +927,55 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             counter += i;
         }
     }
-    
+
     private DbAccessControlList getStoreAclAsSystem(final String storeName)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>(){
+        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>()
+        {
 
             public DbAccessControlList doWork() throws Exception
             {
                 return fAVMRepository.getStoreAcl(storeName);
-            }}, AuthenticationUtil.getSystemUserName());
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     private void setStoreAclAsSystem(final String storeName, final DbAccessControlList acl)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
 
             public Object doWork() throws Exception
             {
                 fAVMRepository.setStoreAcl(storeName, acl);
                 return null;
-            }}, AuthenticationUtil.getSystemUserName());
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     private DbAccessControlList getAclAsSystem(final int version, final String path)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>(){
+        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>()
+        {
 
             public DbAccessControlList doWork() throws Exception
             {
                 return fAVMRepository.getACL(version, path);
-            }}, AuthenticationUtil.getSystemUserName());
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     private void setAclAsSystem(final String path, final DbAccessControlList acl)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
 
             public Object doWork() throws Exception
             {
                 fAVMRepository.setACL(path, acl);
                 return null;
-            }}, AuthenticationUtil.getSystemUserName());
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     public DbAccessControlList getAccessControlList(StoreRef storeRef)
@@ -869,7 +989,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             throw new InvalidStoreRefException(storeRef);
         }
     }
-    
+
     public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl)
     {
         try
@@ -881,6 +1001,5 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             throw new InvalidStoreRefException(storeRef);
         }
     }
-    
-    
+
 }

@@ -27,9 +27,11 @@ package org.alfresco.repo.admin.patch;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,8 +48,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Base implementation of the patch.  This class ensures that the patch is
- * thread- and transaction-safe.
+ * Base implementation of the patch. This class ensures that the patch is thread- and transaction-safe.
  * 
  * @author Derek Hulley
  */
@@ -56,14 +57,20 @@ public abstract class AbstractPatch implements Patch
     /**
      * I18N message when properties not set.
      * <ul>
-     *   <li>{0} = property name</li>
-     *   <li>{1} = patch instance</li>
+     * <li>{0} = property name</li>
+     * <li>{1} = patch instance</li>
      * </ul>
      */
     public static final String ERR_PROPERTY_NOT_SET = "patch.general.property_not_set";
-    
+    private static final String MSG_PROGRESS = "patch.progress";
+
+    private static final long RANGE_10 = 1000 * 60 * 90;
+    private static final long RANGE_5 = 1000 * 60 * 60 * 4;
+    private static final long RANGE_2 = 1000 * 60 * 90 * 10;
+
     private static Log logger = LogFactory.getLog(AbstractPatch.class);
-    
+    private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
+
     private String id;
     private int fixesFromSchema;
     private int fixesToSchema;
@@ -73,7 +80,8 @@ public abstract class AbstractPatch implements Patch
     private List<Patch> dependsOn;
     /** flag indicating if the patch was successfully applied */
     private boolean applied;
-    private boolean applyToTenants = true; // by default, apply to each tenant, if tenant service is enabled
+    private boolean applyToTenants;
+
     /** the service to register ourselves with */
     private PatchService patchService;
     /** used to ensure a unique transaction per execution */
@@ -90,15 +98,22 @@ public abstract class AbstractPatch implements Patch
     protected TenantDeployerService tenantDeployerService;
     
 
+    /** track completion * */
+    int percentComplete = 0;
+
+    /** start time * */
+    long startTime;
+
     public AbstractPatch()
     {
         this.fixesFromSchema = -1;
         this.fixesToSchema = -1;
         this.targetSchema = -1;
         this.applied = false;
+        this.applyToTenants = true;     // by default, apply to each tenant, if tenant service is enabled
         this.dependsOn = Collections.emptyList();
     }
-    
+
     @Override
     public String toString()
     {
@@ -136,7 +151,7 @@ public abstract class AbstractPatch implements Patch
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Set a generally-used service
      */
@@ -167,7 +182,7 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * This ensures that this bean gets registered with the appropriate {@link PatchService service}. 
+     * This ensures that this bean gets registered with the appropriate {@link PatchService service}.
      */
     public void init()
     {
@@ -184,8 +199,8 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * 
-     * @param id the unique ID of the patch.  This dictates the order in which patches are applied.
+     * @param id
+     *            the unique ID of the patch. This dictates the order in which patches are applied.
      */
     public void setId(String id)
     {
@@ -200,7 +215,8 @@ public abstract class AbstractPatch implements Patch
     /**
      * Set the smallest schema number that this patch may be applied to.
      * 
-     * @param version a schema number not smaller than 0
+     * @param version
+     *            a schema number not smaller than 0
      */
     public void setFixesFromSchema(int version)
     {
@@ -224,8 +240,8 @@ public abstract class AbstractPatch implements Patch
     /**
      * Set the largest schema version number that this patch may be applied to.
      * 
-     * @param version a schema version number not smaller than the
-     *      {@link #setFixesFromSchema(int) from version} number.
+     * @param version
+     *            a schema version number not smaller than the {@link #setFixesFromSchema(int) from version} number.
      */
     public void setFixesToSchema(int version)
     {
@@ -242,12 +258,11 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * Set the schema version that this patch attempts to take the existing schema to.
-     * This is for informational purposes only, acting as an indicator of intention rather
-     * than having any specific effect.
+     * Set the schema version that this patch attempts to take the existing schema to. This is for informational
+     * purposes only, acting as an indicator of intention rather than having any specific effect.
      * 
-     * @param version a schema version number that must be greater than the
-     *      {@link #fixesToSchema max fix schema number}
+     * @param version
+     *            a schema version number that must be greater than the {@link #fixesToSchema max fix schema number}
      */
     public void setTargetSchema(int version)
     {
@@ -264,7 +279,8 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * @param description a thorough description of the patch
+     * @param description
+     *            a thorough description of the patch
      */
     public void setDescription(String description)
     {
@@ -275,12 +291,12 @@ public abstract class AbstractPatch implements Patch
     {
         return this.dependsOn;
     }
-    
+
     /**
-     * Set all the dependencies for this patch.  It should not be executed
-     * before all the dependencies have been applied.
+     * Set all the dependencies for this patch. It should not be executed before all the dependencies have been applied.
      * 
-     * @param dependsOn a list of dependencies
+     * @param dependsOn
+     *            a list of dependencies
      */
     public void setDependsOn(List<Patch> dependsOn)
     {
@@ -291,12 +307,14 @@ public abstract class AbstractPatch implements Patch
     {
         return ((this.fixesFromSchema <= version) && (version <= fixesToSchema));
     }
-    
+
     /**
      * Performs a null check on the supplied value.
      * 
-     * @param value value to check
-     * @param name name of the property to report
+     * @param value
+     *            value to check
+     * @param name
+     *            name of the property to report
      */
     protected final void checkPropertyNotNull(Object value, String name)
     {
@@ -312,9 +330,8 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * Check that the schema version properties have been set appropriately.
-     * Derived classes can override this method to perform their own validation provided
-     * that this method is called by the derived class.
+     * Check that the schema version properties have been set appropriately. Derived classes can override this method to
+     * perform their own validation provided that this method is called by the derived class.
      */
     protected void checkProperties()
     {
@@ -328,12 +345,11 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(authenticationComponent, "authenticationComponent");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
-            throw new AlfrescoRuntimeException(
-                    "Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' have not all been set on this patch: \n" +
-                    "   patch: " + this);
+            throw new AlfrescoRuntimeException("Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' have not all been set on this patch: \n"
+                    + "   patch: " + this);
         }
     }
-    
+
     /**
      * Sets up the transaction and ensures thread-safety.
      * 
@@ -344,8 +360,7 @@ public abstract class AbstractPatch implements Patch
         // ensure that this has not been executed already
         if (applied)
         {
-            throw new AlfrescoRuntimeException("The patch has already been executed: \n" +
-                    "   patch: " + this);
+            throw new AlfrescoRuntimeException("The patch has already been executed: \n" + "   patch: " + this);
         }
         // check properties
         checkProperties();
@@ -354,9 +369,7 @@ public abstract class AbstractPatch implements Patch
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("\n" +
-                        "Patch will be applied: \n" +
-                        "   patch: " + this);
+                logger.debug("\n" + "Patch will be applied: \n" + "   patch: " + this);
             }
             AuthenticationUtil.RunAsWork<String> authorisedPathWork = new AuthenticationUtil.RunAsWork<String>()
             {
@@ -399,16 +412,14 @@ public abstract class AbstractPatch implements Patch
                     return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork);
                 }
             };
+            startTime = System.currentTimeMillis();
             String report = AuthenticationUtil.runAs(authorisedPathWork, AuthenticationUtil.getSystemUserName());
             // the patch was successfully applied
             applied = true;
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("\n" +
-                        "Patch successfully applied: \n" +
-                        "   patch: " + this + "\n" +
-                        "   report: " + report);
+                logger.debug("\n" + "Patch successfully applied: \n" + "   patch: " + this + "\n" + "   report: " + report);
             }
             return report;
         }
@@ -431,11 +442,12 @@ public abstract class AbstractPatch implements Patch
             throw new PatchException(report);
         }
     }
-    
+
     /**
      * Dumps the error's full message and trace to the String
      * 
-     * @param e the throwable
+     * @param e
+     *            the throwable
      * @return Returns a String representative of the printStackTrace method
      */
     private String makeReport(Throwable e)
@@ -454,13 +466,91 @@ public abstract class AbstractPatch implements Patch
     }
 
     /**
-     * This method does the work.  All transactions and thread-safety will be taken care of by this class.
-     * Any exception will result in the transaction being rolled back.  Integrity checks are downgraded
-     * for the duration of the transaction.
+     * This method does the work. All transactions and thread-safety will be taken care of by this class. Any exception
+     * will result in the transaction being rolled back. Integrity checks are downgraded for the duration of the
+     * transaction.
      * 
      * @return Returns the report (only success messages).
      * @see #apply()
-     * @throws Exception anything can be thrown.  This must be used for all failures.
+     * @throws Exception
+     *             anything can be thrown. This must be used for all failures.
      */
     protected abstract String applyInternal() throws Exception;
+
+    /**
+     * Support to report patch completion and estimated completion time.
+     * 
+     * @param estimatedTotal
+     * @param currentInteration
+     */
+    protected void reportProgress(long estimatedTotal, long currentInteration)
+    {
+        if (progress_logger.isDebugEnabled())
+        {
+            progress_logger.debug(currentInteration + "/" + estimatedTotal);
+        }
+        if (currentInteration == 0)
+        {
+            // No point reporting the start - we have already done that elsewhere ....
+            percentComplete = 0;
+        }
+        else if (currentInteration * 100l / estimatedTotal > percentComplete)
+        {
+            int previous = percentComplete;
+            percentComplete = (int) (currentInteration * 100l / estimatedTotal);
+
+            if (percentComplete < 100)
+            {
+                // conditional report
+
+                long currentTime = System.currentTimeMillis();
+                long timeSoFar = currentTime - startTime;
+                long timeRemaining = timeSoFar * (100 - percentComplete) / percentComplete;
+
+                int report = -1;
+
+                if (timeRemaining > 60000)
+                {
+                    int reportInterval = getreportingInterval(timeSoFar, timeRemaining);
+
+                    for (int i = previous + 1; i <= percentComplete; i++)
+                    {
+                        if (i % reportInterval == 0)
+                        {
+                            report = i;
+                        }
+                    }
+                    if (report > 0)
+                    {
+                        Date end = new Date(currentTime + timeRemaining);
+
+                        String msg = I18NUtil.getMessage(MSG_PROGRESS, report, end);
+                        progress_logger.info(msg);
+                    }
+                }
+            }
+        }
+    }
+
+    private int getreportingInterval(long soFar, long toGo)
+    {
+        long total = soFar + toGo;
+        if (total < RANGE_10)
+        {
+            return 10;
+        }
+        else if (total < RANGE_5)
+        {
+            return 5;
+        }
+        else if (total < RANGE_2)
+        {
+            return 2;
+        }
+        else
+        {
+            return 1;
+        }
+
+    }
 }

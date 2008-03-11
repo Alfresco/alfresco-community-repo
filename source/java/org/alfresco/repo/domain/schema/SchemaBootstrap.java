@@ -71,6 +71,7 @@ import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.MySQLInnoDBDialect;
 import org.hibernate.dialect.Oracle9Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.engine.ActionQueue;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.context.ApplicationContext;
@@ -113,6 +114,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     
+    
+   
+   
+
     /**
      * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
      */
@@ -257,6 +262,25 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
 
+    /**
+     * Get the limit for the hibernate executions queue
+     * @return
+     */
+    public int getHibernateMaxExecutions()
+    {
+        return ActionQueue.getMAX_EXECUTIONS_SIZE();
+    }
+
+    /**
+     * Set the limit for the hibernate executions queue
+     * Less than zero always uses event amalgamation 
+     * @param hibernateMaxExecutions
+     */
+    public void setHibernateMaxExecutions(int hibernateMaxExecutions)
+    {
+        ActionQueue.setMAX_EXECUTIONS_SIZE(hibernateMaxExecutions);
+    }
+    
     /**
      * Helper method to generate a schema creation SQL script from the given Hibernate
      * configuration.

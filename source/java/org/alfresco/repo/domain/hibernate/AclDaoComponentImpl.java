@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.zip.CRC32;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.DbAccessControlEntry;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -60,8 +62,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.jgroups.tests.DeadlockTest.InRpc;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -92,12 +96,15 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     static String QUERY_GET_AVM_NODES_BY_ACL = "permission.FindAvmNodesByACL";
 
-    static String QUERY_GET_AVM_NODES_BY_INDIRECTION = "permission.FindAvmNodesIndirection";
-
     static String QUERY_GET_LATEST_ACL_BY_ACLID = "permission.FindLatestAclByGuid";
+
+    static String QUERY_GET_LAYERED_DIRECTORIES = "permission.GetLayeredDirectories";
+
+    static String QUERY_GET_LAYERED_FILES = "permission.GetLayeredFiles";
 
     /** Access to QName entities */
     private QNameDAO qnameDAO;
+
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
 
@@ -1217,9 +1224,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         };
         DbAuthority authority = null;
         List<DbAuthority> authorities = (List<DbAuthority>) getHibernateTemplate().execute(callback);
-        for(DbAuthority found : authorities)
+        for (DbAuthority found : authorities)
         {
-            if(found.getAuthority().equals(ace.getAuthority()))
+            if (found.getAuthority().equals(ace.getAuthority()))
             {
                 authority = found;
                 break;
@@ -1239,7 +1246,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         final QName permissionQName = ace.getPermission().getQName();
         final String permissionName = ace.getPermission().getName();
         final QNameEntity permissionQNameEntity = qnameDAO.getOrCreateQNameEntity(permissionQName);
-        
+
         callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -1312,14 +1319,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return changes;
     }
 
-    
     private long getCrc(String str)
     {
         CRC32 crc = new CRC32();
         crc.update(str.getBytes());
         return crc.getValue();
     }
-    
+
     public List<AclChange> enableInheritance(Long id, Long parent)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1539,22 +1545,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     @SuppressWarnings("unchecked")
-    public List<Long> getAvmNodesByIndirection(final String indirection)
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_AVM_NODES_BY_INDIRECTION);
-                query.setParameter("indirection", indirection);
-                return query.list();
-            }
-        };
-        List<Long> avmNodeIds = (List<Long>) getHibernateTemplate().execute(callback);
-        return avmNodeIds;
-    }
-
-    @SuppressWarnings("unchecked")
     private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, DbAccessControlList acl)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
@@ -1749,14 +1739,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-     * Just flushes the session
-     */
-    public void flush()
-    {
-        getSession().flush();
-    }
-
-    /**
      * NO-OP
      */
     public void beforeCommit()
@@ -1832,4 +1814,155 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
 
     }
+
+    /**
+     * Get the total number of head nodes in the repository
+     * 
+     * @return
+     */
+    public Long getAVMHeadNodeCount()
+    {
+        try
+        {
+            Session session = getSession();
+            session.connection().setTransactionIsolation(1);
+            Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCount");
+            Long answer = (Long) query.uniqueResult();
+            return answer;
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+        }
+
+    }
+
+    public Long getMaxAclId()
+    {
+        try
+        {
+            Session session = getSession();
+            session.connection().setTransactionIsolation(1);
+            Query query = getSession().getNamedQuery("permission.GetMaxAclId");
+            Long answer = (Long) query.uniqueResult();
+            return answer;
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+        }
+    }
+
+    public Long getAVMNodeCountWithNewACLS(Long above)
+    {
+        try
+        {
+            Session session = getSession();
+            session.connection().setTransactionIsolation(1);
+            Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCountWherePermissionsHaveChanged");
+            query.setParameter("above", above);
+            Long answer = (Long) query.uniqueResult();
+            return answer;
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Indirection> getLayeredDirectories()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_LAYERED_DIRECTORIES);
+                return query.list();
+            }
+        };
+        List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
+        ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
+        for(Object[] row : results)
+        {
+            Long from = (Long)row[0];
+            String to = (String) row[1];
+            Integer version = (Integer) row[2];
+            indirections.add(new Indirection(from, to, version));
+        }
+        return indirections;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Indirection> getLayeredFiles()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_LAYERED_FILES);
+                return query.list();
+            }
+        };
+        List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
+        ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
+        for(Object[] row : results)
+        {
+            Long from = (Long)row[0];
+            String to = (String) row[1];
+            Integer version = (Integer) row[2];
+            indirections.add(new Indirection(from, to, version));
+        }
+        return indirections;
+    }
+    
+    public List<Indirection> getAvmIndirections()
+    {
+        List<Indirection> dirList = getLayeredDirectories();
+        List<Indirection> fileList = getLayeredFiles();
+        ArrayList<Indirection> answer = new ArrayList<Indirection>(dirList.size() + fileList.size());
+        answer.addAll(dirList);
+        answer.addAll(fileList);
+        return answer;
+    }
+
+    public void flush()
+    {
+        getSession().flush();
+    }
+
+    public static class Indirection
+    {
+        Long from;
+
+        String to;
+        
+        Integer toVersion;
+
+        Indirection(Long from, String to, Integer toVersion)
+        {
+            this.from = from;
+            this.to = to;
+            this.toVersion = toVersion;
+        }
+
+        public Long getFrom()
+        {
+            return from;
+        }
+
+        public String getTo()
+        {
+            return to;
+        }
+
+        public Integer getToVersion()
+        {
+            return toVersion;
+        }
+        
+        
+
+    }
+
 }

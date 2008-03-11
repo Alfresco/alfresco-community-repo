@@ -1269,6 +1269,9 @@
         <property name="accessControlListDao">
             <ref bean="avmACLDAO" />
         </property>
+         <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
+        </property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateAvmPermissionData" />
@@ -1379,6 +1382,9 @@
         </property>
         <property name="permissionService">
             <ref bean="permissionService" />
+        </property>
+        <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
         </property>
         <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
             <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />

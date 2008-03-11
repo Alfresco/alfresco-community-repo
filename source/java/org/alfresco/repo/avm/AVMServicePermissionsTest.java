@@ -404,7 +404,7 @@ public class AVMServicePermissionsTest extends TestCase
             runAs(curentUser);
         }
     }
-    
+
     public void testStoreAcls() throws Exception
     {
         runAs("admin");
@@ -416,74 +416,73 @@ public class AVMServicePermissionsTest extends TestCase
             AVMNodeDescriptor nodeDesc = avmService.lookup(-1, storeName + ":/base");
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
             permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            
-            permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            
-            permissionService.deletePermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS);
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-     
-            permissionService.deletePermissions(nodeRef.getStoreRef());
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
             permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            permissionService.deletePermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS);
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            permissionService.deletePermissions(nodeRef.getStoreRef());
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.READ, true);
             permissionService.setPermission(nodeRef.getStoreRef(), "lemur", PermissionService.ALL_PERMISSIONS, true);
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 3);
-            
+
             permissionService.clearPermission(nodeRef.getStoreRef(), "andy");
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 1);
-            
+
             permissionService.clearPermission(nodeRef.getStoreRef(), "lemur");
-            
-            assertTrue(checkPermission("andy",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("andy",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("lemur",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkHasPermission("lemur",  nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin",  storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin",  nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            
+
+            assertTrue(checkPermission("andy", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
+            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+
         }
         finally
         {
@@ -495,11 +494,13 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.purgeStore(storeName + "-layer-d");
             avmService.purgeStore(storeName + "-layer-layer-base");
             avmService.purgeStore(storeName + "-layer-layer-layer-base");
+
+            System.out.println(avmService.getStores());
         }
 
     }
 
-    public void testSimpleUpdate() throws Exception
+    public void testSimpleUpdate() throws Throwable
     {
         runAs("admin");
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
@@ -555,6 +556,11 @@ public class AVMServicePermissionsTest extends TestCase
             node = avmNodeDAO.getByID(desc.getId());
             fileAcl = node.getAcl();
             assertNull(fileAcl);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
         }
         finally
         {

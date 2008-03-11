@@ -71,6 +71,15 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
     {
         AlfrescoTransactionSupport.bindResource(KEY_DISABLE_IN_TRANSACTION, Boolean.TRUE);
     }
+    
+    /**
+     * Enable resource management for the duration of the current transaction.  This is temporary
+     * and relies on an active transaction.
+     */
+    public static void setEnableInTransaction()
+    {
+        AlfrescoTransactionSupport.bindResource(KEY_DISABLE_IN_TRANSACTION, Boolean.FALSE);
+    }
 
     /**
      * @return Returns true if the resource management must be ignored in the current transaction.

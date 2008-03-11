@@ -32,7 +32,10 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -43,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Remove ACLs on all but staging area stores On staging area stores, set ACls according to the users and roles as set
@@ -60,6 +64,8 @@ public class WCMPermissionPatch extends AbstractPatch
 
     PermissionService permissionService;
 
+    AclDaoComponentImpl aclDaoComponent;
+
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
@@ -75,9 +81,20 @@ public class WCMPermissionPatch extends AbstractPatch
         this.permissionService = permissionService;
     }
 
+    public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
+    {
+        this.aclDaoComponent = aclDaoComponent;
+    }
+
     @Override
     protected String applyInternal() throws Exception
     {
+        Long toDo = aclDaoComponent.getAVMHeadNodeCount();
+        Long maxId = aclDaoComponent.getMaxAclId();
+
+        Thread progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+        progressThread.start();
+
         List<AVMStoreDescriptor> stores = avmService.getStores();
         for (AVMStoreDescriptor store : stores)
         {
@@ -113,6 +130,9 @@ public class WCMPermissionPatch extends AbstractPatch
             }
         }
 
+        progressThread.interrupt();
+        progressThread.join();
+        
         // build the result message
         String msg = I18NUtil.getMessage(MSG_SUCCESS);
         // done
@@ -178,7 +198,7 @@ public class WCMPermissionPatch extends AbstractPatch
         PropertyValue pValue = avmService.getStoreProperty(stagingAreaName, propQName);
 
         permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-        
+
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
@@ -213,7 +233,7 @@ public class WCMPermissionPatch extends AbstractPatch
         int end = name.indexOf("--", start + 1);
         if (end == -1)
         {
-            return name.substring(start+2);
+            return name.substring(start + 2);
         }
         return name.substring(start + 2, end);
     }
@@ -228,4 +248,50 @@ public class WCMPermissionPatch extends AbstractPatch
         return name.substring(0, index);
     }
 
+    private class ProgressWatcher implements Runnable
+    {
+        private boolean running = true;
+
+        Long toDo;
+
+        Long max;
+
+        ProgressWatcher(Long toDo, Long max)
+        {
+            this.toDo = toDo;
+            this.max = max;
+        }
+
+        public void run()
+        {
+            while (running)
+            {
+                try
+                {
+                    Thread.sleep(60000);
+                }
+                catch (InterruptedException e)
+                {
+                    running = false;
+                }
+
+                if (running)
+                {
+                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    txHelper.setMaxRetries(1);
+                    Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+
+                        public Long execute() throws Throwable
+                        {
+                            return aclDaoComponent.getAVMNodeCountWithNewACLS(max);
+                        }
+                    }, true, true);
+
+                    reportProgress(toDo, done);
+                }
+            }
+        }
+
+    }
 }

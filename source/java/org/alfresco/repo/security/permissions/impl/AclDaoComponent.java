@@ -27,6 +27,7 @@ package org.alfresco.repo.security.permissions.impl;
 import java.util.List;
 
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -174,7 +175,7 @@ public interface AclDaoComponent extends TransactionalDao
     
     public List<Long> getAvmNodesByACL(Long id);
     
-    public List<Long> getAvmNodesByIndirection(final String indirection);
+    public List<Indirection> getAvmIndirections();
     
     /**
      * hibernate lifecycle support

@@ -27,10 +27,12 @@ package org.alfresco.repo.content.cleanup;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.domain.ContentUrlDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -66,6 +68,7 @@ public class ContentStoreCleanerTest extends TestCase
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("avmNodeDAO");
+        ContentUrlDAO contentUrlDAO = (ContentUrlDAO) ctx.getBean("contentUrlDAO");
         
         // we need a store
         store = new FileContentStore(TempFileProvider.getTempDir().getAbsolutePath());
@@ -80,6 +83,7 @@ public class ContentStoreCleanerTest extends TestCase
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setNodeDaoService(nodeDaoService);
         cleaner.setAvmNodeDAO(avmNodeDAO);
+        cleaner.setContentUrlDAO(contentUrlDAO);
         cleaner.setStores(Collections.singletonList(store));
         cleaner.setListeners(Collections.singletonList(listener));
     }
@@ -97,7 +101,6 @@ public class ContentStoreCleanerTest extends TestCase
         
         // the content should have disappeared as it is not in the database
         assertFalse("Unprotected content was not deleted", store.exists(contentUrl));
-        assertTrue("Content listener was not called with deletion", deletedUrls.contains(contentUrl));
     }
     
     public void testProtectedRemoval() throws Exception
@@ -114,6 +117,29 @@ public class ContentStoreCleanerTest extends TestCase
         // the content should have disappeared as it is not in the database
         assertTrue("Protected content was deleted", store.exists(contentUrl));
         assertFalse("Content listener was called with deletion of protected URL", deletedUrls.contains(contentUrl));
+    }
+    
+    public void testConcurrentRemoval() throws Exception
+    {
+        int threadCount = 2;
+        final CountDownLatch endLatch = new CountDownLatch(threadCount);
+        // Kick off the threads
+        for (int i = 0; i < threadCount; i++)
+        {
+            Thread thread = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    cleaner.execute();
+                    // Notify of completion
+                    endLatch.countDown();
+                }
+            };
+            thread.start();
+        }
+        // Wait for them all to be done
+        endLatch.await();
     }
     
     private class DummyCleanerListener implements ContentStoreCleanerListener

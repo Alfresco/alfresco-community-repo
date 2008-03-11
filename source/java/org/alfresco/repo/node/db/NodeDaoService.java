@@ -277,12 +277,20 @@ public interface NodeDaoService
     public void deleteNodeAssoc(NodeAssoc assoc);
     
     /**
-     * Fetch all property values for the given type definition.  This will also dig out values that
+     * Iterate over all property values for the given type definition.  This will also dig out values that
      * were persisted as type <b>d:any</b>.
      * 
+     * @param actualDataTypeDefinition          the persisted type to retrieve
+     * @param handler                           the callback to use while iterating over the URLs
      * @return Returns the values for the given type definition
      */
-    public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition);
+    public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler);
+    
+    /**
+     * Get properties with the given type and string value.
+     * TODO: Refactor as in getPropertyValuesByActualType
+     */
+    public Collection<Node> getNodesWithPropertyStringValueForStore(StoreRef storeRef, QName propQName, String propStringValue);
     
     /**
      * @return      Returns the total number of nodes in the ADM repository
@@ -293,7 +301,16 @@ public interface NodeDaoService
      */
     public int getNodeCount(final StoreRef storeRef);
     
-    public Collection<Node> getNodesWithPropertyStringValueForStore(final StoreRef storeRef, final QName propQName, final String propStringValue);
+    /**
+     * Iterface to handle callbacks when iterating over properties
+     * 
+     * @author Derek Hulley
+     * @since 2.0
+     */
+    public interface NodePropertyHandler
+    {
+        void handle(Node node, Serializable value);
+    }
     
     public Transaction getTxnById(long txnId);
     /**

@@ -39,6 +39,7 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -297,7 +298,15 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 collection);
         
         // get a list of all content values
-        List<Serializable> allContentDatas = nodeDaoService.getPropertyValuesByActualType(contentDataType);
+        final List<Serializable> allContentDatas = new ArrayList<Serializable>(500);
+        NodePropertyHandler handler = new NodePropertyHandler()
+        {
+            public void handle(Node node, Serializable value)
+            {
+                allContentDatas.add(value);
+            }
+        };
+        nodeDaoService.getPropertyValuesByActualType(contentDataType, handler);
         assertTrue("At least two instances expected", allContentDatas.size() >= 2);
         assertTrue("Single content data not present in results",
                 allContentDatas.contains(contentDataSingle));

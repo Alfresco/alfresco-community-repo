@@ -25,9 +25,7 @@
 package org.alfresco.repo.content.replication;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -370,32 +368,26 @@ public class ReplicatingContentStore extends AbstractContentStore
     }
 
     /**
-     * @return Returns the results as given by the primary store, and if inbound
-     *      replication is active, merges the URLs from the secondary stores.
+     * Iterates over results as given by the primary store and all secondary stores.  It is up to the handler to eliminate
+     * duplicates that will occur between the primary and secondary stores.
      */
-    public Set<String> getUrls(Date createdAfter, Date createdBefore) throws ContentIOException
+    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
-        Set<String> urls = new HashSet<String>(1024);
-        
         // add in URLs from primary store
-        Set<String> primaryUrls = primaryStore.getUrls(createdAfter, createdBefore);
-        urls.addAll(primaryUrls);
+        primaryStore.getUrls(createdAfter, createdBefore, handler);
         
         // add in URLs from secondary stores (they are visible for reads)
         for (ContentStore secondaryStore : secondaryStores)
         {
-            Set<String> secondaryUrls = secondaryStore.getUrls(createdAfter, createdBefore);
-            // merge them
-            urls.addAll(secondaryUrls);
+            secondaryStore.getUrls(createdAfter, createdBefore, handler);
         }
         // done
         if (logger.isDebugEnabled())
         {
-            logger.debug("Found " + urls.size() + " URLs, of which " + primaryUrls.size() + " are primary: \n" +
+            logger.debug("Iterated over content URLs: \n" +
                     "   created after: " + createdAfter + "\n" +
                     "   created before: " + createdBefore);
         }
-        return urls;
     }
 
     /**

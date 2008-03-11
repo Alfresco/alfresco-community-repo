@@ -25,7 +25,6 @@
 package org.alfresco.repo.content;
 
 import java.util.Date;
-import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -150,27 +149,24 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * Searches for URLs using null dates.
-     * 
-     * @see ContentStore#getUrls(java.util.Date, java.util.Date)
+     * @see #getUrls(Date, Date, ContentUrlHandler)
      */
-    public final Set<String> getUrls()
+    public final void getUrls(ContentUrlHandler handler) throws ContentIOException
     {
-        return getUrls(null, null);
+        getUrls(null, null, handler);
     }
 
     /**
-     * Override if the derived class supports the operation.
+     * Override to provide an implementation.  If no implementation is supplied, then the store will not support
+     * cleaning of orphaned content binaries.
      * 
-     * @throws UnsupportedOperationException    always
-     * 
-     * @since 2.1
+     * @throws UnsupportedOperationException always
      */
-    public Set<String> getUrls(Date createdAfter, Date createdBefore)
+    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
         throw new UnsupportedOperationException();
     }
-    
+
     /**
      * Implement to supply a store-specific writer for the given existing content
      * and optional target content URL.
@@ -255,6 +251,16 @@ public abstract class AbstractContentStore implements ContentStore
         }
         return writer;
     }
+
+    /**
+     * @see ContentContext
+     * @see ContentStore#getWriter(ContentContext)
+     */
+    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
+    {
+        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
+        return getWriter(ctx);
+    }
     
     /**
      * Simple implementation that uses the
@@ -265,15 +271,5 @@ public abstract class AbstractContentStore implements ContentStore
     {
         ContentReader reader = getReader(contentUrl);
         return reader.exists();
-    }
-
-    /**
-     * @see ContentContext
-     * @see ContentStore#getWriter(ContentContext)
-     */
-    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
-    {
-        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
-        return getWriter(ctx);
     }
 }

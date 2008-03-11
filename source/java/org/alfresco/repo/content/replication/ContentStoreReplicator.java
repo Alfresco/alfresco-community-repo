@@ -24,9 +24,8 @@
  */
 package org.alfresco.repo.content.replication;
 
-import java.util.Set;
-
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.node.index.IndexRecovery;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -150,22 +149,27 @@ public class ContentStoreReplicator
     }
     
     /**
+     * Handler that does the actual replication
+     * 
+     * @author Derek Hulley
+     * @since 2.0
+     */
+    private class ReplicatingHandler implements ContentUrlHandler
+    {
+        public void handle(String contentUrl)
+        {
+            replicate(contentUrl);
+        }
+    }
+    
+    /**
      * Perform a full replication of all source to target URLs.
      */
     private void replicate()
     {
-        // get all the URLs from the source
-        Set<String> sourceUrls = sourceStore.getUrls();
-        // get all the URLs from the target
-        Set<String> targetUrls = targetStore.getUrls();
-        // remove source URLs that are present in the target
-        sourceUrls.removeAll(targetUrls);
-        
-        // ensure that each remaining source URL is present in the target
-        for (String contentUrl : sourceUrls)
-        {
-            replicate(contentUrl);
-        }
+        ReplicatingHandler handler = new ReplicatingHandler();
+        // Iterate over all the URLs
+        sourceStore.getUrls(handler);
     }
     
     /**

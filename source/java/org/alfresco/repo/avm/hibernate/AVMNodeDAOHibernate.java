@@ -38,6 +38,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.hibernate.Query;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -157,10 +159,15 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
      * @return A List of URL Strings.
      */
     @SuppressWarnings("unchecked")
-    public List<String> getContentUrls()
+    public void getContentUrls(ContentUrlHandler handler)
     {
         Query query = getSession().getNamedQuery("PlainFileNode.GetContentUrls");
-        return (List<String>)query.list();
+        ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
+        while (results.next())
+        {
+            String contentUrl = results.getText(0);
+            handler.handle(contentUrl);
+        }
     }
 
     /**

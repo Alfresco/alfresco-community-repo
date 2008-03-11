@@ -20,31 +20,31 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.content.cleanup;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeDAO;
+import org.alfresco.repo.avm.AVMNodeDAO.ContentUrlHandler;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.domain.ContentUrlDAO;
+import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -60,12 +60,11 @@ public class ContentStoreCleaner
 {
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
     
-    private static VmShutdownListener vmShutdownListener = new VmShutdownListener(ContentStoreCleaner.class.getName());
-    
     private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
-    private TransactionService transactionService;
     private AVMNodeDAO avmNodeDAO;
+    private ContentUrlDAO contentUrlDAO;
+    private TransactionService transactionService;
     private List<ContentStore> stores;
     private List<ContentStoreCleanerListener> listeners;
     private int protectDays;
@@ -94,12 +93,19 @@ public class ContentStoreCleaner
     }
 
     /**
-     * Setter for Spring.
      * @param avmNodeDAO The AVM Node DAO to get urls with.
      */
     public void setAvmNodeDAO(AVMNodeDAO avmNodeDAO)
     {
         this.avmNodeDAO = avmNodeDAO;
+    }
+    
+    /**
+     * @param contentUrlDAO     DAO for recording valid <b>Content URLs</b>
+     */
+    public void setContentUrlDAO(ContentUrlDAO contentUrlDAO)
+    {
+        this.contentUrlDAO = contentUrlDAO;
     }
     
     /**
@@ -144,6 +150,8 @@ public class ContentStoreCleaner
     {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
+        PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
+        PropertyCheck.mandatory(this, "contentUrlDAO", contentUrlDAO);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "listeners", listeners);
         
@@ -160,126 +168,124 @@ public class ContentStoreCleaner
         }
     }
     
-    private Set<String> getValidUrls()
+    private void removeContentUrlsPresentInMetadata()
     {
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         
-        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
-        // wrap to make the request in a transaction
-        RetryingTransactionCallback<List<Serializable>> getUrlsCallback = new RetryingTransactionCallback<List<Serializable>>()
+        // Remove all the Content URLs for the ADM repository
+        // Handler that records the URL
+        final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
         {
-            public List<Serializable> execute() throws Throwable
+            public void handle(Node node, Serializable value)
             {
-                return nodeDaoService.getPropertyValuesByActualType(contentDataType);
+                // Convert the values to ContentData and extract the URLs
+                ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                String contentUrl = contentData.getContentUrl();
+                if (contentUrl != null)
+                {
+                    contentUrlDAO.deleteContentUrl(contentUrl);
+                }
             }
         };
-        // execute in READ-ONLY txn
-        List<Serializable> values = txnHelper.doInTransaction(getUrlsCallback, true);
+        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
+        // execute in READ-WRITE txn
+        RetryingTransactionCallback<Object> getUrlsCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                nodeDaoService.getPropertyValuesByActualType(contentDataType, nodePropertyHandler);
+                return null;
+            };
+        };
+        txnHelper.doInTransaction(getUrlsCallback);
         
         // Do the same for the AVM repository.
-        RetryingTransactionCallback<List<String>> getAVMUrlsCallback = new RetryingTransactionCallback<List<String>>()
+        final ContentUrlHandler handler = new ContentUrlHandler()
         {
-            public List<String> execute() throws Exception
+            public void handle(String contentUrl)
             {
-                return avmNodeDAO.getContentUrls();
+                contentUrlDAO.deleteContentUrl(contentUrl);
             }
         };
-        // execute in READ-ONLY txn
-        List<String> avmContentUrls = txnHelper.doInTransaction(getAVMUrlsCallback, true);
-        
-        // get all valid URLs
-        Set<String> validUrls = new HashSet<String>(values.size());
-        // convert the strings to objects and extract the URL
-        for (Serializable value : values)
+        // execute in READ-WRITE txn
+        RetryingTransactionCallback<Object> getAVMUrlsCallback = new RetryingTransactionCallback<Object>()
         {
-            ContentData contentData = (ContentData) value;
-            if (contentData.getContentUrl() != null)
+            public Object execute() throws Exception
             {
-                // a URL was present
-                validUrls.add(contentData.getContentUrl());
+                avmNodeDAO.getContentUrls(handler);
+                return null;
             }
-        }
-        // put all the avm urls into validUrls.
-        for (String url : avmContentUrls)
+        };
+        txnHelper.doInTransaction(getAVMUrlsCallback);
+    }
+    
+    private void addContentUrlsPresentInStores()
+    {
+        org.alfresco.repo.content.ContentStore.ContentUrlHandler handler = new org.alfresco.repo.content.ContentStore.ContentUrlHandler()
         {
-            validUrls.add(url);
-        }
-        
-        // done
-        if (logger.isDebugEnabled())
+            public void handle(String contentUrl)
+            {
+                contentUrlDAO.createContentUrl(contentUrl);
+            }
+        };
+        Date checkAllBeforeDate = new Date(System.currentTimeMillis() - (long) protectDays * 3600L * 1000L * 24L);
+        for (ContentStore store : stores)
         {
-            logger.debug("Found " + validUrls.size() + " valid URLs in metadata");
+            store.getUrls(null, checkAllBeforeDate, handler);
         }
-        return validUrls;
     }
     
     public void execute()
     {
         checkProperties();
-        try
+        
+        if (logger.isDebugEnabled())
         {
-            Set<String> validUrls = getValidUrls();
-            // now clean each store in turn
-            for (ContentStore store : stores)
+            logger.debug("Starting content store cleanup.");
+        }
+
+        // This handler removes the URLs from all the stores
+        final org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler handler = new org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler()
+        {
+            public void handle(String contentUrl)
             {
-                try
+                for (ContentStore store : stores)
                 {
-                    clean(validUrls, store);
+                    if (logger.isDebugEnabled())
+                    {
+                        if (store.isWriteSupported())
+                        {
+                            logger.debug("   Deleting content URL: " + contentUrl);
+                        }
+                    }
+                    store.delete(contentUrl);
                 }
-                catch (UnsupportedOperationException e)
-                {
-                    throw new ContentIOException(
-                            "Unable to clean store as the necessary operations are not supported: " + store,
-                            e);
-                }
             }
-        }
-        catch (ContentIOException e)
+        };
+        // execute in READ-WRITE txn
+        RetryingTransactionCallback<Object> executeCallback = new RetryingTransactionCallback<Object>()
         {
-            throw e;
-        }
-        catch (Throwable e)
+            public Object execute() throws Exception
+            {
+                // Delete all the URLs
+                contentUrlDAO.deleteAllContentUrls();
+                // Populate the URLs from the content stores
+                addContentUrlsPresentInStores();
+                // Remove URLs present in the metadata
+                removeContentUrlsPresentInMetadata();
+                // Any remaining URLs are URls present in the stores but not in the metadata
+                contentUrlDAO.getAllContentUrls(handler);
+                // Delete all the URLs
+                contentUrlDAO.deleteAllContentUrls();
+                return null;
+            };
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(executeCallback);
+
+        // Done
+        if (logger.isDebugEnabled())
         {
-            // If the VM is shutting down, then ignore
-            if (vmShutdownListener.isVmShuttingDown())
-            {
-                // Ignore
-            }
-            else
-            {
-                logger.error("Exception during cleanup of content", e);
-            }
-        }
-    }
-    
-    private void clean(Set<String> validUrls, ContentStore store)
-    {
-        Date checkAllBeforeDate = new Date(System.currentTimeMillis() - (long) protectDays * 3600L * 1000L * 24L);
-        // get the store's URLs
-        Set<String> storeUrls = store.getUrls(null, checkAllBeforeDate);
-        // remove all URLs that occur in the validUrls
-        storeUrls.removeAll(validUrls);
-        // now clean the store
-        for (String url : storeUrls)
-        {
-            ContentReader sourceReader = store.getReader(url);
-            // announce this to the listeners
-            for (ContentStoreCleanerListener listener : listeners)
-            {
-                // get a fresh reader
-                ContentReader listenerReader = sourceReader.getReader();
-                // call it
-                listener.beforeDelete(listenerReader);
-            }
-            // delete it
-            store.delete(url);
-            
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Removed URL from store: \n" +
-                        "   Store: " + store + "\n" +
-                        "   URL: " + url);
-            }
+            logger.debug("   Content store cleanup completed.");
         }
     }
 }

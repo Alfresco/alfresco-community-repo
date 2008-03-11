@@ -1407,4 +1407,20 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V2.0-ContentUrls" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.0-ContentUrls</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>123</value></property>
+        <property name="targetSchema"><value>124</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.0/${db.script.dialect}/AlfrescoSchemaUpdate-2.0-ContentUrls.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -35,12 +36,15 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationContext;
 
@@ -133,5 +137,30 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
                 QUICK_DESCRIPTION,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
+    }
+    
+    public void testZeroLengthFile() throws Exception
+    {
+        MetadataExtracter extractor = getExtracter();
+        File file = TempFileProvider.createTempFile(getName(), ".bin");
+        ContentWriter writer = new FileContentWriter(file);
+        writer.getContentOutputStream().close();
+        ContentReader reader = writer.getReader();
+        // Try the zero length file against all supported mimetypes.
+        // Note: Normally the reader would need to be fetched for each access, but we need to be sure
+        // that the content is not accessed on the reader AT ALL.
+        PropertyMap properties = new PropertyMap();
+        List<String> mimetypes = mimetypeMap.getMimetypes();
+        for (String mimetype : mimetypes)
+        {
+            if (!extractor.isSupported(mimetype))
+            {
+                // Not interested
+                continue;
+            }
+            reader.setMimetype(mimetype);
+            extractor.extract(reader, properties);
+            assertEquals("There should not be any new properties", 0, properties.size());
+        }
     }
 }

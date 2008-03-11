@@ -25,7 +25,6 @@
 package org.alfresco.repo.content;
 
 import java.util.Date;
-import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -195,24 +194,23 @@ public interface ContentStore
      * 
      * @see #getUrls(Date, Date)
      */
-    public Set<String> getUrls();
+    public void getUrls(ContentUrlHandler handler) throws ContentIOException;
 
     /**
-     * Get a set of all content URLs in the store.  This indicates all content
-     * available for reads.
+     * Get a set of all content URLs in the store.  This indicates all content available for reads.
      * 
      * @param createdAfter
      *      all URLs returned must have been created after this date.  May be null.
      * @param createdBefore
      *      all URLs returned must have been created before this date.  May be null.
-     * @return
-     *      Returns a complete set of the unique URLs of all available content in the store
+     * @param handler
+     *      the callback that will passed each URL
+     * @throws ContentIOException
+     *      if an error occurs
      * @throws UnsupportedOperationException
      *      if the store is unable to provide the information
-     * @throws ContentIOException
-     *      if an IO error occurs
      */
-    public Set<String> getUrls(Date createdAfter, Date createdBefore);
+    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException;
     
     /**
      * Deletes the content at the given URL.
@@ -229,8 +227,19 @@ public interface ContentStore
      *      if the store is unable to perform the action
      * @throws UnsupportedContentUrlException
      *      if the content URL supplied is not supported by the store
-     * @throws ContentIOException
+     * @throws ContentIOException if an error occurs
      *      if an IO error occurs
      */
     public boolean delete(String contentUrl);
+    
+    /**
+     * Iterface for to use during iteration over content URLs.
+     * 
+     * @author Derek Hulley
+     * @since 2.0
+     */
+    public interface ContentUrlHandler
+    {
+        void handle(String contentUrl);
+    }
 }

@@ -626,7 +626,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         Map<QName, Serializable> changedProperties = null;
         try
         {
-            Map<String, Serializable> rawMetadata = extractRaw(reader);
+            Map<String, Serializable> rawMetadata = null;
+            // Check that the content has some meat
+            if (reader.getSize() > 0 && reader.exists())
+            {
+                rawMetadata = extractRaw(reader);
+            }
+            else
+            {
+                rawMetadata = new HashMap<String, Serializable>(1);
+            }
             // Convert to system properties (standalone)
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
             // Convert the properties according to the dictionary types

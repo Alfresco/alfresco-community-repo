@@ -34,6 +34,9 @@
       <property name="avmNodeDAO">
             <ref bean="avmNodeDAO"/>
       </property>
+      <property name="contentUrlDAO">
+      	  <ref bean="contentUrlDAO"/>
+      </property>
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>

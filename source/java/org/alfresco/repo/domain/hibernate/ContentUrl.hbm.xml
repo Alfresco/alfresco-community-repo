@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<hibernate-mapping>
+
+   <class
+         name="org.alfresco.repo.domain.hibernate.ContentUrlImpl"
+         proxy="org.alfresco.repo.domain.ContentUrl"
+         table="alf_content_url"
+         dynamic-update="false"
+         dynamic-insert="false"
+         select-before-update="false"
+         optimistic-lock="none" >
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="increment" />
+      </id>
+      <property name="contentUrl" column="content_url" type="string" length="240" not-null="true" index="idx_alf_con_urls" />
+      <!--
+      <property name="isOrphaned" column="is_orphaned" type="boolean" not-null="true" />
+      -->
+   </class>
+   
+   <query name="contentUrl.GetAll">
+      select
+         entity.contentUrl
+      from
+         org.alfresco.repo.domain.hibernate.ContentUrlImpl entity
+   </query>
+   
+   <query name="contentUrl.DeleteInList">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.ContentUrlImpl entity
+      where
+         entity.contentUrl in (:contentUrls)
+   </query>
+   
+   <query name="contentUrl.DeleteByUrl">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.ContentUrlImpl entity
+      where
+         entity.contentUrl = :contentUrl
+   </query>
+   
+   <query name="contentUrl.DeleteAll">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.ContentUrlImpl entity
+   </query>
+   
+</hibernate-mapping>

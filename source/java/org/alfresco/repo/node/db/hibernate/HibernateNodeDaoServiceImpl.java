@@ -1376,7 +1376,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         getHibernateTemplate().delete(assoc);
     }
 
-    public List<Serializable> getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition)
+    public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler)
     {
         // get the in-database string representation of the actual type
         QName typeQName = actualDataTypeDefinition.getName();
@@ -1393,7 +1393,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         };
         ScrollableResults results = (ScrollableResults) getHibernateTemplate().execute(callback);
         // Loop through, extracting content URLs
-        List<Serializable> convertedValues = new ArrayList<Serializable>(1000);
         TypeConverter converter = DefaultTypeConverter.INSTANCE;
         int unflushedCount = 0;
         while(results.next())
@@ -1418,15 +1417,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     {
                         continue;
                     }
+                    Serializable convertedValue = null;
                     try
                     {
-                         Serializable convertedValue = (Serializable) converter.convert(actualDataTypeDefinition, value);
-                         // it converted, so add it
-                         convertedValues.add(convertedValue);
+                         convertedValue = (Serializable) converter.convert(actualDataTypeDefinition, value);
                     }
                     catch (Throwable e)
                     {
                         // The value can't be converted - forget it
+                    }
+                    if (convertedValue != null)
+                    {
+                        handler.handle(node, convertedValue);
                     }
                 }
             }
@@ -1438,7 +1440,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 unflushedCount = 0;
             }
         }
-        return convertedValues;
     }
     
     /**

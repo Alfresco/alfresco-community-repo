@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
@@ -398,29 +396,26 @@ public class FileContentStore extends AbstractContentStore
         }
     }
 
-    public Set<String> getUrls(Date createdAfter, Date createdBefore)
+    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
     {
         // recursively get all files within the root
-        Set<String> contentUrls = new HashSet<String>(1000);
-        getUrls(rootDirectory, contentUrls, createdAfter, createdBefore);
+        getUrls(rootDirectory, handler, createdAfter, createdBefore);
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Listed all content URLS: \n" +
-                    "   store: " + this + "\n" +
-                    "   count: " + contentUrls.size());
+                    "   store: " + this);
         }
-        return contentUrls;
     }
     
     /**
      * @param directory the current directory to get the files from
-     * @param contentUrls the list of current content URLs to add to
+     * @param handler the callback to use for each URL
      * @param createdAfter only get URLs for content create after this date
      * @param createdBefore only get URLs for content created before this date
      * @return Returns a list of all files within the given directory and all subdirectories
      */
-    private void getUrls(File directory, Set<String> contentUrls, Date createdAfter, Date createdBefore)
+    private void getUrls(File directory, ContentUrlHandler handler, Date createdAfter, Date createdBefore)
     {
         File[] files = directory.listFiles();
         if (files == null)
@@ -433,7 +428,7 @@ public class FileContentStore extends AbstractContentStore
             if (file.isDirectory())
             {
                 // we have a subdirectory - recurse
-                getUrls(file, contentUrls, createdAfter, createdBefore);
+                getUrls(file, handler, createdAfter, createdBefore);
             }
             else
             {
@@ -451,7 +446,8 @@ public class FileContentStore extends AbstractContentStore
                 }
                 // found a file - create the URL
                 String contentUrl = makeContentUrl(file);
-                contentUrls.add(contentUrl);
+                // Callback
+                handler.handle(contentUrl);
             }
         }
     }

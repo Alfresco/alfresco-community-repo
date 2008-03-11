@@ -63,6 +63,7 @@
              <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
              <ref bean="patch.db-V2.2-5-MappedFKIndexes" />
              <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
+             <ref bean="patch.db-V2.0-ContentUrls" />
              <ref bean="patch.db-V2.1-JBPMData" />
              <ref bean="patch.db-V2.1-VersionColumns2" />
              <ref bean="patch.db-V2.1-JBPMProcessKey" />

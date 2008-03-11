@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.replication;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -32,6 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
@@ -107,6 +109,21 @@ public class ContentStoreReplicatorTest extends TestCase
     }
     
     /**
+     * Handler that merely records the URL
+     * 
+     * @author Derek Hulley
+     * @since 2.0
+     */
+    private class UrlRecorder implements ContentUrlHandler
+    {
+        public Set<String> urls = new HashSet<String>(1027);
+        public void handle(String contentUrl)
+        {
+            urls.add(contentUrl);
+        }
+    }
+    
+    /**
      * Adds content to the source while the replicator is going as fast as possible.
      * Just to make it more interesting, the content is sometimes put in the target
      * store as well.
@@ -150,11 +167,13 @@ public class ContentStoreReplicatorTest extends TestCase
         }
         
         // check that we have an exact match of URLs
-        Set<String> sourceUrls = sourceStore.getUrls();
-        Set<String> targetUrls = targetStore.getUrls();
+        UrlRecorder sourceUrls = new UrlRecorder();
+        UrlRecorder targetUrls = new UrlRecorder();
+        sourceStore.getUrls(sourceUrls);
+        targetStore.getUrls(targetUrls);
         
-        sourceUrls.containsAll(targetUrls);
-        targetUrls.contains(sourceUrls);
+        sourceUrls.urls.containsAll(targetUrls.urls);
+        targetUrls.urls.contains(sourceUrls.urls);
     }
     
     /**

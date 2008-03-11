@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.ehcache.Cache;
@@ -34,6 +35,7 @@ import net.sf.ehcache.CacheManager;
 
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
@@ -217,6 +219,12 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         {
             return fileStore.getReader(contentUrl);
         }
+
+        @Override
+        public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
+        {
+            fileStore.getUrls(createdAfter, createdBefore, handler);
+        }
     }
     
     /**
@@ -238,6 +246,12 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         public ContentReader getReader(String contentUrl)
         {
             throw new UnsupportedContentUrlException(this, contentUrl);
+        }
+
+        @Override
+        public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
+        {
+            throw new UnsupportedOperationException("getUrls not supported");
         }
     }
 }

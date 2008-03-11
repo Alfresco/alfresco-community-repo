@@ -25,9 +25,7 @@
 package org.alfresco.repo.content;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -357,50 +355,38 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         return writer;
     }
 
-    /**
-     * @see 
-     */
     public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
     {
         return getWriter(new ContentContext(existingContentReader, newContentUrl));
     }
 
     /**
-     * Compile a set of URLs from all stores.
+     * @see #getUrls(Date, Date, ContentUrlHandler)
      */
-    public Set<String> getUrls() throws ContentIOException
+    public void getUrls(ContentUrlHandler handler) throws ContentIOException
     {
-        Set<String> urls = new HashSet<String>(1139);
-        List<ContentStore> stores = getAllStores();
-        for (ContentStore store : stores)
-        {
-            Set<String> storeUrls = store.getUrls();
-            urls.addAll(storeUrls);
-        }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Found " + urls.size() + " URLs from " + stores.size() + " stores");
-        }
-        return urls;
+        getUrls(null, null, handler);
     }
 
     /**
-     * Compile a set of URLs from all stores given the date range.
+     * Passes the call to each of the stores wrapped by this store
+     * 
+     * @see ContentStore#getUrls(Date, Date, ContentUrlHandler)
      */
-    public Set<String> getUrls(Date createdAfter, Date createdBefore) throws ContentIOException
+    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
-        Set<String> urls = new HashSet<String>(1139);
         List<ContentStore> stores = getAllStores();
         for (ContentStore store : stores)
         {
-            Set<String> storeUrls = store.getUrls(createdAfter, createdBefore);
-            urls.addAll(storeUrls);
+            try
+            {
+                store.getUrls(createdAfter, createdBefore, handler);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                // Support of this is not mandatory
+            }
         }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Found " + urls.size() + " URLs from " + stores.size() + " stores");
-        }
-        return urls;
     }
 
     /**

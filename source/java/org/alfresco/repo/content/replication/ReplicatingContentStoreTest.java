@@ -26,6 +26,7 @@ package org.alfresco.repo.content.replication;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.SynchronousQueue;
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -135,7 +137,15 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
         // check that the URL is present for each of the stores
         for (ContentStore store : secondaryStores)
         {
-            Set<String> urls = store.getUrls();
+            final Set<String> urls = new HashSet<String>(1027);
+            ContentUrlHandler handler = new ContentUrlHandler()
+            {
+                public void handle(String contentUrl)
+                {
+                    urls.add(contentUrl);
+                }
+            };
+            store.getUrls(handler);
             assertTrue("URL of new content not present in store", urls.contains(contentUrl) == mustExist);
         }
     }

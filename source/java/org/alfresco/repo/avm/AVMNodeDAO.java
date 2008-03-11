@@ -83,11 +83,22 @@ public interface AVMNodeDAO
     public List<AVMNode> getOrphans(int batchSize);
 
     /**
-     * Get all content urls in he AVM Repository.
-     * @return A List of URL Strings.
+     * Get all content urls in the AVM Repository.
+     * @param contentUrlHandler the handler that will be called with the URLs
      */
-    public List<String> getContentUrls();
+    public void getContentUrls(ContentUrlHandler handler);
 
+    /**
+     * A callback handler for iterating over the content URLs
+     * 
+     * @author Derek Hulley
+     * @since 2.0
+     */
+    public interface ContentUrlHandler
+    {
+        void handle(String contentUrl);
+    }
+    
     /**
      * Get all the nodes that are new in the given store.
      * @param store The store to query.

@@ -27,12 +27,14 @@ package org.alfresco.repo.content;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -118,7 +120,18 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
         ContentStore store = getStore();
         try
         {
-            Set<String> contentUrls = store.getUrls();
+            final Set<String> contentUrls = new HashSet<String>(5);
+            ContentUrlHandler handler = new ContentUrlHandler()
+            {
+                public void handle(String contentUrl)
+                {
+                    if (contentUrls.size() < 50)
+                    {
+                        contentUrls.add(contentUrl);
+                    }
+                }
+            };
+            store.getUrls(handler);
             if (contentUrls.size() > 0)
             {
                 return (String) contentUrls.toArray()[0];

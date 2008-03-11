@@ -36,8 +36,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Set;
 
+import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -329,23 +329,34 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("After-content reader should be closed after reading", readerAfterWrite.isClosed());
     }
     
+    /**
+     * Helper method to check if a store contains a particular URL using the getUrl method
+     */
+    private boolean searchForUrl(ContentStore store, final String contentUrl, Date from, Date to)
+    {
+        final boolean[] found = new boolean[] {false};
+        ContentUrlHandler handler = new ContentUrlHandler()
+        {
+            public void handle(String checkContentUrl)
+            {
+                if (contentUrl.equals(checkContentUrl))
+                {
+                    found[0] = true;
+                }
+            }
+        };
+        getStore().getUrls(from, to, handler);
+        return found[0];
+    }
+    
     public void testGetUrls()
     {
-        ContentStore store = getStore();
-        try
-        {
-            store.getUrls();
-        }
-        catch (UnsupportedOperationException e)
-        {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
-            return;
-        }
         ContentWriter writer = getWriter();
         writer.putContent("Content for " + getName());
-        Set<String> contentUrls = store.getUrls();
-        String contentUrl = writer.getContentUrl();
-        assertTrue("New content not found in URL set", contentUrls.contains(contentUrl));
+        final String contentUrl = writer.getContentUrl();
+        ContentStore store = getStore();
+        boolean inStore = searchForUrl(store, contentUrl, null, null);
+        assertTrue("New content not found in URL set", inStore);
     }
     
     public void testDeleteSimple() throws Exception
@@ -603,7 +614,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         // Ensure that this test can be done
         try
         {
-            store.getUrls();
+            searchForUrl(store, "abc", null, null);
         }
         catch (UnsupportedOperationException e)
         {
@@ -612,10 +623,10 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         }
         // Proceed with the test
         ContentWriter writer = getWriter();
-        
-        Set<String> contentUrls = store.getUrls();
         String contentUrl = writer.getContentUrl();
-        assertTrue("Writer URL not listed by store", contentUrls.contains(contentUrl));
+
+        boolean inStore = searchForUrl(store, contentUrl, null, null);
+        assertTrue("Writer URL not listed by store", inStore);
 
         Date yesterday = new Date(System.currentTimeMillis() - 3600L * 1000L * 24L);
         
@@ -623,12 +634,12 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         writer.putContent("The quick brown fox...");
 
         // check again
-        contentUrls = store.getUrls();
-        assertTrue("Writer URL not listed by store", contentUrls.contains(contentUrl));
+        inStore = searchForUrl(store, contentUrl, null, null);
+        assertTrue("Writer URL not listed by store", inStore);
         
         // check that the query for content created before this time yesterday doesn't return the URL
-        contentUrls = store.getUrls(null, yesterday);
-        assertFalse("URL was younger than required, but still shows up", contentUrls.contains(contentUrl));
+        inStore = searchForUrl(store, contentUrl, null, yesterday);
+        assertFalse("URL was younger than required, but still shows up", inStore);
     }
     
     /**

@@ -176,7 +176,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
          */
         public boolean isSecure()
         {
-            return false;
+            return content.isSecure();
         }
 
         @Override

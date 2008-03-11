@@ -707,7 +707,7 @@ public class ScriptNode implements Serializable, Scopeable
     /**
      * @return true if the node is currently locked
      */
-    public boolean isLocked()
+    public boolean getIsLocked()
     {
         boolean locked = false;
         

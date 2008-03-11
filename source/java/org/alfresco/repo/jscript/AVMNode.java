@@ -168,7 +168,7 @@ public class AVMNode extends ScriptNode
     /**
      * @return true if the node is currently locked
      */
-    public boolean isLocked()
+    public boolean getIsLocked()
     {
         AVMLock lock = this.services.getAVMLockingService().getLock(
                 getWebProject(), path.substring(path.indexOf("/")));

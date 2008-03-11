@@ -18,5 +18,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-5-MappedFKIndexes', 'Manually executed script upgrade V2.2: Created FK indexes',
-    0, 85, -1, 86, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 120, -1, 121, null, 'UNKOWN', 1, 1, 'Script completed'
   );

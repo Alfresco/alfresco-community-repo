@@ -79,5 +79,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-4-ExtraIndexesAndConstraints', 'Manually executed script upgrade V2.2: Created additional indexes and constraints',
-    0, 85, -1, 86, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 120, -1, 121, null, 'UNKOWN', 1, 1, 'Script completed'
   );

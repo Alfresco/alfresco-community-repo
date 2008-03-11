@@ -923,11 +923,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        System.out.println("\n" +
-                "=============================================================================\n" +
-                "= WARNING: USE OF THIS BUILD IS LIKELY TO BREAK CURRENT OR FUTURE UPGRADES. =\n" +
-                "=============================================================================");
-        
+//        System.out.println("\n" +
+//                "=============================================================================\n" +
+//                "= WARNING: USE OF THIS BUILD IS LIKELY TO BREAK CURRENT OR FUTURE UPGRADES. =\n" +
+//                "=============================================================================");
+//        
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
         try

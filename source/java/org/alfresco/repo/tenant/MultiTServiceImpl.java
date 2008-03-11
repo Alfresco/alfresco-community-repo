@@ -535,9 +535,13 @@ public class MultiTServiceImpl implements TenantService
     
     protected void checkTenantEnabled(String tenantDomain)
     {
-        if (getTenant(tenantDomain).isEnabled() == false)
+        // note: System user can access disabled tenants
+        if (! getBaseNameUser(AuthenticationUtil.getCurrentUserName()).equals(AuthenticationUtil.getSystemUserName()))
         {
-            throw new AlfrescoRuntimeException("Tenant is not enabled: " + tenantDomain);
+            if (getTenant(tenantDomain).isEnabled() == false)
+            {
+                throw new AlfrescoRuntimeException("Tenant is not enabled: " + tenantDomain);
+            }
         }
     }
 

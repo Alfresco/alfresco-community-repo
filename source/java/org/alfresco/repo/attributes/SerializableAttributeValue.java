@@ -49,35 +49,28 @@ public class SerializableAttributeValue extends AttributeValue implements
         fData = attr.getSerializableValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.SERIALIZABLE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getSerializableValue()
-     */
+    public Serializable getRawValue()
+    {
+        return fData;
+    }
+
     @Override
     public Serializable getSerializableValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setSerializableValue(java.io.Serializable)
-     */
     @Override
     public void setSerializableValue(Serializable value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

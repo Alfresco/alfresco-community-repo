@@ -44,6 +44,9 @@ import java.util.Properties;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.Descriptor;
@@ -60,10 +63,14 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.connection.UserSuppliedConnectionProvider;
+import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.HSQLDialect;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.hibernate.dialect.Oracle9Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.springframework.context.ApplicationContext;
@@ -103,6 +110,29 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_SCRIPT_NOT_FOUND = "schema.update.err.script_not_found";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
     
+    public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
+    private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
+    
+    /**
+     * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
+     */
+    public static final void setMaxStringLength(int length)
+    {
+        if (length < 1024)
+        {
+            throw new AlfrescoRuntimeException("The maximum string length must >= 1024 characters.");
+        }
+        SchemaBootstrap.maxStringLength = length;
+    }
+
+    /**
+     * @return      Returns the maximum number of characters that a string field can be
+     */
+    public static final int getMaxStringLength()
+    {
+        return SchemaBootstrap.maxStringLength;
+    }
+    
     private static Log logger = LogFactory.getLog(SchemaBootstrap.class);
     
     private LocalSessionFactoryBean localSessionFactory;
@@ -112,6 +142,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
+    private int maximumStringLength;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
 
@@ -121,6 +152,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         validateUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         preUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         postUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
+        maximumStringLength = -1;
     }
     
     public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
@@ -198,6 +230,31 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setPostUpdateScriptPatches(List<SchemaUpgradeScriptPatch> scriptPatches)
     {
         this.postUpdateScriptPatches = scriptPatches;
+    }
+
+    /**
+     * Optionally override the system's default maximum string length.  Some databases have
+     * limitations on how long the <b>string_value</b> columns can be while other do not.
+     * When a <tt>String<tt> value exceeds the maximum size it is persisted in the
+     * <b>serializable_value</b> column instead.  Some databases have limitation on the size
+     * of the serializable columns as well, but usually support much more.
+     * <p>
+     * The system - as of V2.1.2 - will attempt to adjust the maximum string length size
+     * automatically and therefore this method is not normally required.  But it is possible
+     * to manually override the value if, for example, the system doesn't guess the correct
+     * maximum length or if the dialect is not explicitly catered for.
+     * <p>
+     * All negative or zero values are ignored and the system defaults to its best guess based
+     * on the dialect being used.
+     * 
+     * @param maximumStringLength       the maximum length of the <b>string_value</b> columns
+     */
+    public void setMaximumStringLength(int maximumStringLength)
+    {
+        if (maximumStringLength > 0)
+        {
+            this.maximumStringLength = maximumStringLength;
+        }
     }
 
     /**
@@ -768,6 +825,76 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             try { stmt.close(); } catch (Throwable e) {}
         }
     }
+    
+    /**
+     * Performs dialect-specific checking.  This includes checking for InnoDB, dumping the dialect being used
+     * as well as setting any runtime, dialect-specific properties.
+     */
+    private void checkDialect(Dialect dialect)
+    {
+        Class dialectClazz = dialect.getClass();
+        LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
+        if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
+        {
+            LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+        }
+        if (dialectClazz.equals(HSQLDialect.class))
+        {
+            LogUtil.info(logger, WARN_DIALECT_HSQL);
+        }
+        
+        int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        // Adjust the maximum allowable String length according to the dialect
+        if (dialect instanceof AlfrescoSQLServerDialect)
+        {
+            // string_value nvarchar(1024) null,
+            // serializable_value image null,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        }
+        else if (dialect instanceof AlfrescoSybaseAnywhereDialect)
+        {
+            // string_value text null,
+            // serializable_value varbinary(8192) null,
+            maxStringLength = Integer.MAX_VALUE;
+        }
+        else if (dialect instanceof DB2Dialect)
+        {
+            // string_value varchar(1024),
+            // serializable_value varchar(8192) for bit data,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        }
+        else if (dialect instanceof HSQLDialect)
+        {
+            // string_value varchar(1024),
+            // serializable_value varbinary(8192),
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        }
+        else if (dialect instanceof MySQLInnoDBDialect)
+        {
+            // string_value text,
+            // serializable_value blob,
+            maxStringLength = Integer.MAX_VALUE;
+        }
+        else if (dialect instanceof Oracle9Dialect)
+        {
+            // string_value varchar2(1024 char),
+            // serializable_value long raw,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        }
+        else if (dialect instanceof PostgreSQLDialect)
+        {
+            // string_value varchar(1024),
+            // serializable_value bytea,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        }
+        SchemaBootstrap.setMaxStringLength(maxStringLength);
+        
+        // Now override the maximum string length if it was set directly
+        if (maximumStringLength > 0)
+        {
+            SchemaBootstrap.setMaxStringLength(maximumStringLength);
+        }
+    }
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -789,16 +916,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             
             // Check and dump the dialect being used
             Dialect dialect = Dialect.getDialect(cfg.getProperties());
-            Class dialectClazz = dialect.getClass();
-            LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
-            if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
-            {
-                LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-            }
-            if (dialectClazz.equals(HSQLDialect.class))
-            {
-                LogUtil.info(logger, WARN_DIALECT_HSQL);
-            }
+            checkDialect(dialect);
             
             // Ensure that our static connection provider is used
             String defaultConnectionProviderFactoryClass = cfg.getProperty(Environment.CONNECTION_PROVIDER);

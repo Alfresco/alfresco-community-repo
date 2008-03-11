@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -54,35 +56,28 @@ public class DoubleAttributeImpl extends AttributeImpl implements DoubleAttribut
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.DOUBLE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getDoubleValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Double.valueOf(fValue);
+    }
+
     @Override
     public double getDoubleValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setDoubleValue(double)
-     */
     @Override
     public void setDoubleValue(double value)
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

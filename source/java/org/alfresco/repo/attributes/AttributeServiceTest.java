@@ -25,6 +25,7 @@
 
 package org.alfresco.repo.attributes;
 
+import java.rmi.server.LogStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +83,7 @@ public class AttributeServiceTest extends TestCase
         }
     }
     
-    public void testBasic()
+    public void testBasic() throws Exception
     {
         try
         {
@@ -126,15 +127,30 @@ public class AttributeServiceTest extends TestCase
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            fail();
+            throw e;
         }
+    }
+    
+    public void testLongStrings() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 1000; i++)
+        {
+            sb.append(i);
+        }
+        String longStr = sb.toString();
+        StringAttributeValue attributeValue = new StringAttributeValue(longStr);
+        fService.setAttribute("", "long-string", attributeValue);
+        // Check that we can get it back
+        Attribute checkAttribute = fService.getAttribute("long-string");
+        String checkStr = checkAttribute.getStringValue();
+        assertEquals("Retrieved String is not the same as the persisted one", longStr, checkStr);
     }
     
     /**
      * Test the query capability.
      */
-    public void testQuery()
+    public void testQuery() throws Exception
     {
         try
         {
@@ -236,12 +252,11 @@ public class AttributeServiceTest extends TestCase
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            fail();
+            throw e;
         }
     }
     
-    public void testDelete()
+    public void testDelete() throws Exception
     {
         try
         {
@@ -290,14 +305,14 @@ public class AttributeServiceTest extends TestCase
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            throw e;
         }
     }
     
     /**
      * Test ListAttributes
      */
-    public void testList()
+    public void testList() throws Exception
     {
         try
         {
@@ -344,8 +359,7 @@ public class AttributeServiceTest extends TestCase
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 }

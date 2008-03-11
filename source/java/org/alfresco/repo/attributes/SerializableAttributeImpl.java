@@ -57,35 +57,28 @@ public class SerializableAttributeImpl extends AttributeImpl implements
         AVMDAOs.Instance().fAttributeDAO.save(this);        
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.SERIALIZABLE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getSerializableValue()
-     */
+    public Serializable getRawValue()
+    {
+        return fValue;
+    }
+
     @Override
     public Serializable getSerializableValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setSerializableValue(java.io.Serializable)
-     */
     @Override
     public void setSerializableValue(Serializable value)
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

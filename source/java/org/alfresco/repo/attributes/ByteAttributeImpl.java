@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -54,35 +56,28 @@ public class ByteAttributeImpl extends AttributeImpl implements ByteAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.BYTE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getByteValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Byte.valueOf(fValue);
+    }
+
     @Override
     public byte getByteValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setByteValue(byte)
-     */
     @Override
     public void setByteValue(byte value)
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

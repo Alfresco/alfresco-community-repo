@@ -25,6 +25,7 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 
@@ -56,96 +56,39 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
         for (Map.Entry<String, Attribute> entry : attr.entrySet())
         {
+            String key = entry.getKey();
             Attribute value = entry.getValue();
-            Attribute newAttr = null;
-            switch (value.getType())
-            {
-                case BOOLEAN :
-                {
-                    newAttr = new BooleanAttributeImpl(value.getBooleanValue());
-                    break;
-                }
-                case BYTE :
-                {
-                    newAttr = new ByteAttributeImpl(value.getByteValue());
-                    break;
-                }
-                case SHORT :
-                {
-                    newAttr = new ShortAttributeImpl(value.getShortValue());
-                    break;
-                }
-                case INT :
-                {
-                    newAttr = new IntAttributeImpl(value.getIntValue());
-                    break;
-                }
-                case LONG :
-                {
-                    newAttr = new LongAttributeImpl(value.getLongValue());
-                    break;
-                }
-                case FLOAT :
-                {
-                    newAttr = new FloatAttributeImpl(value.getFloatValue());
-                    break;
-                }
-                case DOUBLE :
-                {
-                    newAttr = new DoubleAttributeImpl(value.getDoubleValue());
-                    break;
-                }
-                case STRING :
-                {
-                    newAttr = new StringAttributeImpl(value.getStringValue());
-                    break;
-                }
-                case SERIALIZABLE :
-                {
-                    newAttr = new SerializableAttributeImpl(value.getSerializableValue());
-                    break;
-                }
-                case MAP :
-                {
-                    newAttr = new MapAttributeImpl((MapAttribute)value);
-                    break;
-                }
-                case LIST :
-                {
-                    newAttr = new ListAttributeImpl((ListAttribute)value);
-                    break;
-                }
-                default :
-                {
-                    throw new AlfrescoRuntimeException("Unknown Attribute Type: " + value.getType());
-                }
-            }
-            MapEntryKey key = new MapEntryKey(this, entry.getKey());
-            MapEntry mapEntry = new MapEntryImpl(key, newAttr);
+            // Use the object's factory for AttributeValue
+            Attribute newAttr = value.getAttributeImpl();
+            // Persist it
+            MapEntryKey keyEntity = new MapEntryKey(this, key);
+            MapEntry mapEntry = new MapEntryImpl(keyEntity, newAttr);
             AVMDAOs.Instance().fMapEntryDAO.save(mapEntry);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.MAP;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#clear()
-     */
+    public Serializable getRawValue()
+    {
+        List<MapEntry> entries = AVMDAOs.Instance().fMapEntryDAO.get(this);
+        HashMap<String, Serializable> ret = new HashMap<String, Serializable>(entries.size() * 2);
+        for (MapEntry entry : entries)
+        {
+            ret.put(entry.getKey().getKey(), entry.getAttribute().getSerializableValue());
+        }
+        return ret;
+    }
+
     @Override
     public void clear()
     {
         AVMDAOs.Instance().fMapEntryDAO.delete(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#entrySet()
-     */
     @Override
     public Set<Entry<String, Attribute>> entrySet()
     {
@@ -158,9 +101,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         return map.entrySet();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#get(java.lang.String)
-     */
     @Override
     public Attribute get(String key)
     {
@@ -174,9 +114,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         return attr;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#keySet()
-     */
     @Override
     public Set<String> keySet()
     {
@@ -189,9 +126,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         return keys;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#put(java.lang.String, org.alfresco.repo.attributes.Attribute)
-     */
     @Override
     public void put(String key, Attribute value)
     {
@@ -208,9 +142,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         AVMDAOs.Instance().fMapEntryDAO.save(entry);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#remove(java.lang.String)
-     */
     @Override
     public void remove(String key)
     {
@@ -225,9 +156,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         AVMDAOs.Instance().fAttributeDAO.delete(attr);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#values()
-     */
     @Override
     public Collection<Attribute> values()
     {
@@ -240,9 +168,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         return attrs;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
@@ -259,9 +184,6 @@ public class MapAttributeImpl extends AttributeImpl implements MapAttribute
         return builder.toString();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#size()
-     */
     @Override
     public int size()
     {

@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -54,35 +56,28 @@ public class FloatAttributeImpl extends AttributeImpl implements FloatAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.FLOAT;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getFloatValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Float.valueOf(fValue);
+    }
+
     @Override
     public float getFloatValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setFloatValue(float)
-     */
     @Override
     public void setFloatValue(float value)
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of a long attribute.
  * @author britt
@@ -46,35 +48,28 @@ public class LongAttributeValue extends AttributeValue implements LongAttribute
         fData = attr.getLongValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.LONG;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getLongValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Long.valueOf(fData);
+    }
+
     @Override
     public long getLongValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setLongValue(long)
-     */
     @Override
     public void setLongValue(long value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

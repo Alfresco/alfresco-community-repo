@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -54,35 +56,28 @@ public class LongAttributeImpl extends AttributeImpl implements LongAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.LONG;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getLongValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Long.valueOf(fValue);
+    }
+
     @Override
     public long getLongValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setLongValue(long)
-     */
     @Override
     public void setLongValue(long value)
     {
        fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

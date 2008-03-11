@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -55,35 +57,28 @@ public class BooleanAttributeImpl extends AttributeImpl implements
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getBooleanValue()
-     */
     @Override
     public boolean getBooleanValue() 
     {
         return fValue;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setBooleanValue(boolean)
-     */
     @Override
     public void setBooleanValue(boolean value) 
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType() 
     {
         return Type.BOOLEAN;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+    public Serializable getRawValue()
+    {
+        return Boolean.valueOf(fValue);
+    }
+
     @Override
     public String toString()
     {

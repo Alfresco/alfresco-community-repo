@@ -25,11 +25,11 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 
@@ -52,86 +52,30 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
         for (Attribute entry : other)
         {
-            Attribute newEntry = null;
-            switch (entry.getType())
-            {
-                case BOOLEAN :
-                {
-                    newEntry = new BooleanAttributeImpl((BooleanAttribute)entry);
-                    break;
-                }
-                case BYTE :
-                {
-                    newEntry = new ByteAttributeImpl((ByteAttribute)entry);
-                    break;
-                }
-                case SHORT :
-                {
-                    newEntry = new ShortAttributeImpl((ShortAttribute)entry);
-                    break;
-                }
-                case INT :
-                {
-                    newEntry = new IntAttributeImpl((IntAttribute)entry);
-                    break;
-                }
-                case LONG :
-                {
-                    newEntry = new LongAttributeImpl((LongAttribute)entry);
-                    break;
-                }
-                case FLOAT :
-                {
-                    newEntry = new FloatAttributeImpl((FloatAttribute)entry);
-                    break;
-                }
-                case DOUBLE :
-                {
-                    newEntry = new DoubleAttributeImpl((DoubleAttribute)entry);
-                    break;
-                }
-                case STRING :
-                {
-                    newEntry = new StringAttributeImpl((StringAttribute)entry);
-                    break;
-                }
-                case SERIALIZABLE :
-                {
-                    newEntry = new SerializableAttributeImpl((SerializableAttribute)entry);
-                    break;
-                }
-                case MAP :
-                {
-                    newEntry = new MapAttributeImpl((MapAttribute)entry);
-                    break;
-                }
-                case LIST :
-                {
-                    newEntry = new ListAttributeImpl((ListAttribute)entry);
-                    break;
-                }
-                default :
-                {
-                    throw new AlfrescoRuntimeException("Unknown Attribute Type: " + entry.getType());
-                }
-            }
+            Attribute newAttr = entry.getAttributeImpl();
             ListEntryKey key = new ListEntryKey(this, index++);
-            ListEntry listEntry = new ListEntryImpl(key, newEntry);
+            ListEntry listEntry = new ListEntryImpl(key, newAttr);
             AVMDAOs.Instance().fListEntryDAO.save(listEntry);
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.LIST;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#add(org.alfresco.repo.attributes.Attribute)
-     */
+    public Serializable getRawValue()
+    {
+        List<ListEntry> entries = AVMDAOs.Instance().fListEntryDAO.get(this);
+        ArrayList<Serializable> ret = new ArrayList<Serializable>(entries.size());
+        for (ListEntry listEntry : entries)
+        {
+            Serializable rawEntry = listEntry.getAttribute().getRawValue();
+            ret.add(rawEntry);
+        }
+        return ret;
+    }
+
     @Override
     public void add(Attribute attr)
     {
@@ -141,9 +85,6 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         AVMDAOs.Instance().fListEntryDAO.save(entry);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#add(int, org.alfresco.repo.attributes.Attribute)
-     */
     @Override
     public void add(int index, Attribute attr)
     {
@@ -167,18 +108,12 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         dao.save(newEntry);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#clear()
-     */
     @Override
     public void clear()
     {
         AVMDAOs.Instance().fListEntryDAO.delete(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#get(int)
-     */
     @Override
     public Attribute get(int index)
     {
@@ -191,9 +126,6 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         return entry.getAttribute();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#iterator()
-     */
     @Override
     public Iterator<Attribute> iterator()
     {
@@ -206,18 +138,12 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         return attrList.iterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#size()
-     */
     @Override
     public int size()
     {
         return AVMDAOs.Instance().fListEntryDAO.size(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#remove(java.lang.String)
-     */
     @Override
     public void remove(int index)
     {
@@ -242,9 +168,6 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         }
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
@@ -259,9 +182,6 @@ public class ListAttributeImpl extends AttributeImpl implements ListAttribute
         return builder.toString();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#set(int, org.alfresco.repo.attributes.Attribute)
-     */
     @Override
     public void set(int index, Attribute value)
     {

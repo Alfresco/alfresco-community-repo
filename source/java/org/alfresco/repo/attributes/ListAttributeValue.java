@@ -25,11 +25,10 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Value based implementation of a list attribute.
@@ -49,139 +48,59 @@ public class ListAttributeValue extends AttributeValue implements ListAttribute
     public ListAttributeValue(ListAttribute attr)
     {
         this();
-        for (Attribute child : attr)
+        for (Attribute entry : attr)
         {
-            Attribute newAttr = null;
-            switch (child.getType())
-            {
-                case BOOLEAN :
-                {
-                    newAttr = new BooleanAttributeValue((BooleanAttribute)child);
-                    break;
-                }
-                case BYTE :
-                {
-                    newAttr = new ByteAttributeValue((ByteAttribute)child);
-                    break;
-                }
-                case SHORT :
-                {
-                    newAttr = new ShortAttributeValue((ShortAttribute)child);
-                    break;
-                }
-                case INT :
-                {
-                    newAttr = new IntAttributeValue((IntAttribute)child);
-                    break;
-                }
-                case LONG :
-                {
-                    newAttr = new LongAttributeValue((LongAttribute)child);
-                    break;
-                }
-                case FLOAT :
-                {
-                    newAttr = new FloatAttributeValue((FloatAttribute)child);
-                    break;
-                }
-                case DOUBLE :
-                {
-                    newAttr = new DoubleAttributeValue((DoubleAttribute)child);
-                    break;
-                }
-                case STRING :
-                {
-                    newAttr = new StringAttributeValue((StringAttribute)child);
-                    break;
-                }
-                case SERIALIZABLE :
-                {
-                    newAttr = new SerializableAttributeValue((SerializableAttribute)child);
-                    break;
-                }
-                case MAP :
-                {
-                    newAttr = new MapAttributeValue((MapAttribute)child);
-                    break;
-                }
-                case LIST :
-                {
-                    newAttr = new ListAttributeValue((ListAttribute)child);
-                    break;
-                }
-                default :
-                {
-                    throw new AlfrescoRuntimeException("Unknown Attribute Type: " + child.getType());
-                }
-            }
+            // Use the type's factory for AttributeValue
+            Attribute newAttr = entry.getAttributeValue();
             fData.add(newAttr);
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#get(int)
-     */
     public Attribute get(int index)
     {
         return fData.get(index);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.LIST;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#add(org.alfresco.repo.attributes.Attribute)
-     */
+    public Serializable getRawValue()
+    {
+        return (Serializable) fData;
+    }
+
     @Override
     public void add(Attribute attr)
     {
         fData.add(attr);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#add(int, org.alfresco.repo.attributes.Attribute)
-     */
     @Override
     public void add(int index, Attribute attr)
     {
         fData.add(index, attr);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#iterator()
-     */
     @Override
     public Iterator<Attribute> iterator()
     {
         return fData.iterator();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#size()
-     */
     @Override
     public int size()
     {
         return fData.size();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#remove(int)
-     */
     @Override
     public void remove(int index)
     {
         fData.remove(index);
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
@@ -196,9 +115,6 @@ public class ListAttributeValue extends AttributeValue implements ListAttribute
         return builder.toString();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#set(int, org.alfresco.repo.attributes.Attribute)
-     */
     @Override
     public void set(int index, Attribute value)
     {

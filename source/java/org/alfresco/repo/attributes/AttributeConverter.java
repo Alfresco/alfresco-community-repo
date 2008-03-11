@@ -25,13 +25,14 @@
 
 package org.alfresco.repo.attributes;
 
-import java.util.Map;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
  * Handles conversions between persistent and value based Attributes.
+ * 
+ * @see Attribute.Type#getAttributeImpl(Attribute)
+ * @see Attribute.Type#getAttributeValue(Attribute)
+ * 
  * @author britt
  */
 public class AttributeConverter
@@ -44,133 +45,16 @@ public class AttributeConverter
      */
     public Attribute toPersistent(Attribute from)
     {
-        switch (from.getType())
-        {
-            case BOOLEAN :
-            {
-                return new BooleanAttributeImpl((BooleanAttribute)from);
-            }
-            case BYTE :
-            {
-                return new ByteAttributeImpl((ByteAttribute)from);
-            }
-            case SHORT :
-            {
-                return new ShortAttributeImpl((ShortAttribute)from);
-            }
-            case INT :
-            {
-                return new IntAttributeImpl((IntAttribute)from);
-            }
-            case LONG :
-            {
-                return new LongAttributeImpl((LongAttribute)from);
-            }
-            case FLOAT :
-            {
-                return new FloatAttributeImpl((FloatAttribute)from);
-            }
-            case DOUBLE :
-            {
-                return new DoubleAttributeImpl((DoubleAttribute)from);
-            }
-            case STRING :
-            {
-                return new StringAttributeImpl((StringAttribute)from);
-            }
-            case SERIALIZABLE :
-            {
-                return new SerializableAttributeImpl((SerializableAttribute)from);
-            }
-            case MAP :
-            {
-                return new MapAttributeImpl((MapAttribute)from);
-            }
-            case LIST :
-            {
-                return new ListAttributeImpl((ListAttribute)from);
-            }
-            default :
-            {
-                throw new AlfrescoRuntimeException("Invalid Attribute Type: " + from.getType());
-            }
-        }
+        AttributeImpl attributeEntity = from.getAttributeImpl();
+        // Done
+        return attributeEntity;
     }
 
     public Attribute toValue(Attribute from)
     {
-        Attribute ret = null;
-        switch (from.getType())
-        {
-            case BOOLEAN :
-            {
-                ret = new BooleanAttributeValue((BooleanAttribute)from);
-                break;
-            }
-            case BYTE :
-            {
-                ret = new ByteAttributeValue((ByteAttribute)from);
-                break;
-            }
-            case SHORT :
-            {
-                ret = new ShortAttributeValue((ShortAttribute)from);
-                break;
-            }
-            case INT :
-            {
-                ret = new IntAttributeValue((IntAttribute)from);
-                break;
-            }
-            case LONG :
-            {
-                ret = new LongAttributeValue((LongAttribute)from);
-                break;
-            }
-            case FLOAT :
-            {
-                ret = new FloatAttributeValue((FloatAttribute)from);
-                break;
-            }
-            case DOUBLE :
-            {
-                ret = new DoubleAttributeValue((DoubleAttribute)from);
-                break;
-            }
-            case STRING :
-            {
-                ret = new StringAttributeValue((StringAttribute)from);
-                break;
-            }
-            case SERIALIZABLE :
-            {
-                ret = new SerializableAttributeValue((SerializableAttribute)from);
-                break;
-            }
-            case MAP :
-            {
-                ret = new MapAttributeValue();
-                for (Map.Entry<String, Attribute> entry : from.entrySet())
-                {
-                    ret.put(entry.getKey(), toValue(entry.getValue()));
-                }
-                break;
-            }
-            case LIST :
-            {
-                ret = new ListAttributeValue();
-                for (Attribute child : from)
-                {
-                    ret.add(toValue(child));
-                }
-                break;
-            }
-            default :
-            {
-                throw new AlfrescoRuntimeException("Invalid Attribute Type: " + from.getType());
-            }
-        }
+        AttributeValue attributeValue = from.getAttributeValue();
         AVMDAOs.Instance().fAttributeDAO.evictFlat(from);
-        return ret;
+        // Done
+        return attributeValue;
     }
 }

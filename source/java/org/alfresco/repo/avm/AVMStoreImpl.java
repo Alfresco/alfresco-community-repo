@@ -258,81 +258,71 @@ public class AVMStoreImpl implements AVMStore, Serializable
             */
         }
         // Clear out the new nodes.
-        try
+        List<Long> allLayeredNodeIDs = AVMDAOs.Instance().fAVMNodeDAO.getNewLayeredInStoreIDs(me);
+        AVMDAOs.Instance().fAVMNodeDAO.clearNewInStore(me);
+        AVMDAOs.Instance().fAVMNodeDAO.clear();
+        List<Long> layeredNodeIDs = new ArrayList<Long>();
+        for (Long layeredID : allLayeredNodeIDs)
         {
-            // attempt to clear only AVMNodes from cache, to allow direct batch update of them
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            AVMDAOs.Instance().fAVMNodeDAO.noCache();
-            AVMDAOs.Instance().fAVMNodeDAO.clearNewInStore(me);
-            
-            List<Long> allLayeredNodeIDs = AVMDAOs.Instance().fAVMNodeDAO.getNewLayeredInStoreIDs(me);
-            List<Long> layeredNodeIDs = new ArrayList<Long>();
-            for (Long layeredID : allLayeredNodeIDs)
+            Layered layered = (Layered)AVMDAOs.Instance().fAVMNodeDAO.getByID(layeredID);
+            String indirection = layered.getIndirection();
+            if (indirection == null)
             {
-                Layered layered = (Layered)AVMDAOs.Instance().fAVMNodeDAO.getByID(layeredID);
-                String indirection = layered.getIndirection();
-                if (indirection == null)
+                continue;
+            }
+            layeredNodeIDs.add(layeredID);
+            String storeName = indirection.substring(0, indirection.indexOf(':'));
+            if (!snapShotMap.containsKey(storeName))
+            {
+                AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(storeName);
+                if (store == null)
                 {
-                    continue;
-                }
-                layeredNodeIDs.add(layeredID);
-                String storeName = indirection.substring(0, indirection.indexOf(':'));
-                if (!snapShotMap.containsKey(storeName))
-                {
-                    AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(storeName);
-                    if (store == null)
-                    {
-                        layered.setIndirectionVersion(-1);
-                    }
-                    else
-                    {
-                        store.createSnapshot(null, null, snapShotMap);
-                        layered = (Layered)AVMDAOs.Instance().fAVMNodeDAO.getByID(layeredID);
-                        layered.setIndirectionVersion(snapShotMap.get(storeName));
-                    }
+                    layered.setIndirectionVersion(-1);
                 }
                 else
                 {
+                    store.createSnapshot(null, null, snapShotMap);
+                    layered = (Layered)AVMDAOs.Instance().fAVMNodeDAO.getByID(layeredID);
                     layered.setIndirectionVersion(snapShotMap.get(storeName));
                 }
             }
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            // Make up a new version record.
-            String user = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
-            if (user == null)
+            else
             {
-                user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
-            }
-            me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(fID);
-            VersionRoot versionRoot = new VersionRootImpl(me,
-                                                          me.fRoot,
-                                                          me.fNextVersionID++,
-                                                          System.currentTimeMillis(),
-                                                          user,
-                                                          tag,
-                                                          description);
-            // Another embarassing flush needed.
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
-            for (Long nodeID : layeredNodeIDs)
-            {
-                AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeID);
-                List<String> paths = fAVMRepository.getVersionPaths(versionRoot, node);
-                for (String path : paths)
-                {
-                    VersionLayeredNodeEntry entry =
-                        new VersionLayeredNodeEntryImpl(versionRoot, path);
-                    AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.save(entry);
-                }
+                layered.setIndirectionVersion(snapShotMap.get(storeName));
             }
         }
-        finally
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        // Make up a new version record.
+        String user = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
+        if (user == null)
         {
-            AVMDAOs.Instance().fAVMNodeDAO.yesCache();
+            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
+        }
+        me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(fID);
+        VersionRoot versionRoot = new VersionRootImpl(me,
+                                                      me.fRoot,
+                                                      me.fNextVersionID++,
+                                                      System.currentTimeMillis(),
+                                                      user,
+                                                      tag,
+                                                      description);
+        // Another embarassing flush needed.
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
+        AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
+        for (Long nodeID : layeredNodeIDs)
+        {
+            AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeID);
+            List<String> paths = fAVMRepository.getVersionPaths(versionRoot, node);
+            for (String path : paths)
+            {
+                VersionLayeredNodeEntry entry =
+                    new VersionLayeredNodeEntryImpl(versionRoot, path);
+                AVMDAOs.Instance().fVersionLayeredNodeEntryDAO.save(entry);
+            }
         }
         return snapShotMap;
-        
     }
+
     /**
      * Create a new directory.
      * @param path The path to the containing directory.

@@ -25,19 +25,13 @@
 
 package org.alfresco.repo.attributes;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Map.Entry;
-
 import org.alfresco.repo.domain.DbAccessControlList;
 
 /**
  * The base class of the implementation of Values.
  * @author britt
  */
-public abstract class AttributeImpl implements Attribute 
+public abstract class AttributeImpl extends AbstractAttribute implements Attribute 
 {
     /**
      * The primary key.
@@ -89,226 +83,17 @@ public abstract class AttributeImpl implements Attribute
     {
         return fVersion;
     }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#clear()
-     */
-    public void clear() 
+
+    public DbAccessControlList getAcl()
     {
-        throw new AttributeMethodNotImplemented("Not ListValue or MapValue");
+        return fACL;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#entrySet()
-     */
-    public Set<Entry<String, Attribute>> entrySet() 
+    public void setAcl(DbAccessControlList acl)
     {
-        throw new AttributeMethodNotImplemented("Not MapValue");
+        fACL = acl;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#get(java.lang.String)
-     */
-    public Attribute get(String key) 
-    {
-        throw new AttributeMethodNotImplemented("Not Map or List");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getBlobValue()
-     */
-    public byte[] getBlobValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not BlobValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getDoubleValue()
-     */
-    public double getDoubleValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not DoubleValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getIntValue()
-     */
-    public int getIntValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not IntValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getLongValue()
-     */
-    public long getLongValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not LongValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getSerializableValue()
-     */
-    public Serializable getSerializableValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not SerializableValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getStringValue()
-     */
-    public String getStringValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not StringValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#keySet()
-     */
-    public Set<String> keySet() 
-    {
-        throw new AttributeMethodNotImplemented("Not MapValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#put(java.lang.String, org.alfresco.repo.attributes.Value)
-     */
-    public void put(String key, Attribute value) 
-    {
-        throw new AttributeMethodNotImplemented("Not Map or List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#remove(java.lang.String)
-     */
-    public void remove(String key) 
-    {
-        throw new AttributeMethodNotImplemented("Not MapValue");    
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setBlobValue(byte[])
-     */
-    public void setBlobValue(byte[] value) 
-    {
-        throw new AttributeMethodNotImplemented("Not BlobValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setDoubleValue(double)
-     */
-    public void setDoubleValue(double value) 
-    {
-        throw new AttributeMethodNotImplemented("Not DoubleValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setIntValue(int)
-     */
-    public void setIntValue(int value) 
-    {
-        throw new AttributeMethodNotImplemented("Not IntValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setLongValue(long)
-     */
-    public void setLongValue(long value) 
-    {
-        throw new AttributeMethodNotImplemented("Not LongValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setSerializableValue(java.io.Serializable)
-     */
-    public void setSerializableValue(Serializable value) 
-    {
-        throw new AttributeMethodNotImplemented("Not SerializableValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setStringValue(java.lang.String)
-     */
-    public void setStringValue(String value) 
-    {
-        throw new AttributeMethodNotImplemented("Not StringValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#values()
-     */
-    public Collection<Attribute> values() 
-    {
-        throw new AttributeMethodNotImplemented("Not MapValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getBooleanValue()
-     */
-    public boolean getBooleanValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not BooleanValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getByteValue()
-     */
-    public byte getByteValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not ByteValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getFloatValue()
-     */
-    public float getFloatValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not FloatValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#getShortValue()
-     */
-    public short getShortValue() 
-    {
-        throw new AttributeMethodNotImplemented("Not ShortValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setBooleanValue(boolean)
-     */
-    public void setBooleanValue(boolean value) 
-    {
-        throw new AttributeMethodNotImplemented("Not BooleanValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setByteValue(byte)
-     */
-    public void setByteValue(byte value) 
-    {
-        throw new AttributeMethodNotImplemented("Not ByteValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setFloatValue(float)
-     */
-    public void setFloatValue(float value) 
-    {
-        throw new AttributeMethodNotImplemented("Not FloatValue");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Value#setShortValue(short)
-     */
-    public void setShortValue(short value) 
-    {
-        throw new AttributeMethodNotImplemented("Not ShortValue");
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj)
     {
@@ -323,84 +108,9 @@ public abstract class AttributeImpl implements Attribute
         return fID == ((AttributeImpl)obj).fID;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode()
     {
         return (int)fID;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getAcl()
-     */
-    public DbAccessControlList getAcl()
-    {
-        return fACL;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#setAcl(org.alfresco.repo.domain.DbAccessControlList)
-     */
-    public void setAcl(DbAccessControlList acl)
-    {
-        fACL = acl;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#add(org.alfresco.repo.attributes.Attribute)
-     */
-    public void add(Attribute attr)
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#add(int, org.alfresco.repo.attributes.Attribute)
-     */
-    public void add(int index, Attribute attr)
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#iterator()
-     */
-    public Iterator<Attribute> iterator()
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#size()
-     */
-    public int size()
-    {
-        throw new AttributeMethodNotImplemented("Not a List or Map.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#get(int)
-     */
-    public Attribute get(int index)
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#remove(int)
-     */
-    public void remove(int index)
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#set(int, org.alfresco.repo.attributes.Attribute)
-     */
-    public void set(int index, Attribute value)
-    {
-        throw new AttributeMethodNotImplemented("Not a List.");
     }
 }

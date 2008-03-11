@@ -30,6 +30,9 @@
        <property name="localSessionFactory">
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
        </property>
+       <property name="maximumStringLength">
+          <value>${system.maximumStringLength}</value>
+       </property>
        <property name="updateSchema">
           <value>${db.schema.update}</value>
        </property>

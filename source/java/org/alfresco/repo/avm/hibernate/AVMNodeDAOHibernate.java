@@ -33,12 +33,11 @@ import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.LayeredDirectoryNode;
 import org.alfresco.repo.avm.LayeredFileNode;
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.hibernate.Query;
-import org.hibernate.impl.SessionImpl;
-import org.hibernate.stat.SessionStatistics;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -250,7 +249,7 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
             fgLogger.debug(getSession().getStatistics());
         }
         getSession().flush();
-        getSession().clear();
+        SessionSizeResourceManager.clear(getSession());
         if (fgLogger.isDebugEnabled())
         {
             fgLogger.debug(getSession().getStatistics());

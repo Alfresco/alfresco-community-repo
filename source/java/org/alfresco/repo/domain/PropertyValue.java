@@ -40,6 +40,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.AttributeConverter;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -171,7 +172,8 @@ public class PropertyValue implements Cloneable, Serializable
             }
 
             /**
-             * Strings longer than the maximum of 1024 characters will be serialized.
+             * Strings longer than the maximum of {@link PropertyValue#DEFAULT_MAX_STRING_LENGTH}
+             * characters will be serialized.
              */
             @Override
             protected ValueType getPersistedType(Serializable value)
@@ -179,7 +181,8 @@ public class PropertyValue implements Cloneable, Serializable
                 if (value instanceof String)
                 {
                     String valueStr = (String) value;
-                    if (valueStr.length() > 1024)
+                    // Check how long the String can be
+                    if (valueStr.length() > SchemaBootstrap.getMaxStringLength())
                     {
                         return ValueType.SERIALIZABLE;
                     }

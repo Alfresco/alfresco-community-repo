@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,7 +35,6 @@ import org.alfresco.util.resource.MethodResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
-import org.hibernate.engine.CollectionKey;
 import org.hibernate.engine.EntityKey;
 import org.hibernate.stat.SessionStatistics;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -151,8 +149,20 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
         }
     }
     
+    /**
+     * Clear the session now.
+     * 
+     * @param session
+     */
+    public static void clear(Session session)
+    {
+        SessionStatistics stats = session.getStatistics();
+        selectivelyClear(session, stats);
+    }
+    
+    
     @SuppressWarnings("unchecked")
-    private void selectivelyClear(Session session, SessionStatistics stats)
+    private static void selectivelyClear(Session session, SessionStatistics stats)
     {
         if (logger.isDebugEnabled())
         {

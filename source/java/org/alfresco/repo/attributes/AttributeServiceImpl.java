@@ -489,7 +489,7 @@ public class AttributeServiceImpl implements AttributeService
             throw new AVMWrongTypeException("Attribute Not List: " + keys);
         }
         Attribute converted = fAttributeConverter.toPersistent(value);
-        found.set(index, fAttributeConverter.toPersistent(value));
+        found.set(index, converted);
     }
 
     /* (non-Javadoc)

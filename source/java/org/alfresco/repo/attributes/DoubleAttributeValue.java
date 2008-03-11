@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of a double attribute.
  * @author britt
@@ -47,35 +49,28 @@ public class DoubleAttributeValue extends AttributeValue implements
         fData = attr.getDoubleValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.DOUBLE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getDoubleValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Double.valueOf(fData);
+    }
+
     @Override
     public double getDoubleValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setDoubleValue(double)
-     */
     @Override
     public void setDoubleValue(double value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

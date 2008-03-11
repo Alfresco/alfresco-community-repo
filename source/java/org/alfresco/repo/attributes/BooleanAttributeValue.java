@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of a boolean attribute.
  * @author britt
@@ -47,35 +49,28 @@ public class BooleanAttributeValue extends AttributeValue implements
         fData = attr.getBooleanValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.BOOLEAN;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getBooleanValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Boolean.valueOf(fData);
+    }
+
     @Override
     public boolean getBooleanValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setBooleanValue(boolean)
-     */
     @Override
     public void setBooleanValue(boolean value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

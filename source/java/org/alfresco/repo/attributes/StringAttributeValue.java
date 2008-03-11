@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of a String attribute.
  * @author britt
@@ -47,35 +49,28 @@ public class StringAttributeValue extends AttributeValue implements
         fData = attr.getStringValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.STRING;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getStringValue()
-     */
+    public Serializable getRawValue()
+    {
+        return fData;
+    }
+
     @Override
     public String getStringValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setStringValue(java.lang.String)
-     */
     @Override
     public void setStringValue(String value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

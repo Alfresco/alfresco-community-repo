@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of byte attribute.
  * @author britt
@@ -46,35 +48,28 @@ public class ByteAttributeValue extends AttributeValue implements ByteAttribute
         fData = attr.getByteValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.BYTE;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getByteValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Byte.valueOf(fData);
+    }
+
     @Override
     public byte getByteValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setByteValue(byte)
-     */
     @Override
     public void setByteValue(byte value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

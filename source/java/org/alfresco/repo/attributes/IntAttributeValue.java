@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of int attribute.
  * @author britt
@@ -46,35 +48,28 @@ public class IntAttributeValue extends AttributeValue implements IntAttribute
         fData = attr.getIntValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.INT;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getIntValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Integer.valueOf(fData);
+    }
+
     @Override
     public int getIntValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setIntValue(int)
-     */
     @Override
     public void setIntValue(int value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of a short attribute.
  * @author britt
@@ -47,35 +49,28 @@ public class ShortAttributeValue extends AttributeValue implements
         fData = attr.getShortValue();    
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.SHORT;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getShortValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Short.valueOf(fData);
+    }
+
     @Override
     public short getShortValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setShortValue(short)
-     */
     @Override
     public void setShortValue(short value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

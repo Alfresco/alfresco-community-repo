@@ -116,7 +116,6 @@ public class JBPMTransactionTemplate extends JbpmTemplate
             if (context == null)
             {
                 context = super.getContext();
-                SessionSizeResourceManager.setDisableInTransaction();
                 AlfrescoTransactionSupport.bindResource(JBPM_CONTEXT_KEY, context);
                 AlfrescoTransactionSupport.bindListener(this);
     

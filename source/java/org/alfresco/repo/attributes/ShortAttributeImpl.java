@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.avm.AVMDAOs;
 
 /**
@@ -54,35 +56,28 @@ public class ShortAttributeImpl extends AttributeImpl implements ShortAttribute
         AVMDAOs.Instance().fAttributeDAO.save(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#getShortValue()
-     */
     @Override
     public short getShortValue()
     {
         return fValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeImpl#setShortValue(short)
-     */
     @Override
     public void setShortValue(short value)
     {
         fValue = value;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.SHORT;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+    public Serializable getRawValue()
+    {
+        return Short.valueOf(fValue);
+    }
+
     @Override
     public String toString()
     {

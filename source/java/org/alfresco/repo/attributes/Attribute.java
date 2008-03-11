@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 
 /**
  * Interface for polymorphic attributes.
@@ -41,17 +42,373 @@ public interface Attribute extends Serializable, Iterable<Attribute>
 {
     public static enum Type implements Serializable
     {
-        BOOLEAN,
-        BYTE,
-        SHORT,
-        INT,
-        LONG,
-        FLOAT,
-        DOUBLE,
-        STRING,
-        SERIALIZABLE,
-        MAP,
+        BOOLEAN
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof BooleanAttribute)
+                {
+                    return new BooleanAttributeValue((BooleanAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof BooleanAttribute)
+                {
+                    return new BooleanAttributeImpl((BooleanAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        BYTE
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof ByteAttribute)
+                {
+                    return new ByteAttributeValue((ByteAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof ByteAttribute)
+                {
+                    return new ByteAttributeImpl((ByteAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        SHORT
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof ShortAttribute)
+                {
+                    return new ShortAttributeValue((ShortAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof ShortAttribute)
+                {
+                    return new ShortAttributeImpl((ShortAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        INT
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof IntAttribute)
+                {
+                    return new IntAttributeValue((IntAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof IntAttribute)
+                {
+                    return new IntAttributeImpl((IntAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        LONG
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof LongAttribute)
+                {
+                    return new LongAttributeValue((LongAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof LongAttribute)
+                {
+                    return new LongAttributeImpl((LongAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        FLOAT
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof FloatAttribute)
+                {
+                    return new FloatAttributeValue((FloatAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof FloatAttribute)
+                {
+                    return new FloatAttributeImpl((FloatAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        DOUBLE
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof DoubleAttribute)
+                {
+                    return new DoubleAttributeValue((DoubleAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof DoubleAttribute)
+                {
+                    return new DoubleAttributeImpl((DoubleAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        STRING
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof StringAttribute)
+                {
+                    return new StringAttributeValue((StringAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof StringAttribute)
+                {
+                    // We need to check that the String will fit into the database
+                    StringAttribute stringAttr = (StringAttribute) from;
+                    String stringValue = stringAttr.getStringValue();
+                    
+                    if (stringValue != null && stringValue.length() > SchemaBootstrap.getMaxStringLength())
+                    {
+                        // Need to serialize it
+                        return new SerializableAttributeImpl(stringValue);
+                    }
+                    else
+                    {
+                        return new StringAttributeImpl(stringValue);
+                    }
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        SERIALIZABLE
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof SerializableAttribute)
+                {
+                    return new SerializableAttributeValue((SerializableAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof SerializableAttribute)
+                {
+                    return new SerializableAttributeImpl((SerializableAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
+        MAP
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof MapAttribute)
+                {
+                    return new MapAttributeValue((MapAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof MapAttribute)
+                {
+                    return new MapAttributeImpl((MapAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        },
         LIST
+        {
+            @Override
+            public AttributeValue getAttributeValue(Attribute from)
+            {
+                if (from instanceof ListAttribute)
+                {
+                    return new ListAttributeValue((ListAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+
+            @Override
+            public AttributeImpl getAttributeImpl(Attribute from)
+            {
+                if (from instanceof ListAttribute)
+                {
+                    return new ListAttributeImpl((ListAttribute)from);
+                }
+                else
+                {
+                    throw new IllegalArgumentException(
+                            "Conversion to " + this + " not supported for " + from.getType() + "(" + from + ")");
+                }
+            }
+        };
+        
+        /**
+         * Get the unpersisted attribute value implementation of the {@link Attribute} given an existing attribute.
+         * The <tt>from</tt> attribute may be a persistable entity or not but a new instance will
+         * be created.
+         * <p>
+         * No assumptions should be made about the return type.  The raw type might not match the persisted type.
+         * 
+         * @param from      the instance supplying the data
+         * @return          Returns a value object based on the provided data
+         */
+        public abstract AttributeValue getAttributeValue(Attribute from);
+        
+        /**
+         * Get a persistable implementation of the {@link Attribute} given an existing attribute.
+         * The <tt>from</tt> attribute may be a persistable entity or not but a new instance will
+         * be created.
+         * <p>
+         * No assumptions should be made about the return type.  It is possible that the data will
+         * be converted to a different persistable type.
+         * 
+         * @param from      the instance supplying the data
+         * @return          Returns a persistable entity based on the provided data
+         */
+        public abstract AttributeImpl getAttributeImpl(Attribute from);
     };
     
     /**
@@ -67,10 +424,25 @@ public interface Attribute extends Serializable, Iterable<Attribute>
     public DbAccessControlList getAcl();
     
     /**
-     * Get the value type for this node.
-     * @return
+     * @return      the enumerated type
      */
     public Type getType();
+    
+    /**
+     * Method to return the underlying raw data for possible conversion to the descired type.
+     * @return          Returns a raw data value
+     */
+    public Serializable getRawValue();
+
+    /**
+     * @see Type#getAttributeValue(Attribute)
+     */
+    public abstract AttributeValue getAttributeValue();
+    
+    /**
+     * @see Type#getAttributeImpl(Attribute)
+     */
+    public abstract AttributeImpl getAttributeImpl();
 
     /**
      * Set a boolean value.

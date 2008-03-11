@@ -84,6 +84,35 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 mlTextProperty.getValue(Locale.ENGLISH),
                 propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
+    
+    public void testLongMLTextValues() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 4096; i++)
+        {
+            sb.append(" ").append(i);
+        }
+        String longString = sb.toString();
+        // Set the server default locale
+        Locale.setDefault(Locale.ENGLISH);
+
+        // Set it as a normal string
+        nodeService.setProperty(
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                longString);
+        
+        MLText mlTextProperty = new MLText();
+        mlTextProperty.addValue(Locale.ENGLISH, longString);
+        mlTextProperty.addValue(Locale.FRENCH, longString);
+        mlTextProperty.addValue(Locale.GERMAN, longString);
+
+        // Set it as MLText
+        nodeService.setProperty(
+                rootNodeRef,
+                BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                mlTextProperty);
+    }
 
     /**
      * {@inheritDoc}

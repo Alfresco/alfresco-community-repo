@@ -21,46 +21,79 @@
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
- 
-*  
-*  Author  Jon Cox  <jcox@alfresco.com>
-*  File    RuntimeSystemPropertiesSetter.java
 *----------------------------------------------------------------------------*/
-
 package org.alfresco.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor; 
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.Ordered;
 
-
-
 /**
-*   Sets runtime JVM system properties for Spring Framework. 
-*
-*   This class is used by the Spring framework to inject system properties into
-*   the runtime environment (e.g.:  alfresco.jmx.dir).   The motivation for this 
-*   is that certain values must be set within spring must be computed in advance
-*   for org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
-*   to work properly.
-*
+ * Sets runtime JVM system properties for Spring Framework. 
+ * <p>
+ * This class is used by the Spring framework to inject system properties into
+ * the runtime environment (e.g.:  alfresco.jmx.dir).   The motivation for this 
+ * is that certain values must be set within spring must be computed in advance
+ * for org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+ * to work properly.
+ *
+ * @author Jon Cox
+ * @see #setProperties(Map)
 */
-public class      RuntimeSystemPropertiesSetter 
-       implements BeanFactoryPostProcessor, Ordered
+public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, Ordered
 {
-    private static org.apache.commons.logging.Log log=
-                org.apache.commons.logging.LogFactory.getLog( 
-                    RuntimeSystemPropertiesSetter.class );
+    private static Log logger = LogFactory.getLog(RuntimeSystemPropertiesSetter.class );
 
-    // default: just before PropertyPlaceholderConfigurer
-    private int order = Integer.MAX_VALUE - 1;  
+    /** default: just before PropertyPlaceholderConfigurer */
+    private int order = Integer.MAX_VALUE - 1;
+    
+    /**
+     * @see #setProperties(Map)
+     */
+    private Map<String, String> jvmProperties;
 
-    public void RuntimeSystemPropertiesSetter() { }
-
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) 
-                throws BeansException 
+    public RuntimeSystemPropertiesSetter()
     {
+        jvmProperties = new HashMap<String, String>(7);
+    }
+
+    /**
+     * Set the properties that will get pushed into the JVM system properties.
+     * This will be akin to running the JVM with the <b>-Dprop=value</b>.  Existing system JVM properties
+     * <i>will not be overwritten</i>.
+     * 
+     * @param jvmProperties     properties to set if they are not already present in the VM
+     */
+    public void setJvmProperties(Map<String, String> jvmProperties)
+    {
+        this.jvmProperties = jvmProperties;
+    }
+
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException 
+    {
+        // Push any mapped properties into the JVM
+        for (Map.Entry<String, String> entry : jvmProperties.entrySet())
+        {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            // Push into VM
+            String currentValue = System.getProperty(key);
+            if (currentValue == null)
+            {
+                System.setProperty(key, value);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Setting system property: " + key + " = " + value);
+                }
+            }
+        }
+        
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String path=null;
         try 
@@ -81,9 +114,8 @@ public class      RuntimeSystemPropertiesSetter
         catch (java.net.URISyntaxException e ) { e.printStackTrace(); }
         catch (Exception e ) 
         { 
-            if ( log.isWarnEnabled() )
-                 log.warn( 
-                 "Could not find alfresco-jmxrmi.password on classpath");
+            if ( logger.isWarnEnabled() )
+                 logger.warn("Could not find alfresco-jmxrmi.password on classpath");
         }
 
         if ( path == null ) { System.setProperty("alfresco.jmx.dir", ""); }

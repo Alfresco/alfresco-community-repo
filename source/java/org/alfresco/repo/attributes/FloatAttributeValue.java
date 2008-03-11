@@ -25,6 +25,8 @@
 
 package org.alfresco.repo.attributes;
 
+import java.io.Serializable;
+
 /**
  * Value based implementation of float attribute
  * @author britt
@@ -47,35 +49,28 @@ public class FloatAttributeValue extends AttributeValue implements
         fData = attr.getFloatValue();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.Attribute#getType()
-     */
     public Type getType()
     {
         return Type.FLOAT;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#getFloatValue()
-     */
+    public Serializable getRawValue()
+    {
+        return Float.valueOf(fData);
+    }
+
     @Override
     public float getFloatValue()
     {
         return fData;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.attributes.AttributeValue#setFloatValue(float)
-     */
     @Override
     public void setFloatValue(float value)
     {
         fData = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {

@@ -44,7 +44,6 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.MapAttribute;
 import org.alfresco.repo.attributes.MapAttributeValue;
-import org.alfresco.repo.attributes.StringAttribute;
 import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -322,15 +321,9 @@ public class DefaultTypeConverter
                                 "MapAttribute string key cannot be converted to a locales:" + localeStr, e);
                     }
                     Attribute valueAttribute = entry.getValue();
-                    if (valueAttribute instanceof StringAttribute)
-                    {
-                        ret.put(locale, valueAttribute.getStringValue());
-                    }
-                    else
-                    {
-                        throw new TypeConversionException(
-                                "MapAttribute must contain Locale-String mappings to convert to MLText");
-                    }
+                    // Use the attribute's built-in conversion
+                    String valueStr = valueAttribute == null ? null : valueAttribute.getStringValue();
+                    ret.put(locale, valueStr);
                 }
                 return ret;
             }

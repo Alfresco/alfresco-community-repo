@@ -304,8 +304,11 @@
    <div style="padding: 4px"></div>
 </f:verbatim>
 
-<a:panel label="#{msg.version_history}" id="version-history-panel" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" rendered="#{DialogManager.bean.versionable}"
-   expanded='#{DialogManager.bean.panels["version-history-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
+<a:panel label="#{msg.version_history}" id="version-history-panel" progressive="true" 
+         border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" 
+         rendered="#{DialogManager.bean.versionable && !NavigationBean.isGuest}"
+         expanded='#{DialogManager.bean.panels["version-history-panel"]}' 
+         expandedActionListener="#{DialogManager.bean.expandPanel}">
 
    <a:richList id="versionHistoryList" viewMode="details" value="#{DialogManager.bean.versionHistory}" var="r" styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
       pageSize="10" initialSortColumn="versionDate" initialSortDescending="true">
@@ -361,8 +364,11 @@
       <a:dataPager styleClass="pager" id="pager-version-history" />
    </a:richList>
 </a:panel>
-<a:panel label="#{msg.version_history}" id="no-version-history-panel" progressive="true" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" rendered="#{DialogManager.bean.versionable == false}"
-   expanded='#{DialogManager.bean.panels["version-history-panel"]}' expandedActionListener="#{DialogManager.bean.expandPanel}">
+<a:panel label="#{msg.version_history}" id="no-version-history-panel" progressive="true" border="white" 
+         bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" 
+         rendered="#{DialogManager.bean.versionable == false && !NavigationBean.isGuest}"
+         expanded='#{DialogManager.bean.panels["version-history-panel"]}' 
+         expandedActionListener="#{DialogManager.bean.expandPanel}">
    <h:outputText id="no-history-msg" value="#{msg.not_versioned}<br/><br/>" escape="false" />
    <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write" id="eval_ver">
       <a:actionLink id="make-versionable" value="#{msg.allow_versioning}" action="#{DialogManager.bean.applyVersionable}" rendered="#{DialogManager.bean.locked == false}" />

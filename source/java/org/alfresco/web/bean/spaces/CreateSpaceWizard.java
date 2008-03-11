@@ -135,7 +135,8 @@ public class CreateSpaceWizard extends BaseWizardBean
       {
          this.spaceType = this.getNodeService().getType(this.existingSpaceId).toString();
       }
-      else if (this.createFrom.equals(CREATEFROM_TEMPLATE) && this.templateSpaceId != null)
+      else if (this.createFrom.equals(CREATEFROM_TEMPLATE) && this.templateSpaceId != null &&
+               !this.templateSpaceId.equals("none"))
       {
          NodeRef templateNode = new NodeRef(Repository.getStoreRef(), this.templateSpaceId);
          this.spaceType = this.getNodeService().getType(templateNode).toString();

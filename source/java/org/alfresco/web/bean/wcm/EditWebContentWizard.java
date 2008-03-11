@@ -24,69 +24,22 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
-import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
-
-import org.alfresco.config.Config;
-import org.alfresco.config.ConfigElement;
-import org.alfresco.config.ConfigService;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
-import org.alfresco.model.WCMWorkflowModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.avm.AVMExistsException;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.content.BaseContentWizard;
-import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.forms.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
-import org.alfresco.web.ui.common.component.UIListItem;
-import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 
 /**
  * Bean implementation for the "Edit Web Content Wizard" dialog
@@ -95,10 +48,13 @@ public class EditWebContentWizard extends CreateWebContentWizard
 {
    private static final long serialVersionUID = 439996926303151006L;
 
-   private static final Log LOGGER = LogFactory.getLog(EditWebContentWizard.class);
+   private static final Log logger = LogFactory.getLog(EditWebContentWizard.class);
    
    private AVMNode avmNode;
    private Form form;
+   
+   private boolean wasFormLockPresent = false;
+   private boolean wasRenditionLockPresent = false;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -112,10 +68,10 @@ public class EditWebContentWizard extends CreateWebContentWizard
       {
          throw new IllegalArgumentException("Edit Form wizard requires action node context.");
       }
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("path is " + this.avmNode.getPath());
-      }
+
+      if (logger.isDebugEnabled())
+         logger.debug("path is " + this.avmNode.getPath());
+
       this.createdPath = AVMUtil.getCorrespondingPathInPreviewStore(this.avmNode.getPath());
       this.formInstanceData = this.getFormsService().getFormInstanceData(-1, this.createdPath);
       final WebProject webProject = new WebProject(this.createdPath);
@@ -131,6 +87,46 @@ public class EditWebContentWizard extends CreateWebContentWizard
       this.content = this.getAvmService().getContentReader(-1, this.createdPath).getContentString();
       this.fileName = this.formInstanceData.getName();
       this.mimeType = MimetypeMap.MIMETYPE_XML;
+      this.wasFormLockPresent = false;
+      this.wasRenditionLockPresent = false;
+   }
+
+   @Override
+   public String cancel()
+   {
+      if (this.formInstanceData != null && this.renditions != null)
+      {
+         if (this.wasFormLockPresent == false)
+         {
+            // there wasn't a lock on the form at the start of the 
+            // wizard so remove the one present now
+            if (logger.isDebugEnabled())
+               logger.debug("removing form instance data lock from " + 
+                     AVMUtil.getCorrespondingPathInMainStore(this.createdPath) +
+                     " as user chose to cancel");
+            
+            this.getAvmLockingService().removeLock(AVMUtil.getStoreId(this.createdPath),
+                                                   AVMUtil.getStoreRelativePath(this.createdPath));
+         }
+      
+         if (this.wasRenditionLockPresent == false)
+         {
+            // there weren't locks on renditions at the start of
+            // the wizard so remove the ones present now
+            for (Rendition r : this.renditions)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("removing lock from " + 
+                        AVMUtil.getCorrespondingPathInMainStore(r.getPath()) + 
+                        " as user chose to cancel");
+               
+               this.getAvmLockingService().removeLock(AVMUtil.getStoreId(r.getPath()),
+                                                      AVMUtil.getStoreRelativePath(r.getPath()));
+            }
+         }
+      }
+      
+      return super.cancel();
    }
 
    @Override
@@ -149,22 +145,26 @@ public class EditWebContentWizard extends CreateWebContentWizard
    protected void saveContent()
       throws Exception
    {
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("saving " + this.createdPath);
-      }
+      if (logger.isDebugEnabled())
+         logger.debug("saving " + this.createdPath);
+      
       AVMLock lock = this.getAvmLockingService().getLock(AVMUtil.getStoreId(this.createdPath),
                                                     AVMUtil.getStoreRelativePath(this.createdPath));
       if (lock != null)
       {
-         LOGGER.debug("transferring lock from " + lock.getStore() + 
-                      " to " + AVMUtil.getStoreName(this.createdPath));
+         if (logger.isDebugEnabled())
+            logger.debug("transferring lock from " + lock.getStore() + 
+                         " to " + AVMUtil.getStoreName(this.createdPath));
+         
          this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(this.createdPath),
                                            AVMUtil.getStoreRelativePath(this.createdPath),
                                            null,
                                            AVMUtil.getStoreName(this.createdPath),
                                            null,
                                            null);
+         
+         // set the lock present flag
+         this.wasFormLockPresent = true;
       }
 
       final ContentWriter writer = this.getAvmService().getContentWriter(this.createdPath);
@@ -179,14 +179,19 @@ public class EditWebContentWizard extends CreateWebContentWizard
                                                AVMUtil.getStoreRelativePath(r.getPath()));
          if (lock != null)
          {
-            LOGGER.debug("transferring lock from " + lock.getStore() + 
-                         " to " + AVMUtil.getStoreName(r.getPath()));
+            if (logger.isDebugEnabled())
+               logger.debug("transferring lock from " + lock.getStore() + 
+                            " to " + AVMUtil.getStoreName(r.getPath()));
+            
             this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(r.getPath()),
                                               AVMUtil.getStoreRelativePath(r.getPath()),
                                               null,
                                               AVMUtil.getStoreName(r.getPath()),
                                               null,
                                               null);
+            
+            // set the lock present flag
+            this.wasRenditionLockPresent = true;
          }
       }
       final List<FormInstanceData.RegenerateResult> result = this.formInstanceData.regenerateRenditions();
@@ -203,19 +208,24 @@ public class EditWebContentWizard extends CreateWebContentWizard
          {
             final Rendition r = rr.getRendition();
             this.renditions.add(r);
-            LOGGER.debug("transferring lock for " + r.getPath() + 
-                         " back to " + AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())));
+            
+            if (logger.isDebugEnabled())
+               logger.debug("transferring lock for " + r.getPath() + 
+                            " back to " + AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())));
+            
             this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(r.getPath()),
                                               AVMUtil.getStoreRelativePath(r.getPath()),
                                               null,
                                               AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(r.getPath())),
                                               null,
                                               null);
-
          }
       }
-      LOGGER.debug("transferring form instance data lock back to " + 
-                   AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)));
+      
+      if (logger.isDebugEnabled())
+         logger.debug("transferring form instance data lock back to " + 
+                      AVMUtil.getCorrespondingMainStoreName(AVMUtil.getStoreName(this.createdPath)));
+      
       this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(this.createdPath),
                                         AVMUtil.getStoreRelativePath(this.createdPath),
                                         null,

@@ -89,7 +89,7 @@ public class CreateWebContentWizard extends CreateContentWizard
 {
    private static final long serialVersionUID = -4090370304405270047L;
 
-   private static final Log LOGGER = LogFactory.getLog(CreateWebContentWizard.class);
+   private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
 
    protected String content = null;
    transient private List<SelectItem> createMimeTypes;
@@ -245,8 +245,8 @@ public class CreateWebContentWizard extends CreateContentWizard
       {
          public String execute() throws Throwable
          {
-            if (LOGGER.isDebugEnabled())
-               LOGGER.debug("reseting layer " + path);
+            if (logger.isDebugEnabled())
+               logger.debug("reseting layer " + path);
             
             // call the actual implementation
             getAvmSyncService().resetLayer(path);
@@ -313,8 +313,8 @@ public class CreateWebContentWizard extends CreateContentWizard
             {
                if (formInstanceData != null)
                {
-                  if (LOGGER.isDebugEnabled())
-                     LOGGER.debug("clearing form instance data: " + formInstanceData.getPath());
+                  if (logger.isDebugEnabled())
+                     logger.debug("clearing form instance data: " + formInstanceData.getPath());
                   
                   getAvmService().removeNode(formInstanceData.getPath());
                }
@@ -371,21 +371,24 @@ public class CreateWebContentWizard extends CreateContentWizard
          diffList.add(new AVMDifference(-1, path, -1, AVMUtil.getCorrespondingPathInMainStore(path), AVMDifference.NEWER));
       }
 
-      if (LOGGER.isDebugEnabled())
+      if (logger.isDebugEnabled())
       {
          for (final AVMDifference diff : diffList)
          {
-            LOGGER.debug("updating main store with " + diff.getSourcePath());
+            logger.debug("updating main store with " + diff.getSourcePath());
          }
       }
       this.getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
       for (final AVMDifference diff : diffList)
       {
          final String path = diff.getDestinationPath();
-         if (LOGGER.isDebugEnabled())
+         if (logger.isDebugEnabled())
          {
-            LOGGER.debug("modifying lock on " + path + ".  chaging store from "
-                  + this.getAvmLockingService().getLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path)).getStore() + " to " + AVMUtil.getStoreName(path));
+            logger.debug("modifying lock on " + path + 
+                         ".  chaging store from " + 
+                         this.getAvmLockingService().getLock(AVMUtil.getStoreId(path), 
+                                                             AVMUtil.getStoreRelativePath(path)).getStore() +
+                         " to " + AVMUtil.getStoreName(path));
          }
          this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path), null, AVMUtil.getStoreName(path), null, null);
       }
@@ -417,15 +420,16 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       // reset all paths and structures to the main store
       this.createdPath = AVMUtil.getCorrespondingPathInMainStore(this.createdPath);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("reset path " + this.createdPath + " to main store");
+      if (logger.isDebugEnabled())
+         logger.debug("reset path " + this.createdPath + " to main store");
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
          this.formInstanceData = getFormsService().getFormInstanceData(-1, this.createdPath);
          this.renditions = this.formInstanceData.getRenditions();
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("reset form instance data " + this.formInstanceData.getName() + " and " + this.renditions.size() + " to main store");
+         if (logger.isDebugEnabled())
+            logger.debug("reset form instance data " + this.formInstanceData.getName() + 
+                         " and " + this.renditions.size() + " rendition(s) to main store");
       }
 
       return outcome;
@@ -455,8 +459,8 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       // get the parent path of the location to save the content
       String fileName = this.getFileName();
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("saving file content to " + fileName);
+      if (logger.isDebugEnabled())
+         logger.debug("saving file content to " + fileName);
 
       final String cwd = AVMUtil.getCorrespondingPathInPreviewStore(this.avmBrowseBean.getCurrentPath());
       final Form form = (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) ? this.getForm() : null);
@@ -470,13 +474,13 @@ public class CreateWebContentWizard extends CreateContentWizard
          fileName = sb[1];
       }
 
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("creating all directories in path " + path);
+      if (logger.isDebugEnabled())
+         logger.debug("creating all directories in path " + path);
 
       AVMUtil.makeAllDirectories(path);
 
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("creating file " + fileName + " in " + path);
+      if (logger.isDebugEnabled())
+         logger.debug("creating file " + fileName + " in " + path);
 
       // put the content of the file into the AVM store
       try
@@ -608,14 +612,14 @@ public class CreateWebContentWizard extends CreateContentWizard
          final Config wizardCfg = svc.getConfig("Content Wizards");
          if (wizardCfg == null)
          {
-            LOGGER.warn("Could not find 'Content Wizards' configuration section");
+            logger.warn("Could not find 'Content Wizards' configuration section");
          }
          else
          {
             final ConfigElement typesCfg = wizardCfg.getConfigElement("create-mime-types");
             if (typesCfg == null)
             {
-               LOGGER.warn("Could not find 'create-mime-types' configuration element");
+               logger.warn("Could not find 'create-mime-types' configuration element");
             }
             else
             {

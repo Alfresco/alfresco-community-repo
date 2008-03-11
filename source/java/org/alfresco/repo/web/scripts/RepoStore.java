@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
@@ -442,7 +443,7 @@ public class RepoStore implements Store, TenantDeployer
         }
         else
         {
-            pathInfo = fileService.makeFolders(getBaseNodeRef(), folderElementsList, ContentModel.TYPE_FOLDER);
+            pathInfo = FileFolderServiceImpl.makeFolders(fileService, getBaseNodeRef(), folderElementsList, ContentModel.TYPE_FOLDER);
         }
 
         // create file

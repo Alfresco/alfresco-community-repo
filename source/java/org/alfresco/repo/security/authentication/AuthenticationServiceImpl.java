@@ -110,6 +110,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
     {
         try
         {
+            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
+            clearCurrentSecurityContext();
             preAuthenticationCheck(userName);
         	authenticationComponent.authenticate(userName, password);
         }

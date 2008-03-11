@@ -536,7 +536,7 @@ public class MultiTServiceImpl implements TenantService
     protected void checkTenantEnabled(String tenantDomain)
     {
         // note: System user can access disabled tenants
-        if (! getBaseNameUser(AuthenticationUtil.getCurrentUserName()).equals(AuthenticationUtil.getSystemUserName()))
+        if (! (AuthenticationUtil.getSystemUserName().equals(getBaseNameUser(AuthenticationUtil.getCurrentUserName()))))
         {
             if (getTenant(tenantDomain).isEnabled() == false)
             {

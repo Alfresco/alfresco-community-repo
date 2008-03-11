@@ -241,11 +241,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         // register file store - to allow enable/disable tenant callbacks
         register(tenantFileContentStore);
         
-        UserTransaction userTransaction = transactionService.getUserTransaction();           
-        authenticationComponent.setSystemUserAsCurrentUser();
-                                        
+        UserTransaction userTransaction = transactionService.getUserTransaction();
+        
         try 
         {
+            authenticationComponent.setSystemUserAsCurrentUser();
             userTransaction.begin();
             
             // bootstrap Tenant Service internal cache            
@@ -268,7 +268,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                     disableTenant(tenant.getTenantDomain(), false);
                     disabledCount++;
                 }
-            } 
+            }
             
             tenantService.register(this); // callback to refresh tenantStatus cache
             
@@ -284,8 +284,11 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         {
             // rollback the transaction
             try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
             throw new AlfrescoRuntimeException("Failed to bootstrap tenants", e);
+        }
+        finally
+        {
+            authenticationComponent.clearCurrentSecurityContext();
         }
     }
     
@@ -907,49 +910,43 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
             {
                 // rollback the transaction
                 try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-                try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
                 throw new AlfrescoRuntimeException("Failed to get tenants", e);
             }
-                           
-            String currentUser = AuthenticationUtil.getCurrentUserName();
-            
-            try 
+            finally
             {
-                for (Tenant tenant : tenants)
-                { 
-                    if (tenant.isEnabled()) 
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+
+            for (Tenant tenant : tenants)
+            {
+                if (tenant.isEnabled())
+                {
+                    try
                     {
-                        try
-                        {     
-                            // switch to admin in order to deploy within context of tenant domain
-                            // assumes each tenant has default "admin" user                       
-                            AuthenticationUtil.runAs(new RunAsWork<Object>()
-                            {
-                                public Object doWork()
-                                {            
-                                    // init the service within tenant context
-                                    deployer.init();
-                                    return null;
-                                }                               
-                            }, getSystemUser(tenant.getTenantDomain()));
-                        
-                        }       
-                        catch (Throwable e)
+                        // switch to admin in order to deploy within context of tenant domain
+                        // assumes each tenant has default "admin" user
+                        AuthenticationUtil.runAs(new RunAsWork<Object>()
                         {
-                            logger.error("Deployment failed" + e);
-                            
-                            StringWriter stringWriter = new StringWriter();
-                            e.printStackTrace(new PrintWriter(stringWriter));
-                            logger.error(stringWriter.toString());
-                            
-                            // tenant deploy failure should not necessarily affect other tenants
-                        }
+                            public Object doWork()
+                            {            
+                                // init the service within tenant context
+                                deployer.init();
+                                return null;
+                            }
+                        }, getSystemUser(tenant.getTenantDomain()));
+                    
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error("Deployment failed" + e);
+                        
+                        StringWriter stringWriter = new StringWriter();
+                        e.printStackTrace(new PrintWriter(stringWriter));
+                        logger.error(stringWriter.toString());
+                        
+                        // tenant deploy failure should not necessarily affect other tenants
                     }
                 }
-            }
-            finally
-            {    
-                if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
             }
         }
     }

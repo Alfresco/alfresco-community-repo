@@ -435,11 +435,11 @@ public class FileFolderServiceImplTest extends TestCase
         namePath.add("CCC");
         namePath.add("DDD");
         
-        FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
         
-        FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
         // check that it worked
@@ -468,11 +468,11 @@ public class FileFolderServiceImplTest extends TestCase
         namePath.add("C");
         namePath.add("D");
         
-        FileInfo lastFileInfo = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        FileInfo lastFileInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("First makeFolder failed", lastFileInfo);
         // check that a repeat works
         
-        FileInfo lastFileInfoAgain = fileFolderService.makeFolders(rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
+        FileInfo lastFileInfoAgain = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, namePath, ContentModel.TYPE_FOLDER);
         assertNotNull("Repeat makeFolders failed", lastFileInfoAgain);
         assertEquals("Repeat created new leaf", lastFileInfo.getNodeRef(), lastFileInfoAgain.getNodeRef());
     }

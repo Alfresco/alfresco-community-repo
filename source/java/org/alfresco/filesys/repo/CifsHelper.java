@@ -38,6 +38,7 @@ import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -352,7 +353,8 @@ public class CifsHelper
         NodeRef parentFolderNodeRef = rootNodeRef;
         if (folderPathElements.size() > 0)
         {
-            parentFolderNodeRef = fileFolderService.makeFolders(
+            parentFolderNodeRef = FileFolderServiceImpl.makeFolders(
+                    fileFolderService,
                     rootNodeRef,
                     folderPathElements,
                     ContentModel.TYPE_FOLDER).getNodeRef();

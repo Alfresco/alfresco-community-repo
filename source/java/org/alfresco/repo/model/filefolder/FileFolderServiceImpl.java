@@ -35,12 +35,15 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -260,27 +263,46 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     private boolean isFolder(QName typeQName) throws InvalidTypeException
     {
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        FileFolderServiceType type = getType(typeQName);
+        
+        switch (type)
         {
-            if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
-            {
-                throw new InvalidTypeException("This service should ignore type " + ContentModel.TYPE_SYSTEM_FOLDER);
-            }
-            return true;
-        }
-        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) ||
-        		dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
-        {
-            // it is a regular file
+        case FILE:
             return false;
-        }
-        else
-        {
-            // unhandled type
+        case FOLDER:
+            return true;
+        case SYSTEM_FOLDER:
+            throw new InvalidTypeException("This service should ignore type " + ContentModel.TYPE_SYSTEM_FOLDER);
+        case INVALID:
+        default:
             throw new InvalidTypeException("Type is not handled by this service: " + typeQName);
         }
     }
 
+    
+    public FileFolderServiceType getType(QName typeQName)
+    {
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        {
+            if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
+            {
+                return FileFolderServiceType.SYSTEM_FOLDER;
+            }
+            return FileFolderServiceType.FOLDER;
+        }
+        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) ||
+                dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
+        {
+            // it is a regular file
+            return FileFolderServiceType.FILE;
+        }
+        else
+        {
+            // unhandled type
+            return FileFolderServiceType.INVALID;
+        }
+    }
+    
     public List<FileInfo> list(NodeRef contextNodeRef)
     {
         // execute the query
@@ -774,39 +796,7 @@ public class FileFolderServiceImpl implements FileFolderService
 
     public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
     {
-        if (pathElements.size() == 0)
-        {
-            throw new IllegalArgumentException("Path element list is empty");
-        }
-        
-        // make sure that the folder is correct
-        boolean isFolder = isFolder(folderTypeQName);
-        if (!isFolder)
-        {
-            throw new IllegalArgumentException("Type is invalid to make folders with: " + folderTypeQName);
-        }
-        
-        NodeRef currentParentRef = parentNodeRef;
-        // just loop and create if necessary
-        for (String pathElement : pathElements)
-        {
-            // does it exist?
-            NodeRef nodeRef = searchSimple(currentParentRef, pathElement);
-            if (nodeRef == null)
-            {
-                // not present - make it
-                FileInfo createdFileInfo = create(currentParentRef, pathElement, folderTypeQName);
-                currentParentRef = createdFileInfo.getNodeRef();
-            }
-            else
-            {
-                // it exists
-                currentParentRef = nodeRef;
-            }
-        }
-        // done
-        FileInfo fileInfo = toFileInfo(currentParentRef, true);
-        return fileInfo;
+        return FileFolderServiceImpl.makeFolders(this, parentNodeRef, pathElements, folderTypeQName);
     }
 
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
@@ -937,5 +927,80 @@ public class FileFolderServiceImpl implements FileFolderService
             throw new InvalidTypeException("Unable to get a content writer for a folder: " + fileInfo);
         }
         return contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+    }
+    
+    /**
+     * Helper method to create folders.
+     * 
+     * This uses the provided service for all auditing and permission checks. 
+     * 
+     * @param service
+     * @param parentNodeRef
+     * @param pathElements
+     * @param folderTypeQName
+     * @return
+     */
+    public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
+    {
+        if (pathElements.size() == 0)
+        {
+            throw new IllegalArgumentException("Path element list is empty");
+        }
+        
+        // make sure that the folder is correct
+        boolean isFolder = service.getType(folderTypeQName) == FileFolderServiceType.FOLDER;
+        if (!isFolder)
+        {
+            throw new IllegalArgumentException("Type is invalid to make folders with: " + folderTypeQName);
+        }
+        
+        NodeRef currentParentRef = parentNodeRef;
+        // just loop and create if necessary
+        for (String pathElement : pathElements)
+        {
+            // does it exist?
+            // Navigation should not check permissions
+            NodeRef nodeRef = AuthenticationUtil.runAs(new SearchAsSystem(service, currentParentRef, pathElement), AuthenticationUtil.getSystemUserName());
+
+            if (nodeRef == null)
+            {
+                // not present - make it
+                // If this uses the public service it will check create permissions
+                FileInfo createdFileInfo = service.create(currentParentRef, pathElement, folderTypeQName);
+                currentParentRef = createdFileInfo.getNodeRef();
+            }
+            else
+            {
+                // it exists
+                currentParentRef = nodeRef;
+            }
+        }
+        // done
+        // Used to call toFileInfo((currentParentRef, true);
+        // If this uses the public service this will check the final read access
+        FileInfo fileInfo = service.getFileInfo(currentParentRef);
+        
+        // Should we check the type?
+        return fileInfo;
+    }
+    
+    private static class SearchAsSystem implements RunAsWork<NodeRef>
+    {
+        FileFolderService service;
+        NodeRef node;
+        String name;
+
+        SearchAsSystem( FileFolderService service, NodeRef node, String name)
+        {
+            this.service = service;
+            this.node = node;
+            this.name = name;
+        }
+        
+        public NodeRef doWork() throws Exception
+        {
+            return service.searchSimple(node, name);
+        }
+        
     }
 }

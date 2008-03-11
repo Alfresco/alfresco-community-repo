@@ -32,6 +32,7 @@ import java.util.List;
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -398,7 +399,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
             {
                 public FileInfo execute() throws Throwable
                 {
-                    return fileFolderService.makeFolders(parentNodeRef, pathElements, folderTypeQName);
+                    return FileFolderServiceImpl.makeFolders(fileFolderService, parentNodeRef, pathElements, folderTypeQName);
                 }
             };
             return retryingTransactionHelper.doInTransaction(callback, false, true);

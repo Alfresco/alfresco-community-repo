@@ -24,14 +24,18 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -89,6 +93,31 @@ public class PermissionServiceTest extends AbstractPermissionTest
         allowAndyReadChildren = new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED);
     }
 
+    public void test_AR_2055()
+    {
+        runAs("admin");
+        NodeRef folder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        runAs("andy");
+        List<String> pathElements = new ArrayList<String>();
+        pathElements.add("monkey");
+        try
+        {
+            FileFolderServiceImpl.makeFolders(serviceRegistry.getFileFolderService(), folder, pathElements, ContentModel.TYPE_FOLDER);
+            fail();
+        }
+        catch (AccessDeniedException ade)
+        {
+
+        }
+        
+        runAs("admin");
+        permissionService.setPermission(folder, "andy", PermissionService.ALL_PERMISSIONS, true);
+        
+        FileFolderServiceImpl.makeFolders(serviceRegistry.getFileFolderService(), folder, pathElements, ContentModel.TYPE_FOLDER);
+
+    }
+
     public void testRunAsRealAndEffectiveUsers()
     {
         runAs("admin");
@@ -97,26 +126,28 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         runAs("andy");
         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
-        
+
         assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
         assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
 
             public Object doWork() throws Exception
             {
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
-                
+
                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
                 return null;
-            }}, "admin");
-        
+            }
+        }, "admin");
+
         assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
         assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
 
     }
-    
+
     public void testDefaultModelPermissions()
     {
         runAs("admin");
@@ -977,7 +1008,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_CHILDREN)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_CONTENT)) == AccessStatus.ALLOWED);
     }
-    
+
     public void testPerformance() throws Exception
     {
         runAs("admin");
@@ -1002,17 +1033,16 @@ public class PermissionServiceTest extends AbstractPermissionTest
         runAs("andy");
         permissionService.hasPermission(n5, PermissionService.READ);
         long start = System.nanoTime();
-        for(int i = 0; i < 10000; i++)
+        for (int i = 0; i < 10000; i++)
         {
             permissionService.hasPermission(n5, PermissionService.READ);
         }
         long end = System.nanoTime();
-        System.out.println("Can in "+((end-start)/10e9f/10000));
-        System.out.println("Can per second "+(1/((end-start)/10e9f/10000)));
-      
+        System.out.println("Can in " + ((end - start) / 10e9f / 10000));
+        System.out.println("Can per second " + (1 / ((end - start) / 10e9f / 10000)));
+
     }
-    
-    
+
     public void testPerf() throws Exception
     {
         runAs("admin");
@@ -1591,7 +1621,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CONTENT), "AnDy", AccessStatus.ALLOWED));
 
         permissionService.getAllSetPermissions(rootNodeRef);
-        
+
         runAs("andy");
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);
@@ -1882,9 +1912,9 @@ public class PermissionServiceTest extends AbstractPermissionTest
         NodeRef n9 = nodeService.createNode(n1, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}nine"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n10 = nodeService.createNode(n1, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}ten"), ContentModel.TYPE_FOLDER).getChildRef();
 
-        //assertEquals(0, permissionService.getAllSetPermissionsForCurrentUser().size());
-        //assertEquals(0, permissionService.getAllSetPermissionsForAuthority("admin").size());
-        //assertEquals(0, permissionService.getAllSetPermissionsForAuthority("andy").size());
+        // assertEquals(0, permissionService.getAllSetPermissionsForCurrentUser().size());
+        // assertEquals(0, permissionService.getAllSetPermissionsForAuthority("admin").size());
+        // assertEquals(0, permissionService.getAllSetPermissionsForAuthority("andy").size());
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ_CHILDREN), "admin", AccessStatus.ALLOWED));
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ_CONTENT), "admin", AccessStatus.ALLOWED));
@@ -1901,50 +1931,50 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(n10, getPermission(PermissionService.READ_CHILDREN), "admin", AccessStatus.DENIED));
         permissionService.setPermission(new SimplePermissionEntry(n10, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
 
-//        assertEquals(10, permissionService.getAllSetPermissionsForCurrentUser().size());
-//        assertEquals(10, permissionService.getAllSetPermissionsForAuthority("admin").size());
-//        assertEquals(2, permissionService.getAllSetPermissionsForAuthority("andy").size());
-//        assertNull(permissionService.getAllSetPermissionsForCurrentUser().get(rootNodeRef));
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("admin").get(rootNodeRef));
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(rootNodeRef));
-//        assertEquals(2, permissionService.getAllSetPermissionsForCurrentUser().get(n1).size());
-//        assertEquals(2, permissionService.getAllSetPermissionsForAuthority("admin").get(n1).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n1));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n2).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n2).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n2).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n3).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n3).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n3));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n4).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n4).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n4));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n5).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n5).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n5));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n6).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n6).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n6));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n7).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n7).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n7));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n8).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n8).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n8));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n9).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n9).size());
-//        assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n9));
-//        assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n10).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n10).size());
-//        assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n10).size());
+        // assertEquals(10, permissionService.getAllSetPermissionsForCurrentUser().size());
+        // assertEquals(10, permissionService.getAllSetPermissionsForAuthority("admin").size());
+        // assertEquals(2, permissionService.getAllSetPermissionsForAuthority("andy").size());
+        // assertNull(permissionService.getAllSetPermissionsForCurrentUser().get(rootNodeRef));
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("admin").get(rootNodeRef));
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(rootNodeRef));
+        // assertEquals(2, permissionService.getAllSetPermissionsForCurrentUser().get(n1).size());
+        // assertEquals(2, permissionService.getAllSetPermissionsForAuthority("admin").get(n1).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n1));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n2).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n2).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n2).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n3).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n3).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n3));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n4).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n4).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n4));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n5).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n5).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n5));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n6).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n6).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n6));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n7).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n7).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n7));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n8).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n8).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n8));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n9).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n9).size());
+        // assertNull(permissionService.getAllSetPermissionsForAuthority("andy").get(n9));
+        // assertEquals(1, permissionService.getAllSetPermissionsForCurrentUser().get(n10).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("admin").get(n10).size());
+        // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n10).size());
 
     }
 
     public void xtestFindNodesByPermission()
     {
         runAs("admin");
-        
-        //StoreRef storeRef = rootNodeRef.getStoreRef();
+
+        // StoreRef storeRef = rootNodeRef.getStoreRef();
 
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
@@ -1961,14 +1991,22 @@ public class PermissionServiceTest extends AbstractPermissionTest
         String groupAuth = authorityService.createAuthority(AuthorityType.GROUP, null, "G");
         authorityService.addAuthority(groupAuth, "andy");
 
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer", true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer", false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", "Consumer", true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", "Consumer", false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, "Consumer", true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, "Consumer", false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer",
+        // true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser("Consumer",
+        // false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", true,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", "Consumer", false,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", "Consumer", true,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", "Consumer", false,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, "Consumer", true,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, "Consumer", false,
+        // false, false), storeRef).size());
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.CONSUMER), "admin", AccessStatus.ALLOWED));
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
@@ -1985,212 +2023,413 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(n4, getPermission(PermissionService.READ_CHILDREN), groupAuth, AccessStatus.ALLOWED));
         permissionService.setPermission(new SimplePermissionEntry(n5, getPermission(PermissionService.READ_CONTENT), groupAuth, AccessStatus.ALLOWED));
 
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, false, false), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, false, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, false, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, false, false, false), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, false, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // true, false, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, true, false, false), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, true, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, false, false, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // true, false, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, false, false, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true,
+        // false, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false,
+        // false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, false, false, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // true, false, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, false, false, false), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, false, false, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // true, false, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, true, false, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, false, false, false), storeRef).size());
 
         // Include groups for exact match
 
-//        for (NodeRef nodeRef : permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, false))
-//        {
-//            System.out.println("Found " + nodeService.getPath(nodeRef));
-//        }
+        // for (NodeRef nodeRef :
+        // permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, false))
+        // {
+        // System.out.println("Found " + nodeService.getPath(nodeRef));
+        // }
 
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, true, false), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, true, false), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, true, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, true, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, true, false), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, false, true, false), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, true, false), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // true, true, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, false, true, false), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, true, true, false), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, true, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, false, true, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // true, true, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // false, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, false, true, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true,
+        // true, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false,
+        // true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, false, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, false, true, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // true, true, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // false, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, false, true, false), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, false, true, false), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, false, true, false), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // true, true, false), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // false, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, true, true, false), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, false, true, false), storeRef).size());
 
         // Include inexact permission
 
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, false, true), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, false, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, false, true), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, false, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, false, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, false, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, false, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, false, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, false, false, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, false, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // true, false, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, false, false, true), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, true, false, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, true, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, false, false, true), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // true, false, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // false, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, false, false, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true,
+        // false, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false,
+        // false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, false, false, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, true, false, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, true, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, false, false, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // true, false, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, false, false, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, true, false, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, false, false, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, true, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, false, false, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // true, false, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // false, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, true, false, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, false, false, true), storeRef).size());
 
         // Inexact for all
 
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONSUMER, false, true, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, true, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONSUMER, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, true, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONSUMER, false, true, true), storeRef).size());
-//
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ, false, true, true), storeRef).size());
-//        assertEquals(4, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, true, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, true, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ, false, true, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CONTENT, false, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, true, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CONTENT, false, true, true), storeRef).size());
-//        assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, true, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CONTENT, false, true, true), storeRef).size());
-//
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
-//        assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin", PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
-//        assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy", PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
-//        assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
-//        assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth, PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // true, true, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONSUMER,
+        // false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONSUMER, false, true, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, true, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONSUMER, false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, true, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONSUMER, false, true, true), storeRef).size());
+        //
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // true, true, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.CONTRIBUTOR,
+        // false, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.CONTRIBUTOR, false, true, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, true,
+        // true, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ, false,
+        // true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ, false, true, true), storeRef).size());
+        // assertEquals(4, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, true, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ, false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, true, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ, false, true, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // true, true, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CONTENT,
+        // false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CONTENT, false, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, true, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CONTENT, false, true, true), storeRef).size());
+        // assertEquals(3, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, true, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CONTENT, false, true, true), storeRef).size());
+        //
+        // assertEquals(1,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // true, true, true), storeRef).size());
+        // assertEquals(0,
+        // filterForStore(permissionService.findNodesByAssignedPermissionForCurrentUser(PermissionService.READ_CHILDREN,
+        // false, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
+        // assertEquals(0, filterForStore(permissionService.findNodesByAssignedPermission("admin",
+        // PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
+        // assertEquals(5, filterForStore(permissionService.findNodesByAssignedPermission("andy",
+        // PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
+        // assertEquals(2, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, true, true, true), storeRef).size());
+        // assertEquals(1, filterForStore(permissionService.findNodesByAssignedPermission(groupAuth,
+        // PermissionService.READ_CHILDREN, false, true, true), storeRef).size());
 
     }
 
-//    private Set<NodeRef> filterForStore(Set<NodeRef> set, StoreRef storeRef)
-//    {
-//        Set<NodeRef> toRemove = new HashSet<NodeRef>();
-//        for (NodeRef node : set)
-//        {
-//            if (!node.getStoreRef().equals(storeRef))
-//            {
-//                toRemove.add(node);
-//            }
-//        }
-//        set.removeAll(toRemove);
-//        return set;
-//    }
+    // private Set<NodeRef> filterForStore(Set<NodeRef> set, StoreRef storeRef)
+    // {
+    // Set<NodeRef> toRemove = new HashSet<NodeRef>();
+    // for (NodeRef node : set)
+    // {
+    // if (!node.getStoreRef().equals(storeRef))
+    // {
+    // toRemove.add(node);
+    // }
+    // }
+    // set.removeAll(toRemove);
+    // return set;
+    // }
 
     // TODO: Test permissions on missing nodes
 

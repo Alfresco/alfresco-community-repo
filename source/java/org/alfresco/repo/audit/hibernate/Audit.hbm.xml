@@ -115,7 +115,7 @@
         
     </class>
     
-    <query name="audit.GetLatestAuditDate">
+    <query name="audit.GetLatestAuditDate" cacheable="true">
         select
             audit_date
         from
@@ -124,7 +124,7 @@
             audit_date.id = (select max(audit_date_2.id) from  org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date_2)
     </query>
     
-    <query name="audit.GetAuditDate">
+    <query name="audit.GetAuditDate" cacheable="true">
         select
             audit_date
         from
@@ -133,7 +133,7 @@
             audit_date.id = (select max(audit_date_2.id) from  org.alfresco.repo.audit.hibernate.AuditDateImpl as audit_date_2 where audit_date_2.date = :date)
     </query>
     
-    <query name="audit.GetLatestAuditConfig">
+    <query name="audit.GetLatestAuditConfig" cacheable="true">
         select
             audit_config
         from
@@ -142,7 +142,7 @@
             audit_config.id = (select max(audit_config_2.id) from org.alfresco.repo.audit.hibernate.AuditConfigImpl as audit_config_2)
     </query>
     
-    <query name="audit.GetAuditSourceByApplication">
+    <query name="audit.GetAuditSourceByApplication" cacheable="true" >
         select 
             audit_store_byid
         from
@@ -158,7 +158,7 @@
             audit_store.method is null)
     </query>
     
-    <query name="audit.GetAuditSourceByApplicationServiceMethod">
+    <query name="audit.GetAuditSourceByApplicationServiceMethod" cacheable="true" >
         select 
             audit_store_byid
         from

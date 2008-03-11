@@ -26,6 +26,7 @@ package org.alfresco.service.cmr.model;
 
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -200,6 +201,8 @@ public interface FileFolderService
      * @param folderTypeQName the types of nodes to create.  This must be a valid subtype of
      *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
      * @return Returns the info of the last folder in the path.
+     * 
+     * @deprecated - See the static helper method FileFolderServiceImpl.makeFolders
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "pathElements", "folderTypeQName"})
     public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName);
@@ -262,4 +265,14 @@ public interface FileFolderService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentWriter getWriter(NodeRef nodeRef);
+    
+    
+    /**
+     * Checks the type for whether it is a recognised file or folder type or is invalid for the FileFolderService.
+     * 
+     * @param typeQName the type to check
+     * @return - the type
+     */
+    @Auditable(parameters = {"typeQName"})
+    public FileFolderServiceType getType(QName typeQName);
 }

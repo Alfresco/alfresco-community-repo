@@ -92,6 +92,7 @@ public class NavigationBean implements Serializable
    /** Public JSF Bean name */
    public static final String BEAN_NAME = "NavigationBean";
    
+   private static Log logger = LogFactory.getLog(NavigationBean.class);
 
    /**
     * Default constructor
@@ -843,33 +844,55 @@ public class NavigationBean implements Serializable
    }
    
    /**
-    * @return true if the Company home node is accessable to the current user
+    * @return true if the Company home node is accessible to the current user
     */
    public boolean getCompanyHomeVisible()
    {
-      Node companyHomeNode = getCompanyHomeNode();
-      if (companyHomeNode != null)
+      try
       {
-          return companyHomeNode.hasPermission(PermissionService.READ);
+         Node companyHomeNode = getCompanyHomeNode();
+         if (companyHomeNode != null)
+         {
+            return companyHomeNode.hasPermission(PermissionService.READ);
+         }
+         else
+         {
+            return false;
+         }
       }
-      else
+      catch (Throwable e)
       {
-          return false;
+         if (logger.isDebugEnabled())
+         {
+            logger.debug("getCompanyHomeVisible failed", e);
+         }
+         return false;
       }
    }
    
    /**
-    * @return true if the Guest home node is accessable to the current user
+    * @return true if the Guest home node is accessible to the current user
     */
    public boolean getGuestHomeVisible()
    {
-      if (this.getAuthService().guestUserAuthenticationAllowed())
+      try
       {
-         Node guestHome = getGuestHomeNode();
-         return guestHome != null && guestHome.hasPermission(PermissionService.READ);
+         if (this.getAuthService().guestUserAuthenticationAllowed())
+         {
+            Node guestHome = getGuestHomeNode();
+            return guestHome != null && guestHome.hasPermission(PermissionService.READ);
+         }
+         else
+         {
+            return false;
+         }
       }
-      else
+      catch (Throwable e)
       {
+         if (logger.isDebugEnabled())
+         {
+            logger.debug("getGuestHomeVisible failed", e);
+         }
          return false;
       }
    }

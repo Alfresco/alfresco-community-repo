@@ -314,7 +314,11 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          this.userRolesDataModel = new ListDataModel();
       }
       
-      this.userRolesDataModel.setWrappedData(this.userGroupRoles);
+      // only set the wrapped data once otherwise the rowindex is reset
+      if (this.userRolesDataModel.getWrappedData() == null)
+      {
+         this.userRolesDataModel.setWrappedData(this.userGroupRoles);
+      }
       
       return this.userRolesDataModel;
    }

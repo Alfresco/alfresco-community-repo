@@ -475,7 +475,6 @@ public class SubmitDialog extends BaseDialogBean
       final String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
       final String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
       final List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
-      final AVMSyncService syncService = this.getAvmSyncService();
       final String submitLabel = this.label;
       final String submitComment = this.comment;
       
@@ -511,7 +510,7 @@ public class SubmitDialog extends BaseDialogBean
       {
            public Object doWork() throws Exception
            {
-               syncService.update(diffs, null, true, true, false, false, submitLabel, submitComment);
+               getAvmSyncService().update(diffs, null, true, true, false, false, submitLabel, submitComment);
                AVMDAOs.Instance().fAVMNodeDAO.flush();
                getAvmSyncService().flatten(sandboxPath, stagingPath);
                return null;

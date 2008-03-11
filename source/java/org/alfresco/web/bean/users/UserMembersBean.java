@@ -258,7 +258,10 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          this.personRolesDataModel = new ListDataModel();
       }
       
-      this.personRolesDataModel.setWrappedData(this.personRoles);
+      if (this.personRolesDataModel.getWrappedData() == null)
+      {
+         this.personRolesDataModel.setWrappedData(this.personRoles);
+      }
       
       return this.personRolesDataModel;
    }

@@ -154,7 +154,11 @@ public class AdvancedSearchDialog extends BaseDialogBean
     */
    public DataModel getCategoriesDataModel()
    {
-      properties.getCategoriesDataModel().setWrappedData(properties.getCategories());
+      // only set the wrapped data once otherwise the rowindex is reset
+      if (properties.getCategoriesDataModel().getWrappedData() == null)
+      {
+         properties.getCategoriesDataModel().setWrappedData(properties.getCategories());
+      }
       
       return properties.getCategoriesDataModel();
    }

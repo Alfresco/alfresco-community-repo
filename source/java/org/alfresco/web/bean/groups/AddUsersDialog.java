@@ -171,7 +171,11 @@ public class AddUsersDialog extends BaseDialogBean
          this.usersDataModel = new ListDataModel();
       }
 
-      this.usersDataModel.setWrappedData(this.usersForGroup);
+      // only set the wrapped data once otherwise the rowindex is reset
+      if (this.usersDataModel.getWrappedData() == null)
+      {
+         this.usersDataModel.setWrappedData(this.usersForGroup);
+      }
 
       return this.usersDataModel;
    }

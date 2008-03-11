@@ -733,7 +733,11 @@ public class CreateFormWizard extends BaseWizardBean
          this.renderingEngineTemplatesDataModel = new ListDataModel();
       }
       
-      this.renderingEngineTemplatesDataModel.setWrappedData(this.renderingEngineTemplates);
+      // only set the wrapped data once otherwise the rowindex is reset
+      if (this.renderingEngineTemplatesDataModel.getWrappedData() == null)
+      {
+         this.renderingEngineTemplatesDataModel.setWrappedData(this.renderingEngineTemplates);
+      }
       
       return this.renderingEngineTemplatesDataModel;
    }

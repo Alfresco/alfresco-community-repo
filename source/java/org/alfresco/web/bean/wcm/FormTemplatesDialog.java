@@ -137,7 +137,11 @@ public class FormTemplatesDialog extends BaseDialogBean
          this.templatesDataModel = new ListDataModel();
       }
       
-      this.templatesDataModel.setWrappedData(this.templates);
+      // only set the wrapped data once otherwise the rowindex is reset
+      if (this.templatesDataModel.getWrappedData() == null)
+      {
+         this.templatesDataModel.setWrappedData(this.templates);
+      }
       
       return this.templatesDataModel;
    }

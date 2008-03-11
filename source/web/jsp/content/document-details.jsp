@@ -354,8 +354,8 @@
             <h:outputText value="#{msg.actions}" />
          </f:facet>
          <a:actionLink id="view-version-props" value="#{msg.properties}" action="dialog:showVersionedDetails" actionListener="#{VersionedDocumentDetailsDialog.setBrowsingVersion}">
-            <f:param name="id" value="#{DialogManager.bean.document.id}" />
-            <f:param name="versionLabel" value="#{r.versionLabel}" />
+            <f:param id="pm1" name="id" value="#{DialogManager.bean.document.id}" />
+            <f:param id="pm2" name="versionLabel" value="#{r.versionLabel}" />
          </a:actionLink>
          <h:outputText id="space" value=" " />
          <a:actionLink id="view-link" value="#{msg.view}" href="#{r.url}" target="new" rendered="#{r.url != null}" />

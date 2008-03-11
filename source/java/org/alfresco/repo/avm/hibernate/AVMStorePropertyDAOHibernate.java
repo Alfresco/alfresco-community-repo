@@ -83,7 +83,7 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
                         "asp.store = :store and " +
                         "asp.name = :name");
             query.setEntity("store", store);
-            query.setParameter("name", qnameEntity);
+            query.setEntity("name", qnameEntity);
             return (AVMStoreProperty)query.uniqueResult();
         }
     }

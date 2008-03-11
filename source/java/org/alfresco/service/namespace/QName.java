@@ -27,6 +27,8 @@ package org.alfresco.service.namespace;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.repo.domain.hibernate.NamespaceEntityImpl;
+
 /**
  * <code>QName</code> represents the qualified name of a Repository item. Each
  * QName consists of a local name qualified by a namespace.
@@ -229,7 +231,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable
      */
     private QName(String namespace, String name, String prefix)
     {   
-        this.namespaceURI = (namespace == null) ? NamespaceService.DEFAULT_URI : namespace;
+        this.namespaceURI = ((namespace == null) || (namespace.equals(NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE))) ? NamespaceService.DEFAULT_URI : namespace;
         this.prefix = prefix;
         this.localName = name;
         this.hashCode = 0;

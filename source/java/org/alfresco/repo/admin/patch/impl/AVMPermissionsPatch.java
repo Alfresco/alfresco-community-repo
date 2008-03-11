@@ -49,16 +49,23 @@ public class AVMPermissionsPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        Long toDo = aclDaoComponent.getAVMHeadNodeCount();
-        Long maxId = aclDaoComponent.getMaxAclId();
+        Thread progressThread = null;
+        if (aclDaoComponent.supportsProgressTracking())
+        {
+            Long toDo = aclDaoComponent.getAVMHeadNodeCount();
+            Long maxId = aclDaoComponent.getMaxAclId();
 
-        Thread progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
-        progressThread.start();
+            progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+            progressThread.start();
+        }
         
         Map<ACLType, Integer> summary = accessControlListDao.patchAcls();
         
-        progressThread.interrupt();
-        progressThread.join();
+        if (progressThread != null)
+        {
+            progressThread.interrupt();
+            progressThread.join();
+        }
         
         // build the result message
         String msg = I18NUtil.getMessage(MSG_SUCCESS, summary.get(ACLType.DEFINING), summary.get(ACLType.LAYERED));

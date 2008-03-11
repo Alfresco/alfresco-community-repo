@@ -424,6 +424,14 @@
     ]]>
     </query>
     
+    <query name="permission.GetNewInStore">
+    <![CDATA[
+        select count(*)
+        from org.alfresco.repo.avm.AVMNodeImpl node
+        where storeNew is not null
+    ]]>
+    </query>
+    
     
     <!--
        

@@ -84,6 +84,10 @@ public class QNameEntityImpl implements QNameEntity, Serializable
             if (qname == null )
             {
                 String namespaceUri = namespace.getUri();
+                if (namespaceUri.equals(NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE)) 
+                {
+                    namespaceUri = "";
+                }
                 qname = QName.createQName(namespaceUri, localName);
             }
             return qname;

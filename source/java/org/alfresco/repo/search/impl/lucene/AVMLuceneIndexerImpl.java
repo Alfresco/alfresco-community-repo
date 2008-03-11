@@ -128,6 +128,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     private int startVersion = -1;
 
     private int endVersion = -1;
+    
+    private long indexedDocCount = 0;
 
     /**
      * Set the AVM Service
@@ -391,6 +393,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
         if (desc.isLayeredDirectory() || desc.isLayeredFile())
         {
+            incrementDocCount();
             return docs;
         }
 
@@ -538,6 +541,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             System.out.println("Is Root " + root);
             System.out.println("Is deleted " + deleted);
         }
+        incrementDocCount();
         return docs;
     }
 
@@ -1649,5 +1653,15 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             }
         }
 
+    }
+    
+    public synchronized long getIndexedDocCount()
+    {
+        return indexedDocCount;
+    }
+    
+    private synchronized void incrementDocCount()
+    {
+        indexedDocCount++;
     }
 }

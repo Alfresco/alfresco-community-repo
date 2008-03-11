@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 
 /**
@@ -232,6 +233,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
     {
+        // If their are no actual changes there is nothing to do (the changes are all in TX and have already COWed so they can just change)
+        
+        boolean hasChanges = false;
         Long after = null;
         for (AclChange change : changes)
         {
@@ -243,7 +247,22 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             {
                 after = change.getAfter();
             }
+            
+            if(!EqualsHelper.nullSafeEquals(change.getTypeBefore(), change.getTypeAfter()))
+            {
+                hasChanges = true;
+            }
+            if(!EqualsHelper.nullSafeEquals(change.getBefore(), change.getAfter()))
+            {
+                hasChanges = true;
+            }
         }
+        
+        if(!hasChanges)
+        {
+            return;
+        }
+        
         Long inherited = null;
         if (after != null)
         {
@@ -253,6 +272,8 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         updateChangedAclsImpl(startingPoint, changes, SetMode.ALL, inherited, after, indirections);
     }
 
+   
+    
     private void updateChangedAclsImpl(NodeRef startingPoint, List<AclChange> changes, SetMode mode, Long inherited, Long setAcl, Map<Long, Set<Long>> indirections)
     {
         hibernateSessionHelper.mark();

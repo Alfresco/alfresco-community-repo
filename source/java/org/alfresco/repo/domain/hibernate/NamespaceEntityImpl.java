@@ -38,7 +38,7 @@ public class NamespaceEntityImpl implements NamespaceEntity, Serializable
 {
     private static final long serialVersionUID = -6781559184013949845L;
     
-    protected static final String EMPTY_URI_SUBSTITUTE = ".empty";
+    public static final String EMPTY_URI_SUBSTITUTE = ".empty";
 
     private Long id;
     private Long version;

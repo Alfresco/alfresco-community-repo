@@ -1390,6 +1390,30 @@
             <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
         </property>
     </bean>
+    
+    
+    <bean id="patch.wcmPostPermissionSnapshotPatch" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
+        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch</value></property>
+        <property name="description"><value>patch.wcmPostPermissionSnapshotPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>122</value></property>
+        <property name="targetSchema"><value>123</value></property>
+        <!-- helper beans -->
+        <property name="avmService">
+            <ref bean="AVMService" />
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
+        <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.wcmPermissionPatch" />
+            </list>
+        </property>
+    </bean>
 
     <bean id="patch.avmWebProjectInheritPermissions02" class="org.alfresco.repo.admin.patch.impl.AVMWebProjectInheritPermissionsPatch" parent="basePatch">
         <property name="id"><value>patch.avmWebProjectInheritPermissions02</value></property>

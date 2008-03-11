@@ -101,6 +101,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     static String QUERY_GET_LAYERED_DIRECTORIES = "permission.GetLayeredDirectories";
 
     static String QUERY_GET_LAYERED_FILES = "permission.GetLayeredFiles";
+    
+    static String QUERY_GET_NEW_IN_STORE = "permission.GetNewInStore";
 
     /** Access to QName entities */
     private QNameDAO qnameDAO;
@@ -1825,14 +1827,22 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         try
         {
             Session session = getSession();
-            session.connection().setTransactionIsolation(1);
-            Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCount");
-            Long answer = (Long) query.uniqueResult();
-            return answer;
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCount");
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
         }
         catch (SQLException e)
         {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
         }
 
     }
@@ -1842,15 +1852,37 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         try
         {
             Session session = getSession();
-            session.connection().setTransactionIsolation(1);
-            Query query = getSession().getNamedQuery("permission.GetMaxAclId");
-            Long answer = (Long) query.uniqueResult();
-            return answer;
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetMaxAclId");
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
         }
         catch (SQLException e)
         {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
         }
+    }
+
+    public boolean supportsProgressTracking()
+    {
+        try
+        {
+            Session session = getSession();
+            return session.connection().getMetaData().supportsTransactionIsolationLevel(1);
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+
     }
 
     public Long getAVMNodeCountWithNewACLS(Long above)
@@ -1858,16 +1890,38 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         try
         {
             Session session = getSession();
-            session.connection().setTransactionIsolation(1);
-            Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCountWherePermissionsHaveChanged");
-            query.setParameter("above", above);
-            Long answer = (Long) query.uniqueResult();
-            return answer;
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetAVMHeadNodeCountWherePermissionsHaveChanged");
+                query.setParameter("above", above);
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
         }
         catch (SQLException e)
         {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level");
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
         }
+    }
+    
+    public Long getNewInStore()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_NEW_IN_STORE);
+                return query.uniqueResult();
+            }
+        };
+        Long count = (Long) getHibernateTemplate().execute(callback);
+        return count;
     }
 
     @SuppressWarnings("unchecked")
@@ -1883,16 +1937,16 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         };
         List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
         ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
-        for(Object[] row : results)
+        for (Object[] row : results)
         {
-            Long from = (Long)row[0];
+            Long from = (Long) row[0];
             String to = (String) row[1];
             Integer version = (Integer) row[2];
             indirections.add(new Indirection(from, to, version));
         }
         return indirections;
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<Indirection> getLayeredFiles()
     {
@@ -1906,16 +1960,16 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         };
         List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
         ArrayList<Indirection> indirections = new ArrayList<Indirection>(results.size());
-        for(Object[] row : results)
+        for (Object[] row : results)
         {
-            Long from = (Long)row[0];
+            Long from = (Long) row[0];
             String to = (String) row[1];
             Integer version = (Integer) row[2];
             indirections.add(new Indirection(from, to, version));
         }
         return indirections;
     }
-    
+
     public List<Indirection> getAvmIndirections()
     {
         List<Indirection> dirList = getLayeredDirectories();
@@ -1936,7 +1990,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         Long from;
 
         String to;
-        
+
         Integer toVersion;
 
         Indirection(Long from, String to, Integer toVersion)
@@ -1960,8 +2014,6 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             return toVersion;
         }
-        
-        
 
     }
 

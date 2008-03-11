@@ -355,7 +355,7 @@ DROP INDEX t_fk_alf_qn_ns;
 ALTER TABLE alf_qname DROP CONSTRAINT t_fk_alf_qn_ns;
 
 -- Remove the FILLER- values from the namespace uri
-UPDATE alf_namespace SET uri = 'empty' WHERE uri = 'FILLER-';
+UPDATE alf_namespace SET uri = '.empty' WHERE uri = 'FILLER-';
 UPDATE alf_namespace SET uri = SUBSTR(uri, 8) WHERE uri LIKE 'FILLER-%';
 
 --

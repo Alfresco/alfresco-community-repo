@@ -485,4 +485,18 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             avmIndexer.createIndex(store, IndexMode.SYNCHRONOUS);
         }
     }
+    
+    public AVMLuceneIndexer getIndexer(String store)
+    {
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+        if (indexer instanceof AVMLuceneIndexer)
+        {
+            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+            return avmIndexer;
+        }
+        return null;
+    }
+
+    
 }

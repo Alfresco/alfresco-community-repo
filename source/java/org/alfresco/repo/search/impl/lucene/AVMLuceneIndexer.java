@@ -99,4 +99,10 @@ public interface AVMLuceneIndexer extends LuceneIndexer, BackgroundIndexerAware
      * @return
      */
     public boolean hasIndexBeenCreated(String store);
+    
+    /**
+     * Get the number of docs this indexer has indexed so far
+     * @return
+     */
+    public long getIndexedDocCount();
 }

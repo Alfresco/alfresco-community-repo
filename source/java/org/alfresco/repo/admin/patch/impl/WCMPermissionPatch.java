@@ -25,6 +25,7 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.WCMAppModel;
@@ -89,11 +90,15 @@ public class WCMPermissionPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        Long toDo = aclDaoComponent.getAVMHeadNodeCount();
-        Long maxId = aclDaoComponent.getMaxAclId();
+        Thread progressThread = null;
+        if (aclDaoComponent.supportsProgressTracking())
+        {
+            Long toDo = aclDaoComponent.getAVMHeadNodeCount();
+            Long maxId = aclDaoComponent.getMaxAclId();
 
-        Thread progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
-        progressThread.start();
+            progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+            progressThread.start();
+        }
 
         List<AVMStoreDescriptor> stores = avmService.getStores();
         for (AVMStoreDescriptor store : stores)
@@ -130,9 +135,12 @@ public class WCMPermissionPatch extends AbstractPatch
             }
         }
 
-        progressThread.interrupt();
-        progressThread.join();
-        
+        if (progressThread != null)
+        {
+            progressThread.interrupt();
+            progressThread.join();
+        }
+
         // build the result message
         String msg = I18NUtil.getMessage(MSG_SUCCESS);
         // done
@@ -182,6 +190,30 @@ public class WCMPermissionPatch extends AbstractPatch
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, store.getName() + ":/www");
         permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
 
+        QName propQName = QName.createQName(null, ".web_project.noderef");
+
+        PropertyValue pValue = avmService.getStoreProperty(store.getName(), propQName);
+
+        if (pValue != null)
+        {
+            NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
+
+            // Apply sepcific user permissions as set on the web project
+            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef ref : userInfoRefs)
+            {
+                NodeRef userInfoRef = ref.getChildRef();
+                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+
+                if (userrole.equals("ContentManager"))
+                {
+                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.CHANGE_PERMISSIONS, true);
+                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.READ_PERMISSIONS, true);
+                }
+            }
+        }
+
     }
 
     private void setSandBoxMasks(AVMStoreDescriptor sandBoxStore)
@@ -195,6 +227,7 @@ public class WCMPermissionPatch extends AbstractPatch
 
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, sandBoxStore.getName() + ":/www");
 
+        Map<QName, PropertyValue> woof = avmService.getStoreProperties(stagingAreaName);
         PropertyValue pValue = avmService.getStoreProperty(stagingAreaName, propQName);
 
         permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);

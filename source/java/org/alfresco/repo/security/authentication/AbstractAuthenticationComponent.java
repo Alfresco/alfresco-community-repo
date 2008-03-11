@@ -102,6 +102,21 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         return transactionService;
     }
 
+    public Boolean getAllowGuestLogin()
+    {
+        return allowGuestLogin;
+    }
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    public PersonService getPersonService()
+    {
+        return personService;
+    }
+
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         // Support guest login from the login screen
@@ -136,33 +151,13 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         }
         else
         {
-            return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Authentication>()
+            SetCurrentUserCallback callback = new SetCurrentUserCallback(userName);
+            Authentication auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, transactionService.isReadOnly(), false);
+            if ((auth == null) || (callback.ae != null))
             {
-
-                public Authentication execute() throws Throwable
-                {
-                    if (personService.personExists(userName))
-                    {
-                        NodeRef userNode = personService.getPerson(userName);
-                        if (userNode != null)
-                        {
-                            // Get the person name and use that as the current user to line up with permission checks
-                            String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                            return setCurrentUserImpl(personName);
-                        }
-                        else
-                        {
-                            // Set using the user name
-                            return setCurrentUserImpl(userName);
-                        }
-                    }
-                    else
-                    {
-                        // Set using the user name
-                        return setCurrentUserImpl(userName);
-                    }
-                }
-            }, false, false);
+                throw callback.ae;
+            }
+            return auth;
         }
     }
 
@@ -400,4 +395,48 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         return NTLMMode.NONE;
     }
 
+    class SetCurrentUserCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Authentication>
+    {
+        AuthenticationException ae = null;
+
+        String userName;
+
+        SetCurrentUserCallback(String userName)
+        {
+            this.userName = userName;
+        }
+
+        public Authentication execute() throws Throwable
+        {
+            try
+            {
+                if (personService.personExists(userName))
+                {
+                    NodeRef userNode = personService.getPerson(userName);
+                    if (userNode != null)
+                    {
+                        // Get the person name and use that as the current user to line up with permission checks
+                        String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                        return setCurrentUserImpl(personName);
+                    }
+                    else
+                    {
+                        // Set using the user name
+                        return setCurrentUserImpl(userName);
+                    }
+                }
+                else
+                {
+                    // Set using the user name
+                    return setCurrentUserImpl(userName);
+                }
+            }
+            catch (AuthenticationException ae)
+            {
+                this.ae = ae;
+                return null;
+            }
+
+        }
+    }
 }

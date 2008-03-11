@@ -29,6 +29,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -199,7 +200,7 @@ public class LockMethod extends WebDAVMethod
             else
             {
                // make sure folder structure is present
-               dirInfo = fileFolderService.makeFolders(rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
+               dirInfo = FileFolderServiceImpl.makeFolders(fileFolderService, rootNodeRef, dirPathElements, ContentModel.TYPE_FOLDER);
             }
             
             if (dirInfo == null)

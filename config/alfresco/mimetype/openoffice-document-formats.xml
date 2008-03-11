@@ -115,7 +115,7 @@
 
   <document-format><name>Microsoft Excel</name>
     <family>Spreadsheet</family>
-    <mime-type>application/application/vnd.excel</mime-type>
+    <mime-type>application/vnd.excel</mime-type>
     <file-extension>xls</file-extension>
     <export-filters>
       <entry><family>Spreadsheet</family><string>MS Excel 97</string></entry>

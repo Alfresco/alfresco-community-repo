@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -59,6 +60,9 @@ import org.apache.commons.logging.LogFactory;
 public class ContentStoreCleaner
 {
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
+    
+    /** kept to notify the thread that it should quit */
+    private static VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleaner");
     
     private DictionaryService dictionaryService;
     private NodeDaoService nodeDaoService;
@@ -178,6 +182,10 @@ public class ContentStoreCleaner
         {
             public void handle(Node node, Serializable value)
             {
+                if (vmShutdownListener.isVmShuttingDown())
+                {
+                    throw new VmShutdownException();
+                }
                 // Convert the values to ContentData and extract the URLs
                 ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
                 String contentUrl = contentData.getContentUrl();
@@ -204,6 +212,10 @@ public class ContentStoreCleaner
         {
             public void handle(String contentUrl)
             {
+                if (vmShutdownListener.isVmShuttingDown())
+                {
+                    throw new VmShutdownException();
+                }
                 contentUrlDAO.deleteContentUrl(contentUrl);
             }
         };
@@ -225,6 +237,10 @@ public class ContentStoreCleaner
         {
             public void handle(String contentUrl)
             {
+                if (vmShutdownListener.isVmShuttingDown())
+                {
+                    throw new VmShutdownException();
+                }
                 contentUrlDAO.createContentUrl(contentUrl);
             }
         };
@@ -251,6 +267,10 @@ public class ContentStoreCleaner
             {
                 for (ContentStore store : stores)
                 {
+                    if (vmShutdownListener.isVmShuttingDown())
+                    {
+                        throw new VmShutdownException();
+                    }
                     if (logger.isDebugEnabled())
                     {
                         if (store.isWriteSupported())
@@ -280,12 +300,33 @@ public class ContentStoreCleaner
                 return null;
             };
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(executeCallback);
-
-        // Done
-        if (logger.isDebugEnabled())
+        try
         {
-            logger.debug("   Content store cleanup completed.");
+            transactionService.getRetryingTransactionHelper().doInTransaction(executeCallback);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   Content store cleanup completed.");
+            }
         }
+        catch (VmShutdownException e)
+        {
+            // Aborted
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   Content store cleanup aborted.");
+            }
+        }
+    }
+
+    /**
+     * Message carrier to break out of loops using the callback.
+     * 
+     * @author Derek Hulley
+     * @since 2.1.3
+     */
+    private class VmShutdownException extends RuntimeException
+    {
+        private static final long serialVersionUID = -5876107469054587072L;
     }
 }

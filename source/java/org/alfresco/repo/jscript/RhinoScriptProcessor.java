@@ -509,8 +509,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // add the global scripts
             for (ProcessorExtension ex : this.processorExtensions.values()) 
             {
-            	model.put(ex.getExtensionName(), ex);
-			}
+               model.put(ex.getExtensionName(), ex);
+            }
+            
             
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())

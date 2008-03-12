@@ -33,6 +33,7 @@ import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -145,7 +146,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public Authentication setCurrentUser(final String userName) throws AuthenticationException
     {
-        if (AuthenticationUtil.getSystemUserName().equals(userName))
+        if (isSystemUserName(userName))
         {
             return setCurrentUserImpl(userName);
         }
@@ -178,11 +179,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         try
         {
             UserDetails ud = null;
-            if (userName.equals(AuthenticationUtil.SYSTEM_USER_NAME))
+            if (isSystemUserName(userName))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[1];
                 gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
-                ud = new User(AuthenticationUtil.SYSTEM_USER_NAME, "", true, true, true, true, gas);
+                ud = new User(userName, "", true, true, true, true, gas);
             }
             else if (isGuestUserName(userName))
             {
@@ -283,7 +284,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 	 */
     public boolean isSystemUserName(String userName)
     {
-    	return ((userName != null) && tenantService.getBaseNameUser(userName).equals(getSystemUserName()));
+    	return (getSystemUserName().equals(tenantService.getBaseNameUser(userName)));
     }
 
     /**
@@ -343,7 +344,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     
     private boolean isGuestUserName(String userName)
     {
-    	return ((userName != null) && tenantService.getBaseNameUser(userName).equalsIgnoreCase(PermissionService.GUEST_AUTHORITY));
+    	return (PermissionService.GUEST_AUTHORITY.equalsIgnoreCase(tenantService.getBaseNameUser(userName)));
     }
 
     protected abstract boolean implementationAllowsGuestLogin();
@@ -410,33 +411,39 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             try
             {
-                if (personService.personExists(userName))
+                String name = AuthenticationUtil.runAs(new RunAsWork<String>()
                 {
-                    NodeRef userNode = personService.getPerson(userName);
-                    if (userNode != null)
+                    public String doWork() throws Exception
                     {
-                        // Get the person name and use that as the current user to line up with permission checks
-                        String personName = (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
-                        return setCurrentUserImpl(personName);
+                        if (personService.personExists(userName))
+                        {
+                            NodeRef userNode = personService.getPerson(userName);
+                            if (userNode != null)
+                            {
+                                // Get the person name and use that as the current user to line up with permission checks
+                                return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
+                            }
+                            else
+                            {
+                                // Get user name
+                                return userName;
+                            }
+                        }
+                        else
+                        {
+                            // Get user name
+                            return userName;
+                        }                     
                     }
-                    else
-                    {
-                        // Set using the user name
-                        return setCurrentUserImpl(userName);
-                    }
-                }
-                else
-                {
-                    // Set using the user name
-                    return setCurrentUserImpl(userName);
-                }
+                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getUserDomain(userName)));                
+                
+                return setCurrentUserImpl(name);
             }
             catch (AuthenticationException ae)
             {
                 this.ae = ae;
                 return null;
             }
-
         }
     }
 }

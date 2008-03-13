@@ -147,7 +147,14 @@ public class MapNode extends Node implements Map<String, Object>
          propsInitialised = true;
       }
       
-      return props.get(key);
+      if (key.equals("properties"))
+      {
+         return props;
+      }
+      else
+      {
+         return props.get(key);
+      }
    }
 
    /**
@@ -196,6 +203,13 @@ public class MapNode extends Node implements Map<String, Object>
    public int size()
    {
       return getProperties().size();
+   }
+   
+   @Override
+   public void reset() 
+   {
+	  super.reset();
+	  propsInitialised = false;
    }
 
    /**

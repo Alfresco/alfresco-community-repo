@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -41,8 +42,11 @@ public class CCProperties implements Serializable
 
     private static final long serialVersionUID = -79530354521757202L;
 
-   /** The VersionOperationsService to be used by the bean */
+    /** The VersionOperationsService to be used by the bean */
     transient protected CheckOutCheckInService versionOperationsService;
+    
+    /** The VersionQueryService to be used by the bean */
+    transient protected VersionService versionQueryService;
 
     /** The ContentService to be used by the bean */
     transient protected ContentService contentService;
@@ -65,6 +69,8 @@ public class CCProperties implements Serializable
     /** transient form and upload properties */
     private File file;
     private String fileName;
+    private String webdavUrl;
+    private String cifsPath;
     private boolean keepCheckedOut = false;
     private boolean minorChange = true;
     private boolean isWorkflowAction = false;
@@ -98,6 +104,28 @@ public class CCProperties implements Serializable
     public void setVersionOperationsService(CheckOutCheckInService versionOperationsService)
     {
         this.versionOperationsService = versionOperationsService;
+    }
+    
+    /**
+     * @return Returns the VersionQueryService.
+     */
+    public VersionService getVersionQueryService()
+    {
+        if (this.versionQueryService == null)
+        {
+           this.versionQueryService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getVersionService();
+        }
+        
+        return this.versionQueryService;
+    }
+
+    /**
+     * @param versionQueryService
+     *            The VersionQueryService to set.
+     */
+    public void setVersionQueryService(VersionService versionQueryService)
+    {
+        this.versionQueryService = versionQueryService;
     }
 
     /**
@@ -366,5 +394,37 @@ public class CCProperties implements Serializable
     public void setCopyLocation(String copyLocation)
     {
         this.copyLocation = copyLocation;
+    }
+    
+    /**
+     * @return Returns WebDav url for online editing. If webdav online editing didn't yet started, returns null
+     */
+    public String getWebdavUrl()
+    {
+        return webdavUrl;
+    }
+
+    /**
+     * @param webdavUrl The webdav url. Using only for online editing
+     */
+    public void setWebdavUrl(String webdavUrl)
+    {
+        this.webdavUrl = webdavUrl;
+    }
+
+    /**
+     * @return Returns CIFS path for online editing. If cifs online editing didn't yet started, returns null
+     */
+    public String getCifsPath()
+    {
+        return cifsPath;
+    }
+
+    /**
+     * @param cifsPath The cifs path. Using only for online editing
+     */
+    public void setCifsPath(String cifsPath)
+    {
+        this.cifsPath = cifsPath;
     }
 }

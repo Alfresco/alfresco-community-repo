@@ -42,6 +42,72 @@
             </params>
          </action>
 
+         <!-- Edit document offline action -->
+         <action id="edit_doc_offline">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocOfflineEvaluator</evaluator>
+            <label-id>edit_doc_offline</label-id>
+            <image>/images/icons/edit_offline.gif</image>
+            <action-listener>#{EditOfflineDialog.setupContentAction}</action-listener>
+            <params>
+                <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Download document -->
+         <action id="download_doc">
+             <evaluator>org.alfresco.web.action.evaluator.DownloadEvaluator</evaluator>
+             <label-id>download_doc</label-id>
+             <image>/images/icons/download_doc.gif</image>
+             <href>#{actionContext.url}</href>
+         </action>
+
+         <!-- Edit document online action via webdav -->
+         <action id="edit_doc_online_webdav">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocOnlineWebDavEvaluator</evaluator>
+            <label-id>edit_doc_online</label-id>
+            <image>/images/icons/edit_online.gif</image>
+            <action-listener>#{EditOnlineDialog.handleWebdavEditing}</action-listener>
+            <params>
+                <param name="id">#{actionContext.id}</param>
+                <param name="webdavUrl">#{actionContext.webdavUrl}</param>
+            </params>
+         </action>
+
+         <!-- Edit document online action via cifs -->
+         <action id="edit_doc_online_cifs">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocOnlineCIFSEvaluator</evaluator>
+            <label-id>edit_doc_online</label-id>
+            <image>/images/icons/edit_online.gif</image>
+            <action-listener>#{EditOnlineDialog.handleCifsEditing}</action-listener>
+            <params>
+                <param name="id">#{actionContext.id}</param>
+                <param name="cifsPath">#{actionContext.cifsPath}</param>
+            </params>
+         </action>
+
+          <!-- Edit document online action via http -->
+         <action id="edit_doc_online_http">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.EditDocOnlineHttpEvaluator</evaluator>
+            <label-id>edit_doc_online</label-id>
+            <image>/images/icons/edit_online.gif</image>
+            <action-listener>#{EditOnlineDialog.handleHttpEditing}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
          <!-- Edit document action to open using normal HTTP access or inline Edit if set -->
          <action id="edit_doc_http">
             <permissions>
@@ -113,6 +179,29 @@
             <image>/images/icons/undo_checkout.gif</image>
             <action-listener>#{CCUndoCheckoutFileDialog.setupContentAction}</action-listener>
             <action>dialog:undoCheckoutFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
+         <!-- Cancel editing document -->
+         <action id="cancel_editing_doc">
+            <evaluator>org.alfresco.web.action.evaluator.CancelEditingDocEvaluator</evaluator>
+            <label-id>cancel_editing</label-id>
+            <image>/images/icons/cancel_editing.gif</image>
+            <action-listener>#{CancelEditingDialog.setupContentAction}</action-listener>
+            <action>dialog:cancelEditing</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
+         <!-- Done-editing document -->
+         <action id="done_editing_doc">
+            <evaluator>org.alfresco.web.action.evaluator.DoneEditingDocEvaluator</evaluator>
+            <label-id>checkin</label-id>
+            <image>/images/icons/done_editing.gif</image>
+            <action-listener>#{DoneEditingDialog.handle}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>
@@ -205,6 +294,22 @@
                <param name="id">#{actionContext.id}</param>
             </params>
          </action>
+
+         <!-- Upload new version of document-->
+         <action id="upload_new_version">
+            <permissions>
+               <permission allow="true">Write</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.UploadNewVersionEvaluator</evaluator>
+            <label-id>upload_new_version</label-id>
+            <image>/images/icons/upload_new_version.gif</image>
+            <action-listener>#{UploadNewVersionDialog.setupContentAction}</action-listener>
+            <action>dialog:uploadVersion</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+
 
          <!-- 'Approve' workflow step for document -->
          <action id="approve_doc">
@@ -619,14 +724,14 @@
             </params>
          </action>
       
-       <!-- Invite Space user action-->
+         <!-- Invite Space user action-->
          <action id="invite_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
             <action>wizard:inviteSpaceUsers</action>
          </action>
          
-      <!-- Invite Content user action-->
+         <!-- Invite Content user action-->
          <action id="invite_content_user">
             <label-id>invite</label-id>
             <image>/images/icons/invite.gif</image>
@@ -887,11 +992,28 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
 
+            <action idref="upload_new_version" />
+            <action idref="edit_doc_online_webdav" />
+            <action idref="edit_doc_online_cifs" />
+            <action idref="edit_doc_online_http" />
+            <action idref="edit_doc_offline" />
+            <action idref="checkout_doc" />             
+            <action idref="done_editing_doc" />
+            <action idref="cancel_editing_doc" />
+            <action idref="download_doc" />
+            
+            <!-- Actions previously used for checkin/checkout -->
+            <!-- If old behaviour is required uncomment the --> 
+            <!-- actions below and comment out the ones above --> 		
+            
+            <!--        
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
             <action idref="checkout_doc" />
             <action idref="checkin_doc" />
+            -->
+
             <action idref="details_doc" />
             <action idref="delete_doc" />
 
@@ -913,14 +1035,17 @@
          <action-group id="document_browse_menu">
             <action idref="preview_doc" />
             <action idref="update_doc" />
-            <action idref="cancelcheckout_doc" />
+            <!-- Old Cancel Checkout action -->
+            <!--
+            <action idref="cancelcheckout_doc" /> 
+            -->
             <action idref="approve_doc" />
             <action idref="reject_doc" />
             <action idref="cut_node" />
             <action idref="copy_node" />
          </action-group>
       
-      <!-- Action menu for Invite Space user in Manage invite users screen-->
+         <!-- Action menu for Invite Space user in Manage invite users screen-->
          <action-group id="invite_user_menu">
             <action idref="invite_user"/>
          </action-group>
@@ -975,17 +1100,31 @@
 
          <!-- Actions Menu for Document Details screen -->
          <action-group id="doc_details_actions">
+            <action idref="upload_new_version" />
+            <action idref="edit_doc_online_http" />
+            <action idref="edit_doc_online_webdav" />
+            <action idref="edit_doc_online_cifs" />
+            <action idref="edit_doc_offline" />
             <action idref="checkout_doc" />
-            <action idref="checkin_doc" />
+            <action idref="done_editing_doc" />
+            <action idref="download_doc" />
+            <action idref="cancel_editing_doc" />
+
+            <!-- Actions previously used for checkin/checkout -->
+            <!-- If old behaviour is required uncomment the --> 
+            <!-- actions below and comment out the ones above -->
+
+            <!-- 
+            <action idref="checkout_doc" />       
+            <action idref="checkin_doc" />              
             <action idref="cancelcheckout_doc" />
+            <action idref="edit_doc_http" />
+            <action idref="edit_doc_webdav" />
+            <action idref="edit_doc_cifs" />  
+            -->
+            
             <action idref="approve_doc_details" />
             <action idref="reject_doc_details" />
-            <action idref="edit_doc_http" />
-            <!-- TODO: add these once the appropriate props (webdavUrl and cifsPath) are added
-                       to the node bean as resolvers (probably need to change valuebindings also)
-            <action idref="edit_doc_webdav" />
-            <action idref="edit_doc_cifs" />
-            -->
             <action idref="update_doc" />
             <action idref="cut_node" />
             <action idref="copy_node" />

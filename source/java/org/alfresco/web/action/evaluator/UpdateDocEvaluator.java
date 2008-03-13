@@ -24,10 +24,13 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.web.bean.coci.EditOfflineDialog;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -47,10 +50,13 @@ public class UpdateDocEvaluator extends BaseActionEvaluator
    {
       DictionaryService dd = Repository.getServiceRegistry(
             FacesContext.getCurrentInstance()).getDictionaryService();
+
+      Map<String, Object> props = node.getProperties();
+      
+      boolean isOfflineEditing = props.get(ContentModel.PROP_WORKING_COPY_MODE) != null && props.get(ContentModel.PROP_WORKING_COPY_MODE).equals(EditOfflineDialog.OFFLINE_EDITING);
       
       return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
-             ((node.isWorkingCopyOwner() == true ||
-              (node.isLocked() == false &&
-               node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)));
+             ((node.isWorkingCopyOwner() == true && !isOfflineEditing) ||
+              (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false));
    }
 }

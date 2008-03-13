@@ -74,21 +74,6 @@
                </td>
             </tr>
             <tr><td colspan="2" class="paddingRow"></td></tr>
-            <tr>
-               <td class="mainSubTitle">
-                  </f:verbatim><h:outputText value="#{msg.continue_working_title}" /><f:verbatim>
-               </td>
-            </tr>
-            <tr>
-               <td class="mainSubText">
-                  </f:verbatim><h:outputText value="#{msg.continue_working_info1}" /><f:verbatim>
-               </td>
-            </tr>
-            <tr>
-               <td class="mainSubText">
-                  </f:verbatim><h:outputText value="#{msg.continue_working_info2}" /><f:verbatim> <img src="<%=request.getContextPath()%>/images/icons/edit_icon.gif" align="absmiddle" width="12" height="16">
-               </td>
-            </tr>
          </table>
          <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
       </td>

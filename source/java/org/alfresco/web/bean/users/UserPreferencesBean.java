@@ -56,9 +56,11 @@ public class UserPreferencesBean implements Serializable
 {
    private static final long serialVersionUID = -1262481849503163054L;
 
+   public static final String PREF_INTERFACELANGUAGE = "interface-language";
+   
    private static final String PREF_STARTLOCATION = "start-location";
    private static final String PREF_CONTENTFILTERLANGUAGE = "content-filter-language";
-   public static final String PREF_INTERFACELANGUAGE = "interface-language";
+   private static final String PREF_DOWNLOADAUTOMATICALLY = "download-automatically";
 
    /** 
     * Remplacement message for set the filter at 'all languages'. 
@@ -387,5 +389,29 @@ public class UserPreferencesBean implements Serializable
          contentFilterLanguagesService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentFilterLanguagesService();
       }
       return contentFilterLanguagesService;
+   }
+
+   /**
+    * @return download files automatically for offline editing or not
+    */
+   public boolean isDownloadAutomatically()
+   {
+      Boolean downloadAutomatically = (Boolean) PreferencesService.getPreferences().getValue(PREF_DOWNLOADAUTOMATICALLY);
+      if (downloadAutomatically == null)
+      {
+         return true;
+     }
+     else
+     {
+         return downloadAutomatically.booleanValue();
+     }
+   }
+
+   /** 
+    * @param downloadAutomatically the boolean value to set
+    */
+   public void setDownloadAutomatically(boolean downloadAutomatically)
+   {
+      PreferencesService.getPreferences().setValue(PREF_DOWNLOADAUTOMATICALLY, downloadAutomatically);
    }
 }

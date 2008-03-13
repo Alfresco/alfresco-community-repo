@@ -265,7 +265,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
     * @param id GUID of the node to setup as the content document context
     * @return The Node
     */
-   private Node setupContentDocument(String id)
+   protected Node setupContentDocument(String id)
    {
       if (logger.isDebugEnabled())
          logger.debug("Setup for action, setting current document to: " + id);

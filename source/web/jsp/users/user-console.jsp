@@ -136,8 +136,21 @@
             <f:selectItems value="#{UserPreferencesBean.contentFilterLanguages}" />
          </h:selectOneMenu>
       </h:panelGrid>
-   </a:panel>
    
+      <%-- Download automatically checkbox --%>
+      <f:verbatim><br/></f:verbatim>
+      
+      <h:outputText value="#{msg.offline_editing}"/>
+      
+      <h:panelGrid cellpadding="2" columns="2" cellspacing="2">           
+         <h:selectBooleanCheckbox
+      		id="download-automatically"
+      		value="#{UserPreferencesBean.downloadAutomatically}"
+      		onchange="document.forms['dialog'].submit(); return true;"/>
+      		
+        <h:outputText value="#{msg.download_automatically}"/>
+      </h:panelGrid>
+   </a:panel>   
    <f:verbatim/>
 
    <a:panel label="#{msg.user_management}" id="man-panel"

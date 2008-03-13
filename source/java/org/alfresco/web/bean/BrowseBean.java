@@ -1699,7 +1699,7 @@ public class BrowseBean implements IContextListener, Serializable
          {
             // create the node ref, then our node representation
             NodeRef ref = new NodeRef(Repository.getStoreRef(), id);
-            Node node = new Node(ref);
+            Node node = new MapNode(ref);
 
             // store the URL to for downloading the content
             if (ApplicationModel.TYPE_FILELINK.equals(node.getType()))
@@ -1710,6 +1710,8 @@ public class BrowseBean implements IContextListener, Serializable
             {
                node.addPropertyResolver("url", this.resolverDownload);
             }
+            node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
+            node.addPropertyResolver("cifsPath", this.resolverCifsPath);
             node.addPropertyResolver("fileType32", this.resolverFileType32);
             node.addPropertyResolver("mimetype", this.resolverMimetype);
             node.addPropertyResolver("encoding", this.resolverEncoding);

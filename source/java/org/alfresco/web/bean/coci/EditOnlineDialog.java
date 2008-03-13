@@ -1,0 +1,183 @@
+/*
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.web.bean.coci;
+
+import java.util.Map;
+
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.component.UIActionLink;
+
+/**
+ * This is fiction dialog class for provides method for online editing. He
+ * doesn't have entry in web-client-config-dialogs.xml
+ *
+ */
+public class EditOnlineDialog extends CCCheckoutFileDialog
+{
+
+   public final static String ONLINE_EDITING = "onlineEditing";
+
+   /**
+    * Action listener for handle webdav online editing action. E.g "edit_doc_online_webdav" action
+    *
+    * @param event ActionEvent
+    */
+   public void handleWebdavEditing(ActionEvent event)
+   {
+      handle(event);
+
+      Node workingCopyNode = property.getDocument();
+      if (workingCopyNode != null)
+      {
+         UIActionLink link = (UIActionLink) event.getComponent();
+         Map<String, String> params = link.getParameterMap();
+         String webdavUrl = params.get("webdavUrl");
+
+         if (webdavUrl != null)
+         {
+            // modify webDav for editing working copy
+            property.setWebdavUrl(webdavUrl.substring(0, webdavUrl.lastIndexOf("/") + 1) + workingCopyNode.getName());
+         }
+         
+        FacesContext fc = FacesContext.getCurrentInstance();
+     	
+        fc.getApplication().getNavigationHandler().handleNavigation(fc, null,"dialog:close:browse");
+         
+      }
+   }
+
+   /**
+    * Action listener for handle cifs online editing action. E.g "edit_doc_online_cifs" action
+    *
+    * @param event ActionEvent
+    */
+   public void handleCifsEditing(ActionEvent event)
+   {
+      handle(event);
+
+      Node workingCopyNode = property.getDocument();
+      if (workingCopyNode != null)
+      {
+         UIActionLink link = (UIActionLink) event.getComponent();
+         Map<String, String> params = link.getParameterMap();
+         String cifsPath = params.get("cifsPath");
+
+         if (cifsPath != null)
+         {
+            // modify cifsPath for editing working copy
+            property.setCifsPath(cifsPath.substring(0, cifsPath.lastIndexOf("/") + 1) + workingCopyNode.getName());
+         }
+         
+        FacesContext fc = FacesContext.getCurrentInstance();
+     	
+        fc.getApplication().getNavigationHandler().handleNavigation(fc, null,"dialog:close:browse");
+      }
+   }
+
+   /**
+    * Action listener for handle http online(inline) editing action. E.g "edit_doc_online_http" action
+    *
+    * @param event ActionEvent
+    */
+   public void handleHttpEditing(ActionEvent event)
+   {
+      handle(event);
+
+      Node workingCopyNode = property.getDocument();
+      if (workingCopyNode != null)
+      {
+
+         ContentReader reader = property.getContentService().getReader(workingCopyNode.getNodeRef(), ContentModel.PROP_CONTENT);
+         if (reader != null)
+         {
+            String mimetype = reader.getMimetype();
+
+            // calculate which editor screen to display
+            if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) || MimetypeMap.MIMETYPE_XML.equals(mimetype) || MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype)
+                  || MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
+            {
+               // make content available to the text editing screen
+               property.setEditorOutput(reader.getContentString());
+
+               // navigate to appropriate screen
+               FacesContext fc = FacesContext.getCurrentInstance();
+               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
+               this.navigator.setupDispatchContext(workingCopyNode);
+               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
+            }
+            else
+            {
+               // make content available to the html editing screen
+               property.setDocumentContent(reader.getContentString());
+               property.setEditorOutput(null);
+
+               // navigate to appropriate screen
+               FacesContext fc = FacesContext.getCurrentInstance();
+               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
+               this.navigator.setupDispatchContext(workingCopyNode);
+               fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
+            }
+         }
+
+      }
+   }
+
+   /**
+    * Base handling method.
+    *
+    * @param event ActionEvent
+    */
+   public void handle(ActionEvent event)
+   {
+      super.setupContentAction(event);
+
+      Node node = property.getDocument();
+      if (node != null)
+      {
+         // if current content is already working copy then we don't checkout
+         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)
+         {
+            // if checkout is successful, then checkoutFile sets property workingDocument
+            checkoutFile(FacesContext.getCurrentInstance(), null);
+
+            Node workingCopyNode = property.getWorkingDocument();
+
+            if (workingCopyNode != null)
+            {
+               // set working copy node as document for editing
+               property.setDocument(workingCopyNode);
+               getNodeService().setProperty(workingCopyNode.getNodeRef(), ContentModel.PROP_WORKING_COPY_MODE, ONLINE_EDITING);
+            }
+         }
+      }
+   }
+
+}

@@ -1302,6 +1302,10 @@
       <managed-bean-class>org.alfresco.web.bean.coci.CCProperties</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
+         <property-name>versionQueryService</property-name>
+         <value>#{VersionService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>versionOperationsService</property-name>
          <value>#{CheckoutCheckinService}</value>
       </managed-property>
@@ -1313,6 +1317,56 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>The bean that help with edit offline procedure.</description>
+      <managed-bean-name>EditOfflineDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.coci.EditOfflineDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>userPreferencesBean</property-name>
+         <value>#{UserPreferencesBean}</value>
+      </managed-property>  
+   </managed-bean>
+
+   <managed-bean>
+      <description>The bean that helps with edit online procedure and presents fiction online editing dialog.</description>
+      <managed-bean-name>EditOnlineDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.coci.EditOnlineDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>browseBean</property-name>
+         <value>#{BrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>         
    </managed-bean>
 
    <managed-bean>
@@ -1351,6 +1405,27 @@
       </managed-property>
    </managed-bean>
 	
+   <managed-bean>
+      <description>The bean for the Upload a new versoin Screen.</description>
+      <managed-bean-name>UploadNewVersionDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.UploadNewVersionDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>navigator</property-name>
+         <value>#{NavigationBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+
    <managed-bean>
       <description>
          The bean that holds manage content rules state
@@ -5498,6 +5573,20 @@
    </managed-bean>
 
    <managed-bean>
+      <description>The bean for the Cancel Editing File Screen.</description>
+      <managed-bean-name>CancelEditingDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.CancelEditingDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+   </managed-bean>
+
+
+   <managed-bean>
       <description>The bean for the Working Copy Missing Screen.</description>
       <managed-bean-name>CCWorkingCopyMissingDialog</managed-bean-name>
       <managed-bean-class>
@@ -5523,6 +5612,23 @@
       </managed-property>
    </managed-bean>
    
+   <managed-bean>
+      <description>The bean for the Done-Editing File Screen(New commit dialog).</description>
+      <managed-bean-name>DoneEditingDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.coci.DoneEditingDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>property</property-name>
+         <value>#{CCProperties}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+   </managed-bean>
+
    <managed-bean>
       <description>The bean for the Edit Search Screen.</description>
       <managed-bean-name>EditSearchDialog</managed-bean-name>

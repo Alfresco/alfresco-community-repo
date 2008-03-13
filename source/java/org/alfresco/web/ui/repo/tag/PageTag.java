@@ -27,11 +27,14 @@ package org.alfresco.web.ui.repo.tag;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.coci.CCProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,6 +60,8 @@ public class PageTag extends TagSupport
       "/scripts/menu.js",
       // webdav javascript
       "/scripts/webdav.js",
+      // functional for window.onload
+      "/scripts/onload.js",
       // base yahoo file
       "/scripts/ajax/yahoo/yahoo/yahoo-min.js",
       // io handling (AJAX)
@@ -268,11 +273,17 @@ public class PageTag extends TagSupport
             out.write(SCRIPTS_END);
          }
          
+         out.write("<script type=\"text/javascript\">"); // start - generate naked javascript code
+
          // set the context path used by some Alfresco script objects
-         out.write("<script type=\"text/javascript\">");
          out.write("setContextPath('");
          out.write(reqPath);
-         out.write("');</script>\n");
+         out.write("');");
+
+         // generate window onload code
+         out.write(getWindowOnloadCode());
+
+         out.write("</script>\n"); // end - generate naked javascript code
 
          if (!Application.inPortalServer())
          {
@@ -352,4 +363,29 @@ public class PageTag extends TagSupport
       }
       return PageTag.alfresco;
    }
+
+   /**
+    * This method generate code for setting window.onload reference if we need (we need to open WebDav or Cifs url or may be else)
+    * Using javascript code(function onloadFunc) from onload.js file
+    * @return Returns window.onload javascript code
+    */
+   private String getWindowOnloadCode()
+   {
+      CCProperties ccProps = (CCProperties) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CCProperties");
+
+      StringBuffer onloadCode = new StringBuffer();
+      if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
+      {
+         String webdavUrl = (ccProps.getWebdavUrl() != null) ? (ccProps.getWebdavUrl()) : ("");
+         String cifsPath = (ccProps.getCifsPath() != null) ? (ccProps.getCifsPath()) : ("");
+
+         onloadCode.append("window.onload=onloadFunc('").append(webdavUrl).append("','").append(cifsPath).append("');");
+
+         ccProps.setCifsPath(null); // we need reset cifsPath flag
+         ccProps.setWebdavUrl(null); // we need reset webdavUrl flag
+      }
+
+      return onloadCode.toString();
+   }
+
 }

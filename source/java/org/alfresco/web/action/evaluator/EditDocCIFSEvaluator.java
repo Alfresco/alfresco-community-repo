@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.coci.EditOnlineDialog;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 
@@ -59,7 +60,8 @@ public class EditDocCIFSEvaluator extends BaseActionEvaluator
          if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) == false &&
              "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
          {
-            if (node.isWorkingCopyOwner() == true ||
+            if ((node.isWorkingCopyOwner() == true && node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE) != null && 
+                 node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE).equals(EditOnlineDialog.ONLINE_EDITING))||
                (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) && node.hasPermission(PermissionService.WRITE)) ||
                (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false))
             {

@@ -19,7 +19,7 @@
 	            <tr><td>Start Date:</td><td>${task.startDate?date}</td></tr>
 	            <tr><td>Due Date:</td><td>
 	            <#if task.properties["bpm:dueDate"]?exists>
-	               ${t.properties["bpm:dueDate"]?date}
+	               ${task.properties["bpm:dueDate"]?date}
 	            <#else>
 	               <i>None</i>
 	            </#if>
@@ -34,7 +34,7 @@
 	</table>
 </div>
 
-<STYLE type="text/css">
+<style type="text/css">
    .taskPopupPanel
    {
       background-image: url(../images/parts/popup_bg.gif);
@@ -50,4 +50,4 @@
    {
       font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
    }
-</STYLE>
+</style>

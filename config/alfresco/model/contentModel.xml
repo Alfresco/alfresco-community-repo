@@ -638,6 +638,9 @@
                <protected>true</protected>
                <mandatory>true</mandatory>
             </property>
+            <property name="cm:workingCopyMode">
+               <type>d:text</type>
+            </property>
            </properties>
       </aspect>
    

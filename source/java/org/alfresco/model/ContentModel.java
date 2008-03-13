@@ -105,6 +105,7 @@ public interface ContentModel
     // working copy aspect contants
     static final QName ASPECT_WORKING_COPY = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "workingcopy");
     static final QName PROP_WORKING_COPY_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "workingCopyOwner");
+    static final QName PROP_WORKING_COPY_MODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "workingCopyMode");
     
     // content type and aspect constants
     static final QName TYPE_CONTENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content");

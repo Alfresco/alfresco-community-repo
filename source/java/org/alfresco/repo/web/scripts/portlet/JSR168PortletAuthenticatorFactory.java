@@ -27,9 +27,12 @@ package org.alfresco.repo.web.scripts.portlet;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.scripts.Authenticator;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;
@@ -50,16 +53,25 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
     private static final Log logger = LogFactory.getLog(JSR168PortletAuthenticatorFactory.class);
 
     // dependencies
-    private AuthenticationService authenticationService;
+    private AuthenticationService unprotAuthenticationService;
+    private TransactionService txnService;    
     
     /**
      * @param authenticationService
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setUnprotAuthenticationService(AuthenticationService authenticationService)
     {
-        this.authenticationService = authenticationService;
+        this.unprotAuthenticationService = authenticationService;
     }
 
+    /**
+     * @param transactionService
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.txnService = transactionService;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.portlet.PortletAuthenticatorFactory#create(javax.portlet.RenderRequest, javax.portlet.RenderResponse)
      */
@@ -78,7 +90,6 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
     {
         // dependencies
         private RenderRequest req;
-        private RenderResponse res;
         
         /**
          * Construct
@@ -90,7 +101,6 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
         public JSR168PortletAuthenticator(RenderRequest req, RenderResponse res)
         {
             this.req = req;
-            this.res = res;
         }
         
         /*(non-Javadoc)
@@ -123,12 +133,37 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating as user " + portalUser);
-                
-                if (!authenticationService.authenticationExists(portalUser))
+
+                UserTransaction txn = null;
+                try
                 {
-                    throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "User " + portalUser + " is not a known Alfresco user");
+                	txn = txnService.getUserTransaction();
+                	txn.begin();
+
+                	if (!unprotAuthenticationService.authenticationExists(portalUser))
+                	{
+                		throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "User " + portalUser + " is not a known Alfresco user");
+                	}
+                	AuthenticationUtil.setCurrentUser(portalUser);
                 }
-                AuthenticationUtil.setCurrentUser(portalUser);
+                catch (Throwable err)
+                {
+                	throw new AlfrescoRuntimeException("Error authenticating user: " + portalUser, err);
+                }
+                finally
+                {
+                	try
+                	{
+                		if (txn != null)
+                		{
+                			txn.rollback();
+                		}
+                	}
+                	catch (Exception tex)
+                	{
+                		// nothing useful we can do with this
+                	}
+                }
             }
             
             return true;

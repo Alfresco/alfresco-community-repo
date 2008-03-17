@@ -85,6 +85,7 @@
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="searchService" />
       <property name="tenantDeployerService" ref="tenantAdminService" />
+      <property name="avmService" ref="AVMService" />
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
@@ -139,7 +140,8 @@
 
    <!--  JSR-168 Authenticator (Portal based) -->
    <bean id="webscripts.authenticator.jsr168" class="org.alfresco.repo.web.scripts.portlet.JSR168PortletAuthenticatorFactory">
-      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="unprotAuthenticationService" ref="authenticationService" />
+      <property name="transactionService" ref="TransactionService" />
    </bean>
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory">
       <property name="repository" ref="webscripts.repo" />

@@ -32,12 +32,15 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -49,6 +52,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.WebScriptException;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -72,6 +77,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private PersonService personService;
+    private AVMService avmService;
     private TenantDeployerService tenantDeployerService;
     
     // company home
@@ -168,6 +174,16 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         this.tenantDeployerService = tenantDeployerService;
     }
 
+    /**
+     * Sets the AVM service
+     * 
+     * @param avmService
+     */
+    public void setAvmService(AVMService avmService)
+    {
+    	this.avmService = avmService;
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -299,66 +315,109 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      * 2) Path - {store_type}/{store_id}/{path}
      * 
      *    Resolve to node via its display path.
+     *  
+     * 3) AVM Path - {store_id}/{path}
+     * 
+     *    Resolve to AVM node via its display path
      *    
-     * 3) QName - {store_type}/{store_id}/{child_qname_path}  TODO: Implement
+     * 4) QName - {store_type}/{store_id}/{child_qname_path}  TODO: Implement
      * 
      *    Resolve to node via its child qname path.
      * 
-     * @param  referenceType  one of node, path or qname
+     * @param  referenceType  one of node, path, avmpath or qname
      * @return  reference  array of reference segments (as described above for each reference type)
      */
     public NodeRef findNodeRef(String referenceType, String[] reference)
     {
         NodeRef nodeRef = null;
         
-        // construct store reference
-        if (reference.length < 3)
+        if (referenceType.equals("avmpath"))
         {
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Reference " + Arrays.toString(reference) + " is not properly formed");
+            if (reference.length == 0)
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Reference " + Arrays.toString(reference) + " is not properly formed");
+            }
+            String path = reference[0] + ":/";
+            if (reference.length > 1)
+            {
+                Object[] pathElements = ArrayUtils.subarray(reference, 1, reference.length);
+                path += StringUtils.join(pathElements, "/");
+            }
+            AVMNodeDescriptor nodeDesc = avmService.lookup(-1, path);
+            if (nodeDesc != null)
+            {
+                nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+            }
         }
-        StoreRef storeRef = new StoreRef(reference[0], reference[1]);
-        if (nodeService.exists(storeRef))
+        else
         {
-            if (referenceType.equals("node"))
-            {
-                NodeRef urlRef = new NodeRef(storeRef, reference[2]);
-                if (nodeService.exists(urlRef))
-                {
-                    nodeRef = urlRef;
-                }
-            }
-            
-            else if (referenceType.equals("path"))
-            {
-                // TODO: Allow a root path to be specified - for now, hard-code to Company Home
-//                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                NodeRef rootNodeRef = getCompanyHome();
-                if (reference.length == 3)
-                {
-                    nodeRef = rootNodeRef;
-                }
-                else
-                {
-                    String[] path = new String[reference.length - /*2*/3];
-                    System.arraycopy(reference, /*2*/3, path, 0, path.length);
-                    
-                    try
+	        // construct store reference
+	        if (reference.length < 3)
+	        {
+	            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Reference " + Arrays.toString(reference) + " is not properly formed");
+	        }
+	        StoreRef storeRef = new StoreRef(reference[0], reference[1]);
+	        if (nodeService.exists(storeRef))
+	        {
+	            if (referenceType.equals("node"))
+	            {
+	                NodeRef urlRef = new NodeRef(storeRef, reference[2]);
+	                if (nodeService.exists(urlRef))
+	                {
+	                    nodeRef = urlRef;
+	                }
+	            }
+	            
+	            else if (referenceType.equals("path"))
+	            {
+                    // NOTE: special case for avm based path
+                    if (reference[0].equals(StoreRef.PROTOCOL_AVM))
                     {
-                        FileInfo fileInfo = fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(path));
-                        nodeRef = fileInfo.getNodeRef();
+                        String path = reference[1] + ":/";
+                        if (reference.length > 2)
+                        {
+                            Object[] pathElements = ArrayUtils.subarray(reference, 2, reference.length);
+                            path += StringUtils.join(pathElements, "/");
+                        }
+                        AVMNodeDescriptor nodeDesc = avmService.lookup(-1, path);
+                        if (nodeDesc != null)
+                        {
+                            nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+                        }
                     }
-                    catch (FileNotFoundException e)
+                    else
                     {
-                        // NOTE: return null node ref
+		                // TODO: Allow a root path to be specified - for now, hard-code to Company Home
+	//                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+		                NodeRef rootNodeRef = getCompanyHome();
+		                if (reference.length == 3)
+		                {
+		                    nodeRef = rootNodeRef;
+		                }
+		                else
+		                {
+		                    String[] path = new String[reference.length - /*2*/3];
+		                    System.arraycopy(reference, /*2*/3, path, 0, path.length);
+		                    
+		                    try
+		                    {
+		                        FileInfo fileInfo = fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(path));
+		                        nodeRef = fileInfo.getNodeRef();
+		                    }
+		                    catch (FileNotFoundException e)
+		                    {
+		                        // NOTE: return null node ref
+		                    }
+		                }
                     }
-                }
-            }
-            
-            else
-            {
-                // TODO: Implement 'qname' style
-                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
-            }
+	            }
+	            
+	            else
+	            {
+	                // TODO: Implement 'qname' style
+	                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Web Script Node URL specified an invalid reference style of '" + referenceType + "'");
+	            }
+	        }
         }
         
         return nodeRef;

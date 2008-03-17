@@ -996,8 +996,7 @@
             <action idref="edit_doc_online_webdav" />
             <action idref="edit_doc_online_cifs" />
             <action idref="edit_doc_online_http" />
-            <action idref="edit_doc_offline" />
-            <action idref="checkout_doc" />             
+            <action idref="edit_doc_offline" />             
             <action idref="done_editing_doc" />
             <action idref="cancel_editing_doc" />
             <action idref="download_doc" />
@@ -1039,6 +1038,7 @@
             <!--
             <action idref="cancelcheckout_doc" /> 
             -->
+            <action idref="checkout_doc" />
             <action idref="approve_doc" />
             <action idref="reject_doc" />
             <action idref="cut_node" />

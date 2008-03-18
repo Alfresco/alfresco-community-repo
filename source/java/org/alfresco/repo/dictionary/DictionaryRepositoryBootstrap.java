@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -233,39 +234,39 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 {
                     logger.warn("StoreRef '"+ storeRef+"' does not exist");
                     continue; // skip this location
-                }          
+                }
     
-                if (repositoryLocation.getQueryLanguage().equals(
-                        SearchService.LANGUAGE_XPATH))
+                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_LUCENE))
                 {
-                    NodeRef rootNode = nodeService.getRootNode(storeRef);
-    
-                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
-                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)),
-                                                                       null, 
-                                                                       namespaceService, 
-                                                                       false);
-    
-                    for (NodeRef dictionaryModel : nodeRefs)
-                    {                    	
-                        // Ignore if the node is a working copy or if its inactive
-                        if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
+                    ResultSet rs = searchService.query(storeRef,
+                                                       SearchService.LANGUAGE_LUCENE,
+                                                       repositoryLocation.getLuceneQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)));
+                    if (rs.length() > 0)
+                    {   
+                        for (NodeRef dictionaryModel : rs.getNodeRefs())
                         {
-                            Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
-           
-                            if ((isActive != null) && (isActive.booleanValue() == true))
-                            {             	
-    	                        M2Model model = createM2Model(dictionaryModel);
-    	                        if (model != null)
-    	                        {
-    	                            for (M2Namespace namespace : model.getNamespaces())
-    	                            {
-    	                                modelMap.put(namespace.getUri(), model);
-    	                            }
-    	                        }
+                            // Ignore if the node is a working copy or if its inactive
+                            if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
+                            {
+                                Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
+                                if ((isActive != null) && (isActive.booleanValue() == true))
+                                {
+                                    M2Model model = createM2Model(dictionaryModel);
+                                    if (model != null)
+                                    {
+                                        for (M2Namespace namespace : model.getNamespaces())
+                                        {
+                                            modelMap.put(namespace.getUri(), model);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                	logger.error("Unsupported query language for models location: " + repositoryLocation.getQueryLanguage());
                 }
             }
     
@@ -292,43 +293,43 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 {
                     logger.warn("StoreRef '"+ storeRef+"' does not exist");
                     continue; // skip this location
-                } 
-  
-                if (repositoryLocation.getQueryLanguage().equals(
-                        SearchService.LANGUAGE_XPATH))
+                }
+                
+                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_LUCENE))
                 {
-                    NodeRef rootNode = nodeService.getRootNode(storeRef);
-    
-                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, 
-                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)), 
-                                                                       null, 
-                                                                       namespaceService, 
-                                                                       false);
-     
-                    List<String> resourceBundleBaseNames = new ArrayList<String>();
-    
-                    for (NodeRef messageResource : nodeRefs)
-                    {
-                        String resourceName = (String) nodeService.getProperty(
-                                messageResource, ContentModel.PROP_NAME);
-                        
-                        String bundleBaseName = messageService.getBaseBundleName(resourceName);
-                        
-                        if (!resourceBundleBaseNames.contains(bundleBaseName))
+                    ResultSet rs = searchService.query(storeRef,
+                                                       SearchService.LANGUAGE_LUCENE,
+                                                       repositoryLocation.getLuceneQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)));
+                    if (rs.length() > 0)
+                    {   
+                        List<String> resourceBundleBaseNames = new ArrayList<String>();
+                        for (NodeRef messageResource : rs.getNodeRefs())
                         {
-                            resourceBundleBaseNames.add(bundleBaseName);
+                            String resourceName = (String) nodeService.getProperty(
+                                    messageResource, ContentModel.PROP_NAME);
+                            
+                            String bundleBaseName = messageService.getBaseBundleName(resourceName);
+                            
+                            if (!resourceBundleBaseNames.contains(bundleBaseName))
+                            {
+                                resourceBundleBaseNames.add(bundleBaseName);
+                            }
+                        }
+                        
+                        // Only need to register resource bundle names
+                        for (String resourceBundleBaseName : resourceBundleBaseNames)
+                        {
+                            logger.info("Register bundle: " + resourceBundleBaseName);
+                            
+                            messageService.registerResourceBundle(storeRef.toString() + path + "/cm:" + resourceBundleBaseName);
+                            
                         }
                     }
-    
-                    // Only need to register resource bundle names
-                    for (String resourceBundleBaseName : resourceBundleBaseNames)
-                    {
-                        logger.info("Register bundle: " + resourceBundleBaseName);
-    
-                        messageService.registerResourceBundle(storeRef.toString() + path + "/cm:" + resourceBundleBaseName);
-    
-                    }
-                } 
+                }
+                else
+                {
+                	logger.error("Unsupported query language for messages location: " + repositoryLocation.getQueryLanguage());
+                }
             }
         }
     }

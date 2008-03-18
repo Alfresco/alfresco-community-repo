@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -104,7 +104,7 @@ public class RepositoryLocation
     }
     
     /**
-     * Set the queru language
+     * Set the query language
      *
      * @param path  the search language
      */
@@ -159,7 +159,7 @@ public class RepositoryLocation
     {
         String result = "+TYPE:\"" + contentModelType.toString() + "\"";
         
-        if (this.path != null)
+        if ((this.path != null) && (! this.path.equals("")))
         {
             result += " +PATH:\"" + this.path + "\"";
         }
@@ -176,7 +176,7 @@ public class RepositoryLocation
     {
         String result = "/*[subtypeOf('" + prefixResolvedContentModelType.toPrefixString() + "')]"; // immediate children only
         
-        if (this.path != null)
+        if ((this.path != null) && (! this.path.equals("")))
         {
             result = this.path + result;
         }

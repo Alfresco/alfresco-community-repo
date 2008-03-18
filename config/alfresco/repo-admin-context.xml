@@ -44,12 +44,18 @@
         <property name="path">
             <value>/app:company_home/app:dictionary/app:models</value>
         </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>   
    </bean>
 
    <bean id="customMessagesRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
         <!-- other properties will be defaulted, but can be overriden here -->
         <property name="path">
             <value>/app:company_home/app:dictionary/app:messages</value>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
         </property>
    </bean>  
     

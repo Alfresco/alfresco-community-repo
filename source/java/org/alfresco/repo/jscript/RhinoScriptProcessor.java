@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -38,13 +37,15 @@ import java.util.StringTokenizer;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.processor.BaseProcessor;
+import org.alfresco.scripts.ScriptException;
+import org.alfresco.scripts.ScriptResourceHelper;
+import org.alfresco.scripts.ScriptResourceLoader;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ProcessorExtension;
-import org.alfresco.service.cmr.repository.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -63,14 +64,11 @@ import org.springframework.util.FileCopyUtils;
  * 
  * @author Kevin Roast
  */
-public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor
+public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader
 {
     private static final Log    logger = LogFactory.getLog(RhinoScriptProcessor.class);
     
-    private static final String IMPORT_PREFIX = "<import";
-    private static final String IMPORT_RESOURCE = "resource=\"";
     private static final String PATH_CLASSPATH = "classpath:";
-    private static final String SCRIPT_ROOT = "_root";
 
     /** Wrap Factory */
     private static WrapFactory wrapFactory = new RhinoWrapFactory();
@@ -190,9 +188,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
     }
 
-    
     /**
-     * Resolve the imports in the specified script. Include directives are of the following form:
+     * Resolve the imports in the specified script. Supported include directives are of the following form:
      * <pre>
      * <import resource="classpath:alfresco/includeme.js">
      * <import resource="workspace://SpacesStore/6f73de1b-d3b4-11db-80cb-112e6c2ea048">
@@ -214,142 +211,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     private String resolveScriptImports(String script)
     {
-        // use a linked hashmap to preserve order of includes - the key in the collection is used
-        // to resolve multiple includes of the same scripts and therefore cyclic includes also
-        Map<String, String> scriptlets = new LinkedHashMap<String, String>(8, 1.0f);
-        
-        // perform a recursive resolve of all script imports
-        recurseScriptImports(SCRIPT_ROOT, script, scriptlets);
-        
-        if (scriptlets.size() == 1)
-        {
-            // quick exit for single script with no includes
-            if (logger.isTraceEnabled())
-                logger.trace("Script content resolved to:\r\n" + script);
-            
-            return script;
-        }
-        else
-        {
-            // calculate total size of buffer required for the script and all includes
-            int length = 0;
-            for (String scriptlet : scriptlets.values())
-            {
-                length += scriptlet.length();
-            }
-            // append the scripts together to make a single script
-            StringBuilder result = new StringBuilder(length);
-            for (String scriptlet : scriptlets.values())
-            {
-                result.append(scriptlet);
-            }
-            
-            if (logger.isTraceEnabled())
-                logger.trace("Script content resolved to:\r\n" + result.toString());
-            
-            return result.toString();
-        }
-    }
-    
-    /**
-     * Recursively resolve imports in the specified scripts, adding the imports to the
-     * specific list of scriplets to combine later.
-     * 
-     * @param location      Script location - used to ensure duplicates are not added
-     * @param script        The script to recursively resolve imports for
-     * @param scripts       The collection of scriplets to execute with imports resolved and removed
-     */
-    private void recurseScriptImports(String location, String script, Map<String, String> scripts)
-    {
-        int index = 0;
-        // skip any initial whitespace
-        for (; index<script.length(); index++)
-        {
-            if (Character.isWhitespace(script.charAt(index)) == false)
-            {
-                break;
-            }
-        }
-        // look for the "<import" directive marker
-        if (script.startsWith(IMPORT_PREFIX, index))
-        {
-            // skip whitespace between "<import" and "resource"
-            boolean afterWhitespace = false;
-            index += IMPORT_PREFIX.length() + 1;
-            for (; index<script.length(); index++)
-            {
-                if (Character.isWhitespace(script.charAt(index)) == false)
-                {
-                    afterWhitespace = true;
-                    break;
-                }
-            }
-            if (afterWhitespace == true && script.startsWith(IMPORT_RESOURCE, index))
-            {
-                // found an import line!
-                index += IMPORT_RESOURCE.length();
-                int resourceStart = index;
-                for (; index<script.length(); index++)
-                {
-                    if (script.charAt(index) == '"' && script.charAt(index + 1) == '>')
-                    {
-                        // found end of import line - so we have a resource path
-                        String resource = script.substring(resourceStart, index);
-                        
-                        if (logger.isDebugEnabled())
-                            logger.debug("Found script resource import: " + resource);
-                        
-                        if (scripts.containsKey(resource) == false)
-                        {
-                            // load the script resource (and parse any recursive includes...)
-                            String includedScript = loadScriptResource(resource);
-                            if (includedScript != null)
-                            {
-                                if (logger.isDebugEnabled())
-                                    logger.debug("Succesfully located script '" + resource + "'");
-                                recurseScriptImports(resource, includedScript, scripts);
-                            }
-                        }
-                        else
-                        {
-                            if (logger.isDebugEnabled())
-                                logger.debug("Note: already imported resource: " + resource);
-                        }
-                        
-                        // continue scanning this script for additional includes
-                        // skip the last two characters of the import directive
-                        for (index += 2; index<script.length(); index++)
-                        {
-                            if (Character.isWhitespace(script.charAt(index)) == false)
-                            {
-                                break;
-                            }
-                        }
-                        recurseScriptImports(location, script.substring(index), scripts);
-                        return;
-                    }
-                }
-                // if we get here, we failed to find the end of an import line
-                throw new ScriptException(
-                        "Malformed 'import' line - must be first in file, no comments and strictly of the form:" +
-                        "\r\n<import resource=\"...\">");
-            }
-            else
-            {
-                throw new ScriptException(
-                        "Malformed 'import' line - must be first in file, no comments and strictly of the form:" +
-                        "\r\n<import resource=\"...\">");
-            }
-        }
-        else
-        {
-            // no (further) includes found - include the original script content
-            if (logger.isDebugEnabled())
-                logger.debug("Imports resolved, adding resource '" + location);
-            if (logger.isTraceEnabled())
-                logger.trace(script);
-            scripts.put(location, script);
-        }
+        return ScriptResourceHelper.resolveScriptImports(script, this, logger);
     }
     
     /**
@@ -366,7 +228,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * 
      * @throws AlfrescoRuntimeException on any IO or ContentIO error
      */
-    private String loadScriptResource(String resource)
+    public String loadScriptResource(String resource)
     {
         String result = null;
         
@@ -462,7 +324,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * 
      * @throws AlfrescoRuntimeException
      */
-    private Object executeScriptImpl(String script, Map<String, Object> origModel, boolean secure)
+    private Object executeScriptImpl(String script, Map<String, Object> model, boolean secure)
         throws AlfrescoRuntimeException
     {
         long startTime = 0;
@@ -472,7 +334,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         
         // Convert the model
-        Map<String, Object> model = convertToRhinoModel(origModel);
+        model = convertToRhinoModel(model);
         
         // check that rhino script engine is available
         Context cx = Context.enter();
@@ -509,9 +371,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // add the global scripts
             for (ProcessorExtension ex : this.processorExtensions.values()) 
             {
-               model.put(ex.getExtensionName(), ex);
+                model.put(ex.getExtensionName(), ex);
             }
-            
             
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())
@@ -535,8 +396,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             Object result = cx.evaluateString(scope, script, "AlfrescoScript", 1, null);
             
             // extract java object result if wrapped by Rhino 
-            result = valueConverter.convertValueForRepo((Serializable)result);
-            return result;
+            return valueConverter.convertValueForRepo((Serializable)result);
         }
         catch (Throwable err)
         {

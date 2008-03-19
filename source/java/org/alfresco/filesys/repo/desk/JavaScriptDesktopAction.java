@@ -40,7 +40,7 @@ import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
-import org.alfresco.service.cmr.repository.ScriptException;
+import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.transaction.TransactionService;
 

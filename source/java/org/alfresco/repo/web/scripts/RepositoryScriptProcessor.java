@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.jscript.ValueConverter;
-import org.alfresco.service.cmr.repository.ScriptException;
+import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.web.scripts.MultiScriptLoader;

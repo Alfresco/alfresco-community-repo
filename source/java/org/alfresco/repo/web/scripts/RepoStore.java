@@ -244,7 +244,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#exists()
+     * @see org.alfresco.web.scripts.Store#exists()
      */
     public boolean exists()
     {
@@ -252,7 +252,7 @@ public class RepoStore implements Store, TenantDeployer
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getBasePath()
+     * @see org.alfresco.web.scripts.Store#getBasePath()
      */
     public String getBasePath()
     {
@@ -295,7 +295,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript)
+     * @see org.alfresco.web.scripts.Store#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript)
      */
     public String[] getScriptDocumentPaths(final WebScript script)
     {
@@ -338,7 +338,7 @@ public class RepoStore implements Store, TenantDeployer
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getDescriptionDocumentPaths()
+     * @see org.alfresco.web.scripts.Store#getDescriptionDocumentPaths()
      */
     public String[] getDescriptionDocumentPaths()
     {
@@ -374,7 +374,29 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#hasDocument(java.lang.String)
+     * @see org.alfresco.web.scripts.Store#lastModified(java.lang.String)
+     */
+    public long lastModified(final String documentPath) throws IOException
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>()
+        {
+            public Long doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                {
+                    public Long execute() throws Exception
+                    {
+                        ContentReader reader = contentService.getReader(
+                                findNodeRef(documentPath), ContentModel.PROP_CONTENT);
+                        return reader.getLastModified();
+                    }
+                });
+            }
+        }, AuthenticationUtil.getSystemUserName());            
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#hasDocument(java.lang.String)
      */
     public boolean hasDocument(final String documentPath)
     {
@@ -395,7 +417,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getDescriptionDocument(java.lang.String)
+     * @see org.alfresco.web.scripts.Store#getDescriptionDocument(java.lang.String)
      */
     public InputStream getDocument(final String documentPath)      
         throws IOException
@@ -426,7 +448,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#createDocument(java.lang.String, java.lang.String)
+     * @see org.alfresco.web.scripts.Store#createDocument(java.lang.String, java.lang.String)
      */
     public void createDocument(String documentPath, String content) throws IOException
     {
@@ -458,7 +480,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getTemplateLoader()
+     * @see org.alfresco.web.scripts.Store#getTemplateLoader()
      */
     public TemplateLoader getTemplateLoader()
     {
@@ -466,7 +488,7 @@ public class RepoStore implements Store, TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptStore#getScriptLoader()
+     * @see org.alfresco.web.scripts.Store#getScriptLoader()
      */
     public ScriptLoader getScriptLoader()
     {

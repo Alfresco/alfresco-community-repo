@@ -76,6 +76,18 @@ public class TenantInterpreter extends BaseInterpreter
         return ((username != null) && (username.equals(BaseInterpreter.DEFAULT_ADMIN)));
     }
 
+    public String interpretCommand(final String line) throws IOException
+    {
+        String currentUser = AuthenticationUtil.getCurrentUserName();
+        try
+        {
+            return super.interpretCommand(line);
+        }
+        finally
+        {
+            AuthenticationUtil.setCurrentUser(currentUser);
+        }
+    }
     /**
      * Execute a single command using the BufferedReader passed in for any data needed.
      *

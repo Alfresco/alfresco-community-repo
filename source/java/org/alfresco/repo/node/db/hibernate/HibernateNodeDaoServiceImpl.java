@@ -452,6 +452,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         list = (List<NodeImpl>)query.list();
         getHibernateTemplate().deleteAll(list);
         
+        store.setRootNode(null);
+        getHibernateTemplate().update(store);
+        
         // delete root node and store
         getHibernateTemplate().delete(rootNode);
         getHibernateTemplate().delete(store);

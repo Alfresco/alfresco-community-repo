@@ -24,7 +24,7 @@
       <!-- forward assoc to root node -->
       <many-to-one
             name="rootNode"
-            not-null="true"
+            not-null="false"
             foreign-key="fk_alf_store_rn"
             lazy="proxy"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"

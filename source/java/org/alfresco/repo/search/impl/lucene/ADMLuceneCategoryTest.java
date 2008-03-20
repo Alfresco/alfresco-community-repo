@@ -815,31 +815,31 @@ public class ADMLuceneCategoryTest extends TestCase
         assertEquals(14, categoryService.getChildren(catACBase , CategoryService.Mode.MEMBERS, CategoryService.Depth.ANY).size());
         assertEquals(3, categoryService.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY).size());
         assertEquals(17, categoryService.getChildren(catACBase , CategoryService.Mode.ALL, CategoryService.Depth.ANY).size());
-        assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());
-        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.IMMEDIATE).size());
-        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), CategoryService.Depth.ANY).size());
+        assertEquals(2, categoryService.getClassifications(rootNodeRef.getStoreRef()).size());      
+        assertEquals(2, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
+        assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
         assertEquals(7, categoryService.getClassificationAspects().size());
-        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass")).size());
+        assertEquals(2, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
         
-        List<Pair<NodeRef, Integer>> top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "AssetClass"), 10);
+        List<Pair<NodeRef, Integer>> top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), 10);
         for(Pair<NodeRef, Integer> current : top)
         {
             System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
         }
         
-       top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "InvestmentRegion"), 10);
+       top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "investmentRegion"), 10);
         for(Pair<NodeRef, Integer> current : top)
         {
             System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
         }    
         
-        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "MarketingRegion"), 10);
+        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "marketingRegion"), 10);
         for(Pair<NodeRef, Integer> current : top)
         {
             System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());
         }
         
-        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "Region"), 10);
+        top = categoryService.getTopCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "region"), 10);
         for(Pair<NodeRef, Integer> current : top)
         {
             System.out.println(""+nodeService.getPaths(current.getFirst(), true) + " "+current.getSecond());

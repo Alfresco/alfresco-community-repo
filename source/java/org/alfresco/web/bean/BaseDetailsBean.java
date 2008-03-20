@@ -41,7 +41,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -67,15 +66,6 @@ import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 public abstract class BaseDetailsBean extends BaseDialogBean
 {
    private static final String MSG_SUCCESS_OWNERSHIP = "success_ownership";
-
-   /** BrowseBean instance */
-   protected BrowseBean browseBean;
-   
-   /** The NavigationBean bean reference */
-   protected NavigationBean navigator;
-   
-   /** NodeServuce bean reference */
-   transient private NodeService nodeService;
    
    /** OwnableService bean reference */
    transient private OwnableService ownableService;
@@ -107,42 +97,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
-   
-   /**
-    * Sets the BrowseBean instance to use to retrieve the current node
-    * 
-    * @param browseBean BrowseBean instance
-    */
-   public void setBrowseBean(BrowseBean browseBean)
-   {
-      this.browseBean = browseBean;
-   }
-   
-   /**
-    * @param navigator The NavigationBean to set.
-    */
-   public void setNavigator(NavigationBean navigator)
-   {
-      this.navigator = navigator;
-   }
-   
-   /**
-    * @param nodeService   The NodeService to set
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-   
-   protected NodeService getNodeService()
-   {
-      if (nodeService == null)
-      {
-         nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
-      }
-      return nodeService;
-   }
-   
+ 
    /**
     * Sets the ownable service instance the bean should use
     * 

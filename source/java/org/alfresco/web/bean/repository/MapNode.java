@@ -143,6 +143,7 @@ public class MapNode extends Node implements Map<String, Object>
          props.put("id", this.getId());
          props.put("name", this.getName());     // TODO: perf test pulling back single prop here instead of all!
          props.put("nodeRef", this.getNodeRef());
+         props.put("nodeRefAsString", this.getNodeRefAsString());
          
          propsInitialised = true;
       }

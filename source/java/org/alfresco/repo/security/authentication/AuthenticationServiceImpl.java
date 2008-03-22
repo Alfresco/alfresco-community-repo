@@ -167,7 +167,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
         {
            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
            clearCurrentSecurityContext();
-           authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket));
+           authenticationComponent.setCurrentUser(ticketComponent.getAuthorityForTicket(ticket));
+           ticketComponent.validateTicket(ticket);
         }
         catch(AuthenticationException ae)
         {

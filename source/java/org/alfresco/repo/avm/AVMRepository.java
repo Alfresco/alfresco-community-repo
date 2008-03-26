@@ -3200,7 +3200,10 @@ public class AVMRepository
             type = WCMModel.TYPE_AVM_LAYERED_CONTENT;
         }
         PermissionContext context = new PermissionContext(type);
-        context.addDynamicAuthorityAssignment(node.getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
+        
+        // We're doing the hand unrolling of the proxy because Hibernate/CGLIB proxies are broken
+        context.addDynamicAuthorityAssignment(AVMNodeUnwrapper.Unwrap(node).getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
+
         // Pass in node aspects
         Set<Long> nodeAspectQNameIds = node.getAspects();
         Set<QName> contextQNames = context.getAspects();

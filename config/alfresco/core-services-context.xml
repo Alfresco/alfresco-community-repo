@@ -825,6 +825,15 @@
             </list>
         </property>
     </bean>
+    
+    <!-- TODO - deprecate and replace with mechanism that does not rely on init-method (see AR-2207) -->
+    <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/defaultCustomModel.xml</value>
+            </list>
+        </property>
+    </bean>
 
     <!--                 -->
     <!-- Copy Service    -->

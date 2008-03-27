@@ -30,12 +30,14 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -44,6 +46,8 @@ import org.apache.commons.logging.LogFactory;
 
 public class EditOfflineDialog extends CheckinCheckoutDialog
 {
+   private static final long serialVersionUID = -4848508258494238150L;
+   
    public static final String OFFLINE_EDITING = "offlineEditing";
    public static final String CLOSE = "close";
    public static final String MSG_ERROR_CHECKOUT = "error_checkout";
@@ -130,17 +134,25 @@ public class EditOfflineDialog extends CheckinCheckoutDialog
     */
    private void checkoutFile(Node node)
    {
+      UserTransaction tx = null;
+      FacesContext context = FacesContext.getCurrentInstance();
+      
       if (node != null)
       {
          try
          {
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
             if (logger.isDebugEnabled())
                logger.debug("Trying to checkout content node Id: " + node.getId());
             NodeRef workingCopyRef = null;
+            
             // checkout the content to the current space
             workingCopyRef = property.getVersionOperationsService().checkout(node.getNodeRef());
             getNodeService().setProperty(workingCopyRef, ContentModel.PROP_WORKING_COPY_MODE,
                      OFFLINE_EDITING);
+            
             // set the working copy Node instance
             Node workingCopy = new Node(workingCopyRef);
             property.setWorkingDocument(workingCopy);
@@ -153,9 +165,14 @@ public class EditOfflineDialog extends CheckinCheckoutDialog
             workingCopy.getProperties().put("url", url);
             workingCopy.getProperties().put("fileType32",
                      Utils.getFileTypeImage(workingCopy.getName(), false));
+            
+            // commit the transaction
+            tx.commit();
          }
          catch (Throwable err)
          {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            
             Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(),
                      MSG_ERROR_CHECKOUT)
                      + err.getMessage(), err);

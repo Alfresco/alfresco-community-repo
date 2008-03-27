@@ -28,11 +28,15 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
@@ -162,20 +166,39 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
       Node node = property.getDocument();
       if (node != null)
       {
-         // if current content is already working copy then we don't checkout
-         if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)
+         UserTransaction tx = null;
+         FacesContext context = FacesContext.getCurrentInstance();
+         
+         try
          {
-            // if checkout is successful, then checkoutFile sets property workingDocument
-            checkoutFile(FacesContext.getCurrentInstance(), null);
-
-            Node workingCopyNode = property.getWorkingDocument();
-
-            if (workingCopyNode != null)
+            tx = Repository.getUserTransaction(context, false);
+            tx.begin();
+            
+            // if current content is already working copy then we don't checkout
+            if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false)
             {
-               // set working copy node as document for editing
-               property.setDocument(workingCopyNode);
-               getNodeService().setProperty(workingCopyNode.getNodeRef(), ContentModel.PROP_WORKING_COPY_MODE, ONLINE_EDITING);
+               // if checkout is successful, then checkoutFile sets property workingDocument
+               checkoutFile(FacesContext.getCurrentInstance(), null);
+   
+               Node workingCopyNode = property.getWorkingDocument();
+   
+               if (workingCopyNode != null)
+               {
+                  // set working copy node as document for editing
+                  property.setDocument(workingCopyNode);
+                  getNodeService().setProperty(workingCopyNode.getNodeRef(), ContentModel.PROP_WORKING_COPY_MODE, ONLINE_EDITING);
+               }
             }
+            
+            // commit the transaction
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+            
+            Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
+                     MSG_ERROR_CHECKOUT) + err.getMessage(), err);
          }
       }
    }

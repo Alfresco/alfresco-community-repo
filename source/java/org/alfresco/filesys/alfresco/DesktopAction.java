@@ -429,8 +429,11 @@ public abstract class DesktopAction {
 	                hostStr.append(webPath.substring(pos));
 
 	            webPath = hostStr.toString();
-	            setWebappURL( webPath);
 	        }
+	        
+	        // Set the URL path
+	        
+	        setWebappURL( webPath);
 		}
 		
 		// Check if debug output is enabled for the action

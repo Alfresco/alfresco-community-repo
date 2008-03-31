@@ -2,11 +2,11 @@
 
    <config evaluator="string-compare" condition="CIFS Server">
 	  <serverEnable enabled="true"/>
-      <host name="${localname}A"/>
+      <host name="${cifs.localname}A" domain="${cifs.domain}"/>
       <comment>Alfresco CIFS Server</comment>
 
       <!-- Set to the broadcast mask for the subnet -->
-      <broadcast>255.255.255.255</broadcast>
+      <broadcast>${cifs.broadcast}</broadcast>
 
       <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
       <tcpipSMB platforms="linux,solaris,macosx"/>

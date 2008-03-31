@@ -16,6 +16,11 @@
       <constructor-arg>
          <ref bean="fileServersConfigSource" />
       </constructor-arg>
+      <property name="properties">
+         <list>
+	        <value>classpath:alfresco/file-servers.properties</value>
+	      </list>
+      </property>
    </bean>
 
    <!-- File Server Configuration -->

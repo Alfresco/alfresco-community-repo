@@ -35,6 +35,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.webservice.AbstractWebService;
@@ -271,4 +272,61 @@ public class ContentWebService extends AbstractWebService implements
             throw new ContentFault(0, e.getMessage());
         }
     }
+
+    /**
+     * Transforms content from one node and mimetype to another node and mimetype
+     * 
+     * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#transform(org.alfresco.repo.webservice.types.Reference, java.lang.String, org.alfresco.repo.webservice.types.Reference, java.lang.String, org.alfresco.repo.webservice.types.ContentFormat)
+     */
+	public Content transform(
+						final Reference source, 
+						final String property,
+						final Reference destinationReference, 
+						final String destinationProperty,
+						final ContentFormat destinationFormat) 
+		throws RemoteException, ContentFault 
+	{
+		try
+        {
+            RetryingTransactionCallback<Content> callback = new RetryingTransactionCallback<Content>()
+            {
+                public Content execute() throws Throwable
+                {
+					// Get the nodes and property qname's
+					NodeRef sourceNodeRef = Utils.convertToNodeRef(source, ContentWebService.this.nodeService, ContentWebService.this.searchService, ContentWebService.this.namespaceService);
+					NodeRef destinationNodeRef = Utils.convertToNodeRef(destinationReference, ContentWebService.this.nodeService, ContentWebService.this.searchService, ContentWebService.this.namespaceService);
+					QName sourceQName = QName.createQName(property);
+					QName destinationQName = QName.createQName(destinationProperty);
+					
+					// Get the content reader
+					ContentReader contentReader = ContentWebService.this.contentService.getReader(sourceNodeRef, sourceQName);
+					if (contentReader == null)
+					{
+						throw new AlfrescoRuntimeException("Source content does not exist.  Transform could not take place.");
+					}
+					
+					// Get the content writer
+					ContentWriter contentWriter = ContentWebService.this.contentService.getWriter(destinationNodeRef, destinationQName, true);
+					contentWriter.setEncoding(destinationFormat.getEncoding());
+					contentWriter.setMimetype(destinationFormat.getMimetype());
+					
+					// Transform the content
+					ContentWebService.this.contentService.transform(contentReader, contentWriter);
+					
+					// Return the content object to the user
+					return createContent(destinationNodeRef, destinationProperty);
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        } 
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            throw new ContentFault(0, e.getMessage());
+        }
+		
+	}
 }

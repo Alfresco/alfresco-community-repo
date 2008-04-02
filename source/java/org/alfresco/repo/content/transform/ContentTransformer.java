@@ -30,6 +30,7 @@ import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * Interface for class that allow content transformation from one mimetype to another.
@@ -45,8 +46,8 @@ public interface ContentTransformer extends ContentWorker
      * options are used, but they should be considered optional and their absence 
      * should not interfere with the execution of the transformer.
      */
-    public static final String OPT_SOURCE_NODEREF = "sourceNodeRef";
-    public static final String OPT_DESTINATION_NODEREF = "destinationNodeRef";
+    //public static final String OPT_SOURCE_NODEREF = "sourceNodeRef";
+    //public static final String OPT_DESTINATION_NODEREF = "destinationNodeRef";
     
     /**
      * Provides the approximate accuracy with which this transformer can
@@ -61,7 +62,27 @@ public interface ContentTransformer extends ContentWorker
      *      transformation cannot be performed at all.  1.0 indicates that
      *      the transformation can be performed perfectly.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype);
+    //public double getReliability(String sourceMimetype, String targetMimetype);
+    
+    /**
+     * Indicates whether the provided source mimetype can be transformed into the target mimetype with 
+     * the options specified by this content transformer.
+     * 
+     * @param  sourceMimetype           the source mimetype
+     * @param  destinationMimetype      the destination mimetype
+     * @param  options                  the transformation options
+     * @return boolean                  true if this content transformer can satify the mimetypes and options specified, false otherwise
+     */
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);
+    
+    /**
+     * 
+     * @param sourceMimetype
+     * @param targetMimetype
+     * @param options
+     * @return
+     */
+    public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options);
     
     /**
      * Provides an estimate, usually a worst case guess, of how long a transformation
@@ -75,7 +96,7 @@ public interface ContentTransformer extends ContentWorker
     public long getTransformationTime();
     
     /**
-     * @see #transform(ContentReader, ContentWriter, Map)
+     * @see #transform(ContentReader, ContentWriter, TransformationOptions)
      */
     public void transform(ContentReader reader, ContentWriter writer) throws ContentIOException;
     
@@ -97,9 +118,36 @@ public interface ContentTransformer extends ContentWorker
      * @param options options to pass to the transformer.  These are transformer dependent
      *      and may be null.
      * @throws ContentIOException if an IO exception occurs
+     * 
+     * @deprecated 
+     * Deprecated since 3.0.  Options should now be provided as a TransformationOptions object.
      */
+    @Deprecated
     public void transform(
             ContentReader reader,
             ContentWriter writer,
             Map<String, Object> options) throws ContentIOException;
+    
+    /**
+     * Transforms the content provided by the reader and source mimetype
+     * to the writer and target mimetype with the provided transformation options.
+     * <p>
+     * The transformation viability can be determined by an up front call
+     * to {@link #isTransformable(String, String, TransformationOptions)}.
+     * <p>
+     * The source and target mimetypes <b>must</b> be available on the
+     * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} methods of
+     * both the reader and the writer.
+     * <p>
+     * Both reader and writer will be closed after the transformation completes.
+     * <p>
+     * The provided options can be null.
+     * 
+     * @param  reader               the source of the content
+     * @param  contentWriter        the destination of the transformed content    
+     * @param  options              transformation options, these can be null
+     * @throws ContentIOException   if an IO exception occurs
+     */
+    public void transform(ContentReader reader, ContentWriter contentWriter, TransformationOptions options) 
+        throws ContentIOException;
 }

@@ -24,10 +24,9 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.util.Map;
-
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,41 +41,38 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class BinaryPassThroughContentTransformer extends AbstractContentTransformer
+public class BinaryPassThroughContentTransformer extends AbstractContentTransformer2
 {
+    @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(BinaryPassThroughContentTransformer.class);
-    
-    /**
-     * @return Returns 1.0 if the formats are identical and not text
-     */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+
+    @Override
+    protected void transformInternal(ContentReader reader,
+            ContentWriter writer, TransformationOptions options)
+            throws Exception
+    {
+        // just stream it
+        writer.putContent(reader.getContentInputStream());
+        
+    }
+
+    public boolean isTransformable(String sourceMimetype,
+            String targetMimetype, TransformationOptions options)
     {
         if (sourceMimetype.startsWith(StringExtractingContentTransformer.PREFIX_TEXT))
         {
             // we can only stream binary content through
-            return 0.0;
+            return false;
         }
         else if (!sourceMimetype.equals(targetMimetype))
         {
             // no transformation is possible so formats must be exact
-            return 0.0;
+            return false;
         }
         else
         {
             // formats are the same and are not text
-            return 1.0;
+            return true;
         }
-    }
-
-    /**
-     * Performs a direct stream provided the preconditions are met
-     */
-    public void transformInternal(
-            ContentReader reader,
-            ContentWriter writer,
-            Map<String, Object> options) throws Exception
-    {
-        // just stream it
-        writer.putContent(reader.getContentInputStream());
     }
 }

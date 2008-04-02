@@ -25,11 +25,11 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.util.PDFTextStripper;
 
@@ -39,12 +39,12 @@ import org.pdfbox.util.PDFTextStripper;
  * 
  * @author Derek Hulley
  */
-public class PdfBoxContentTransformer extends AbstractContentTransformer
+public class PdfBoxContentTransformer extends AbstractContentTransformer2
 {
     /**
      * Currently the only transformation performed is that of text extraction from PDF documents.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // TODO: Expand PDFBox usage to convert images to PDF and investigate other conversions
         
@@ -52,18 +52,18 @@ public class PdfBoxContentTransformer extends AbstractContentTransformer
             !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support PDF -> Text
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
     protected void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         PDDocument pdf = null;
         InputStream is = null;

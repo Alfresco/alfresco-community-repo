@@ -29,6 +29,7 @@ import java.util.Collections;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
 
 /**
@@ -69,10 +70,9 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         {
             return;
         }
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        assertEquals("Mimetype should not be supported", false, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
+        assertEquals("Mimetype should be supported", true, reliability);
     }
 }

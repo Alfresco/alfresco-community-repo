@@ -26,11 +26,11 @@ package org.alfresco.repo.content.transform;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -51,7 +51,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
  * 
  * @author Derek Hulley
  */
-public class PoiHssfContentTransformer extends AbstractContentTransformer
+public class PoiHssfContentTransformer extends AbstractContentTransformer2
 {
     /**
      * Windows carriage return line feed pair.
@@ -61,21 +61,21 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer
     /**
      * Currently the only transformation performed is that of text extraction from XLS documents.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_EXCEL.equals(sourceMimetype) ||
                 !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support XLS -> Text
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
         InputStream is = reader.getContentInputStream();
@@ -135,6 +135,7 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer
         }
     }
     
+    @SuppressWarnings("deprecation")
     private void writeRow(OutputStream os, HSSFRow row, String encoding) throws Exception
     {
         short firstCellNum = row.getFirstCellNum(); 

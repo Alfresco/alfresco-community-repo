@@ -24,9 +24,7 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -45,6 +43,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -186,14 +185,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 		// Get the mime type
 		String mimeType = (String)ruleAction.getParameterValue(PARAM_MIME_TYPE);
 		
-		// Check that a transformer is available to the transformation before we go any further
-		ContentTransformer contentTransformer = this.transformerRegistry.getTransformer(sourceMimeType, mimeType);
-		if (contentTransformer == null)
-		{
-			// Throw an exception since the transformer is not present
-			throw new NoTransformerException(sourceMimeType, mimeType);
-		}
-		
 		// Get the details of the copy destination
 		NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
         QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
@@ -314,13 +305,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
         }
         
-        // build map of options
-        Map<String, Object> options = new HashMap<String, Object>(2);
-        options.put(ContentTransformer.OPT_SOURCE_NODEREF, sourceNodeRef);
-        options.put(ContentTransformer.OPT_DESTINATION_NODEREF, destinationNodeRef);
-        
         // transform
-		this.contentService.transform(contentReader, contentWriter, options);
+        TransformationOptions options = new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
+        this.contentService.transform(contentReader, contentWriter, options);
 	}
 	
     /**

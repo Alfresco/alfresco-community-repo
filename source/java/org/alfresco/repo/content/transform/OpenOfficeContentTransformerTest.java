@@ -33,6 +33,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -81,17 +82,16 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
             // no connection
             return;
         }
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MIMETYPE_RUBBISH, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MIMETYPE_RUBBISH);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_XHTML);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        boolean reliability = transformer.isTransformable(MIMETYPE_RUBBISH, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        assertEquals("Mimetype should not be supported", false, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MIMETYPE_RUBBISH, new TransformationOptions());
+        assertEquals("Mimetype should not be supported", false, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_XHTML, new TransformationOptions());
+        assertEquals("Mimetype should not be supported", false, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD, new TransformationOptions());
+        assertEquals("Mimetype should be supported", true, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        assertEquals("Mimetype should be supported", true, reliability);
     }
     
     /**

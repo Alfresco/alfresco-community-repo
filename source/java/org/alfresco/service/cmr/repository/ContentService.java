@@ -147,6 +147,7 @@ public interface ContentService
 
     /**
      * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentReader)
+     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentWriter, TransformationOptions)
      * 
      * A map of transform options can be provided.
      * 
@@ -156,23 +157,67 @@ public interface ContentService
      * @throws NoTransformerException if no transformer exists for the
      *      given source and target mimetypes of the reader and writer
      * @throws ContentIOException if the transformation fails
+     * 
+     * @depricated 
+     * As of release 3.0 the TransformOptions class should be used to pass transformation options 
+     * to a transformation execution.
      */
     @Auditable(parameters = {"reader", "writer", "options"})
+    @Deprecated
     public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
+            throws NoTransformerException, ContentIOException;
+    
+    /**
+     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentReader)
+     * 
+     * A transformation options can be provided.
+     * 
+     * @param reader the source content location and mimetype
+     * @param writer the target content location and mimetype
+     * @param options the options for the transformation
+     * @throws NoTransformerException if no transformer exists for the
+     *      given source and target mimetypes of the reader and writer
+     * @throws ContentIOException if the transformation fails
+     */
+    @Auditable(parameters = {"reader", "writer", "options"})
+    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
             throws NoTransformerException, ContentIOException;
     
     /**
      * Fetch the transformer that is capable of transforming the content in the
      * given source mimetype to the given target mimetype.
+     * <p>
+     * Since no transformation options are provided only the source and destination mimetypes are
+     * considered when getting the correct transformer.
      * 
      * @param the source mimetype
      * @param the target mimetype
      * @return Returns a transformer that can be used, or null if one was not available
      * 
+     * @see org.alfresco.service.cmr.respository.ContentService.getTransformer(String, String, TransformationOptions)
      * @see ContentAccessor#getMimetype()
      */
     @Auditable(parameters = {"sourceMimetype", "targetMimetype"})
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
+    
+    /**
+     * Fetch the transformer that is capable of transforming the content in the
+     * given source mimetype to the given target mimetype with the provided transformation
+     * options.
+     * <p>
+     * The transformation options provide a finer grain way of discoving the correct transformer, 
+     * since the values and type of the options provided are considered by the transformer when
+     * deciding whether it can satisfy the transformation request.
+     * 
+     * @param  sourceMimetype       the source mimetype
+     * @param  targetMimetype       the target mimetype
+     * @param  options              the transformation options
+     * @return ContentTransformer   a transformer that can be used, or null if one was not available
+     * 
+     * @see ContentAccessor#getMimetype()
+     */
+    @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options);
     
     /**
      * Fetch the transformer that is capable of transforming image content.
@@ -186,6 +231,9 @@ public interface ContentService
      * Returns whether a transformer exists that can read the content from
      * the reader and write the content back out to the writer.
      * <p>
+     * Since no transformation options are specified, only the source and target
+     * mimetypes will be considered when making this decision.
+     * <p>
      * The mimetypes used for the transformation must be set both on
      * the {@link ContentAccessor#getMimetype() reader} and on the
      * {@link ContentAccessor#getMimetype() writer}.
@@ -194,7 +242,26 @@ public interface ContentService
      * @param writer the target content location and mimetype
      * 
      * @return true if a transformer exists, false otherwise
+     * 
+     * @see org.alfresco.service.cmr.repository.ContentService.isTransformable(ContentReader, ContentWriter, TransformationOptions)
      */
     @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);
+    
+    /**
+     * Returns whether a transformer exists that can read the content from
+     * the reader and write the content back out to the writer with the 
+     * provided tranformation options.
+     * <p>
+     * The mimetypes used for the transformation must be set both on
+     * the {@link ContentAccessor#getMimetype() reader} and on the
+     * {@link ContentAccessor#getMimetype() writer}.
+     * 
+     * @param  reader   the source content location and mimetype
+     * @param  writer   the target content location and mimetype
+     * @param  options  the transformation options
+     * @return boolean  true if a transformer exists, false otherwise
+     */
+    @Auditable(parameters = {"reader", "writer", "options"})
+    public boolean isTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options);
 }

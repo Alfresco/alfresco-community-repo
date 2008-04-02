@@ -26,12 +26,12 @@ package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
@@ -44,7 +44,7 @@ import org.apache.poi.poifs.filesystem.DocumentInputStream;
  * 
  * @author Kevin Roast
  */
-public class MailContentTransformer extends AbstractContentTransformer
+public class MailContentTransformer extends AbstractContentTransformer2
 {
     private static final Log logger = LogFactory.getLog(MailContentTransformer.class);
     
@@ -54,17 +54,17 @@ public class MailContentTransformer extends AbstractContentTransformer
     /**
      * Only support MSG to text
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_RFC822.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support MSG -> TEXT
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
@@ -72,7 +72,7 @@ public class MailContentTransformer extends AbstractContentTransformer
      * @see org.alfresco.repo.content.transform.AbstractContentTransformer#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, java.util.Map)
      */
     @Override
-    protected void transformInternal(final ContentReader reader, ContentWriter writer, Map<String, Object> options)
+    protected void transformInternal(final ContentReader reader, ContentWriter writer, TransformationOptions options)
         throws Exception
     {
         final StringBuilder sb = new StringBuilder();

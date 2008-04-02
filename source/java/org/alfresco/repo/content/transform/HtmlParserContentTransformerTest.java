@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * @see org.alfresco.repo.content.transform.HtmlParserContentTransformer
@@ -52,14 +53,14 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
         assertNotNull(transformer);
     }
     
-    public void checkReliability() throws Exception
+    public void checkIsTransformable() throws Exception
     {
         // check reliability
-        double reliability = transformer.getReliability(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Reliability incorrect", 1.0, reliability);   // plain text to plain text is 100%
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        assertTrue(reliability);   // plain text to plain text is supported
         
         // check other way around
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML);
-        assertEquals("Reliability incorrect", 0.0, reliability);   // plain text to plain text is 0%
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML, new TransformationOptions());
+        assertFalse(reliability);   // plain text to plain text is not supported
     }
 }

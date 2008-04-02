@@ -79,6 +79,7 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -836,7 +837,7 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testTransformAction()
     {
-        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN) != null)
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) != null)
         {
     		try
     		{
@@ -920,7 +921,7 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testImageTransformAction()
     {
-        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG) != null)
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions()) != null)
         {
     		try
     		{
@@ -1653,7 +1654,7 @@ public class RuleServiceCoverageTest extends TestCase
     
     public void testAsyncExecutionWithPotentialLoop()
     {
-        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN) != null)
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) != null)
         {
     		try
     		{

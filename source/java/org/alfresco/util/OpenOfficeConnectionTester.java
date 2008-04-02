@@ -31,7 +31,6 @@ import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -194,13 +193,7 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
             if (metadataExractorRegistryObj != null && (metadataExractorRegistryObj instanceof MetadataExtracterRegistry))
             {
                 metadataExtracterRegistry = (MetadataExtracterRegistry) metadataExractorRegistryObj;
-            }
-            Object contentTransformerRegistryObj = jobData.get("contentTransformerRegistry");
-            ContentTransformerRegistry contentTransformerRegistry = null;
-            if (contentTransformerRegistryObj != null && (contentTransformerRegistryObj instanceof ContentTransformerRegistry))
-            {
-                contentTransformerRegistry = (ContentTransformerRegistry) contentTransformerRegistryObj;
-            }
+            }            
             
             // Now ping the connection.  It doesn't matter if it fails or not.
             boolean connected = openOfficeConnectionTester.testAndConnect();
@@ -228,10 +221,6 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
                 if (metadataExtracterRegistry != null)
                 {
                     metadataExtracterRegistry.resetCache();
-                }
-                if (contentTransformerRegistry != null)
-                {
-                    contentTransformerRegistry.resetCache();
                 }
             }
             // Record the state

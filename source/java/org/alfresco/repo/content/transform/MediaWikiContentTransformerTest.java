@@ -33,6 +33,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 import de.schlichtherle.io.FileOutputStream;
 
@@ -85,15 +86,11 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
         assertNotNull(transformer);
     }
     
-    public void checkReliability() throws Exception
+    public void testIsTransformable() throws Exception
     {
         // check reliability
-        double reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, MimetypeMap.MIMETYPE_HTML);
-        assertEquals("Reliability incorrect", 1.0, reliability);   // plain text to html is 100%
-        
-        // check other way around
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI);
-        assertEquals("Reliability incorrect", 0.0, reliability);   // html to plain text is 0%
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, new TransformationOptions()));
     }
     
     public void testMediaWikiToHTML() throws Exception

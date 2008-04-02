@@ -30,6 +30,7 @@ import java.io.InputStream;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -57,13 +58,10 @@ public class TextMiningContentTransformerTest extends AbstractContentTransformer
         return transformer;
     }
     
-    public void testReliability() throws Exception
+    public void testIsTransformable() throws Exception
     {
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
     }
     
     /**

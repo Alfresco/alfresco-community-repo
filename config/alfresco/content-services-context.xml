@@ -190,16 +190,16 @@
 
    <bean id="transformer.BinaryPassThrough"
          class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseContentTransformer" />     
 
    <bean id="transformer.PdfBox"
          class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
          parent="baseContentTransformer" >
       <property name="explicitTransformations">
          <list>
-            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
-                <constructor-arg><value>application/pdf</value></constructor-arg>
-                <constructor-arg><value>text/plain</value></constructor-arg>
+         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>text/plain</value></property>
             </bean>
          </list>
       </property>
@@ -210,7 +210,7 @@
          parent="baseContentTransformer" >
       <property name="explicitTransformations">
          <list>
-            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <constructor-arg><value>text/plain</value></constructor-arg>
                 <constructor-arg><value>application/pdf</value></constructor-arg>
             </bean>
@@ -227,9 +227,9 @@
          parent="baseContentTransformer" >
       <property name="explicitTransformations">
          <list>
-            <bean class="org.alfresco.repo.content.transform.ContentTransformerRegistry$TransformationKey" >
-                <constructor-arg><value>application/msword</value></constructor-arg>
-                <constructor-arg><value>text/plain</value></constructor-arg>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/msword</value></property>
+                <property name="targetMimetype"><value>text/plain</value></property>
             </bean>
          </list>
       </property>

@@ -25,7 +25,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -33,6 +32,7 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -46,6 +46,8 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     private static final String B = MimetypeMap.MIMETYPE_XML;
     private static final String C = MimetypeMap.MIMETYPE_WORD;
     private static final String D = MimetypeMap.MIMETYPE_HTML;
+
+    private static final TransformationOptions OPTIONS = new TransformationOptions();
     
     /** a real registry with real transformers */
     private ContentTransformerRegistry registry;
@@ -75,17 +77,17 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         // create the dummyRegistry
         dummyRegistry = new ContentTransformerRegistry();
         // create some dummy transformers for reliability tests
-        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 0.3, 10L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 0.6, 10L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 0.5, 10L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 1.0, 10L);
-        new DummyTransformer(mimetypeService, dummyRegistry, B, C, 0.2, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, B, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, C, 10L);
+        new DummyTransformer(mimetypeService, dummyRegistry, B, C, 10L);
         // create some dummy transformers for speed tests
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 10L);  // the fast one
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
-        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 1.0, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 10L);  // the fast one
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
+        new DummyTransformer(mimetypeService, dummyRegistry, A, D, 20L);
     }
 
     /**
@@ -100,31 +102,31 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     /**
      * @return Returns the transformer provided by the <b>real</b> registry
      */
-    protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
+    protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        return registry.getTransformer(sourceMimetype, targetMimetype);
+        return registry.getTransformer(sourceMimetype, targetMimetype, options);
     }
 
     public void testNullRetrieval() throws Exception
     {
         ContentTransformer transformer = null;
-        transformer = dummyRegistry.getTransformer(C, B);
+        transformer = dummyRegistry.getTransformer(C, B, OPTIONS);
         assertNull("No transformer expected", transformer);
-        transformer = dummyRegistry.getTransformer(C, A);
+        transformer = dummyRegistry.getTransformer(C, A, OPTIONS);
         assertNull("No transformer expected", transformer);
-        transformer = dummyRegistry.getTransformer(B, A);
+        transformer = dummyRegistry.getTransformer(B, A, OPTIONS);
         assertNull("No transformer expected", transformer);
     }
     
     public void testSimpleRetrieval() throws Exception
     {
         ContentTransformer transformer = null;
-        // B -> C expect 0.2
-        transformer = dummyRegistry.getTransformer(B, C);
-        transformer = dummyRegistry.getTransformer(B, C);
+        // B -> C expect true
+        transformer = dummyRegistry.getTransformer(B, C, OPTIONS);
+        //transformer = dummyRegistry.getTransformer(B, C, OPTIONS);
         assertNotNull("No transformer found", transformer);
-        assertEquals("Incorrect reliability", 0.2, transformer.getReliability(B, C));
-        assertEquals("Incorrect reliability", 0.0, transformer.getReliability(C, B));
+        assertTrue("Incorrect reliability", transformer.isTransformable(B, C, OPTIONS));
+        assertFalse("Incorrect reliability", transformer.isTransformable(C, B, OPTIONS));
     }
     
     /**
@@ -135,9 +137,9 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     public void testPerformanceRetrieval() throws Exception
     {
         // A -> D expect 1.0, 10ms
-        ContentTransformer transformer1 = dummyRegistry.getTransformer(A, D);
-        assertEquals("Incorrect reliability", 1.0, transformer1.getReliability(A, D));
-        assertEquals("Incorrect reliability", 0.0, transformer1.getReliability(D, A));
+        ContentTransformer transformer1 = dummyRegistry.getTransformer(A, D, OPTIONS);
+        assertTrue("Incorrect reliability", transformer1.isTransformable(A, D, OPTIONS));
+        assertFalse("Incorrect reliability", transformer1.isTransformable(D, A, OPTIONS));
         assertEquals("Incorrect transformation time", 10L, transformer1.getTransformationTime());
     }
     
@@ -145,15 +147,15 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     {
         ContentTransformer transformer = null;
         // A -> B expect 0.6
-        transformer = dummyRegistry.getTransformer(A, B);
+        transformer = dummyRegistry.getTransformer(A, B, OPTIONS);
         assertNotNull("No transformer found", transformer);
-        assertEquals("Incorrect reliability", 0.6, transformer.getReliability(A, B));
-        assertEquals("Incorrect reliability", 0.0, transformer.getReliability(B, A));
+        assertTrue("Incorrect reliability", transformer.isTransformable(A, B, OPTIONS));
+        assertFalse("Incorrect reliability", transformer.isTransformable(B, A, OPTIONS));
         // A -> C expect 1.0
-        transformer = dummyRegistry.getTransformer(A, C);
+        transformer = dummyRegistry.getTransformer(A, C, OPTIONS);
         assertNotNull("No transformer found", transformer);
-        assertEquals("Incorrect reliability", 1.0, transformer.getReliability(A, C));
-        assertEquals("Incorrect reliability", 0.0, transformer.getReliability(C, A));
+        assertTrue("Incorrect reliability", transformer.isTransformable(A, C, OPTIONS));
+        assertFalse("Incorrect reliability", transformer.isTransformable(C, A, OPTIONS));
     }
     
     /**
@@ -162,22 +164,22 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
      */
     public void testExplicitTransformation()
     {
-        AbstractContentTransformer dummyTransformer = new DummyTransformer(
+        AbstractContentTransformer2 dummyTransformer = new DummyTransformer(
                 mimetypeService,
                 dummyRegistry,
                 MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL,
-                1.0, 12345);
+                12345);
         // set an explicit transformation
-        ContentTransformerRegistry.TransformationKey key =
-                new ContentTransformerRegistry.TransformationKey(
-                        MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL);
+        ExplictTransformationDetails key =
+            new ExplictTransformationDetails(
+                        MimetypeMap.MIMETYPE_FLASH, 
+                        MimetypeMap.MIMETYPE_EXCEL);
         dummyTransformer.setExplicitTransformations(Collections.singletonList(key));
         // register again
         dummyTransformer.register();
         
         // get the appropriate transformer for the bizarre mapping
-        ContentTransformer checkTransformer = dummyRegistry.getTransformer(
-                MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL);
+        ContentTransformer checkTransformer = dummyRegistry.getTransformer(MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL, OPTIONS);
         
         assertNotNull("No explicit transformer found", checkTransformer);
         assertTrue("Expected explicit transformer", dummyTransformer == checkTransformer);
@@ -187,39 +189,37 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
      * Dummy transformer that does no transformation and scores exactly as it is
      * told to in the constructor.  It enables the tests to be sure of what to expect.
      */
-    private static class DummyTransformer extends AbstractContentTransformer
+    private static class DummyTransformer extends AbstractContentTransformer2
     {
         private String sourceMimetype;
         private String targetMimetype;
-        private double reliability;
         private long transformationTime;
         
         public DummyTransformer(
                 MimetypeService mimetypeService,
                 ContentTransformerRegistry registry,
                 String sourceMimetype, String targetMimetype,
-                double reliability, long transformationTime)
+                long transformationTime)
         {
             super.setMimetypeService(mimetypeService);
             super.setRegistry(registry);
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
-            this.reliability = reliability;
             this.transformationTime = transformationTime;
             // register
             register();
         }
 
-        public double getReliability(String sourceMimetype, String targetMimetype)
+        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
         {
             if (this.sourceMimetype.equals(sourceMimetype)
                     && this.targetMimetype.equals(targetMimetype))
             {
-                return reliability;
+                return true;
             }
             else
             {
-                return 0.0;
+                return false;
             }
         }
 
@@ -229,7 +229,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         public void transformInternal(
                 ContentReader reader,
                 ContentWriter writer,
-                Map<String, Object> options) throws Exception
+                TransformationOptions options) throws Exception
         {
             // just update the transformation time
             super.recordTime(transformationTime);
@@ -242,5 +242,12 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         {
             return transformationTime;
         }
+    }
+
+    @Override
+    protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

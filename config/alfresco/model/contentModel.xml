@@ -309,6 +309,20 @@
             <aspect>sys:localized</aspect>
          </mandatory-aspects>
       </type>
+      
+      <!-- Thumbnail content type -->
+      <type name="cm:thumbnail">
+	     <title>Thumbnail</title>
+		 <parent>cm:content</parent>
+		 <archive>true</archive>
+		 <properties>     
+		    <property name="cm:options">
+		        <title>Thumbnail Options</title>
+			    <type>d:any</type>
+			    <mandatory>false</mandatory>
+		    </property>      
+		 </properties>
+	  </type>
             
    </types>
    
@@ -816,6 +830,25 @@
             <aspect>cm:mlDocument</aspect>
          </mandatory-aspects>
       </aspect>
+      
+      <!-- Thumbnailed aspect relates a content node to it's thumbnails -->
+      <aspect name="cm:thumbnailed">
+         <title>Thumbnailed</title>
+         <associations>
+             <child-association name="cm:thumbnails">
+                 <source>
+	                <mandatory>false</mandatory>
+	                <many>true</many>
+                 </source>
+                 <target>
+	                <class>cm:thumbnail</class>
+	                <mandatory>false</mandatory>
+	                <many>true</many>
+                 </target>
+             </child-association>
+         </associations>
+      </aspect>
+      
    </aspects>
 
 </model>

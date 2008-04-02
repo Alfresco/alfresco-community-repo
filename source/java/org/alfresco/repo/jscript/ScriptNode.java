@@ -38,7 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
-import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
@@ -1742,9 +1742,12 @@ public class ScriptNode implements Serializable, Scopeable
             public ScriptNode transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
                     ContentWriter writer)
             {
-                Map<String, Object> opts = new HashMap<String, Object>(1);
-                opts.put(ImageMagickContentTransformer.KEY_OPTIONS, options != null ? options : "");
-                contentService.getImageTransformer().transform(reader, writer, opts);
+                ImageTransformationOptions imageOptions = new ImageTransformationOptions();
+                if (options != null)
+                {
+                    imageOptions.setCommandOptions(options);
+                }
+                contentService.getImageTransformer().transform(reader, writer, imageOptions);
 
                 return newInstance(nodeRef, services, scope);
             }

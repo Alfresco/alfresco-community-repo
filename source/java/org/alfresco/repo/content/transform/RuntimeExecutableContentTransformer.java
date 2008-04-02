@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry.TransformationKey;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
@@ -67,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 1.1
  * @author Derek Hulley
  */
-public class RuntimeExecutableContentTransformer extends AbstractContentTransformer
+public class RuntimeExecutableContentTransformer extends AbstractContentTransformer2
 {
     public static final String VAR_SOURCE = "source";
     public static final String VAR_TARGET = "target";
@@ -168,28 +168,20 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
      * 
      * @see AbstractContentTransformer#setExplicitTransformations(List)
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!available)
         {
-            return 0.0;
+            return false;
         }
-        // check whether the transformation was one of the explicit transformations
-        TransformationKey transformationKey = new TransformationKey(sourceMimetype, targetMimetype);
-        List<TransformationKey> explicitTransformations = getExplicitTransformations();
-        if (explicitTransformations.size() == 0)
+        
+        if (isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
         {
-            logger.warn(
-                    "Property 'explicitTransformations' should be set to enable this transformer: \n" +
-                    "   transformer: " + this);
-        }
-        if (explicitTransformations.contains(transformationKey))
-        {
-            return 1.0;
+            return true;
         }
         else
         {
-            return 0.0;
+            return false;
         }
     }
     
@@ -202,7 +194,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     protected final void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         // get mimetypes
         String sourceMimetype = getMimetype(reader);
@@ -230,11 +222,15 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         
         Map<String, String> properties = new HashMap<String, String>(5);
         // copy options over
-        for (Map.Entry<String, Object> entry : options.entrySet())
+        if (options instanceof RuntimeExecutableContentTransformerOptions)
         {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            properties.put(key, (value == null ? null : value.toString()));
+            RuntimeExecutableContentTransformerOptions runtimeOptions = (RuntimeExecutableContentTransformerOptions)options;
+            for (Map.Entry<String, Object> entry : runtimeOptions.getPropertyValues().entrySet())
+            {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                properties.put(key, (value == null ? null : value.toString()));
+            }
         }
         // add the source and target properties
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());

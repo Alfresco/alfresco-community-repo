@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -309,6 +310,7 @@ public class RoutingContentService implements ContentService
         return getReader(nodeRef, propertyQName, true);
     }
         
+    @SuppressWarnings("unchecked")
     private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
     {   
         ContentData contentData = null;
@@ -448,16 +450,29 @@ public class RoutingContentService implements ContentService
      */
     public void transform(ContentReader reader, ContentWriter writer)
     {
-        // Call transform with not options
-        this.transform(reader, writer, null);
+        // Call transform with no options
+        TransformationOptions options = null;
+        this.transform(reader, writer, options);
+    }
+    
+    /**
+     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
+     * @see org.alfresco.repo.content.transform.ContentTransformer
+     * @deprecated
+     */    
+    @SuppressWarnings("deprecation")
+    public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
+            throws NoTransformerException, ContentIOException
+    {
+        transform(reader, writer, new TransformationOptions(options));
     }
     
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
      */
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
-            throws NoTransformerException, ContentIOException
+    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) 
+        throws NoTransformerException, ContentIOException
     {
         // check that source and target mimetypes are available
         String sourceMimetype = reader.getMimetype();
@@ -471,7 +486,7 @@ public class RoutingContentService implements ContentService
             throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
         }
         // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype);
+        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
         if (transformer == null)
         {
             throw new NoTransformerException(sourceMimetype, targetMimetype);
@@ -487,10 +502,15 @@ public class RoutingContentService implements ContentService
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
     {
-        // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype);
-        // done
-        return transformer;
+        return getTransformer(sourceMimetype, targetMimetype, new TransformationOptions());
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ContentService#getTransformer(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     */
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
     }
     
     /**
@@ -507,7 +527,15 @@ public class RoutingContentService implements ContentService
      */
     public boolean isTransformable(ContentReader reader, ContentWriter writer)
     {
-        // check that source and target mimetypes are available
+       return isTransformable(reader, writer, new TransformationOptions());
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ContentService#isTransformable(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
+     */
+    public boolean isTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options)
+    {
+     // check that source and target mimetypes are available
         String sourceMimetype = reader.getMimetype();
         if (sourceMimetype == null)
         {
@@ -520,7 +548,7 @@ public class RoutingContentService implements ContentService
         }
         
         // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype);
+        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
         return (transformer != null);
     }
 

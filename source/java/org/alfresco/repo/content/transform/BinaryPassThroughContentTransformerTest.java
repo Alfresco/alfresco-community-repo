@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * @see org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer
@@ -51,16 +52,18 @@ public class BinaryPassThroughContentTransformerTest extends AbstractContentTran
         return transformer;
     }
     
-    public void testReliability() throws Exception
+    public void testIsTransformable() throws Exception
     {
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_XML, MimetypeMap.MIMETYPE_XML);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_WORD);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_EXCEL);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        TransformationOptions options = new TransformationOptions();
+        boolean reliability = false;
+        
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+        assertFalse("Mimetype should not be supported", reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, MimetypeMap.MIMETYPE_XML, options);
+        assertFalse("Mimetype should not be supported", reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_WORD, options);
+        assertTrue("Mimetype should be supported", reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_EXCEL, options);
+        assertTrue("Mimetype should be supported", reliability);
     }
 }

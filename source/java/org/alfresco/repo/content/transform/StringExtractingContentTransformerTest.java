@@ -38,6 +38,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -116,9 +117,8 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     {
         ContentReader reader = writeContent("text/plain", "MacDingbat");
         
-        // check reliability
-        double reliability = transformer.getReliability(reader.getMimetype(), targetWriter.getMimetype());
-        assertEquals("Reliability incorrect", 1.0, reliability);   // plain text to plain text is 100%
+        // check transformability
+        assertTrue(transformer.isTransformable(reader.getMimetype(), targetWriter.getMimetype(), new TransformationOptions()));
         
         // transform
         transformer.transform(reader, targetWriter);
@@ -133,9 +133,8 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     {
         ContentReader reader = writeContent("text/xml", "MacDingbat");
         
-        // check reliability
-        double reliability = transformer.getReliability(reader.getMimetype(), targetWriter.getMimetype());
-        assertEquals("Reliability incorrect", 0.1, reliability);   // markup to plain text not 100%
+        // check transformability
+        assertTrue(transformer.isTransformable(reader.getMimetype(), targetWriter.getMimetype(), new TransformationOptions()));
         
         // transform
         transformer.transform(reader, targetWriter);

@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * @see org.alfresco.repo.content.transform.PdfBoxContentTransformer
@@ -51,12 +52,9 @@ public class PdfBoxContentTransformerTest extends AbstractContentTransformerTest
         return transformer;
     }
     
-    public void testReliability() throws Exception
+    public void testIsTransformable() throws Exception
     {
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
     }
 }

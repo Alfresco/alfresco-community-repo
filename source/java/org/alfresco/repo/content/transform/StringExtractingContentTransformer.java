@@ -28,11 +28,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class StringExtractingContentTransformer extends AbstractContentTransformer
+public class StringExtractingContentTransformer extends AbstractContentTransformer2
 {
     public static final String PREFIX_TEXT = "text/";
     
@@ -56,28 +56,28 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
      * <p>
      * Extraction of text from binary data is wholly unreliable.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN))
         {
             // can only convert to plain text
-            return 0.0;
+            return false;
         }
         else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN) ||
                  sourceMimetype.equals(MimetypeMap.MIMETYPE_JAVASCRIPT))
         {
             // conversions from any plain text format are very reliable
-            return 1.0;
+            return true;
         }
         else if (sourceMimetype.startsWith(PREFIX_TEXT))
         {
             // the source is text, but probably with some kind of markup
-            return 0.1;
+            return true;
         }
         else
         {
             // extracting text from binary is not useful
-            return 0.0;
+            return false;
         }
     }
 
@@ -90,17 +90,17 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
      * be unformatted but valid. 
      */
     @Override
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
         // is this a straight text-text transformation
-        transformText(reader, writer);
+        transformText(reader, writer, options);
     }
     
     /**
      * Transformation optimized for text-to-text conversion
      */
-    private void transformText(ContentReader reader, ContentWriter writer) throws Exception
+    private void transformText(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
     {
         // get a char reader and writer
         Reader charReader = null;

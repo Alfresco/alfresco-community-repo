@@ -27,12 +27,12 @@ package org.alfresco.repo.content.transform;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.pdfbox.TextToPDF;
 import org.pdfbox.pdmodel.PDDocument;
 import org.pdfbox.pdmodel.font.PDTrueTypeFont;
@@ -44,7 +44,7 @@ import org.pdfbox.pdmodel.font.PDType1Font;
  * @author Derek Hulley
  * @since 2.1.0
  */
-public class TextToPdfContentTransformer extends AbstractContentTransformer
+public class TextToPdfContentTransformer extends AbstractContentTransformer2
 {
     private TextToPDF transformer;
     
@@ -92,24 +92,24 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer
     /**
      * Only supports Text to PDF
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_PDF.equals(targetMimetype))
         {
             // only support Text -> PDF
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
     protected void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         PDDocument pdf = null;
         InputStream is = null;

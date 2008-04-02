@@ -24,43 +24,22 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
-import java.io.File;
-
-import magick.ImageInfo;
-import magick.MagickImage;
-
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
- * 
- * @author Derek Hulley
+ * @author Roy Wetherall
  */
-public class JMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class ImageTransformationOptions extends TransformationOptions
 {
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformer.class);
+    private String commandOptions = "";
     
-    public JMagickContentTransformer()
+    public void setCommandOptions(String commandOptions)
     {
+        this.commandOptions = commandOptions;
     }
     
-    /**
-     * Uses the <b>JMagick</b> library to perform the transformation
-     * 
-     * @param sourceFile
-     * @param targetFile
-     * @throws Exception
-     */
-    @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+    public String getCommandOptions()
     {
-        ImageInfo imageInfo = new ImageInfo(sourceFile.getAbsolutePath());
-        MagickImage image = new MagickImage(imageInfo);
-        image.setFileName(targetFile.getAbsolutePath());
-        image.writeImage(imageInfo);
+        return commandOptions;
     }
 }

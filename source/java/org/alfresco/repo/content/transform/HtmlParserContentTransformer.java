@@ -25,11 +25,11 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,28 +41,29 @@ import org.htmlparser.beans.StringBean;
  * 
  * @author Derek Hulley
  */
-public class HtmlParserContentTransformer extends AbstractContentTransformer
+public class HtmlParserContentTransformer extends AbstractContentTransformer2
 {
+    @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(HtmlParserContentTransformer.class);
     
     /**
      * Only support HTML to TEXT.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_HTML.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support HTML -> TEXT
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
         // we can only work from a file

@@ -26,13 +26,9 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,12 +48,13 @@ public class ContentTransformerRegistry
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
     
     private List<ContentTransformer> transformers;
+   
     /** Cache of previously used transactions */
-    private Map<TransformationKey, List<ContentTransformer>> transformationCache;
+    //private Map<TransformationKey, List<ContentTransformer>> transformationCache;
     /** Controls read access to the transformation cache */
-    private Lock transformationCacheReadLock;
+    //private Lock transformationCacheReadLock;
     /** controls write access to the transformation cache */
-    private Lock transformationCacheWriteLock;
+    //private Lock transformationCacheWriteLock;
     
     /**
      * @param mimetypeMap all the mimetypes available to the system
@@ -65,12 +62,13 @@ public class ContentTransformerRegistry
     public ContentTransformerRegistry()
     {
         this.transformers = new ArrayList<ContentTransformer>(10);
-        transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
+       
+        //transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
         
         // create lock objects for access to the cache
-        ReadWriteLock transformationCacheLock = new ReentrantReadWriteLock();
-        transformationCacheReadLock = transformationCacheLock.readLock();
-        transformationCacheWriteLock = transformationCacheLock.writeLock();
+        //ReadWriteLock transformationCacheLock = new ReentrantReadWriteLock();
+        //transformationCacheReadLock = transformationCacheLock.readLock();
+        //transformationCacheWriteLock = transformationCacheLock.writeLock();
     }
     
     /**
@@ -80,17 +78,17 @@ public class ContentTransformerRegistry
      * @param key the mapping from one mimetype to the next
      * @param transformer the content transformer
      */
-    public void addExplicitTransformer(TransformationKey key, ContentTransformer transformer)
-    {
-        transformationCache.put(key, Collections.singletonList(transformer));
+    //public void addExplicitTransformer(TransformationKey key, ContentTransformer transformer)
+    //{
+    //    transformationCache.put(key, Collections.singletonList(transformer));
         // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Registered explicit transformation: \n" +
-                    "   key: " + key + "\n" +
-                    "   transformer: " + transformer);
-        }
-    }
+    //    if (logger.isDebugEnabled())
+    //    {
+    //        logger.debug("Registered explicit transformation: \n" +
+    //                "   key: " + key + "\n" +
+    //                "   transformer: " + transformer);
+    //    }
+   // }
     
     /**
      * Registers an individual transformer that can be queried to check for applicability.
@@ -112,81 +110,75 @@ public class ContentTransformerRegistry
      * Resets the transformation cache.  This allows a fresh analysis of the best
      * conversions based on actual average performance of the transformers.
      */
-    public void resetCache()
-    {
-        // get a write lock on the cache
-        transformationCacheWriteLock.lock();
-        try
-        {
-            transformationCache.clear();
-        }
-        finally
-        {
-            transformationCacheWriteLock.unlock();
-        }
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Content transformation cache reset");
-        }
-    }
+//    public void resetCache()
+//    {
+//        // get a write lock on the cache
+//        transformationCacheWriteLock.lock();
+//        try
+//        {
+//            transformationCache.clear();
+//        }
+//        finally
+//        {
+//            transformationCacheWriteLock.unlock();
+//        }
+//        // done
+//        if (logger.isDebugEnabled())
+//        {
+//            logger.debug("Content transformation cache reset");
+//        }
+//    }
     
     /**
      * Gets the best transformer possible.  This is a combination of the most reliable
      * and the most performant transformer.
-     * <p>
-     * The result is cached for quicker access next time.
-     * 
-     * @param sourceMimetype the source mimetype of the transformation
-     * @param targetMimetype the target mimetype of the transformation
-     * @return Returns a content transformer that can perform the desired
-     *      transformation or null if no transformer could be found that would do it.
+     *
+     * TODO
      */
-    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        TransformationKey key = new TransformationKey(sourceMimetype, targetMimetype);
+        //TransformationKey key = new TransformationKey(sourceMimetype, targetMimetype);
         List<ContentTransformer> transformers = null;
-        transformationCacheReadLock.lock();
-        try
-        {
-            if (transformationCache.containsKey(key))
-            {
+        //transformationCacheReadLock.lock();
+        //try
+        //{
+          //  if (transformationCache.containsKey(key))
+          //  {
                 // the translation has been requested before
                 // it might have been null
-                transformers = transformationCache.get(key);
-            }
-        }
-        finally
-        {
-            transformationCacheReadLock.unlock();
-        }
+           //     transformers = transformationCache.get(key);
+           // }
+        //}
+       // finally
+       // {
+       //     transformationCacheReadLock.unlock();
+       // }
         
-        if (transformers == null)
-        {
+       // if (transformers == null)
+       // {
             // the translation has not been requested before
             // get a write lock on the cache
             // no double check done as it is not an expensive task
-            transformationCacheWriteLock.lock();
-            try
-            {
+         //   transformationCacheWriteLock.lock();
+         //   try
+         //   {
                 // find the most suitable transformer - may be empty list
-                transformers = findTransformers(sourceMimetype, targetMimetype);
+                transformers = findTransformers(sourceMimetype, targetMimetype, options);
                 // store the result even if it is null
-                transformationCache.put(key, transformers);
-            }
-            finally
-            {
-                transformationCacheWriteLock.unlock();
-            }
-        }
+          //      transformationCache.put(key, transformers);
+          //  }
+          //  finally
+          //  {
+          //      transformationCacheWriteLock.unlock();
+          //  }
+        //}
         // select the most performant transformer
         long bestTime = -1L;
         ContentTransformer bestTransformer = null;
         for (ContentTransformer transformer : transformers)
         {
-            // Reliability can be dynamic, i.e. it may have become unreliable
-            double reliability = transformer.getReliability(sourceMimetype, targetMimetype);
-            if (reliability == 0.0)
+            // Transformability can be dynamic, i.e. it may have become unusable
+            if (transformer.isTransformable(sourceMimetype, targetMimetype, options) == false)
             {
                 // It is unreliable now.
                 continue;
@@ -210,12 +202,12 @@ public class ContentTransformerRegistry
      * @return Returns best transformer for the translation - null if all
      *      score 0.0 on reliability
      */
-    private List<ContentTransformer> findTransformers(String sourceMimetype, String targetMimetype)
+    private List<ContentTransformer> findTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // search for a simple transformer that can do the job
-        List<ContentTransformer> transformers = findDirectTransformers(sourceMimetype, targetMimetype);
+        List<ContentTransformer> transformers = findDirectTransformers(sourceMimetype, targetMimetype, options);
         // get the complex transformers that can do the job
-        List<ContentTransformer> complexTransformers = findComplexTransformer(sourceMimetype, targetMimetype);
+        List<ContentTransformer> complexTransformers = findComplexTransformer(sourceMimetype, targetMimetype, options);
         transformers.addAll(complexTransformers);
         // done
         if (logger.isDebugEnabled())
@@ -236,45 +228,68 @@ public class ContentTransformerRegistry
      * @return Returns the most reliable transformers for the translation - empty list if there
      *      are none.
      */
-    private List<ContentTransformer> findDirectTransformers(String sourceMimetype, String targetMimetype)
+    private List<ContentTransformer> findDirectTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        double maxReliability = 0.0;
-        List<ContentTransformer> bestTransformers = new ArrayList<ContentTransformer>(2);
+        //double maxReliability = 0.0;
+        
+        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
+        boolean foundExplicit = false;
+        
         // loop through transformers
         for (ContentTransformer transformer : this.transformers)
         {
-            double reliability = transformer.getReliability(sourceMimetype, targetMimetype);
-            if (reliability <= 0.0)
+            if (transformer.isTransformable(sourceMimetype, targetMimetype, options) == true)
             {
-                // it is unusable
-                continue;
+                if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
+                {
+                    if (foundExplicit == false)
+                    {
+                        transformers.clear();
+                        foundExplicit = true;
+                    }
+                    transformers.add(transformer);
+                }
+                else
+                {
+                    if (foundExplicit == false)
+                    {
+                        transformers.add(transformer);
+                    }
+                }
             }
-            else if (reliability < maxReliability)
-            {
-                // it is not the best one to use
-                continue;
-            }
-            else if (reliability == maxReliability)
-            {
-                // it is as reliable as a previous transformer
-            }
-            else
-            {
-                // it is better than any previous transformer - wipe them
-                bestTransformers.clear();
-                maxReliability = reliability;
-            }
-            // add the transformer to the list
-            bestTransformers.add(transformer);
+            
+//            double reliability = transformer.getReliability(sourceMimetype, targetMimetype);
+//            if (reliability <= 0.0)
+//            {
+//                // it is unusable
+//                continue;
+//            }
+//            else if (reliability < maxReliability)
+//            {
+//                // it is not the best one to use
+//                continue;
+//            }
+//            else if (reliability == maxReliability)
+//            {
+//                // it is as reliable as a previous transformer
+//            }
+//            else
+//            {
+//                // it is better than any previous transformer - wipe them
+//                bestTransformers.clear();
+//                maxReliability = reliability;
+//            }
+//            // add the transformer to the list
+//            bestTransformers.add(transformer);
         }
         // done
-        return bestTransformers;
+        return transformers;
     }
     
     /**
      * Uses a list of known mimetypes to build transformations from several direct transformations. 
      */
-    private List<ContentTransformer> findComplexTransformer(String sourceMimetype, String targetMimetype)
+    private List<ContentTransformer> findComplexTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // get a complete list of mimetypes
         // TODO: Build complex transformers by searching for transformations by mimetype
@@ -296,7 +311,10 @@ public class ContentTransformerRegistry
     
     /**
      * A key for a combination of a source and target mimetype
+     * 
+     * @Deprecated since 3.0
      */
+    @Deprecated
     public static class TransformationKey
     {
         private final String sourceMimetype;

@@ -3,12 +3,12 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -18,7 +18,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Derek Hulley
  */
-public class ComplexContentTransformer extends AbstractContentTransformer implements InitializingBean
+public class ComplexContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {
     private List<ContentTransformer> transformers;
     private List<String> intermediateMimetypes;
@@ -74,13 +74,15 @@ public class ComplexContentTransformer extends AbstractContentTransformer implem
             throw new AlfrescoRuntimeException("'mimetypeService' is a required property");
         }
     }
-
+    
     /**
-     * @return Returns the multiple of the reliabilities of the chain of transformers
+     * Check we can transform all the way along the chain of mimetypes
+     * 
+     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        double reliability = 1.0;
+        boolean result = true;
         String currentSourceMimetype = sourceMimetype;
         
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
@@ -99,20 +101,29 @@ public class ComplexContentTransformer extends AbstractContentTransformer implem
                 // use an intermediate transformation mimetype
                 currentTargetMimetype = intermediateMimetypeIterator.next();
             }
-            // the reliability is a multiple
-            reliability *= transformer.getReliability(currentSourceMimetype, currentTargetMimetype);
-            // move the source on
+            
+            // check we can tranform the current stage
+            if (transformer.isTransformable(currentSourceMimetype, currentTargetMimetype, options) == false)
+            {
+                result = false;
+                break;
+            }
+            
+            // move on
             currentSourceMimetype = currentTargetMimetype;
         }
-        // done
-        return reliability;
+        
+        return result;
     }
 
+    /**
+     * @see org.alfresco.repo.content.transform.AbstractContentTransformer2#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
+     */
     @Override
     public void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         ContentReader currentReader = reader;
         
@@ -145,5 +156,5 @@ public class ComplexContentTransformer extends AbstractContentTransformer implem
             currentReader = currentWriter.getReader();
         }
         // done
-    }
+    }    
 }

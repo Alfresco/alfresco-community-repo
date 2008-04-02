@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * @see org.alfresco.repo.content.transform.TextToPdfContentTransformer
@@ -56,10 +57,9 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
     
     public void testReliability() throws Exception
     {
-        double reliability = 0.0;
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals("Mimetype should not be supported", 0.0, reliability);
-        reliability = transformer.getReliability(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF);
-        assertEquals("Mimetype should be supported", 1.0, reliability);
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        assertEquals("Mimetype should not be supported", false, reliability);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
+        assertEquals("Mimetype should be supported", true, reliability);
     }
 }

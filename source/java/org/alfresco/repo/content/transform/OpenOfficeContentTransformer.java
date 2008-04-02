@@ -27,7 +27,6 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import net.sf.jooreports.converter.DocumentFamily;
 import net.sf.jooreports.converter.DocumentFormat;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -53,7 +53,7 @@ import org.springframework.core.io.DefaultResourceLoader;
  * 
  * @author Derek Hulley
  */
-public class OpenOfficeContentTransformer extends AbstractContentTransformer
+public class OpenOfficeContentTransformer extends AbstractContentTransformer2
 {
     private OpenOfficeConnection connection;
     private OpenOfficeDocumentConverter converter;
@@ -119,22 +119,22 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
     /**
      * @see DocumentFormatRegistry
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!isConnected())
         {
             // The connection management is must take care of this
-            return 0.0;
+            return false;
         }
         
         // there are some conversions that fail, despite the converter believing them possible
         if (targetMimetype.equals(MimetypeMap.MIMETYPE_XHTML))
         {
-            return 0.0;
+            return false;
         }
         else if (targetMimetype.equals(MimetypeMap.MIMETYPE_WORDPERFECT))
         {
-            return 0.0;
+            return false;
         }
         
         MimetypeService mimetypeService = getMimetypeService();
@@ -145,14 +145,14 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
         if (sourceFormat == null)
         {
             // no document format
-            return 0.0;
+            return false;
         }
         // query the registry for the target format
         DocumentFormat targetFormat = formatRegistry.getFormatByFileExtension(targetExtension);
         if (targetFormat == null)
         {
             // no document format
-            return 0.0;
+            return false;
         }
 
         // get the family of the target document
@@ -161,18 +161,18 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer
         if (!targetFormat.isExportableFrom(sourceFamily))
         {
             // unable to export from source family of documents to the target format
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
     protected void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         String sourceMimetype = getMimetype(reader);
         String targetMimetype = getMimetype(writer);

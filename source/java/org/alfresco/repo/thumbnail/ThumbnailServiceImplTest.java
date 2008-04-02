@@ -22,45 +22,39 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.transform.magick;
+package org.alfresco.repo.thumbnail;
 
-import java.io.File;
-
-import magick.ImageInfo;
-import magick.MagickImage;
-
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.util.BaseSpringTest;
 
 /**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
+ * Thumbnail service implementation unit test
  * 
- * @author Derek Hulley
+ * @author Roy Wetherall
  */
-public class JMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class ThumbnailServiceImplTest extends BaseSpringTest 
 {
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformer.class);
-    
-    public JMagickContentTransformer()
-    {
-    }
+    private NodeService nodeService;
+    private ContentService contentService;
+    private ThumbnailService thumbnailService;
     
     /**
-     * Uses the <b>JMagick</b> library to perform the transformation
-     * 
-     * @param sourceFile
-     * @param targetFile
-     * @throws Exception
+     * Called during the transaction setup
      */
-    @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+    protected void onSetUpInTransaction() throws Exception
     {
-        ImageInfo imageInfo = new ImageInfo(sourceFile.getAbsolutePath());
-        MagickImage image = new MagickImage(imageInfo);
-        image.setFileName(targetFile.getAbsolutePath());
-        image.writeImage(imageInfo);
+        // Get required service implementations
+        this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
+        this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
+        this.thumbnailService = (ThumbnailService)this.applicationContext.getBean("ThumbnailService");
+        
     }
+	
+    public void testCreateThumbnail() throws Exception
+    {
+        
+    }
+
 }

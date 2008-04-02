@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,14 +42,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ImageMagickContentTransformer extends AbstractImageMagickContentTransformer
 {
-    /** the command options, such as <b>--resize</b>, etc. */
-    public static final String KEY_OPTIONS = "options";
+    /** options variable name */
+    private static final String KEY_OPTIONS = "options";
     /** source variable name */
-    public static final String VAR_OPTIONS = "options";
-    /** source variable name */
-    public static final String VAR_SOURCE = "source";
+    private static final String VAR_SOURCE = "source";
     /** target variable name */
-    public static final String VAR_TARGET = "target";
+    private static final String VAR_TARGET = "target";
     
     private static final Log logger = LogFactory.getLog(ImageMagickContentTransformer.class);
 
@@ -95,11 +94,14 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
     /**
      * Transform the image content from the source file to the target file
      */
-    protected void transformInternal(File sourceFile, File targetFile, Map<String, Object> options) throws Exception
+    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
     {
         Map<String, String> properties = new HashMap<String, String>(5);
         // set properties
-        properties.put(KEY_OPTIONS, (String) options.get(KEY_OPTIONS));
+        if (options instanceof ImageTransformationOptions)
+        {
+            properties.put(KEY_OPTIONS, (String) ((ImageTransformationOptions)options).getCommandOptions());
+        }
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         

@@ -26,16 +26,15 @@ package org.alfresco.repo.content.transform.magick;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.content.transform.AbstractContentTransformer;
+import org.alfresco.repo.content.transform.AbstractContentTransformer2;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractImageMagickContentTransformer extends AbstractContentTransformer
+public abstract class AbstractImageMagickContentTransformer extends AbstractContentTransformer2
 {
     /** the prefix for mimetypes supported by the transformer */
     public static final String MIMETYPE_IMAGE_PREFIX = "image/";
@@ -111,8 +110,7 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
                     ".png");
             
             // execute it
-            Map<String, Object> options = Collections.emptyMap();
-            transformInternal(inputFile, outputFile, options);
+            transformInternal(inputFile, outputFile, new TransformationOptions());
             
             // check that the file exists
             if (!outputFile.exists())
@@ -167,21 +165,21 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
      * Supports image to image conversion, but only if the JMagick library and required
      * libraries are available.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!available)
         {
-            return 0.0;
+            return false;
         }
         if (!AbstractImageMagickContentTransformer.isSupported(sourceMimetype) ||
                 !AbstractImageMagickContentTransformer.isSupported(targetMimetype))
         {
             // only support IMAGE -> IMAGE (excl. RGB)
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
     
@@ -191,7 +189,7 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
     protected final void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception
+            TransformationOptions options) throws Exception
     {
         // get mimetypes
         String sourceMimetype = getMimetype(reader);
@@ -251,5 +249,5 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
     protected abstract void transformInternal(
             File sourceFile,
             File targetFile,
-            Map<String, Object> options) throws Exception;
+            TransformationOptions options) throws Exception;
 }

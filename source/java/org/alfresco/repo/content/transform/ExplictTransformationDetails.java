@@ -22,45 +22,40 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.transform.magick;
+package org.alfresco.repo.content.transform;
 
-import java.io.File;
-
-import magick.ImageInfo;
-import magick.MagickImage;
-
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-/**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
- * 
- * @author Derek Hulley
- */
-public class JMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class ExplictTransformationDetails
 {
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformer.class);
+    private String sourceMimetype;
+    private String targetMimetype;
     
-    public JMagickContentTransformer()
+    public ExplictTransformationDetails()
     {
     }
     
-    /**
-     * Uses the <b>JMagick</b> library to perform the transformation
-     * 
-     * @param sourceFile
-     * @param targetFile
-     * @throws Exception
-     */
-    @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+    public ExplictTransformationDetails(String sourceMimetype, String targetMimetype)
     {
-        ImageInfo imageInfo = new ImageInfo(sourceFile.getAbsolutePath());
-        MagickImage image = new MagickImage(imageInfo);
-        image.setFileName(targetFile.getAbsolutePath());
-        image.writeImage(imageInfo);
+        this.sourceMimetype = sourceMimetype;
+        this.targetMimetype = targetMimetype;
+    }
+    
+    public void setSourceMimetype(String sourceMimetype)
+    {
+        this.sourceMimetype = sourceMimetype;
+    }
+    
+    public String getSourceMimetype()
+    {
+        return sourceMimetype;
+    }
+    
+    public void setTargetMimetype(String targetMimetype)
+    {
+        this.targetMimetype = targetMimetype;
+    }
+    
+    public String getTargetMimetype()
+    {
+        return targetMimetype;
     }
 }

@@ -25,7 +25,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +35,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,31 +45,26 @@ import org.apache.commons.logging.LogFactory;
  * This class maintains the performance measures for the transformers as well, making sure that
  * there is an extra penalty for transformers that fail regularly.
  * 
- * @deprecated 
- * Deprecated since 3.0.  The abstract base class org.alfresco.repo.content.transform.AbstractContentTransformer2 should now be used instead.
- * 
  * @author Derek Hulley
+ * @author Roy Wetherall
  */
-@Deprecated
-public abstract class AbstractContentTransformer implements ContentTransformer
+public abstract class AbstractContentTransformer2 implements ContentTransformer
 {
-    private static final Log logger = LogFactory.getLog(AbstractContentTransformer.class);
+    private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
     private MimetypeService mimetypeService;
     private ContentTransformerRegistry registry;
-    @SuppressWarnings("deprecation")
-    private List<ContentTransformerRegistry.TransformationKey> explicitTransformations;
+    private List<ExplictTransformationDetails> explicitTransformations;
     private double averageTime = 0.0;
     private long count = 0L;
     
     /**
      * All transformers start with an average transformation time of 0.0ms.
      */
-    @SuppressWarnings("deprecation")
-    protected AbstractContentTransformer()
+    protected AbstractContentTransformer2()
     {
         averageTime = 0.0;
-        explicitTransformations = new ArrayList<ContentTransformerRegistry.TransformationKey>(0);
+        explicitTransformations = new ArrayList<ExplictTransformationDetails>(0);
     }
 
     /**
@@ -102,26 +95,11 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         return mimetypeService;
     }
 
-    /**
-     * @return Returns the explicit transformations that were enabled for this transformer
-     */
-    @SuppressWarnings("deprecation")
-    protected List<ContentTransformerRegistry.TransformationKey> getExplicitTransformations()
-    {
-        return explicitTransformations;
-    }
-
-    /**
-     * Set the transformations that this transformer can do regardless of what it returns
-     * via the {@link ContentTransformer#getReliability(String, String) reliability check}.
-     * 
-     * @param explicitTransformations explicit key mappings
-     */
-    @SuppressWarnings("deprecation")
-    public void setExplicitTransformations(List<ContentTransformerRegistry.TransformationKey> explicitTransformations)
+    public void setExplicitTransformations(List<ExplictTransformationDetails> explicitTransformations)
     {
         this.explicitTransformations = explicitTransformations;
     }
+    
 
     @Override
     public String toString()
@@ -145,14 +123,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer
                     "   transformer: " + this);
             return;
         }
-        // first register any explicit transformations
-        //if (explicitTransformations != null)
-        //{
-        //    for (ContentTransformerRegistry.TransformationKey key : explicitTransformations)
-        // /   {
-        //        registry.addExplicitTransformer(key, this);
-        //    }
-        //}
+
         // register this instance for the fallback case
         registry.addTransformer(this);
     }
@@ -176,76 +147,27 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     }
     
     /**
-     * Added for backward compatibility of existing content transformers
+     * Convenience method to check the transformability of a transformation
      * 
-     * @param sourceMimetype    the source mimetype
-     * @param targetMimetype    the target mimetype
-     * @return double           the reliability value of the content transformer ranging from 0 to 1
+     * @param reader    content reader
+     * @param writer    content writer
+     * @param options   transformation options
+     * @throws AlfrescoRuntimeException if the the transformation isn't supported
      */
-    protected abstract double getReliability(String sourceMimetype, String targetMimetype);
-    
-    /**
-     * Convenience method to check the reliability of a transformation
-     * 
-     * @param reader
-     * @param writer
-     * @throws AlfrescoRuntimeException if the reliability isn't > 0
-     */
-    protected void checkReliability(ContentReader reader, ContentWriter writer)
+    protected void checkTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options)
     {
         String sourceMimetype = getMimetype(reader);
         String targetMimetype = getMimetype(writer);
-        double reliability = getReliability(sourceMimetype, targetMimetype);
-        if (reliability <= 0.0)
+        boolean transformable = isTransformable(sourceMimetype, targetMimetype, options);
+        if (transformable == false)
         {
-            throw new AlfrescoRuntimeException("Zero scoring transformation attempted: \n" +
+            throw new AlfrescoRuntimeException("Unsuported transformation attempted: \n" +
                     "   reader: " + reader + "\n" +
                     "   writer: " + writer);
         }
         // it all checks out OK
     }
-    
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        ParameterCheck.mandatoryString("sourceMimetype", sourceMimetype);
-        ParameterCheck.mandatoryString("targetMimetype", targetMimetype);
-        
-        double reliability = getReliability(sourceMimetype, targetMimetype);
-        boolean result = true;
-        if (reliability <= 0.0)
-        {
-            result = false;
-        }
-        return result;
-    }
 
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     */
-    @SuppressWarnings("deprecation")
-    public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-       boolean result = false;
-       
-       if (this.explicitTransformations != null)
-       {
-           for (ContentTransformerRegistry.TransformationKey transformationKey : this.explicitTransformations)
-           {
-               if (transformationKey.getSourceMimetype().equals(sourceMimetype) == true &&
-                   transformationKey.getTargetMimetype().equals(targetMimetype) == true)
-               {
-                   result = true;
-                   break;
-               }
-           }
-       }
-       
-       return result;
-    }
-    
     /**
      * Method to be implemented by subclasses wishing to make use of the common infrastructural code
      * provided by this class.
@@ -259,7 +181,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     protected abstract void transformInternal(
             ContentReader reader,
             ContentWriter writer,
-            Map<String, Object> options) throws Exception;
+            TransformationOptions options) throws Exception;
     
     /**
      * @see #transform(ContentReader, ContentWriter, Map)
@@ -267,8 +189,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer
      */
     public final void transform(ContentReader reader, ContentWriter writer) throws ContentIOException
     {
-        Map<String, Object> optionsMap = null;
-        transform(reader, writer, optionsMap);
+        transform(reader, writer, new TransformationOptions());
     }
     
     /**
@@ -277,42 +198,19 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     public final void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
         throws ContentIOException
     {
-        Map<String, Object> optionsMap = options.toMap();
-        transform(reader, writer, optionsMap);
-    }
-
-    /**
-     * Performs the following:
-     * <ul>
-     *   <li>Times the transformation</li>
-     *   <li>Ensures that the transformation is allowed</li>
-     *   <li>Calls the subclass implementation of {@link #transformInternal(ContentReader, ContentWriter)}</li>
-     *   <li>Transforms any exceptions generated</li>
-     *   <li>Logs a successful transformation</li>
-     * </ul>
-     * Subclass need only be concerned with performing the transformation.
-     * <p>
-     * If the options provided are null, then an empty map will be created.
-     */
-    @SuppressWarnings("deprecation")
-    public final void transform(
-            ContentReader reader,
-            ContentWriter writer,
-            Map<String, Object> options) throws ContentIOException
-    {
         // begin timing
         long before = System.currentTimeMillis();
         
         // check options map
         if (options == null)
         {
-            options = Collections.emptyMap();
+            options = new TransformationOptions();
         }
         
         try
         {
-            // Check the reliability
-            checkReliability(reader, writer);
+            // Check the transformability
+            checkTransformable(reader, writer, options);
 
             // Transform
             transformInternal(reader, writer, options);
@@ -360,6 +258,36 @@ public abstract class AbstractContentTransformer implements ContentTransformer
                     "   options: " + options + "\n" +
                     "   transformer: " + this);
         }
+    }
+
+
+    @SuppressWarnings("deprecation")
+    public final void transform(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, Object> options) throws ContentIOException
+    {
+        this.transform(reader, writer, new TransformationOptions(options));
+    }
+    
+    /**
+     * Default implementation, override if need to extend logic
+     * 
+     * @see org.alfresco.repo.content.transform.ContentTransformer#isExplicitTransformation(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     */
+    public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        boolean result = false;
+        for (ExplictTransformationDetails explicitTransformation : this.explicitTransformations)
+        {
+            if (sourceMimetype.equals(explicitTransformation.getSourceMimetype()) == true &&
+                targetMimetype.equals(explicitTransformation.getTargetMimetype()) == true)
+            {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /**

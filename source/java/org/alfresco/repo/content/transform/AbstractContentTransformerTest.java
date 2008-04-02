@@ -170,7 +170,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
 
                 // must we test the transformation?
                 ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
-                if (transformer == null || transformer.getReliability(sourceMimetype, targetMimetype) <= 0.0)
+                if (transformer == null || transformer.isTransformable(sourceMimetype, targetMimetype, null) == false)
                 {
                     // no transformer
                     continue;

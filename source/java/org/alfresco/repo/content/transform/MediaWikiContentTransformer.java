@@ -29,7 +29,6 @@ import info.bliki.wiki.model.WikiModel;
 import info.bliki.wiki.tags.ATag;
 
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -38,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.htmlcleaner.ContentToken;
 
 /**
@@ -47,7 +47,7 @@ import org.htmlcleaner.ContentToken;
  * 
  * @author Roy Wetherall
  */
-public class MediaWikiContentTransformer extends AbstractContentTransformer
+public class MediaWikiContentTransformer extends AbstractContentTransformer2
 {
     /** The file folder service */
     private FileFolderService fileFolderService;
@@ -76,35 +76,36 @@ public class MediaWikiContentTransformer extends AbstractContentTransformer
     }
     
     /**
-     * Only support MEDIAWIKI to HTML
-     */    
-    public double getReliability(String sourceMimetype, String targetMimetype)
+     * Only transform from mediawiki to html
+     * 
+     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     */public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_HTML.equals(targetMimetype))
         {
             // only support MEDIAWIKI -> HTML
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
     
-    /**
-     * @see org.alfresco.repo.content.transform.AbstractContentTransformer#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, java.util.Map)
-     */
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+     /**
+      * @see org.alfresco.repo.content.transform.AbstractContentTransformer2#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
+      */
+    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
         String imageURL = "{$image}";
         String pageURL = "${title}";
         
-        if (options.containsKey(ContentTransformer.OPT_DESTINATION_NODEREF) == true)
+        // If we have context about the destination of the transformation then use it
+        if (options.getTargetNodeRef() != null)
         {
-            NodeRef destinationNodeRef = (NodeRef)options.get(ContentTransformer.OPT_DESTINATION_NODEREF);
-            NodeRef parentNodeRef = this.nodeService.getPrimaryParent(destinationNodeRef).getParentRef();
+            NodeRef parentNodeRef = this.nodeService.getPrimaryParent(options.getTargetNodeRef()).getParentRef();
             
             StringBuffer folderPath = new StringBuffer(256);
             List<FileInfo> fileInfos = this.fileFolderService.getNamePath(null, parentNodeRef);
@@ -124,6 +125,11 @@ public class MediaWikiContentTransformer extends AbstractContentTransformer
         writer.putContent(wikiModel.render(reader.getContentString()));
     }
     
+    /**
+     * Alfresco custom Wiki model used to generate links and image references
+     * 
+     * @author Roy Wetherall
+     */
     private class AlfrescoWikiModel extends WikiModel
     {
         public AlfrescoWikiModel(String imageBaseURL, String linkBaseURL)

@@ -26,11 +26,11 @@ package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.textmining.text.extraction.WordExtractor;
 
 /**
@@ -39,7 +39,7 @@ import org.textmining.text.extraction.WordExtractor;
  * 
  * @author Derek Hulley
  */
-public class TextMiningContentTransformer extends AbstractContentTransformer
+public class TextMiningContentTransformer extends AbstractContentTransformer2
 {
     private WordExtractor wordExtractor;
     
@@ -51,21 +51,21 @@ public class TextMiningContentTransformer extends AbstractContentTransformer
     /**
      * Currently the only transformation performed is that of text extraction from Word documents.
      */
-    public double getReliability(String sourceMimetype, String targetMimetype)
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_WORD.equals(sourceMimetype) ||
                 !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support DOC -> Text
-            return 0.0;
+            return false;
         }
         else
         {
-            return 1.0;
+            return true;
         }
     }
 
-    public void transformInternal(ContentReader reader, ContentWriter writer,  Map<String, Object> options)
+    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
         InputStream is = null;

@@ -22,45 +22,43 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.transform.magick;
+package org.alfresco.repo.content.transform;
 
-import java.io.File;
-
-import magick.ImageInfo;
-import magick.MagickImage;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
+ * Transformation options for the runtime executable transformer.
+ * <p>
+ * Values set here are mapped to ${valueName} style strings in the tranformer
+ * execution string. 
  * 
- * @author Derek Hulley
+ * @author Roy Wetherall
  */
-public class JMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class RuntimeExecutableContentTransformerOptions extends TransformationOptions
 {
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformer.class);
+    /** Map of property values */
+    private Map<String, Object> propertyValues = new HashMap<String, Object>(1);
     
-    public JMagickContentTransformer()
+    /**
+     * Sets the map of property values that are used when executing the transformer
+     * 
+     * @param propertyValues    property value
+     */
+    public void setPropertyValues(Map<String, Object> propertyValues)
     {
+        this.propertyValues = propertyValues;
     }
     
     /**
-     * Uses the <b>JMagick</b> library to perform the transformation
+     * Gets the map of property values that are used when executing the transformer
      * 
-     * @param sourceFile
-     * @param targetFile
-     * @throws Exception
+     * @return Map<String, Object>  property values
      */
-    @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+    public Map<String, Object> getPropertyValues()
     {
-        ImageInfo imageInfo = new ImageInfo(sourceFile.getAbsolutePath());
-        MagickImage image = new MagickImage(imageInfo);
-        image.setFileName(targetFile.getAbsolutePath());
-        image.writeImage(imageInfo);
+        return propertyValues;
     }
 }

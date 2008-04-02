@@ -54,4 +54,44 @@ public interface AccessControlServiceSoapPort extends java.rmi.Remote {
      * Sets the current node owner.
      */
     public org.alfresco.repo.webservice.accesscontrol.OwnerResult[] setOwners(org.alfresco.repo.webservice.types.Predicate predicate, java.lang.String owner) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Getsl aa the authorities avaialble in the repository.
+     */
+    public java.lang.String[] getAllAuthorities(org.alfresco.repo.webservice.accesscontrol.AuthorityFilter filter) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Ges the authorities for the current user
+     */
+    public java.lang.String[] getAuthorities() throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Creates new authorities
+     */
+    public java.lang.String[] createAuthorities(java.lang.String parentAuthority, org.alfresco.repo.webservice.accesscontrol.NewAuthority[] newAuthorites) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Delete authorities
+     */
+    public void deleteAuthorities(java.lang.String[] authorities) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Adds child authorities to a specified parent authority
+     */
+    public java.lang.String[] addChildAuthorities(java.lang.String parentAuthority, java.lang.String[] authorities) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Remove child authorities from the specified parent authority
+     */
+    public void removeChildAuthorities(java.lang.String parentAuthority, java.lang.String[] authorities) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Gets an authorities child authorities
+     */
+    public java.lang.String[] getChildAuthorities(java.lang.String authority, org.alfresco.repo.webservice.accesscontrol.SiblingAuthorityFilter filter) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
+
+    /**
+     * Gets an authorities parent authorities
+     */
+    public java.lang.String[] getParentAuthorities(java.lang.String authority, org.alfresco.repo.webservice.accesscontrol.SiblingAuthorityFilter filter) throws java.rmi.RemoteException, org.alfresco.repo.webservice.accesscontrol.AccessControlFault;
 }

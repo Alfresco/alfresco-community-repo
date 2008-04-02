@@ -191,6 +191,9 @@
       <property name="ownableService">
          <ref bean="OwnableService"/>
       </property>
+      <property name="authorityService">
+      	 <ref bean="AuthorityService"/>
+      </property>
    </bean>
    
    <bean id="administrationWebService" class="org.alfresco.repo.webservice.administration.AdministrationWebService">

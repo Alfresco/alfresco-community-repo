@@ -14,6 +14,8 @@ import org.alfresco.repo.webservice.types.Predicate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -33,6 +35,9 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     
     /** Ownable service */
     private OwnableService ownableService = null;
+    
+    /** Authority service */
+    private AuthorityService authorityService;
     
     /**
      * Set the transaction service
@@ -63,6 +68,16 @@ public class AccessControlWebService extends AbstractWebService implements Acces
     {
         this.ownableService = ownableService;
     }
+    
+    /**
+     * Set the authentication service
+     * 
+     * @param authorityService	the authentication service
+     */
+    public void setAuthorityService(AuthorityService authorityService) 
+    {
+		this.authorityService = authorityService;
+	}
     
     /**
      * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#getACLs(org.alfresco.repo.webservice.types.Predicate, org.alfresco.repo.webservice.accesscontrol.ACE)
@@ -150,7 +165,10 @@ public class AccessControlWebService extends AbstractWebService implements Acces
             {
                 accessStatus = org.alfresco.repo.webservice.accesscontrol.AccessStatus.acepted;
             }
-            ACE ace = new ACE(permission.getAuthority(),permission.getPermission(), accessStatus);
+            
+            ACE ace = new ACE(permission.getAuthority(),
+            				  permission.getPermission(), 
+            				  accessStatus);
             
             // Add ace to array
             aces[count] = ace;
@@ -215,7 +233,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
                 this.permissionService.setPermission(node, ace.getAuthority(), ace.getPermission(), allow);
             }
             
-            // Add the ACL forthis node to the returned array
+            // Add the ACL for this node to the returned array
             acls[count] = getACLFromNodeRef(node, null);
             count++;
         }
@@ -280,7 +298,7 @@ public class AccessControlWebService extends AbstractWebService implements Acces
                 }
             }
             
-            // Add the ACL forthis node to the returned array
+            // Add the ACL for this node to the returned array
             acls[count] = getACLFromNodeRef(node, null);
             count++;
         }
@@ -623,4 +641,133 @@ public class AccessControlWebService extends AbstractWebService implements Acces
         
         return result;
     }
+
+    /**
+     * Add an existing authority as a child of another authority.
+     * 
+     * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#addChildAuthorities(java.lang.String, java.lang.String[])
+     */
+	public String[] addChildAuthorities(String parentAuthority, String[] authorities) 
+		throws RemoteException, AccessControlFault 
+	{
+		String[] result = new String[authorities.length];
+		int index = 0;
+		for (String authority : authorities) 
+		{
+			this.authorityService.addAuthority(parentAuthority, authority);
+			result[index] = authority;
+			index++;
+		}
+		return result;
+	}
+
+	/**
+	 * Creates a new authority under a given parent authority.  If no parent authority is provided then the new authority is
+	 * created at the root.
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#createAuthorities(java.lang.String, org.alfresco.repo.webservice.accesscontrol.NewAuthority[])
+	 */
+	public String[] createAuthorities(String parentAuthority, NewAuthority[] newAuthorites) 
+		throws RemoteException, AccessControlFault 
+	{
+		String[] result = new String[newAuthorites.length];
+		int index = 0;
+		for (NewAuthority newAuthority : newAuthorites) 
+		{
+			AuthorityType authorityType = AuthorityType.valueOf(newAuthority.getAuthorityType());
+			String authority = this.authorityService.createAuthority(authorityType, parentAuthority, newAuthority.getName());
+			result[index] = authority;
+			index++;
+		}		
+		return result;
+	}
+
+	/**
+	 * Delete existing authority
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#deleteAuthorities(java.lang.String[])
+	 */
+	public void deleteAuthorities(String[] authorities) 
+		throws RemoteException, AccessControlFault 
+	{
+		for (String authority : authorities) 
+		{
+			this.authorityService.deleteAuthority(authority);
+		}
+	}
+
+	/**
+	 * Get all authorities that match the filter
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#getAllAuthorities(org.alfresco.repo.webservice.accesscontrol.AuthorityFilter)
+	 */
+	public String[] getAllAuthorities(AuthorityFilter filter)
+			throws RemoteException, AccessControlFault 
+	{
+		List<String> result = new ArrayList<String>(10);
+		
+		AuthorityType authorityType = AuthorityType.valueOf(filter.getAuthorityType());
+		if (filter.isRootOnly() == true)
+		{
+			result.addAll(this.authorityService.getAllRootAuthorities(authorityType));
+		}
+		else
+		{
+			result.addAll(this.authorityService.getAllAuthorities(authorityType));
+		}
+		
+		return (String[])result.toArray(new String[result.size()]);
+	}
+
+	/**
+	 * Gets all the authorities that the current user belongs to
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#getAuthorities()
+	 */
+	public String[] getAuthorities() 
+		throws RemoteException, AccessControlFault 
+	{
+		Set<String> result = this.authorityService.getAuthorities();
+		return (String[])result.toArray(new String[result.size()]);
+	}
+
+	/**
+	 * Gets all the child authorities of a given authority, taking into account a filter
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#getChildAuthorities(java.lang.String, org.alfresco.repo.webservice.accesscontrol.SiblingAuthorityFilter)
+	 */
+	public String[] getChildAuthorities(String authority, SiblingAuthorityFilter filter) 
+		throws RemoteException, AccessControlFault 
+	{
+		AuthorityType authorityType = AuthorityType.valueOf(filter.getAuthorityType());
+		Set<String> result = this.authorityService.getContainedAuthorities(authorityType, authority, filter.isImmediate());
+		return (String[])result.toArray(new String[result.size()]);
+	}
+
+	/**
+	 * Gets all the parent authorities of a given authority, taking into account a filter
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#getParentAuthorities(java.lang.String, org.alfresco.repo.webservice.accesscontrol.SiblingAuthorityFilter)
+	 */
+	public String[] getParentAuthorities(String authority, SiblingAuthorityFilter filter) 
+		throws RemoteException, AccessControlFault 
+	{
+		AuthorityType authorityType = AuthorityType.valueOf(filter.getAuthorityType());
+		Set<String> result = this.authorityService.getContainingAuthorities(authorityType, authority, filter.isImmediate());
+		return (String[])result.toArray(new String[result.size()]);
+	}
+
+	/**
+	 * Remove a child authority
+	 * 
+	 * @see org.alfresco.repo.webservice.accesscontrol.AccessControlServiceSoapPort#removeChildAuthorities(java.lang.String, java.lang.String[])
+	 */
+	public void removeChildAuthorities(String parentAuthority, String[] authorities) 
+		throws RemoteException, AccessControlFault 
+	{
+		for (String authority : authorities) 
+		{
+			this.authorityService.removeAuthority(parentAuthority, authority);
+		}		
+	}
 }

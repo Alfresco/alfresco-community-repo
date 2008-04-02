@@ -20,6 +20,11 @@ public interface ContentServiceSoapPort extends java.rmi.Remote {
     public org.alfresco.repo.webservice.content.Content write(org.alfresco.repo.webservice.types.Reference node, java.lang.String property, byte[] content, org.alfresco.repo.webservice.types.ContentFormat format) throws java.rmi.RemoteException, org.alfresco.repo.webservice.content.ContentFault;
 
     /**
+     * Writes the attached content into the repository.
+     */
+    public org.alfresco.repo.webservice.content.Content writeWithAttachment(org.alfresco.repo.webservice.types.Reference node, java.lang.String property, org.alfresco.repo.webservice.types.ContentFormat format) throws java.rmi.RemoteException, org.alfresco.repo.webservice.content.ContentFault;
+
+    /**
      * Clears content from the repository.
      */
     public org.alfresco.repo.webservice.content.Content[] clear(org.alfresco.repo.webservice.types.Predicate items, java.lang.String property) throws java.rmi.RemoteException, org.alfresco.repo.webservice.content.ContentFault;

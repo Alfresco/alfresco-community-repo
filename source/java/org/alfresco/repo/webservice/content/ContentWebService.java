@@ -31,8 +31,10 @@ import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.activation.DataHandler;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -47,7 +49,11 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.axis.AxisFault;
+import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
+import org.apache.axis.attachments.AttachmentPart;
+import org.apache.axis.attachments.Attachments;
 import org.apache.axis.transport.http.HTTPConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -227,6 +233,90 @@ public class ContentWebService extends AbstractWebService implements
             throw new ContentFault(0, e.getMessage());
         }
     }
+    
+    /**
+     * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#writeWithAttachments(org.alfresco.repo.webservice.types.Reference[], java.lang.String[], org.alfresco.repo.webservice.types.ContentFormat[])
+     */
+	public Content writeWithAttachment(final Reference node, final String property, final ContentFormat format) 
+		throws RemoteException, ContentFault 
+	{
+		try
+        {
+            RetryingTransactionCallback<Content> callback = new RetryingTransactionCallback<Content>()
+            {
+                public Content execute() throws Throwable
+                {
+                	AttachmentPart[] attachments = getMessageAttachments();
+            		if (attachments.length != 1)
+            		{
+            			throw new AlfrescoRuntimeException("Expecting only one attachment");
+            		}
+                	
+                	// create a NodeRef from the parent reference
+                    NodeRef nodeRef = Utils.convertToNodeRef(node, nodeService, searchService, namespaceService);
+
+                    // Get the content writer
+                    ContentWriter writer = contentService.getWriter(nodeRef, QName.createQName(property), true);
+                    
+                    // Set the content format details (if they have been specified)
+                    if (format != null)
+                    {
+                        writer.setEncoding(format.getEncoding());
+                        writer.setMimetype(format.getMimetype());
+                    }
+                    
+                    // Write the content (just need to get the first in the array since we are only expecting one attachment)
+                    DataHandler dh = attachments[0].getDataHandler();
+                    InputStream is = dh.getInputStream();
+                    writer.putContent(is);
+
+                    // Debug
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Updated content for node with id: " + nodeRef.getId());
+                    }
+
+                    // Return the content object
+                    return createContent(nodeRef, property);
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
+        } 
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.error("Unexpected error occurred", e);
+            }
+            throw new ContentFault(0, e.getMessage());
+        }
+		
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	private AttachmentPart[] getMessageAttachments() 
+		throws AxisFault
+	{
+		MessageContext msgContext = MessageContext.getCurrentContext();
+		Message reqMsg = msgContext.getRequestMessage();
+		Attachments messageAttachments = reqMsg.getAttachmentsImpl();
+		if (null == messageAttachments)
+		{
+			return new AttachmentPart[0];
+		}
+		int attachmentCount = messageAttachments.getAttachmentCount();
+		AttachmentPart attachments[] = new AttachmentPart[attachmentCount];
+		Iterator it = messageAttachments.getAttachments().iterator();
+		int count = 0;
+		while (it.hasNext())
+		{
+			AttachmentPart part = (AttachmentPart)it.next();
+			attachments[count++] = part;			
+		}
+
+		return attachments;
+	}
 
     /**
      * @see org.alfresco.repo.webservice.content.ContentServiceSoapPort#clear(org.alfresco.repo.webservice.types.Predicate,

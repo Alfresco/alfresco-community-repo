@@ -41,9 +41,9 @@ import org.alfresco.service.namespace.QName;
 public class TransformationOptions
 {
     /** Option map names to preserve backward compatibility */
-    public static final String OPT_SOURCE_NODEREF = "sourceNodeRef";
+    public static final String OPT_SOURCE_NODEREF = "contentReaderNodeRef";
     public static final String OPT_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";
-    public static final String OPT_TARGET_NODEREF = "targetNodeRef";
+    public static final String OPT_TARGET_NODEREF = "contentWriterNodeRef";
     public static final String OPT_TARGET_CONTENT_PROPERTY = "targetContentProperty";
     
     /** The source node reference */
@@ -182,6 +182,11 @@ public class TransformationOptions
         return new HashMap<String, Object>(10);
     }
     
+    /**
+     * Places the values of the transformation options into a Map
+     * 
+     * @param optionsMap    the options map
+     */
     protected void toMapImpl(Map<String, Object> optionsMap)
     {
         optionsMap.put(OPT_SOURCE_NODEREF, getSourceNodeRef());
@@ -190,12 +195,16 @@ public class TransformationOptions
         optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, getTargetContentProperty());
     }
     
+    /**
+     * Populates the transformation options from a given Map of value.
+     * 
+     * @param optionsMap    the options map
+     */
     protected void fromMapImpl(Map<String, Object> optionsMap)
     {
         this.sourceNodeRef = (NodeRef)optionsMap.get(OPT_SOURCE_NODEREF);
         this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
         this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
         this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
-    }
-    
+    }    
 }

@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -55,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 public class TransformActionExecuter extends ActionExecuterAbstractBase 
-{
+{    
     /** Error messages */
     public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
     
@@ -82,7 +80,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	private ContentService contentService;
 	private CopyService copyService;
     private MimetypeService mimetypeService;
-    private ContentTransformerRegistry transformerRegistry;
     
     /**
      * Set the mime type service
@@ -133,16 +130,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	{
 		this.copyService = copyService;
 	}
-	
-	/**
-	 * Set the transformer registry
-	 * 
-	 * @param transformerRegistry	the transformer registry
-	 */
-	public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
-    {
-        this.transformerRegistry = transformerRegistry;
-    }
 	
 	/**
 	 * Add parameter definitions
@@ -298,15 +285,18 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 	protected void doTransform( Action ruleAction, 
 	                            NodeRef sourceNodeRef, ContentReader contentReader, 
 	                            NodeRef destinationNodeRef, ContentWriter contentWriter)	
+
 	{
-        // try to pre-empt the lack of a transformer
-        if (!this.contentService.isTransformable(contentReader, contentWriter))
+	    // Transformation options
+	    TransformationOptions options = new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
+        
+	    // try to pre-empt the lack of a transformer	    
+        if (this.contentService.isTransformable(contentReader, contentWriter, options) == false)
         {
             throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
         }
         
         // transform
-        TransformationOptions options = new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
         this.contentService.transform(contentReader, contentWriter, options);
 	}
 	

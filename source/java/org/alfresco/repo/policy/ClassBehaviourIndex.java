@@ -139,7 +139,7 @@ import org.alfresco.service.namespace.QName;
             if (isEnabled)
             {
                 // Find class behaviour by scanning up the class hierarchy
-                BehaviourDefinition behaviour = null;
+                List<BehaviourDefinition<B>> behaviour = null;
                 while(behaviour == null && binding != null)
                 {
                     behaviour = classMap.get(binding);
@@ -150,7 +150,7 @@ import org.alfresco.service.namespace.QName;
                 }
                 if (behaviour != null)
                 {
-                    behaviours.add(behaviour);
+                    behaviours.addAll(behaviour);
                 }
             }
             

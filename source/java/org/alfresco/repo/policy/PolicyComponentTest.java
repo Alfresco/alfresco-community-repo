@@ -283,6 +283,15 @@ public class PolicyComponentTest extends TestCase
         assertTrue(file2Policies.size() == 2);
         TestClassPolicy filePolicy2 = delegate.get(FILE_TYPE);
         assertNotNull(filePolicy2);
+        
+        // Test multiple class behaviours
+        Behaviour file2Behaviour = new JavaBehaviour(this, "fileTest2");
+        policyComponent.bindClassBehaviour(policyName, FILE_TYPE, file2Behaviour);
+        Collection<TestClassPolicy> file3Policies = delegate.getList(FILE_TYPE);
+        assertNotNull(file3Policies);
+        assertTrue(file3Policies.size() == 3);
+        TestClassPolicy filePolicy3 = delegate.get(FILE_TYPE);
+        assertNotNull(filePolicy3);
     }
 
     
@@ -623,7 +632,12 @@ public class PolicyComponentTest extends TestCase
     {
         return "File: " + argument;
     }
-    
+
+    public String fileTest2(String argument)
+    {
+        return "File2: " + argument;
+    }
+
     public String folderTest(String argument)
     {
         return "Folder: " + argument;

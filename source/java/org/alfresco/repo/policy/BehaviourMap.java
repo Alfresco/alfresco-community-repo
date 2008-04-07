@@ -40,10 +40,15 @@ import java.util.Map;
  */
 /*package*/ class BehaviourMap<B extends BehaviourBinding>
 {
+	/**
+	 * The count of behaviours
+	 */
+	int size = 0;
+	
     /**
      * The map of bindings to behaviour
      */
-    private Map<B, BehaviourDefinition<B>> index = new HashMap<B, BehaviourDefinition<B>>();
+    private Map<B, List<BehaviourDefinition<B>>> index = new HashMap<B, List<BehaviourDefinition<B>>>();
     
     /**
      * The list of registered observers
@@ -59,11 +64,28 @@ import java.util.Map;
     public void put(BehaviourDefinition<B> behaviourDefinition)
     {
         B binding = behaviourDefinition.getBinding();
-        index.put(binding, behaviourDefinition);
+        List<BehaviourDefinition<B>> existing = index.get(binding);
+        if (existing == null)
+        {
+        	List<BehaviourDefinition<B>> behaviourList = new ArrayList<BehaviourDefinition<B>>();
+        	behaviourList.add(behaviourDefinition);
+        	index.put(binding, behaviourList);
+        	size++;
+        }
+        else
+        {
+        	if (!existing.contains(behaviourDefinition))
+        	{
+        		existing.add(behaviourDefinition);
+        		size++;
+        	}
+        }
+        
         for (BehaviourChangeObserver<B> listener : observers)
         {
             listener.addition(binding, behaviourDefinition.getBehaviour());
         }
+        
     }
     
     
@@ -73,7 +95,7 @@ import java.util.Map;
      * @param binding  the binding
      * @return  the behaviour
      */
-    public BehaviourDefinition<B> get(B binding)
+    public List<BehaviourDefinition<B>> get(B binding)
     {
         return index.get(binding);
     }
@@ -86,7 +108,12 @@ import java.util.Map;
      */
     public Collection<BehaviourDefinition<B>> getAll()
     {
-        return index.values();
+    	List<BehaviourDefinition<B>> allBehaviours = new ArrayList<BehaviourDefinition<B>>(size);
+    	for (List<BehaviourDefinition<B>> behaviours : index.values())
+    	{
+    		allBehaviours.addAll(behaviours);
+    	}
+        return allBehaviours;
     }
 
     
@@ -97,7 +124,7 @@ import java.util.Map;
      */
     public int size()
     {
-        return index.size();
+        return size;
     }
 
     

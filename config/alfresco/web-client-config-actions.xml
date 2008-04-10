@@ -58,10 +58,9 @@
 
          <!-- Download document -->
          <action id="download_doc">
-             <evaluator>org.alfresco.web.action.evaluator.DownloadEvaluator</evaluator>
              <label-id>download_doc</label-id>
              <image>/images/icons/download_doc.gif</image>
-             <href>#{actionContext.url}</href>
+             <href>#{actionContext.downloadUrl}</href>
          </action>
 
          <!-- Edit document online action via webdav -->
@@ -1174,6 +1173,7 @@
 
          <!-- Actions Menu for File Link Details screen -->
          <action-group id="filelink_details_actions">
+            <action idref="download_doc" />
             <action idref="cut_node" />
             <action idref="copy_node" />
             <action idref="delete_doc" />

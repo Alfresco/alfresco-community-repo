@@ -663,6 +663,16 @@ public class BrowseBean implements IContextListener, Serializable
    {
       // special properties to be used by the value binding components on the page
       node.addPropertyResolver("url", this.resolverUrl);
+
+      if (ApplicationModel.TYPE_FILELINK.equals(node.getType()))
+      {
+         node.addPropertyResolver("downloadUrl", this.resolverLinkDownload);
+      }
+      else
+      {
+         node.addPropertyResolver("downloadUrl", this.resolverDownload);
+      }
+
       node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
       node.addPropertyResolver("cifsPath", this.resolverCifsPath);
       node.addPropertyResolver("fileType16", this.resolverFileType16);
@@ -863,6 +873,7 @@ public class BrowseBean implements IContextListener, Serializable
                   if (destRef != null && new Node(destRef).hasPermission(PermissionService.READ) == true)
                   {
                      node.addPropertyResolver("url", this.resolverLinkUrl);
+                     node.addPropertyResolver("downloadUrl", this.resolverLinkDownload);
                      node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
                      node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
                      node.addPropertyResolver("fileType16", this.resolverFileType16);
@@ -1041,6 +1052,7 @@ public class BrowseBean implements IContextListener, Serializable
                         if (new Node(destRef).hasPermission(PermissionService.READ) == true)
                         {
                            node.addPropertyResolver("url", this.resolverLinkUrl);
+                           node.addPropertyResolver("downloadUrl", this.resolverLinkDownload);
                            node.addPropertyResolver("webdavUrl", this.resolverLinkWebdavUrl);
                            node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
                            node.addPropertyResolver("fileType16", this.resolverFileType16);
@@ -1180,7 +1192,7 @@ public class BrowseBean implements IContextListener, Serializable
          if (getNodeService().exists(destRef) == true)
          {
             String destName = Repository.getNameForNode(getNodeService(), destRef);
-            return DownloadContentServlet.generateDownloadURL(node.getNodeRef(), destName);
+            return DownloadContentServlet.generateDownloadURL(destRef, destName);
          }
          else
          {
@@ -1705,10 +1717,12 @@ public class BrowseBean implements IContextListener, Serializable
             if (ApplicationModel.TYPE_FILELINK.equals(node.getType()))
             {
                node.addPropertyResolver("url", this.resolverLinkDownload);
+               node.addPropertyResolver("downloadUrl", this.resolverLinkDownload);
             }
             else
             {
                node.addPropertyResolver("url", this.resolverDownload);
+               node.addPropertyResolver("downloadUrl", this.resolverDownload);
             }
             node.addPropertyResolver("webdavUrl", this.resolverWebdavUrl);
             node.addPropertyResolver("cifsPath", this.resolverCifsPath);

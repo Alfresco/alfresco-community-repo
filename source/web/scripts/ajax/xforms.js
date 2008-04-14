@@ -2637,7 +2637,16 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     }
     contentDiv.widget = child;
 
-    this._updateDisplay(false);
+    // Glen.Johnson@alfresco.com - for each child added to a VGroup,
+    // the method call below (commented out) recalculates the layout and 
+    // updates the display for each of its siblings (already displayed 
+    // above it). This is extremely expensive in terms of processing time.
+    // Commenting out the method call below drastically improves form rendering
+    // time for forms containing lots of VGroup widgets.
+    // See JIRA issue WCM-629
+    //
+    // this._updateDisplay(false);
+    
     this._childAdded(child);
     return child.domContainer;
   },

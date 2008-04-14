@@ -308,7 +308,7 @@ public class RepoStore implements Store, TenantDeployer
                     public String[] execute() throws Exception
                     {
                         int baseDirLength = getBaseDir().length() +1;
-                        List<String> documentPaths = new ArrayList<String>();
+                        List<String> documentPaths = null;
                         String scriptPath = script.getDescription().getScriptPath();
                         NodeRef scriptNodeRef = (scriptPath.length() == 0) ? getBaseNodeRef() : findNodeRef(scriptPath);
                         if (scriptNodeRef != null)
@@ -317,6 +317,7 @@ public class RepoStore implements Store, TenantDeployer
                             String id = script.getDescription().getId().substring(scriptPath.length() + (scriptPath.length() > 0 ? 1 : 0));
                             String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "//*\" +QNAME:" + id + "*";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                            documentPaths = new ArrayList<String>(resultSet.length());
                             List<NodeRef> nodes = resultSet.getNodeRefs();
                             for (NodeRef nodeRef : nodes)
                             {
@@ -330,7 +331,7 @@ public class RepoStore implements Store, TenantDeployer
                             }
                         }
                         
-                        return documentPaths.toArray(new String[documentPaths.size()]);
+                        return documentPaths != null ? documentPaths.toArray(new String[documentPaths.size()]) : new String[0];
                     }
                 });
             }
@@ -351,10 +352,10 @@ public class RepoStore implements Store, TenantDeployer
                     public String[] execute() throws Exception
                     {
                         int baseDirLength = getBaseDir().length() +1;
-                        List<String> documentPaths = new ArrayList<String>();
                         
                         String query = "+PATH:\"" + repoPath + "//*\" +QNAME:*.desc.xml";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                        List<String> documentPaths = new ArrayList<String>(resultSet.length());
                         List<NodeRef> nodes = resultSet.getNodeRefs();
                         for (NodeRef nodeRef : nodes)
                         {
@@ -364,6 +365,38 @@ public class RepoStore implements Store, TenantDeployer
                                 String documentPath = nodeDir.substring(baseDirLength);
                                 documentPaths.add(documentPath);
                             }
+                        }
+                        
+                        return documentPaths.toArray(new String[documentPaths.size()]);
+                    }
+                });
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#getAllDocumentPaths()
+     */
+    public String[] getAllDocumentPaths()
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
+        {
+            public String[] doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
+                {
+                    public String[] execute() throws Exception
+                    {
+                        int baseDirLength = getBaseDir().length() +1;
+                        
+                        String query = "+PATH:\"" + repoPath + "//*\" +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"";
+                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                        List<String> documentPaths = new ArrayList<String>(resultSet.length());
+                        List<NodeRef> nodes = resultSet.getNodeRefs();
+                        for (NodeRef nodeRef : nodes)
+                        {
+                            String nodeDir = getPath(nodeRef);
+                            documentPaths.add(nodeDir.substring(baseDirLength));
                         }
                         
                         return documentPaths.toArray(new String[documentPaths.size()]);
@@ -475,6 +508,35 @@ public class RepoStore implements Store, TenantDeployer
             throw new IOException("Document " + documentPath + " already exists");
         }
         FileInfo fileInfo = fileService.create(pathInfo.getNodeRef(), fileName, ContentModel.TYPE_CONTENT);
+        ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
+        writer.putContent(content);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#updateDocument(java.lang.String, java.lang.String)
+     */
+    public void updateDocument(String documentPath, String content) throws IOException
+    {
+        String[] pathElements = documentPath.split("/");
+        
+        // get parent folder
+        NodeRef parentRef;
+        if (pathElements.length == 1)
+        {
+            parentRef = getBaseNodeRef();
+        }
+        else
+        {
+            parentRef = findNodeRef(documentPath.substring(0, documentPath.lastIndexOf('/')));
+        }
+
+        // update file
+        String fileName = pathElements[pathElements.length -1];
+        if (fileService.searchSimple(parentRef, fileName) == null)
+        {
+            throw new IOException("Document " + documentPath + " does not exists");
+        }
+        FileInfo fileInfo = fileService.create(parentRef, fileName, ContentModel.TYPE_CONTENT);
         ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
         writer.putContent(content);
     }

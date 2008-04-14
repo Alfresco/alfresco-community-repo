@@ -130,7 +130,8 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
 
         AlfrescoTransactionSupport.bindResource("staging_diffs", stagingDiffs);
 
-        // Workflow does this as system as the staging area has restricted access
+        // Workflow does this as system as the staging area has restricted access and reviewers
+        // may not have permission to flatten the store the workflow was submitted from
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
 
@@ -139,22 +140,23 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
                 fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
+                
+                // flatten source folder where changes were submitted from
+                if (from != null && from.length() > 0)
+                {
+                    // first, submit changes back to sandbox forcing addition of edits in workflow (and submission
+                    // flag removal). second, flatten sandbox, removing modified items that have been submitted
+                    // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
+                    // may get lost when the item is finally approved
+                    final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
+                    fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
+                    AVMDAOs.Instance().fAVMNodeDAO.flush();
+                    fAVMSyncService.flatten(from, targetPath);
+                }
+                
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-
-        // flatten source folder where changes were submitted from
-        if (from != null && from.length() > 0)
-        {
-            // first, submit changes back to sandbox forcing addition of edits in workflow (and submission
-            // flag removal). second, flatten sandbox, removing modified items that have been submitted
-            // TODO: Without locking on the sandbox, it's possible that a change to a "submitted" item
-            // may get lost when the item is finally approved
-            final List<AVMDifference> sandboxDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, from, null);
-            fAVMSyncService.update(sandboxDiffs, null, true, true, false, false, tag, description);
-            AVMDAOs.Instance().fAVMNodeDAO.flush();
-            fAVMSyncService.flatten(from, targetPath);
-        }
     }
 
     /**

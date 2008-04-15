@@ -77,6 +77,21 @@
             </params>
          </action>
          
+         <!-- Unlock AVM file -->
+         <action id="unlock_file">
+            <permissions>
+               <permission allow="true">Delete</permission>
+            </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMUnlockEvaluator</evaluator>
+            <label-id>unlock</label-id>
+            <image>/images/icons/unlock.gif</image>
+            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <action>dialog:unlockAvmFile</action>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>
+         </action>
+         
          <!-- Submit AVM node -->
          <action id="submit">
             <permissions>
@@ -329,6 +344,7 @@
             <action idref="cut_avm_node" />
             <action idref="copy_avm_node" />
             <action idref="file_details" />
+            <action idref="unlock_file" />
             <action idref="delete_file_browse" />
          </action-group>
          

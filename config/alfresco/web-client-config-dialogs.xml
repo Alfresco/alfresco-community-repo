@@ -171,6 +171,10 @@
          <dialog name="deleteLayeredFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteLayeredFolderBrowseDialog"
                  icon="/images/icons/delete_large.gif" title-id="delete_layered_folder" 
                  description-id="delete_layered_folder_info" />
+                 
+         <dialog name="unlockAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="UnlockFileDialog"
+                 icon="/images/icons/unlock_large.gif" title-id="unlock_file" 
+                 description-id="unlock_file_info" />
 
          <dialog name="promptForWebForm" page="/jsp/wcm/prompt-for-web-form.jsp" managed-bean="PromptForWebFormDialog"
                  icon="/images/icons/details_large.gif" title-id="prompt_for_web_form" 

@@ -47,28 +47,38 @@ public interface FormInstanceData
       private static final long serialVersionUID = -3827878774655260635L;
       
       private final RenderingEngineTemplate ret;
+      private final String path;
       private final Rendition r;
       private final Exception e;
 
       public RegenerateResult(final RenderingEngineTemplate ret, 
+                              final String path,
                               final Rendition r)
       {
          this.ret = ret;
          this.r = r;
          this.e = null;
+         this.path = path;
       }
 
       public RegenerateResult(final RenderingEngineTemplate ret,
+                              final String path,
                               final Exception e)
       {
          this.ret = ret;
          this.e = e;
          this.r = null;
+         this.path = path;
       }
 
       public RenderingEngineTemplate getRenderingEngineTemplate()
       {
          return this.ret;
+      }
+      
+      public String getPath()
+      {
+         return this.path;
       }
 
       public Rendition getRendition()

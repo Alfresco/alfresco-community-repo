@@ -3673,6 +3673,27 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
+   
+   <managed-bean>
+      <description>
+         The bean that backs up the Unlock File Dialog
+      </description>
+      <managed-bean-name>UnlockFileDialog</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.UnlockFileDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmService</property-name>
+         <value>#{AVMLockingAwareService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
 
    <managed-bean>
       <description>

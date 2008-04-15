@@ -316,11 +316,16 @@
 		 <parent>cm:content</parent>
 		 <archive>true</archive>
 		 <properties>     
-		    <property name="cm:options">
-		        <title>Thumbnail Options</title>
-			    <type>d:any</type>
-			    <mandatory>false</mandatory>
+		    <property name="cm:contentPropertyName">
+		        <title>Thumbnailed Content Property Name</title>
+			    <type>d:qname</type>
+			    <mandatory>true</mandatory>
 		    </property>      
+		    <property name="cm:transformationOptionsClass">
+		        <title>Transformation Options Class</title>
+			    <type>d:text</type>
+			    <mandatory>false</mandatory>
+		    </property>  		       
 		 </properties>
 	  </type>
             
@@ -847,6 +852,50 @@
                  </target>
              </child-association>
          </associations>
+      </aspect>
+      
+      <!-- Aspect containing image transformation options -->
+      <aspect name="cm:imageTransformationOptions">
+      	<title>Image Transformation Options</title>
+         <properties>
+            <property name="cm:commandOptions">
+               <title>Command Options</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <default>-1</default>
+            </property>
+            <property name="cm:resize">
+            	<title>Resize The Image</title>
+            	<type>d:boolean</type>
+            	<default>false</default>
+            </property>
+            <property name="cm:resizeWidth">
+               <title>Resize Width</title>
+               <type>d:int</type>
+               <mandatory>false</mandatory>
+               <default>-1</default>
+            </property>
+            <property name="cm:resizeHeight">
+               <title>Resize Height</title>
+               <type>d:int</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="cm:resizeMaintainAspectRatio">
+               <title>Resize Maintain Aspect Ratio</title>
+               <type>d:boolean</type>
+               <default>true</default>            
+            </property>
+            <property name="cm:resizePercent">
+               <title>Resize Percent</title>
+               <type>d:boolean</type>
+               <default>false</default>            
+            </property>
+            <property name="cm:resizeToThumbnail">
+               <title>Resize To Thumbnail</title>
+               <type>d:boolean</type>
+               <default>false</default>            
+            </property>
+         </properties>
       </aspect>
       
    </aspects>

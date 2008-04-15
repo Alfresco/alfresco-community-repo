@@ -71,8 +71,17 @@ public class BinaryPassThroughContentTransformer extends AbstractContentTransfor
         }
         else
         {
-            // formats are the same and are not text
-            return true;
+            if (BinaryPassThroughContentTransformer.class == options.getClass())
+            {
+                // formats are the same and are not text
+                return true;
+            }
+            else
+            {
+                // If it has meaningful options then we assume there is another transformer better equiped
+                // to deal with it
+                return false;
+            }
         }
     }
 }

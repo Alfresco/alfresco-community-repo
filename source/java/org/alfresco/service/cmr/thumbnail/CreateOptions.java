@@ -25,15 +25,16 @@
 package org.alfresco.service.cmr.thumbnail;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * This class provides the thumbnail generate options to the thumbnail service.
+ * This class provides the thumbnail create options to the thumbnail service.
  * 
  * @author Roy Wetherall
  */
-public class GenerateOptions
+public class CreateOptions
 {
     /** Parent association details */
     private ParentAssociationDetails assocDetails;
@@ -41,11 +42,19 @@ public class GenerateOptions
     /** Name of the thumbnail */
     private String thumbnailName;
     
+    /** The destination mimetype */
+    private String destinationMimetype;
+    
+    /** Transformation options */
+    private TransformationOptions options;
+    
     /**
      * Default constructor.
      */
-    public GenerateOptions()
+    public CreateOptions(String destinationMimetype, TransformationOptions options)
     {       
+        this.destinationMimetype = destinationMimetype;
+        this.options = options;
     }    
     
     /**
@@ -53,8 +62,9 @@ public class GenerateOptions
      * 
      * @param thumbnailName the name of the thumbnail, can be null
      */
-    public GenerateOptions(String thumbnailName)
+    public CreateOptions(String destinationMimetype, TransformationOptions options, String thumbnailName)
     {
+        this(destinationMimetype, options);
         this.thumbnailName= thumbnailName;
     }
     
@@ -66,9 +76,60 @@ public class GenerateOptions
      * @param assocType     the child association type
      * @param asscoName     the child association name
      */
-    public GenerateOptions(String thumbnailName, NodeRef parent, QName assocType, QName assocName)
+    public CreateOptions(String destinationMimetype, TransformationOptions options, String thumbnailName,  
+                           NodeRef parent, QName assocType, QName assocName)
     {
-        this.assocDetails = new ParentAssociationDetails(parent, assocType, assocName);
+        this(destinationMimetype, options, thumbnailName);
+        this.assocDetails = new ParentAssociationDetails(parent, assocType, assocName);        
+    }
+    
+    /**
+     * Set the destination mimetype
+     * 
+     * @param destinationMimetype   the destination minetype
+     */
+    public void setDestinationMimetype(String destinationMimetype)
+    {
+        this.destinationMimetype = destinationMimetype;
+    }
+    
+    /**
+     * Get the destination mimetype
+     * 
+     * @return  the destination mimetype
+     */
+    public String getDestinationMimetype()
+    {
+        return destinationMimetype;
+    }
+    
+    /**
+     * Set the transformation options
+     * 
+     * @param options   the transformation options
+     */
+    public void setTransformationOptions(TransformationOptions options)
+    {
+        this.options = options;
+    }
+    
+    /**
+     * Get the transformation options
+     * 
+     * @return  the transformation options
+     */
+    public TransformationOptions getTransformationOptions()
+    {
+        return options;
+    }
+    
+    /**
+     * Sets the name of the thumbnail
+     * 
+     * @param thumbnailName     the thumbnail name
+     */
+    public void setThumbnailName(String thumbnailName)
+    {
         this.thumbnailName = thumbnailName;
     }
     
@@ -80,6 +141,16 @@ public class GenerateOptions
     public String getThumbnailName()
     {
         return thumbnailName;
+    }    
+    
+    /**
+     * Sets the details of the thumnails parent association
+     * 
+     * @param assocDetails  the parent association details
+     */
+    public void setParentAssociationDetails(ParentAssociationDetails assocDetails)
+    {
+        this.assocDetails = assocDetails;
     }
     
     /**

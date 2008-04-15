@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -57,7 +58,7 @@ public interface ThumbnailService
      * @return NodeRef              node reference to the newly created thumbnail 
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "createOptions"})
-    NodeRef createThumbnail(NodeRef node, QName contentProperty, GenerateOptions createOptions);
+    NodeRef createThumbnail(NodeRef node, QName contentProperty, CreateOptions createOptions);
     
     /**
      * Updates the content of a thumbnail.
@@ -73,25 +74,37 @@ public interface ThumbnailService
     void updateThumbnail(NodeRef thumbnail);
     
     /**
-     * Gets a list of the thumbnails that are available for the node's content property, given a
-     * the accept options.
      * 
-     * The accept options contain details about the desired mimetypes, size and other parameters of
-     * a potential thumbnail.  If any of the nodes thumbnails match these accept options they are 
-     * added to the return list.
-     * 
-     * The list of returned thumbnails is ordered, with the most appropriate thumbnail first.  If no 
-     * appropriate thumbnails are found then the list is returned empty.
-     * 
-     * When no accept options are provided all available thumbnails are returned.
-     * 
-     * @see org.alfresco.service.cmr.thumbnail.AcceptOptions
-     * 
-     * @param  node                 the content node
-     * @param  contentProperty      the content property
-     * @param  acceptOptions        the accept options
-     * @return List<NodeRef>        list of thumbnails that match the accept options
+     * @param node
+     * @param contentProperty
+     * @param thumbnailName
+     * @return
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "acceptOptions"})
-    List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, AcceptOptions acceptOptions);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "thumbnailName"})
+    NodeRef getThumbnailByName(NodeRef node, QName contentProperty, String thumbnailName);
+    
+    /**
+     * 
+     * @param node
+     * @param contentProperty
+     * @param mimetype
+     * @param options
+     * @return
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "options"})
+    List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype, TransformationOptions options);
+    
+    /**
+     * @see ThumbnailService#getThumbnails(NodeRef, QName, String, TransformationOptions)
+     * 
+     * Transformation options defaulted to null.
+     * 
+     * @param node
+     * @param contentProperty
+     * @param mimetype
+     * @return
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype"})    
+    List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype);
+    
 }

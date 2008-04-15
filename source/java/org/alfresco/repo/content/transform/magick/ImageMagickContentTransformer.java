@@ -54,6 +54,9 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
     /** the system command executer */
     private RuntimeExec executer;
     
+    /**
+     * Default constructor
+     */
     public ImageMagickContentTransformer()
     {
     }
@@ -100,7 +103,14 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
         // set properties
         if (options instanceof ImageTransformationOptions)
         {
-            properties.put(KEY_OPTIONS, (String) ((ImageTransformationOptions)options).getCommandOptions());
+            ImageTransformationOptions imageOptions = (ImageTransformationOptions)options;
+            ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
+            String commandOptions = imageOptions.getCommandOptions();
+            if (resizeOptions != null)
+            {
+                commandOptions = commandOptions + " " + getImageResizeCommandOptions(resizeOptions);
+            }
+            properties.put(KEY_OPTIONS, commandOptions);
         }
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
@@ -116,5 +126,48 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
         {
             logger.debug("ImageMagic executed successfully: \n" + executer);
         }
+    }
+    
+    /**
+     * Gets the imagemagick command string for the image resize options provided
+     * 
+     * @param imageResizeOptions    image resize options
+     * @return String               the imagemagick command options
+     */
+    private String getImageResizeCommandOptions(ImageResizeOptions imageResizeOptions)
+    {
+        StringBuilder builder = new StringBuilder(32);
+        
+        if (imageResizeOptions.isResizeToThumbnail() == true)
+        {
+            builder.append("-thumbnail ");
+        }
+        else
+        {
+            builder.append("-resize ");
+        }
+        
+        if (imageResizeOptions.getWidth() > -1)
+        {
+            builder.append(imageResizeOptions.getWidth());
+        }
+        
+        if (imageResizeOptions.getHeight() > -1)
+        {
+            builder.append("x");
+            builder.append(imageResizeOptions.getHeight());
+        }
+        
+        if (imageResizeOptions.isPercentResize() == true)
+        {
+            builder.append("%");
+        }
+        
+        if (imageResizeOptions.isMaintainAspectRatio() == false)
+        {
+            builder.append("!");
+        }
+        
+        return builder.toString();
     }
 }

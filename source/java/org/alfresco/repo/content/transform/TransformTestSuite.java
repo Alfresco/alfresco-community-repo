@@ -24,11 +24,10 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
-import org.alfresco.repo.content.transform.magick.JMagickContentTransformerTest;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
+import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
 
 
 /**
@@ -60,7 +59,6 @@ public class TransformTestSuite extends TestSuite
         suite.addTestSuite(TextMiningContentTransformerTest.class);
         suite.addTestSuite(TextToPdfContentTransformerTest.class);
         suite.addTestSuite(ImageMagickContentTransformerTest.class);
-        suite.addTestSuite(JMagickContentTransformerTest.class);
         return suite;
     }
 }

@@ -206,5 +206,29 @@ public class TransformationOptions
         this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
         this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
         this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
-    }    
+    } 
+    
+    /**
+     * Save the transformation options to the given node by applying the appropriate aspect
+     * and setting the meta data from the transformation options
+     * 
+     * @param nodeRef       the node reference
+     * @param nodeService   the node service
+     */
+    public void saveToNode(NodeRef nodeRef, NodeService nodeService)
+    {
+        // Do nothing for default transformation options
+    }
+    
+    /**
+     * Populate the transformation options from the meta data present on the appropraite
+     * aspect on the passed node.
+     * 
+     * @param nodeRef       the node reference
+     * @param nodeService   the node service
+     */
+    public void populateFromNode(NodeRef nodeRef, NodeService nodeService)
+    {
+        // Do nothing for the detauls transformation options
+    }
 }

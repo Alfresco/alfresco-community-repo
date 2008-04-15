@@ -22,45 +22,39 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.transform.magick;
+package org.alfresco.service.cmr.thumbnail;
 
-import java.io.File;
-
-import magick.ImageInfo;
-import magick.MagickImage;
-
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
+ * Thumbnail service exception class
  * 
- * @author Derek Hulley
+ * @author Roy Wetherall
  */
-public class JMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class ThumbnailException extends AlfrescoRuntimeException 
 {
-    @SuppressWarnings("unused")
-    private static final Log logger = LogFactory.getLog(JMagickContentTransformer.class);
-    
-    public JMagickContentTransformer()
+	/**
+	 * Serial version UID 
+	 */
+	private static final long serialVersionUID = 3257571685241467958L;
+
+    public ThumbnailException(String msgId)
     {
+        super(msgId);
     }
-    
-    /**
-     * Uses the <b>JMagick</b> library to perform the transformation
-     * 
-     * @param sourceFile
-     * @param targetFile
-     * @throws Exception
-     */
-    @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+
+    public ThumbnailException(String msgId, Object[] msgParams)
     {
-        ImageInfo imageInfo = new ImageInfo(sourceFile.getAbsolutePath());
-        MagickImage image = new MagickImage(imageInfo);
-        image.setFileName(targetFile.getAbsolutePath());
-        image.writeImage(imageInfo);
+        super(msgId, msgParams);
+    }
+
+    public ThumbnailException(String msgId, Object[] msgParams, Throwable cause)
+    {
+        super(msgId, msgParams, cause);
+    }
+
+    public ThumbnailException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
     }
 }

@@ -103,7 +103,7 @@ public class SearchProperties implements Serializable
     private List<Node> categories = new ArrayList<Node>(2);
 
     /** datamodel for table of categories to search */
-    transient private DataModel categoriesDataModel = new ListDataModel();
+    transient private DataModel categoriesDataModel = null;
 
     /** title attribute to search */
     private String title = null;
@@ -326,7 +326,17 @@ public class SearchProperties implements Serializable
 
     public DataModel getCategoriesDataModel()
     {
+        if (categoriesDataModel == null)
+        {
+            categoriesDataModel = new ListDataModel();
+        }
+        
         return categoriesDataModel;
+    }
+    
+    public void setCategoriesDataModel(DataModel categoriesDataModel)
+    {
+        this.categoriesDataModel = categoriesDataModel;
     }
 
     public String getTitle()

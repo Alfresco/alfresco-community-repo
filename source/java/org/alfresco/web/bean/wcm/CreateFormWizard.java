@@ -400,6 +400,7 @@ public class CreateFormWizard extends BaseWizardBean
       this.renderingEngineTemplateDescription = null; 
       this.renderingEngine = null;
       this.renderingEngineTemplates = new ArrayList<RenderingEngineTemplateData>();
+      this.renderingEngineTemplatesDataModel = null;
       this.outputPathPatternForFormInstanceData = null;
       this.outputPathPatternForRendition = null;
       this.mimetypeForRendition = null;

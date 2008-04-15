@@ -209,6 +209,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       super.init(parameters);
       
       notify = NOTIFY_NO;
+      userRolesDataModel = null;
       userGroupRoles = new ArrayList<UserGroupRole>(8);
       mailHelper = new TemplateMailHelperBean();
       mailHelper.setMailSender(mailSender);

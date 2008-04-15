@@ -95,6 +95,7 @@ public class AddUsersDialog extends BaseDialogBean
       this.group = parameters.get(GroupsDialog.PARAM_GROUP);
       this.groupName = parameters.get(GroupsDialog.PARAM_GROUP_NAME);
       
+      this.usersDataModel = null;
       usersForGroup = new ArrayList<UserAuthorityDetails>();
    }
 

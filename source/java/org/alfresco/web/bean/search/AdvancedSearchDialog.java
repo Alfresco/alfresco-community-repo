@@ -312,6 +312,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
       properties.setLocation(null);
       properties.setLocationChildren(true);
       properties.setCategories(new ArrayList<Node>(2));
+      properties.setCategoriesDataModel(null);
       properties.setTitle(null);
       properties.setDescription(null);
       properties.setAuthor(null);

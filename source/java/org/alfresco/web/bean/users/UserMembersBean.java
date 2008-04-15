@@ -567,6 +567,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                }
             }
             // action context setup
+            this.personRolesDataModel = null;
             this.personRoles = userPermissions;
             setPersonAuthority(authority);
          }

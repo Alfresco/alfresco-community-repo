@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -361,13 +362,39 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
 	        {
 	            if (referenceType.equals("node"))
 	            {
-	                NodeRef urlRef = new NodeRef(storeRef, reference[2]);
-	                if (nodeService.exists(urlRef))
+	                // find the node the rest of the path is relative to
+	                NodeRef relRef = new NodeRef(storeRef, reference[2]);
+	                if (nodeService.exists(relRef))
 	                {
-	                    nodeRef = urlRef;
+	                    // are there any relative path elements to process?
+	                    if (reference.length == 3 || reference.length == 4)
+	                    {
+	                        // just the NodeRef can be specified
+	                        nodeRef = relRef;
+	                    }
+	                    else
+	                    {
+	                        // process optional path elements
+	                        List<String> paths = new ArrayList<String>(reference.length - 3);
+	                        for (int i=3; i<reference.length; i++)
+	                        {
+	                            paths.add(reference[i]);
+	                        }
+
+	                        try
+	                        {
+	                            NodeRef parentRef = nodeService.getPrimaryParent(relRef).getParentRef();
+	                            FileInfo fileInfo = fileFolderService.resolveNamePath(parentRef, paths);
+	                            nodeRef = fileInfo.getNodeRef();
+	                        }
+	                        catch (FileNotFoundException e)
+	                        {
+	                            // NOTE: return null node ref
+	                        }
+	                    }
 	                }
 	            }
-	            
+                
 	            else if (referenceType.equals("path"))
 	            {
                     // NOTE: special case for avm based path
@@ -388,7 +415,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                     else
                     {
 		                // TODO: Allow a root path to be specified - for now, hard-code to Company Home
-	//                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+	                    //NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
 		                NodeRef rootNodeRef = getCompanyHome();
 		                if (reference.length == 3)
 		                {

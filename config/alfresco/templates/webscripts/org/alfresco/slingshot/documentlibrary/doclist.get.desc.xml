@@ -1,7 +1,7 @@
 <webscript>
   <shortname>doclist</shortname>
   <description>Document List Component - doclist data webscript</description>
-  <url>/slingshot/doclib/doclist?nodeRef={nodeRef}</url>
-  <authentication>user</authentication>
+  <url>/slingshot/doclib/doclist?nodeRef={nodeRef?}&amp;path={path?}</url>
+  <authentication>guest</authentication>
   <transaction>required</transaction>
 </webscript>

@@ -54,10 +54,10 @@ public class PolicyComponentTransactionTest extends TestCase
     private static QName BASE_TYPE = QName.createQName(TEST_NAMESPACE, "base");
     
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
     private PolicyComponent policyComponent;
     private TransactionService trxService;
     private AuthenticationComponent authenticationComponent;
-    private ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate;
 
     
     @Override
@@ -79,12 +79,15 @@ public class PolicyComponentTransactionTest extends TestCase
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Register Policy
-        sideEffectDelegate = policyComponent.registerClassPolicy(SideEffectTestPolicy.class);
-
-        // Bind Behaviour to side effect policy
-        QName policyName = QName.createQName(TEST_NAMESPACE, "sideEffect");
-        Behaviour baseBehaviour = new JavaBehaviour(this, "sideEffectTest", NotificationFrequency.TRANSACTION_COMMIT);
-        policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
+        if (sideEffectDelegate == null)
+        {
+	        sideEffectDelegate = policyComponent.registerClassPolicy(SideEffectTestPolicy.class);
+	
+	        // Bind Behaviour to side effect policy
+	        QName policyName = QName.createQName(TEST_NAMESPACE, "sideEffect");
+	        Behaviour baseBehaviour = new JavaBehaviour(this, "sideEffectTest", NotificationFrequency.TRANSACTION_COMMIT);
+	        this.policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
+        }
     }
 
     

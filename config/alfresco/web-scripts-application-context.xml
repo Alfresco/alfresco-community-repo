@@ -217,14 +217,14 @@
    <bean id="webscript.org.alfresco.repository.store.remoteavm.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
-      <property name="rootPath"><value>site-data</value></property>
+      <property name="rootPath"><value>alfresco</value></property>
       <property name="store"><value>sitestore</value></property>
    </bean>
    
    <bean id="webscript.org.alfresco.repository.store.remoteavm.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
-      <property name="rootPath"><value>site-data</value></property>
+      <property name="rootPath"><value>alfresco</value></property>
       <property name="store"><value>sitestore</value></property>
    </bean>
 

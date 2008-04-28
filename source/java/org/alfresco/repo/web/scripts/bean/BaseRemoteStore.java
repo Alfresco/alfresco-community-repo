@@ -49,16 +49,15 @@ import org.apache.commons.logging.LogFactory;
  * from a web-tier application to remotely mirror a WebScript Store instance.
  * 
  * Request format:
- * 
  *      <servicepath>/<method>/<path>
  * 
  * Example:
+ *      /service/remotestore/lastmodified/sites/xyz/pages/page.xml
  * 
- *      /service/store/lastmodified/sites/xyz/pages/page.xml
- * 
- * where: /service/store     -> service path
- *        /lastmodified      -> method name
- *        /sites/../page.xml -> document path
+ * where:
+ *      /service/remotestore -> service path
+ *      /lastmodified        -> method name
+ *      /sites/../page.xml   -> document path
  * 
  * Note: path is relative to the root path as configured for this webscript bean
  * 

@@ -99,7 +99,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         String[] CONFIG_LOCATIONS = new String[]
         {
             "classpath:alfresco/application-context.xml",
-            "classpath:alfresco/web-framework-application-context.xml",
+            "classpath:alfresco/webscript-framework-application-context.xml",
             "classpath:alfresco/web-scripts-application-context.xml",
             "classpath:alfresco/web-scripts-application-context-test.xml",
             "classpath:alfresco/web-client-application-context.xml"

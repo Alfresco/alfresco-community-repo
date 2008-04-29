@@ -38,6 +38,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertToVersionAction;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -150,7 +151,7 @@ public class FileDetailsBean extends AVMDetailsBean
     */
    public String getFileType32()
    {
-      return Utils.getFileTypeImage(getAvmNode().getName(), false);
+      return FileTypeImageUtils.getFileTypeImage(getAvmNode().getName(), false);
    }
 
    /**
@@ -183,7 +184,7 @@ public class FileDetailsBean extends AVMDetailsBean
             wrapper.put("url", DownloadContentServlet.generateBrowserURL(
                         AVMNodeConverter.ToNodeRef(path.getFirst(), path.getSecond()), avmNode.getName()));
          }
-         wrapper.put("fileType16", Utils.getFileTypeImage(avmNode.getName(), true));
+         wrapper.put("fileType16", FileTypeImageUtils.getFileTypeImage(avmNode.getName(), true));
          
          wrappers.add(wrapper);
       }

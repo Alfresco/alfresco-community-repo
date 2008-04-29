@@ -40,6 +40,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,7 +51,6 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 
 /**
@@ -63,6 +63,7 @@ import org.apache.commons.logging.Log;
  * @author Kevin Roast
  * @author gavinc
  */
+@SuppressWarnings("serial")
 public abstract class BaseTemplateContentServlet extends BaseServlet
 {
    private static final String MIMETYPE_HTML = "text/html;charset=utf-8";
@@ -339,7 +340,7 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
    {
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(getServletContext(), filename, size);
+         return FileTypeImageUtils.getFileTypeImage(getServletContext(), filename, size);
       }
    };
    

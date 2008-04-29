@@ -36,6 +36,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -324,7 +325,7 @@ public class RegenerateRenditionsWizard
             item.setDescription(MessageFormat.format(bundle.getString("regenerate_renditions_select_renditions_select_item_desc"), 
                                                      rs.size(),
                                                      this.selectedWebProject.getName()));
-            item.setImage(Utils.getFileTypeImage(ret.getName(), false));
+            item.setImage(FileTypeImageUtils.getFileTypeImage(ret.getName(), false));
             result.add(item);
          }
       }

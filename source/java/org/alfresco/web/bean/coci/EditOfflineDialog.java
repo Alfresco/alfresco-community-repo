@@ -33,6 +33,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -164,7 +165,7 @@ public class EditOfflineDialog extends CheckinCheckoutDialog
 
             workingCopy.getProperties().put("url", url);
             workingCopy.getProperties().put("fileType32",
-                     Utils.getFileTypeImage(workingCopy.getName(), false));
+                    FileTypeImageUtils.getFileTypeImage(workingCopy.getName(), false));
             
             // commit the transaction
             tx.commit();

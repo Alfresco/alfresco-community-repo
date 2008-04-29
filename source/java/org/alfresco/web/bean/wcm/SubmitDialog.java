@@ -49,6 +49,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -1451,7 +1452,7 @@ public class SubmitDialog extends BaseDialogBean
       public String getIcon()
       {
          return (descriptor.isFile() || descriptor.isDeletedFile()
-                 ? Utils.getFileTypeImage(descriptor.getName(), true)
+                 ? FileTypeImageUtils.getFileTypeImage(descriptor.getName(), true)
                  : SPACE_ICON);
       }
 

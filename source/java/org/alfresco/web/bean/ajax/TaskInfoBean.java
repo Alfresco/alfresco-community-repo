@@ -34,13 +34,13 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
 import org.alfresco.repo.template.Workflow;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean used by an AJAX control to send information back on the requested workflow task.
@@ -158,7 +158,7 @@ public class TaskInfoBean implements Serializable
    {
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+         return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
 }

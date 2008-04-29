@@ -34,6 +34,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -45,7 +46,6 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.config.ClientConfigElement;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Node class representing an AVM specific Node.
@@ -128,7 +128,7 @@ public class AVMNode extends Node implements Map<String, Object>
             }
             else
             {
-               return Utils.getFileTypeImage(node.getName(), true);
+               return FileTypeImageUtils.getFileTypeImage(node.getName(), true);
             }
          }
       };

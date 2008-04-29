@@ -302,5 +302,17 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="blogIntegrationService" ref="BlogIntegrationService"/>
     </bean>
+    
+    <!-- ===================================== -->
+    <!-- Web Script Beans             -->
+    <!-- ===================================== -->
 
+	<!--  Alfresco Web Client Authenticator (Servlet based) -->
+   <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
+	
+   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory">
+      <property name="repository" ref="webscripts.repo" />
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="transactionService" ref="TransactionService" />
+   </bean>
 </beans>

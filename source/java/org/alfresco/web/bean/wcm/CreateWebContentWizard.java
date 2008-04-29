@@ -51,6 +51,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -815,7 +816,7 @@ public class CreateWebContentWizard extends CreateContentWizard
          item.setValue(name);
          item.setLabel((String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE));
          item.setDescription((String) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
-         item.setImage(Utils.getFileTypeImage(name, false));
+         item.setImage(FileTypeImageUtils.getFileTypeImage(name, false));
          result.add(item);
       }
       return result;

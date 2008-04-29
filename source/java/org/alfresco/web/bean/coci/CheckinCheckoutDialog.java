@@ -39,6 +39,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -283,7 +284,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          String url = DownloadContentServlet.generateDownloadURL(ref, node.getName());
          node.getProperties().put("url", url);
          node.getProperties().put("workingCopy", node.hasAspect(ContentModel.ASPECT_WORKING_COPY));
-         node.getProperties().put("fileType32", Utils.getFileTypeImage(node.getName(), false)); 
+         node.getProperties().put("fileType32", FileTypeImageUtils.getFileTypeImage(node.getName(), false)); 
          
          // remember the document
          property.setDocument(node);

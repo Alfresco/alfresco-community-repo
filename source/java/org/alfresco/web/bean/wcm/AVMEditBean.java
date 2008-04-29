@@ -18,7 +18,6 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.File;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -26,6 +25,7 @@ import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
@@ -123,7 +123,7 @@ public class AVMEditBean extends BaseDialogBean
     */
    public String getFileType32()
    {
-      return Utils.getFileTypeImage(getAvmNode().getName(), false);
+      return FileTypeImageUtils.getFileTypeImage(getAvmNode().getName(), false);
    }
    
    /**
@@ -131,7 +131,7 @@ public class AVMEditBean extends BaseDialogBean
     */
    public String getFileType16()
    {
-      return Utils.getFileTypeImage(getAvmNode().getName(), true);
+      return FileTypeImageUtils.getFileTypeImage(getAvmNode().getName(), true);
    }
    
    /**

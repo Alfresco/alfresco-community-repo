@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -298,7 +299,7 @@ public class UITemplate extends SelfRenderingComponent
    {
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+         return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
 }

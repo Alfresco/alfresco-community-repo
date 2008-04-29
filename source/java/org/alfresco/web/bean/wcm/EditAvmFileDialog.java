@@ -29,13 +29,13 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -96,7 +96,7 @@ public class EditAvmFileDialog
     */
    public String getFileType32()
    {
-      return Utils.getFileTypeImage(getAvmNode().getName(), false);
+      return FileTypeImageUtils.getFileTypeImage(getAvmNode().getName(), false);
    }
 
    /**

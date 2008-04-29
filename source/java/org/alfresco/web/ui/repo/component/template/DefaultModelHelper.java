@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -35,7 +36,6 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Helper class to generate the default template model.
@@ -106,7 +106,7 @@ public class DefaultModelHelper
    {
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+         return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
 }

@@ -38,6 +38,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -535,7 +536,7 @@ public class PickerBean implements Serializable
                   out.writeValue(ID_ID, item.getNodeRef().toString());
                   String name = (String)item.getProperties().get(ContentModel.PROP_NAME);
                   out.writeValue(ID_NAME, name);
-                  String icon = Utils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
+                  String icon = FileTypeImageUtils.getFileTypeImage(fc, name, FileTypeImageSize.Small);
                   out.writeValue(ID_ICON, icon);
                   out.writeValue(ID_URL, DownloadContentServlet.generateBrowserURL(item.getNodeRef(), name));
                   out.endObject();

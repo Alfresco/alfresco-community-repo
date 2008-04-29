@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Tagging Query</shortname>
-  <description>Query tag usage</description>
-  <url>/collaboration/tagQuery</url>
-  <format default="html"/>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

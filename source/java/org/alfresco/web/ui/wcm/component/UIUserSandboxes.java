@@ -46,6 +46,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -812,7 +813,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                if (node.isFile())
                {
                   out.write(linkPrefix);
-                  out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
+                  out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
                   out.write("</a></td><td>");
                   out.write(linkPrefix);
                   out.write(name);
@@ -872,7 +873,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                out.write("<td width=16>");
                if (node.isDeletedFile())
                {
-                  out.write(Utils.buildImageTag(fc, Utils.getFileTypeImage(fc, name, true), ""));
+                  out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
                   out.write("</td><td style='color:#aaaaaa'>");
                   out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
                   out.write("</a>");

@@ -38,6 +38,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -329,7 +330,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
 
       public String resolveImagePathForName(String filename, FileTypeImageSize size)
       {
-         return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+         return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
    

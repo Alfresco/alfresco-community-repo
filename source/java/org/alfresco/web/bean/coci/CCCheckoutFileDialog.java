@@ -27,6 +27,7 @@ package org.alfresco.web.bean.coci;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -143,7 +144,7 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
                 String url = DownloadContentServlet.generateDownloadURL(workingCopyRef, workingCopy.getName());
 
                 workingCopy.getProperties().put("url", url);
-                workingCopy.getProperties().put("fileType32", Utils.getFileTypeImage(workingCopy.getName(), false));
+                workingCopy.getProperties().put("fileType32", FileTypeImageUtils.getFileTypeImage(workingCopy.getName(), false));
 
                 // mark as successful
                 checkoutSuccessful = true;

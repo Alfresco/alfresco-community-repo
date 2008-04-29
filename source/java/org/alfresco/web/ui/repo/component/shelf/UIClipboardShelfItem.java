@@ -40,7 +40,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
@@ -207,7 +207,7 @@ public class UIClipboardShelfItem extends UIShelfItem
             }
             else
             {
-               String image = Utils.getFileTypeImage(item.getName(), true);
+               String image = FileTypeImageUtils.getFileTypeImage(item.getName(), true);
                out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
             }
             

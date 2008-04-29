@@ -39,6 +39,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
@@ -204,7 +205,7 @@ public class UIShortcutsShelfItem extends UIShelfItem
             }
             else if (dd.isSubClass(item.getType(), ContentModel.TYPE_CONTENT))
             {
-               String image = Utils.getFileTypeImage(item.getName(), true);
+               String image = FileTypeImageUtils.getFileTypeImage(item.getName(), true);
                out.write(Utils.buildImageTag(context, image, null, "absmiddle"));
             }
             

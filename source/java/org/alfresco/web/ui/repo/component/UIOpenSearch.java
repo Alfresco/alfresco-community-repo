@@ -27,7 +27,6 @@ package org.alfresco.web.ui.repo.component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.faces.context.FacesContext;
@@ -37,10 +36,9 @@ import org.alfresco.config.Config;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.bean.SearchProxy;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.config.OpenSearchConfigElement;
-import org.alfresco.web.config.OpenSearchConfigElement.EngineConfig;
-import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.springframework.web.jsf.FacesContextUtils;
 

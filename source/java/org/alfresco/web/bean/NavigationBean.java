@@ -45,6 +45,7 @@ import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -632,7 +633,7 @@ public class NavigationBean implements Serializable
             {
                public String resolveImagePathForName(String filename, FileTypeImageSize size)
                {
-                  return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+                  return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
                }
             });
       

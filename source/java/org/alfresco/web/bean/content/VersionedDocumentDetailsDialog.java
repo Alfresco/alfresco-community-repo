@@ -40,6 +40,7 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.common.VersionLabelComparator;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -401,7 +402,7 @@ public class VersionedDocumentDetailsDialog implements Serializable
     */
    public String getFileType32()
    {
-       String fileType = Utils.getFileTypeImage(getName(), false);
+       String fileType = FileTypeImageUtils.getFileTypeImage(getName(), false);
        return fileType;
    }
 

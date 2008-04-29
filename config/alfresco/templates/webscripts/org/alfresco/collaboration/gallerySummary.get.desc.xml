@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Gallery Summary</shortname>
-  <description>Collaboration Gallery Summary</description>
-  <url>/collaboration/gallerySummary?nodeRef={noderef}</url>
-  <format default="html"/>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

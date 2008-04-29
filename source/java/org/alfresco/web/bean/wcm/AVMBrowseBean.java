@@ -53,6 +53,7 @@ import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -1014,7 +1015,7 @@ public class AVMBrowseBean implements IContextListener
             {
                public String resolveImagePathForName(String filename, FileTypeImageSize size)
                {
-                  return Utils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
+                  return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
                }
             });
       
@@ -1280,7 +1281,7 @@ public class AVMBrowseBean implements IContextListener
       }
       else
       {
-         node.getProperties().put("fileType16", Utils.getFileTypeImage(avmRef.getName(), true));
+         node.getProperties().put("fileType16", FileTypeImageUtils.getFileTypeImage(avmRef.getName(), true));
          node.getProperties().put("url", DownloadContentServlet.generateBrowserURL(
                AVMNodeConverter.ToNodeRef(-1, avmRef.getPath()), avmRef.getName()));
          this.files.add(node);

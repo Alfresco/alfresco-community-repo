@@ -40,6 +40,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -312,7 +313,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       
       public Object get(Node node)
       {
-         return Utils.getFileTypeImage(node.getName(), true);
+         return FileTypeImageUtils.getFileTypeImage(node.getName(), true);
       }
    };
    
@@ -335,7 +336,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       
       public Object get(Node node)
       {
-         return Utils.getFileTypeImage(node.getName(), false);
+         return FileTypeImageUtils.getFileTypeImage(node.getName(), false);
       }
    };
    
@@ -749,7 +750,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          }
          else
          {
-            img = Utils.getFileTypeImage(node.getName(), true);
+            img = FileTypeImageUtils.getFileTypeImage(node.getName(), true);
          }
          buf.append("<img width=16 height=16 alt='' src='").append(contextPath).append(img).append("'>");
          buf.append("</td><td>");

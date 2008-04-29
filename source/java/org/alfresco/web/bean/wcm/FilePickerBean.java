@@ -70,7 +70,6 @@ import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.XMLUtil;
-import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -634,7 +633,7 @@ public class FilePickerBean implements Serializable
 
          this.uploads.add(AVMNodeConverter.ToNodeRef(-1, currentPath + "/"
                + filename));
-         returnPage = returnPage.replace("${_FILE_TYPE_IMAGE}", Utils
+         returnPage = returnPage.replace("${_FILE_TYPE_IMAGE}", org.alfresco.repo.web.scripts.FileTypeImageUtils
                .getFileTypeImage(facesContext, filename, true));
       } catch (Exception e)
       {
@@ -1042,7 +1041,7 @@ public class FilePickerBean implements Serializable
       // TODO (Glen): IS this the right image to set?
       // originally from Ariel's code
       childNodeElement.setAttribute("image",
-            (node.isDirectory() ? "/images/icons/space_small.gif" : Utils
+            (node.isDirectory() ? "/images/icons/space_small.gif" : org.alfresco.repo.web.scripts.FileTypeImageUtils
                   .getFileTypeImage(facesContext, node.getName(), true)));
 
       boolean selectable = false;

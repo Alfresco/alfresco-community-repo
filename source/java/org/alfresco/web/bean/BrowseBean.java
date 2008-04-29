@@ -45,6 +45,7 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
@@ -1258,7 +1259,7 @@ public class BrowseBean implements IContextListener, Serializable
       private static final long serialVersionUID = -2690520488415178029L;
 
       public Object get(Node node) {
-         return Utils.getFileTypeImage(node.getName(), true);
+         return FileTypeImageUtils.getFileTypeImage(node.getName(), true);
       }
    };
 
@@ -1266,7 +1267,7 @@ public class BrowseBean implements IContextListener, Serializable
       private static final long serialVersionUID = 1991254398502584389L;
 
       public Object get(Node node) {
-         return Utils.getFileTypeImage(node.getName(), false);
+         return FileTypeImageUtils.getFileTypeImage(node.getName(), false);
       }
    };
 

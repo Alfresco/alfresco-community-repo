@@ -48,13 +48,6 @@ public class ContentTransformerRegistry
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
     
     private List<ContentTransformer> transformers;
-   
-    /** Cache of previously used transactions */
-    //private Map<TransformationKey, List<ContentTransformer>> transformationCache;
-    /** Controls read access to the transformation cache */
-    //private Lock transformationCacheReadLock;
-    /** controls write access to the transformation cache */
-    //private Lock transformationCacheWriteLock;
     
     /**
      * @param mimetypeMap all the mimetypes available to the system
@@ -62,33 +55,7 @@ public class ContentTransformerRegistry
     public ContentTransformerRegistry()
     {
         this.transformers = new ArrayList<ContentTransformer>(10);
-       
-        //transformationCache = new HashMap<TransformationKey, List<ContentTransformer>>(17);
-        
-        // create lock objects for access to the cache
-        //ReadWriteLock transformationCacheLock = new ReentrantReadWriteLock();
-        //transformationCacheReadLock = transformationCacheLock.readLock();
-        //transformationCacheWriteLock = transformationCacheLock.writeLock();
     }
-    
-    /**
-     * Register an individual transformer against a specific transformation.  This transformation
-     * will take precedence over any of the generally-registered transformers.
-     * 
-     * @param key the mapping from one mimetype to the next
-     * @param transformer the content transformer
-     */
-    //public void addExplicitTransformer(TransformationKey key, ContentTransformer transformer)
-    //{
-    //    transformationCache.put(key, Collections.singletonList(transformer));
-        // done
-    //    if (logger.isDebugEnabled())
-    //    {
-    //        logger.debug("Registered explicit transformation: \n" +
-    //                "   key: " + key + "\n" +
-    //                "   transformer: " + transformer);
-    //    }
-   // }
     
     /**
      * Registers an individual transformer that can be queried to check for applicability.
@@ -105,29 +72,6 @@ public class ContentTransformerRegistry
                     "   transformer: " + transformer);
         }
     }
-
-    /**
-     * Resets the transformation cache.  This allows a fresh analysis of the best
-     * conversions based on actual average performance of the transformers.
-     */
-//    public void resetCache()
-//    {
-//        // get a write lock on the cache
-//        transformationCacheWriteLock.lock();
-//        try
-//        {
-//            transformationCache.clear();
-//        }
-//        finally
-//        {
-//            transformationCacheWriteLock.unlock();
-//        }
-//        // done
-//        if (logger.isDebugEnabled())
-//        {
-//            logger.debug("Content transformation cache reset");
-//        }
-//    }
     
     /**
      * Gets the best transformer possible.  This is a combination of the most reliable
@@ -137,41 +81,9 @@ public class ContentTransformerRegistry
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        //TransformationKey key = new TransformationKey(sourceMimetype, targetMimetype);
-        List<ContentTransformer> transformers = null;
-        //transformationCacheReadLock.lock();
-        //try
-        //{
-          //  if (transformationCache.containsKey(key))
-          //  {
-                // the translation has been requested before
-                // it might have been null
-           //     transformers = transformationCache.get(key);
-           // }
-        //}
-       // finally
-       // {
-       //     transformationCacheReadLock.unlock();
-       // }
-        
-       // if (transformers == null)
-       // {
-            // the translation has not been requested before
-            // get a write lock on the cache
-            // no double check done as it is not an expensive task
-         //   transformationCacheWriteLock.lock();
-         //   try
-         //   {
-                // find the most suitable transformer - may be empty list
-                transformers = findTransformers(sourceMimetype, targetMimetype, options);
-                // store the result even if it is null
-          //      transformationCache.put(key, transformers);
-          //  }
-          //  finally
-          //  {
-          //      transformationCacheWriteLock.unlock();
-          //  }
-        //}
+        // Get the list of transformers
+        List<ContentTransformer> transformers = findTransformers(sourceMimetype, targetMimetype, options);
+
         // select the most performant transformer
         long bestTime = -1L;
         ContentTransformer bestTransformer = null;
@@ -257,30 +169,6 @@ public class ContentTransformerRegistry
                     }
                 }
             }
-            
-//            double reliability = transformer.getReliability(sourceMimetype, targetMimetype);
-//            if (reliability <= 0.0)
-//            {
-//                // it is unusable
-//                continue;
-//            }
-//            else if (reliability < maxReliability)
-//            {
-//                // it is not the best one to use
-//                continue;
-//            }
-//            else if (reliability == maxReliability)
-//            {
-//                // it is as reliable as a previous transformer
-//            }
-//            else
-//            {
-//                // it is better than any previous transformer - wipe them
-//                bestTransformers.clear();
-//                maxReliability = reliability;
-//            }
-//            // add the transformer to the list
-//            bestTransformers.add(transformer);
         }
         // done
         return transformers;

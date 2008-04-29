@@ -363,6 +363,8 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /**
      * Determine whether the thumbnail meta-data matches the given mimetype and options
      * 
+     * If mimetype and transformation options are null then match is guarenteed
+     * 
      * @param  thumbnail     thumbnail node reference
      * @param  mimetype      mimetype
      * @param  options       transformation options
@@ -372,26 +374,21 @@ public class ThumbnailServiceImpl implements ThumbnailService
     {
         boolean result = true;
         
-        // Check the mimetype
-        String thumbnailMimetype = ((ContentData)this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT)).getMimetype();
-        if (mimetype.equals(thumbnailMimetype) == true)
+        if (mimetype != null)
         {
-            // TODO continue to check options ...
+            // Check the mimetype
+            String thumbnailMimetype = ((ContentData)this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT)).getMimetype();
+            if (mimetype.equals(thumbnailMimetype) == false)
+            {             
+                result = false;
+            }
         }
-        else
+        
+        if (result != false && options != null)
         {
-            result = false;
+            // TODO .. check for matching options here ...
         }
         
         return result;
     }
-
-    /**
-     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#getThumbnails(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String)
-     */
-    public List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype)
-    {        
-        return getThumbnails(node, contentProperty, mimetype, null);
-    }
-
 }

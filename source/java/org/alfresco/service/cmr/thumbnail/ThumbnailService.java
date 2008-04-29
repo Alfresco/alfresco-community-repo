@@ -74,37 +74,35 @@ public interface ThumbnailService
     void updateThumbnail(NodeRef thumbnail);
     
     /**
+     * Get's the thumbnail for a given content property with a given name.
      * 
-     * @param node
-     * @param contentProperty
-     * @param thumbnailName
-     * @return
+     * Returns null if no thumbnail with that name for that content property is found.
+     * 
+     * @param node              node reference
+     * @param contentProperty   content property name
+     * @param thumbnailName     thumbnail name
+     * @return NodeRef          the thumbnail node reference, null if not found
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "thumbnailName"})
     NodeRef getThumbnailByName(NodeRef node, QName contentProperty, String thumbnailName);
     
     /**
+     * Get's a list of thumbnail nodes for a given content property that match the provided mimetype and
+     * transformation options.
      * 
-     * @param node
-     * @param contentProperty
-     * @param mimetype
-     * @param options
-     * @return
+     * Both mimetype and transformation options are optional parameters.  If only one or other is specified the
+     * only the other is considered during.  If neither are provided all thumbnails for that content property 
+     * are returned.
+     * 
+     * If no matches are found then an empty list is returned.
+     * 
+     * @param node                  node reference
+     * @param contentProperty       content property name
+     * @param mimetype              mimetype
+     * @param options               transformation options
+     * @return List<NodeRef>        list of matching thumbnail node references, empty if no matches found
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "options"})
     List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype, TransformationOptions options);
-    
-    /**
-     * @see ThumbnailService#getThumbnails(NodeRef, QName, String, TransformationOptions)
-     * 
-     * Transformation options defaulted to null.
-     * 
-     * @param node
-     * @param contentProperty
-     * @param mimetype
-     * @return
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype"})    
-    List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype);
     
 }

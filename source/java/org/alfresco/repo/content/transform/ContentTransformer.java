@@ -40,31 +40,6 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 public interface ContentTransformer extends ContentWorker
 {
     /**
-     * Transform option constants
-     * 
-     * It is up to the transformation implementation whether these 
-     * options are used, but they should be considered optional and their absence 
-     * should not interfere with the execution of the transformer.
-     */
-    //public static final String OPT_SOURCE_NODEREF = "sourceNodeRef";
-    //public static final String OPT_DESTINATION_NODEREF = "destinationNodeRef";
-    
-    /**
-     * Provides the approximate accuracy with which this transformer can
-     * transform from one mimetype to another.
-     * <p>
-     * This method is used to determine, up front, which of a set of
-     * transformers will be used to perform a specific transformation.
-     * 
-     * @param sourceMimetype the source mimetype
-     * @param targetMimetype the target mimetype 
-     * @return Returns a score 0.0 to 1.0.  0.0 indicates that the
-     *      transformation cannot be performed at all.  1.0 indicates that
-     *      the transformation can be performed perfectly.
-     */
-    //public double getReliability(String sourceMimetype, String targetMimetype);
-    
-    /**
      * Indicates whether the provided source mimetype can be transformed into the target mimetype with 
      * the options specified by this content transformer.
      * 
@@ -76,11 +51,16 @@ public interface ContentTransformer extends ContentWorker
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);
     
     /**
+     * Indicates whether given the provided transformation parmaters this transformer can prvide an explict
+     * transformation.
      * 
-     * @param sourceMimetype
-     * @param targetMimetype
-     * @param options
-     * @return
+     * An explict transformation indicates that the transformation happens directly and not as a result of 
+     * another transformation process.  Explict transformation always take presidence over normal transformations.
+     * 
+     * @param sourceMimetype    the source mimetype
+     * @param targetMimetype    the target mimetype
+     * @param options           the transformation options
+     * @return boolean          true if it is an explicit transformation, flase otherwise         
      */
     public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options);
     

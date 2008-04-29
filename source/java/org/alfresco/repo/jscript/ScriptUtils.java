@@ -76,4 +76,17 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
         NodeRef nodeRef = new NodeRef(nodeRefString);
         return (ScriptNode)new ValueConverter().convertValueForScript(this.services, getScope(), null, nodeRef);
     }
+    
+    /**
+     * Gets a boolean value from a string
+     * 
+     * @see Boolean#parseBoolean(String)
+     * 
+     * @param booleanString  boolean string 
+     * @return boolean      the boolean value
+     */
+    public boolean toBoolean(String booleanString)
+    {
+        return Boolean.parseBoolean(booleanString);
+    }
 }

@@ -41,6 +41,7 @@
     <import resource="classpath:alfresco/projects-context.xml"/>
     <import resource="classpath:alfresco/blog-context.xml"/>
     <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
+    <import resource="classpath:alfresco/site-services-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 

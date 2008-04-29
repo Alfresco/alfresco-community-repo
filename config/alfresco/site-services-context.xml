@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<bean id="siteService_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/siteModel.xml</value>
+            </list>
+        </property>
+    </bean>
+       
+    <!-- Bootstrap the permission model -->
+    <bean id="siteService_permissionBootstrap" parent="permissionModelBootstrap">
+    	<property name="model" value="alfresco/model/sitePermissionDefinitions.xml"/>
+    </bean>
+    
+    <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="searchService" ref="SearchService"/>
+       <property name="authenticationService" ref="AuthenticationService"/>
+       <property name="permissionService" ref="PermissionService" />
+       <property name="authenticationComponent" ref="authenticationComponent"/>              
+       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+       <property name="AVMRepository" ref="avmRepository"/>      
+    </bean>
+    
+    <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">
+        <property name="extensionName">
+            <value>siteService</value>
+        </property>
+        <property name="siteService" ref="siteService"/>
+    </bean>
+    
+    
+</beans>

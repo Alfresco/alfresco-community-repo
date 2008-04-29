@@ -1,0 +1,8 @@
+<webscript>
+	<shortname>Save Calendar Event</shortname> 
+	<description>Save Calendar Event</description> 
+	<url>/calendar/SaveCalendarEvent?what={whatEvent}&amp;where={whereEvent}&amp;desc={descriptionEvent}&amp;color={colorEvent}&amp;fd={fromDate}&amp;ft={fromTime}&amp;td={toDate}&amp;tt={toTime}&amp;e={eventId}&amp;d={toDelete}&amp;s={spaceRef}</url> 
+	<format default="html">extension</format> 
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Doc Summary</shortname>
+  <description>Collaboration Doc Summary</description>
+  <url>/collaboration/docSummary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

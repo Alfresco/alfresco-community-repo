@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>My Spaces Panel</shortname>
+  <description>Generate the inner panel for the My Spaces portlet page</description>
+  <url>/ui/myspacespanel?f={filter}&amp;p={path}&amp;h={home}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

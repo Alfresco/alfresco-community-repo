@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Delete Login Ticket</shortname>
+  <description>Delete Login Ticket</description>
+  <url>/api/login/ticket/{ticket}</url>
+  <format default="xml"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

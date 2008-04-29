@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Sites</shortname>
+  <description>Creates a new site based on the site preset and details provided.</description>
+  <url>/api/sites</url>
+  <format default="json"/>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+</webscript>

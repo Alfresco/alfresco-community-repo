@@ -1,0 +1,6 @@
+<webscript>
+<shortname>Calendar Events</shortname>
+<description>Calendar Events</description>
+<url>/calendar/getCalendarEvents</url>
+<authentication>user</authentication>
+</webscript>

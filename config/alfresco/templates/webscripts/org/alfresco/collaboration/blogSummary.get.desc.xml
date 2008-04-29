@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Blog Summary</shortname>
+  <description>Collaboration Blog Summary</description>
+  <url>/collaboration/blogSummary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,6 @@
+<webscript>
+<shortname>Calendar Subscriptions</shortname>
+<description>Calendar Subscriptions</description>
+<url>/calendar/calendarSubscriptions</url>
+<authentication>user</authentication>
+</webscript>

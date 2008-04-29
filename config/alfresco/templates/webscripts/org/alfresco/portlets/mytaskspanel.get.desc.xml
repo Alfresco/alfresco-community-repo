@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>My Tasks Panel</shortname>
+  <description>Generate the Generate the inner panel for the My Tasks portlet page</description>
+  <url>/ui/mytaskspanel?f={filter?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

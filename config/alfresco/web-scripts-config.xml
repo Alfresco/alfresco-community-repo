@@ -1,0 +1,67 @@
+<!--                        -->
+<!--  Web API Configuration -->
+<!--                        -->
+
+<alfresco-config>
+
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="opensearch" class="org.alfresco.repo.web.scripts.config.OpenSearchElementReader"/>
+      </element-readers>
+   </plug-ins>
+   
+
+   <!--                                   -->
+   <!--  Configuration of Open Search API -->
+   <!--                                   -->
+
+   <config evaluator="string-compare" condition="OpenSearch">
+      <opensearch>
+      
+         <engines>
+         
+            <!--                            -->
+            <!--  Local Alfresco Repository -->
+            <!--                            -->
+         
+            <engine label-id="current_repo" label="Alfresco Keyword Search">
+               <url type="application/opensearchdescription+xml">
+                  /api/search/keyword/description.xml
+               </url>
+               <url type="application/atom+xml">
+                  /api/search/keyword.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+               <url type="application/rss+xml">
+                  /api/search/keyword.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+               <url type="text/html">
+                  /api/search/keyword?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+            </engine>
+
+            <engine label-id="current_repo_people" label="Alfresco Person Search">
+               <url type="application/opensearchdescription+xml">
+                  /api/search/person/description.xml
+               </url>
+               <url type="application/atom+xml">
+                  /api/search/person.atom?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+               <url type="application/rss+xml">
+                  /api/search/person.rss?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+               <url type="text/html">
+                  /api/search/person?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}&amp;guest={alf:guest?}
+               </url>
+            </engine>
+
+         </engines>
+         
+         <proxy>
+            <!--  URL of Search Engine proxy -->
+            <url>/api/search/engine</url>
+         </proxy>
+         
+      </opensearch>
+   </config>
+   
+</alfresco-config>

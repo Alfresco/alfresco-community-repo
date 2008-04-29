@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Forum Summary</shortname>
+  <description>Collaboration Forum Summary</description>
+  <url>/collaboration/forumSummary?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

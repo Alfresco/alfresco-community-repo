@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Search Engines</shortname>
+  <description>Lists "search engines" registered with this Alfresco Repository</description>
+  <url>/api/search/engines?type={type?}</url>
+  <url>/search/engines?type={type?}</url>
+  <url>/api/search/engines.atom?type={type?}</url>
+  <url>/search/engines.atom?type={type?}</url>
+</webscript>

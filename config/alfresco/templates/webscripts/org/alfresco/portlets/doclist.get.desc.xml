@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Document List</shortname>
+  <description>Generate the Document list portlet page</description>
+  <url>/ui/doclist?f={filter?}&amp;p={path?}&amp;q={query?}</url>
+  <url>/ui/doclist.atom?f={filter?}&amp;p={path?}&amp;q={query?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

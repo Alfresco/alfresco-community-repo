@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Login</shortname>
+  <description>Establish a ticket</description>
+  <url>/api/login?u={username}&amp;pw={password?}</url>
+  <format default="xml"/>
+  <authentication>none</authentication>
+  <transaction>required</transaction>
+</webscript>

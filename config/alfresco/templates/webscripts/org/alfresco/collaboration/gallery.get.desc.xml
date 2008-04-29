@@ -1,0 +1,14 @@
+<webscript>
+	
+	<!-- Details of the web script -->
+	<shortname>Gallery Sample Data</shortname>
+  	<description>Returns data used to populate the Flex gallery sample.</description>
+   	
+   	<!-- Web script URL's -->
+   	<url>/collaboration/gallery/{noderef}</url>
+   
+   	<format default="xml">extension</format>
+   	<authentication>user</authentication>
+   	<transaction>required</transaction>
+   	
+</webscript>

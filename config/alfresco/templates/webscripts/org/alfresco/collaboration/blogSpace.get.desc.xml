@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Blog Custom View</shortname>
+  <description>Collaboration Blog Space view</description>
+  <url>/collaboration/blogSpace?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

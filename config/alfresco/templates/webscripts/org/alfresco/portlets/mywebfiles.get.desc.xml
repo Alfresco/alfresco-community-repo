@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>My Web Modified Files</shortname>
+  <description>Generate the My Web Modified Files portlet page</description>
+  <url>/ui/mywebfiles</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

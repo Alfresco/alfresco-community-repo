@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>My Tasks (Office Add-In)</shortname>
+  <description>Generate the Office Add-In My Tasks page</description>
+  <url>/office/myTasks?p={path}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

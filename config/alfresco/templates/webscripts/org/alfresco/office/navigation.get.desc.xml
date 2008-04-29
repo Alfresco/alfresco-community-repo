@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Navigation (Office Add-In)</shortname>
+  <description>Generate the Office Add-In Navigation page</description>
+  <url>/office/navigation?p={path?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

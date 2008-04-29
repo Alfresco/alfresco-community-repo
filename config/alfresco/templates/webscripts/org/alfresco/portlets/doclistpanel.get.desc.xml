@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Document List Panel</shortname>
+  <description>Generate the inner panel for the Document List portlet page</description>
+  <url>/ui/doclistpanel?f={filter}&amp;p={path}&amp;h={home};q={query?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

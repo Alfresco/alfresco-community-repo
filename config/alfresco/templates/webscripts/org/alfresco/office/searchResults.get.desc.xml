@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Search Results (Office Add-In)</shortname>
+  <description>Generate the Office Add-In Search Results page</description>
+  <url>/office/searchResults?search={searchString?}&amp;maxresults={maxresults?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

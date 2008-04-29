@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Colleague Presence Custom View</shortname>
+  <description>Collaboration Colleague Presence view</description>
+  <url>/collaboration/colleaguePresence?nodeRef={noderef}</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

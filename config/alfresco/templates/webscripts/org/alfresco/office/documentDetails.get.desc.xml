@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Document Details (Office Add-In)</shortname>
+  <description>Generate the Office Add-In Document Details page</description>
+  <url>/office/documentDetails?p={path?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

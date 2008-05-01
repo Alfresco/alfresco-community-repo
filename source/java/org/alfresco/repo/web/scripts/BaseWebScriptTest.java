@@ -72,10 +72,26 @@ public abstract class BaseWebScriptTest extends TestCase
     }
     
     /**
+     * "DELETE" the url and check for the expected status code
+     * 
+     * @param url
+     * @param expectedStatus
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse deleteRequest(String url, int expectedStatus)
+        throws IOException
+    {
+        return sendRequest(METHOD_DELETE, url, expectedStatus, null, null);
+    }
+    
+    /**
      * "POST" the url and check for the expected status code
      * 
      * @param url
      * @param expectedStatus
+     * @param body
+     * @param contentType
      * @return
      * @throws IOException
      */
@@ -83,6 +99,22 @@ public abstract class BaseWebScriptTest extends TestCase
         throws IOException
     {
         return sendRequest(METHOD_POST, url, expectedStatus, body, contentType);
+    }
+    
+    /**
+     * "PUT" the url and check for the expected status code
+     * 
+     * @param url
+     * @param expectedStatus
+     * @param body
+     * @param contentType
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse putRequest(String url, int expectedStatus, String body, String contentType)
+        throws IOException
+    {
+        return sendRequest(METHOD_PUT, url, expectedStatus, body, contentType);
     }
     
     /**

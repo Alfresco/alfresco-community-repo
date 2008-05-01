@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Site</shortname>
+  <description>Get the details of a site.</description>
+  <url>/api/site/{shortname}</url>
+  <format default="json"/>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+</webscript>

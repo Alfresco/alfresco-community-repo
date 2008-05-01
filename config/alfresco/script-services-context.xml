@@ -59,6 +59,12 @@
         </property>
     </bean>
     
+    <bean id="testScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ScriptTestUtils">
+        <property name="extensionName">
+            <value>test</value>
+        </property>
+    </bean>
+    
     <bean id="actionsScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Actions">
         <property name="extensionName">
             <value>actions</value>

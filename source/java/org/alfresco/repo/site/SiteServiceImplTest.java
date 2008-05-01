@@ -27,6 +27,7 @@ package org.alfresco.repo.site;
 import java.util.HashMap;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -129,16 +130,78 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
     }
     
+    public void testGetSite()
+    {
+        // Get a site that isn't there
+        SiteInfo siteInfo = this.siteService.getSite("testGetSite");
+        assertNull(siteInfo);
+        
+        // Create a test site
+        this.siteService.createSite(TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, true);
+        
+        // Get the test site
+        siteInfo = this.siteService.getSite("testGetSite");
+        assertNotNull(siteInfo);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, true); 
+    }
+    
+    public void testUpdateSite()
+    {
+        SiteInfo siteInfo = new SiteInfo(TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", false);
+        
+        // update a site that isn't there
+        try
+        {
+            this.siteService.updateSite(siteInfo);
+            fail("Shouldn't be able to update a site that does not exist");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
+        
+        // Create a test site
+        this.siteService.createSite(TEST_SITE_PRESET, "testUpdateSite", TEST_TITLE, TEST_DESCRIPTION, true);
+        
+        // Update the details of the site
+        this.siteService.updateSite(siteInfo);
+        siteInfo = this.siteService.getSite("testUpdateSite");
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", false); 
+        
+        // Update the permission again
+        siteInfo.setIsPublic(true);
+        this.siteService.updateSite(siteInfo);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", true);         
+    }
+    
+    public void testDeleteSite()
+    {
+        // delete a site that isn't there
+        try
+        {
+            this.siteService.deleteSite("testDeleteSite");
+            fail("Shouldn't be able to delete a site that does not exist");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
+        
+        // Create a test site
+        this.siteService.createSite(TEST_SITE_PRESET, "testUpdateSite", TEST_TITLE, TEST_DESCRIPTION, true);
+        assertNotNull(this.siteService.getSite("testUpdateSite"));
+        
+        // Delete the site
+        this.siteService.deleteSite("testUpdateSite");
+        assertNull(this.siteService.getSite("testUpdateSite"));
+    }
+        
+    // == Test the JavaScript API ==
+    
     public void testJSAPI() throws Exception
     {
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_siteService.js");
-        String result = (String)this.scriptService.executeScript(location, new HashMap<String, Object>(0));
-        
-        // Check the result and fail if message returned
-        if (result != null && result.length() != 0)
-        {
-            fail("The site service text JS script failed: " + result);
-        }
+        this.scriptService.executeScript(location, new HashMap<String, Object>(0));
     }
 
 }

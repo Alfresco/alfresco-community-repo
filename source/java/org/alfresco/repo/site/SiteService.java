@@ -33,4 +33,10 @@ public interface SiteService
      */
     // TODO audit information
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
+    
+    SiteInfo getSite(String shortName);
+    
+    void updateSite(SiteInfo siteInfo);
+    
+    void deleteSite(String shortName);
 }

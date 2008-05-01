@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -47,6 +48,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationEvent;
 
@@ -105,28 +107,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     public SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
     {
-        // TODO:
-        // 1.  Check that the site preset exists
-        // 2.  Check that the short name of the site isn't a duplicate
-        // 3.  AVM create:
-        //     3a.   Find the site preset AVM folder
-        //     3b.   Create a new site folder in the correct location (named by the short name)
-        //     3c.   Copy the contents of the site preset folder into the new site folder
-        //     3d.   Mangle files as needed during copy ??
-        // 4.  DM create:
-        //     4a.   Find the site preset DM folder ??
-        //     4b.   Create a new site in the correct location (named by short name)
-        //     4c.   Set meta-data
-        //     4d.   Set up memberships (copying from site preset DM folder??)
-        //     4e.   Set up another details (rules) on site from DM preset folder ??
-        // 5. Return created site information
-        
-        
-        
-        // 4. DM create .. create the DM object that represents the site
+        /// TODO check for shortname duplicates
         
         // Get the site parent node reference
-        NodeRef siteParent = getDMSiteParent(shortName);
+        NodeRef siteParent = getSiteParent(shortName);
         
         // Create the site node
         PropertyMap properties = new PropertyMap(4);
@@ -148,32 +132,32 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
            this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
        }
         
-       // 5. Return created site information
+       // Return created site information
        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
        return siteInfo;
     }
     
-    private NodeRef getDMSiteParent(String shortName)
+    private NodeRef getSiteParent(String shortName)
     {
         // TODO
         // For now just return the site root, later we may build folder structure based on the shortname to
         // spread the sites about
-        return getDMSiteRoot();
+        return getSiteRoot();
     }
     
-    private NodeRef getDMSiteRoot()
+    private NodeRef getSiteRoot()
     {
         // Get the root 'sites' folder
         ResultSet resultSet = this.searchService.query(SITE_DM_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\"cm:sites\"");
         if (resultSet.length() == 0)
         {
             // TODO
-            throw new RuntimeException("No root sites folder exists");
+            throw new AlfrescoRuntimeException("No root sites folder exists");
         }
         else if (resultSet.length() != 1)
         {
             // TODO
-            throw new RuntimeException("More than one root sites folder exists");
+            throw new AlfrescoRuntimeException("More than one root sites folder exists");
         }        
         NodeRef sitesRoot = resultSet.getNodeRef(0);
         
@@ -188,12 +172,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // TODO 
         // - take into consideration the filters set
         // - take into consideration that the sites may not just be in a flat list under the site root
-        // - should we be taking the list from the AVM store, since we can have an AVM site pointing to
-        //   the default DM data site 
         
         // TODO
         // For now just return the list of sites present under the site root
-        NodeRef siteRoot = getDMSiteRoot();
+        NodeRef siteRoot = getSiteRoot();
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(siteRoot, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
@@ -214,6 +196,15 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         String description = (String)properties.get(ContentModel.PROP_DESCRIPTION);
         
         // Determine whether the space is public or not
+        boolean isPublic = isSitePublic(siteNodeRef);
+        
+        // Create and return the site information
+        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
+        return siteInfo;
+    }   
+    
+    private boolean isSitePublic(NodeRef siteNodeRef)
+    {
         boolean isPublic = false;
         Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
         for (AccessPermission permission : permissions)
@@ -225,10 +216,84 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 break;
             }                
         }
+        return isPublic;
+    }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteService#getSite(java.lang.String)
+     */
+    public SiteInfo getSite(String shortName)
+    {
+        SiteInfo result = null;
         
-        // Create and return the site information
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
-        return siteInfo;
+        // Get the site node
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef != null)
+        {
+            // Create the site info
+            result = createSiteInfo(siteNodeRef);
+        }
+        
+        // Return the site information
+        return result;
+    }
+    
+    private NodeRef getSiteNodeRef(String shortName)
+    {
+        NodeRef result = null;
+        ResultSet resultSet = this.searchService.query(SITE_DM_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\"cm:sites/cm:" + ISO9075.encode(shortName) + "\"");
+        if (resultSet.length() == 1)
+        {
+            result = resultSet.getNodeRef(0);
+        }
+        return result;
+    }
+
+    public void updateSite(SiteInfo siteInfo)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(siteInfo.getShortName());
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Can not update site " + siteInfo.getShortName() + " because it does not exist.");
+        }
+        
+        // Note: the site preset and short name can not be updated
+        
+        // Update the properties of the site
+        Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
+        properties.put(ContentModel.PROP_TITLE, siteInfo.getTitle());
+        properties.put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
+        this.nodeService.setProperties(siteNodeRef, properties);
+        
+        // Update the isPublic flag
+        boolean isPublic = isSitePublic(siteNodeRef);
+        if (isPublic != siteInfo.getIsPublic());
+        {
+            if (siteInfo.getIsPublic() == true)
+            {
+                // Add the permission
+                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+            }
+            else
+            {
+                // Remove the permission
+                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
+            }
+        }        
+    }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteService#deleteSite(java.lang.String)
+     */
+    public void deleteSite(String shortName)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Can not delete site " + shortName + " because it does not exist.");
+        }
+        
+        this.nodeService.deleteNode(siteNodeRef);        
     }
     
     /**

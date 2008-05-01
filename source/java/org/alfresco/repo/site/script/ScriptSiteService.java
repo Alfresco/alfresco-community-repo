@@ -67,7 +67,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     public Site createSite(String sitePreset, String shortName, String title, String descripion, boolean isPublic)
     {                
         SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, descripion, isPublic);
-        return new Site(siteInfo);
+        return new Site(this.siteService, siteInfo);
     }
     
     /**
@@ -86,8 +86,27 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
         for (SiteInfo siteInfo : siteInfos)
         {
-            sites.add(new Site(siteInfo));
+            sites.add(new Site(this.siteService, siteInfo));
         }
         return sites;
     }      
+    
+    /**
+     * Get a site for a provided site short name.
+     * <p>
+     * Returns null if the site does not exist.
+     * 
+     * @param shortName     short name of the site
+     * @return Site         the site, null if does not exist
+     */
+    public Site getSite(String shortName)
+    {
+        Site site = null;
+        SiteInfo siteInfo = this.siteService.getSite(shortName);
+        if (siteInfo != null)
+        {
+            site = new Site(this.siteService, siteInfo);
+        }
+        return site;
+    }
 }

@@ -26,13 +26,13 @@ package org.alfresco.repo.site;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -64,10 +63,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     private NodeService nodeService;
     private SearchService searchService;
-    private AuthenticationService authenticationService;
     private PermissionService permissionService;
     private AuthenticationComponent authenticationComponent;
-    private AVMRepository AVMRepository;
     private RetryingTransactionHelper retryingTransactionHelper;
     
     public void setNodeService(NodeService nodeService)
@@ -80,11 +77,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         this.searchService = searchService;
     }
     
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-    
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
@@ -93,11 +85,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
-    }
-    
-    public void setAVMRepository(AVMRepository repository)
-    {
-        AVMRepository = repository;
     }
     
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
@@ -126,11 +113,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 properties).getChildRef();
         
        // Set the memberhips details
+       //    - give all authorities read permissions if site is public
+       //    - give all authorities read permission on permissions so memberships can be calculated
+       //    - give current user role of site manager
        this.permissionService.setInheritParentPermissions(siteNodeRef, false);
        if (isPublic == true)
        {
            this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
        }
+       this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PERMISSIONS, true);
+       this.permissionService.setPermission(siteNodeRef, authenticationComponent.getCurrentUserName(), SiteModel.SITE_MANAGER, true);
         
        // Return created site information
        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
@@ -297,6 +289,83 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
     
     /**
+     * @see org.alfresco.repo.site.SiteService#listMembers(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+        
+        Map<String, String> members = new HashMap<String, String>(23);
+        Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+        for (AccessPermission permission : permissions)
+        {
+            String authority = permission.getAuthority();      
+            if (permission.getAuthority().startsWith(PermissionService.GROUP_PREFIX) == true)
+            {
+                // TODO .. collapse groups into users
+            }                
+            else
+            {
+                // CHeck to see if we already have an entry for the user in the map
+                if (members.containsKey(authority) == true)
+                {
+                    // TODO .. we need to resolve the permission in the map to the 'highest'
+                    //         for now do nothing as we shouldn't have more than on anyhow
+                }
+                else
+                {
+                    // Add the user and permission to the map
+                    members.put(authority, permission.getPermission());
+                }
+            }
+        }
+        
+        return members;
+    }
+
+    /**
+     * @see org.alfresco.repo.site.SiteService#removeMembership(java.lang.String, java.lang.String)
+     */
+    public void removeMembership(String shortName, String userName)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+     
+        // TODO what do we do about the user if they are in a group that has rights to the site?        
+        // TODO do not remove the only site manager
+        
+        // Clear the permissions for the user 
+        this.permissionService.clearPermission(siteNodeRef, userName);        
+    }
+
+    /**
+     * @see org.alfresco.repo.site.SiteService#setMembership(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void setMembership(String shortName, String userName, String role)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+        
+        // TODO if this is the only site manager do not downgrade their permissions
+        
+        // Clear any existing permissions
+        this.permissionService.clearPermission(siteNodeRef, userName);
+        
+        // Set the permissions
+        this.permissionService.setPermission(siteNodeRef, userName, role, true);
+    }
+    
+    /**
      * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
@@ -356,10 +425,15 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             NodeRef rootNode = this.nodeService.getRootNode(storeRef);
             
             // Create the root folder where sites will be stored
-            this.nodeService.createNode(rootNode, 
+            NodeRef rootStoreNode = this.nodeService.createNode(rootNode, 
                                         ContentModel.ASSOC_CHILDREN, 
                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sites"), 
-                                        ContentModel.TYPE_FOLDER);
+                                        ContentModel.TYPE_FOLDER).getChildRef();
+            
+            // Set the permissions for the root store node
+            this.permissionService.setInheritParentPermissions(rootStoreNode, false);
+            this.permissionService.setPermission(rootStoreNode, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+            this.permissionService.setPermission(rootStoreNode, PermissionService.ALL_AUTHORITIES, PermissionService.CREATE_CHILDREN, true);
         }
     }
 }

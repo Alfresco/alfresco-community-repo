@@ -25,15 +25,22 @@
 package org.alfresco.repo.site.script;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
+import org.jgroups.util.GetNetworkInterfaces1_4;
+import org.mozilla.javascript.ScriptableObject;
 
 /**
+ * Site JavaScript object
+ * 
  * @author Roy Wetherall
  */
 public class Site implements Serializable
 {
+    /** Serializable serial verion UID */
     private static final long serialVersionUID = 8013569574120957923L;
  
     /** Site information */
@@ -163,5 +170,54 @@ public class Site implements Serializable
     {
         // Delete the site
         this.siteService.deleteSite(this.siteInfo.getShortName());
+    }
+    
+    /**
+     * Gets a map of members of the site with their role within the site.  This list can
+     * be filtered by name and/or role.
+     * <p>
+     * If no name or role filter is specified all members of the site are listed. 
+     * 
+     * @param nameFilter                            user name filter
+     * @param roleFilter                            user role filter
+     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     */
+    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter)
+    {
+        Map<String, String> sites =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter);
+        
+        ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
+        result.putAll(sites);
+        
+        return result;
+    }
+    
+    /**
+     * Sets the membership details for a user.
+     * <p>
+     * If the user is not already a member of the site then they are added with the role
+     * given.  If the user is already a member of the site then their role is updated to the new role.
+     * <p>
+     * Only a site manager can modify memberships and there must be at least one site manager at
+     * all times.
+     * 
+     * @param userName  user name
+     * @param role      site role
+     */
+    public void setMembership(String userName, String role)
+    {
+        this.siteService.setMembership(getShortName(), userName, role);
+    }
+    
+    /**
+     * Removes a users membership of the site.
+     * <p>
+     * Only a site manager can remove a user's membership and the last site manager can not be removed.
+     * 
+     * @param userName  user name
+     */
+    public void removeMembership(String userName)
+    {
+        this.siteService.removeMembership(getShortName(), userName);
     }
 }

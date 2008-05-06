@@ -1,6 +1,7 @@
 package org.alfresco.repo.site;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Site service fundamental API.
@@ -39,4 +40,14 @@ public interface SiteService
     void updateSite(SiteInfo siteInfo);
     
     void deleteSite(String shortName);
+    
+    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter);
+    
+    void setMembership(String shortName, String userName, String role);
+    
+    void removeMembership(String shortName, String userName);
+    
+    
+    
+    
 }

@@ -32,6 +32,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
  */
 public class ScriptTestUtils extends BaseScopableProcessorExtension
 {    
+    public void assertEquals(Object expected, Object value)
+    {
+        assertEquals(expected, value, null);
+    }
+    
     public void assertEquals(Object expected, Object value, String message)
     {
         if (expected.equals(value) == false)
@@ -42,6 +47,11 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
             }
             throw new AlfrescoRuntimeException(message);
         }
+    }
+    
+    public void assertNotNull(Object value)
+    {
+        assertNotNull(value, null);
     }
     
     public void assertNotNull(Object value, String message)
@@ -56,6 +66,11 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
         }
     }
     
+    public void assertNull(Object value)
+    {
+        assertNull(value, null);
+    }
+            
     public void assertNull(Object value, String message)
     {
         if (value != null)
@@ -68,6 +83,11 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
         }
     }
     
+    public void assertTrue(boolean value)
+    {
+        assertTrue(value, null);
+    }            
+            
     public void assertTrue(boolean value, String message)
     {
         if (value == false)
@@ -78,6 +98,11 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
             }
             throw new AlfrescoRuntimeException(message);
         }
+    }
+    
+    public void assertFalse(boolean value)
+    {
+        assertFalse(value, null);
     }
     
     public void assertFalse(boolean value, String message)

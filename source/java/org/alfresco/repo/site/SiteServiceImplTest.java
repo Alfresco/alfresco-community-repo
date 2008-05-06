@@ -26,12 +26,15 @@ package org.alfresco.repo.site;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.TestWithUserUtils;
 
 /**
  * Thumbnail service implementation unit test
@@ -45,9 +48,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String TEST_TITLE = "This is my title";
     private static final String TEST_DESCRIPTION = "This is my description";
     
-    private SiteService siteService;
+    private static final String USER_ONE = "UserOne";
+    private static final String USER_TWO = "UserTwo";
+    private static final String USER_THREE = "UserThree";
     
+    private SiteService siteService;    
     private ScriptService scriptService;
+    private AuthenticationComponent authenticationComponent;
     
     /**
      * Called during the transaction setup
@@ -59,6 +66,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.siteService = (SiteService)this.applicationContext.getBean("siteService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
+        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        
+        // Do the test's as userOne
+        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
     }
 	
     public void testCreateSite() throws Exception
@@ -194,6 +205,133 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Delete the site
         this.siteService.deleteSite("testUpdateSite");
         assertNull(this.siteService.getSite("testUpdateSite"));
+    }
+    
+    public void testIsPublic()
+    {
+        // Create a couple of sites as user one
+        this.siteService.createSite(TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, true);
+        this.siteService.createSite(TEST_SITE_PRESET, "isPublicFalse", TEST_TITLE, TEST_DESCRIPTION, false);
+        
+        // Get the sites as user one
+        List<SiteInfo> sites = this.siteService.listSites(null, null);
+        assertNotNull(sites);
+        assertEquals(2, sites.size());
+        
+        // Now get the sites as user two
+        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        sites = this.siteService.listSites(null, null);
+        assertNotNull(sites);
+        assertEquals(1, sites.size());
+        checkSiteInfo(sites.get(0), TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, true);
+        
+        // Make user 2 a member of the site
+        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        this.siteService.setMembership("isPublicFalse", USER_TWO, SiteModel.SITE_CONSUMER);
+        
+        // Now get the sites as user two
+        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        sites = this.siteService.listSites(null, null);
+        assertNotNull(sites);
+        assertEquals(2, sites.size());
+    }
+    
+    public void testMembership()
+    {
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, false);
+        
+        // Get the members of the site and check that user one is a manager
+        Map<String, String> members = this.siteService.listMembers("testMembership", null, null);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+     
+        // Add user two as a consumer and user three as a collaborator
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_CONSUMER);
+        this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
+        
+        // Get the members of the site
+        members = this.siteService.listMembers("testMembership", null, null);
+        assertNotNull(members);
+        assertEquals(3, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        
+        // Change the membership of user two
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+        
+        // Check the members of the site
+        members = this.siteService.listMembers("testMembership", null, null);
+        assertNotNull(members);
+        assertEquals(3, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_TWO));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        
+        // Remove user two's membership
+        this.siteService.removeMembership("testMembership", USER_TWO);
+        
+        // Check the members of the site
+        members = this.siteService.listMembers("testMembership", null, null);
+        assertNotNull(members);
+        assertEquals(2, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        
+        // Check that a non-manager and non-member cannot edit the memberships
+        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+            fail("A non member shouldnt be able to set memberships");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // As expected
+        }
+        try
+        {
+            this.siteService.removeMembership("testMembership", USER_THREE);
+            fail("A non member shouldnt be able to remove a membership");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // As expected            
+        }
+        TestWithUserUtils.authenticateUser(USER_THREE, "PWD", this.authenticationService, this.authenticationComponent);
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+            fail("A member who isn't a manager shouldnt be able to set memberships");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // As expected
+        }
+        try
+        {
+            this.siteService.removeMembership("testMembership", USER_THREE);
+            fail("A member who isn't a manager shouldnt be able to remove a membership");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // As expected            
+        }
+        
+        // TODO .. try and change the permissions of the only site manager
+        
+        // TODO .. try and remove the only site manager and should get a failure
     }
         
     // == Test the JavaScript API ==

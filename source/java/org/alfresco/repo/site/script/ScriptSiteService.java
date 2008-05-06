@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
 
@@ -78,9 +79,9 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * 
      * @param nameFilter        name filter
      * @param sitePresetFilter  site preset filter
-     * @return List<Site>       a list of the site filtered as appropriate             
+     * @return Site[]           a list of the site filtered as appropriate             
      */
-    public List<Site> listSites(String nameFilter, String sitePresetFilter)
+    public Site[] listSites(String nameFilter, String sitePresetFilter)
     {
         List<SiteInfo> siteInfos = this.siteService.listSites(nameFilter, sitePresetFilter);
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
@@ -88,7 +89,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         {
             sites.add(new Site(this.siteService, siteInfo));
         }
-        return sites;
+        return (Site[])sites.toArray(new Site[sites.size()]);
     }      
     
     /**

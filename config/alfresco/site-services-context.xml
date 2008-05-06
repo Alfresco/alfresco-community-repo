@@ -19,11 +19,9 @@
     <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl">
        <property name="nodeService" ref="NodeService"/>
        <property name="searchService" ref="SearchService"/>
-       <property name="authenticationService" ref="AuthenticationService"/>
        <property name="permissionService" ref="PermissionService" />
        <property name="authenticationComponent" ref="authenticationComponent"/>              
        <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
-       <property name="AVMRepository" ref="avmRepository"/>      
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

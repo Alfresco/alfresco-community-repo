@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public abstract class TestWithUserUtils extends BaseSpringTest
+public abstract class TestWithUserUtils 
 {
     /**
      * Create a new user, including the corresponding person node.

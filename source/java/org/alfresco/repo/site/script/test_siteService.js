@@ -1,11 +1,11 @@
 function checkSite(site, sitePreset, shortName, title, description, isPublic)
 {
-	test.assertNotNull(site, "Site should not be null");
-	test.assertEquals(sitePreset, site.sitePreset, "Site preset incorrect for site " + shortName);
-	test.assertEquals(shortName, site.shortName, "Site shortname incorrect");
-	test.assertEquals(title, site.title, "Site title incorrect for site " + shortName);
-	test.assertEquals(description, site.description, "Site description incorrect for site " + shortName);
-	test.assertEquals(isPublic, site.isPublic, "Site ispublic incorrect for site " + shortName);
+	test.assertNotNull(site);
+	test.assertEquals(sitePreset, site.sitePreset);
+	test.assertEquals(shortName, site.shortName);
+	test.assertEquals(title, site.title);
+	test.assertEquals(description, site.description);
+	test.assertEquals(isPublic, site.isPublic);
 }
 
 function testCRUD()
@@ -39,9 +39,46 @@ function testCRUD()
 
 function testListSites()
 {
-	// TODO
+	// Create a couple of sites
+	siteService.createSite("sitePreset", "siteShortName", "siteTitle", "siteDescription", true);
+	siteService.createSite("sitePreset", "siteShortName2", "siteTitle", "siteDescription", true);
+	
+	// List all the site
+	var sites = siteService.listSites(null, null);
+	
+	// Check the list
+	test.assertNotNull(sites);
+	test.assertEquals(2, sites.length);
+	
+	// TODO .. check the filters
+}
+
+function testMembership()
+{
+	var site = siteService.getSite("siteShortName");
+	test.assertNotNull(site);
+	
+	var members = site.listMembers(null, null);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne"]);
+	
+	site.setMembership("UserTwo", "SiteCollaborator");
+	members = site.listMembers(null, null);
+	test.assertNotNull(members);
+	test.assertEquals(2, members.length);
+	test.assertEquals("SiteManager", members["UserOne"]);
+	test.assertEquals("SiteCollaborator", members["UserTwo"]);
+	
+	site.removeMembership("UserTwo");
+	members = site.listMembers(null, null);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne"]);
+	
 }
 
 // Execute test's
 testCRUD();
 testListSites();
+testMembership();

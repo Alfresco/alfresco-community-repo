@@ -129,7 +129,7 @@ public abstract class BaseWebScriptTest extends TestCase
         throws IOException
     {
         MockHttpServletResponse response = BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);
-        if (expectedStatus != response.getStatus())
+        if (expectedStatus > 0 && expectedStatus != response.getStatus())
         {
             if (response.getStatus() == 500)
             {

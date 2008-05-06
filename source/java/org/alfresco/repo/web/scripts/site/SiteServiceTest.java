@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.web.scripts.site;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
@@ -39,6 +42,23 @@ public class SiteServiceTest extends BaseWebScriptTest
 {    
     private static final String URL_SITES = "/api/sites";
     private static final String URL_SITE = "/api/site/";
+    
+    private List<String> createdSites = new ArrayList<String>(5);
+    
+    @Override
+    protected void tearDown() throws Exception
+    {
+        super.tearDown();
+        
+        // Tidy-up any site's create during the execution of the test
+        for (String shortName : this.createdSites)
+        {
+            deleteRequest(URL_SITE + shortName, 0);
+        }
+        
+        // Clear the list
+        this.createdSites.clear();
+    }
     
     public void testCreateSite() throws Exception
     {
@@ -65,7 +85,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         site.put("title", title);
         site.put("description", description);
         site.put("isPublic", isPublic);                
-        MockHttpServletResponse response = postRequest(URL_SITES, expectedStatus, site.toString(), "application/json");        
+        MockHttpServletResponse response = postRequest(URL_SITES, expectedStatus, site.toString(), "application/json"); 
+        this.createdSites.add(shortName);
         return new JSONObject(response.getContentAsString());
     }
     

@@ -318,7 +318,7 @@
       <servlet-class>org.alfresco.web.scripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
-         <param-value>webscripts.authenticator.jsr168.webclient</param-value>
+         <param-value>webscripts.authenticator.webclient</param-value>
       </init-param>
    </servlet>
 

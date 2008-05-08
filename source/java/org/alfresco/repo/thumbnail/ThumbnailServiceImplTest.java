@@ -83,164 +83,176 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 	
     public void testCreateThumbnailFromImage() throws Exception
     {
-        NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        NodeRef gifOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_GIF);
-        
-        // ===== small: 64x64, marked as thumbnail ====
-        
-        ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
-        imageResizeOptions.setWidth(64);
-        imageResizeOptions.setHeight(64);     
-        imageResizeOptions.setResizeToThumbnail(true);
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-        CreateOptions createOptions = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions,
-                                                    "small");        
-        NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
-        assertNotNull(thumbnail1);
-        checkThumbnailed(jpgOrig, "small");
-        checkThumbnail(thumbnail1, imageTransformationOptions);
-        outputThumbnailTempContentLocation(thumbnail1, "jpg", "small - 64x64, marked as thumbnail");
-        
-        // ===== small2: 64x64, aspect not maintained ====
-        
-        ImageResizeOptions imageResizeOptions2 = new ImageResizeOptions();
-        imageResizeOptions2.setWidth(64);
-        imageResizeOptions2.setHeight(64);   
-        imageResizeOptions2.setMaintainAspectRatio(false);
-        ImageTransformationOptions imageTransformationOptions2 = new ImageTransformationOptions();
-        imageTransformationOptions2.setResizeOptions(imageResizeOptions2);        
-        CreateOptions createOptions2 = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions2,
-                                                    "small2");  
-        NodeRef thumbnail2 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions2);
-        checkThumbnailed(jpgOrig, "small2");
-        checkThumbnail(thumbnail2, imageTransformationOptions2);
-        outputThumbnailTempContentLocation(thumbnail2, "jpg", "small2 - 64x64, aspect not maintained");
-        
-        // ===== half: 50%x50  =====
-        
-        ImageResizeOptions imageResizeOptions3 = new ImageResizeOptions();
-        imageResizeOptions3.setWidth(50);
-        imageResizeOptions3.setHeight(50);   
-        imageResizeOptions3.setPercentResize(true);
-        ImageTransformationOptions imageTransformationOptions3 = new ImageTransformationOptions();
-        imageTransformationOptions3.setResizeOptions(imageResizeOptions3);        
-        CreateOptions createOptions3 = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions3,
-                                                    "half");  
-        NodeRef thumbnail3 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions3);
-        checkThumbnailed(jpgOrig, "half");
-        checkThumbnail(thumbnail3, imageTransformationOptions3);
-        outputThumbnailTempContentLocation(thumbnail3, "jpg", "half - 50%x50%");
-        
-        
-        // ===== half2: 50%x50 from gif  =====
-        
-        ImageResizeOptions imageResizeOptions4 = new ImageResizeOptions();
-        imageResizeOptions4.setWidth(50);
-        imageResizeOptions4.setHeight(50);   
-        imageResizeOptions4.setPercentResize(true);
-        ImageTransformationOptions imageTransformationOptions4 = new ImageTransformationOptions();
-        imageTransformationOptions4.setResizeOptions(imageResizeOptions4);        
-        CreateOptions createOptions4 = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions4,
-                                                    "half2");  
-        NodeRef thumbnail4 = this.thumbnailService.createThumbnail(gifOrig, ContentModel.PROP_CONTENT, createOptions4);
-        checkThumbnailed(gifOrig, "half2");
-        checkThumbnail(thumbnail4, imageTransformationOptions4);
-        outputThumbnailTempContentLocation(thumbnail4, "jpg", "half2 - 50%x50%, from gif");
-        
+        // Check that the image transformations are available
+        if (this.contentService.getImageTransformer() != null)
+        {       
+            NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            NodeRef gifOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_GIF);
+            
+            // ===== small: 64x64, marked as thumbnail ====
+            
+            ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
+            imageResizeOptions.setWidth(64);
+            imageResizeOptions.setHeight(64);     
+            imageResizeOptions.setResizeToThumbnail(true);
+            ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
+            CreateOptions createOptions = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions,
+                                                        "small");     
+            
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
+            assertNotNull(thumbnail1);
+            checkThumbnailed(jpgOrig, "small");
+            checkThumbnail(thumbnail1, imageTransformationOptions);
+            outputThumbnailTempContentLocation(thumbnail1, "jpg", "small - 64x64, marked as thumbnail");
+            
+            // ===== small2: 64x64, aspect not maintained ====
+            
+            ImageResizeOptions imageResizeOptions2 = new ImageResizeOptions();
+            imageResizeOptions2.setWidth(64);
+            imageResizeOptions2.setHeight(64);   
+            imageResizeOptions2.setMaintainAspectRatio(false);
+            ImageTransformationOptions imageTransformationOptions2 = new ImageTransformationOptions();
+            imageTransformationOptions2.setResizeOptions(imageResizeOptions2);        
+            CreateOptions createOptions2 = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions2,
+                                                        "small2");  
+            NodeRef thumbnail2 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions2);
+            checkThumbnailed(jpgOrig, "small2");
+            checkThumbnail(thumbnail2, imageTransformationOptions2);
+            outputThumbnailTempContentLocation(thumbnail2, "jpg", "small2 - 64x64, aspect not maintained");
+            
+            // ===== half: 50%x50  =====
+            
+            ImageResizeOptions imageResizeOptions3 = new ImageResizeOptions();
+            imageResizeOptions3.setWidth(50);
+            imageResizeOptions3.setHeight(50);   
+            imageResizeOptions3.setPercentResize(true);
+            ImageTransformationOptions imageTransformationOptions3 = new ImageTransformationOptions();
+            imageTransformationOptions3.setResizeOptions(imageResizeOptions3);        
+            CreateOptions createOptions3 = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions3,
+                                                        "half");  
+            NodeRef thumbnail3 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions3);
+            checkThumbnailed(jpgOrig, "half");
+            checkThumbnail(thumbnail3, imageTransformationOptions3);
+            outputThumbnailTempContentLocation(thumbnail3, "jpg", "half - 50%x50%");
+            
+            
+            // ===== half2: 50%x50 from gif  =====
+            
+            ImageResizeOptions imageResizeOptions4 = new ImageResizeOptions();
+            imageResizeOptions4.setWidth(50);
+            imageResizeOptions4.setHeight(50);   
+            imageResizeOptions4.setPercentResize(true);
+            ImageTransformationOptions imageTransformationOptions4 = new ImageTransformationOptions();
+            imageTransformationOptions4.setResizeOptions(imageResizeOptions4);        
+            CreateOptions createOptions4 = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions4,
+                                                        "half2");  
+            NodeRef thumbnail4 = this.thumbnailService.createThumbnail(gifOrig, ContentModel.PROP_CONTENT, createOptions4);
+            checkThumbnailed(gifOrig, "half2");
+            checkThumbnail(thumbnail4, imageTransformationOptions4);
+            outputThumbnailTempContentLocation(thumbnail4, "jpg", "half2 - 50%x50%, from gif");
+        }        
     }
     
     public void testDuplicationNames()
         throws Exception
     {
-        NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
-        imageResizeOptions.setWidth(64);
-        imageResizeOptions.setHeight(64);     
-        imageResizeOptions.setResizeToThumbnail(true);
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-        CreateOptions createOptions = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions,
-                                                    "small");        
-        NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
-        assertNotNull(thumbnail1);
-        checkThumbnailed(jpgOrig, "small");
-        checkThumbnail(thumbnail1, imageTransformationOptions);
-        
-        try
+        if (contentService.getImageTransformer() != null)
         {
-            this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
-            fail("A duplicate exception should have been raised");
-        }
-        catch (ThumbnailException exception)
-        {
-            // OK since this should have been thrown
+            NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
+            imageResizeOptions.setWidth(64);
+            imageResizeOptions.setHeight(64);     
+            imageResizeOptions.setResizeToThumbnail(true);
+            ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
+            CreateOptions createOptions = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions,
+                                                        "small");        
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
+            assertNotNull(thumbnail1);
+            checkThumbnailed(jpgOrig, "small");
+            checkThumbnail(thumbnail1, imageTransformationOptions);
+            
+            try
+            {
+                this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
+                fail("A duplicate exception should have been raised");
+            }
+            catch (ThumbnailException exception)
+            {
+                // OK since this should have been thrown
+            }
         }
     }
     
     public void testThumbnailUpdate() 
         throws Exception
     {
-        // First create a thumbnail
-        NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
-        imageResizeOptions.setWidth(64);
-        imageResizeOptions.setHeight(64);     
-        imageResizeOptions.setResizeToThumbnail(true);
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-        CreateOptions createOptions = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions,
-                                                    "small");        
-        NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
-        
-        // Update the thumbnail
-        this.thumbnailService.updateThumbnail(thumbnail1);
-        
+        if (contentService.getImageTransformer() != null)
+        {
+            // First create a thumbnail
+            NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
+            imageResizeOptions.setWidth(64);
+            imageResizeOptions.setHeight(64);     
+            imageResizeOptions.setResizeToThumbnail(true);
+            ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
+            CreateOptions createOptions = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions,
+                                                        "small");        
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
+            
+            // Update the thumbnail
+            this.thumbnailService.updateThumbnail(thumbnail1);
+        }
         
     }
     
     public void testGetThumbnailByName()
         throws Exception
     {
-        NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        
-        // Check for missing thumbnail
-        NodeRef result1 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");
-        assertNull("The thumbnail 'small' should have been missing", result1);
-        
-        // Create the thumbnail
-        ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
-        imageResizeOptions.setWidth(64);
-        imageResizeOptions.setHeight(64);     
-        imageResizeOptions.setResizeToThumbnail(true);
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-        CreateOptions createOptions = new CreateOptions(
-                                                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                    imageTransformationOptions,
-                                                    "small");        
-        this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);   
-        
-        // Try and retrieve the thumbnail
-        NodeRef result2 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");
-        assertNotNull(result2);
-        checkThumbnail(result2, imageTransformationOptions);
-        
-        // Check for an other thumbnail that doesn't exist
-        NodeRef result3 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "anotherone");
-        assertNull("The thumbnail 'anotherone' should have been missing", result3);
+        if (contentService.getImageTransformer() != null)
+        {
+            NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            
+            // Check for missing thumbnail
+            NodeRef result1 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");
+            assertNull("The thumbnail 'small' should have been missing", result1);
+            
+            // Create the thumbnail
+            ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
+            imageResizeOptions.setWidth(64);
+            imageResizeOptions.setHeight(64);     
+            imageResizeOptions.setResizeToThumbnail(true);
+            ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
+            CreateOptions createOptions = new CreateOptions(
+                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                        imageTransformationOptions,
+                                                        "small");        
+            this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);   
+            
+            // Try and retrieve the thumbnail
+            NodeRef result2 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");
+            assertNotNull(result2);
+            checkThumbnail(result2, imageTransformationOptions);
+            
+            // Check for an other thumbnail that doesn't exist
+            NodeRef result3 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "anotherone");
+            assertNull("The thumbnail 'anotherone' should have been missing", result3);
+        }
     }
     
     // TODO test getThumbnails

@@ -45,7 +45,7 @@
             <value>/app:company_home/app:dictionary/app:models</value>
         </property>
         <property name="queryLanguage">
-            <value>lucene</value>
+            <value>xpath</value>
         </property>   
    </bean>
 
@@ -55,7 +55,7 @@
             <value>/app:company_home/app:dictionary/app:messages</value>
         </property>
         <property name="queryLanguage">
-            <value>lucene</value>
+            <value>xpath</value>
         </property>
    </bean>  
     

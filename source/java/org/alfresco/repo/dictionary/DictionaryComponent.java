@@ -35,7 +35,6 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -199,12 +198,12 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         ClassDefinition classDef = getClass(className);
         if (classDef == null)
         {
-            throw new InvalidTypeException(className);
+            return false;
         }
         ClassDefinition ofClassDef = getClass(ofClassName);
         if (ofClassDef == null)
         {
-            throw new InvalidTypeException(ofClassName);
+            return false;
         }
         
         // Only check if both ends are either a type or an aspect

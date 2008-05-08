@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -236,28 +235,31 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     continue; // skip this location
                 }
     
-                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_LUCENE))
+                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
                 {
-                    ResultSet rs = searchService.query(storeRef,
-                                                       SearchService.LANGUAGE_LUCENE,
-                                                       repositoryLocation.getLuceneQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)));
-                    if (rs.length() > 0)
-                    {   
-                        for (NodeRef dictionaryModel : rs.getNodeRefs())
+                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+                    
+                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
+                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)),
+                                                                       null,
+                                                                       namespaceService,
+                                                                       false);
+                    
+                    for (NodeRef dictionaryModel : nodeRefs)
+                    {
+                        // Ignore if the node is a working copy or if its inactive
+                        if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
                         {
-                            // Ignore if the node is a working copy or if its inactive
-                            if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
+                            Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
+                            
+                            if ((isActive != null) && (isActive.booleanValue() == true))
                             {
-                                Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
-                                if ((isActive != null) && (isActive.booleanValue() == true))
+                                M2Model model = createM2Model(dictionaryModel);
+                                if (model != null)
                                 {
-                                    M2Model model = createM2Model(dictionaryModel);
-                                    if (model != null)
+                                    for (M2Namespace namespace : model.getNamespaces())
                                     {
-                                        for (M2Namespace namespace : model.getNamespaces())
-                                        {
-                                            modelMap.put(namespace.getUri(), model);
-                                        }
+                                        modelMap.put(namespace.getUri(), model);
                                     }
                                 }
                             }
@@ -287,7 +289,6 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             for (RepositoryLocation repositoryLocation : this.repositoryMessagesLocations)
             {                
                 StoreRef storeRef = repositoryLocation.getStoreRef();
-                String path = repositoryLocation.getPath();
                 
                 if (! nodeService.exists(storeRef))
                 {
@@ -295,34 +296,28 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     continue; // skip this location
                 }
                 
-                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_LUCENE))
+                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
                 {
-                    ResultSet rs = searchService.query(storeRef,
-                                                       SearchService.LANGUAGE_LUCENE,
-                                                       repositoryLocation.getLuceneQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)));
-                    if (rs.length() > 0)
-                    {   
-                        List<String> resourceBundleBaseNames = new ArrayList<String>();
-                        for (NodeRef messageResource : rs.getNodeRefs())
-                        {
-                            String resourceName = (String) nodeService.getProperty(
-                                    messageResource, ContentModel.PROP_NAME);
-                            
-                            String bundleBaseName = messageService.getBaseBundleName(resourceName);
-                            
-                            if (!resourceBundleBaseNames.contains(bundleBaseName))
-                            {
-                                resourceBundleBaseNames.add(bundleBaseName);
-                            }
-                        }
+                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+                    
+                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
+                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)),
+                                                                       null,
+                                                                       namespaceService,
+                                                                       false);
+                    
+                    List<String> resourceBundleBaseNames = new ArrayList<String>();
+                    
+                    for (NodeRef messageResource : nodeRefs)
+                    {
+                        String resourceName = (String) nodeService.getProperty(
+                                messageResource, ContentModel.PROP_NAME);
                         
-                        // Only need to register resource bundle names
-                        for (String resourceBundleBaseName : resourceBundleBaseNames)
+                        String bundleBaseName = messageService.getBaseBundleName(resourceName);
+                        
+                        if (!resourceBundleBaseNames.contains(bundleBaseName))
                         {
-                            logger.info("Register bundle: " + resourceBundleBaseName);
-                            
-                            messageService.registerResourceBundle(storeRef.toString() + path + "/cm:" + resourceBundleBaseName);
-                            
+                            resourceBundleBaseNames.add(bundleBaseName);
                         }
                     }
                 }

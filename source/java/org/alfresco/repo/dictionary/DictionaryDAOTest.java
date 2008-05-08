@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -311,19 +310,15 @@ public class DictionaryDAOTest extends TestCase
         QName referenceable = QName.createQName(TEST_URL, "referenceable");
 
         // Test invalid args
-        try
-        {
-            service.isSubClass(invalid, referenceable);
-            fail("Failed to catch invalid class parameter");
-        }
-        catch(InvalidTypeException e) {}
-
-        try
-        {
-            service.isSubClass(referenceable, invalid);
-            fail("Failed to catch invalid class parameter");
-        }
-        catch(InvalidTypeException e) {}
+        boolean testI1 = service.isSubClass(invalid, referenceable);
+        
+        assertFalse(testI1);
+        
+        boolean testI2 = service.isSubClass(referenceable, invalid);
+        assertFalse(testI2);
+        
+        boolean testI3 = service.isSubClass(invalid, invalid);
+        assertFalse(testI3);
 
         // Test various flavours of subclassof
         boolean test1 = service.isSubClass(file, referenceable);  // type vs aspect

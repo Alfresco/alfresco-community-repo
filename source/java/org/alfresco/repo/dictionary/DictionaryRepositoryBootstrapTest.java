@@ -110,7 +110,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());
         location.setStoreId(this.storeRef.getIdentifier());
-        location.setQueryLanguage(SearchService.LANGUAGE_LUCENE);
+        location.setQueryLanguage(SearchService.LANGUAGE_XPATH);
         // NOTE: we are not setting the path for now .. in doing so we are searching the whole dictionary
         
         List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();

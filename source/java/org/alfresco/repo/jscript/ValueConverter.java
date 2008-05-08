@@ -173,22 +173,38 @@ public class ValueConverter
                 {
                     // convert JavaScript array of values to a List of Serializable objects
                     Object[] propIds = values.getIds();
-                    List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
-                    for (int i=0; i<propIds.length; i++)
-                    {
-                        // work on each key in turn
-                        Object propId = propIds[i];
-                        
-                        // we are only interested in keys that indicate a list of values
-                        if (propId instanceof Integer)
+                    if (isArray(propIds) == true)
+                    {                    
+                        List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+                        for (int i=0; i<propIds.length; i++)
                         {
-                            // get the value out for the specified key
-                            Serializable val = (Serializable)values.get((Integer)propId, values);
-                            // recursively call this method to convert the value
-                            propValues.add(convertValueForRepo(val));
+                            // work on each key in turn
+                            Object propId = propIds[i];
+                            
+                            // we are only interested in keys that indicate a list of values
+                            if (propId instanceof Integer)
+                            {
+                                // get the value out for the specified key
+                                Serializable val = (Serializable)values.get((Integer)propId, values);
+                                // recursively call this method to convert the value
+                                propValues.add(convertValueForRepo(val));
+                            }
                         }
+
+                        value = (Serializable)propValues;
                     }
-                    value = (Serializable)propValues;
+                    else
+                    {
+                        Map<Serializable, Serializable> propValues = new HashMap<Serializable, Serializable>(propIds.length);
+                        for (Object propId : propIds)
+                        {
+                            // Get the value and add to the map
+                            Serializable val = (Serializable)values.get(propId.toString(), values);
+                            propValues.put(convertValueForRepo((Serializable)propId), convertValueForRepo(val));
+                        }
+                        
+                        value = (Serializable)propValues;
+                    }
                 }
                 else
                 {
@@ -225,6 +241,26 @@ public class ValueConverter
             value = list;
         }
         return value;
+    }
+    
+    /**
+     * Look at the id's of a native array and try to determine whether it's actually an Array or a Hashmap
+     * 
+     * @param ids       id's of the native array
+     * @return boolean  true if it's an array, false otherwise (ie it's a map)
+     */
+    private boolean isArray(Object[] ids)
+    {
+        boolean result = true;
+        for (Object id : ids)
+        {
+            if (id instanceof Integer == false)
+            {
+               result = false;
+               break;
+            }
+        }
+        return result;
     }
     
 }

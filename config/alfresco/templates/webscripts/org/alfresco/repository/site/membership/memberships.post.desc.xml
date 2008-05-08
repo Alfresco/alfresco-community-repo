@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Memberships</shortname>
+  <description>Adds a new membership to the site</description>
+  <url>/api/sites/{shortname}/memberships</url>
+  <format default="json"/>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+</webscript>

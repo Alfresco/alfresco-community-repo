@@ -27,8 +27,14 @@ package org.alfresco.repo.web.scripts.site;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -40,20 +46,64 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class SiteServiceTest extends BaseWebScriptTest
 {    
+    private AuthenticationService authenticationService;
+    private AuthenticationComponent authenticationComponent;
+    private PersonService personService;
+    
+    private static final String USER_ONE = "SiteTestOne";
+    private static final String USER_TWO = "SiteTestTwo";
+    private static final String USER_THREE = "SiteTestThree";
+    
     private static final String URL_SITES = "/api/sites";
-    private static final String URL_SITE = "/api/site/";
+    private static final String URL_MEMBERSHIPS = "/memberships";
     
     private List<String> createdSites = new ArrayList<String>(5);
+    
+    @Override
+    protected void setUp() throws Exception
+    {
+        super.setUp();
+        
+        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
+        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        
+        // Create users
+        createUser(USER_ONE);
+        createUser(USER_TWO);
+        createUser(USER_THREE);
+        
+        // Do tests as user one
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+    }
+    
+    private void createUser(String userName)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            this.personService.createPerson(ppOne);
+        }        
+    }
     
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
+        this.authenticationComponent.setCurrentUser("admin");
         
         // Tidy-up any site's create during the execution of the test
         for (String shortName : this.createdSites)
         {
-            deleteRequest(URL_SITE + shortName, 0);
+            deleteRequest(URL_SITES + "/" + shortName, 0);
         }
         
         // Clear the list
@@ -106,12 +156,12 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testGetSite() throws Exception
     {
         // Get a site that doesn't exist
-        MockHttpServletResponse response = getRequest(URL_SITE + "somerandomshortname", 404);
+        MockHttpServletResponse response = getRequest(URL_SITES + "/" + "somerandomshortname", 404);
         
         // Create a site and get it
         String shortName  = GUID.generate();
         JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
-        response = getRequest(URL_SITE + shortName, 200);
+        response = getRequest(URL_SITES + "/" + shortName, 200);
        
     }
     
@@ -125,14 +175,14 @@ public class SiteServiceTest extends BaseWebScriptTest
         result.put("title", "abs123abc");
         result.put("description", "123abc123");
         result.put("isPublic", false);
-        MockHttpServletResponse response = putRequest(URL_SITE + shortName, 200, result.toString(), "application/json");
+        MockHttpServletResponse response = putRequest(URL_SITES + "/" + shortName, 200, result.toString(), "application/json");
         result = new JSONObject(response.getContentAsString());
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
         assertFalse(result.getBoolean("isPublic"));
         
         // Try and get the site and double check it's changed
-        response = getRequest(URL_SITE + shortName, 200);
+        response = getRequest(URL_SITES + "/" + shortName, 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
@@ -142,20 +192,63 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testDeleteSite() throws Exception
     {
         // Delete non-existant site
-        MockHttpServletResponse response = deleteRequest(URL_SITE + "somerandomshortname", 404);
+        MockHttpServletResponse response = deleteRequest(URL_SITES + "/" + "somerandomshortname", 404);
         
         // Create a site
         String shortName  = GUID.generate();
         JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
         
         // Get the site
-        response = getRequest(URL_SITE + shortName, 200);
+        response = getRequest(URL_SITES + "/" + shortName, 200);
         
         // Delete the site
-        response = deleteRequest(URL_SITE + shortName, 200);
+        response = deleteRequest(URL_SITES + "/" + shortName, 200);
         
         // Get the site
-        response = getRequest(URL_SITE + shortName, 404);
+        response = getRequest(URL_SITES + "/" + shortName, 404);
     }
-
+    
+    public void testGetMemeberships() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        
+        // Check the memberships
+        MockHttpServletResponse response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200);
+        JSONArray result = new JSONArray(response.getContentAsString());        
+        assertNotNull(result);
+        assertEquals(1, result.length());
+        JSONObject membership = result.getJSONObject(0);
+        assertEquals(SiteModel.SITE_MANAGER, membership.get("role"));
+        assertEquals(USER_ONE, membership.getJSONObject("person").get("userName"));        
+    }
+    
+    public void testPostMemberships() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+        
+        // Post the memebership
+        MockHttpServletResponse response = postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // Check the result
+        assertEquals(SiteModel.SITE_CONSUMER, membership.get("role"));
+        assertEquals(USER_TWO, membership.getJSONObject("person").get("userName")); 
+        
+        // Get the membership list
+        response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200);   
+        JSONArray result2 = new JSONArray(response.getContentAsString());
+        assertNotNull(result2);
+        assertEquals(2, result2.length());
+    }
 }

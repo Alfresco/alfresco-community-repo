@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Memberships</shortname>
+  <description>Get a colleciton of a sites memberships.</description>
+  <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
+  <format default="json"/>
+  <authentication>guest</authentication>
+  <transaction>required</transaction>
+</webscript>

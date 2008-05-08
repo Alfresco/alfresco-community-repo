@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Site</shortname>
   <description>Update the details of a site.</description>
-  <url>/api/site/{shortname}</url>
+  <url>/api/sites/{shortname}</url>
   <format default="json"/>
   <authentication>guest</authentication>
   <transaction>required</transaction>

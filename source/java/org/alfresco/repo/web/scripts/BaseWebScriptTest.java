@@ -135,7 +135,7 @@ public abstract class BaseWebScriptTest extends TestCase
             {
                 System.out.println(response.getContentAsString());
             }
-            fail("The expected status code (" + expectedStatus + ") was not returned.");
+            fail("Expected status code " + expectedStatus + " , " + response.getStatus() + " was returned.");
         }
         return response;
     }

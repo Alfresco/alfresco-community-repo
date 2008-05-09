@@ -101,7 +101,8 @@ public final class SimplePermissionReference extends AbstractPermissionReference
     private String name;
     
     
-    protected SimplePermissionReference(QName qName, String name)
+    // TODO: make protected
+    public SimplePermissionReference(QName qName, String name)
     {
         super();
         this.qName = qName;

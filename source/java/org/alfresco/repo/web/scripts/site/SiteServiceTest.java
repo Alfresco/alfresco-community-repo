@@ -251,4 +251,83 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertNotNull(result2);
         assertEquals(2, result2.length());
     }
+    
+    public void testGetMembership() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        
+        // Test error conditions
+        getRequest(URL_SITES + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE, 404);
+        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/baduser", 404);
+        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 404);
+        
+        MockHttpServletResponse response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_ONE, 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // Check the result
+        assertEquals(SiteModel.SITE_MANAGER, result.get("role"));
+        assertEquals(USER_ONE, result.getJSONObject("person").get("userName")); 
+    }
+    
+    public void testPutMembership() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        
+        // Test error conditions
+        // TODO
+        
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+        
+        // Post the memebership
+        MockHttpServletResponse response = postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        JSONObject newMember = new JSONObject(response.getContentAsString());
+        
+        // Update the role
+        newMember.put("role", SiteModel.SITE_COLLABORATOR);
+        response = putRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200, newMember.toString(), "application/json");
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // Check the result
+        assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
+        assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
+        
+        // Double check and get the membership for user two
+        response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
+        assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
+    }
+    
+    public void testDeleteMembership() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+     
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+        
+        // Post the membership
+        postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        
+        // Delete the membership
+        deleteRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200);
+        
+        // Check that the membership has been deleted
+        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 404);
+        
+    }
 }

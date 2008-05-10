@@ -30,8 +30,6 @@ import java.util.Map;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
-import org.jgroups.util.GetNetworkInterfaces1_4;
-import org.mozilla.javascript.ScriptableObject;
 
 /**
  * Site JavaScript object
@@ -190,6 +188,30 @@ public class Site implements Serializable
         result.putAll(sites);
         
         return result;
+    }
+    
+    /**
+     * Gets a user's role on this site.
+     * <p>
+     * If the user is not a member of the site then null is returned.
+     * 
+     * @param userName  user name
+     * @return String   user's role or null if not a member
+     */
+    public String getMembersRole(String userName)
+    {
+        return this.siteService.getMembersRole(getShortName(), userName);
+    }
+    
+    /**
+     * Indicates whether a user is a member of the site.
+     * 
+     * @param userName  user name
+     * @return boolean  true if the user is a member of the site, false otherwise
+     */
+    public boolean isMember(String userName)
+    {
+        return this.siteService.isMember(getShortName(), userName);
     }
     
     /**

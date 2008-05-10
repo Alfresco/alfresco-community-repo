@@ -35,16 +35,73 @@ public interface SiteService
     // TODO audit information
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
     
+    /**
+     * Gets site information based on the short name of a site.
+     * <p>
+     * Returns null if the site can not be found.
+     * 
+     * @param shortName     the site short name
+     * @return SiteInfo     the site information
+     */
     SiteInfo getSite(String shortName);
     
+    /**
+     * Update the site information.
+     * <P>
+     * Note that the shortname and sitepreset of a site can not be updated once the site has been created.
+     * 
+     * @param siteInfo  site information
+     */
     void updateSite(SiteInfo siteInfo);
     
+    /**
+     * Delete the site.
+     * 
+     * @param shortName     site short name
+     */
     void deleteSite(String shortName);
     
+    /**
+     * List the memebers of the site.
+     * <p>
+     * Name and role filters are optional and if not specified all the memebers of the site are returned.
+     * 
+     * @param shortName     site short name
+     * @param nameFilter    name filter
+     * @param roleFilter    role filter
+     * @return Map<String, String>  the username and their role
+     */
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter);
     
+    /**
+     * 
+     * @param shortName
+     * @param userName
+     * @return
+     */
+    String getMembersRole(String shortName, String userName);
+    
+    /**
+     * 
+     * @param shortName
+     * @param userName
+     * @return
+     */
+    boolean isMember(String shortName, String userName);
+    
+    /**
+     * 
+     * @param shortName
+     * @param userName
+     * @param role
+     */
     void setMembership(String shortName, String userName, String role);
     
+    /**
+     * 
+     * @param shortName
+     * @param userName
+     */
     void removeMembership(String shortName, String userName);
     
     

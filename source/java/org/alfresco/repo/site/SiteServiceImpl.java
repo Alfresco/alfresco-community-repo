@@ -310,7 +310,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             }                
             else
             {
-                // CHeck to see if we already have an entry for the user in the map
+                // Check to see if we already have an entry for the user in the map
                 if (members.containsKey(authority) == true)
                 {
                     // TODO .. we need to resolve the permission in the map to the 'highest'
@@ -327,6 +327,23 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return members;
     }
 
+    /**
+     * @see org.alfresco.repo.site.SiteService#getMembersRole(java.lang.String, java.lang.String)
+     */
+    public String getMembersRole(String shortName, String userName)
+    {
+        Map<String, String> members = listMembers(shortName, null, null);
+        return members.get(userName);
+    }
+
+    /**
+     * @see org.alfresco.repo.site.SiteService#isMember(java.lang.String, java.lang.String)
+     */
+    public boolean isMember(String shortName, String userName)
+    {
+        return (getMembersRole(shortName, userName) != null);
+    }
+    
     /**
      * @see org.alfresco.repo.site.SiteService#removeMembership(java.lang.String, java.lang.String)
      */

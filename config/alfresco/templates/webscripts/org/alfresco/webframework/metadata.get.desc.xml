@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Content Metadata Retrieval Service</shortname>
+  <description>Content Metadata Retrieval Service</description>
+  <url>/webframework/content/metadata</url>
+  <format default="html">argument</format>
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

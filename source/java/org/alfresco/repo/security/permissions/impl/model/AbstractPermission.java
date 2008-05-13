@@ -71,7 +71,7 @@ public abstract class AbstractPermission extends AbstractPermissionReference imp
 
     private Set<RequiredPermission> requiredPermissions = new HashSet<RequiredPermission>();
     
-    public AbstractPermission(QName typeQName)
+    protected AbstractPermission(QName typeQName)
     {
         super();
         this.typeQName = typeQName;
@@ -134,11 +134,19 @@ public abstract class AbstractPermission extends AbstractPermissionReference imp
         return name;
     }
 
+    /**
+     * Get the required permissions
+     * @return the required permissions
+     */
     public final Set<RequiredPermission> getRequiredPermissions()
     {
         return Collections.unmodifiableSet(requiredPermissions);
     }
 
+    /**
+     * Get the type for this permission
+     * @return the type
+     */
     public final QName getTypeQName()
     {
         return typeQName;

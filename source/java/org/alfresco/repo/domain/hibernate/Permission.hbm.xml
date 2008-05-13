@@ -433,6 +433,21 @@
     </query>
     
     
+	<query name="permission.GetDmNodeCount">
+    <![CDATA[
+        select count(*)
+        from org.alfresco.repo.domain.hibernate.NodeImpl  
+    ]]>
+    </query>
+    
+    <query name="permission.GetDmNodeCountWherePermissionsHaveChanged">
+    <![CDATA[
+        select count(*)
+        from org.alfresco.repo.domain.hibernate.NodeImpl node
+        where node.accessControlList.id > :above
+    ]]>
+    </query>
+	
     <!--
        
    <query name="permission.GetAccessControlEntriesForAuthority">

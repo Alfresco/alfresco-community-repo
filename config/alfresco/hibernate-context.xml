@@ -235,18 +235,18 @@
          <value>org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent</value>
       </property>
       <property name="defaultBinding">
-         <ref bean="oldPermissionsDaoComponent"></ref>
+         <ref bean="dmPermissionsDaoComponent"></ref>
       </property>
       <property name="redirectedProtocolBindings">
          <map>
-            <entry key="workspace"><ref bean="oldPermissionsDaoComponent"></ref></entry>
-            <entry key="versionStore"><ref bean="oldPermissionsDaoComponent"></ref></entry>
-            <entry key="avm"><ref bean="newPermissionsDaoComponent"/></entry>
+            <entry key="workspace"><ref bean="dmPermissionsDaoComponent"></ref></entry>
+            <entry key="versionStore"><ref bean="dmPermissionsDaoComponent"></ref></entry>
+            <entry key="avm"><ref bean="avmPermissionsDaoComponent"/></entry>
          </map>
       </property>
    </bean>
     
-   <bean id="newPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl">
+   <bean id="avmPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl">
       <property name="aclDaoComponent">
          <ref bean="aclDaoComponent" />
       </property>
@@ -261,7 +261,7 @@
        </property>
    </bean>
     
-   <bean id="oldPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.OldADMPermissionsDaoComponentImpl">
+   <bean id="dmPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.DMPermissionsDaoComponentImpl">
       <property name="aclDaoComponent">
          <ref bean="aclDaoComponent" />
       </property>
@@ -288,9 +288,18 @@
       </property>
    </bean>
    
-    <bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.NodeAccessControlListDAO">
+    <bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.DMAccessControlListDAO">
         <property name="nodeDaoService">
             <ref bean="nodeDaoService" />
+        </property>
+		<property name="aclDaoComponent">
+            <ref bean="aclDaoComponent"/>
+        </property>
+		<property name="hibernateSessionHelper">
+            <ref bean="hibernateSessionHelper"/>
+        </property>
+		<property name="nodeService">
+            <ref bean="nodeService"/>
         </property>
     </bean>
     

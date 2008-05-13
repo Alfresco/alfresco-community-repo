@@ -25,18 +25,22 @@
 package org.alfresco.repo.security.permissions.dynamic;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
+import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.EqualsHelper;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -48,6 +52,11 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
     
     private NodeService nodeService;
     
+    private ModelDAO modelDAO;
+    
+    private List<String> requiredFor;
+    
+    private Set<PermissionReference> whenRequired;
     
     public boolean hasAuthority(final NodeRef nodeRef, final String userName)
     {
@@ -101,16 +110,64 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
         {
             throw new IllegalStateException("The NodeService service must be set");
         }
+        if(modelDAO == null)
+        {
+            throw new IllegalStateException("The ModelDAO service must be set");
+        }
         
+        // buld the permission set
+        
+        if(requiredFor != null)
+        {
+            whenRequired = new HashSet<PermissionReference>();
+            for(String permission : requiredFor)
+            {
+                PermissionReference permissionReference = modelDAO.getPermissionReference(null, permission);
+                whenRequired.addAll(modelDAO.getGranteePermissions(permissionReference));
+                whenRequired.addAll(modelDAO.getGrantingPermissions(permissionReference));
+            }
+        }
     }
 
+    /**
+     * Set the lock service
+     * @param lockService
+     */
     public void setLockService(LockService lockService)
     {
         this.lockService = lockService;
     }
     
+    /**
+     * Set the node service
+     * @param nodeService
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * Set the permissions model dao
+     * @param modelDAO
+     */
+    public void setModelDAO(ModelDAO modelDAO)
+    {
+        this.modelDAO = modelDAO;
+    }
+    
+    /**
+     * Set the permissions for which this dynamic authority is required
+     * @param requiredFor
+     */
+    public void setRequiredFor(List<String> requiredFor)
+    {
+        this.requiredFor = requiredFor;
+    }
+    
+    
+    public Set<PermissionReference> requiredFor()
+    {
+        return whenRequired;
     }
 }

@@ -20,7 +20,7 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * http://www.alfresco.com/legal/licensing
  */
 package org.alfresco.repo.domain.hibernate;
 
@@ -30,20 +30,23 @@ import java.util.List;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACLType;
-import org.alfresco.repo.security.permissions.AccessControlEntry;
-import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * Old permissions dao component impl
+ * Manage creation and deletion of ACL entries for the new DM ACL implementation
+ * 
  * @author andyh
  *
  */
-public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponentImpl
+public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoComponentImpl
 {
+    @SuppressWarnings("unused")
+    private static Log logger = LogFactory.getLog(DMPermissionsDaoComponentImpl.class);
 
     @Override
     protected CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, DbAccessControlList existing)
@@ -52,6 +55,8 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
         {
             SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
             properties.setAclType(ACLType.DEFINING);
+            properties.setInherits(inherit);
+            properties.setVersioned(false);
             // Accept default versioning
             Long id = aclDaoComponent.createAccessControlList(properties);
             List<AclChange> changes = new ArrayList<AclChange>();
@@ -78,7 +83,7 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
             properties = new SimpleAccessControlListProperties();
             properties.setAclType(ACLType.DEFINING);
             properties.setInherits(existing.getInherits());
-            // Accept default versioning
+            properties.setVersioned(false);
             id = aclDaoComponent.createAccessControlList(properties);
             changes = new ArrayList<AclChange>();
             acl = aclDaoComponent.getDbAccessControlList(id);
@@ -90,45 +95,11 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
             getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
             return new CreationReport(acl, changes);
         case LAYERED:
-            // Need to get the indirected node ACL
-            Long indirectAclId = getACLDAO(nodeRef).getIndirectAcl(nodeRef);
-            Long inheritedAclId = getACLDAO(nodeRef).getInheritedAcl(nodeRef);
-
-            // create new defining, wire up and report changes to acl required.
-            properties = new SimpleAccessControlListProperties();
-            properties.setAclType(ACLType.DEFINING);
-            if (indirectAclId != null)
-            {
-                properties.setInherits(aclDaoComponent.getAccessControlListProperties(indirectAclId).getInherits());
-            }
-            // Accept default versioning
-            id = aclDaoComponent.createAccessControlList(properties);
-            changes = new ArrayList<AclChange>();
-            acl = aclDaoComponent.getDbAccessControlList(id);
-            changes.add(new AclDaoComponentImpl.AclChangeImpl(existing.getId(), id, existing.getAclType(), acl.getAclType()));
-            if (indirectAclId != null)
-            {
-                AccessControlList indirectAcl = aclDaoComponent.getAccessControlList(indirectAclId);
-                for (AccessControlEntry entry : indirectAcl.getEntries())
-                {
-                    if (entry.getPosition() == 0)
-                    {
-                        aclDaoComponent.setAccessControlEntry(id, entry);
-                    }
-                }
-            }
-            if (inheritedAclId != null)
-            {
-                changes.addAll(aclDaoComponent.mergeInheritedAccessControlList(inheritedAclId, id));
-            }
-            // set this to inherit to children
-            changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
-
-            getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
-            return new CreationReport(acl, changes);
+            throw new IllegalStateException("Layering is not supported for DM permissions");
         default:
             throw new IllegalStateException("Unknown type " + existing.getAclType());
         }
+
     }
 
     public void deletePermissions(NodeRef nodeRef)
@@ -142,6 +113,7 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
         {
             return;
         }
+        System.out.println("Deleting "+acl+" on "+nodeRef);
         if (acl != null)
         {
             if (acl.getInheritsFrom() != null)
@@ -161,9 +133,11 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
                 @SuppressWarnings("unused")
                 Long deleted = acl.getId();
                 SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+                properties = new SimpleAccessControlListProperties();
                 properties.setAclType(ACLType.DEFINING);
                 properties.setInherits(Boolean.FALSE);
-                // Accept default versioning
+                properties.setVersioned(false);
+
                 Long id = aclDaoComponent.createAccessControlList(properties);
                 getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(id));
                 List<AclChange> changes = new ArrayList<AclChange>();
@@ -172,5 +146,22 @@ public class PermissionsDaoComponentImpl extends AbstractPermissionsDaoComponent
                 aclDaoComponent.deleteAccessControlList(acl.getId());
             }
         }
+
     }
+
+    
+    /**
+     * Get the default ACL properties 
+     * 
+     * @return the default properties
+     */
+    public static SimpleAccessControlListProperties getDefaultProperties()
+    {
+        SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+        properties.setAclType(ACLType.DEFINING);
+        properties.setInherits(true);
+        properties.setVersioned(false);
+        return properties;
+    }
+
 }

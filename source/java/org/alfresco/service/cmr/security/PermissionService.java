@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.security;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -230,9 +231,9 @@ public interface PermissionService
     /**
      * Check if a permission is allowed on an acl.
      * @param aclID
-     * @param owner
+     * @param context
      * @param permission
-     * @return
+     * @return the access status
      */
     @Auditable(parameters = { "aclID", "context", "permission" })
     public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission);
@@ -377,7 +378,7 @@ public interface PermissionService
      * @param authority
      * @param permission
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = { "StoreRef", "authority", "permission" })
+    @Auditable(key = Auditable.Key.ARG_0, parameters = { "storeRef", "authority", "permission" })
     public void deletePermission(StoreRef storeRef, String authority, String permission);
     
     /**
@@ -386,7 +387,7 @@ public interface PermissionService
      * @param storeRef
      * @param authority
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = { "StoreRef", "authority" })
+    @Auditable(key = Auditable.Key.ARG_0, parameters = { "storeRef", "authority" })
     public void clearPermission(StoreRef storeRef, String authority);
     
     /**
@@ -394,16 +395,17 @@ public interface PermissionService
      * 
      * @param storeRef
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = { "StoreRef" })
+    @Auditable(key = Auditable.Key.ARG_0, parameters = { "storeRef" })
     public void deletePermissions(StoreRef storeRef);
+    
     
     /**
      * Get all the AccessPermissions that are set for anyone for the given node
      *
-     * @param nodeRef -
-     *            the reference to the node
+     * @param storeRef -
+     *            the reference to the store
      * @return the set of allowed permissions
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = { "StoreRef" })
+    @Auditable(key = Auditable.Key.ARG_0, parameters = { "storeRef" })
     public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef);
 }

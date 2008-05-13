@@ -193,12 +193,12 @@ public class PermissionServiceNOOPImpl
 
     public PermissionReference getPermissionReference(QName qname, String permissionName)
     {
-        return new PermissionReferenceImpl(qname, permissionName);
+        return PermissionReferenceImpl.getPermissionReference(qname, permissionName);
     }
 
     public PermissionReference getPermissionReference(String permissionName)
     {
-        return new PermissionReferenceImpl(QName.createQName("uri", "local"), permissionName);
+        return PermissionReferenceImpl.getPermissionReference(QName.createQName("uri", "local"), permissionName);
     }
 
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
@@ -283,6 +283,11 @@ public class PermissionServiceNOOPImpl
     public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef)
     {
         return Collections.<AccessPermission>emptySet();
+    }
+
+    public NodePermissionEntry getSetPermissions(StoreRef storeRef)
+    {
+        return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptySet());
     }
     
     

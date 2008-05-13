@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -80,6 +81,10 @@ public class AbstractPermissionTest extends BaseSpringTest
     
     protected AuthorityService authorityService;
 
+    protected NodeDaoService nodeDaoService;
+    
+    protected AclDaoComponent aclDaoComponent;
+
     public AbstractPermissionTest()
     {
         super();
@@ -103,6 +108,8 @@ public class AbstractPermissionTest extends BaseSpringTest
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
+        nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
+        aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
         
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());

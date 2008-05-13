@@ -67,6 +67,10 @@ public class ModelPermissionEntry implements PermissionEntry, XMLModelInitialisa
 
     private NodeRef nodeRef;
 
+    /**
+     * Create a permission model entry with the given node context
+     * @param nodeRef (may be null)
+     */
     public ModelPermissionEntry(NodeRef nodeRef)
     {
         super();
@@ -83,6 +87,10 @@ public class ModelPermissionEntry implements PermissionEntry, XMLModelInitialisa
         return getRecipient();
     }
 
+    /**
+     * Synonym for authority
+     * @return recipient/authority
+     */
     public String getRecipient()
     {
         return recipient;
@@ -145,6 +153,6 @@ public class ModelPermissionEntry implements PermissionEntry, XMLModelInitialisa
         Element permissionReferenceElement = element.element(PERMISSION_REFERENCE);
         QName typeQName = QName.createQName(permissionReferenceElement.attributeValue(TYPE), nspr);
         String name = permissionReferenceElement.attributeValue(NAME);
-        permissionReference = new PermissionReferenceImpl(typeQName, name);
+        permissionReference = PermissionReferenceImpl.getPermissionReference(typeQName, name);
     }
 }

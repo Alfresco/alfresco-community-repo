@@ -72,10 +72,11 @@ public class OldADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCom
         {
             logger.debug("Created Access Control List: \n" + "   node: " + nodeRef + "\n" + "   list: " + acl);
         }
-        
-        AbstractPermissionsDaoComponentImpl.CreationReport report = new AbstractPermissionsDaoComponentImpl.CreationReport(acl, Collections.<AclChange>singletonList(new AclDaoComponentImpl.AclChangeImpl(null, id, null, acl.getAclType())));
+
+        AbstractPermissionsDaoComponentImpl.CreationReport report = new AbstractPermissionsDaoComponentImpl.CreationReport(acl, Collections
+                .<AclChange> singletonList(new AclDaoComponentImpl.AclChangeImpl(null, id, null, acl.getAclType())));
         return report;
-       
+
     }
 
     public void deletePermissions(NodeRef nodeRef)
@@ -96,7 +97,4 @@ public class OldADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCom
             aclDaoComponent.deleteAccessControlList(acl.getId());
         }
     }
-
-   
-
 }

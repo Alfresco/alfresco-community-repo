@@ -40,6 +40,7 @@ import java.util.Stack;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodeStatus;
@@ -47,9 +48,16 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.hibernate.DMAccessControlListDAO;
+import org.alfresco.repo.domain.hibernate.DMPermissionsDaoComponentImpl;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.AccessControlListProperties;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
+import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -98,6 +106,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private StoreArchiveMap storeArchiveMap;
     private NodeService avmNodeService;
     private TenantService tenantService;
+    private AclDaoComponent aclDaoComponent;
 
     public DbNodeServiceImpl()
     {
@@ -130,6 +139,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    {
+        this.aclDaoComponent = aclDaoComponent;
     }
 
     /**
@@ -265,9 +279,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 ContentModel.ASPECT_ROOT,
                 Collections.<QName, Serializable>emptyMap());
         
+        // Bind root permission
+        
+        if(aclDaoComponent != null)
+        {
+            SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
+            Long id = aclDaoComponent.createAccessControlList(properties);
+            DbAccessControlList acl = aclDaoComponent.getDbAccessControlList(id);
+            rootNode.setAccessControlList(acl);
+        }
+        
         // invoke policies
         invokeOnCreateStore(rootNodeRef);
-        
+     
         // done
         if (!store.getStoreRef().equals(storeRef))
         {
@@ -412,6 +436,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         setChildUniqueName(childNode);         // ensure uniqueness
         ChildAssociationRef childAssocRef = tenantService.getBaseName(childAssoc.getChildAssocRef());
         
+        // permissions behaviour
+        if(aclDaoComponent != null)
+        {
+            DbAccessControlList inherited = parentNode.getAccessControlList();
+            if (inherited == null)
+            {
+                // not fixde up yet or unset
+            }
+            else
+            {
+                childNode.setAccessControlList(aclDaoComponent.getDbAccessControlList(aclDaoComponent.getInheritedAccessControlList(inherited.getId())));
+            }
+        }
+        
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateChildAssociation(childAssocRef, true);
@@ -519,6 +557,29 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // check that no cyclic relationships have been created
         getPaths(nodeToMoveRef, false);
 
+        // Fix inherited permissions
+        
+        if(aclDaoComponent != null)
+        {
+            Long targetAcl = newAssoc.getChild().getAccessControlList().getId();
+            AccessControlListProperties aclProperties = aclDaoComponent.getAccessControlListProperties(targetAcl);
+            Boolean inherits = aclProperties.getInherits();
+            if((inherits != null) && (inherits.booleanValue()))
+            {
+                Long parentAcl = newAssoc.getParent().getAccessControlList().getId();
+                Long inheritedAcl = aclDaoComponent.getInheritedAccessControlList(parentAcl);
+                if(aclProperties.getAclType() == ACLType.DEFINING)
+                {
+                    aclDaoComponent.enableInheritance(targetAcl, parentAcl);
+                }
+                else if(aclProperties.getAclType() == ACLType.SHARED)
+                {
+                    DMAccessControlListDAO.setFixedAcls(newAssoc.getChildAssocRef().getChildRef(), inheritedAcl, true, this, aclDaoComponent, nodeDaoService);
+                }
+            }
+                    
+        }
+        
         // invoke policy behaviour
         if (movingStore)
         {

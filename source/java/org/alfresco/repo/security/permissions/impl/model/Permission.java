@@ -75,6 +75,11 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
     
     private boolean requiresType;
 
+    /**
+     * A permission for the given type
+     * 
+     * @param typeQName
+     */
     public Permission(QName typeQName)
     {
         super(typeQName);
@@ -141,25 +146,41 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
 
             String grantedName = grantedToGroupsElement.attributeValue(GTG_NAME);
             
-            grantedToGroups.add(new PermissionReferenceImpl(qName, grantedName));
+            grantedToGroups.add(PermissionReferenceImpl.getPermissionReference(qName, grantedName));
         }
     }
 
+    /**
+     * Default deny/allow for this permission
+     * @return the access status
+     */
     public AccessStatus getDefaultPermission()
     {
         return defaultPermission;
     }
 
+    /**
+     * Get the groups for which this permission is granted (by definition - filled in by the model API)
+     * @return the specifed groups
+     */
     public Set<PermissionReference> getGrantedToGroups()
     {
         return Collections.unmodifiableSet(grantedToGroups);
     }
 
+    /**
+     * Should this permission be shown to the UI?
+     * @return return true if the permission be shown in the UI.
+     */
     public boolean isExposed()
     {
         return isExposed;
     }
     
+    /**
+     * Does a node have to have the type/aspect for the permission to apply?
+     * @return true if a node must  have the type/aspect for the permission to apply.
+     */
     public boolean isTypeRequired()
     {
         return requiresType;

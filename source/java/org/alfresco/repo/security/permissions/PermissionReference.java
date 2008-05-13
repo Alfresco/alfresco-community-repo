@@ -41,14 +41,16 @@ public interface PermissionReference extends Serializable
      * Get the QName of the type or aspect against which the permission is
      * defined.
      * 
-     * @return
+     * @return the qname
      */
     public QName getQName();
 
     /**
      * Get the name of the permission
      * 
-     * @return
+     * @return the name
      */
     public String getName();
+    
+    
 }

@@ -37,7 +37,7 @@ public abstract class AbstractPermissionReference implements PermissionReference
     private int hashcode = 0;
     private String str = null;
     
-    public AbstractPermissionReference()
+    protected AbstractPermissionReference()
     {
         super();
     }
@@ -54,6 +54,10 @@ public abstract class AbstractPermissionReference implements PermissionReference
             return false;
         }
         AbstractPermissionReference other = (AbstractPermissionReference)o;
+        if(other.hashCode() != this.hashCode())
+        {
+            return false;
+        }
         return this.getName().equals(other.getName()) && this.getQName().equals(other.getQName());
     }
 

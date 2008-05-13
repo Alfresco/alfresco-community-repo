@@ -24,6 +24,12 @@
  */
 package org.alfresco.repo.security.permissions;
 
+/**
+ * Basic implementation of access control list properties
+ * 
+ * @author andyh
+ *
+ */
 public class SimpleAccessControlListProperties implements AccessControlListProperties
 {
     /**
@@ -42,6 +48,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     private Boolean latest;
     
     private Boolean versioned;
+    
+    private Long id;
     
     public String getAclId()
     {
@@ -73,34 +81,72 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
        return versioned;
     }
 
+    /**
+     * Set the acl id
+     * @param aclId
+     */
     public void setAclId(String aclId)
     {
         this.aclId = aclId;
     }
 
+    /**
+     * Set the acl type
+     * @param aclType
+     */
     public void setAclType(ACLType aclType)
     {
         this.aclType = aclType;
     }
 
+    /**
+     * Set the acl version
+     * @param aclVersion
+     */
     public void setAclVersion(Long aclVersion)
     {
         this.aclVersion = aclVersion;
     }
 
+    /**
+     * Set inheritance
+     * @param inherits
+     */
     public void setInherits(boolean inherits)
     {
         this.inherits = inherits;
     }
 
+    /**
+     * Set latest
+     * @param latest
+     */
     public void setLatest(boolean latest)
     {
         this.latest = latest;
     }
 
+    /**
+     * Set versioned
+     * @param versioned
+     */
     public void setVersioned(boolean versioned)
     {
         this.versioned = versioned;
+    }
+
+    public Long getId()
+    {
+        return id;
+    }
+
+    /**
+     * Set the id
+     * @param id
+     */
+    public void setId(Long id)
+    {
+        this.id = id;
     }
     
     

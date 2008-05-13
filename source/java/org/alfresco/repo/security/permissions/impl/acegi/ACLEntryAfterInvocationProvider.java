@@ -59,6 +59,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Enforce permission after the method calll
+ * 
+ * @author andyh
+ *
+ */
 public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider, InitializingBean
 {
     private static Log log = LogFactory.getLog(ACLEntryAfterInvocationProvider.class);
@@ -74,6 +80,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private int maxPermissionChecks;
     private long maxPermissionCheckTimeMillis;
 
+    /**
+     * Default constructor
+     */
     public ACLEntryAfterInvocationProvider()
     {
         super();
@@ -81,51 +90,92 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         maxPermissionCheckTimeMillis = Long.MAX_VALUE;
     }
 
+    /**
+     * Set the permission service.
+     * 
+     * @param permissionService
+     */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
 
+    /**
+     * Get the permission service.
+     * @return - the permission service
+     */
     public PermissionService getPermissionService()
     {
         return permissionService;
     }
 
+    /**
+     * Get the namespace prefix resolver
+     * @return the namespace prefix resolver
+     */
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return nspr;
     }
 
+    /**
+     * Set the namespace prefix resolver
+     * @param nspr
+     */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
         this.nspr = nspr;
     }
 
+    /** 
+     * Get the node service
+     * @return the node service
+     */
     public NodeService getNodeService()
     {
         return nodeService;
     }
 
+    /**
+     * Set the node service
+     * @param nodeService
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * Get the authentication service
+     * @return the authentication service
+     */
     public AuthenticationService getAuthenticationService()
     {
         return authenticationService;
     }
 
+    /** 
+     * Set the authentication service
+     * @param authenticationService
+     */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
     
+    /**
+     * Set the max number of permission checks
+     * @param maxPermissionChecks
+     */
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
         this.maxPermissionChecks = maxPermissionChecks;
     }
     
+    /**
+     * Set the max time for permission checks
+     * @param maxPermissionCheckTimeMillis
+     */
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
@@ -261,7 +311,8 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     }
 
-    public NodeRef decide(
+    
+    private NodeRef decide(
             Authentication authentication,
             Object object,
             ConfigAttributeDefinition config,
@@ -304,7 +355,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    public FileInfo decide(
+    private FileInfo decide(
             Authentication authentication,
             Object object,
             ConfigAttributeDefinition config,
@@ -336,7 +387,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return definitions;
     }
 
-    public ChildAssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+    private ChildAssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
             ChildAssociationRef returnedObject) throws AccessDeniedException
 
     {
@@ -376,7 +427,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    public ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
             ResultSet returnedObject) throws AccessDeniedException
 
     {
@@ -473,7 +524,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return filteringResultSet;
     }
 
-    public Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+    private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
             Collection returnedObject) throws AccessDeniedException
 
     {
@@ -594,7 +645,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return returnedObject;
     }
 
-    public Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+    private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
             Object[] returnedObject) throws AccessDeniedException
 
     {
@@ -742,7 +793,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
             QName qName = QName.createQName(qNameString, nspr);
 
-            required = new SimplePermissionReference(qName, permissionString);
+            required = SimplePermissionReference.getPermissionReference(qName, permissionString);
         }
     }
 }

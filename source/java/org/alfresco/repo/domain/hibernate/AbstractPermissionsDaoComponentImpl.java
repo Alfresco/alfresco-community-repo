@@ -37,6 +37,7 @@ import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -57,6 +58,16 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Common suppot for permisisons dao
+ * 
+ * Sub classes deteremine how ACLs are cascaded to children and how changes may COW/version children as ACLs are pushed down.
+ * 
+ * TODO: remove the protocol to dao mapping
+ * 
+ * @author andyh
+ *
+ */
 public abstract class AbstractPermissionsDaoComponentImpl implements PermissionsDaoComponent, TransactionalDao
 {
     private static Log logger = LogFactory.getLog(AbstractPermissionsDaoComponentImpl.class);
@@ -77,11 +88,19 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         this.uuid = GUID.generate();
     }
 
+    /**
+     * Get the ACL DAO component
+     * @return - the acl dao component
+     */
     public AclDaoComponent getAclDaoComponent()
     {
         return aclDaoComponent;
     }
 
+    /**
+     * Set the ACL DAO component
+     * @param aclDaoComponent
+     */
     public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
@@ -138,11 +157,19 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         aclDaoComponent.beforeCommit();
     }
 
+    /**
+     * Set the mapping of protocol to DAO
+     * @param map
+     */
     public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {
         fProtocolToACLDAO = map;
     }
 
+    /**
+     * Set the default DAO
+     * @param defaultACLDAO
+     */
     public void setDefaultACLDAO(AccessControlListDAO defaultACLDAO)
     {
         fDefaultACLDAO = defaultACLDAO;
@@ -435,6 +462,8 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             deletePermissions(nodeRef);
         }
         // create the access control list
+
+        existing = getAccessControlList(nodeRef);
         CreationReport report = createAccessControlList(nodeRef, nodePermissionEntry.inheritPermissions(), existing);
 
         // add all entries
@@ -594,8 +623,26 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return npe;
     }
 
+    
+
+    public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef)
+    {
+        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        if(acl == null)
+        {
+            return null;
+        }
+        return aclDaoComponent.getAccessControlListProperties(acl.getId());
+    }
+
     protected abstract CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, DbAccessControlList existing);
 
+    
+    /**
+     * Internal class used for reporting the collateral damage when creating an new ACL entry 
+     * @author andyh
+     *
+     */        
     static class CreationReport
     {
         DbAccessControlList created;
@@ -608,21 +655,38 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             this.changes = changes;
         }
 
+        /**
+         * Set the change list
+         * 
+         * @param changes
+         */
         public void setChanges(List<AclChange> changes)
         {
             this.changes = changes;
         }
 
+        /**
+         * Set the ACL that was created
+         * @param created
+         */
         public void setCreated(DbAccessControlList created)
         {
             this.created = created;
         }
 
+        /**
+         * Get the change list
+         * @return - the change list
+         */
         public List<AclChange> getChanges()
         {
             return changes;
         }
 
+        /**
+         * Get the created ACL
+         * @return - the acl
+         */
         public DbAccessControlList getCreated()
         {
             return created;

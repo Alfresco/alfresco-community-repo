@@ -35,8 +35,10 @@ import net.sf.acegisecurity.GrantedAuthority;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionEntry;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -135,6 +137,9 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
             public Object doWork() throws Exception
             {
+                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
@@ -318,6 +323,24 @@ public class PermissionServiceTest extends AbstractPermissionTest
         // testUnset();
     }
 
+    private void printPermissions(NodeRef nodeRef, String path)
+    {
+        Long id = nodeDaoService.getNode(nodeRef).getAccessControlList().getId();
+        System.out.println(path + " has "+id);
+        for(AccessControlEntry entry : aclDaoComponent.getAccessControlList(id).getEntries())
+        {
+            System.out.println("\t\t "+id+"  "+entry);
+        }
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
+        for(ChildAssociationRef child: children)
+        {
+            String newPath = path+"/"+child.getQName();
+            printPermissions(child.getChildRef(), newPath);
+           
+        }
+        
+    }
+    
     public void testSetNodePermissionEntry()
     {
         runAs("andy");
@@ -1740,10 +1763,14 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_CHILDREN)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_CONTENT)) == AccessStatus.ALLOWED);
 
+        //printPermissions(rootNodeRef, "/");
+        
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_PROPERTIES), "andy", AccessStatus.ALLOWED));
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_CONTENT), "andy", AccessStatus.ALLOWED));
 
+        printPermissions(rootNodeRef, "/");
+        
         runAs("andy");
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);

@@ -83,6 +83,10 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     private boolean requiresType;
 
+    /**
+     * Permission group for the given type or aspect.
+     * @param container
+     */
     public PermissionGroup(QName container)
     {
         super();
@@ -160,11 +164,15 @@ public final class PermissionGroup extends AbstractPermissionReference implement
                 qName = container;
             }
             String refName = includePermissionGroupElement.attributeValue(PERMISSION_GROUP);
-            PermissionReference permissionReference = new PermissionReferenceImpl(qName, refName);
+            PermissionReference permissionReference = PermissionReferenceImpl.getPermissionReference(qName, refName);
             includedPermissionGroups.add(permissionReference);
         }
     }
 
+    /**
+     * What permission groups are included in this one (for ease of definition)
+     * @return - the set of included permission from teh definitio
+     */
     public Set<PermissionReference> getIncludedPermissionGroups()
     {
         return Collections.unmodifiableSet(includedPermissionGroups);
@@ -175,6 +183,10 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         return name;
     }
 
+    /**
+     * Does this permission group allow full control?
+     * @return true if this definition allows full control
+     */
     public boolean isAllowFullControl()
     {
         return allowFullControl;
@@ -185,22 +197,37 @@ public final class PermissionGroup extends AbstractPermissionReference implement
         return container;
     }
 
+    /**
+     * Does this definition extend another (from a base type as defined in the DD)
+     * @return true if the permission is extended from another type
+     */
     public boolean isExtends()
     {
         return extendz;
     }
 
+    /**
+     * Get the  class
+     * @return - the class
+     */
     public QName getTypeQName()
     {
         return type;
     }
 
+    /**
+     * Expose in the UI?
+     * @return exposed -> true
+     */
     public boolean isExposed()
     {
         return isExposed;
     }
     
-    
+    /**
+     * Does a node have to have a the type for the permission to apply?
+     * @return true if a node has to have the type for the permission to apply.
+     */
     public boolean isTypeRequired()
     {
         return requiresType;

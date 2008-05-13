@@ -83,26 +83,47 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
     {
     }
 
+    /**
+     * Set the AVM repository
+     * 
+     * @param repository
+     */
     public void setAvmRepository(AVMRepository repository)
     {
         fAVMRepository = repository;
     }
 
+    /**
+     * Set the AVM service
+     * 
+     * @param avmService
+     */
     public void setAvmService(AVMService avmService)
     {
         fAVMService = avmService;
     }
 
+    /**
+     * Set the ACL DAO component
+     * 
+     * @param aclDaoComponent
+     */
     public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
     }
 
+    /**
+     * @param avmSnapShotTriggeredIndexingMethodInterceptor
+     */
     public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
     {
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
 
+    /**
+     * @param hibernateSessionHelper
+     */
     public void setHibernateSessionHelper(HibernateSessionHelper hibernateSessionHelper)
     {
         this.hibernateSessionHelper = hibernateSessionHelper;
@@ -161,6 +182,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         // to the path stuffed in the NodeRef.
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         String path = avmVersionPath.getSecond();
+        @SuppressWarnings("unused")
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         String[] splitPath = AVMNodeConverter.SplitBase(path);
         if (splitPath[0] == null)
@@ -588,6 +610,16 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
+    /**
+     * Set and cascade ACls
+     * 
+     * @param descriptor
+     * @param mergeFrom
+     * @param changes
+     * @param mode
+     * @param set
+     * @param indirections
+     */
     public void setFixedAcls(AVMNodeDescriptor descriptor, Long mergeFrom, List<AclChange> changes, SetMode mode, boolean set, Map<Long, Set<Long>> indirections)
     {
         if (descriptor == null)
@@ -691,9 +723,21 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
+    /**
+     * Mode to sue when setting ACLs
+     * @author andyh
+     *
+     */
     private enum SetMode
     {
-        ALL, DIRECT_ONLY;
+        /**
+         * Set ALL
+         */
+        ALL, 
+        /**
+         * Set only direct children (not those present by layering) 
+         */
+        DIRECT_ONLY;
     }
 
     public Map<ACLType, Integer> patchAcls()
@@ -893,8 +937,19 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         return result;
     }
 
-    private class CounterSet extends HashMap<ACLType, Counter>
+    /**
+     * 
+     * Counter for each type of ACL change
+     * @author andyh
+     *
+     */
+    public static class CounterSet extends HashMap<ACLType, Counter>
     {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -3682278258679211481L;
+
         CounterSet()
         {
             super();
@@ -929,7 +984,12 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    private class Counter
+    /**
+     * Simple counter
+     * @author andyh
+     *
+     */
+    public static class Counter
     {
         int counter;
 

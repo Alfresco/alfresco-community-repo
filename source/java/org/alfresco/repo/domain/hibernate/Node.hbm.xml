@@ -62,7 +62,7 @@
             fetch="select"
             unique="false"
             not-null="false"
-            cascade="delete" />
+            cascade="none" />
       <!-- forward assoc to properties -->
       <map
             name="properties" 

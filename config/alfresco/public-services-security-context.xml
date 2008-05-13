@@ -41,7 +41,7 @@
     
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="dbNodeService" />
         </property>
         <property name="tenantService">
             <ref bean="tenantService"/>
@@ -136,6 +136,16 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
+		<property name="modelDAO">
+            <ref bean="permissionsModelDAO" />
+        </property>
+		<property name="requiredFor">
+			<list>
+				<value>Unlock</value>
+				<value>CheckIn</value>
+				<value>CancelCheckOut</value>
+			</list>
+		</property>
     </bean>
 
     <!-- ===================== -->

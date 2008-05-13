@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.util.Set;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -40,7 +42,7 @@ public interface DynamicAuthority
      * 
      * @param nodeRef
      * @param userName
-     * @return
+     * @return true if the current user has the authority
      */
     public boolean hasAuthority(NodeRef nodeRef, String userName);
 
@@ -48,7 +50,15 @@ public interface DynamicAuthority
      * If this authority is granted this method provides the string
      * representation of the granted authority.
      * 
-     * @return
+     * @return the authority taht may be assigned
      */
     public String getAuthority();
+    
+    /**
+     * For what permission checks is this dynamic authority required?
+     * If null, it is required for all checks. 
+     * 
+     * @return the set of permissions for which this dynamic authority should be evaluated
+     */
+    public Set<PermissionReference> requiredFor();
 }

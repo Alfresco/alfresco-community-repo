@@ -46,6 +46,13 @@ public final class SimplePermissionReference extends AbstractPermissionReference
 
     private static HashMap<QName, HashMap<String, SimplePermissionReference>> instances = new HashMap<QName, HashMap<String, SimplePermissionReference>>();
 
+    /**
+     * Factory method to create simple permission refrences
+     * 
+     * @param qName
+     * @param name
+     * @return a simple permission reference
+     */
     public static SimplePermissionReference getPermissionReference(QName qName, String name)
     {
         lock.readLock().lock();
@@ -101,8 +108,7 @@ public final class SimplePermissionReference extends AbstractPermissionReference
     private String name;
     
     
-    // TODO: make protected
-    public SimplePermissionReference(QName qName, String name)
+    protected SimplePermissionReference(QName qName, String name)
     {
         super();
         this.qName = qName;

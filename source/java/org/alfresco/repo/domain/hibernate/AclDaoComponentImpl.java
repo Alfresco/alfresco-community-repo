@@ -41,6 +41,7 @@ import org.alfresco.repo.domain.DbAccessControlListChangeSet;
 import org.alfresco.repo.domain.DbAccessControlListMember;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
+import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
@@ -62,10 +63,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.jgroups.tests.DeadlockTest.InRpc;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -112,23 +113,59 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     private enum WriteMode
     {
-        TRUNCATE_INHERITED, ADD_INHERITED, CHANGE_INHERITED, REMOVE_INHERITED, INSERT_INHERITED, COPY_UPDATE_AND_INHERIT, COPY_ONLY;
+        /**
+         * Remove inherited ACEs after that set 
+         */
+        TRUNCATE_INHERITED, 
+        /**
+         * Add inherited ACEs
+         */
+        ADD_INHERITED,
+        /**
+         * The source of inherited ACEs is changing
+         */
+        CHANGE_INHERITED, 
+        /**
+         * Remove all inherited ACEs
+         */
+        REMOVE_INHERITED, 
+        /**
+         * Insert inherited ACEs
+         */
+        INSERT_INHERITED, 
+        /**
+         * Copy ACLs and update ACEs and inheritance 
+         */
+        COPY_UPDATE_AND_INHERIT, 
+        /**
+         * Simlpe copy
+         */
+        COPY_ONLY;
     }
 
+    /**
+     *
+     */
     public AclDaoComponentImpl()
     {
         super();
+        // Wire up for annoying AVM hack to support copy and setting of ACLs as nodes are created
         DbAccessControlListImpl.setAclDaoComponent(this);
     }
 
     /**
      * Set the DAO for accessing QName entities
+     * @param qnameDAO 
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
 
+    /**
+     * Set the ACL cache
+     * @param aclCache
+     */
     public void setAclCache(SimpleCache<Long, AccessControlList> aclCache)
     {
         this.aclCache = aclCache;
@@ -344,7 +381,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
      * @param toAdd
      * @param inheritsFrom
      * @param depth
-     * @return
+     * @return - an AclChange
      */
     @SuppressWarnings("unchecked")
     private AclChange getWritable(final Long id, final Long parent, AccessControlEntry exclude, List<DbAccessControlEntry> toAdd, Long inheritsFrom,
@@ -814,9 +851,26 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     @SuppressWarnings("unchecked")
     public List<AclChange> deleteAccessControlList(final Long id)
     {
+        HibernateCallback check = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
+                criteria.createAlias("node.accessControlList", "acl");
+                criteria.add(Restrictions.eq("acl.id", id));
+                criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                return criteria.list();
+            }
+        };
+        List<Node> nodes = (List<Node>) getHibernateTemplate().execute(check);
+        for(Node node : nodes)
+        {
+            logger.error("Found "+node.getId() +" "+node.getUuid() + " "+node.getAccessControlList() );
+        }
+        
         List<AclChange> acls = new ArrayList<AclChange>();
 
-        DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
+        final DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
         if (!acl.isLatest())
         {
             throw new UnsupportedOperationException("Old ALC versions can not be updated");
@@ -828,7 +882,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
         if ((acl.getAclType() == ACLType.DEFINING) || (acl.getAclType() == ACLType.LAYERED))
         {
-            if (acl.getInheritedAclId() != -1)
+            if ((acl.getInheritedAclId() != null) && (acl.getInheritedAclId() != -1))
             {
                 final DbAccessControlList inherited = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, acl.getInheritedAclId());
                 // Will remove from the cache
@@ -929,6 +983,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             }
 
             getHibernateTemplate().delete(acl);
+            getSession().flush();
         }
 
         // remove the deleted acl from the cache
@@ -965,6 +1020,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return changes;
     }
 
+    /**
+     * Search for access control lists
+     * @param pattern
+     * @return the ids of the ACLs found
+     */
     public Long[] findAccessControlList(AccessControlEntry pattern)
     {
         throw new UnsupportedOperationException();
@@ -986,6 +1046,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return acl;
     }
 
+    /**
+     * @param id
+     * @return the access control list
+     */
     @SuppressWarnings("unchecked")
     public AccessControlList getAccessControlListImpl(final Long id)
     {
@@ -1025,7 +1089,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 entry.setContext(context);
             }
             DbPermission perm = member.getAccessControlEntry().getPermission();
-            SimplePermissionReference permissionRefernce = new SimplePermissionReference(perm.getTypeQName().getQName(), perm.getName());
+            SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(perm.getTypeQName().getQName(), perm.getName());
             entry.setPermission(permissionRefernce);
             entry.setPosition(member.getPosition());
 
@@ -1054,6 +1118,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         properties.setInherits(acl.getInherits());
         properties.setLatest(acl.isLatest());
         properties.setVersioned(acl.isVersioned());
+        properties.setId(id);
         return properties;
     }
 
@@ -1199,8 +1264,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     @SuppressWarnings("unchecked")
-    public List<AclChange> setAccessControlEntry(Long id, final AccessControlEntry ace)
-    {
+    public List<AclChange> setAccessControlEntry(final Long id, final AccessControlEntry ace)
+    {   
         DbAccessControlList target = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
         if (target.getAclType() == ACLType.SHARED)
         {
@@ -1595,7 +1660,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                     entry.setContext(context);
                 }
                 DbPermission perm = member.getAccessControlEntry().getPermission();
-                SimplePermissionReference permissionRefernce = new SimplePermissionReference(perm.getTypeQName().getQName(), perm.getName());
+                SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(perm.getTypeQName().getQName(), perm.getName());
                 entry.setPermission(permissionRefernce);
                 entry.setPosition(Integer.valueOf(0));
 
@@ -1775,11 +1840,17 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             return before;
         }
 
+        /**
+         * @param after
+         */
         public void setAfter(Long after)
         {
             this.after = after;
         }
 
+        /**
+         * @param before
+         */
         public void setBefore(Long before)
         {
             this.before = before;
@@ -1790,6 +1861,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             return typeAfter;
         }
 
+        /**
+         * @param typeAfter
+         */
         public void setTypeAfter(ACLType typeAfter)
         {
             this.typeAfter = typeAfter;
@@ -1800,6 +1874,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             return typeBefore;
         }
 
+        /**
+         * @param typeBefore
+         */
         public void setTypeBefore(ACLType typeBefore)
         {
             this.typeBefore = typeBefore;
@@ -1820,7 +1897,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     /**
      * Get the total number of head nodes in the repository
      * 
-     * @return
+     * @return count
      */
     public Long getAVMHeadNodeCount()
     {
@@ -1847,6 +1924,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     }
 
+    /**
+     * Get the max acl id
+     * @return - max acl id
+     */
     public Long getMaxAclId()
     {
         try
@@ -1871,6 +1952,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
     }
 
+    /**
+     * Does the underlyinf connection support isolation level 1 (dirty read)
+     * 
+     * @return true if we can do a dirty db read and so track changes (Oracle can not)
+     */
     public boolean supportsProgressTracking()
     {
         try
@@ -1885,6 +1971,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     }
 
+    /**
+     * Get the acl count canges so far for progress tracking
+     * @param above
+     * @return - the count
+     */
     public Long getAVMNodeCountWithNewACLS(Long above)
     {
         try
@@ -1910,6 +2001,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
     }
     
+    /**
+     * How many nodes are noew in store (approximate)
+     * @return - the number fo new nodes - approximate
+     */
     public Long getNewInStore()
     {
         HibernateCallback callback = new HibernateCallback()
@@ -1924,6 +2019,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return count;
     }
 
+    
+    /**
+     * Find layered directories 
+     * Used to imporove performance during patching and cascading the effect fo permission changes between layers
+     * 
+     * @return - layered directories
+     */
     @SuppressWarnings("unchecked")
     public List<Indirection> getLayeredDirectories()
     {
@@ -1947,6 +2049,13 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return indirections;
     }
 
+    /**
+     * Find layered files
+     * 
+     * Used to imporove performance during patching and cascading the effect fo permission changes between layers
+     * 
+     * @return - layerd files
+     */
     @SuppressWarnings("unchecked")
     public List<Indirection> getLayeredFiles()
     {
@@ -1985,6 +2094,11 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         getSession().flush();
     }
 
+    /**
+     * Support to describe AVM indirections for permission performance improvements when permissions are set.
+     * @author andyh
+     *
+     */
     public static class Indirection
     {
         Long from;
@@ -2000,21 +2114,90 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             this.toVersion = toVersion;
         }
 
+        /**
+         * @return - from id
+         */
         public Long getFrom()
         {
             return from;
         }
 
+        /**
+         * @return - to id
+         */
         public String getTo()
         {
             return to;
         }
 
+        /**
+         * @return - version
+         */
         public Integer getToVersion()
         {
             return toVersion;
         }
 
+    }
+
+    /**
+     * Ho many DM nodes are there?
+     * 
+     * @return - the count
+     */
+    public Long getDmNodeCount()
+    {
+        try
+        {
+            Session session = getSession();
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetDmNodeCount");
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
+        }
+
+    }
+
+    /**
+     * How many DM nodes are three with new ACls (to track patch progress)
+     * @param above
+     * @return - the count
+     */
+    public Long getDmNodeCountWithNewACLS(Long above)
+    {
+        try
+        {
+            Session session = getSession();
+            int isolationLevel = session.connection().getTransactionIsolation();
+            try
+            {
+                session.connection().setTransactionIsolation(1);
+                Query query = getSession().getNamedQuery("permission.GetDmNodeCountWherePermissionsHaveChanged");
+                query.setParameter("above", above);
+                Long answer = (Long) query.uniqueResult();
+                return answer;
+            }
+            finally
+            {
+                session.connection().setTransactionIsolation(isolationLevel);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
+        }
     }
 
 }

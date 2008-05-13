@@ -27,6 +27,7 @@ package org.alfresco.repo.security.permissions;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -50,8 +51,8 @@ public interface PermissionServiceSPI extends PermissionService
     /**
      * Get the permissions that can be set for a given type
      * 
-     * @param nodeRef
-     * @return
+     * @param type
+     * @return the set of permissions
      */
     public Set<PermissionReference> getSettablePermissionReferences(QName type);
     
@@ -59,7 +60,7 @@ public interface PermissionServiceSPI extends PermissionService
      * Get the permissions that can be set for a given type
      * 
      * @param nodeRef
-     * @return
+     * @return the set of permissions
      */
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef);
 
@@ -68,7 +69,7 @@ public interface PermissionServiceSPI extends PermissionService
      * nothing of the parent permissions)
      * 
      * @param nodeRef
-     * @return
+     * @return the node permission entry
      */
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef);
 
@@ -78,7 +79,7 @@ public interface PermissionServiceSPI extends PermissionService
      * 
      * @param nodeRef
      * @param perm
-     * @return
+     * @return the access status
      */
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm);
 
@@ -87,9 +88,8 @@ public interface PermissionServiceSPI extends PermissionService
      * permission for the given authentication to access the specified name.
      * 
      * @param nodeRef
-     * @param auth
      * @param perm
-     * @return
+     * @return the node permission entry
      */
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm);
     
@@ -124,7 +124,7 @@ public interface PermissionServiceSPI extends PermissionService
      * 
      * @param qname - may be null if the permission name is unique
      * @param permissionName
-     * @return
+     * @return the permission reference
      */
     public PermissionReference getPermissionReference(QName qname, String permissionName);
     
@@ -132,7 +132,7 @@ public interface PermissionServiceSPI extends PermissionService
      * Get the permission reference by permission name.
      *
      * @param permissionName
-     * @return
+     * @return the permission reference
      */
     public PermissionReference getPermissionReference(String permissionName);
     
@@ -141,9 +141,20 @@ public interface PermissionServiceSPI extends PermissionService
      * Get the string that can be used to identify the given permission reference.
      * 
      * @param permissionReference
-     * @return
+     * @return the permission short name
      */
     public String getPermission(PermissionReference permissionReference);
     
+    /**
+     * Delete permissions for the given recipient.
+     * @param recipient
+     */
     public void deletePermissions(String recipient);
+    
+    /**
+     * Get the permissions set for the store
+     * @param storeRef
+     * @return - the node permission entry
+     */
+    public NodePermissionEntry getSetPermissions(StoreRef storeRef);
 }

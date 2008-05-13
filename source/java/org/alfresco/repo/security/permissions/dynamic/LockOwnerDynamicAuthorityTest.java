@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.security.permissions.dynamic;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -43,10 +46,17 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
+/**
+ * Test the lock owner dynaic authority
+ * 
+ * @author andyh
+ *
+ */
 public class LockOwnerDynamicAuthorityTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -73,11 +83,17 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
     
     private OwnableService ownableService;
     
+    /**
+     * 
+     */
     public LockOwnerDynamicAuthorityTest()
     {
         super();
     }
 
+    /**
+     * @param arg0
+     */
     public LockOwnerDynamicAuthorityTest(String arg0)
     {
         super(arg0);
@@ -137,6 +153,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         super.tearDown();
     }
 
+    /**
+     * 
+     */
     public void testSetup()
     {
         assertNotNull(nodeService);
@@ -144,6 +163,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertNotNull(lockService);
     }
 
+    /**
+     * 
+     */
     public void testUnSet()
     {
         permissionService.setPermission(rootNodeRef, "andy", PermissionService.ALL_PERMISSIONS, true);
@@ -152,6 +174,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         authenticationService.clearCurrentSecurityContext();
     }
 
+    /**
+     * 
+     */
     public void testPermissionWithNoLockAspect()
     {
         authenticationService.authenticate("andy", "andy".toCharArray());
@@ -169,6 +194,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rootNodeRef, PermissionService.CANCEL_CHECK_OUT));
     }
     
+    /**
+     * 
+     */
     public void testPermissionWithLockAspect()
     {
         permissionService.setPermission(rootNodeRef, "andy", PermissionService.ALL_PERMISSIONS, true);
@@ -228,6 +256,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         
     }
 
+    /**
+     * 
+     */
     public void testCheckOutCheckInAuthorities()
     {
         permissionService.setPermission(rootNodeRef, "andy", PermissionService.ALL_PERMISSIONS, true);
@@ -356,11 +387,13 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.LOCK));
-        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode,
+        @SuppressWarnings("unused")
+        Map<QName, Serializable> properties = nodeService.getProperties(testNode);
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         authenticationService.authenticate("lemur", "lemur".toCharArray());
         
@@ -390,6 +423,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         
     }
    
+    /**
+     * 
+     */
     public void testCeckInCheckOut()
     {
 

@@ -77,6 +77,10 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     private AuthorityService authorityService;
 
+    /**
+     * Default constructor
+     *
+     */
     public ACLEntryVoter()
     {
         super();
@@ -85,46 +89,82 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     // ~ Methods
     // ================================================================
 
+    /**
+     * Set the permission service
+     * @param permissionService 
+     */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
 
+    /**
+     * Get the permission service
+     * @return the permission service
+     */
     public PermissionService getPermissionService()
     {
         return permissionService;
     }
 
+    /**
+     * Get the name space prefix resolver
+     * @return the name space prefix resolver
+     */
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return nspr;
     }
 
+    /**
+     * Set the name space prefix resolver
+     * @param nspr
+     */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
         this.nspr = nspr;
     }
 
+    /**
+     * Get the node service
+     * @return the node service
+     */
     public NodeService getNodeService()
     {
         return nodeService;
     }
 
+    /**
+     * Set the node service
+     * @param nodeService
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * Get the authentication service
+     * @return the authentication service
+     */
     public AuthenticationService getAuthenticationService()
     {
         return authenticationService;
     }
 
+    /**
+     * Set the authentication service
+     * @param authenticationService
+     */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Set the authority service
+     * @param authorityService
+     */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
@@ -434,7 +474,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
                 QName qName = QName.createQName(qNameString, nspr);
 
-                required = new SimplePermissionReference(qName, permissionString);
+                required = SimplePermissionReference.getPermissionReference(qName, permissionString);
             }
             else if (typeString.equals(ACL_METHOD))
             {

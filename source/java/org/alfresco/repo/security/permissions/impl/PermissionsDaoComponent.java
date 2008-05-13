@@ -27,6 +27,7 @@ package org.alfresco.repo.security.permissions.impl;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -39,25 +40,27 @@ import org.alfresco.service.cmr.security.AccessPermission;
  * 
  * @author andyh
  */
-public interface PermissionsDaoComponent
+public interface PermissionsDaoComponent 
 {
     /**
      * Get the permissions that have been set on a given node.
      * 
      * @param nodeRef
-     * @return
+     * @return the node permission entry
      */
     public NodePermissionEntry getPermissions(NodeRef nodeRef);
 
     /**
      * Delete the access control list and all access control entries for the node.
      * 
-     * @param nodeRef the node for which to delete permission
+     * @param nodeRef
+     *            the node for which to delete permission
      */
     public void deletePermissions(NodeRef nodeRef);
 
     /**
      * Remove all permissions for the specified authority
+     * 
      * @param authority
      */
     public void deletePermissions(String authority);
@@ -65,25 +68,29 @@ public interface PermissionsDaoComponent
     /**
      * Delete permission entries for the given node and authority
      * 
-     * @param nodeRef the node to query against
-     * @param authority the specific authority to query against
+     * @param nodeRef
+     *            the node to query against
+     * @param authority
+     *            the specific authority to query against
      */
     public void deletePermissions(NodeRef nodeRef, String authority);
-    
+
     /**
-     * Delete as single permission entry, if a match is found.
-     * This deleted one permission on the node. It does not affect the persistence of any other permissions.
+     * Delete as single permission entry, if a match is found. This deleted one permission on the node. It does not
+     * affect the persistence of any other permissions.
      * 
-     * @param nodeRef the node with the access control list
-     * @param authority the specific authority to look for
-     * @param permission the permission to look for
+     * @param nodeRef
+     *            the node with the access control list
+     * @param authority
+     *            the specific authority to look for
+     * @param permission
+     *            the permission to look for
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission);
-    
+
     /**
-     * Set a permission on a node.
-     * If the node has no permissions set then a default node permission (allowing inheritance) will be created to
-     * contain the permission entry.
+     * Set a permission on a node. If the node has no permissions set then a default node permission (allowing
+     * inheritance) will be created to contain the permission entry.
      * 
      * @param nodeRef
      * @param authority
@@ -122,7 +129,7 @@ public interface PermissionsDaoComponent
      */
     public boolean getInheritParentPermissions(NodeRef nodeRef);
 
-    /** 
+    /**
      * Get all the permissions set for the given authority
      * 
      * @param authority
@@ -132,9 +139,13 @@ public interface PermissionsDaoComponent
 
     /**
      * Find nodes which have the given permisson for the given authority
-     * @param authority - the authority to match
-     * @param permission - the permission to match
-     * @param allow - true to match allow, false to match deny
+     * 
+     * @param authority -
+     *            the authority to match
+     * @param permission -
+     *            the permission to match
+     * @param allow -
+     *            true to match allow, false to match deny
      * @return - the set of matching nodes
      */
     public Set<NodeRef> findNodeByPermission(String authority, PermissionReference permission, boolean allow);
@@ -175,8 +186,18 @@ public interface PermissionsDaoComponent
 
     /**
      * Get permission masks set on a store
+     * 
      * @param storeRef
-     * @return
+     * @return the node permission entry
      */
     public NodePermissionEntry getPermissions(StoreRef storeRef);
+
+    /**
+     * Get the properties for the access control list
+     * 
+     * @param nodeRef
+     * @return the properties for the access control list
+     */
+    public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef);
+
 }

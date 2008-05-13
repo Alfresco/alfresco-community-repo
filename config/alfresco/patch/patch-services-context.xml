@@ -1452,5 +1452,20 @@
             </list>
         </property>
     </bean>
+	
+	 <bean id="patch.updateDmPermissions" class="org.alfresco.repo.admin.patch.impl.DmPermissionsPatch" parent="basePatch" >
+        <property name="id"><value>patch.updateDmPermissions</value></property>
+        <property name="description"><value>patch.updateDmPermissions.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>124</value></property>
+        <property name="targetSchema"><value>125</value></property>
+        <!-- helper beans -->
+        <property name="accessControlListDao">
+            <ref bean="nodeACLDAO" />
+        </property>
+        <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
+        </property>
+    </bean>
 
 </beans>

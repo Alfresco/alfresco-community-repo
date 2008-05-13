@@ -27,6 +27,12 @@ package org.alfresco.repo.security.permissions;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 
+/**
+ * A basic access control entry 
+ * 
+ * @author andyh
+ *
+ */
 public class SimpleAccessControlEntry implements AccessControlEntry
 {
     /**
@@ -76,31 +82,56 @@ public class SimpleAccessControlEntry implements AccessControlEntry
         return position;
     }
 
+    /**
+     * Set the status
+     * @param accessStatus
+     */
     public void setAccessStatus(AccessStatus accessStatus)
     {
         this.accessStatus = accessStatus;
     }
 
+    
+    /**
+     * Set the type
+     * @param aceType
+     */
     public void setAceType(ACEType aceType)
     {
         this.aceType = aceType;
     }
 
+    /**
+     * Set the authority
+     * @param authority
+     */
     public void setAuthority(String authority)
     {
         this.authority = authority;
     }
 
+    /**
+     * Set the context
+     * @param context
+     */
     public void setContext(AccessControlEntryContext context)
     {
         this.context = context;
     }
 
+    /**
+     * Set the permission
+     * @param permission
+     */
     public void setPermission(PermissionReference permission)
     {
         this.permission = permission;
     }
 
+    /** 
+     * Set the position
+     * @param position
+     */
     public void setPosition(Integer position)
     {
         this.position = position;
@@ -125,6 +156,21 @@ public class SimpleAccessControlEntry implements AccessControlEntry
         {
             return diff;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+       StringBuilder builder = new StringBuilder();
+       builder.append("[");
+       builder.append(getPermission()).append(", ");
+       builder.append(getAuthority()).append(", ");
+       builder.append(getAccessStatus()).append(", ");
+       builder.append(getAceType()).append(", ");
+       builder.append(getPosition()).append(", ");
+       builder.append(getContext());
+       builder.append("]");
+       return builder.toString();
     }
 
     

@@ -26,25 +26,30 @@ package org.alfresco.repo.security.permissions;
 
 import java.io.Serializable;
 
-
+/**
+ * Properties for an access control list
+ * 
+ * @author andyh
+ *
+ */
 public interface AccessControlListProperties extends Serializable
 {
     /**
      * Get the ACL ID
-     * @return
+     * @return the acl id
      */
     
     public String getAclId();
     
     /**
      * Get the ACL version
-     * @return
+     * @return the acl version
      */
     public Long getAclVersion();
     
     /**
      * Is this the latest version of the acl identified by the acl id string? 
-     * @return
+     * @return - true if the acl is the latest version
      */
     public Boolean isLatest();
     
@@ -57,7 +62,7 @@ public interface AccessControlListProperties extends Serializable
     /**
      * Get the type for this ACL
      * 
-     * @return
+     * @return the acl type
      */
     public ACLType getAclType();
     
@@ -67,7 +72,14 @@ public interface AccessControlListProperties extends Serializable
      * 
      * If an acl is versioned it can not be updated - a new copy has to be created,
      *  
-     * @return
+     * @return if the acl is verioned
      */
     public Boolean isVersioned();
+    
+    /**
+     * The ACL DB id
+     * 
+     * @return the id
+     */
+    public Long getId();
 }

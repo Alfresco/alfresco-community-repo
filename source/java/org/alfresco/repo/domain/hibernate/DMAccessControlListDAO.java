@@ -48,13 +48,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * DAO layer for the improved ACL implemtentation.
- * 
- * This layer is responsible for setting ACLs and any cascade behaviour required.
- * It also implements the migration from the old implementation to the new.
+ * DAO layer for the improved ACL implemtentation. This layer is responsible for setting ACLs and any cascade behaviour
+ * required. It also implements the migration from the old implementation to the new.
  * 
  * @author andyh
- *
  */
 public class DMAccessControlListDAO implements AccessControlListDAO
 {
@@ -81,6 +78,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
     /**
      * Set the ACL DAO components
+     * 
      * @param aclDaoComponent
      */
     public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
@@ -100,6 +98,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
     /**
      * Set the node service.
+     * 
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
@@ -196,8 +195,11 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
         for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
         {
-            CounterSet update = fixOldDmAcls(child.getChildRef());
-            result.add(update);
+            if (child.isPrimary())
+            {
+                CounterSet update = fixOldDmAcls(child.getChildRef());
+                result.add(update);
+            }
         }
 
         DbAccessControlList existingAcl = getAccessControlList(nodeRef);
@@ -235,7 +237,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                 // Already fixed up :-)
             }
         }
-        
+
         return result;
     }
 
@@ -291,49 +293,51 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
             for (ChildAssociationRef child : children)
             {
-                DbAccessControlList acl = getAccessControlList(child.getChildRef());
+                if (child.isPrimary())
+                {
+                    DbAccessControlList acl = getAccessControlList(child.getChildRef());
 
-                if (acl == null)
-                {
-                    hibernateSessionHelper.mark();
-                    try
+                    if (acl == null)
                     {
-                        setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
+                        hibernateSessionHelper.mark();
+                        try
+                        {
+                            setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
+                        }
+                        finally
+                        {
+                            hibernateSessionHelper.resetAndRemoveMark();
+                        }
                     }
-                    finally
+                    else if (acl.getAclType() == ACLType.LAYERED)
                     {
-                        hibernateSessionHelper.resetAndRemoveMark();
+                        throw new UnsupportedOperationException();
+                    }
+                    else if (acl.getAclType() == ACLType.DEFINING)
+                    {
+                        @SuppressWarnings("unused")
+                        List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
+                    }
+                    else
+                    {
+                        hibernateSessionHelper.mark();
+                        try
+                        {
+                            setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
+                        }
+                        finally
+                        {
+                            hibernateSessionHelper.resetAndRemoveMark();
+                        }
                     }
                 }
-                else if (acl.getAclType() == ACLType.LAYERED)
-                {
-                    throw new UnsupportedOperationException();
-                }
-                else if (acl.getAclType() == ACLType.DEFINING)
-                {
-                    @SuppressWarnings("unused")
-                    List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
-                }
-                else
-                {
-                    hibernateSessionHelper.mark();
-                    try
-                    {
-                        setFixedAcls(child.getChildRef(), mergeFrom, changes, true);
-                    }
-                    finally
-                    {
-                        hibernateSessionHelper.resetAndRemoveMark();
-                    }
-                }
-
             }
         }
 
     }
 
     /**
-     * Static support to set ACLs - required for use by the dbNodeService 
+     * Static support to set ACLs - required for use by the dbNodeService
      * 
      * @param nodeRef
      * @param mergeFrom
@@ -359,24 +363,27 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
             for (ChildAssociationRef child : children)
             {
-                DbAccessControlList acl = getAccessControlList(child.getChildRef(), nodeDaoService);
+                if (child.isPrimary())
+                {
+                    DbAccessControlList acl = getAccessControlList(child.getChildRef(), nodeDaoService);
 
-                if (acl == null)
-                {
-                    setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
-                }
-                else if (acl.getAclType() == ACLType.LAYERED)
-                {
-                    throw new UnsupportedOperationException();
-                }
-                else if (acl.getAclType() == ACLType.DEFINING)
-                {
-                    @SuppressWarnings("unused")
-                    List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
-                }
-                else
-                {
-                    setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
+                    if (acl == null)
+                    {
+                        setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
+                    }
+                    else if (acl.getAclType() == ACLType.LAYERED)
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                    else if (acl.getAclType() == ACLType.DEFINING)
+                    {
+                        @SuppressWarnings("unused")
+                        List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
+                    }
+                    else
+                    {
+                        setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
+                    }
                 }
             }
         }

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.avm.AVMNodeService;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -160,9 +161,13 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
         for (StoreRef store : stores)
         {
-            @SuppressWarnings("unused")
-            CounterSet update;
-            update = fixOldDmAcls(nodeService.getRootNode(store));
+            if (!store.getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            {
+                @SuppressWarnings("unused")
+                CounterSet update;
+                update = fixOldDmAcls(nodeService.getRootNode(store));
+                result.add(update);
+            }
         }
 
         HashMap<ACLType, Integer> toReturn = new HashMap<ACLType, Integer>();

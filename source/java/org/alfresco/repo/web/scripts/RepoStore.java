@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -339,10 +340,39 @@ public class RepoStore implements Store, TenantDeployer
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getDescriptionDocumentPaths()
+     * @see org.alfresco.web.scripts.Store#getDocumentPaths(java.lang.String, boolean, java.lang.String)
      */
-    public String[] getDescriptionDocumentPaths()
+    public String[] getDocumentPaths(String path, boolean includeSubPaths, String documentPattern)
     {
+        if ((path == null) || (path.length() == 0))
+        {
+            path = "/";
+        }
+        
+        if (! path.startsWith("/"))
+        {
+            path = "/" + path;
+        }
+        
+        if (! path.endsWith("/"))
+        {
+            path = path + "/";
+        }
+        
+        if ((documentPattern == null) || (documentPattern.length() == 0))
+        {
+            documentPattern = "*";
+        }
+        
+        final String matcher = documentPattern.replace(".","\\.").replace("*",".*");
+        
+        final StringBuffer query = new StringBuffer();
+        query.append("+PATH:\"").append(repoPath)
+               .append(path)
+               .append((includeSubPaths ? "/*\"" : ""))
+               .append(" +QNAME:")
+               .append(documentPattern);
+        
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
         {
             public String[] doWork() throws Exception
@@ -353,15 +383,15 @@ public class RepoStore implements Store, TenantDeployer
                     {
                         int baseDirLength = getBaseDir().length() +1;
                         
-                        String query = "+PATH:\"" + repoPath + "//*\" +QNAME:*.desc.xml";
-                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query.toString());
                         List<String> documentPaths = new ArrayList<String>(resultSet.length());
                         List<NodeRef> nodes = resultSet.getNodeRefs();
                         for (NodeRef nodeRef : nodes)
                         {
-                            String nodeDir = getPath(nodeRef);
-                            if (nodeDir.endsWith(".desc.xml"))
+                            String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            if (Pattern.matches(matcher, name))
                             {
+                                String nodeDir = getPath(nodeRef);
                                 String documentPath = nodeDir.substring(baseDirLength);
                                 documentPaths.add(documentPath);
                             }
@@ -372,6 +402,14 @@ public class RepoStore implements Store, TenantDeployer
                 });
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#getDescriptionDocumentPaths()
+     */
+    public String[] getDescriptionDocumentPaths()
+    {
+        return getDocumentPaths("/", true, "*.desc.xml");
     }
 
     /* (non-Javadoc)

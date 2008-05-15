@@ -58,7 +58,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         super.onSetUpInTransaction();
         
         // Get the required services
-        this.activityService = (ActivityService)this.applicationContext.getBean("ActivityService");
+        this.activityService = (ActivityService)this.applicationContext.getBean("activityService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");

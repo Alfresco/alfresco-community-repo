@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Activities Admin User Feed Web Script</shortname>
+  <description>Allow admin to get feed for a specified user</description>
+  <url>/api/activities/feed/user/{userId}</url>
+  <url>/api/activities/feed/user/{userId}?format=atomfeed</url>
+  <url>/api/activities/feed/user/{userId}?format=json</url>
+  <url>/api/activities/feed/user/{userId}?s={siteId}</url>
+  <url>/api/activities/feed/user/{userId}?s={siteId}&amp;format=atomfeed</url>
+  <url>/api/activities/feed/user/{userId}?s={siteId}&amp;format=json</url>
+  <format default="atomfeed"></format>
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

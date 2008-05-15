@@ -222,4 +222,55 @@
       <property name="store"><value>sitestore</value></property>
    </bean>
 
+   <!--                            -->
+   <!-- Activity Feed Web Scripts  -->
+   <!--                            -->
+
+   <!-- Activity User Feed - to get activities feed for logged in user -->
+   <bean id="webscript.org.alfresco.repository.activities.userfeed.get" class="org.alfresco.repo.web.scripts.activities.UserFeedRetrieverWebScript" parent="webscript">
+      <property name="activityService" ref="activityService"/>
+   </bean>
+  
+   <!-- Activity Admin Feed - to get activities feed for specified user -->
+   <bean id="webscript.org.alfresco.repository.activities.userfeed-admin.get" class="org.alfresco.repo.web.scripts.activities.UserFeedRetrieverWebScript" parent="webscript">
+      <property name="activityService" ref="activityService"/>
+   </bean>
+   
+   <!-- Activity Site Feed - to get activities feed for given site, if private site then need to be a member or admin -->
+   <bean id="webscript.org.alfresco.repository.activities.sitefeed.get" class="org.alfresco.repo.web.scripts.activities.SiteFeedRetrieverWebScript" parent="webscript">
+      <property name="activityService" ref="activityService"/>
+   </bean>
+   
+   <!--                            -->
+   <!-- Activity Templates Storage -->
+   <!--                            -->
+   
+   <bean id="webscript.org.alfresco.repository.activities.templates.get" class="org.alfresco.repo.web.scripts.activities.TemplatesWebScript" parent="webscript">
+      <property name="searchPath" ref="activity.template.searchpath"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.activities.template.get" class="org.alfresco.repo.web.scripts.activities.TemplateWebScript" parent="webscript">
+      <property name="searchPath" ref="activity.template.searchpath"/>
+   </bean>
+   
+   <bean id="templates.classpathstore" class="org.alfresco.web.scripts.ClassPathStore" abstract="true" />
+   
+   <bean id="activity.template.store.client.extension" parent="templates.classpathstore">
+      <property name="classPath"><value>alfresco/extension/templates/activities</value></property>
+   </bean>
+
+   <bean id="activity.template.store.client" parent="templates.classpathstore">
+      <property name="mustExist"><value>true</value></property>
+      <property name="classPath"><value>alfresco/templates/activities</value></property>
+   </bean>
+   
+   <bean id="activity.template.searchpath" class="org.alfresco.web.scripts.SearchPath">
+      <property name="searchPath">
+          <list>
+             <ref bean="activity.template.store.client.extension" />
+             <ref bean="activity.template.store.client" />
+          </list>
+      </property>
+   </bean>
+   
 </beans>

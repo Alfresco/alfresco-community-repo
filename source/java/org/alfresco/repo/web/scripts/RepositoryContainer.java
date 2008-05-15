@@ -257,7 +257,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 //
                 if (auth == null || auth.authenticate(required, isGuest))
                 {
-                    if (required == RequiredAuthentication.admin && !authorityService.hasAdminAuthority())
+                    if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getCurrentUserName().equals(AuthenticationUtil.getSystemUserName())))
                     {
                         throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
                     }

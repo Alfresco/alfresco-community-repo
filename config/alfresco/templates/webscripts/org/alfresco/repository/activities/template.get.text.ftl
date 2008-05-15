@@ -1,0 +1,2 @@
+<#if template??>
+${template}</#if>

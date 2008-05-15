@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ActivityFeedControl">
+
+   <typeAlias alias="FeedControl" type="org.alfresco.repo.activities.feed.control.FeedControlDAO"/>
+
+   <resultMap id="FeedControlResult" class="FeedControl">
+      <result property="id" column="ID"/>
+      <result property="feedUserId" column="FEED_USER_ID"/>
+      <result property="siteNetwork" column="SITE_NETWORK"/>
+      <result property="appTool" column="APP_TOOL"/>
+      <result property="lastModified" column="LAST_MODIFIED"/>
+   </resultMap>
+  
+   <select id="select.activity.feedcontrols.for.user" parameterClass="FeedControl" resultClass="FeedControl">
+      <![CDATA[
+      select id as id, feed_user_id as feedUserId, site_network as siteNetwork, app_tool as appTool
+      from alf_activity_feed_control
+      where feed_user_id = #feedUserId#
+      ]]>
+   </select>
+
+   <select id="select.activity.feedcontrol" parameterClass="FeedControl" resultClass="long">
+      <![CDATA[
+      select id as id
+      from alf_activity_feed_control
+      where feed_user_id = #feedUserId#
+      and site_network = #siteNetwork#
+      and app_tool = #appTool#
+      ]]>
+   </select>
+   
+   <insert id="insert.activity.feedcontrol" parameterClass="FeedControl">
+   
+      <selectKey resultClass="long" keyProperty="id" type="pre">
+         select alf_activity_feed_control_seq.nextval as value from dual
+      </selectKey>
+      
+      insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)
+      values (#id#, #feedUserId#, #siteNetwork#, #appTool#, #lastModified#)
+      
+   </insert>
+  
+   <delete id="delete.activity.feedcontrol" parameterClass="FeedControl">
+      <![CDATA[
+      delete from alf_activity_feed_control
+      where feed_user_id = #feedUserId#
+      and site_network = #siteNetwork#
+      and app_tool = #appTool#
+      ]]>
+   </delete>
+
+</sqlMap>

@@ -1468,4 +1468,15 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V3.0-0-CreateActivitiesTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.0-0-CreateActivitiesTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>125</value></property>
+        <property name="targetSchema"><value>126</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-tables.sql</value>
+        </property>
+    </bean>
+    
 </beans>

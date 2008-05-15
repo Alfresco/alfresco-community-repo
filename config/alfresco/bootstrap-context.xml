@@ -43,6 +43,7 @@
           <list>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-tables.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -59,6 +60,7 @@
              <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
              <ref bean="patch.db-V2.2-2-MoveQNames" />
              <ref bean="patch.db-V2.2-3-PropTypes" />
+             <ref bean="patch.db-V3.0-0-CreateActivitiesTables" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

@@ -95,6 +95,10 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
     {
         // The derived class is using the default context
         defaultContext = true;
+        
+        this.setAutowireMode(AUTOWIRE_BY_NAME);
+        //this.setDependencyCheck(false);
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Getting config locations");

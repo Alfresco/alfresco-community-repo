@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">
+      <property name="postDaoService" ref="postDaoService"/>
+      <property name="feedDaoService" ref="feedDaoService"/>
+      <property name="feedControlDaoService" ref="feedControlDaoService"/>
+      <property name="authorityService" ref="AuthorityService"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+      <property name="feedGenerator" ref="feedGenerator"/>
+      <property name="maxFeedItems" value="100"/>
+   </bean>
+   
+   <bean id="iBatisDataSource" parent="dataSource">
+      <property name="defaultAutoCommit" >
+         <value>true</value>
+      </property>
+   </bean>
+
+   <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" singleton="true">
+      <property name="configLocation"><value>classpath:alfresco/activities/activities-SqlMapConfig.xml</value></property> 
+      <property name="dataSource" ref="iBatisDataSource"/>
+   </bean> 
+   
+   <bean id="postDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityPostDaoServiceImpl">
+      <property name="sqlMapClient" ref="sqlMapClient"/>
+   </bean>
+   
+   <bean id="feedDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityFeedDaoServiceImpl">
+      <property name="sqlMapClient" ref="sqlMapClient"/>
+   </bean>
+   
+   <bean id="feedControlDaoService" class="org.alfresco.repo.activities.ibatis.IBatisFeedControlDaoServiceImpl">
+      <property name="sqlMapClient" ref="sqlMapClient"/>
+   </bean>
+
+   <!-- cleans out-of-date feed entries -->
+   <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner">
+      <property name="feedDaoService" ref="feedDaoService"/>
+      <property name="maxAgeMins">
+         <value>20160</value> <!-- 20160 mins = 2 weeks -->
+      </property>
+   </bean>
+   
+   <!-- cleans processed posts - max age can be small, unless required to be kept longer (for debugging) -->
+   <bean id="postCleaner" class="org.alfresco.repo.activities.post.cleanup.PostCleaner">
+      <property name="postDaoService" ref="postDaoService"/>
+      <property name="maxAgeMins">
+         <value>30</value> <!-- 30 minutes -->
+      </property>
+   </bean>
+   
+   <!-- secondary lookup for pending posts -->
+   <bean id="postLookup" class="org.alfresco.repo.activities.post.lookup.PostLookup">
+      <property name="postDaoService" ref="postDaoService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      <property name="transactionService" ref="transactionService"/>
+      <property name="personService" ref="personService"/>
+   </bean>
+    
+   <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">
+      <property name="postDaoService" ref="postDaoService"/>
+      <property name="authenticationService" ref="AuthenticationService"/>
+      <property name="repoEndPoint" value="${repo.remote.endpoint.url}"/>
+      <property name="maxItemsPerCycle" value="100"/>
+   </bean>
+   
+   
+   <!-- Local (non-grid-based) Feed Generator -->
+   
+   <bean id="feedGenerator" class="org.alfresco.repo.activities.feed.local.LocalFeedGenerator" parent="baseFeedGenerator">
+      <property name="feedTaskProcessor" ref="feedTaskProcessor"/>
+   </bean>
+   
+   <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">
+      <!-- NOTE: assumes same sqlMapClient is also configured for postDaoService and feedDaoService -->
+      <property name="sqlMapClient" ref="sqlMapClient"/>
+      <property name="postDaoService" ref="postDaoService"/>
+      <property name="feedDaoService" ref="feedDaoService"/>
+      <property name="feedControlDaoService" ref="feedControlDaoService"/>
+   </bean>
+   
+</beans>

@@ -167,4 +167,13 @@
         </property>
     </bean>
 
+    <bean id="activitiesScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.activities.script.Activity">
+        <property name="extensionName">
+            <value>activities</value>
+        </property>        
+        <property name="activityService">
+            <ref bean="activityService"/>
+        </property>
+    </bean>
+    
 </beans>

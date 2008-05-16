@@ -52,6 +52,10 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
 	 */
     public BaseSpringTest()
     {
+        // TODO temporarily switch default to auto-wire by name
+        this.setAutowireMode(AUTOWIRE_BY_NAME);
+        //this.setDependencyCheck(false);
+        
         defaultContext = false;
     }
     
@@ -95,9 +99,6 @@ public abstract class BaseSpringTest extends AbstractTransactionalDataSourceSpri
     {
         // The derived class is using the default context
         defaultContext = true;
-        
-        this.setAutowireMode(AUTOWIRE_BY_NAME);
-        //this.setDependencyCheck(false);
         
         if (logger.isDebugEnabled())
         {

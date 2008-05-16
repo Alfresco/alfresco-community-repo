@@ -63,3 +63,15 @@ CREATE TABLE alf_activity_feed_control (
 CREATE SEQUENCE alf_activity_feed_control_seq START WITH 1 INCREMENT BY 1;
 
 CREATE INDEX feedcontroluserid_idx ON alf_activity_feed_control(feed_user_id);
+
+--
+-- Record script finish
+--
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V3.0-0-CreateActivitiesTables';
+INSERT INTO alf_applied_patch
+  (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
+  VALUES
+  (
+    'patch.db-V3.0-0-CreateActivitiesTables', 'Executed script create V3.0: Created activities tables',
+    0, 125, -1, 126, null, 'UNKNOWN', 1, 1, 'Script completed'
+  );

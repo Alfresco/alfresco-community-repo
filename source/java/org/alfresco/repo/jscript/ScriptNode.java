@@ -73,6 +73,8 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -1900,6 +1902,47 @@ public class ScriptNode implements Serializable, Scopeable
         }
     }
 
+    /**
+     * Returns the JSON representation of this node.
+     * 
+     * NOTE: This is a temporary method to support the /api/metadata web script
+     * 
+     * @return The JSON representation of this node
+     */
+    public String toJSON()
+    {
+       String jsonStr = "{}";
+       
+       if (this.nodeService.exists(nodeRef))
+       {
+           if (this.services.getPermissionService().hasPermission(nodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED)
+           {
+               JSONObject json = new JSONObject();
+              
+               try
+               {
+                   // add type info
+                   json.put("nodeRef", this.getNodeRef().toString());
+                   json.put("type", this.getType());
+                   json.put("mimetype", this.getMimetype());
+                   
+                   // add properties
+                   json.put("properties", this.nodeService.getProperties(this.nodeRef));
+                   
+                   // add aspects as an array
+                   json.put("aspects", this.nodeService.getAspects(this.nodeRef));
+               }
+               catch (JSONException error)
+               {
+                   error.printStackTrace();
+               }
+              
+               jsonStr = json.toString();
+           }
+       }
+       
+       return jsonStr;
+    }
     
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string

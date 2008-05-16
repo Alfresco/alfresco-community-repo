@@ -64,5 +64,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.0-0-CreateActivitiesTables', 'Executed script create V3.0: Created activities tables',
-    0, 125, -1, 126, null, 'UNKNOWN', 1, 1, 'Script completed'
+    0, 125, -1, 126, now(), 'UNKNOWN', 1, 1, 'Script completed'
   );

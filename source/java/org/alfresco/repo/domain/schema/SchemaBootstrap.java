@@ -535,7 +535,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Builds the schema from scratch or applies the necessary patches to the schema.
      */
-    private void updateSchema(Configuration cfg, Session session, Connection connection) throws Exception
+    private boolean updateSchema(Configuration cfg, Session session, Connection connection) throws Exception
     {
         boolean create = false;
         try
@@ -604,6 +604,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Execute any post-auto-update scripts
             checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, true);
         }
+        
+        return create;
     }
     
     /**
@@ -956,7 +958,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // Allocate buffer for executed statements
                 executedStatementsThreadLocal.set(new StringBuilder(1024));
                 
-                updateSchema(cfg, session, connection);
+                boolean create = updateSchema(cfg, session, connection);
                 
                 // Copy the executed statements to the output file
                 File schemaOutputFile = null;
@@ -981,10 +983,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
                 }
                 
-                // verify that all patches have been applied correctly 
-                checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
-                checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
-                checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
+                if (! create)
+                {
+                    // verify that all patches have been applied correctly 
+                    checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts
+                    checkSchemaPatchScripts(cfg, session, connection, preUpdateScriptPatches, false);       // check scripts
+                    checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
+                }
                 
                 // Remove the flag indicating a running bootstrap
                 setBootstrapCompleted(connection);

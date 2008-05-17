@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="wf:workflowmodel"
+   xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
+   </imports>
+
+   <types>
+      <!--  Custom Tasks -->
+
+      <type name="wf:startInviteTask">
+         <parent>bpm:startTask</parent>
+      </type>
+
+      <type name="wf:inviteToSiteTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+      <type name="wf:acceptInviteTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+      <type name="wf:rejectInviteTask">
+         <parent>bpm:workflowTask</parent>
+      </type>
+
+   </types>
+</model>

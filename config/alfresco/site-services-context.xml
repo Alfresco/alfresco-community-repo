@@ -22,6 +22,8 @@
        <property name="permissionService" ref="PermissionService" />
        <property name="authenticationComponent" ref="authenticationComponent"/>              
        <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+       <property name="personService" ref="PersonService"/>
+       <property name="activityService" ref="activityService"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

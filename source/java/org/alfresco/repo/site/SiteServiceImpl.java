@@ -33,8 +33,10 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,28 +44,40 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Bootstraps the site AVN and DM stores
+ * Site Service Implementation. Also bootstraps the site AVM and DM stores.
  * 
  * @author Roy Wetherall
  */
 public class SiteServiceImpl extends AbstractLifecycleBean implements SiteService, SiteModel
 {
+    private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
+    
     public static final String SITE_AVM_STORE = "SiteStore";
     public static final StoreRef SITE_DM_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SiteStore");
+    
+    private static final String ACTIVITY_TOOL = "siteService";
     
     private NodeService nodeService;
     private SearchService searchService;
     private PermissionService permissionService;
+    private ActivityService activityService;
+    private PersonService personService;
     private AuthenticationComponent authenticationComponent;
     private RetryingTransactionHelper retryingTransactionHelper;
     
@@ -80,6 +94,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    public void setActivityService(ActivityService activityService)
+    {
+        this.activityService = activityService;
+    }
+    
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
     
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
@@ -359,7 +383,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // TODO do not remove the only site manager
         
         // Clear the permissions for the user 
-        this.permissionService.clearPermission(siteNodeRef, userName);        
+        this.permissionService.clearPermission(siteNodeRef, userName);
+
+        if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+        {
+            activityService.postActivity(ActivityType.SITE_USER_REMOVED, shortName, ACTIVITY_TOOL, getActivityData(userName, ""));
+        }
+        else
+        {
+            // TODO - update this, if sites support groups
+            logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
+        }
     }
 
     /**
@@ -373,6 +407,18 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
         }
         
+        boolean alreadyMember = false;
+        Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+        for (AccessPermission permission : permissions)
+        {
+            String authority = permission.getAuthority();
+            if (authority.equals(userName))
+            {
+                alreadyMember = true;
+                break;
+            }
+        }
+        
         // TODO if this is the only site manager do not downgrade their permissions
         
         // Clear any existing permissions
@@ -380,6 +426,58 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         // Set the permissions
         this.permissionService.setPermission(siteNodeRef, userName, role, true);
+        
+        if (! alreadyMember)
+        {
+            if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+            {
+                activityService.postActivity(ActivityType.SITE_USER_JOINED, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
+            }
+            else
+            {
+                // TODO - update this, if sites support groups
+                logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
+            }
+        }
+        else
+        {
+            if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+            {
+                activityService.postActivity(ActivityType.SITE_USER_ROLE_UPDATE, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
+            }
+            else
+            {
+                // TODO - update this, if sites support groups
+                logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
+            }
+        }
+    }
+    
+    private String getActivityData(String userName, String role)
+    {
+        String memberFN = "";
+        String memberLN = "";
+        NodeRef person = personService.getPerson(userName);
+        if (person != null)
+        {
+            memberFN = (String)nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
+            memberLN = (String)nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
+        }
+        
+        try
+        {
+            JSONObject activityData = new JSONObject();
+            activityData.put("role", role);
+            activityData.put("memberFirstName", memberFN);
+            activityData.put("memberLastName", memberLN);
+            return activityData.toString();
+        }
+        catch (JSONException je)
+        {
+            // log error, subsume exception
+            logger.error("Failed to get activity data: " + je);
+            return "";
+        }
     }
     
     /**

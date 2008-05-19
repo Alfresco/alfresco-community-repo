@@ -30,4 +30,9 @@ public interface ActivityType
     
     // generic fallback (if specific template is missing)
     public final String GENERIC_FALLBACK = "org.alfresco.generic";
+    
+    // site membership
+    public final String SITE_USER_JOINED = "org.alfresco.site.user-joined";
+    public final String SITE_USER_REMOVED = "org.alfresco.site.user-left";
+    public final String SITE_USER_ROLE_UPDATE = "org.alfresco.site.user-role-changed";
 }

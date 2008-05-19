@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -68,6 +69,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.tools.ant.taskdefs.War;
+
+import freemarker.log.Logger;
 
 /**
  * Node operations service implmentation.
@@ -76,6 +82,11 @@ import org.alfresco.util.ParameterCheck;
  */
 public class CopyServiceImpl implements CopyService
 {
+	/**
+     * The logger
+     */
+	private static Log logger = LogFactory.getLog(ActionServiceImpl.class);
+	
 	/** I18N labels */
 	private String COPY_OF_LABEL = "copy_service.copy_of_label";
 	
@@ -733,7 +744,16 @@ public class CopyServiceImpl implements CopyService
 			if (this.nodeService.hasAspect(destinationNodeRef, aspect) == false)
 			{
 				// Error since the aspect has not been added to the destination node (should never happen)
-				throw new CopyServiceException("The aspect has not been added to the destination node.");
+				if (logger.isWarnEnabled() == true)
+				{
+					logger.warn("WARNING: the aspect " + aspect.toString() + " could not be found on node " + destinationNodeRef.toString() + "during copy.  It has been reapplied.");
+				}
+				
+				// For some reason the aspect has not been added, so re-add it
+				this.nodeService.addAspect(
+						destinationNodeRef, 
+						aspect, 
+						copyDetails.getProperties(aspect));
 			}
 			
 			copyChildAssociations(aspect, destinationNodeRef, copyDetails, copyChildren, copiedChildren);

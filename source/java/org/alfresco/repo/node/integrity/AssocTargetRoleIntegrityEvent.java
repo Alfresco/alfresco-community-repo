@@ -98,7 +98,7 @@ public class AssocTargetRoleIntegrityEvent extends AbstractIntegrityEvent
         if (assocRoleQName != null)
         {
             // the assoc defines a role name - check it
-            RegexQNamePattern rolePattern = new RegexQNamePattern(assocRoleQName.toString());
+            RegexQNamePattern rolePattern = new RegexQNamePattern(assocRoleQName.getNamespaceURI(), assocRoleQName.getLocalName());
             if (!rolePattern.isMatch(assocQName))
             {
                 IntegrityRecord result = new IntegrityRecord(

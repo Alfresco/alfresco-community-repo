@@ -38,7 +38,7 @@ public class InvalidTypeException extends InvalidClassException
 
     public InvalidTypeException(QName typeName)
     {
-        super(null, typeName);
+        super("Invalid type: " + typeName, typeName);
     }
 
     public InvalidTypeException(String msg, QName typeName)

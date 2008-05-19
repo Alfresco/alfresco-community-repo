@@ -187,6 +187,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         {
             report.setCause(e);
             report.setStatus(RestoreStatus.FAILURE_OTHER);
+            logger.error("An unhandled exception stopped the restore", e);
         }
         // done
         if (logger.isDebugEnabled())

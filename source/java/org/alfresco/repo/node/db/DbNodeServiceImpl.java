@@ -1837,6 +1837,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
             
             Node nodeToMove = oldNodeStatus.getNode();
+            if (nodeToMove == null)
+            {
+                // Ignore it.  It was moved already.
+                continue;
+            }
             NodeRef oldNodeRef = nodeToMove.getNodeRef();
             nodeToMove.setStore(store);
             NodeRef newNodeRef = nodeToMove.getNodeRef();

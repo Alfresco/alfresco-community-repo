@@ -39,11 +39,30 @@ import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
  */
 public class AssociationGenerator extends BaseComponentGenerator
 {
+   protected String optionsSize = null;
+   
+   public String getAvailableOptionsSize()
+   {
+      return this.optionsSize;
+   }
+
+   public void setAvailableOptionsSize(String optionsSize)
+   {
+      this.optionsSize = optionsSize;
+   }
+
+   @SuppressWarnings("unchecked")
    public UIComponent generate(FacesContext context, String id)
    {
       UIComponent component = context.getApplication().
             createComponent(RepoConstants.ALFRESCO_FACES_ASSOC_EDITOR);
       FacesHelper.setupComponentId(context, component, id);
+      
+      // set the size of the list (if provided)
+      if (this.optionsSize != null)
+      {
+         component.getAttributes().put("availableOptionsSize", this.optionsSize);
+      }
       
       return component;
    }

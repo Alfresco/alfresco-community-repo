@@ -718,7 +718,7 @@ public abstract class BaseAssociationEditor extends UIInput
 
       if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetRef)))
       {
-         out.write(Utils.encode(User.getFullName(nodeService, targetRef)));
+         out.write(Utils.encode(User.getFullNameAndUserId(nodeService, targetRef)));
       }
       else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetRef)))
       {
@@ -843,14 +843,14 @@ public abstract class BaseAssociationEditor extends UIInput
             {
                if (ContentModel.TYPE_PERSON.equals(nodeService.getType(item)))
                {
-                  // if the node represents a person, show the username instead of the name
+                  // if the node represents a person, show the full name and userid instead of the name
                   String userName = (String)nodeService.getProperty(item, ContentModel.PROP_USERNAME);
                   if (userName != null && (userName.equals(PermissionService.GUEST_AUTHORITY) == false))
                   {
                      out.write("<option value='");
                      out.write(item.toString());
                      out.write("'>");
-                     out.write(Utils.encode(User.getFullName(nodeService, item)));
+                     out.write(Utils.encode(User.getFullNameAndUserId(nodeService, item)));
                      out.write("</option>");
                   }
                }

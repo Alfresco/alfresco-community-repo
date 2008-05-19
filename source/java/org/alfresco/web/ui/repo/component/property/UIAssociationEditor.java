@@ -171,7 +171,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
             if (ContentModel.TYPE_PERSON.equals(nodeService.getType(targetNode)))
             {
                // if the node represents a person, show the username instead of the name
-               out.write(Utils.encode(User.getFullName(nodeService, targetNode)));
+               out.write(Utils.encode(User.getFullNameAndUserId(nodeService, targetNode)));
             }
             else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
             {

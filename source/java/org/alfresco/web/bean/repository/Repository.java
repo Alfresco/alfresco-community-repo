@@ -47,6 +47,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -66,7 +67,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.NavigationBean.NavigationBreadcrumbHandler;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.apache.commons.logging.Log;
@@ -437,6 +437,7 @@ public final class Repository
       
       // get required services
       NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
+      DictionaryService dictionaryService = Repository.getServiceRegistry(context).getDictionaryService();
       PermissionService permsService = Repository.getServiceRegistry(context).getPermissionService();
       
       // add the given node to start
@@ -455,9 +456,14 @@ public final class Repository
             
             if (grandParent != null)
             {
-               // current node is not the root node so add it to the breadcrumb
-               String parentName = Repository.getNameForNode(nodeService, parent);
-               location.add(0, navBean.new NavigationBreadcrumbHandler(parent, parentName));
+               // check that the node is actually a folder type, content can have children!
+               QName parentType = nodeService.getType(parent);
+               if (dictionaryService.isSubClass(parentType, ContentModel.TYPE_FOLDER))
+               {
+                  // if it's a folder add the location to the breadcrumb
+                  String parentName = Repository.getNameForNode(nodeService, parent);
+                  location.add(0, navBean.new NavigationBreadcrumbHandler(parent, parentName));
+               }
             }
             
             parent = grandParent;

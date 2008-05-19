@@ -290,4 +290,30 @@ public final class User implements Serializable
       
       return fullName;
    }
+   
+   /**
+    * Returns the full name of the user plus their userid in the form [id]
+    * 
+    * @param nodeService The node service instance
+    * @param user The user to get the full name for
+    * @return The full name and userid
+    */
+   public static String getFullNameAndUserId(NodeService nodeService, NodeRef user)
+   {
+      String fullName = getFullName(nodeService, user);
+      String userId = (String)nodeService.getProperties(user).get(ContentModel.PROP_USERNAME);
+
+      StringBuilder nameAndId = new StringBuilder();
+      if (fullName != null && fullName.length() > 0 && fullName.equals("null") == false)
+      {
+         nameAndId.append(fullName);
+         nameAndId.append(" ");
+      }
+      
+      nameAndId.append("[");
+      nameAndId.append(userId);
+      nameAndId.append("]");
+      
+      return nameAndId.toString();
+   }
 }

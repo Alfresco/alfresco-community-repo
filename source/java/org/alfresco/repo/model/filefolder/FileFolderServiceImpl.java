@@ -679,6 +679,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
        
         // Only update the name if it has changed
+        String sourceName = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
         String currentName = (String)nodeService.getProperty(targetNodeRef, ContentModel.PROP_NAME);
         if (currentName.equals(newName) == false)
         {
@@ -686,18 +687,22 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 // changed the name property
                 nodeService.setProperty(targetNodeRef, ContentModel.PROP_NAME, newName);
-                
-                // May need to update the mimetype, to support apps using .tmp files when saving
-                ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
-                if (contentData != null)
+                               
+                // Only care about changing the mimetype id the extension has been changed
+                if (getFileExtension(sourceName).equals(getFileExtension(newName)) == false)
                 {
-                    String targetMimetype = contentData.getMimetype();
-                    String newMimetype = mimetypeService.guessMimetype(newName);
-                    if (!targetMimetype.equalsIgnoreCase(newMimetype))
-                	{
-                        contentData = ContentData.setMimetype(contentData, newMimetype);
-                        nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
-                	}
+	                // May need to update the mimetype, to support apps using .tmp files when saving
+	                ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
+	                if (contentData != null)
+	                {
+	                    String targetMimetype = contentData.getMimetype();
+	                    String newMimetype = mimetypeService.guessMimetype(newName);
+	                    if (!targetMimetype.equalsIgnoreCase(newMimetype))
+	                	{
+	                        contentData = ContentData.setMimetype(contentData, newMimetype);
+	                        nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
+	                	}
+	                }
                 }
             }
             catch (DuplicateChildNodeNameException e)
@@ -717,6 +722,22 @@ public class FileFolderServiceImpl implements FileFolderService
                     "   after: " + afterFileInfo);
         }
         return afterFileInfo;
+    }
+    
+    /**
+     * Get the file extension for a given file name
+     * 
+     * @param  filename		the file name
+     * @return String		the file extension
+     */
+    private String getFileExtension(String filename)
+    {
+    	String result = "";
+    	if (filename.lastIndexOf(".")!=-1)
+    	{
+    		result = filename.substring(filename.lastIndexOf(".")+1, filename.length());
+    	}
+    	return result;
     }
     
     /**

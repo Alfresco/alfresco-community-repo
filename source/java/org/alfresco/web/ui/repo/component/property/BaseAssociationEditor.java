@@ -110,6 +110,7 @@ public abstract class BaseAssociationEditor extends UIInput
    protected String selectItemsMsg;
    protected String selectedItemsMsg;
    protected String noSelectedItemsMsg;
+   protected String searchTerm;
    protected Boolean disabled;
    
    protected boolean showAvailable = false;
@@ -154,6 +155,7 @@ public abstract class BaseAssociationEditor extends UIInput
       this.selectedItemsMsg = (String)values[7];
       this.changingAssociation = (String)values[8];
       this.disabled = (Boolean)values[9];
+      this.searchTerm = (String)values[10];
    }
    
    /**
@@ -161,7 +163,7 @@ public abstract class BaseAssociationEditor extends UIInput
     */
    public Object saveState(FacesContext context)
    {
-      Object values[] = new Object[10];
+      Object values[] = new Object[11];
       // standard component attributes are saved by the super class
       values[0] = super.saveState(context);
       values[1] = this.associationName;
@@ -173,6 +175,7 @@ public abstract class BaseAssociationEditor extends UIInput
       values[7] = this.selectedItemsMsg;
       values[8] = this.changingAssociation;
       values[9] = this.disabled;
+      values[10] = this.searchTerm;
       
       // NOTE: we don't save the state of the added and removed maps as these
       //       need to be rebuilt everytime
@@ -233,6 +236,7 @@ public abstract class BaseAssociationEditor extends UIInput
             {
                this.showAvailable = true;
                this.availableOptions = new ArrayList<NodeRef>();
+               this.searchTerm = assocEvent.Contains;
                getAvailableOptions(FacesContext.getCurrentInstance(), assocEvent.Contains);
                break;
             }
@@ -779,7 +783,14 @@ public abstract class BaseAssociationEditor extends UIInput
       // TODO: externalise the max and size attributes
       out.write("<tr><td colspan='2'><input type='text' maxlength='1024' size='32' name='");
       out.write(getClientId(context) + FIELD_CONTAINS);
-      out.write("'/>&nbsp;&nbsp;<input type='submit' value='");
+      out.write("'");
+      if (this.searchTerm != null)
+      {
+         out.write(" value='");
+         out.write(this.searchTerm);
+         out.write("'");
+      }
+      out.write("/>&nbsp;&nbsp;<input type='submit' value='");
       out.write(Application.getMessage(context, MSG_SEARCH));
       out.write("' onclick=\"");
       out.write(generateFormSubmit(context, Integer.toString(ACTION_SEARCH)));

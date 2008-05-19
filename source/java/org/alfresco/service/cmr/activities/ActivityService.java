@@ -25,7 +25,6 @@
 package org.alfresco.service.cmr.activities;
 
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -98,16 +97,18 @@ public interface ActivityService
      * @param userId - required
      * @param format - required
      * @param siteId - optional, if set then will filter by given siteId else return all sites
+     * @return list of JSON feed entries
      */
-    public List<Map<String, Object>> getUserFeedEntries(String userId, String format, String siteId);
+    public List<String> getUserFeedEntries(String userId, String format, String siteId);
     
     /**
      * Retrieve site feed
      *
      * @param activityType - required
      * @param format - required
+     * @return list of JSON feed entries
      */
-    public List<Map<String, Object>> getSiteFeedEntries(String siteId, String format);
+    public List<String> getSiteFeedEntries(String siteId, String format);
     
     
     /*

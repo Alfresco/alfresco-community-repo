@@ -26,7 +26,6 @@ package org.alfresco.repo.activities;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -113,7 +112,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         }
         authenticationService.authenticate(USER_UN, USER_PW.toCharArray());
         
-        List<Map<String, Object>> siteFeedEntries = this.activityService.getSiteFeedEntries("unknown site", "some format");
+        List<String> siteFeedEntries = this.activityService.getSiteFeedEntries("unknown site", "some format");
         
         assertNotNull(siteFeedEntries);
         assertTrue(siteFeedEntries.isEmpty());
@@ -121,8 +120,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
     
     public void testGetEmptyUserFeed() throws Exception
     {
-        
-        List<Map<String, Object>> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", null);
+        List<String> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());

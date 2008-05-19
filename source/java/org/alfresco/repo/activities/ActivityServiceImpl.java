@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.activities.feed.ActivityFeedDAO;
@@ -44,7 +43,6 @@ import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -221,7 +219,7 @@ public class ActivityServiceImpl implements ActivityService
             }
             else if ((! currentUser.equals(AuthenticationUtil.SYSTEM_USER_NAME)) && (! userNamesAreCaseSensitive))
             {
-                // user names are case-insensitive
+                // user names are not case-sensitive
                 currentUser = currentUser.toLowerCase();
             }
         } 
@@ -277,22 +275,23 @@ public class ActivityServiceImpl implements ActivityService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String)
      */
-    public List<Map<String, Object>> getUserFeedEntries(String feedUserId, String format, String siteId)
+    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId)
     {
         // NOTE: siteId is optional
         ParameterCheck.mandatoryString("feedUserId", feedUserId);
         ParameterCheck.mandatoryString("format", format);
         
-        List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+        List<String> activityFeedEntries = new ArrayList<String>();
         
-        if (! userNamesAreCaseSensitive)
-        {
-            feedUserId = feedUserId.toLowerCase();
-        }
-
         String currentUser = AuthenticationUtil.getCurrentUserName();
         if (currentUser != null)
         {
+            if (! userNamesAreCaseSensitive)
+            {
+                feedUserId = feedUserId.toLowerCase();
+                currentUser = currentUser.toLowerCase();
+            }
+            
             if ((! authorityService.isAdminAuthority(currentUser)) && (! currentUser.equals(feedUserId)))
             {
                 throw new AlfrescoRuntimeException("Unable to get feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
@@ -318,7 +317,7 @@ public class ActivityServiceImpl implements ActivityService
                     {
                         break;
                     }
-                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(activityFeed.getJSONString()));
+                    activityFeedEntries.add(activityFeed.getJSONString());
                 }
             }
             catch (SQLException se)
@@ -335,18 +334,18 @@ public class ActivityServiceImpl implements ActivityService
             throw new AlfrescoRuntimeException("Unable to get user feed entries - current user is null");
         }
         
-        return activityFeedModels;
+        return activityFeedEntries;
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getSiteFeedEntries(java.lang.String, java.lang.String)
      */
-    public List<Map<String, Object>> getSiteFeedEntries(String siteId, String format)
+    public List<String> getSiteFeedEntries(String siteId, String format)
     {
         ParameterCheck.mandatoryString("siteId", siteId);
         ParameterCheck.mandatoryString("format", format);
         
-        List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+        List<String> activityFeedEntries = new ArrayList<String>();
 
         String currentUser = AuthenticationUtil.getCurrentUserName();
         if (currentUser != null) 
@@ -364,7 +363,7 @@ public class ActivityServiceImpl implements ActivityService
                     {
                         break;
                     }
-                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(activityFeed.getJSONString()));
+                    activityFeedEntries.add(activityFeed.getJSONString());
                 }
             }
             catch (SQLException se)
@@ -381,7 +380,7 @@ public class ActivityServiceImpl implements ActivityService
             throw new AlfrescoRuntimeException("Unable to get site feed entries - current user is null");
         }
         
-        return activityFeedModels;
+        return activityFeedEntries;
     }
     
     /* (non-Javadoc)

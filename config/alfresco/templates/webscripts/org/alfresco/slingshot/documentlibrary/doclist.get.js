@@ -42,7 +42,7 @@ function getDoclist(nodeRef, path, type)
    for each(item in parentSpace.children)
    {
       if ((item.isContainer && showFolders) || (!item.isContainer && showDocs))
-      {      
+      {
          items.push(item);
       }
    }

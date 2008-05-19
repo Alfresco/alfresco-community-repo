@@ -108,7 +108,7 @@ else  // Non document-based actions
          var parentNodeId = args.p,
             spaceName = args.sn,
             spaceTitle = (args.st == "undefined") ? "" : args.st,
-            spaceDescription = (args.sd == "undefined") ? "" : args.sd,
+            spaceDescription = (args.sd == "undefined") ? "" : args.sd.substr(0, 100)
             templateId = args.t;
          var nodeNew;
          

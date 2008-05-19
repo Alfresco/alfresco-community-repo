@@ -40,11 +40,24 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
               ? alfresco.constants.AVM_WEBAPP_URL + href
               : href);
   }
+  
   if (href && href.startsWith(document.location.href))
   {
     result = href.substring(document.location.href.length);
   }
+  
+  // handle URL issue with IE (WCM-1134)
+  if (tinyMCE.isMSIE)
+  {
+     var server = document.location.protocol + "//" + document.location.host;
+     if (href && href.startsWith(server))
+     {
+        result = href.substring(server.length);
+     }
+  }
+
 //  dojo.debug("alfresco_TinyMCE_urlconverter_callback('" + href + "', ... , " + onsave + ") = " + result);
+  
   return result;
 }
 

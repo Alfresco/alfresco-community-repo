@@ -5,6 +5,8 @@
  */
 var OfficeMyTasks =
 {
+   MAX_DESCRIPTION: 100,
+   
    init: function()
    {
       OfficeAddin.sortTasks($('taskList'));
@@ -46,6 +48,20 @@ var OfficeMyTasks =
             readOnly: false,
             dateFormat: "dd MMMM yyyy"
          });
+      }
+      
+      if ($('wrkDescription'))
+      {
+         var desc = $('wrkDescription');
+         
+         desc.onkeyup = desc.onchange = desc.onblur = function(event)
+         {
+            if (this.value.length > OfficeMyTasks.MAX_DESCRIPTION)
+            {
+              this.setProperty('value', this.getProperty('value').substr(0, OfficeMyTasks.MAX_DESCRIPTION));
+            }
+         }
+         
       }
    },
 

@@ -276,6 +276,10 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
                   throw e;
                }
             }
+            finally
+            {
+               res.getWriter().close();
+            }
          }
          catch (Throwable txnErr)
          {

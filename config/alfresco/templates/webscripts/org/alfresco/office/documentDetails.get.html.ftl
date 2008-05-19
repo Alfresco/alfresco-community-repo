@@ -77,7 +77,7 @@
                         <td>
    <#if d.properties.categories?exists>
       <#list d.properties.categories as category>
-                           ${category.name}<#if category != d.properties.categories?last>,</#if>
+                           ${companyhome.nodeByReference[category.nodeRef].name}; 
       </#list>
    <#else>
                            None.

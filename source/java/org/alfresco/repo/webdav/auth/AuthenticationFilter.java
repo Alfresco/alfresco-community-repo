@@ -36,7 +36,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -70,7 +69,7 @@ public class AuthenticationFilter implements Filter
 
     public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
 
-    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
+    // Allow an authentication ticket to be passed as part of a request to bypass authentication
     
     private static final String ARG_TICKET = "ticket";
     
@@ -163,6 +162,9 @@ public class AuthenticationFilter implements Filter
                     // Authenticate the user
 
                 	m_authService.authenticate(username, password.toCharArray());
+                    
+                    // Set the user name as stored by the back end
+                    username = m_authService.getCurrentUserName();
                     
                     // Get the user node and home folder
                 	

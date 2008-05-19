@@ -142,6 +142,11 @@
             <extension>jpeg</extension>
             <extension>jpe</extension>
          </mimetype>
+         <mimetype mimetype="image/jpeg2000" display="JPEG 2000 Image">
+            <extension default="true">jpx</extension>
+            <extension>jp2</extension>
+            <extension>jpm</extension>
+         </mimetype>
          <mimetype mimetype="image/svg" display="Scalable Vector Graphics Image">
             <extension>svg</extension>
          </mimetype>

@@ -378,7 +378,7 @@
 	    </property>
 	</bean>
 
-   <bean id="avmSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.TransactionResourceInterceptor" >
+   <bean id="avmSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
       <property name="methodResourceManagers">
          <list>
             <ref bean="avmSessionSizeResourceManager"></ref>

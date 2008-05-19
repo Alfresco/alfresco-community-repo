@@ -157,14 +157,6 @@ public class JBPMTransactionTemplate extends JbpmTemplate
      */
     public void beforeCommit(boolean readOnly)
     {
-        JbpmContext context = (JbpmContext)AlfrescoTransactionSupport.getResource(JBPM_CONTEXT_KEY);
-        if (context != null)
-        {
-            super.releaseContext(context);
-
-            if (logger.isDebugEnabled())
-                logger.debug("Detached (commit) JBPM Context from transaction " + AlfrescoTransactionSupport.getTransactionId());
-        }
     }
 
     
@@ -181,6 +173,14 @@ public class JBPMTransactionTemplate extends JbpmTemplate
      */
     public void afterCommit()
     {
+        JbpmContext context = (JbpmContext)AlfrescoTransactionSupport.getResource(JBPM_CONTEXT_KEY);
+        if (context != null)
+        {
+            super.releaseContext(context);
+
+            if (logger.isDebugEnabled())
+                logger.debug("Detached (commit) JBPM Context from transaction " + AlfrescoTransactionSupport.getTransactionId());
+        }
     }
 
     

@@ -51,13 +51,18 @@ import org.aopalliance.intercept.MethodInvocation;
  * This class supports both interceptor-based calling as well as manual calling.
  * Long-running processes can call an this manually on every iteration and
  * get the same behaviour of regular calls to the resouce managers.
+ * <p>
+ * The current thread is marked on first entry and all subsequent nested re-entries
+ * will just get passed down to the underlying delegate invocation method.
  * 
  * @see org.alfresco.util.resource.MethodResourceManager
  * 
  * @author Derek Hulley
+ * @since 2.1.3
  */
-public class TransactionResourceInterceptor implements MethodInterceptor
+public class SingleEntryTransactionResourceInterceptor implements MethodInterceptor
 {
+    private ThreadLocal<Boolean> threadLocalReentryCheck;
     private List<MethodResourceManager> methodResourceManagers;
     /** Default 10000ms (10s) */
     private long elapsedTimeBeforeActivationMillis = 10000L;
@@ -72,9 +77,10 @@ public class TransactionResourceInterceptor implements MethodInterceptor
      */ 
     private String resourceKey;
 
-    public TransactionResourceInterceptor()
+    public SingleEntryTransactionResourceInterceptor()
     {
         resourceKey = "MethodStats" + super.toString();
+        threadLocalReentryCheck = new ThreadLocal<Boolean>();
     }
     
     /**
@@ -115,12 +121,31 @@ public class TransactionResourceInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        if (methodResourceManagers == null || methodResourceManagers.size() == 0)
+        if (threadLocalReentryCheck.get() == Boolean.TRUE)
+        {
+            // We're already in a wrapped resource, so avoid doing anything
+            return invocation.proceed();
+        }
+        else if (methodResourceManagers == null || methodResourceManagers.size() == 0)
         {
             // We just ignore everything
             return invocation.proceed();
         }
-        
+        try
+        {
+            // Mark this thread
+            threadLocalReentryCheck.set(Boolean.TRUE);
+            return invokeInternal(invocation);
+        }
+        finally
+        {
+            // Unmark this thread
+            threadLocalReentryCheck.set(null);
+        }
+    }
+
+    private Object invokeInternal(MethodInvocation invocation) throws Throwable
+    {
         // Get the txn start time
         long txnStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
         if (txnStartTime < 0)

@@ -181,42 +181,8 @@
     </cache>
 
     <cache
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.sourceNodeAssocs"
-        maxElementsInMemory="10000"
-        eternal="true"
-        timeToIdleSeconds="0"
-        timeToLiveSeconds="0"
-        overflowToDisk="false">
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
-    </cache>
-
-    <cache
-        name="org.alfresco.repo.domain.hibernate.NodeImpl.targetNodeAssocs"
-        maxElementsInMemory="10000"
-        eternal="true"
-        timeToIdleSeconds="0"
-        timeToLiveSeconds="0"
-        overflowToDisk="false">
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
-    </cache>
-
-    <cache
         name="org.alfresco.repo.domain.hibernate.NodeAssocImpl"
-        maxElementsInMemory="1000"
+        maxElementsInMemory="5000"
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
@@ -270,7 +236,52 @@
         maxElementsInMemory="100"
         eternal="true"
         timeToIdleSeconds="0"
-        timeToLiveSeconds="60"
+        timeToLiveSeconds="300"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl"
+        maxElementsInMemory="5000"
+        eternal="true"
         overflowToDisk="false">
 
             <cacheEventListenerFactory
@@ -298,7 +309,7 @@
     </cache>
 
     <cache
-        name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl.entries"
+        name="org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false">
@@ -311,25 +322,10 @@
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
     </cache>
-
+    
     <cache
-        name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
-        maxElementsInMemory="5000"
-        eternal="true"
-        overflowToDisk="false">
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
-    </cache>
-
-    <cache
-        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
-        maxElementsInMemory="500"
+        name="org.alfresco.repo.domain.hibernate.DbAuthorityAliasImpl"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false">
 
@@ -356,10 +352,250 @@
                                 replicateUpdatesViaCopy = false,
                                 replicateAsynchronously = false"/>
     </cache>
+    
+    <cache
+        name="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
+        maxElementsInMemory="500"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
 
     <cache
-        name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl.externalKeys"
+        name="org.alfresco.repo.audit.hibernate.AuditConfigImpl"
+        maxElementsInMemory="2"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.audit.hibernate.AuditDateImpl"
+        maxElementsInMemory="2"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.audit.hibernate.AuditSourceImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.attributes.AttributeImpl"
         maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.attributes.ListEntryImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.attributes.MapEntryImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.AVMNodeImpl"
+        maxElementsInMemory="5000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.AVMStoreImpl"
+        maxElementsInMemory="100"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.VersionRootImpl"
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.ChildEntryImpl"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.HistoryLinkImpl"
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.MergeLinkImpl"
+        maxElementsInMemory="200"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.AVMNodePropertyImpl"
+        maxElementsInMemory="2000"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.AVMStorePropertyImpl"
+        maxElementsInMemory="500"
+        eternal="true"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+    
+    <cache
+        name="org.alfresco.repo.avm.AVMAspectNameImpl"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false">
 

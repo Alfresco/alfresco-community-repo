@@ -98,7 +98,7 @@ public class AVMTestRemote extends TestCase
         AVMNodeDescriptor found = fAVMRemote.lookup(-1, "test2932:/a/foo.txt");
         Pair<Integer, String> path = fAVMRemote.getAPath(found);
         assertEquals(path.getSecond(), "test2932:/a/foo.txt");
-        explorePaths("foo--admin:/");
+        explorePaths("test2932:/");
     }
 
     /**

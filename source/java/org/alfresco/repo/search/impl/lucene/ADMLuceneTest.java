@@ -40,11 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -68,7 +64,6 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionResourceInterceptor;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -303,7 +298,7 @@ public class ADMLuceneTest extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "path-ista"), nodeService.getPath(n3));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "locale-ista"), Locale.UK);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "null"), null);
-        testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList());
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "list"), new ArrayList<Object>());
         MLText mlText = new MLText();
         mlText.addValue(Locale.ENGLISH, "banana");
         mlText.addValue(Locale.FRENCH, "banane");

@@ -25,6 +25,12 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +59,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.BooleanQuery;
@@ -913,7 +918,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         return this.threadPoolExecutor;
     }
-    
+
     public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
     {
         this.threadPoolExecutor = threadPoolExecutor;
@@ -929,6 +934,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     public static class LuceneIndexBackupComponent
     {
+
+        private static String BACKUP_TEMP_NAME = ".indexbackup_temp";
 
         private TransactionService transactionService;
 
@@ -1018,7 +1025,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             {
                 throw new AlfrescoRuntimeException("Target location may not be a root directory: " + targetDir);
             }
-            File tempDir = new File(targetParentDir, "indexbackup_temp");
+            File tempDir = new File(targetParentDir, BACKUP_TEMP_NAME);
 
             for (LuceneIndexerAndSearcher factory : factories)
             {
@@ -1066,7 +1073,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             /**
              * Makes a backup of the source directory via a temporary folder
              */
-            private static void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
+            private void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
             {
                 if (!sourceDir.exists())
                 {
@@ -1076,21 +1083,21 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 // delete the files from the temp directory
                 if (tempDir.exists())
                 {
-                    FileUtils.deleteDirectory(tempDir);
+                    deleteDirectory(tempDir);
                     if (tempDir.exists())
                     {
                         throw new AlfrescoRuntimeException("Temp directory exists and cannot be deleted: " + tempDir);
                     }
                 }
                 // copy to the temp directory
-                FileUtils.copyDirectory(sourceDir, tempDir, true);
+                copyDirectory(sourceDir, tempDir, true);
                 // check that the temp directory was created
                 if (!tempDir.exists())
                 {
                     throw new AlfrescoRuntimeException("Copy to temp location failed");
                 }
                 // delete the target directory
-                FileUtils.deleteDirectory(targetDir);
+                deleteDirectory(targetDir);
                 if (targetDir.exists())
                 {
                     throw new AlfrescoRuntimeException("Failed to delete older files from target location");
@@ -1103,6 +1110,163 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                     throw new AlfrescoRuntimeException("Failed to rename temporary directory to target backup directory");
                 }
             }
+
+            private void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
+            {
+                if (destDir.exists())
+                {
+                    throw new IOException("Destination should be created from clean");
+                }
+                else
+                {
+                    if (!destDir.mkdirs())
+                    {
+                        throw new IOException("Destination '" + destDir + "' directory cannot be created");
+                    }
+                    if (preserveFileDate)
+                    {
+                        destDir.setLastModified(srcDir.lastModified());
+                    }
+                }
+                if (!destDir.canWrite())
+                {
+                    throw new IOException("No acces to destination directory" + destDir);
+                }
+
+                File[] files = srcDir.listFiles();
+                if (files == null)
+                {
+                    throw new IOException(" No Access to " + srcDir);
+                }
+                for (int i = 0; i < files.length; i++)
+                {
+                    File currentCopyTarget = new File(destDir, files[i].getName());
+                    if (files[i].isDirectory())
+                    {
+                        // Skip any temp index file
+                        if (files[i].getName().equals(tempDir.getName()))
+                        {
+                            // skip any temp back up directories
+                        }
+                        else if (files[i].getName().equals(targetDir.getName()))
+                        {
+                            // skip any back up directories
+                        }
+                        else
+                        {
+                            copyDirectory(files[i], currentCopyTarget, preserveFileDate);
+                        }
+                    }
+                    else
+                    {
+                        copyFile(files[i], currentCopyTarget, preserveFileDate);
+                    }
+                }
+            }
+
+            private void copyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException
+            {
+                if (destFile.exists())
+                {
+                    throw new IOException("File shoud not exist " + destFile);
+                }
+
+                FileInputStream input = new FileInputStream(srcFile);
+                try
+                {
+                    FileOutputStream output = new FileOutputStream(destFile);
+                    try
+                    {
+                        copy(input, output);
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            output.close();
+                        }
+                        catch (IOException io)
+                        {
+
+                        }
+                    }
+                }
+                finally
+                {
+                    try
+                    {
+                        input.close();
+                    }
+                    catch (IOException io)
+                    {
+
+                    }
+                }
+
+                // check copy
+                if (srcFile.length() != destFile.length())
+                {
+                    throw new IOException("Failed to copy full from '" + srcFile + "' to '" + destFile + "'");
+                }
+                if (preserveFileDate)
+                {
+                    destFile.setLastModified(srcFile.lastModified());
+                }
+            }
+
+            public int copy(InputStream input, OutputStream output) throws IOException
+            {
+                byte[] buffer = new byte[2048 * 4];
+                int count = 0;
+                int n = 0;
+                while ((n = input.read(buffer)) != -1)
+                {
+                    output.write(buffer, 0, n);
+                    count += n;
+                }
+                return count;
+            }
+
+            public void deleteDirectory(File directory) throws IOException
+            {
+                if (!directory.exists())
+                {
+                    return;
+                }
+                if (!directory.isDirectory())
+                {
+                    throw new IllegalArgumentException("Not a directory " + directory);
+                }
+
+                File[] files = directory.listFiles();
+                if (files == null)
+                {
+                    throw new IOException("Failed to delete director - no access" + directory);
+                }
+
+                for (int i = 0; i < files.length; i++)
+                {
+                    File file = files[i];
+                    
+                    if (file.isDirectory())
+                    {
+                        deleteDirectory(file);
+                    }
+                    else
+                    {
+                        if (!file.delete())
+                        {
+                            throw new IOException("Unable to delete file: " + file);
+                        }
+                    }
+                }
+
+                if (!directory.delete())
+                {
+                    throw new IOException("Unable to delete directory " + directory);
+                }
+            }
+
         }
     }
 
@@ -1270,4 +1434,56 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
+    public static void main(String[] args) throws IOException
+    {
+        // delete a directory ....
+        if(args.length != 1)
+        {
+            return;
+        }
+        File file = new File(args[0]);
+        deleteDirectory(file);
+    }
+    
+    public static void deleteDirectory(File directory) throws IOException
+    {
+        if (!directory.exists())
+        {
+            return;
+        }
+        if (!directory.isDirectory())
+        {
+            throw new IllegalArgumentException("Not a directory " + directory);
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null)
+        {
+            throw new IOException("Failed to delete director - no access" + directory);
+        }
+
+        for (int i = 0; i < files.length; i++)
+        {
+            File file = files[i];
+            
+            System.out.println(".");
+            //System.out.println("Deleting "+file.getCanonicalPath());
+            if (file.isDirectory())
+            {
+                deleteDirectory(file);
+            }
+            else
+            {
+                if (!file.delete())
+                {
+                    throw new IOException("Unable to delete file: " + file);
+                }
+            }
+        }
+
+        if (!directory.delete())
+        {
+            throw new IOException("Unable to delete directory " + directory);
+        }
+    }
 }

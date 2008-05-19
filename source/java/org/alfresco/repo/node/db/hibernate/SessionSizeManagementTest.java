@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
-import org.alfresco.repo.transaction.TransactionResourceInterceptor;
+import org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -45,7 +45,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class SessionSizeManagementTest extends BaseNodeServiceTest
 {
-    private TransactionResourceInterceptor interceptor;
+    private SingleEntryTransactionResourceInterceptor interceptor;
     private Method createNodesMethod;
     
     public SessionSizeManagementTest()
@@ -85,7 +85,7 @@ public class SessionSizeManagementTest extends BaseNodeServiceTest
     {
         super.onSetUpInTransaction();
         // Get the interceptor for manual testing
-        interceptor = (TransactionResourceInterceptor) applicationContext.getBean("testSessionSizeResourceInterceptor");
+        interceptor = (SingleEntryTransactionResourceInterceptor) applicationContext.getBean("testSessionSizeResourceInterceptor");
     }
 
     /** Helper to create a given number of nodes using the provided service */

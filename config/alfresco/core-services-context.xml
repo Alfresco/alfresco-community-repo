@@ -961,7 +961,7 @@
             <ref bean="nodeService" />
         </property>
         <property name="targetLocation">
-            <value>${dir.indexes}/backup-lucene-indexes</value>
+            <value>${dir.indexes.backup}</value>
         </property>
     </bean>
 

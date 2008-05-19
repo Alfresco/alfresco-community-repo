@@ -184,7 +184,7 @@
          <ref bean="aclDaoComponent"/>
       </property>
    </bean>
-   <bean id="sessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.TransactionResourceInterceptor" >
+   <bean id="sessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
       <property name="methodResourceManagers">
          <list>
             <ref bean="sessionSizeResourceManager"></ref>

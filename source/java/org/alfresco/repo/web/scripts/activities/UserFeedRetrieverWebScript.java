@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.web.scripts.activities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,11 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.json.JSONException;
 
 /**
  * Java-backed WebScript to retrieve Activity User Feed
@@ -90,11 +93,34 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
            format = "atomentry";
         }
         
-        List<Map<String, Object>> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId);
-        
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("feedEntries", feedEntries);
-        model.put("feedUserId", feedUserId);
+
+        List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId);
+        
+        if (format.equals("json"))
+        { 
+            model.put("feedEntries", feedEntries);
+            model.put("siteId", siteId);
+        }
+        else
+        {
+            List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+            try
+            { 
+                for (String feedEntry : feedEntries)
+                {
+                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
+                }
+            }
+            catch (JSONException je)
+            {    
+                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+            }
+            
+            model.put("feedEntries", activityFeedModels);
+            model.put("feedUserId", feedUserId);
+        }   
+        
         return model;
     }
 }

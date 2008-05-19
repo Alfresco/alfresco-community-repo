@@ -24,15 +24,18 @@
  */
 package org.alfresco.repo.web.scripts.activities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.json.JSONException;
 
 /**
  * Java-backed WebScript to retrieve Activity Site Feed
@@ -83,11 +86,34 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         // TODO - check if site is public or private
         // if private and user is not a member or not an admin then throw 401 (unauthorised)
 
-        List<Map<String, Object>> feedEntries = activityService.getSiteFeedEntries(siteId, format);
-        
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("feedEntries", feedEntries);
-        model.put("siteId", siteId);
+        
+        List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
+        
+        if (format.equals("json"))
+        { 
+            model.put("feedEntries", feedEntries);
+            model.put("siteId", siteId);
+        }
+        else
+        {
+            List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+            try
+            { 
+                for (String feedEntry : feedEntries)
+                {
+                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
+                }
+            }
+            catch (JSONException je)
+            {    
+                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+            }
+            
+            model.put("feedEntries", activityFeedModels);
+            model.put("siteId", siteId);
+        }
+        
         return model;
     }
 }

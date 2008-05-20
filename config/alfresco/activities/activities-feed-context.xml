@@ -65,6 +65,7 @@
       <property name="postDaoService" ref="postDaoService"/>
       <property name="authenticationService" ref="AuthenticationService"/>
       <property name="repoEndPoint" value="${repo.remote.endpoint.url}"/>
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxItemsPerCycle" value="100"/>
    </bean>
    

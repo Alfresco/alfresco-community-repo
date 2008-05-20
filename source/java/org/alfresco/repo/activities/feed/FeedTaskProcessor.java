@@ -408,6 +408,12 @@ public abstract class FeedTaskProcessor
                 {
                     JSONObject member = (JSONObject)ja.get(i);
                     JSONObject person = (JSONObject)member.getJSONObject("person");
+                    
+                    String userName = person.getString("userName");
+                    if (! ctx.isUserNamesAreCaseSensitive())
+                    {
+                        userName = userName.toLowerCase();
+                    }
                     members.add(person.getString("userName"));
                 }
             }
@@ -523,7 +529,7 @@ public abstract class FeedTaskProcessor
         
         for (FeedControlDAO feedControl : feedControls)
         {
-            if ((feedControl.getSiteNetwork() == null) && (feedControl.getAppTool() != null))
+            if (((feedControl.getSiteNetwork() == null) || (feedControl.getSiteNetwork().length() == 0)) && (feedControl.getAppTool() != null))
             {
                 if (feedControl.getAppTool().equals(activityPost.getAppTool()))
                 {
@@ -531,7 +537,7 @@ public abstract class FeedTaskProcessor
                     return false;
                 }
             }
-            else if ((feedControl.getAppTool() == null) && (feedControl.getSiteNetwork() != null))
+            else if (((feedControl.getAppTool() == null) || (feedControl.getAppTool().length() == 0)) && (feedControl.getSiteNetwork() != null))
             {
                 if (feedControl.getSiteNetwork().equals(activityPost.getSiteNetwork()))
                 {
@@ -539,7 +545,8 @@ public abstract class FeedTaskProcessor
                     return false;
                 }
             }
-            else if ((feedControl.getSiteNetwork() != null) && (feedControl.getAppTool() != null))
+            else if (((feedControl.getSiteNetwork() != null) && (feedControl.getSiteNetwork().length() > 0)) &&
+                     ((feedControl.getAppTool() != null) && (feedControl.getAppTool().length() > 0)))
             {
                 if ((feedControl.getSiteNetwork().equals(activityPost.getSiteNetwork())) &&
                     (feedControl.getAppTool().equals(activityPost.getAppTool())))

@@ -24,10 +24,15 @@
  */
 package org.alfresco.service.cmr.activities;
 
-public class FeedControl
+import java.io.Serializable;
+
+public class FeedControl implements Serializable
 {    
+    private static final long serialVersionUID = -1934566916718472843L;
+    
     private String siteId;
     private String appToolId;
+    
     
     public FeedControl(String siteId, String appToolId)
     {

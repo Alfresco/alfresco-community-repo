@@ -32,6 +32,8 @@ import java.io.Serializable;
 public class RepoCtx implements Serializable
 {
     private String repoEndPoint;  // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
+    private boolean userNamesAreCaseSensitive = false;
+    
 	private String ticket;
 	
 	public static final long serialVersionUID = -3896042917378679686L;
@@ -53,5 +55,15 @@ public class RepoCtx implements Serializable
     public void setTicket(String ticket)
     {
         this.ticket = ticket;
+    }
+
+    public boolean isUserNamesAreCaseSensitive()
+    {
+        return userNamesAreCaseSensitive;
+    }
+
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
 }

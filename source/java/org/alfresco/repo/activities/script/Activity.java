@@ -24,8 +24,11 @@
  */
 package org.alfresco.repo.activities.script;
 
+import java.util.List;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -46,6 +49,11 @@ public final class Activity extends BaseScopableProcessorExtension
    {
       this.activityService = activityService;
    }
+   
+   
+   /*
+    * Post Activity
+    */
 
    /**
     * Post a custom activity type
@@ -107,5 +115,43 @@ public final class Activity extends BaseScopableProcessorExtension
    public void postActivity(String activityType, String siteId, String appTool,  NodeRef nodeRef, String name, QName typeQName, NodeRef parentNodeRef)
    {
        activityService.postActivity(activityType, siteId, appTool, nodeRef, name, typeQName, parentNodeRef);
+   }
+   
+   
+   /*
+    * Manage User Feed Controls
+    */
+   
+   /**
+    * For current user, get feed controls
+    *
+    * @return array of user feed controls
+    */
+   public FeedControl[] getFeedControls()
+   {
+       List<FeedControl> feedControls = activityService.getFeedControls();
+       return (FeedControl[])feedControls.toArray(new FeedControl[feedControls.size()]);
+   }
+   
+   /**
+    * For current user, set feed control (opt-out) for a site or an appTool or a site/appTool combination
+    *
+    * @param siteId - required (optional, if appToolId is supplied)
+    * @param appToolId - required (optional, if siteId is supplied)
+    */
+   public void setFeedControl(String siteId, String appToolId)
+   {
+       activityService.setFeedControl(new FeedControl(siteId, appToolId));
+   }
+   
+   /**
+    * For current user, unset feed control
+    *
+    * @param siteId - required (optional, if appToolId is supplied)
+    * @param appToolId - required (optional, if siteId is supplied)
+    */
+   public void unsetFeedControl(String siteId, String appToolId)
+   {
+       activityService.unsetFeedControl(new FeedControl(siteId, appToolId));
    }
 }

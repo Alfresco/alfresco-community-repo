@@ -116,7 +116,7 @@ public interface ActivityService
      */
     
     /**
-     * For current user, set feed control (opt-out) for a site or an appTool or a site/appTool
+     * For current user, set feed control (opt-out) for a site or an appTool or a site/appTool combination
      *
      * @param feedControl - required
      */

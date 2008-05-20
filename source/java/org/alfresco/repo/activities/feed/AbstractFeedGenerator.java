@@ -47,6 +47,8 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private AuthenticationService authenticationService;
     
     private String repoEndPoint; // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
+    
+    private boolean userNamesAreCaseSensitive = false;
 
     private RepoCtx ctx = null;
     
@@ -65,6 +67,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     public void setRepoEndPoint(String repoEndPoint)
     {
         this.repoEndPoint = repoEndPoint;
+    }
+    
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
     
     public void setMaxItemsPerCycle(int maxItemsPerCycle)
@@ -95,6 +102,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     public void init() throws Exception
     {
         ctx = new RepoCtx(repoEndPoint);
+        ctx.setUserNamesAreCaseSensitive(userNamesAreCaseSensitive);
         
         busy = false;
     }

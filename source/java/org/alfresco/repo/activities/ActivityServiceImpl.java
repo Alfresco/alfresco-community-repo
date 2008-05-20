@@ -456,7 +456,7 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-          throw new AlfrescoRuntimeException("Failed to set feed control: " + e, e);
+          throw new AlfrescoRuntimeException("Failed to get feed controls: " + e, e);
         }
     }
     
@@ -479,7 +479,7 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-          throw new AlfrescoRuntimeException("Failed to set feed control: " + e, e);
+          throw new AlfrescoRuntimeException("Failed to unset feed control: " + e, e);
         }
     }
     

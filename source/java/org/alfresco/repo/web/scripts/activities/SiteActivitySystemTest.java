@@ -75,14 +75,26 @@ public class SiteActivitySystemTest extends TestCase
     private static final String URL_ACTIVITIES = "/api/activities";
     private static final String URL_SITE_FEED = "/feed/site";
     private static final String URL_USER_FEED = "/feed/user";
+    private static final String URL_USER_FEED_CTRL = "/feed/user/control";
     
+    // Users & Passwords
+    private static final String ADMIN_USER = "admin";
+    private static final String ADMIN_PW = "admin";
     
-    private static boolean setup = false;
-    
-    private static String shortName = null;
     private static String user1 = null;
     private static String user2 = null;
     private static String user3 = null;
+    
+    private static final String USER_PW = "password";
+    
+    // Test siteId
+    private static String shortName = null;
+    
+    // Site Service appToolId
+    private static String appToolId = "siteService"; // refer to SiteService
+    
+    private static boolean setup = false;
+
     
     
     public SiteActivitySystemTest()
@@ -105,9 +117,9 @@ public class SiteActivitySystemTest extends TestCase
             
             // pre-create users
             
-            createUser(user1, "password");
-            createUser(user2, "password");
-            createUser(user3, "password");
+            createUser(user1, USER_PW);
+            createUser(user2, USER_PW);
+            createUser(user3, USER_PW);
             
             setup = true;
         }
@@ -122,7 +134,7 @@ public class SiteActivitySystemTest extends TestCase
     
     public void testCreateSite() throws Exception
     {
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         JSONObject site = new JSONObject();
         site.put("sitePreset", "myPreset");
@@ -147,7 +159,7 @@ public class SiteActivitySystemTest extends TestCase
     {
         // relies on testCreateSite
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName;
         String response = callGetWebScript(url, ticket);
@@ -165,7 +177,7 @@ public class SiteActivitySystemTest extends TestCase
     {
         // relies on testCreateSite
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_SITE_FEED + "/" + shortName + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
@@ -185,7 +197,7 @@ public class SiteActivitySystemTest extends TestCase
     {
         // relies on testCreateSite
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user1 + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
@@ -227,29 +239,43 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
+    public void testUserFeedControls() throws Exception
+    {
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        addFeedControl(user1, shortName, null, ticket);
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
+        addFeedControl(user2, null, appToolId, ticket);
+        
+        //ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
+        //addFeedControl(user3, shortName, appToolId, ticket);
+        
+        // TODO add more here, once we have more appToolIds
+    }
+    
     public void testMemberships() throws Exception
     {
         // relies on testCreateSite
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
        
         // add member -> join site
-        testAddMembership(user1, ticket, SiteModel.SITE_CONSUMER);
-        testAddMembership(user2, ticket, SiteModel.SITE_MANAGER);
-        testAddMembership(user3, ticket, SiteModel.SITE_COLLABORATOR);
+        addMembership(user1, ticket, SiteModel.SITE_CONSUMER);
+        addMembership(user2, ticket, SiteModel.SITE_MANAGER);
+        addMembership(user3, ticket, SiteModel.SITE_COLLABORATOR);
         
         // update member -> change role
-        testUpdateMembership(user1, ticket, SiteModel.SITE_MANAGER);
-        testUpdateMembership(user2, ticket, SiteModel.SITE_COLLABORATOR);
-        testUpdateMembership(user3, ticket, SiteModel.SITE_CONSUMER);
+        updateMembership(user1, ticket, SiteModel.SITE_MANAGER);
+        updateMembership(user2, ticket, SiteModel.SITE_COLLABORATOR);
+        updateMembership(user3, ticket, SiteModel.SITE_CONSUMER);
         
         // add pause - otherwise, activity service will not generate feed entries (since they will have already left the site)
         Thread.sleep(90000); // 1 min
         
         // remove member -> leave site
-        testRemoveMembership(user1, ticket);
-        testRemoveMembership(user2, ticket);
-        testRemoveMembership(user3, ticket);
+        removeMembership(user1, ticket);
+        removeMembership(user2, ticket);
+        removeMembership(user3, ticket);
         
         // add pause
         Thread.sleep(60000); // 1 min
@@ -259,7 +285,7 @@ public class SiteActivitySystemTest extends TestCase
     {
         // relies on testCreateSite, testMemberships
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_SITE_FEED + "/" + shortName + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
@@ -287,7 +313,7 @@ public class SiteActivitySystemTest extends TestCase
     {
         // relies on testCreateSite, testMemberships
         
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, "admin", "admin");
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user1 + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
@@ -303,7 +329,7 @@ public class SiteActivitySystemTest extends TestCase
         if (jsonArrayResult != null)
         {
             JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(6, ja.length());
+            assertEquals(0, ja.length()); // 0 due to feed control
         }
         else
         {
@@ -324,7 +350,7 @@ public class SiteActivitySystemTest extends TestCase
         if (jsonArrayResult != null)
         {
             JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(6, ja.length());
+            assertEquals(0, ja.length()); // 0 due to feed control
         }
         else
         {
@@ -353,7 +379,7 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
-    private void testAddMembership(String userName, String ticket, String role) throws Exception
+    private void addMembership(String userName, String ticket, String role) throws Exception
     {  
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -367,14 +393,14 @@ public class SiteActivitySystemTest extends TestCase
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("testAddMembership: " + userName);
-            logger.debug("------------------");
+            logger.debug("addMembership: " + userName);
+            logger.debug("--------------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    private void testUpdateMembership(String userName, String ticket, String role) throws Exception
+    private void updateMembership(String userName, String ticket, String role) throws Exception
     {  
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -388,22 +414,41 @@ public class SiteActivitySystemTest extends TestCase
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("testUpdateMembership: " + userName);
-            logger.debug("------------------");
+            logger.debug("updateMembership: " + userName);
+            logger.debug("-----------------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    private void testRemoveMembership(String userName, String ticket) throws Exception
+    private void removeMembership(String userName, String ticket) throws Exception
     {  
         String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + userName;
         String response = callDeleteWebScript(url, ticket);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("testRemoveMembership: " + userName);
-            logger.debug("---------------------");
+            logger.debug("removeMembership: " + userName);
+            logger.debug("-----------------");
+            logger.debug(url);
+            logger.debug(response);
+        }
+    }
+    
+    private void addFeedControl(String userName, String siteId, String appToolId, String ticket) throws Exception
+    {  
+        // Build the JSON feedControl object
+        JSONObject feedControl = new JSONObject();
+        feedControl.put("siteId", siteId);
+        feedControl.put("appToolId", appToolId);
+        
+        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED_CTRL;
+        String response = callPostWebScript(url, ticket, feedControl.toString());
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("addFeedControl: " + userName);
+            logger.debug("--------------");
             logger.debug(url);
             logger.debug(response);
         }
@@ -563,7 +608,7 @@ public class SiteActivitySystemTest extends TestCase
     
     protected void createUser(String username, String password) throws MalformedURLException, URISyntaxException, IOException
     {
-        String ticket = webServiceStartSession("admin", "admin");
+        String ticket = webServiceStartSession(ADMIN_USER, ADMIN_PW);
         webServiceCreateUser(username, password, ticket);
         webServiceEndSession(ticket);
     }

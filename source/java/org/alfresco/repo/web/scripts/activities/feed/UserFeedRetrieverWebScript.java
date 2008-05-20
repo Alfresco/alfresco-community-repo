@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.web.scripts.activities;
+package org.alfresco.repo.web.scripts.activities.feed;
 
 import java.util.ArrayList;
 import java.util.HashMap;

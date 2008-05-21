@@ -433,7 +433,13 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             return doAvmCan(nodeRef, permIn);
         }
-        
+
+        // Allow permissions for nodes that do not exist
+        if (!nodeService.exists(nodeRef))
+        {
+            return AccessStatus.ALLOWED;
+        }
+
         final PermissionReference perm;
         if (permIn.equals(OLD_ALL_PERMISSIONS_REFERENCE))
         {
@@ -443,10 +449,13 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             perm = permIn;
         }
-
         
-        // Allow permissions for nodes that do not exist
-        if (!nodeService.exists(nodeRef))
+        if (AuthenticationUtil.getCurrentEffectiveUserName() == null)
+        {
+            return AccessStatus.DENIED;
+        }
+
+        if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
         {
             return AccessStatus.ALLOWED;
         }
@@ -467,16 +476,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 context.addDynamicAuthorityAssignment(user, dynamicAuthority);
             }
             return hasPermission(properties.getId(), context, perm);
-        }
-
-        if (AuthenticationUtil.getCurrentEffectiveUserName() == null)
-        {
-            return AccessStatus.DENIED;
-        }
-
-        if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
-        {
-            return AccessStatus.ALLOWED;
         }
 
         // Get the current authentications
@@ -576,7 +575,31 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     {
         if (aclId == null)
         {
-            return AccessStatus.ALLOWED;
+            // Enforce store ACLs if set - the AVM default was to "allow" if there are no permissions set ...
+            if (context.getStoreAcl() == null)
+            {
+                return AccessStatus.ALLOWED;
+            }
+            else
+            {
+                if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+                {
+                    return AccessStatus.ALLOWED;
+                }
+                
+                Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
+                if (auth == null)
+                {
+                    throw new IllegalStateException("Unauthenticated");
+                }
+                Set<String> storeAuthorisations = getAuthorisations(auth, (PermissionContext) null);
+                QName typeQname = context.getType();
+                Set<QName> aspectQNames = context.getAspects();
+                AclTest aclTest = new AclTest(permission, typeQname, aspectQNames);
+                boolean result = aclTest.evaluate(storeAuthorisations, context.getStoreAcl(), context);
+                AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
+                return status;
+            }
         }
 
         if (permission == null)

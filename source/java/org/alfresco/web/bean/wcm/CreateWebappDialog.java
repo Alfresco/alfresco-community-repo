@@ -30,8 +30,11 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 
 /**
  * Bean implementation for the AVM "Create Webapp Folder" dialog.
@@ -54,22 +57,37 @@ public class CreateWebappDialog extends CreateFolderDialog
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       final String stagingStore = this.avmBrowseBean.getStagingStore();
-      final String parent = AVMUtil.buildSandboxRootPath( stagingStore );
-      this.getAvmService().createDirectory(parent, this.name);
       
-      this.path = AVMNodeConverter.ExtendAVMPath(parent, this.name);
-      this.getAvmService().addAspect(this.path, ApplicationModel.ASPECT_UIFACETS);
-      this.getAvmService().addAspect(this.path, WCMAppModel.ASPECT_WEBAPP);
-      if (this.description != null && this.description.length() != 0)
+      if (SandboxFactory.isContentManager(stagingStore))
       {
-         this.getAvmService().setNodeProperty(path, 
-                                         ContentModel.PROP_DESCRIPTION, 
-                                         new PropertyValue(DataTypeDefinition.TEXT,
-                                                           this.description));
-      }
+          AuthenticationUtil.runAs(new RunAsWork<Object>(){
 
-      // Snapshot the store with the empty webapp
-      this.getAvmService().createSnapshot(stagingStore, null, null);
+              public Object doWork() throws Exception
+              {
+                  final String parent = AVMUtil.buildSandboxRootPath( stagingStore );
+                  CreateWebappDialog.this.getAvmService().createDirectory(parent, CreateWebappDialog.this.name);
+                  
+                  CreateWebappDialog.this.path = AVMNodeConverter.ExtendAVMPath(parent, CreateWebappDialog.this.name);
+                  CreateWebappDialog.this.getAvmService().addAspect(CreateWebappDialog.this.path, ApplicationModel.ASPECT_UIFACETS);
+                  CreateWebappDialog.this.getAvmService().addAspect(CreateWebappDialog.this.path, WCMAppModel.ASPECT_WEBAPP);
+                  if (CreateWebappDialog.this.description != null && CreateWebappDialog.this.description.length() != 0)
+                  {
+                      CreateWebappDialog.this.getAvmService().setNodeProperty(path, 
+                                                     ContentModel.PROP_DESCRIPTION, 
+                                                     new PropertyValue(DataTypeDefinition.TEXT,
+                                                             CreateWebappDialog.this.description));
+                  }
+
+                  // Snapshot the store with the empty webapp
+                  CreateWebappDialog.this.getAvmService().createSnapshot(stagingStore, null, null);
+                  return null;
+              }}, AuthenticationUtil.getSystemUserName());
+          
+      }
+      else
+      {
+          throw new AccessDeniedException("Only content managers may create new webapp folders");
+      }
 
       return outcome;
    }

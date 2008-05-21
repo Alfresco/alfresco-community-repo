@@ -164,6 +164,7 @@
             <permissions>
                <permission allow="true">CreateChildren</permission>
             </permissions>
+            <evaluator>org.alfresco.web.action.evaluator.WCMContentManagerEvaluator</evaluator>
             <label-id>create_webapp</label-id>
             <image>/images/icons/create_webapp.gif</image>
             <action>dialog:createWebappFolder</action>

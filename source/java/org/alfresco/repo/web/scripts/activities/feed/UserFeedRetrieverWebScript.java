@@ -30,12 +30,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 
 /**
@@ -43,12 +47,21 @@ import org.json.JSONException;
  */
 public class UserFeedRetrieverWebScript extends DeclarativeWebScript
 {
-   private ActivityService activityService;
+    private static final Log logger = LogFactory.getLog(UserFeedRetrieverWebScript.class);
+    
+    private ActivityService activityService;
+    private AuthorityService authorityService;
+    
+    public void setActivityService(ActivityService activityService)
+    {
+        this.activityService = activityService;
+    }
    
-   public void setActivityService(ActivityService activityService)
-   {
-       this.activityService = activityService;
-   }
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -83,6 +96,17 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
            feedUserId = AuthenticationUtil.getCurrentUserName();
+        }
+        
+        String currentUser = AuthenticationUtil.getCurrentUserName();
+        if (! ((currentUser == null) || 
+               (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
+               (authorityService.isAdminAuthority(currentUser)) ||
+               (currentUser.equals(feedUserId))))
+        {
+            status.setCode(Status.STATUS_UNAUTHORIZED);
+            logger.warn("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
+            return null;
         }
 
         // map feed collection format to feed entry format (if not the same), eg.

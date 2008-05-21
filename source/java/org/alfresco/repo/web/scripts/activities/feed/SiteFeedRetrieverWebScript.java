@@ -30,11 +30,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteInfo;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 
 /**
@@ -42,12 +47,21 @@ import org.json.JSONException;
  */
 public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
 {
-   private ActivityService activityService;
+    private static final Log logger = LogFactory.getLog(SiteFeedRetrieverWebScript.class);
+    
+    private ActivityService activityService;
+    private SiteService siteService;
    
-   public void setActivityService(ActivityService activityService)
-   {
-       this.activityService = activityService;
-   }
+    public void setActivityService(ActivityService activityService)
+    {
+        this.activityService = activityService;
+    }
+   
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+    
    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -83,9 +97,16 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
            format = "atomentry";
         }
         
-        // TODO - check if site is public or private
-        // if private and user is not a member or not an admin then throw 401 (unauthorised)
-
+        // if site is null then either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
+        SiteInfo siteInfo = siteService.getSite(siteId);
+        if (siteInfo == null)
+        {   
+            String currentUser = AuthenticationUtil.getCurrentUserName();
+            status.setCode(Status.STATUS_UNAUTHORIZED);
+            logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
+            return null;
+        }
+        
         Map<String, Object> model = new HashMap<String, Object>();
         
         List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);

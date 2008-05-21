@@ -77,25 +77,31 @@ public class SiteActivitySystemTest extends TestCase
     private static final String URL_USER_FEED = "/feed/user";
     private static final String URL_USER_FEED_CTRL = "/feed/user/control";
     
-    // Users & Passwords
+    // Test users & passwords
     private static final String ADMIN_USER = "admin";
     private static final String ADMIN_PW = "admin";
     
     private static String user1 = null;
     private static String user2 = null;
     private static String user3 = null;
+    private static String user4 = null;
     
     private static final String USER_PW = "password";
     
-    // Test siteId
-    private static String shortName = null;
+    // Test sites
+    private static String site1 = null;
+    private static String site2 = null;
+    private static String site3 = null;
     
-    // Site Service appToolId
+    // AppToolId for site membership activities
     private static String appToolId = "siteService"; // refer to SiteService
     
     private static boolean setup = false;
+    private static boolean sitesCreated = false;
+    private static boolean membersAddedUpdated = false;
+    private static boolean membersRemoved = false;
+    private static boolean controlsCreated = false;
 
-    
     
     public SiteActivitySystemTest()
     {
@@ -110,16 +116,21 @@ public class SiteActivitySystemTest extends TestCase
         {
             String testid = ""+System.currentTimeMillis();
             
-            shortName = "testSite_" + testid;
-            user1 = "testSite_user1_" + testid;
-            user2 = "testSite_user2_" + testid;
-            user3 = "testSite_user3_" + testid;
+            site1 = "test_site1_" + testid;
+            site2 = "test_site2_" + testid;
+            site3 = "test_site3_" + testid;
+            
+            user1 = "test_user1_" + testid;
+            user2 = "test_user2_" + testid;
+            user3 = "test_user3_" + testid;
+            user4 = "test_user4_" + testid;
             
             // pre-create users
             
             createUser(user1, USER_PW);
             createUser(user2, USER_PW);
             createUser(user3, USER_PW);
+            createUser(user4, USER_PW);
             
             setup = true;
         }
@@ -132,60 +143,123 @@ public class SiteActivitySystemTest extends TestCase
         super.tearDown();
     }
     
-    public void testCreateSite() throws Exception
+    public void testCreateSites() throws Exception
     {
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
-        
+        if (! sitesCreated)
+        {
+            String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+            
+            // create public site
+            createSite(site1, true, ticket);
+            
+            // create private sites
+            createSite(site2, false, ticket);
+            createSite(site3, false, ticket);
+            
+            sitesCreated = true;
+        }
+    }
+    
+    protected void createSite(String siteId, boolean isPublic, String ticket) throws Exception
+    {
         JSONObject site = new JSONObject();
         site.put("sitePreset", "myPreset");
-        site.put("shortName", shortName);
+        site.put("shortName", siteId);
         site.put("title", "myTitle");
         site.put("description", "myDescription");
-        site.put("isPublic", true);
+        site.put("isPublic", isPublic);
         
         String url = WEBSCRIPT_ENDPOINT + URL_SITES;
         String response = callPostWebScript(url, ticket, site.toString());
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("testCreateSite");
-            logger.debug("--------------");
+            logger.debug("createSite: " + siteId);
+            logger.debug("----------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    public void testGetSite() throws Exception
+    public void testGetSites() throws Exception
     {
-        // relies on testCreateSite
+        testCreateSites();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName;
+        getSite(site1, ticket);
+        getSite(site2, ticket);
+        getSite(site3, ticket);
+    }
+    
+    protected void getSite(String siteId, String ticket) throws Exception
+    {
+        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId;
         String response = callGetWebScript(url, ticket);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("testGetSite");
-            logger.debug("-----------");
+            logger.debug("getSite:" + siteId);
+            logger.debug("-------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    public void testGetSiteFeed1() throws Exception
+    public void testGetSiteFeedsBefore() throws Exception
     {
-        // relies on testCreateSite
+        testCreateSites();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_SITE_FEED + "/" + shortName + "?format=json";
+        getSiteFeed(site1, ticket, 0);
+        getSiteFeed(site2, ticket, 0); // site 2 is private, but accessible to admins
+        getSiteFeed(site3, ticket, 0); // site 3 is private, but accessible to admins
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user4, USER_PW);
+        
+        getSiteFeed(site1, ticket, 0); // site 1 is public, hence site feed is accessible to any user of the system
+        
+        try
+        {
+            getSiteFeed(site2, ticket, 0); // site 2 is private, hence only accessible to members or admins
+            
+            fail("Site feed for private site should not be accessible to non-admin / non-member");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
+        }
+        
+        try
+        {
+            getSiteFeed(site3, ticket, 0); // site 3 is private, hence only accessible to members or admins
+            
+            fail("Site feed for private site should not be accessible to non-admin / non-member");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
+        }
+    }
+    
+    protected void getSiteFeed(String siteId, String ticket, int expectedCount) throws Exception
+    {
+        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_SITE_FEED + "/" + siteId + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
         
         if (jsonArrayResult != null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getSiteFeed:" + siteId);
+                logger.debug("-----------");
+                logger.debug(url);
+                logger.debug(jsonArrayResult);
+            }
+            
             JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length());
+            assertEquals(expectedCount, ja.length());
         }
         else
         {
@@ -193,45 +267,52 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
-    public void testGetUserFeeds1_asAdmin() throws Exception
+    public void testGetUserFeedsBefore() throws Exception
     {
-        // relies on testCreateSite
+        testCreateSites();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user1 + "?format=json";
+        getUserFeed(user1, ticket, true, 0);
+        getUserFeed(user2, ticket, true, 0);
+        getUserFeed(user3, ticket, true, 0);
+        getUserFeed(user4, ticket, true, 0);
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        
+        getUserFeed(user1, ticket, false, 0);
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
+        
+        try
+        {
+            getUserFeed(user1, ticket, true, 0);
+            
+            fail("User feed should only be accessible to user or an admin");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
+        }
+    }
+    
+    protected void getUserFeed(String userId, String ticket, boolean isAdmin, int expectedCount) throws Exception
+    {
+        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + (isAdmin ? "/" + userId : "") + "?format=json";
         String jsonArrayResult = callGetWebScript(url, ticket);
         
         if (jsonArrayResult != null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getUserFeed:" + userId + (isAdmin ? "(as admin)" : ""));
+                logger.debug("-----------");
+                logger.debug(url);
+                logger.debug(jsonArrayResult);
+            }
+            
             JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length());
-        }
-        else
-        {
-            fail("Error getting user feed");
-        }
-        
-        url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user2 + "?format=json";
-        jsonArrayResult = callGetWebScript(url, ticket);
-        
-        if (jsonArrayResult != null)
-        {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length());
-        }
-        else
-        {
-            fail("Error getting user feed");
-        }
-        
-        url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user3 + "?format=json";
-        jsonArrayResult = callGetWebScript(url, ticket);
-        
-        if (jsonArrayResult != null)
-        {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length());
+            assertEquals(expectedCount, ja.length());
         }
         else
         {
@@ -241,145 +322,194 @@ public class SiteActivitySystemTest extends TestCase
     
     public void testUserFeedControls() throws Exception
     {
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
-        addFeedControl(user1, shortName, null, ticket);
-        
-        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
-        addFeedControl(user2, null, appToolId, ticket);
-        
-        //ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
-        //addFeedControl(user3, shortName, appToolId, ticket);
-        
-        // TODO add more here, once we have more appToolIds
+        if (! controlsCreated)
+        {
+            // user 1 opts out of all activities for site 1
+            String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+            addFeedControl(user1, site1, null, ticket);
+            
+            // user 2 opts out of site membership activities (across all sites)
+            ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
+            addFeedControl(user2, null, appToolId, ticket);
+            
+            // user 3 opts out of site membership activities for site 1 only
+            ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user3, USER_PW);
+            addFeedControl(user3, site1, appToolId, ticket);
+                 
+            // TODO add more here, once we have more appToolIds
+            
+            controlsCreated = true;
+        }
     }
     
-    public void testMemberships() throws Exception
+    public void testAddAndUpdateMembershipsWithPause() throws Exception
     {
-        // relies on testCreateSite
+        if (! membersAddedUpdated)
+        {
+            testCreateSites();
+            
+            String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+           
+            addAndUpdateMemberships(site1, ticket, true);  // public site, include all users
+            addAndUpdateMemberships(site2, ticket, true);  // private site, include all users
+            addAndUpdateMemberships(site3, ticket, false); // private site, do not include user 4
+            
+            // add pause - otherwise, activity service will not generate feed entries (since they will have already left the site)
+            Thread.sleep(90000); // 1 min
+            
+            membersAddedUpdated = true;
+        }
+    }
+    
+    public void testGetSiteFeedsAfterAddAndUpdateMemberships() throws Exception
+    {
+        testCreateSites();
+        testAddAndUpdateMembershipsWithPause();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
-       
+        
+        getSiteFeed(site1, ticket, 8); // 8 = 4 users, each with 1 join, 1 role change
+        getSiteFeed(site2, ticket, 8); // 8 = 4 users, each with 1 join, 1 role change
+        getSiteFeed(site3, ticket, 6); // 6 = 3 users, each with 1 join, 1 role change (not user 4)
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user4, USER_PW);
+        
+        getSiteFeed(site1, ticket, 8);
+        getSiteFeed(site2, ticket, 8); // site 2 is private, user 4 is a member
+        
+        try
+        {
+            getSiteFeed(site3, ticket, 0); // site 3 is private, user 4 is not a member
+            
+            fail("Site feed for private site should not be accessible to non-admin / non-member");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
+        }
+    }
+    public void testRemoveMembershipsWithPause() throws Exception
+    {
+        if (! membersRemoved)
+        {
+            testCreateSites();
+            testAddAndUpdateMembershipsWithPause();
+            
+            String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+
+            removeMemberships(site1, ticket, true);
+            removeMemberships(site2, ticket, true);
+            removeMemberships(site3, ticket, false);
+            
+            // add pause
+            Thread.sleep(60000); // 1 min
+            
+            membersRemoved = true;
+        }
+    }
+    
+    protected void addAndUpdateMemberships(String siteId, String ticket, boolean includeUser4) throws Exception
+    {
         // add member -> join site
-        addMembership(user1, ticket, SiteModel.SITE_CONSUMER);
-        addMembership(user2, ticket, SiteModel.SITE_MANAGER);
-        addMembership(user3, ticket, SiteModel.SITE_COLLABORATOR);
+        addMembership(siteId, user1, ticket, SiteModel.SITE_CONSUMER);
+        addMembership(siteId, user2, ticket, SiteModel.SITE_MANAGER);
+        addMembership(siteId, user3, ticket, SiteModel.SITE_COLLABORATOR);
+        
+        if (includeUser4) { addMembership(siteId, user4, ticket, SiteModel.SITE_CONSUMER); }
         
         // update member -> change role
-        updateMembership(user1, ticket, SiteModel.SITE_MANAGER);
-        updateMembership(user2, ticket, SiteModel.SITE_COLLABORATOR);
-        updateMembership(user3, ticket, SiteModel.SITE_CONSUMER);
+        updateMembership(siteId, user1, ticket, SiteModel.SITE_MANAGER);
+        updateMembership(siteId, user2, ticket, SiteModel.SITE_COLLABORATOR);
+        updateMembership(siteId, user3, ticket, SiteModel.SITE_CONSUMER);
         
-        // add pause - otherwise, activity service will not generate feed entries (since they will have already left the site)
-        Thread.sleep(90000); // 1 min
-        
+        if (includeUser4) { updateMembership(siteId, user4, ticket, SiteModel.SITE_COLLABORATOR); }
+    }
+    
+    protected void removeMemberships(String siteId, String ticket, boolean includeUser4) throws Exception
+    {
         // remove member -> leave site
-        removeMembership(user1, ticket);
-        removeMembership(user2, ticket);
-        removeMembership(user3, ticket);
+        removeMembership(siteId, user1, ticket);
+        removeMembership(siteId, user2, ticket);
+        removeMembership(siteId, user3, ticket);
         
-        // add pause
-        Thread.sleep(60000); // 1 min
+        if (includeUser4) { removeMembership(siteId, user4, ticket); }
     }
     
-    public void testGetSiteFeed2() throws Exception
+    public void testGetSiteFeedsAfterRemoveMemberships() throws Exception
     {
-        // relies on testCreateSite, testMemberships
+        testCreateSites();
+        testAddAndUpdateMembershipsWithPause();
+        testRemoveMembershipsWithPause();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_SITE_FEED + "/" + shortName + "?format=json";
-        String jsonArrayResult = callGetWebScript(url, ticket);
-
-        if (logger.isDebugEnabled())
+        getSiteFeed(site1, ticket, 12); // 12 = 4 users, each with 1 join, 1 role change, 1 leave
+        getSiteFeed(site2, ticket, 12); // 12 = 4 users, each with 1 join, 1 role change, 1 leave
+        getSiteFeed(site3, ticket, 9);  //  9 = 3 users, each with 1 join, 1 role change, 1 leave (not user 4)
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user4, USER_PW);
+        
+        getSiteFeed(site1, ticket, 12);
+        
+        try
         {
-            logger.debug("testGetSiteFeed2");
-            logger.debug("----------------");
-            logger.debug(url);
-            logger.debug(jsonArrayResult);
+            getSiteFeed(site2, ticket, 0); // site 2 is private, user 4 is no longer a member
+            
+            fail("Site feed for private site should not be accessible to non-admin / non-member");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
         
-        if (jsonArrayResult != null)
+        try
         {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(9, ja.length());
+            getSiteFeed(site3, ticket, 0); // site 3 is private, user 4 was never a member
+            
+            fail("Site feed for private site should not be accessible to non-admin / non-member");
         }
-        else
+        catch (IOException ioe)
         {
-            fail("Error getting site feed");
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
     }
     
-    public void testGetUserFeeds2_asAdmin() throws Exception
+    public void testGetUserFeedsAfter() throws Exception
     {
-        // relies on testCreateSite, testMemberships
+        testCreateSites();
+        testAddAndUpdateMembershipsWithPause();
+        testRemoveMembershipsWithPause();
+        testUserFeedControls();
         
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user1 + "?format=json";
-        String jsonArrayResult = callGetWebScript(url, ticket);
+        // 2 sites, with 4 users, each with 1 join and 1 role change = 8x2
+        // 1 site,  with 3 users, each with 1 join and 1 role change = 6x1
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("testGetUserFeeds2_asAdmin: user1");
-            logger.debug("--------------------------");
-            logger.debug(url);
-            logger.debug(jsonArrayResult);
-        }
+        getUserFeed(user1, ticket, true, 14);  // 8 = due to feed control - exclude site 1
+        getUserFeed(user2, ticket, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
+        getUserFeed(user3, ticket, true, 14);  // 8 = due to feed control - exclude site membership activities for site 1
+        getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
         
-        if (jsonArrayResult != null)
-        {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length()); // 0 due to feed control
-        }
-        else
-        {
-            fail("Error getting user feed");
-        }
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
         
-        url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user2 + "?format=json";
-        jsonArrayResult = callGetWebScript(url, ticket);
+        getUserFeed(user1, ticket, false, 14);
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("testGetUserFeeds2_asAdmin: user2");
-            logger.debug("--------------------------");
-            logger.debug(url);
-            logger.debug(jsonArrayResult);
-        }
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
         
-        if (jsonArrayResult != null)
+        try
         {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(0, ja.length()); // 0 due to feed control
+            getUserFeed(user1, ticket, true, 14);
+            
+            fail("User feed should only be accessible to user or an admin");
         }
-        else
+        catch (IOException ioe)
         {
-            fail("Error getting user feed");
-        }
-        
-        url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + "/" + user3 + "?format=json";
-        jsonArrayResult = callGetWebScript(url, ticket);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("testGetUserFeeds2_asAdmin: user3");
-            logger.debug("--------------------------");
-            logger.debug(url);
-            logger.debug(jsonArrayResult);
-        }
-        
-        if (jsonArrayResult != null)
-        {
-            JSONArray ja = new JSONArray(jsonArrayResult);
-            assertEquals(6, ja.length());
-        }
-        else
-        {
-            fail("Error getting user feed");
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
     }
     
-    private void addMembership(String userName, String ticket, String role) throws Exception
+    private void addMembership(String siteId, String userName, String ticket, String role) throws Exception
     {  
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -388,19 +518,19 @@ public class SiteActivitySystemTest extends TestCase
         person.put("userName", userName);
         membership.put("person", person);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName + URL_MEMBERSHIPS;
+        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId + URL_MEMBERSHIPS;
         String response = callPostWebScript(url, ticket, membership.toString());
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("addMembership: " + userName);
+            logger.debug("addMembership: " + siteId + " - " + userName);
             logger.debug("--------------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    private void updateMembership(String userName, String ticket, String role) throws Exception
+    private void updateMembership(String siteId, String userName, String ticket, String role) throws Exception
     {  
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -409,26 +539,26 @@ public class SiteActivitySystemTest extends TestCase
         person.put("userName", userName);
         membership.put("person", person);
         
-        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + userName;
+        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId + URL_MEMBERSHIPS + "/" + userName;
         String response = callPutWebScript(url, ticket, membership.toString());
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("updateMembership: " + userName);
+            logger.debug("updateMembership: " + siteId + " - " + userName);
             logger.debug("-----------------");
             logger.debug(url);
             logger.debug(response);
         }
     }
     
-    private void removeMembership(String userName, String ticket) throws Exception
+    private void removeMembership(String siteId, String userName, String ticket) throws Exception
     {  
-        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + userName;
+        String url = WEBSCRIPT_ENDPOINT + URL_SITES + "/" + siteId + URL_MEMBERSHIPS + "/" + userName;
         String response = callDeleteWebScript(url, ticket);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("removeMembership: " + userName);
+            logger.debug("removeMembership: " + siteId + " - " + userName);
             logger.debug("-----------------");
             logger.debug(url);
             logger.debug(response);

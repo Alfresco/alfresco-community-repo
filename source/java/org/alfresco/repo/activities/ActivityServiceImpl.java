@@ -283,57 +283,43 @@ public class ActivityServiceImpl implements ActivityService
         
         List<String> activityFeedEntries = new ArrayList<String>();
         
-        String currentUser = AuthenticationUtil.getCurrentUserName();
-        if (currentUser != null)
+        if (! userNamesAreCaseSensitive)
         {
-            if (! userNamesAreCaseSensitive)
+            feedUserId = feedUserId.toLowerCase();
+        }
+
+        try
+        {
+            List<ActivityFeedDAO> activityFeeds = null;
+            if (siteId != null)
             {
-                feedUserId = feedUserId.toLowerCase();
-                currentUser = currentUser.toLowerCase();
+                activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId);
+            }
+            else
+            {
+                activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format);
             }
             
-            if ((! authorityService.isAdminAuthority(currentUser)) && (! currentUser.equals(feedUserId)))
+            int count = 0;
+            for (ActivityFeedDAO activityFeed : activityFeeds)
             {
-                throw new AlfrescoRuntimeException("Unable to get feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
-            }
-            
-            try
-            {
-                List<ActivityFeedDAO> activityFeeds = null;
-                if (siteId != null)
+                count++;
+                if (count > maxFeedItems)
                 {
-                    activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId);
+                    break;
                 }
-                else
-                {
-                    activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format);
-                }
-                
-                int count = 0;
-                for (ActivityFeedDAO activityFeed : activityFeeds)
-                {
-                    count++;
-                    if (count > maxFeedItems)
-                    {
-                        break;
-                    }
-                    activityFeedEntries.add(activityFeed.getJSONString());
-                }
-            }
-            catch (SQLException se)
-            {
-                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + se.getMessage());
-            }
-            catch (JSONException je)
-            {    
-                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+                activityFeedEntries.add(activityFeed.getJSONString());
             }
         }
-        else
+        catch (SQLException se)
         {
-            throw new AlfrescoRuntimeException("Unable to get user feed entries - current user is null");
+            throw new AlfrescoRuntimeException("Unable to get user feed entries: " + se.getMessage());
         }
-        
+        catch (JSONException je)
+        {    
+            throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+        }
+    
         return activityFeedEntries;
     }
     
@@ -347,37 +333,28 @@ public class ActivityServiceImpl implements ActivityService
         
         List<String> activityFeedEntries = new ArrayList<String>();
 
-        String currentUser = AuthenticationUtil.getCurrentUserName();
-        if (currentUser != null) 
-        {
-            // TODO - check whether site is public or private, if private, check whether user is member or admin - authorityService.isAdminAuthority(currentUser))
-            try
-            { 
-                List<ActivityFeedDAO> activityFeeds = feedDaoService.selectSiteFeedEntries(siteId, format);
-                
-                int count = 0;
-                for (ActivityFeedDAO activityFeed : activityFeeds)
-                {
-                    count++;
-                    if (count > maxFeedItems)
-                    {
-                        break;
-                    }
-                    activityFeedEntries.add(activityFeed.getJSONString());
-                }
-            }
-            catch (SQLException se)
+        try
+        { 
+            List<ActivityFeedDAO> activityFeeds = feedDaoService.selectSiteFeedEntries(siteId, format);
+            
+            int count = 0;
+            for (ActivityFeedDAO activityFeed : activityFeeds)
             {
-                throw new AlfrescoRuntimeException("Unable to get site feed entries: " + se.getMessage());
-            }
-            catch (JSONException je)
-            {    
-                throw new AlfrescoRuntimeException("Unable to get site feed entries: " + je.getMessage());
+                count++;
+                if (count > maxFeedItems)
+                {
+                    break;
+                }
+                activityFeedEntries.add(activityFeed.getJSONString());
             }
         }
-        else
+        catch (SQLException se)
         {
-            throw new AlfrescoRuntimeException("Unable to get site feed entries - current user is null");
+            throw new AlfrescoRuntimeException("Unable to get site feed entries: " + se.getMessage());
+        }
+        catch (JSONException je)
+        {    
+            throw new AlfrescoRuntimeException("Unable to get site feed entries: " + je.getMessage());
         }
         
         return activityFeedEntries;

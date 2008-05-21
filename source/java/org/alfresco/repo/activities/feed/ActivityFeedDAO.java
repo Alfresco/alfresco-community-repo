@@ -27,7 +27,7 @@ package org.alfresco.repo.activities.feed;
 import java.util.Date;
 
 import org.json.JSONException;
-import org.json.JSONStringer;
+import org.json.JSONObject;
 
 /**
  * Activity Feed DAO
@@ -158,22 +158,16 @@ public class ActivityFeedDAO
     
     public String getJSONString() throws JSONException
     {
-       return new JSONStringer()
-           .object()
-           .key("postUserId")
-           .value(postUserId)
-           .key("postDate")
-           .value(postDate)
-           .key("feedUserId")
-           .value(feedUserId)
-           .key("siteNetwork")
-           .value(siteNetwork)
-           .key("activityType")
-           .value(activityType)
-           .key("activitySummary")
-           .value(activitySummary)
-           .key("activitySummaryFormat")
-           .value(activitySummaryFormat)
-       .endObject().toString();
+        JSONObject jo = new JSONObject();
+        
+        jo.put("postUserId", postUserId);
+        jo.put("postDate", postDate);
+        if (feedUserId != null) { jo.put("feedUserId", feedUserId); } // eg. site feed
+        jo.put("siteNetwork", siteNetwork);
+        jo.put("activityType", activityType);
+        jo.put("activitySummary", activitySummary);
+        jo.put("activitySummaryFormat", activitySummaryFormat);
+        
+        return jo.toString();
     }
 }

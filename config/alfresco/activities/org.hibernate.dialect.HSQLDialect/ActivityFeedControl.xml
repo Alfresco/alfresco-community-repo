@@ -23,6 +23,16 @@
       where feed_user_id = #feedUserId#
       ]]>
    </select>
+   
+   <select id="select.activity.feedcontrol" parameterClass="FeedControl" resultClass="long">
+      <![CDATA[
+      select id as id
+      from alf_activity_feed_control
+      where feed_user_id = #feedUserId#
+      and site_network = #siteNetwork#
+      and app_tool = #appTool#
+      ]]>
+   </select>
 
    <insert id="insert.activity.feedcontrol" parameterClass="FeedControl">
       insert into alf_activity_feed_control (feed_user_id, site_network, app_tool, last_modified)

@@ -23,7 +23,7 @@
   
    <select id="select.activity.feed.for.feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id != #feedUserId#
@@ -34,7 +34,7 @@
    
    <select id="select.activity.feed.for.feeduser.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id != #feedUserId#
@@ -46,7 +46,7 @@
    
    <select id="select.activity.feed.for.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
       from alf_activity_feed
       where feed_user_id = ''
       and site_network = #siteNetwork#

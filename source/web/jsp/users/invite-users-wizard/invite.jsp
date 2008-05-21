@@ -29,6 +29,20 @@
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.ui.common.Utils" %>
+
+<h:panelGroup rendered="#{WizardManager.bean.haveMaximumUsersBeenReturned}">
+   <f:verbatim>
+   <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+   <img src='<%=request.getContextPath()%>/images/icons/info_icon.gif' align='absmiddle' />&nbsp;&nbsp;
+   </f:verbatim>
+   <h:outputText id="infoMsg" value="#{WizardManager.bean.maximumUsersMsg}" />
+   <f:verbatim>                                 
+   <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner");
+   out.write("<div style='padding:2px;'></div>"); %>
+   </f:verbatim>
+</h:panelGroup>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top:2px; padding-bottom:2px;" width="100%">
    <h:outputText styleClass="mainSubText" value="#{msg.specify_usersgroups}" />

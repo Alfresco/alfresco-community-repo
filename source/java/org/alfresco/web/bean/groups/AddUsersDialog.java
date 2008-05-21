@@ -54,6 +54,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
+import org.apache.lucene.search.BooleanQuery;
 
 /**
  * Implementation of the add user dialog.
@@ -243,6 +244,15 @@ public class AddUsersDialog extends BaseDialogBean
                return items;
             }
          });
+      }
+      catch (BooleanQuery.TooManyClauses clauses)
+      {
+         Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), "too_many_users"));
+         
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         
+         return new SelectItem[0];
       }
       catch (Exception err)
       {

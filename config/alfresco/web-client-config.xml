@@ -51,6 +51,9 @@
          <!-- Limit search results within selectors, -1 for unlimited. -->
          <selectors-search-max-results>500</selectors-search-max-results>
          
+         <!-- Limit search results within invite users wizard, -1 for unlimited. -->
+         <invite-users-max-results>500</invite-users-max-results>
+         
          <!-- The path to starting point when creating/finding home folders for new users in the UI -->
          <default-home-space-path>/app:company_home/app:user_homes</default-home-space-path>
          

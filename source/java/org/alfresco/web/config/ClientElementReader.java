@@ -50,6 +50,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SEARCHANDTERMS = "search-and-terms";
    public static final String ELEMENT_SEARCHMAXRESULTS = "search-max-results";
    public static final String ELEMENT_SELECTORSSEARCHMAXRESULTS = "selectors-search-max-results";
+   public static final String ELEMENT_INVITESEARCHMAXRESULTS = "invite-users-max-results";
    public static final String ELEMENT_HOMESPACEPERMISSION = "home-space-permission";
    public static final String ELEMENT_FROMEMAILADDRESS = "from-email-address";
    public static final String ELEMENT_SHELFVISIBLE = "shelf-visible";
@@ -141,6 +142,14 @@ public class ClientElementReader implements ConfigElementReader
          {
             configElement.setSelectorsSearchMaxResults(
                   Integer.parseInt(selectorsSearchMaxResults.getTextTrim()));
+         }
+         
+         // get the invite users max results size
+         Element inviteUsersMaxResults = element.element(ELEMENT_INVITESEARCHMAXRESULTS);
+         if (inviteUsersMaxResults != null)
+         {
+            configElement.setInviteUsersMaxResults(
+                  Integer.parseInt(inviteUsersMaxResults.getTextTrim()));
          }
          
          // get the default permission for newly created users Home Spaces

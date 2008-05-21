@@ -64,6 +64,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean forceAndTerms = false;
    private int searchMaxResults = -1;
    private int selectorsSearchMaxResults = 500;
+   private int inviteUsersMaxResults = 500;
    private String helpUrl = null;
    private String editLinkType = "http";
    private String homeSpacePermission = null;
@@ -183,6 +184,11 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getSelectorsSearchMaxResults() != combinedElement.getSelectorsSearchMaxResults())
       {
          combinedElement.setSelectorsSearchMaxResults(newElement.getSelectorsSearchMaxResults());
+      }
+      
+      if (newElement.getInviteUsersMaxResults() != combinedElement.getInviteUsersMaxResults())
+      {
+         combinedElement.setInviteUsersMaxResults(newElement.getInviteUsersMaxResults());
       }
       
       if (newElement.isShelfVisible() != combinedElement.isShelfVisible())
@@ -473,6 +479,29 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setSelectorsSearchMaxResults(int selectorsSearchMaxResults)
    {
        this.selectorsSearchMaxResults = selectorsSearchMaxResults;
+   }
+   
+   /**
+    * If positive, this will limit the size of the result set from the 
+    * invite users wizard.
+    * 
+    * @return The maximum number of results to display
+    */
+   public int getInviteUsersMaxResults()
+   {
+       return this.inviteUsersMaxResults;
+   }
+
+   /**
+    * Set if the the result set from a search for the invite users wizard
+    * will be of limited size. If negative it is unlimited, by default, 
+    * this is set to 500.
+    * 
+    * @param inviteUsersMaxResults
+    */
+   /*package*/ void setInviteUsersMaxResults(int inviteUsersMaxResults)
+   {
+       this.inviteUsersMaxResults = inviteUsersMaxResults;
    }
 
    /**

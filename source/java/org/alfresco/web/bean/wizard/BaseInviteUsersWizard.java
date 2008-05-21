@@ -46,7 +46,9 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -61,6 +63,9 @@ import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.search.BooleanQuery;
 import org.springframework.mail.javamail.JavaMailSender;
 
 /**
@@ -72,12 +77,15 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
 {
    private static final long serialVersionUID = -5145813383038390250L;
    
+   private final static Log logger = LogFactory.getLog(BaseInviteUsersWizard.class);
+   
    /** I18N message strings */
    protected static final String MSG_USERROLES = "invite_users_summary";
    private static final String MSG_USERS  = "users";
    private static final String MSG_GROUPS = "groups";
    private static final String MSG_INVITED_TO = "invited_to";
    private static final String MSG_INVITED_ROLE  = "invite_role";
+   private static final String MSG_MAX_USERS  = "max_users_returned";
    
    protected static final String STEP_NOTIFY = "notify";
    
@@ -110,6 +118,9 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    
    /** True to allow duplicate authorities (with a different role) */
    protected boolean allowDuplicateAuthorities = true;
+   
+   /** Flag to determine if the maximum number of users have been returned */
+   protected boolean maxUsersReturned = false;
    
    /** dialog state */
    private String notify = NOTIFY_NO;
@@ -208,6 +219,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    {
       super.init(parameters);
       
+      maxUsersReturned = false;
       notify = NOTIFY_NO;
       userRolesDataModel = null;
       userGroupRoles = new ArrayList<UserGroupRole>(8);
@@ -339,6 +351,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       FacesContext context = FacesContext.getCurrentInstance();
       
       SelectItem[] items;
+      this.maxUsersReturned = false;
       
       UserTransaction tx = null;
       try
@@ -360,11 +373,32 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
             query.append(term);
             query.append("*");
-            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
-                    Repository.getStoreRef(),
-                    SearchService.LANGUAGE_LUCENE,
-                    query.toString());            
-            List<NodeRef> nodes = resultSet.getNodeRefs();            
+            
+            int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
+            
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Maximum invite users results size: " + maxResults);
+            }
+            
+            SearchParameters searchParams = new SearchParameters();
+            searchParams.addStore(Repository.getStoreRef());
+            searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+            searchParams.setQuery(query.toString());
+            if (maxResults > 0)
+            {
+               searchParams.setLimit(maxResults);
+               searchParams.setLimitBy(LimitBy.FINAL_SIZE);
+            }
+            
+            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(searchParams);            
+            List<NodeRef> nodes = resultSet.getNodeRefs();
+            
+            // set the maximum users returned flag if appropriate
+            if (nodes.size() == maxResults)
+            {
+               this.maxUsersReturned = true;
+            }
 
             for (int index=0; index<nodes.size(); index++)
             {
@@ -402,6 +436,15 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          
          // commit the transaction
          tx.commit();
+      }
+      catch (BooleanQuery.TooManyClauses clauses)
+      {
+         Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), "too_many_users"));
+         
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         
+         items = new SelectItem[0];
       }
       catch (Throwable err)
       {
@@ -660,6 +703,28 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
       return buildSummary(
             new String[] {Application.getMessage(fc, MSG_USERROLES)},
             new String[] {buf.toString()});
+   }
+   
+   /**
+    * @return flag to indicate whether maximum users have been returned
+    */
+   public boolean getHaveMaximumUsersBeenReturned()
+   {
+      return this.maxUsersReturned;
+   }
+   
+   /**
+    * @return Message to display when the maximum number of users have been returned
+    */
+   public String getMaximumUsersMsg()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      
+      String pattern = Application.getMessage(context, MSG_MAX_USERS);
+      String msg = MessageFormat.format(pattern, 
+               Application.getClientConfig(context).getInviteUsersMaxResults());
+      
+      return Utils.encode(msg);
    }
    
    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException

@@ -152,6 +152,11 @@
 
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/download/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
       <url-pattern>/template/*</url-pattern>
    </filter-mapping>
    
@@ -169,8 +174,13 @@
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/t/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/d/*</url-pattern>
+   </filter-mapping>
    -->
-      
+   
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/webdav/*</url-pattern>

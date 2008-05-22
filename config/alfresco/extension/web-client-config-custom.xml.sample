@@ -11,6 +11,7 @@
    -->
 
    <!-- Example of adding languages to the list in the login page -->
+   <!-
    <config evaluator="string-compare" condition="Languages">
       <languages>
          <language locale="ca_ES">Catalan</language>
@@ -34,7 +35,8 @@
          <language locale="zh_CN">Simplified Chinese</language>
       </languages>
    </config>
-
+   ->
+   
    <!-- Example of configuring advanced search -->
    <!--
    <config evaluator="string-compare" condition="Advanced Search">

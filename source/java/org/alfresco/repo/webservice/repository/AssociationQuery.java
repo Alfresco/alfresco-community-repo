@@ -58,6 +58,8 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
 
     private Reference node;
     private Association association;
+    
+    private final static String SOURCE = "source";
 
     /**
      * @param node
@@ -107,7 +109,7 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
             {
                 name = QName.createQName(assocType);
             }
-            if ("source".equals(this.association.getDirection()) == true)
+            if (SOURCE.equals(this.association.getDirection()) == true)
             {
                 assocRefs = nodeService.getSourceAssocs(nodeRef, name);
             }
@@ -123,9 +125,17 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
         ResultSetRow[] rows = new ResultSetRow[totalRows];
 
         int index = 0;
+        NodeRef childNodeRef = null;
         for (AssociationRef assocRef : assocRefs)
         {
-            NodeRef childNodeRef = assocRef.getTargetRef();
+        	if (SOURCE.equals(this.association.getDirection()) == true)
+        	{
+        		childNodeRef = assocRef.getSourceRef();
+        	}
+        	else
+        	{
+        		childNodeRef = assocRef.getTargetRef();
+        	}
             ResultSetRowNode rowNode = createResultSetRowNode(childNodeRef, nodeService);
 
             // create columns for all the properties of the node

@@ -179,10 +179,10 @@ var OfficeNavigation =
 
       OfficeAddin.showStatusText("Creating space...", "ajax_anim.gif", false);
       var actionURL = commandURL + "?a=newspace&p=" + nodeId;
-      actionURL += "&sn=" + encodeURI(spaceName);
-      actionURL += "&st=" + encodeURI(spaceTitle);
-      actionURL += "&sd=" + encodeURI(spaceDescription);
-      actionURL += "&t=" + encodeURI(spaceTemplate);
+      actionURL += "&sn=" + encodeURIComponent(spaceName);
+      actionURL += "&st=" + encodeURIComponent(spaceTitle);
+      actionURL += "&sd=" + encodeURIComponent(spaceDescription);
+      actionURL += "&t=" + encodeURIComponent(spaceTemplate);
       var myAjax = new Ajax(actionURL, {
          method: 'get',
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
@@ -196,7 +196,7 @@ var OfficeNavigation =
             if (textResponse != "")
             {
                href += (href.indexOf("?") == -1) ? "?" : "&";
-               href += "st=" + encodeURI(textResponse);
+               href += "st=" + encodeURIComponent(textResponse);
             }
             window.location.href = href;
          }

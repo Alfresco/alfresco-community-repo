@@ -175,16 +175,24 @@ input.button {
    display: none;
 }
 
-.header {
+.headerRow {
    clear: both;
-   font-weight: bold;
    float: left;
-   padding: 6px 2px 2px 4px;
-   height: 13px;
-   width: 282px;
+}
+
+.headerWrapper {
+   float: left;
+   width: 288px;
+}
+
+.header {
+   font-weight: bold;
+   margin: 0px 24px 0px 0px;
+   padding: 3px 2px 2px 4px;
+   height: 16px;
    overflow: hidden;
    text-overflow: ellipsis;
-   white-space:nowrap;
+   white-space: nowrap;
 }
 
 .tabHeader {
@@ -205,23 +213,21 @@ input.button {
 
 .headerExtra {
    font-weight: normal;
-   float: right;
-   height: 13px;
-   margin: -13px 0px 0px 0px;
+   float: left;
+   margin: 0px 0px 0px -16px;
+   padding: 3px 0px 2px 0px;
+   width: 16px;
 }
 
 .taskKey {
-   float: left;
    margin: 0px 0px 0px 0px;
-   padding: 0px 0px 0px 0px;
+   padding: 0px 0px 0px 40px;
 }
 
 .toggle {
    background: transparent url("../images/office/arrow_up.gif") no-repeat;
    cursor: pointer;
-   display: block;
    float: left;
-   margin: -3px -1px 0px 4px;
    height: 16px;
    width: 16px;
 }
@@ -284,7 +290,7 @@ input.button {
    clear: both;
    float: left;
    width: 282px;
-   height: 174px;
+   height: 173px;
    overflow: auto;
    border: 1px solid #cccccc;
    border-top: none;
@@ -570,7 +576,7 @@ input.button {
 .taskParameters {
    border: 1px solid #ccc;
    margin: 4px;
-   height: 160px;
+   height: 168px;
    overflow: auto;
 }
 
@@ -593,7 +599,7 @@ input.button {
 .taskValue select, .taskValue input, .taskValue textarea {
    font-family: tahoma, sans-serif;
    font-size: 8pt;
-   padding: 1px 0px 1px 2px;
+   padding: 1px 0px;
    width: 172px;
 }
 

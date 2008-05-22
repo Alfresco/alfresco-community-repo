@@ -40,7 +40,7 @@ var OfficeTags =
       
       var tagContainer, tagName, tagNameClass, tagCount;
 
-      tagCloud.empty();      
+      tagCloud.empty();
       tagQuery.tags.each(function(tag, i)
       {
          tagNameClass = "tagName" + Math.round((tag.count - tagQuery.countMin) / scale);

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>treenode</shortname>
+  <description>Document List Component - treenode data webscript</description>
+  <url>/slingshot/doclib/treenode?nodeRef={nodeRef?}&amp;path={path?}</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

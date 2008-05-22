@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -246,7 +247,20 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             s_logger.debug("Sync index for " + store + " from " + srcVersion + " to " + dstVersion);
         }
         String path = store + ":/";
-        List<AVMDifference> changeList = avmSyncService.compare(srcVersion, path, dstVersion, path, null);
+        List<AVMDifference> changeList = null;
+        try
+        {
+            changeList = avmSyncService.compare(srcVersion, path, dstVersion, path, null);
+        }
+        catch (AVMSyncException e)
+        {
+            s_logger.warn("\n" +
+                    "Unable to generate change list for synchronous indexing: \n" +
+                    "   Store:         " + store + "\n" +
+                    "   Start version: " + srcVersion + "\n" +
+                    "   End version:   " + endVersion);
+            return;
+        }
         for (AVMDifference difference : changeList)
         {
             switch (difference.getDifferenceCode())

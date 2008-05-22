@@ -87,7 +87,8 @@ import org.alfresco.service.namespace.QName;
         ClassDefinition classDefinition = dictionary.getClass(classQName);
         if (classDefinition == null)
         {
-        	throw new PolicyException("Class definition " + classQName.toPrefixString() + " does not exist.");
+            // The class definition doesn't exist so there can be no behaviour bound
+            return null;
         }
         
         QName parentClassName = classDefinition.getParentName();

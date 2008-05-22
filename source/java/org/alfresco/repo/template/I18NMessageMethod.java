@@ -28,8 +28,10 @@ import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 
+import freemarker.template.TemplateDateModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateNumberModel;
 import freemarker.template.TemplateScalarModel;
 
 /**
@@ -50,40 +52,50 @@ public class I18NMessageMethod extends BaseTemplateProcessorExtension implements
     {
         String result = "";
         int argSize = args.size();
-
-        if (argSize > 0)
+        
+        if (argSize != 0)
         {
-           String id = "";
-           Object arg0 = args.get(0);
-           if (arg0 instanceof TemplateScalarModel)
-           {
-               id = ((TemplateScalarModel)arg0).getAsString();
-           }
-
-           if (argSize == 1)
-           {
-              // Shortcut for no additional params
-                result = I18NUtil.getMessage(id);
-           }
-           else
-           {
-              Object arg;
-              Object[] params = new Object[argSize - 1];
-              for (int i = 0; i < argSize-1; i++)
-              {
-                 // Note: need to ignore first passed-in arg
-                 arg = args.get(i+1);
-                 if (arg instanceof TemplateScalarModel)
-                 {
-                     params[i] = ((TemplateScalarModel)arg).getAsString();
-                 }
-                 else
-                 {
-                    params[i] = new String("");
-                 }
-              }
-              result = I18NUtil.getMessage(id, params);
-           }
+            String id = "";
+            Object arg0 = args.get(0);
+            if (arg0 instanceof TemplateScalarModel)
+            {
+                id = ((TemplateScalarModel)arg0).getAsString();
+            }
+            
+            if (id != null)
+            {
+                if (argSize == 1)
+                {
+                    // shortcut for no additional msg params
+                    result = I18NUtil.getMessage(id);
+                }
+                else
+                {
+                    Object[] params = new Object[argSize - 1];
+                    for (int i = 0; i < argSize-1; i++)
+                    {
+                        // ignore first passed-in arg which is the msg id
+                        Object arg = args.get(i + 1);
+                        if (arg instanceof TemplateScalarModel)
+                        {
+                            params[i] = ((TemplateScalarModel)arg).getAsString();
+                        }
+                        else if (arg instanceof TemplateNumberModel)
+                        {
+                            params[i] = ((TemplateNumberModel)arg).getAsNumber();
+                        }
+                        else if (arg instanceof TemplateDateModel)
+                        {
+                            params[i] = ((TemplateDateModel)arg).getAsDate();
+                        }
+                        else
+                        {
+                            params[i] = "";
+                        }
+                    }
+                    result = I18NUtil.getMessage(id, params);
+                }
+            }
         }
         
         return result;

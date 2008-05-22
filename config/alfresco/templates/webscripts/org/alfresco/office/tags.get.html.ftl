@@ -37,7 +37,9 @@
    </ul>
 </div>
 
-<div class="header">Tag Cloud</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Tag Cloud</div></div>
+</div>
 
 <div class="containerMedium">
    <div id="nonStatusText">
@@ -46,7 +48,9 @@
    <div id="statusText"></div>
 </div>
 
-<div id="taggedHeader" class="header">Tagged Documents</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div id="taggedHeader" class="header">Tagged Documents</div></div>
+</div>
 
 <div id="taggedContainer">
    <div id="itemsFound" class="taggedFound"></div>

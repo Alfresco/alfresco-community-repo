@@ -38,7 +38,9 @@
    </ul>
 </div>
 
-<div class="header">Current Document Details</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Current Document Details</div></div>
+</div>
 
 <div class="containerMedium">
    <div id="nonStatusText">
@@ -195,7 +197,9 @@
    </div>
 </div>
 
-<div class="header">Document Actions</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Document Actions</div></div>
+</div>
 
 <div id="documentActions" class="actionsPanel">
    <ul>

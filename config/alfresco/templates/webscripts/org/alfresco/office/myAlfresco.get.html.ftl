@@ -37,7 +37,10 @@
    </ul>
 </div>
 
-<div class="header">My Checked Out Documents<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">My Checked Out Documents</div></div>
+   <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
+</div>
 
 <div id="checkedoutList" class="containerMedium togglePanel">
 <#assign rowNum=0>
@@ -79,7 +82,10 @@
    </#if>
 </div>
 
-<div class="header">My Tasks<span class="headerExtra"><span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span><span class="toggle">&nbsp;</span></span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">My Tasks<span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></div></div>
+   <div class="headerExtra"><span class="toggle">&nbsp;</span></div>
+</div>
 
 <div id="taskList" class="containerMedium togglePanel">
 <#assign taskNum=0>
@@ -120,7 +126,9 @@
 </#if>
 </div>
 
-<div class="header">Actions</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Actions</div></div>
+</div>
 
 <div id="myAlfrescoActions" class="actionsPanel">
    <div id="nonStatusText">

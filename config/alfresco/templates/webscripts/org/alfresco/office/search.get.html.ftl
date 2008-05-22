@@ -33,7 +33,9 @@
    </ul>
 </div>
 
-<div class="header">Search</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Search</div></div>
+</div>
 
 <div class="containerSearchTerms">
    <div id="nonStatusText">
@@ -62,7 +64,9 @@
    
 </div>
 
-<div class="header"><span id="itemsFound">&nbsp;</span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header"><span id="itemsFound">&nbsp;</span></div></div>
+</div>
 
 <div id="resultsList" class="containerSearchResults">
    <div id="searchResultsList"></div>

@@ -43,7 +43,9 @@
    </ul>
 </div>
 
-<div class="header">My Tasks<span class="headerExtra"><span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">My Tasks<span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></div></div>
+</div>
 
 <div id="taskList" class="containerMedium">
 <#assign taskNum=0>
@@ -84,7 +86,9 @@
 </#if>
 </div>
 
-<div class="header">Task Details</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Task Details</div></div>
+</div>
 
 <div class="containerBig">
    <div id="nonStatusText">

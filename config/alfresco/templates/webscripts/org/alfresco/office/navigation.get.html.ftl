@@ -36,7 +36,9 @@
    </ul>
 </div>
 
-<div class="header">Current Space</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Current Space</div></div>
+</div>
 
 <div id="currentSpaceInfo">
    <span style="float: left;">
@@ -63,7 +65,10 @@
 </#if>
 </div>
 
-<div class="header">Spaces in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Spaces in ${thisSpace.name}</div></div>
+   <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
+</div>
 
 <div id="spaceList" class="containerMedium togglePanel">
    <div id="createSpaceContainer">
@@ -134,7 +139,10 @@
 </#if>
 </div>
 
-<div class="header">Documents in ${thisSpace.name}<span class="headerExtra"><span class="toggle">&nbsp;</span></span></div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Documents in ${thisSpace.name}</div></div>
+   <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
+</div>
 
 <div id="documentList" class="containerMedium togglePanel">
 <#assign documentsFound = 0>
@@ -188,7 +196,9 @@
 </#if>
 </div>
 
-<div class="header">Actions</div>
+<div class="headerRow">
+   <div class="headerWrapper"><div class="header">Actions</div></div>
+</div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
 <#assign currentPath = currentPath?substring(chLen+1)?url?replace('%2F', '/')?replace('\'', '\\\'') />

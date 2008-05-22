@@ -4,6 +4,8 @@ var queryString;
 
 if ((searchString != null) && (searchString != ""))
 {
+   searchString = searchString.replace(/\"/g, '\\"');
+
    if (searchType == "tag")
    {
       queryString = "PATH:\"/cm:categoryRoot/cm:taggable/cm:" + searchString + "/member\"";

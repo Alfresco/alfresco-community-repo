@@ -36,5 +36,7 @@ public interface ReferenceCounting
 
     public void setInvalidForReuse() throws IOException;
     
+    public boolean isInvalidForReuse();
+    
     public String getId();
 }

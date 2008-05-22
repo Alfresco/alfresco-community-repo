@@ -27,6 +27,7 @@ package org.alfresco.repo.security.permissions;
 import java.io.Serializable;
 
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 
 public interface AccessControlEntry extends Comparable<AccessControlEntry>, Serializable
 {
@@ -35,6 +36,8 @@ public interface AccessControlEntry extends Comparable<AccessControlEntry>, Seri
     public PermissionReference getPermission();
 
     public String getAuthority();
+    
+    public AuthorityType getAuthorityType();
 
     public AccessStatus getAccessStatus();
 

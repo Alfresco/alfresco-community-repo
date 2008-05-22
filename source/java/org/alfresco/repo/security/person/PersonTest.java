@@ -110,6 +110,39 @@ public class PersonTest extends BaseSpringTest
         }
     }
 
+    
+    public void testCreateAndThenDelete()
+    {
+        personService.setCreateMissingPeople(false);
+        assertFalse(personService.createMissingPeople());
+
+        personService.setCreateMissingPeople(true);
+        assertTrue(personService.createMissingPeople());
+
+        personService.setCreateMissingPeople(false);
+        try
+        {
+            personService.getPerson("andy");
+            fail("Getting Andy should fail");
+        }
+        catch (PersonException pe)
+        {
+
+        }
+        personService.createPerson(createDefaultProperties("andy", "Andy", "Hind", "andy@hind", "alfresco", rootNodeRef));
+        personService.getPerson("andy");
+        personService.deletePerson("andy");
+        try
+        {
+            personService.getPerson("andy");
+            fail("Getting Andy should fail");
+        }
+        catch (PersonException pe)
+        {
+
+        }
+    }
+    
     public void testCreateMissingPeople1()
     {
         personService.setCreateMissingPeople(false);

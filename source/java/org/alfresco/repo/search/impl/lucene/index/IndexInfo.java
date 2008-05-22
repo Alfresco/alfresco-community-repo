@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -229,11 +230,15 @@ public class IndexInfo
      */
     private ConcurrentLinkedQueue<String> deleteQueue = new ConcurrentLinkedQueue<String>();
 
+    private ConcurrentLinkedQueue<String> deleteFails = new ConcurrentLinkedQueue<String>();
+
     /**
      * A queue of reference counting index readers. We wait for these to become unused (ref count falls to zero) then
      * the data can be removed.
      */
     private ConcurrentLinkedQueue<IndexReader> deletableReaders = new ConcurrentLinkedQueue<IndexReader>();
+
+    private ConcurrentLinkedQueue<IndexReader> waitingReaders = new ConcurrentLinkedQueue<IndexReader>();
 
     /**
      * The call that is responsible for deleting old index information from disk.
@@ -476,6 +481,11 @@ public class IndexInfo
                             }
                             return null;
                         }
+
+                        public boolean canRetry()
+                        {
+                            return false;
+                        }
                     });
                 }
                 finally
@@ -577,6 +587,11 @@ public class IndexInfo
                         return null;
                     }
 
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
+
                 });
             }
             finally
@@ -611,7 +626,10 @@ public class IndexInfo
 
     private class DeleteUnknownGuidDirectories implements LockWork<Object>
     {
-
+        public boolean canRetry()
+        {
+            return true;
+        }
         public Object doWork() throws Exception
         {
             setStatusFromFile();
@@ -720,11 +738,11 @@ public class IndexInfo
                     {
                         indexEntries.put(id, new IndexEntry(IndexType.DELTA, id, "", TransactionStatus.ACTIVE, "", 0, 0, false));
                     }
+                    // Downgrade lock
+                    getReadLock();
                 }
                 finally
                 {
-                    // Downgrade lock
-                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -857,8 +875,7 @@ public class IndexInfo
     }
 
     /**
-     * Get the deletions for a given index (there is not check if thery should be applied that is up to the calling
-     * layer)
+     * Get the deletions for a given index (there is no check if they should be applied that is up to the calling layer)
      * 
      * @param id
      * @return
@@ -980,10 +997,10 @@ public class IndexInfo
                 try
                 {
                     mainIndexReader = null;
+                    getReadLock();
                 }
                 finally
                 {
-                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1005,14 +1022,19 @@ public class IndexInfo
                                 return null;
                             }
 
+                            public boolean canRetry()
+                            {
+                                return true;
+                            }
+
                         });
                         mainIndexReader = createMainIndexReader();
 
                     }
+                    getReadLock();
                 }
                 finally
                 {
-                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1056,10 +1078,10 @@ public class IndexInfo
                 try
                 {
                     mainIndexReader = null;
+                    getReadLock();
                 }
                 finally
                 {
-                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1080,14 +1102,19 @@ public class IndexInfo
                                 return null;
                             }
 
+                            public boolean canRetry()
+                            {
+                                return true;
+                            }
+
                         });
                         mainIndexReader = createMainIndexReader();
 
                     }
+                    getReadLock();
                 }
                 finally
                 {
-                    getReadLock();
                     releaseWriteLock();
                 }
             }
@@ -1162,6 +1189,11 @@ public class IndexInfo
                             return null;
                         }
 
+                        public boolean canRetry()
+                        {
+                            return true;
+                        }
+
                     });
                 }
                 else
@@ -1178,10 +1210,10 @@ public class IndexInfo
                     }
                     dumpInfo();
                 }
+                getReadLock();
             }
             finally
             {
-                getReadLock();
                 releaseWriteLock();
             }
         }
@@ -1392,12 +1424,26 @@ public class IndexInfo
             tl.set(buildReferenceCountingIndexReader(id));
         }
 
+        /**
+         * This has to be protected to allow for retry
+         */
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                throw new IndexerException("Unknown transaction " + id);
+                // We could be retrying - see if the index reader is known or the directory is left
+                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
+                {
+                    File location = new File(indexDirectory, id).getCanonicalFile();
+                    if (!location.exists())
+                    {
+                        throw new IndexerException("Unknown transaction " + id);
+                    }
+                }
+
+                clearOldReaders();
+                cleaner.schedule();
             }
 
             if (TransactionStatus.COMMITTED.follows(entry.getStatus()))
@@ -1494,7 +1540,18 @@ public class IndexInfo
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                throw new IndexerException("Unknown transaction " + id);
+                // We could be retrying - see if the index reader is known or the directory is left
+                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
+                {
+                    File location = new File(indexDirectory, id).getCanonicalFile();
+                    if (!location.exists())
+                    {
+                        throw new IndexerException("Unknown transaction " + id);
+                    }
+                }
+
+                clearOldReaders();
+                cleaner.schedule();
             }
 
             if (TransactionStatus.ROLLEDBACK.follows(entry.getStatus()))
@@ -1535,7 +1592,18 @@ public class IndexInfo
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                throw new IndexerException("Unknown transaction " + id);
+                // We could be retrying - see if the index reader is known or the directory is left
+                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
+                {
+                    File location = new File(indexDirectory, id).getCanonicalFile();
+                    if (!location.exists())
+                    {
+                        throw new IndexerException("Unknown transaction " + id);
+                    }
+                }
+
+                clearOldReaders();
+                cleaner.schedule();
             }
 
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))
@@ -2072,6 +2140,8 @@ public class IndexInfo
     public interface LockWork<Result>
     {
         public Result doWork() throws Exception;
+
+        public boolean canRetry();
     }
 
     public <R> R doWithWriteLock(LockWork<R> lockWork)
@@ -2087,15 +2157,76 @@ public class IndexInfo
         }
     }
 
+    private static final int CHANNEL_OPEN_RETRIES = 5;
+
     private <R> R doWithFileLock(LockWork<R> lockWork)
+    {
+        try
+        {
+            return doWithFileLock(lockWork, CHANNEL_OPEN_RETRIES);
+        }
+        catch (Throwable e)
+        {
+            // Re-throw the exception
+            if (e instanceof RuntimeException)
+            {
+                throw (RuntimeException) e;
+            }
+            else
+            {
+                throw new RuntimeException("Error during run with lock.", e);
+            }
+        }
+    }
+
+    /**
+     * Specific exception to catch channel close issues.
+     * 
+     * @author Derek Hulley
+     * @since 2.1.3
+     */
+    private static class IndexInfoChannelException extends IOException
+    {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1588898991653057286L;
+
+        public IndexInfoChannelException(String msg)
+        {
+            super(msg);
+        }
+    }
+
+    /**
+     * An iterative method that retries the operation in the event of the channel being closed.
+     * 
+     * @param retriesRemaining
+     *            the number of retries remaining
+     * @return Returns the lock work result
+     */
+    private <R> R doWithFileLock(LockWork<R> lockWork, int retriesRemaining) throws Throwable
     {
         FileLock fileLock = null;
         R result = null;
+        long start = 0L;
         try
         {
+            // Check that the channel is open
+            if (!indexInfoChannel.isOpen())
+            {
+                if (lockWork.canRetry())
+                {
+                    throw new IndexInfoChannelException("Channel is closed.  Manually triggering reopen attempts");
+                }
+                else
+                {
+                    reopenChannels();
+                }
+            }
+
             if (indexIsShared)
             {
-                long start = 0l;
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug(" ... waiting for file lock");
@@ -2115,17 +2246,39 @@ public class IndexInfo
             result = lockWork.doWork();
             return result;
         }
-        catch (Throwable exception)
+        catch (IOException e)
         {
-
-            // Re-throw the exception
-            if (exception instanceof RuntimeException)
+            if (!lockWork.canRetry())
             {
-                throw (RuntimeException) exception;
+                // We've done our best
+                s_logger.warn("This operation can not retry upon an IOException - it has to roll back to its previous state");
+                throw e;
+            }
+            if (retriesRemaining == 0)
+            {
+                // We've done our best
+                s_logger.warn("No more channel open retries remaining");
+                throw e;
             }
             else
             {
-                throw new RuntimeException("Error during run with lock.", exception);
+                // Attempt to reopen the channel
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("\n" + "Channel is closed.  Will attempt to open it. \n" + "   Retries remaining: " + retriesRemaining);
+                }
+                try
+                {
+                    reopenChannels();
+                    // Loop around and try again
+                    return doWithFileLock(lockWork, --retriesRemaining);
+                }
+                catch (Throwable ee)
+                {
+                    // Report this error, but throw the original
+                    s_logger.error("Channel reopen failed on index info files in: " + this.indexDirectory, ee);
+                    throw e;
+                }
             }
         }
         finally
@@ -2135,16 +2288,50 @@ public class IndexInfo
                 try
                 {
                     fileLock.release();
+                    long end = System.nanoTime();
                     if (s_logger.isDebugEnabled())
                     {
-                        s_logger.debug(" ... released file lock");
+                        s_logger.debug(" ... released file lock after " + ((end - start) / 10e6f) + " ms");
                     }
                 }
                 catch (IOException e)
                 {
+                    s_logger.warn("Failed to release file lock: " + e.getMessage(), e);
                 }
             }
         }
+    }
+
+    /**
+     * Reopens all the channels. The channels are closed first. This method is synchronized.
+     */
+    private synchronized void reopenChannels() throws Throwable
+    {
+        try
+        {
+            indexInfoRAF.close();
+        }
+        catch (IOException e)
+        {
+            s_logger.warn("Failed to close indexInfoRAF", e);
+        }
+        try
+        {
+            indexInfoBackupRAF.close();
+        }
+        catch (IOException e)
+        {
+            s_logger.warn("Failed to close indexInfoRAF", e);
+        }
+        File indexInfoFile = new File(this.indexDirectory, INDEX_INFO);
+        File indexInfoBackupFile = new File(this.indexDirectory, INDEX_INFO_BACKUP);
+
+        // Open the files and channels for the index info file and the backup
+        this.indexInfoRAF = openFile(indexInfoFile);
+        this.indexInfoChannel = this.indexInfoRAF.getChannel();
+
+        this.indexInfoBackupRAF = openFile(indexInfoBackupFile);
+        this.indexInfoBackupChannel = this.indexInfoBackupRAF.getChannel();
     }
 
     /**
@@ -2196,13 +2383,16 @@ public class IndexInfo
     private class Cleaner extends AbstractSchedulable
     {
 
-        public void run()
+        String getLogName()
+        {
+            return "Index cleaner";
+        }
+
+        ExitState runImpl()
         {
 
-            // Add any closed index readers we were waiting for
-            HashSet<IndexReader> waiting = new HashSet<IndexReader>();
             IndexReader reader;
-            while ((reader = deletableReaders.poll()) != null)
+            while ((reader = deletableReaders.peek()) != null)
             {
                 ReferenceCounting refCounting = (ReferenceCounting) reader;
                 if (refCounting.getReferenceCount() == 0)
@@ -2229,14 +2419,15 @@ public class IndexInfo
                 }
                 else
                 {
-                    waiting.add(reader);
+                    waitingReaders.add(reader);
                 }
+                deletableReaders.remove();
             }
-            deletableReaders.addAll(waiting);
+            deletableReaders.addAll(waitingReaders);
+            waitingReaders.clear();
 
             String id = null;
-            HashSet<String> fails = new HashSet<String>();
-            while ((id = deleteQueue.poll()) != null)
+            while ((id = deleteQueue.peek()) != null)
             {
                 try
                 {
@@ -2254,18 +2445,24 @@ public class IndexInfo
                             s_logger.debug("DELETE FAILED");
                         }
                         // try again later
-                        fails.add(id);
+                        deleteFails.add(id);
                     }
+                    deleteQueue.remove();
                 }
                 catch (IOException ioe)
                 {
                     s_logger.warn("Failed to delete file - invalid canonical file", ioe);
-                    fails.add(id);
+                    deleteFails.add(id);
                 }
             }
-            deleteQueue.addAll(fails);
+            deleteQueue.addAll(deleteFails);
+            deleteFails.clear();
+            return ExitState.DONE;
+        }
 
-            done();
+        ExitState recoverImpl()
+        {
+            return ExitState.DONE;
         }
 
         private boolean deleteDirectory(File file)
@@ -2314,182 +2511,401 @@ public class IndexInfo
         NONE, MERGE_INDEX, APPLY_DELTA_DELETION, MERGE_DELTA
     }
 
+    private enum ScheduledState
+    {
+        UN_SCHEDULED, SCHEDULED, FAILED, RECOVERY_SCHEDULED
+    }
+
+    private enum ExitState
+    {
+        DONE, RESCHEDULE;
+    }
+
     private abstract class AbstractSchedulable implements Schedulable, Runnable
     {
-
-        boolean scheduled = false;
+        ScheduledState scheduledState = ScheduledState.UN_SCHEDULED;
 
         public synchronized void schedule()
         {
-            if (!scheduled)
+            switch (scheduledState)
             {
+            case FAILED:
+                scheduledState = ScheduledState.RECOVERY_SCHEDULED;
                 threadPoolExecutor.execute(this);
-                scheduled = true;
-            }
-            else
-            {
-                // already done
+                break;
+            case UN_SCHEDULED:
+                scheduledState = ScheduledState.SCHEDULED;
+                threadPoolExecutor.execute(this);
+                break;
+            case RECOVERY_SCHEDULED:
+            case SCHEDULED:
+            default:
+                // Nothing to do
+                break;
             }
         }
 
-        public synchronized void done()
+        private synchronized void done()
         {
-            if (scheduled)
+            switch (scheduledState)
             {
-                scheduled = false;
-            }
-            else
-            {
+            case RECOVERY_SCHEDULED:
+            case SCHEDULED:
+                scheduledState = ScheduledState.UN_SCHEDULED;
+                break;
+            case FAILED:
+            case UN_SCHEDULED:
+            default:
                 throw new IllegalStateException();
             }
         }
 
-        public synchronized void reschedule()
+        private synchronized void reschedule()
         {
-            if (scheduled)
+            switch (scheduledState)
             {
+            case RECOVERY_SCHEDULED:
+                scheduledState = ScheduledState.SCHEDULED;
+            case SCHEDULED:
                 threadPoolExecutor.execute(this);
-            }
-            else
-            {
+                break;
+            case FAILED:
+            case UN_SCHEDULED:
+            default:
                 throw new IllegalStateException();
             }
         }
-    }
+        
+        private synchronized void rescheduleRecovery()
+        {
+            switch (scheduledState)
+            {
+            case RECOVERY_SCHEDULED:
+                threadPoolExecutor.execute(this);
+                break;
+            case SCHEDULED:
+            case FAILED:
+            case UN_SCHEDULED:
+            default:
+                throw new IllegalStateException();
+            }
+        }
 
-    private class Merger extends AbstractSchedulable
-    {
+        private synchronized void fail()
+        {
+            switch (scheduledState)
+            {
+            case RECOVERY_SCHEDULED:
+            case SCHEDULED:
+                scheduledState = ScheduledState.FAILED;
+                break;
+            case FAILED:
+            case UN_SCHEDULED:
+            default:
+                throw new IllegalStateException();
+            }
+        }
 
         public void run()
         {
-
             try
             {
-                // Get the read local to decide what to do
-                // Single JVM to start with
-                MergeAction action = MergeAction.NONE;
-
-                getReadLock();
-                try
+                ExitState reschedule;
+                switch (scheduledState)
                 {
-                    if (indexIsShared && !checkVersion())
+                case RECOVERY_SCHEDULED:
+                    reschedule = recoverImpl();
+                    s_logger.error(getLogName() + " has recovered - resuming ... ");
+                    if (reschedule == ExitState.RESCHEDULE)
                     {
-                        releaseReadLock();
-                        getWriteLock();
-                        try
-                        {
-                            // Sync with disk image if required
-                            doWithFileLock(new LockWork<Object>()
-                            {
-                                public Object doWork() throws Exception
-                                {
-                                    return null;
-                                }
-                            });
-                        }
-                        finally
-                        {
-                            try
-                            {
-                                getReadLock();
-                            }
-                            finally
-                            {
-                                releaseWriteLock();
-                            }
-                        }
+                        rescheduleRecovery();
+                        break;
                     }
-
-                    int indexes = 0;
-                    boolean mergingIndexes = false;
-                    int deltas = 0;
-                    boolean applyingDeletions = false;
-
-                    for (IndexEntry entry : indexEntries.values())
+                case SCHEDULED:
+                    reschedule = runImpl();
+                    if (reschedule == ExitState.RESCHEDULE)
                     {
-                        if (entry.getType() == IndexType.INDEX)
-                        {
-                            indexes++;
-                            if (entry.getStatus() == TransactionStatus.MERGE)
-                            {
-                                mergingIndexes = true;
-                            }
-                        }
-                        else if (entry.getType() == IndexType.DELTA)
-                        {
-                            if (entry.getStatus() == TransactionStatus.COMMITTED)
-                            {
-                                deltas++;
-                            }
-                            if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
-                            {
-                                applyingDeletions = true;
-                            }
-                        }
+                        reschedule();
                     }
-
-                    if (s_logger.isDebugEnabled())
+                    else
                     {
-                        s_logger.debug("Indexes = " + indexes);
-                        s_logger.debug("Merging = " + mergingIndexes);
-                        s_logger.debug("Deltas = " + deltas);
-                        s_logger.debug("Deleting = " + applyingDeletions);
+                        done();
                     }
-
-                    if (!mergingIndexes && !applyingDeletions)
-                    {
-
-                        if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
-                        {
-                            if (indexes > deltas)
-                            {
-                                // Try merge
-                                action = MergeAction.MERGE_INDEX;
-                            }
-                            else
-                            {
-                                // Try delete
-                                action = MergeAction.APPLY_DELTA_DELETION;
-
-                            }
-                        }
-                    }
-                }
-
-                catch (IOException e)
-                {
-                    s_logger.error("Error reading index file", e);
-                }
-                finally
-                {
-                    releaseReadLock();
-                }
-
-                if (action == MergeAction.APPLY_DELTA_DELETION)
-                {
-                    mergeDeletions();
-                }
-                else if (action == MergeAction.MERGE_INDEX)
-                {
-                    mergeIndexes();
-                }
-
-                if (action == MergeAction.NONE)
-                {
-                    done();
-                }
-                else
-                {
-                    reschedule();
+                    break;
+                case FAILED:
+                case UN_SCHEDULED:
+                default:
+                    throw new IllegalStateException();
                 }
             }
             catch (Throwable t)
             {
-                s_logger.error("??", t);
+                try
+                {
+                    if (s_logger.isWarnEnabled())
+                    {
+                        s_logger.warn(getLogName() + " failed with ", t);
+                    }
+                    recoverImpl();
+                    if (s_logger.isWarnEnabled())
+                    {
+                        s_logger.warn(getLogName() + " recovered from ", t);
+                    }
+                    done();
+                }
+                catch (Throwable rbt)
+                {
+                    fail();
+                    s_logger.error(getLogName() + " failed to recover - suspending ", rbt);
+                }
             }
         }
 
-        void mergeDeletions()
+        abstract ExitState runImpl() throws Exception;
+
+        abstract ExitState recoverImpl() throws Exception;
+
+        abstract String getLogName();
+    }
+
+    private class Merger extends AbstractSchedulable
+    {
+        String getLogName()
+        {
+            return "Index merger";
+        }
+
+        ExitState runImpl() throws IOException
+        {
+
+            // Get the read local to decide what to do
+            // Single JVM to start with
+            MergeAction action = MergeAction.NONE;
+
+            getReadLock();
+            try
+            {
+                if (indexIsShared && !checkVersion())
+                {
+                    releaseReadLock();
+                    getWriteLock();
+                    try
+                    {
+                        // Sync with disk image if required
+                        doWithFileLock(new LockWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                return null;
+                            }
+
+                            public boolean canRetry()
+                            {
+                                return true;
+                            }
+                        });
+                        getReadLock();
+                    }
+                    finally
+                    {
+                        releaseWriteLock();
+                    }
+                }
+
+                int indexes = 0;
+                boolean mergingIndexes = false;
+                int deltas = 0;
+                boolean applyingDeletions = false;
+
+                for (IndexEntry entry : indexEntries.values())
+                {
+                    if (entry.getType() == IndexType.INDEX)
+                    {
+                        indexes++;
+                        if ((entry.getStatus() == TransactionStatus.MERGE) || (entry.getStatus() == TransactionStatus.MERGE_TARGET))
+                        {
+                            mergingIndexes = true;
+                        }
+
+                    }
+                    else if (entry.getType() == IndexType.DELTA)
+                    {
+                        if (entry.getStatus() == TransactionStatus.COMMITTED)
+                        {
+                            deltas++;
+                        }
+                        if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
+                        {
+                            applyingDeletions = true;
+                            deltas++;
+                        }
+                    }
+                }
+
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("Indexes = " + indexes);
+                    s_logger.debug("Merging = " + mergingIndexes);
+                    s_logger.debug("Deltas = " + deltas);
+                    s_logger.debug("Deleting = " + applyingDeletions);
+                }
+
+                if (!mergingIndexes && !applyingDeletions)
+                {
+
+                    if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
+                    {
+                        if (indexes > deltas)
+                        {
+                            // Try merge
+                            action = MergeAction.MERGE_INDEX;
+                        }
+                        else
+                        {
+                            // Try delete
+                            action = MergeAction.APPLY_DELTA_DELETION;
+
+                        }
+                    }
+                }
+            }
+
+            catch (IOException e)
+            {
+                s_logger.error("Error reading index file", e);
+                return ExitState.DONE;
+            }
+            finally
+            {
+                releaseReadLock();
+            }
+
+            if (action == MergeAction.APPLY_DELTA_DELETION)
+            {
+                mergeDeletions();
+            }
+            else if (action == MergeAction.MERGE_INDEX)
+            {
+                mergeIndexes();
+            }
+
+            if (action == MergeAction.NONE)
+            {
+                return ExitState.DONE;
+            }
+            else
+            {
+                return ExitState.RESCHEDULE;
+            }
+        }
+
+        ExitState recoverImpl()
+        {
+            getWriteLock();
+            try
+            {
+                doWithFileLock(new LockWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        setStatusFromFile();
+
+                        // If the index is not shared we can do some easy clean
+                        // up
+                        if (!indexIsShared)
+                        {
+                            HashSet<String> deletable = new HashSet<String>();
+                            // clean up
+                            for (IndexEntry entry : indexEntries.values())
+                            {
+                                switch (entry.getStatus())
+                                {
+                                // states which can be deleted
+                                // We could check prepared states can be
+                                // committed.
+                                case ACTIVE:
+                                case MARKED_ROLLBACK:
+                                case NO_TRANSACTION:
+                                case PREPARING:
+                                case ROLLEDBACK:
+                                case ROLLINGBACK:
+                                case UNKNOWN:
+                                case PREPARED:
+                                case DELETABLE:
+                                case COMMITTING:
+                                case COMMITTED:
+                                default:
+                                    if (s_logger.isInfoEnabled())
+                                    {
+                                        s_logger.info("Roll back merge: leaving index entry " + entry);
+                                    }
+                                    break;
+                                // States which are in mid-transition which we
+                                // can roll back to the committed state
+                                case COMMITTED_DELETING:
+                                case MERGE:
+                                    if (s_logger.isInfoEnabled())
+                                    {
+                                        s_logger.info("Roll back merge: Resetting merge and committed_deleting to committed " + entry);
+                                    }
+                                    entry.setStatus(TransactionStatus.COMMITTED);
+                                    break;
+                                case MERGE_TARGET:
+                                    if (s_logger.isInfoEnabled())
+                                    {
+                                        s_logger.info("Roll back merge: Deleting merge target " + entry);
+                                    }
+                                    entry.setStatus(TransactionStatus.DELETABLE);
+                                    deletable.add(entry.getName());
+                                    break;
+                                }
+
+                                // Check we have a reader registered
+                                if (referenceCountingReadOnlyIndexReaders.get(entry.getName()) == null)
+                                {
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                }
+                            }
+
+                            if (mainIndexReader != null)
+                            {
+                                ReferenceCounting rcMain = (ReferenceCounting) mainIndexReader;
+                                if (rcMain.isInvalidForReuse())
+                                {
+                                    mainIndexReader = null;
+                                }
+                            }
+
+                            // Delete entries that are not required
+                            for (String id : deletable)
+                            {
+                                indexEntries.remove(id);
+                            }
+                            clearOldReaders();
+
+                            cleaner.schedule();
+
+                            // persist the new state
+                            writeStatus();
+                        }
+                        return null;
+                    }
+
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
+
+                });
+            }
+            finally
+            {
+                releaseWriteLock();
+            }
+            return ExitState.DONE;
+        }
+
+        void mergeDeletions() throws IOException
         {
             if (s_logger.isDebugEnabled())
             {
@@ -2498,6 +2914,7 @@ public class IndexInfo
 
             // lock for deletions
             final LinkedHashMap<String, IndexEntry> toDelete;
+            LinkedHashMap<String, IndexEntry> indexes;
 
             getWriteLock();
             try
@@ -2514,13 +2931,17 @@ public class IndexInfo
                             {
                                 return set;
                             }
+                            if ((entry.getType() == IndexType.INDEX) && (entry.getStatus() == TransactionStatus.MERGE_TARGET))
+                            {
+                                return set;
+                            }
                             if ((entry.getType() == IndexType.DELTA) && (entry.getStatus() == TransactionStatus.COMMITTED_DELETING))
                             {
                                 return set;
                             }
                         }
                         // Check it is not deleting
-                        for (IndexEntry entry : indexEntries.values())
+                        BREAK: for (IndexEntry entry : indexEntries.values())
                         {
                             // skip indexes at the start
                             if (entry.getType() == IndexType.DELTA)
@@ -2534,7 +2955,7 @@ public class IndexInfo
                                 {
                                     // If not committed we stop as we can not
                                     // span non committed.
-                                    break;
+                                    break BREAK;
                                 }
                             }
                         }
@@ -2546,22 +2967,27 @@ public class IndexInfo
 
                     }
 
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
+
                 });
+                getReadLock();
             }
             finally
             {
-                getReadLock();
                 releaseWriteLock();
             }
 
-            LinkedHashMap<String, IndexEntry> indexes = new LinkedHashMap<String, IndexEntry>();
             try
             {
-                for (IndexEntry entry : indexEntries.values())
+                indexes = new LinkedHashMap<String, IndexEntry>();
+                BREAK: for (IndexEntry entry : indexEntries.values())
                 {
                     if (entry.getStatus() == TransactionStatus.COMMITTED_DELETING)
                     {
-                        break;
+                        break BREAK;
                     }
                     indexes.put(entry.getName(), entry);
                 }
@@ -2571,147 +2997,133 @@ public class IndexInfo
                 releaseReadLock();
             }
 
+            if (toDelete.size() == 0)
+            {
+                return;
+            }
             // Build readers
-
-            boolean fail = false;
 
             final HashSet<String> invalidIndexes = new HashSet<String>();
 
             final HashMap<String, Long> newIndexCounts = new HashMap<String, Long>();
 
-            try
+            LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>();
+            for (IndexEntry entry : indexes.values())
             {
-                LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>();
-                for (IndexEntry entry : indexes.values())
+                File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
+                IndexReader reader;
+                if (IndexReader.indexExists(location))
                 {
-                    File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
-                    IndexReader reader;
-                    if (IndexReader.indexExists(location))
-                    {
-                        reader = IndexReader.open(location);
-                    }
-                    else
-                    {
-                        reader = IndexReader.open(emptyIndex);
-                    }
-                    readers.put(entry.getName(), reader);
+                    reader = IndexReader.open(location);
                 }
-
-                for (IndexEntry currentDelete : toDelete.values())
+                else
                 {
-                    Set<String> deletions = getDeletions(currentDelete.getName());
-                    for (String key : readers.keySet())
+                    reader = IndexReader.open(emptyIndex);
+                }
+                readers.put(entry.getName(), reader);
+            }
+
+            for (IndexEntry currentDelete : toDelete.values())
+            {
+                Set<String> deletions = getDeletions(currentDelete.getName());
+                for (String key : readers.keySet())
+                {
+                    IndexReader reader = readers.get(key);
+                    for (String stringRef : deletions)
                     {
-                        IndexReader reader = readers.get(key);
-                        for (String stringRef : deletions)
+                        if (currentDelete.isDeletOnlyNodes())
                         {
-                            if (currentDelete.isDeletOnlyNodes())
-                            {
-                                Searcher searcher = new IndexSearcher(reader);
+                            Searcher searcher = new IndexSearcher(reader);
 
-                                TermQuery query = new TermQuery(new Term("ID", stringRef));
-                                Hits hits = searcher.search(query);
-                                if (hits.length() > 0)
+                            TermQuery query = new TermQuery(new Term("ID", stringRef));
+                            Hits hits = searcher.search(query);
+                            if (hits.length() > 0)
+                            {
+                                for (int i = 0; i < hits.length(); i++)
                                 {
-                                    for (int i = 0; i < hits.length(); i++)
+                                    Document doc = hits.doc(i);
+                                    if (doc.getField("ISCONTAINER") == null)
                                     {
-                                        Document doc = hits.doc(i);
-                                        if (doc.getField("ISCONTAINER") == null)
-                                        {
-                                            reader.deleteDocument(hits.id(i));
-                                            invalidIndexes.add(key);
-                                            // There should only be one thing to
-                                            // delete
-                                            // break;
-                                        }
+                                        reader.deleteDocument(hits.id(i));
+                                        invalidIndexes.add(key);
+                                        // There should only be one thing to
+                                        // delete
+                                        // break;
                                     }
                                 }
-                                searcher.close();
-
                             }
-                            else
+                            searcher.close();
+
+                        }
+                        else
+                        {
+                            int deletedCount = 0;
+                            try
                             {
-                                int deletedCount = 0;
-                                try
+                                deletedCount = reader.deleteDocuments(new Term("ID", stringRef));
+                            }
+                            catch (IOException ioe)
+                            {
+                                if (s_logger.isDebugEnabled())
                                 {
-                                    deletedCount = reader.deleteDocuments(new Term("ID", stringRef));
+                                    s_logger.debug("IO Error for " + key);
+                                    throw ioe;
                                 }
-                                catch (IOException ioe)
+                            }
+                            if (deletedCount > 0)
+                            {
+                                if (s_logger.isDebugEnabled())
                                 {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("IO Error for " + key);
-                                        throw ioe;
-                                    }
+                                    s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + reader.numDocs());
                                 }
-                                if (deletedCount > 0)
-                                {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + reader.numDocs());
-                                    }
-                                    invalidIndexes.add(key);
-                                }
+                                invalidIndexes.add(key);
                             }
                         }
+                    }
 
-                    }
-                    File location = new File(indexDirectory, currentDelete.getName()).getCanonicalFile();
-                    IndexReader reader;
-                    if (IndexReader.indexExists(location))
-                    {
-                        reader = IndexReader.open(location);
-                    }
-                    else
-                    {
-                        reader = IndexReader.open(emptyIndex);
-                    }
-                    readers.put(currentDelete.getName(), reader);
                 }
+                File location = new File(indexDirectory, currentDelete.getName()).getCanonicalFile();
+                IndexReader reader;
+                if (IndexReader.indexExists(location))
+                {
+                    reader = IndexReader.open(location);
+                }
+                else
+                {
+                    reader = IndexReader.open(emptyIndex);
+                }
+                readers.put(currentDelete.getName(), reader);
+            }
 
-                // Close all readers holding the write lock - so no one tries to
-                // read
-                getWriteLock();
-                try
+            // Close all readers holding the write lock - so no one tries to
+            // read
+            getWriteLock();
+            try
+            {
+                for (String key : readers.keySet())
                 {
-                    for (String key : readers.keySet())
-                    {
-                        IndexReader reader = readers.get(key);
-                        // TODO:Set the new document count
-                        newIndexCounts.put(key, new Long(reader.numDocs()));
-                        reader.close();
-                    }
-                }
-                finally
-                {
-                    releaseWriteLock();
+                    IndexReader reader = readers.get(key);
+                    // TODO:Set the new document count
+                    newIndexCounts.put(key, new Long(reader.numDocs()));
+                    reader.close();
                 }
             }
-            catch (IOException e)
+            finally
             {
-                s_logger.error("Failed to merge deletions", e);
-                fail = true;
+                releaseWriteLock();
             }
 
             // Prebuild all readers for affected indexes
             // Register them in the commit.
 
             final HashMap<String, IndexReader> newReaders = new HashMap<String, IndexReader>();
-            try
+
+            for (String id : invalidIndexes)
             {
-                for (String id : invalidIndexes)
-                {
-                    IndexReader reader = buildReferenceCountingIndexReader(id);
-                    newReaders.put(id, reader);
-                }
-            }
-            catch (IOException ioe)
-            {
-                s_logger.error("Failed build new readers", ioe);
-                fail = true;
+                IndexReader reader = buildReferenceCountingIndexReader(id);
+                newReaders.put(id, reader);
             }
 
-            final boolean wasDeleted = !fail;
             getWriteLock();
             try
             {
@@ -2722,12 +3134,8 @@ public class IndexInfo
                         for (IndexEntry entry : toDelete.values())
                         {
                             entry.setStatus(TransactionStatus.COMMITTED);
-                            if (wasDeleted)
-                            {
-                                entry.setType(IndexType.INDEX);
-                                entry.setDeletions(0);
-                            }
-
+                            entry.setType(IndexType.INDEX);
+                            entry.setDeletions(0);
                         }
 
                         for (String key : newIndexCounts.keySet())
@@ -2791,18 +3199,20 @@ public class IndexInfo
                         return null;
                     }
 
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
+
                 });
             }
             finally
             {
                 releaseWriteLock();
             }
-
-            // TODO: Flush readers etc
-
         }
 
-        void mergeIndexes()
+        void mergeIndexes() throws IOException
         {
 
             if (s_logger.isDebugEnabled())
@@ -2824,6 +3234,10 @@ public class IndexInfo
                         for (IndexEntry entry : indexEntries.values())
                         {
                             if ((entry.getType() == IndexType.INDEX) && (entry.getStatus() == TransactionStatus.MERGE))
+                            {
+                                return set;
+                            }
+                            if ((entry.getType() == IndexType.INDEX) && (entry.getStatus() == TransactionStatus.MERGE_TARGET))
                             {
                                 return set;
                             }
@@ -2881,6 +3295,11 @@ public class IndexInfo
 
                     }
 
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
+
                 });
             }
             finally
@@ -2893,95 +3312,90 @@ public class IndexInfo
                 s_logger.debug("....Merging..." + (toMerge.size() - 1));
             }
 
-            boolean fail = false;
+            if (toMerge.size() == 0)
+            {
+                return;
+            }
 
             String mergeTargetId = null;
 
-            try
+            if (toMerge.size() > 0)
             {
-                if (toMerge.size() > 0)
+                int count = 0;
+                IndexReader[] readers = new IndexReader[toMerge.size() - 1];
+                RAMDirectory ramDirectory = null;
+                IndexWriter writer = null;
+                long docCount = 0;
+                File outputLocation = null;
+                for (IndexEntry entry : toMerge.values())
                 {
-                    int count = 0;
-                    IndexReader[] readers = new IndexReader[toMerge.size() - 1];
-                    RAMDirectory ramDirectory = null;
-                    IndexWriter writer = null;
-                    long docCount = 0;
-                    File outputLocation = null;
-                    for (IndexEntry entry : toMerge.values())
+                    File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
+                    if (entry.getStatus() == TransactionStatus.MERGE)
                     {
-                        File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
-                        if (entry.getStatus() == TransactionStatus.MERGE)
+                        IndexReader reader;
+                        if (IndexReader.indexExists(location))
                         {
-                            IndexReader reader;
-                            if (IndexReader.indexExists(location))
-                            {
-                                reader = IndexReader.open(location);
-                            }
-                            else
-                            {
-                                s_logger.error("Index is missing " + entry.getName());
-                                reader = IndexReader.open(emptyIndex);
-                            }
-                            readers[count++] = reader;
-                            docCount += entry.getDocumentCount();
+                            reader = IndexReader.open(location);
                         }
-                        else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
+                        else
                         {
-                            mergeTargetId = entry.getName();
-                            outputLocation = location;
-                            if (docCount < maxDocsForInMemoryMerge)
-                            {
-                                ramDirectory = new RAMDirectory();
-                                writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true);
-                            }
-                            else
-                            {
-                                writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true);
-
-                            }
-                            writer.setUseCompoundFile(mergerUseCompoundFile);
-                            writer.setMaxBufferedDocs(mergerMinMergeDocs);
-                            writer.setMergeFactor(mergerMergeFactor);
-                            writer.setMaxMergeDocs(mergerMaxMergeDocs);
-                            writer.setWriteLockTimeout(writeLockTimeout);
+                            s_logger.error("Index is missing " + entry.getName());
+                            reader = IndexReader.open(emptyIndex);
                         }
+                        readers[count++] = reader;
+                        docCount += entry.getDocumentCount();
                     }
-                    writer.addIndexes(readers);
-                    writer.close();
-
-                    if (ramDirectory != null)
+                    else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
                     {
-                        String[] files = ramDirectory.list();
-                        Directory directory = FSDirectory.getDirectory(outputLocation, true);
-                        for (int i = 0; i < files.length; i++)
+                        mergeTargetId = entry.getName();
+                        outputLocation = location;
+                        if (docCount < maxDocsForInMemoryMerge)
                         {
-                            // make place on ram disk
-                            IndexOutput os = directory.createOutput(files[i]);
-                            // read current file
-                            IndexInput is = ramDirectory.openInput(files[i]);
-                            // and copy to ram disk
-                            int len = (int) is.length();
-                            byte[] buf = new byte[len];
-                            is.readBytes(buf, 0, len);
-                            os.writeBytes(buf, len);
-                            // graceful cleanup
-                            is.close();
-                            os.close();
+                            ramDirectory = new RAMDirectory();
+                            writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true);
                         }
-                        ramDirectory.close();
-                        directory.close();
-                    }
+                        else
+                        {
+                            writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true);
 
-                    for (IndexReader reader : readers)
-                    {
-                        reader.close();
+                        }
+                        writer.setUseCompoundFile(mergerUseCompoundFile);
+                        writer.setMaxBufferedDocs(mergerMinMergeDocs);
+                        writer.setMergeFactor(mergerMergeFactor);
+                        writer.setMaxMergeDocs(mergerMaxMergeDocs);
+                        writer.setWriteLockTimeout(writeLockTimeout);
                     }
                 }
-            }
-            catch (Throwable e)
-            {
-                s_logger.error("Failed to merge indexes", e);
-                fail = true;
+                writer.addIndexes(readers);
+                writer.close();
+
+                if (ramDirectory != null)
+                {
+                    String[] files = ramDirectory.list();
+                    Directory directory = FSDirectory.getDirectory(outputLocation, true);
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        // make place on ram disk
+                        IndexOutput os = directory.createOutput(files[i]);
+                        // read current file
+                        IndexInput is = ramDirectory.openInput(files[i]);
+                        // and copy to ram disk
+                        int len = (int) is.length();
+                        byte[] buf = new byte[len];
+                        is.readBytes(buf, 0, len);
+                        os.writeBytes(buf, len);
+                        // graceful cleanup
+                        is.close();
+                        os.close();
+                    }
+                    ramDirectory.close();
+                    directory.close();
+                }
+
+                for (IndexReader reader : readers)
+                {
+                    reader.close();
+                }
             }
 
             final String finalMergeTargetId = mergeTargetId;
@@ -2989,15 +3403,7 @@ public class IndexInfo
             getReadLock();
             try
             {
-                try
-                {
-                    newReader = buildReferenceCountingIndexReader(mergeTargetId);
-                }
-                catch (IOException e)
-                {
-                    s_logger.error("Failed to open reader for merge target", e);
-                    fail = true;
-                }
+                newReader = buildReferenceCountingIndexReader(mergeTargetId);
             }
             finally
             {
@@ -3005,7 +3411,7 @@ public class IndexInfo
             }
 
             final IndexReader finalNewReader = newReader;
-            final boolean wasMerged = !fail;
+
             getWriteLock();
             try
             {
@@ -3018,41 +3424,21 @@ public class IndexInfo
                         {
                             if (entry.getStatus() == TransactionStatus.MERGE)
                             {
-                                if (wasMerged)
+                                if (s_logger.isDebugEnabled())
                                 {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("... deleting as merged " + entry.getName());
-                                    }
-                                    toDelete.add(entry.getName());
+                                    s_logger.debug("... deleting as merged " + entry.getName());
                                 }
-                                else
-                                {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("... committing as merge failed " + entry.getName());
-                                    }
-                                    entry.setStatus(TransactionStatus.COMMITTED);
-                                }
+                                toDelete.add(entry.getName());
                             }
                             else if (entry.getStatus() == TransactionStatus.MERGE_TARGET)
                             {
-                                if (wasMerged)
+
+                                if (s_logger.isDebugEnabled())
                                 {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("... committing merge target " + entry.getName());
-                                    }
-                                    entry.setStatus(TransactionStatus.COMMITTED);
+                                    s_logger.debug("... committing merge target " + entry.getName());
                                 }
-                                else
-                                {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("... deleting merge target as merge failed " + entry.getName());
-                                    }
-                                    toDelete.add(entry.getName());
-                                }
+                                entry.setStatus(TransactionStatus.COMMITTED);
+
                             }
                         }
                         for (String id : toDelete)
@@ -3073,6 +3459,10 @@ public class IndexInfo
                         return null;
                     }
 
+                    public boolean canRetry()
+                    {
+                        return false;
+                    }
                 });
             }
             finally
@@ -3350,11 +3740,6 @@ public class IndexInfo
     interface Schedulable
     {
         void schedule();
-
-        public void done();
-
-        public void reschedule();
-
     }
 
 }

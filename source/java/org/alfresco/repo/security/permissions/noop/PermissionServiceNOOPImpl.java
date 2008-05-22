@@ -203,7 +203,7 @@ public class PermissionServiceNOOPImpl
 
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
-        return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry>emptySet());
+        return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry>emptyList());
     }
 
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
@@ -287,7 +287,7 @@ public class PermissionServiceNOOPImpl
 
     public NodePermissionEntry getSetPermissions(StoreRef storeRef)
     {
-        return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptySet());
+        return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptyList());
     }
     
     

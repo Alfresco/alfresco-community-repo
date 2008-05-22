@@ -46,7 +46,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == null;
+            return (previous == null) || (previous == ACTIVE);
         }
         
         public int getStatus()
@@ -77,7 +77,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous.allowsRollbackOrMark(previous);
+            return previous.allowsRollbackOrMark(previous) || (previous == MARKED_ROLLBACK);
         }
         
         public int getStatus()
@@ -108,7 +108,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == TransactionStatus.PREPARING;
+            return (previous == TransactionStatus.PREPARING) || (previous == PREPARED);
         }
         
         public int getStatus()
@@ -139,7 +139,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == TransactionStatus.COMMITTING;
+            return (previous == TransactionStatus.COMMITTING) || (previous == COMMITTED);
         }
         
         public int getStatus()
@@ -170,7 +170,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == TransactionStatus.ROLLINGBACK;
+            return (previous == TransactionStatus.ROLLINGBACK) || (previous == ROLLEDBACK);
         }
         
         public int getStatus()
@@ -201,7 +201,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return false;
+            return (previous == UNKNOWN);
         }
         
         public int getStatus()
@@ -232,7 +232,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return false;
+            return (previous == NO_TRANSACTION);
         }
         
         public int getStatus()
@@ -263,7 +263,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == TransactionStatus.ACTIVE;
+            return (previous == TransactionStatus.ACTIVE) || (previous == PREPARING);
         }
         
         public int getStatus()
@@ -294,7 +294,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous == TransactionStatus.PREPARED;
+            return (previous == TransactionStatus.PREPARED) || (previous == COMMITTING);
         }
         
         public int getStatus()
@@ -325,7 +325,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return previous.allowsRollbackOrMark(previous);
+            return previous.allowsRollbackOrMark(previous) || (previous == ROLLINGBACK);
         }
         
         public int getStatus()
@@ -356,7 +356,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return false;
+            return (previous == MERGE);
         }
         
         public int getStatus()
@@ -387,7 +387,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return false;
+            return (previous == MERGE_TARGET);
         }
         
         public int getStatus()
@@ -419,7 +419,7 @@ public enum TransactionStatus
         
         public boolean follows(TransactionStatus previous)
         {
-            return false;
+            return (previous == COMMITTED_DELETING);
         }
         
         public int getStatus()

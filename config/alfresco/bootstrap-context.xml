@@ -39,6 +39,12 @@
        <property name="updateSchema">
           <value>${db.schema.update}</value>
        </property>
+       <property name="schemaUpdateLockRetryCount">
+          <value>${db.schema.update.lockRetryCount}</value>
+       </property>
+       <property name="schemaUpdateLockRetryWaitSeconds">
+          <value>${db.schema.update.lockRetryWaitSeconds}</value>
+       </property>
        <property name="postCreateScriptUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>

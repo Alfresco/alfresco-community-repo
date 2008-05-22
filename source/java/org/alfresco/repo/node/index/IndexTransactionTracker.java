@@ -39,6 +39,8 @@ public class IndexTransactionTracker extends AbstractReindexComponent
 {
     private static Log logger = LogFactory.getLog(IndexTransactionTracker.class);
     
+    private IndexTransactionTrackerListener listener;
+    
     private long maxTxnDurationMs;
     private long reindexLagMs;
     private int maxRecordSetSize;
@@ -66,6 +68,11 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         lastMaxTxnId = Long.MAX_VALUE;
         fromTimeInclusive = -1L;
         voids = new TreeMap<Long, TxnRecord>();
+    }
+
+    public synchronized void setListener(IndexTransactionTrackerListener listener)
+    {
+        this.listener = listener;
     }
 
     /**
@@ -148,6 +155,15 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             // set will be detected as well.  Additionally, the last max transaction will be
             // updated by this method.
             reindexTransactions(txns);
+            
+            // Call the listener
+            synchronized (this)
+            {
+                if (listener != null)
+                {
+                    listener.indexedTransactions(fromTimeInclusive, toTimeExclusive);
+                }
+            }
             
             // Move the time on.
             // Note the subtraction here.  Yes, it's odd.  But the results of the getNextTransactions
@@ -419,5 +435,16 @@ found:
     private class TxnRecord
     {
         private long txnCommitTime;
+    }
+    
+    /**
+     * A callback that can be set to provide logging and other record keeping
+     * 
+     * @author Derek Hulley
+     * @since 2.1.4
+     */
+    public interface IndexTransactionTrackerListener
+    {
+        void indexedTransactions(long fromTimeInclusive, long toTimeExclusive);
     }
 }

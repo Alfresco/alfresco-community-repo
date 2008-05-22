@@ -29,6 +29,7 @@ import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
@@ -341,6 +342,24 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
         return AuthenticationUtil.setCurrentAuthentication(authentication);
+    }
+
+    
+    
+    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
+    {
+        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
+        {
+            try
+            {
+                return authComponent.setCurrentUser(userName, validationMode);
+            }
+            catch (AuthenticationException e)
+            {
+                // Ignore and chain
+            }
+        }
+        throw new AuthenticationException("Failed to set current user " + userName);
     }
 
     /**

@@ -58,6 +58,7 @@ import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -459,6 +460,49 @@ public class ADMLuceneTest extends TestCase
     public ADMLuceneTest(String arg0)
     {
         super(arg0);
+    }
+
+    public void testOverWritetoZeroSize() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+        luceneFTS.resume();
+        testTX.commit();
+
+        for (int i = 0; i < 100; i++)
+        {
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+            runBaseTests();
+            nodeService.setProperty(rootNodeRef, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n1, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n2, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n3, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n4, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n5, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n6, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n7, QName.createQName("{namespace}property-A"), "A");
+            runBaseTests();
+            testTX.commit();
+            
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+            runBaseTests();
+            nodeService.setProperty(n8, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n9, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n10, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n11, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n12, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n13, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n14, QName.createQName("{namespace}property-A"), "A");
+            runBaseTests();
+            testTX.commit();
+        }
+
     }
 
     /**
@@ -1538,7 +1582,7 @@ public class ADMLuceneTest extends TestCase
         sp7.addStore(rootNodeRef.getStoreRef());
         sp7.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp7.setQuery("PATH:\"//.\"");
-        sp7.addSort("@" + createdDate, true);
+        sp7.addSort("@" + createdDate.getPrefixedQName(namespacePrefixResolver), true);
         results = searcher.query(sp7);
 
         Date date = null;
@@ -1573,7 +1617,7 @@ public class ADMLuceneTest extends TestCase
             date = currentBun;
         }
         results.close();
-        
+
         SearchParameters sp_7 = new SearchParameters();
         sp_7.addStore(rootNodeRef.getStoreRef());
         sp_7.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -1613,7 +1657,6 @@ public class ADMLuceneTest extends TestCase
             date = currentBun;
         }
         results.close();
-        
 
         // sort by double
 
@@ -2571,8 +2614,7 @@ public class ADMLuceneTest extends TestCase
             {
                 String startDate = df.format(new Date(testDate.getTime() - i));
                 // System.out.println("\tStart = " + startDate);
-                
-                
+
                 String endDate = df.format(new Date(testDate.getTime() + i));
                 // System.out.println("\tEnd = " + endDate);
 

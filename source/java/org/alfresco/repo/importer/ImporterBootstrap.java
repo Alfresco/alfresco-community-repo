@@ -39,13 +39,12 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import javax.transaction.UserTransaction;
-
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterBinding;
@@ -58,6 +57,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -298,166 +298,153 @@ public class ImporterBootstrap extends AbstractLifecycleBean
      */
     public void bootstrap()
     {
-        if (transactionService == null)
-        {
-            throw new ImporterException("Transaction Service must be provided");
-        }
-        if (namespaceService == null)
-        {
-            throw new ImporterException("Namespace Service must be provided");
-        }
-        if (nodeService == null)
-        {
-            throw new ImporterException("Node Service must be provided");
-        }
-        if (importerService == null)
-        {
-            throw new ImporterException("Importer Service must be provided");
-        }
-        if (storeRef == null)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No Store URL - bootstrap import ignored");
-            }
-            return;
-        }
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "importerService", importerService);
+        PropertyCheck.mandatory(this, "storeRef", storeRef);
 
-        UserTransaction userTransaction = transactionService.getUserTransaction();
-        Authentication authentication = authenticationComponent.getCurrentAuthentication();
         
-        if (authenticationComponent.getCurrentUserName() == null)
+        Authentication authentication = authenticationComponent.setSystemUserAsCurrentUser();
+
+        RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
         {
-            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        }
-        
+            public Object execute() throws Throwable
+            {
+                doImport();
+                return null;
+            }
+        };
         try
         {
-            userTransaction.begin();
-        
-            // check the repository exists, create if it doesn't
-            if (!performBootstrap())
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("Store exists - bootstrap ignored: " + storeRef);
-            }
-            else if (!allowWrite)
-            {
-                // we're in read-only node
-                logger.warn("Store does not exist, but mode is read-only: " + storeRef);
-            }
-            else
-            {
-                // create the store if necessary
-                if (!nodeService.exists(storeRef))
-                {
-                    storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
-                    if (logger.isDebugEnabled())
-                        logger.debug("Created store: " + storeRef);
-                }
-    
-                // bootstrap the store contents
-                if (bootstrapViews != null)
-                {
-                    // add-in any extended views
-                    if (extensionBootstrapViews != null)
-                    {
-                        bootstrapViews.addAll(extensionBootstrapViews);
-                    }
-                    
-                    for (Properties bootstrapView : bootstrapViews)
-                    {
-                        String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);
-                        if (view == null || view.length() == 0)
-                        {
-                            throw new ImporterException("View file location must be provided");
-                        }
-                        String encoding = bootstrapView.getProperty(VIEW_ENCODING);
-                        
-                        // Create appropriate view reader
-                        Reader viewReader = null;
-                        ACPImportPackageHandler acpHandler = null; 
-                        if (view.endsWith(".acp"))
-                        {
-                            File viewFile = getFile(view);
-                            acpHandler = new ACPImportPackageHandler(viewFile, encoding);
-                        }
-                        else
-                        {
-                            viewReader = getReader(view, encoding);
-                        }
-                        
-                        // Create import location
-                        Location importLocation = new Location(storeRef);
-                        String path = bootstrapView.getProperty(VIEW_PATH_PROPERTY);
-                        if (path != null && path.length() > 0)
-                        {
-                            importLocation.setPath(path);
-                        }
-                        String childAssocType = bootstrapView.getProperty(VIEW_CHILDASSOCTYPE_PROPERTY);
-                        if (childAssocType != null && childAssocType.length() > 0)
-                        {
-                            importLocation.setChildAssocType(QName.createQName(childAssocType, namespaceService));
-                        }
-                        
-                        // Create import binding
-                        BootstrapBinding binding = new BootstrapBinding();
-                        binding.setConfiguration(configuration);
-                        binding.setLocation(importLocation);
-                        String messages = bootstrapView.getProperty(VIEW_MESSAGES_PROPERTY);
-                        if (messages != null && messages.length() > 0)
-                        {
-                            Locale bindingLocale = (locale == null) ? I18NUtil.getLocale() : locale;
-                            ResourceBundle bundle = ResourceBundle.getBundle(messages, bindingLocale);
-                            binding.setResourceBundle(bundle);
-                        }
-                        
-                        String uuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
-                        if (uuidBinding != null && uuidBinding.length() > 0)
-                        {
-                            try
-                            {
-                            	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, uuidBinding));
-                            }
-                            catch(IllegalArgumentException e)
-                            {
-                                throw new ImporterException("The value " + uuidBinding + " is an invalid uuidBinding");
-                            }
-                        }                         
-
-                        // Now import...
-                        ImporterProgress importProgress = null;
-                        if (logger.isDebugEnabled())
-                        {
-                            importProgress = new ImportTimerProgress(logger);
-                            logger.debug("Importing " + view);
-                        }
-                        
-                        if (viewReader != null)
-                        {
-                            importerService.importView(viewReader, importLocation, binding, importProgress);
-                        }
-                        else
-                        {
-                            importerService.importView(acpHandler, importLocation, binding, importProgress);
-                        }
-                    }
-                }
-                
-                // a bootstrap was performed
-                bootstrapPerformed = !useExistingStore;
-            }
-            userTransaction.commit();
+            transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback);
         }
         catch(Throwable e)
         {
-            // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Throwable ex) {}
             throw new AlfrescoRuntimeException("Bootstrap failed", e);
         }
         finally
         {
             try {authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable ex) {}
+        }
+    }
+    
+    /**
+     * Perform the actual import work.  This is just separated to allow for simpler TXN demarcation.
+     */
+    private void doImport() throws Throwable
+    {
+        // check the repository exists, create if it doesn't
+        if (!performBootstrap())
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Store exists - bootstrap ignored: " + storeRef);
+        }
+        else if (!allowWrite)
+        {
+            // we're in read-only node
+            logger.warn("Store does not exist, but mode is read-only: " + storeRef);
+        }
+        else
+        {
+            // create the store if necessary
+            if (!nodeService.exists(storeRef))
+            {
+                storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+                if (logger.isDebugEnabled())
+                    logger.debug("Created store: " + storeRef);
+            }
+
+            // bootstrap the store contents
+            if (bootstrapViews != null)
+            {
+                // add-in any extended views
+                if (extensionBootstrapViews != null)
+                {
+                    bootstrapViews.addAll(extensionBootstrapViews);
+                }
+                
+                for (Properties bootstrapView : bootstrapViews)
+                {
+                    String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);
+                    if (view == null || view.length() == 0)
+                    {
+                        throw new ImporterException("View file location must be provided");
+                    }
+                    String encoding = bootstrapView.getProperty(VIEW_ENCODING);
+                    
+                    // Create appropriate view reader
+                    Reader viewReader = null;
+                    ACPImportPackageHandler acpHandler = null; 
+                    if (view.endsWith(".acp"))
+                    {
+                        File viewFile = getFile(view);
+                        acpHandler = new ACPImportPackageHandler(viewFile, encoding);
+                    }
+                    else
+                    {
+                        viewReader = getReader(view, encoding);
+                    }
+                    
+                    // Create import location
+                    Location importLocation = new Location(storeRef);
+                    String path = bootstrapView.getProperty(VIEW_PATH_PROPERTY);
+                    if (path != null && path.length() > 0)
+                    {
+                        importLocation.setPath(path);
+                    }
+                    String childAssocType = bootstrapView.getProperty(VIEW_CHILDASSOCTYPE_PROPERTY);
+                    if (childAssocType != null && childAssocType.length() > 0)
+                    {
+                        importLocation.setChildAssocType(QName.createQName(childAssocType, namespaceService));
+                    }
+                    
+                    // Create import binding
+                    BootstrapBinding binding = new BootstrapBinding();
+                    binding.setConfiguration(configuration);
+                    binding.setLocation(importLocation);
+                    String messages = bootstrapView.getProperty(VIEW_MESSAGES_PROPERTY);
+                    if (messages != null && messages.length() > 0)
+                    {
+                        Locale bindingLocale = (locale == null) ? I18NUtil.getLocale() : locale;
+                        ResourceBundle bundle = ResourceBundle.getBundle(messages, bindingLocale);
+                        binding.setResourceBundle(bundle);
+                    }
+                        
+                    String uuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
+                    if (uuidBinding != null && uuidBinding.length() > 0)
+                    {
+                        try
+                        {
+                        	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, uuidBinding));
+                        }
+                        catch(IllegalArgumentException e)
+                        {
+                            throw new ImporterException("The value " + uuidBinding + " is an invalid uuidBinding");
+                        }
+                    }                         
+
+                    // Now import...
+                    ImporterProgress importProgress = null;
+                    if (logger.isDebugEnabled())
+                    {
+                        importProgress = new ImportTimerProgress(logger);
+                        logger.debug("Importing " + view);
+                    }
+                    
+                    if (viewReader != null)
+                    {
+                        importerService.importView(viewReader, importLocation, binding, importProgress);
+                    }
+                    else
+                    {
+                        importerService.importView(acpHandler, importLocation, binding, importProgress);
+                    }
+                }
+            }
+            
+            // a bootstrap was performed
+            bootstrapPerformed = !useExistingStore;
         }
     }
     

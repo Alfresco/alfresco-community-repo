@@ -128,6 +128,12 @@ public class MLText extends HashMap<Locale, String>
      */
     public String getDefaultValue()
     {
+        // Shortcut so that we don't have to go and get the current locale
+        if (this.size() == 0)
+        {
+            return null;
+        }
+        // There is some hope of getting a match
         Locale locale = I18NUtil.getLocale();
         return getClosestValue(locale);
     }

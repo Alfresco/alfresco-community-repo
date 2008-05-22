@@ -229,7 +229,7 @@ public class PatchServiceImpl implements PatchService
         // We bypass the patch if it was executed successfully
         if (appliedPatch != null)
         {
-            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
+            if (appliedPatch.getSucceeded())
             {
                 // It has already been successfully applied
                 if (logger.isDebugEnabled())
@@ -238,23 +238,6 @@ public class PatchServiceImpl implements PatchService
                             "   patch: " + appliedPatch);
                 }
                 return appliedPatch;
-            }
-            else if (patch.getTargetSchema() != appliedPatch.getTargetSchema())
-            {
-                // The target schema of the defined patch has changed.
-                // The patch applicability was changed for some reason, usually as a result of
-                // merges between branches.  We need to detect new patches in clean installs.
-                if (appliedPatch.getAppliedToSchema() == appliedPatch.getTargetSchema())
-                {
-                    // The patch applicability changed, but it was originally not executed because
-                    // it was a new patch in a clean install
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Patch not applied to a previously clean install: \n" +
-                                "   patch: " + appliedPatch);
-                    }
-                    return appliedPatch;
-                }
             }
         }
         // the execution report

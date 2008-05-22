@@ -27,6 +27,8 @@ package org.alfresco.repo.security.permissions;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
+
 public interface AccessControlList extends Serializable
 {
     /**
@@ -48,4 +50,8 @@ public interface AccessControlList extends Serializable
      * @return
      */
     public List<AccessControlEntry> getEntries();
+    
+    public SimpleNodePermissionEntry getCachedSimpleNodePermissionEntry();
+    
+    public void setCachedSimpleNodePermissionEntry(SimpleNodePermissionEntry cachedSimpleNodePermissionEntry);
 }

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,5 +57,5 @@ public interface NodePermissionEntry
      * 
      * @return
      */
-    public Set<? extends PermissionEntry> getPermissionEntries();
+    public List<? extends PermissionEntry> getPermissionEntries();
 }

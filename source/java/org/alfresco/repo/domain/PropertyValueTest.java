@@ -45,8 +45,15 @@ public class PropertyValueTest extends TestCase
     
     public void testMLText()
     {
+        // single language
         MLText mlText = new MLText(Locale.FRENCH, "bonjour");
         PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+        assertNotNull("MLText not persisted as a string", propertyValue.getStringValue());
+        
+        // multiple languages
+        mlText = new MLText(Locale.GERMAN, "hallo");
+        mlText.addValue(Locale.ITALIAN, "ciao");
+        propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
         assertNotNull("MLText not persisted as an attribute", propertyValue.getAttributeValue());
     }
 }

@@ -990,7 +990,7 @@
     <!-- Audit -->
     <bean id="auditableAspect" class="org.alfresco.repo.audit.AuditableAspect" init-method="init">
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="dbNodeService" />    <!-- bypass loads of interceptor layers -->
         </property>
         <property name="policyComponent">
             <ref bean="policyComponent" />

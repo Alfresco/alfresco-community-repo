@@ -52,7 +52,8 @@ public interface TransactionListener
      * {@link #beforeCommit(boolean) } even if {@link #beforeCommit(boolean)}
      * failed.
      * <p>
-     * Any exceptions generated here will cause the transaction to rollback.
+     * Any exceptions generated here will only be logged and will have no effect
+     * on the state of the transaction.
      * <p>
      * All transaction resources are still available.
      */

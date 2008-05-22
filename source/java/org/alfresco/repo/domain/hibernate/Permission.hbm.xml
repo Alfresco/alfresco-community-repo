@@ -346,6 +346,18 @@
          aclmem.accessControlList.id = :id 
    </query>
     
+    <query name="permission.LoadAcl" cacheable="true">
+       select
+         ace.allowed, ace.applies, authority.authority, ace.permission.id, aclmem.position
+       from
+         org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl as aclmem
+         join aclmem.accessControlList as acl
+         join aclmem.accessControlEntry as ace
+         join ace.authority as authority
+       where
+         acl.id = :id 
+   </query>
+    
    <query name="permission.GetAclsThatInheritFromThisAcl" cacheable="true">
        select
          acl.id

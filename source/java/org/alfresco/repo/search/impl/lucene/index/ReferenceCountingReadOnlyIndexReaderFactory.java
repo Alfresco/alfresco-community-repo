@@ -202,5 +202,10 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         {
             return id;
         }
+
+        public boolean isInvalidForReuse()
+        {
+           return invalidForReuse;
+        }
     }
 }

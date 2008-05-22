@@ -25,6 +25,7 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -344,7 +345,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     public void testSetNodePermissionEntry()
     {
         runAs("andy");
-        Set<SimplePermissionEntry> entries = new HashSet<SimplePermissionEntry>();
+        ArrayList<SimplePermissionEntry> entries = new ArrayList<SimplePermissionEntry>();
         entries.add(new SimplePermissionEntry(rootNodeRef, new SimplePermissionReference(QName.createQName("A", "B"), "C"), "user-one", AccessStatus.ALLOWED));
         entries.add(new SimplePermissionEntry(rootNodeRef, permissionService.getAllPermissionReference(), "user-two", AccessStatus.ALLOWED));
         entries.add(new SimplePermissionEntry(rootNodeRef, new SimplePermissionReference(QName.createQName("D", "E"), "F"), permissionService.getAllAuthorities(),
@@ -363,7 +364,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testSetNodePermissionEntry2()
     {
-        Set<SimplePermissionEntry> entries = new HashSet<SimplePermissionEntry>();
+        ArrayList<SimplePermissionEntry> entries = new ArrayList<SimplePermissionEntry>();
         entries.add(new SimplePermissionEntry(rootNodeRef, permissionService.getAllPermissionReference(), permissionService.getAllAuthorities(), AccessStatus.ALLOWED));
 
         SimpleNodePermissionEntry entry = new SimpleNodePermissionEntry(rootNodeRef, false, entries);
@@ -386,7 +387,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testDoubleSetAllowDeny()
     {
-        Set<? extends PermissionEntry> permissionEntries = null;
+        List<? extends PermissionEntry> permissionEntries = null;
         // add-remove andy-all
         permissionService.setPermission(rootNodeRef, "andy", permissionService.getAllPermission(), true);
         permissionService.setPermission(rootNodeRef, "andy", permissionService.getAllPermission(), false);

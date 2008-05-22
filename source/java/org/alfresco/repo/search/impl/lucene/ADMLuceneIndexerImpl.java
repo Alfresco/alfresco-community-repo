@@ -183,6 +183,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         try
         {
             NodeRef childRef = relationshipRef.getChildRef();
+            if(!childRef.getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Create node failed - node is not in the required store"); 
+            }
             // If we have the root node we delete all other root nodes first
             if ((relationshipRef.getParentRef() == null)
                     && tenantService.getBaseName(childRef).equals(nodeService.getRootNode(childRef.getStoreRef())))
@@ -249,6 +253,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
+            if(!nodeRef.getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Update node failed - node is not in the required store"); 
+            }
             reindex(nodeRef, false);
         }
         catch (LuceneIndexException e)
@@ -267,6 +275,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
+            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Delete node failed - node is not in the required store"); 
+            }
             // The requires a reindex - a delete may remove too much from under this node - that also lives under
             // other nodes via secondary associations. All the nodes below require reindex.
             // This is true if the deleted node is via secondary or primary assoc.
@@ -290,6 +302,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             // TODO: Optimise
             // reindex(relationshipRef.getParentRef());
+            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Create child relationship failed - node is not in the required store"); 
+            }
             reindex(relationshipRef.getChildRef(), true);
         }
         catch (LuceneIndexException e)
@@ -309,6 +325,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         try
         {
             // TODO: Optimise
+            if(!relationshipBeforeRef.getChildRef().getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Update child relationship failed - node is not in the required store"); 
+            }
+            if(!relationshipAfterRef.getChildRef().getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Update child relationship failed - node is not in the required store"); 
+            }
             if (relationshipBeforeRef.getParentRef() != null)
             {
                 // reindex(relationshipBeforeRef.getParentRef());
@@ -331,6 +355,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
+            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            {
+                throw new LuceneIndexException("Delete child relationship failed - node is not in the required store"); 
+            }
             // TODO: Optimise
             if (relationshipRef.getParentRef() != null)
             {
@@ -547,8 +575,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         paths.addAll(categoryPaths);
 
         Document xdoc = new Document();
-        xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+        xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+        xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
         {
@@ -604,9 +632,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             qNameBuffer.append(";/");
                         }
                         qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        xdoc.add(new Field("PARENT", tenantService.getName(qNameRef.getParentRef()).toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                        xdoc.add(new Field("PARENT", tenantService.getName(qNameRef.getParentRef()).toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                         xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
-                        xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.UN_TOKENIZED,
+                        xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.NO_NORMS,
                                 Field.TermVector.NO));
                     }
                 }
@@ -625,17 +653,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         if (directPaths.contains(pair.getFirst()))
                         {
                             Document directoryEntry = new Document();
-                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                             directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
                             for (NodeRef parent : getParents(pair.getFirst()))
                             {
-                                directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                             }
-                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
 
                             if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                             {
-                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                             }
 
                             docs.add(directoryEntry);
@@ -649,12 +677,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         if (isRoot)
         {
             // TODO: Does the root element have a QName?
-            xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
             xdoc.add(new Field("PATH", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             xdoc.add(new Field("QNAME", "", Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISROOT", "T", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
             xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(ContentModel.ASSOC_CHILDREN), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
-            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
             docs.add(xdoc);
 
         }
@@ -666,31 +694,31 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             // true));
 
             ChildAssociationRef primary = nodeService.getPrimaryParent(nodeRef);
-            xdoc.add(new Field("PRIMARYPARENT", tenantService.getName(primary.getParentRef()).toString(), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("PRIMARYPARENT", tenantService.getName(primary.getParentRef()).toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
             xdoc.add(new Field("PRIMARYASSOCTYPEQNAME", ISO9075.getXPathName(primary.getTypeQName()), Field.Store.YES, Field.Index.NO, Field.TermVector.NO));
             QName typeQName = nodeService.getType(nodeRef);
 
-            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("TYPE", ISO9075.getXPathName(typeQName), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
             for (QName classRef : nodeService.getAspects(nodeRef))
             {
-                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("ASPECT", ISO9075.getXPathName(classRef), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
             }
 
-            xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ISROOT", "F", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+            xdoc.add(new Field("ISNODE", "T", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
             if (isAtomic || indexAllProperties)
             {
-                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                xdoc.add(new Field("FTSSTATUS", "Clean", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
             }
             else
             {
                 if (isNew)
                 {
-                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                 }
                 else
                 {
-                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.UN_TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                 }
             }
 

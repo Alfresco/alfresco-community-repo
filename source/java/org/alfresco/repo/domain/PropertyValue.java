@@ -259,6 +259,18 @@ public class PropertyValue implements Cloneable, Serializable
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
+                if (value instanceof MLText)
+                {
+                    MLText mlText = (MLText) value;
+                    if (mlText.getDefaultValue() == null)
+                    {
+                        return ValueType.NULL;
+                    }
+                    else if (mlText.size() == 1)
+                    {
+                        return ValueType.STRING;
+                    }
+                }
                 return ValueType.DB_ATTRIBUTE;
             }
 

@@ -56,9 +56,14 @@ public final class SimplePermissionEntry extends AbstractPermissionEntry
      */
     private AccessStatus accessStatus;
     
-    
+    private int position;
     
     public SimplePermissionEntry(NodeRef nodeRef, PermissionReference permissionReference, String authority, AccessStatus accessStatus)
+    {
+       this(nodeRef, permissionReference, authority, accessStatus, 0);
+    }
+    
+    public SimplePermissionEntry(NodeRef nodeRef, PermissionReference permissionReference, String authority, AccessStatus accessStatus, int position)
     {
         super();
         this.nodeRef = nodeRef;
@@ -95,6 +100,16 @@ public final class SimplePermissionEntry extends AbstractPermissionEntry
     public AccessStatus getAccessStatus()
     {
         return accessStatus;
+    }
+
+    public int getPosition()
+    {
+        return position;
+    }
+
+    public boolean isInherited()
+    {
+        return position > 0;
     }
 
 }

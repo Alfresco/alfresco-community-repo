@@ -231,10 +231,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             try
             {
             	if (tenantService.isEnabled())
-                {
-                    tenantService.checkDomain(storeRef.getIdentifier());
-                    storeRef = tenantService.getBaseName(storeRef); 
-                }
+            	{
+            	    String currentUser = AuthenticationUtil.getCurrentUserName();
+            	    
+            	    // MT: return tenant stores only (although for super System return all stores - as used by ConfigurationChecker, IndexRecovery, IndexBackup etc)
+            	    if ((currentUser == null) || (! currentUser.equals(AuthenticationUtil.getSystemUserName())))
+            	    {
+            	        tenantService.checkDomain(storeRef.getIdentifier());
+            	        storeRef = tenantService.getBaseName(storeRef); 
+            	    }
+            	}
 
                 storeRefs.add(storeRef);
             }

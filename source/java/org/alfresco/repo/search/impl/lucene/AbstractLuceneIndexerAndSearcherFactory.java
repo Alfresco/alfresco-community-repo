@@ -1071,7 +1071,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
             }
 
             /**
-             * Makes a backup of the source directory via a temporary folder
+             * Makes a backup of the source directory via a temporary folder.
              */
             private void backupDirectory(File sourceDir, File tempDir, File targetDir) throws Exception
             {
@@ -1111,6 +1111,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 }
             }
 
+            /**
+             * Note files can alter due to background processes so file not found is Ok
+             * 
+             * @param srcDir
+             * @param destDir
+             * @param preserveFileDate
+             * @throws IOException
+             */
             private void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
             {
                 if (destDir.exists())
@@ -1125,6 +1133,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                     }
                     if (preserveFileDate)
                     {
+                        // OL if file not found so does not need to check
                         destDir.setLastModified(srcDir.lastModified());
                     }
                 }
@@ -1134,83 +1143,100 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 }
 
                 File[] files = srcDir.listFiles();
-                if (files == null)
+                if (files != null)
                 {
-                    throw new IOException(" No Access to " + srcDir);
-                }
-                for (int i = 0; i < files.length; i++)
-                {
-                    File currentCopyTarget = new File(destDir, files[i].getName());
-                    if (files[i].isDirectory())
+                    for (int i = 0; i < files.length; i++)
                     {
-                        // Skip any temp index file
-                        if (files[i].getName().equals(tempDir.getName()))
+                        File currentCopyTarget = new File(destDir, files[i].getName());
+                        if (files[i].isDirectory())
                         {
-                            // skip any temp back up directories
-                        }
-                        else if (files[i].getName().equals(targetDir.getName()))
-                        {
-                            // skip any back up directories
+                            // Skip any temp index file
+                            if (files[i].getName().equals(tempDir.getName()))
+                            {
+                                // skip any temp back up directories
+                            }
+                            else if (files[i].getName().equals(targetDir.getName()))
+                            {
+                                // skip any back up directories
+                            }
+                            else
+                            {
+                                copyDirectory(files[i], currentCopyTarget, preserveFileDate);
+                            }
                         }
                         else
                         {
-                            copyDirectory(files[i], currentCopyTarget, preserveFileDate);
+                            copyFile(files[i], currentCopyTarget, preserveFileDate);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
                     {
-                        copyFile(files[i], currentCopyTarget, preserveFileDate);
+                        logger.debug("Skipping transient directory " + srcDir);
                     }
                 }
             }
 
             private void copyFile(File srcFile, File destFile, boolean preserveFileDate) throws IOException
             {
-                if (destFile.exists())
-                {
-                    throw new IOException("File shoud not exist " + destFile);
-                }
-
-                FileInputStream input = new FileInputStream(srcFile);
                 try
                 {
-                    FileOutputStream output = new FileOutputStream(destFile);
+                    if (destFile.exists())
+                    {
+                        throw new IOException("File shoud not exist " + destFile);
+                    }
+
+                    FileInputStream input = new FileInputStream(srcFile);
                     try
                     {
-                        copy(input, output);
+                        FileOutputStream output = new FileOutputStream(destFile);
+                        try
+                        {
+                            copy(input, output);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                output.close();
+                            }
+                            catch (IOException io)
+                            {
+
+                            }
+                        }
                     }
                     finally
                     {
                         try
                         {
-                            output.close();
+                            input.close();
                         }
                         catch (IOException io)
                         {
 
                         }
                     }
-                }
-                finally
-                {
-                    try
-                    {
-                        input.close();
-                    }
-                    catch (IOException io)
-                    {
 
+                    // check copy
+                    if (srcFile.length() != destFile.length())
+                    {
+                        throw new IOException("Failed to copy full from '" + srcFile + "' to '" + destFile + "'");
+                    }
+                    if (preserveFileDate)
+                    {
+                        destFile.setLastModified(srcFile.lastModified());
                     }
                 }
-
-                // check copy
-                if (srcFile.length() != destFile.length())
+                catch (FileNotFoundException fnfe)
                 {
-                    throw new IOException("Failed to copy full from '" + srcFile + "' to '" + destFile + "'");
-                }
-                if (preserveFileDate)
-                {
-                    destFile.setLastModified(srcFile.lastModified());
+                    // ignore as files can go
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Skipping transient file " + srcFile);
+                    }
                 }
             }
 
@@ -1247,7 +1273,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 for (int i = 0; i < files.length; i++)
                 {
                     File file = files[i];
-                    
+
                     if (file.isDirectory())
                     {
                         deleteDirectory(file);
@@ -1392,6 +1418,11 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         {
             return indexer.doWithWriteLock(lockWork);
         }
+
+        public boolean canRetry()
+        {
+            return false;
+        }
     }
 
     private static class CoreLockWork<R> implements IndexInfo.LockWork<R>
@@ -1430,21 +1461,31 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                         }
                     }
                 }
+
+                public boolean canRetry()
+                {
+                    return false;
+                }
             });
+        }
+
+        public boolean canRetry()
+        {
+            return false;
         }
     }
 
     public static void main(String[] args) throws IOException
     {
         // delete a directory ....
-        if(args.length != 1)
+        if (args.length != 1)
         {
             return;
         }
         File file = new File(args[0]);
         deleteDirectory(file);
     }
-    
+
     public static void deleteDirectory(File directory) throws IOException
     {
         if (!directory.exists())
@@ -1465,9 +1506,9 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         for (int i = 0; i < files.length; i++)
         {
             File file = files[i];
-            
+
             System.out.println(".");
-            //System.out.println("Deleting "+file.getCanonicalPath());
+            // System.out.println("Deleting "+file.getCanonicalPath());
             if (file.isDirectory())
             {
                 deleteDirectory(file);

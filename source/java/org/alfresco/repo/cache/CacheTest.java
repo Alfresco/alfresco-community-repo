@@ -341,8 +341,46 @@ public class CacheTest extends TestCase
         }
     }
     
+    /**
+     * Add 50K objects into the transactional cache and checks that the first object added
+     * has been discarded.
+     */
+    public void testMaxSizeOverrun() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            
+            Object startValue = new Integer(-1);
+            String startKey = startValue.toString();
+            transactionalCache.put(startKey, startValue);
+            
+            assertEquals("The start value isn't correct", startValue, transactionalCache.get(startKey));
+            
+            for (int i = 0; i < 50000; i++)
+            {
+                Object value = Integer.valueOf(i);
+                String key = value.toString();
+                transactionalCache.put(key, value);
+            }
+            
+            // Is the start value here?
+            Object checkStartValue = transactionalCache.get(startKey);
+            // Now, the cache should no longer contain the first value
+            assertNull("The start value didn't drop out of the cache", checkStartValue);
+            
+            txn.commit();
+        }
+        finally
+        {
+            try { txn.rollback(); } catch (Throwable ee) {}
+        }
+    }
+    
     /** Execute the callback and ensure that the backing cache is left with the expected value */
-    private void executeAndCheck(RetryingTransactionCallback callback, Serializable key, Object expectedValue) throws Throwable
+    private void executeAndCheck(RetryingTransactionCallback<Object> callback, Serializable key, Object expectedValue) throws Throwable
     {
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -368,7 +406,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentAddAgainstAdd()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -389,7 +427,7 @@ public class CacheTest extends TestCase
     public void testConcurrentAddAgainstAddSame()throws Throwable
     {
         final Object commonValue = "AAA";
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -409,7 +447,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentAddAgainstClear()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -430,7 +468,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentUpdateAgainstUpdate()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -452,7 +490,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentUpdateAgainstUpdateNull()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -474,7 +512,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentUpdateNullAgainstUpdate()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -496,7 +534,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentUpdateAgainstRemove()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -518,7 +556,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentUpdateAgainstClear()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -540,7 +578,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentRemoveAgainstUpdate()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -562,7 +600,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentRemoveAgainstRemove()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
@@ -584,7 +622,7 @@ public class CacheTest extends TestCase
      */
     public void testConcurrentRemoveAgainstClear()throws Throwable
     {
-        RetryingTransactionCallback callback = new RetryingTransactionCallback()
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {

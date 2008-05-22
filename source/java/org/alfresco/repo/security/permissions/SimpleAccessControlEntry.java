@@ -46,6 +46,8 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     
     private String authority;
     
+    private AuthorityType authorityType;
+    
     private AccessControlEntryContext context;
     
     private PermissionReference permission;
@@ -65,6 +67,11 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     public String getAuthority()
     {
         return authority;
+    }
+    
+    public AuthorityType getAuthorityType()
+    {
+        return authorityType;
     }
 
     public AccessControlEntryContext getContext()
@@ -108,6 +115,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     public void setAuthority(String authority)
     {
         this.authority = authority;
+        this.authorityType = AuthorityType.getAuthorityType(authority);
     }
 
     /**
@@ -145,7 +153,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
             diff = (this.getAccessStatus()== AccessStatus.DENIED ? 0 : 1) - (other.getAccessStatus()== AccessStatus.DENIED ? 0 : 1); 
             if(diff == 0)
             {
-                return AuthorityType.getAuthorityType(this.getAuthority()).getOrderPosition()  -   AuthorityType.getAuthorityType(other.getAuthority()).getOrderPosition();
+                return getAuthorityType().getOrderPosition()  -   other.getAuthorityType().getOrderPosition();
             }
             else
             {

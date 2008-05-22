@@ -25,6 +25,8 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.security.permissions.PermissionEntry;
@@ -55,10 +57,10 @@ public final class SimpleNodePermissionEntry extends AbstractNodePermissionEntry
     /*
      * The set of permission entries.
      */
-    private Set<? extends PermissionEntry> permissionEntries;
+    private List<? extends PermissionEntry> permissionEntries;
     
     
-    public SimpleNodePermissionEntry(NodeRef nodeRef, boolean inheritPermissions, Set<? extends PermissionEntry> permissionEntries)
+    public SimpleNodePermissionEntry(NodeRef nodeRef, boolean inheritPermissions, List<? extends PermissionEntry> permissionEntries)
     {
         super();
         this.nodeRef = nodeRef;
@@ -76,7 +78,7 @@ public final class SimpleNodePermissionEntry extends AbstractNodePermissionEntry
         return inheritPermissions;
     }
 
-    public Set<? extends PermissionEntry> getPermissionEntries()
+    public List<? extends PermissionEntry> getPermissionEntries()
     {
        return permissionEntries;
     }

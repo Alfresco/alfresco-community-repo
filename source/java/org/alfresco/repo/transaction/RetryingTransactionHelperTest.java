@@ -39,8 +39,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Tests the transaction retrying behaviour with various failure modes.
@@ -309,6 +311,7 @@ public class RetryingTransactionHelperTest extends TestCase
      * Checks nesting of two transactions with <code>requiresNew == true</code>,
      * but where the two transactions get involved in a concurrency struggle.
      */
+    @SuppressWarnings("unchecked")
     public void testNestedWithoutPropogationConcurrentUntilFailure()
     {
         RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
@@ -378,5 +381,42 @@ public class RetryingTransactionHelperTest extends TestCase
         };
         long checkValue = txnHelper.doInTransaction(callback);
         assertEquals("Check value not incremented", 11, checkValue);
+    }
+    
+    public void testLostConnectionRecovery()
+    {
+        RetryingTransactionCallback<Object> killConnectionCallback = new RetryingTransactionCallback<Object>()
+        {
+            private boolean killed = false;
+            public Object execute() throws Throwable
+            {
+                // Do some work
+                nodeService.deleteNode(workingNodeRef);
+                // Successful upon retry
+                if (killed)
+                {
+                    return null;
+                }
+                // Kill the connection the first time
+                HibernateConnectionKiller killer = new HibernateConnectionKiller();
+                killer.setSessionFactory((SessionFactory)ctx.getBean("sessionFactory"));
+                killer.killConnection();
+                killed = true;
+                return null;
+            }
+        };
+        // This should work
+        txnHelper.doInTransaction(killConnectionCallback);
+    }
+    
+    /**
+     * Helper class to kill the session's DB connection
+     */
+    private class HibernateConnectionKiller extends HibernateDaoSupport
+    {
+        private void killConnection() throws Exception
+        {
+            getSession().connection().rollback();
+        }
     }
 }

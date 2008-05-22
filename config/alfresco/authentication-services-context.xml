@@ -317,7 +317,7 @@
         <property name="homeFolderManager">
             <ref bean="homeFolderManager" />
         </property>
-        <property name="userPemissions">
+        <property name="userPermissions">
             <set>
                 <value>Consumer</value>
             </set>
@@ -346,12 +346,12 @@
         <property name="inheritsPermissionsOnCreate">
             <value>false</value>
         </property>
-        <property name="ownerPemissionsToSetOnCreate">
+        <property name="ownerPermissionsToSetOnCreate">
             <set>
                 <value>All</value>
             </set>
         </property>
-        <property name="userPemissions">
+        <property name="userPermissions">
             <set>
                 <value>All</value>
             </set>
@@ -374,12 +374,12 @@
         <property name="inheritsPermissionsOnCreate">
             <value>false</value>
         </property>
-        <property name="ownerPemissionsToSetOnCreate">
+        <property name="ownerPermissionsToSetOnCreate">
             <set>
                 <value>All</value>
             </set>
         </property>
-        <property name="userPemissions">
+        <property name="userPermissions">
             <set>
                 <value>All</value>
             </set>

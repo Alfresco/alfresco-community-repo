@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authentication;
 import java.util.Collections;
 import java.util.Set;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.service.cmr.security.PermissionService;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService
@@ -165,10 +166,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
     {
         try
         {
+
            // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
            clearCurrentSecurityContext();
-           authenticationComponent.setCurrentUser(ticketComponent.getAuthorityForTicket(ticket));
-           ticketComponent.validateTicket(ticket);
+           authenticationComponent.setCurrentUser(ticketComponent.validateTicket(ticket), UserNameValidationMode.NONE);
         }
         catch(AuthenticationException ae)
         {

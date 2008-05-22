@@ -25,12 +25,14 @@
 package org.alfresco.repo.transaction;
 
 import java.sql.BatchUpdateException;
+import java.sql.SQLException;
 import java.util.Random;
 
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import net.sf.ehcache.distribution.RemoteCacheException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
@@ -63,6 +65,7 @@ public class RetryingTransactionHelper
     /**
      * Exceptions that trigger retries.
      */
+    @SuppressWarnings("unchecked")
     public static final Class[] RETRY_EXCEPTIONS;
     static
     {
@@ -71,11 +74,14 @@ public class RetryingTransactionHelper
                 DeadlockLoserDataAccessException.class,
                 StaleObjectStateException.class,
                 LockAcquisitionException.class,
-                BatchUpdateException.class,
                 ConstraintViolationException.class,
+                UncategorizedSQLException.class,
+                SQLException.class,
+                BatchUpdateException.class,
                 DataIntegrityViolationException.class,
                 StaleStateException.class,
-                ObjectNotFoundException.class
+                ObjectNotFoundException.class,
+                RemoteCacheException.class
                 };
     }
 
@@ -304,20 +310,10 @@ public class RetryingTransactionHelper
                             txn.rollback();
                         }
                     }
-                    catch (IllegalStateException e1)
+                    catch (Throwable e1)
                     {
-                        logger.error(e);
-                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
-                    }
-                    catch (SecurityException e1)
-                    {
-                        logger.error(e);
-                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
-                    }
-                    catch (SystemException e1)
-                    {
-                        logger.error(e);
-                        throw new AlfrescoRuntimeException("Failure during rollback: " + cb, e1);
+                        // A rollback failure should not preclude a retry, but logging of the rollback failure is required
+                        logger.error("Rollback failure.  Normal retry behaviour will resume.", e1);
                     }
                 }
                 if (e instanceof RollbackException)
@@ -365,6 +361,7 @@ public class RetryingTransactionHelper
      * @param cause     the cause to examine
      * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
      */
+    @SuppressWarnings("unchecked")
     public static Throwable extractRetryCause(Throwable cause)
     {
         Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);
@@ -372,57 +369,9 @@ public class RetryingTransactionHelper
         {
             return null;
         }
-        else if (retryCause instanceof BatchUpdateException)
-        {
-            if (retryCause.getMessage().contains("Lock wait"))
-            {
-                // It is valid
-                return retryCause;
-            }
-            else
-            {
-                // Not valid
-                return null;
-            }
-        }
-        else if (retryCause instanceof DataIntegrityViolationException)
-        {
-            if (retryCause.getMessage().contains("ChildAssocImpl"))
-            {
-                // It is probably the duplicate name violation
-                return retryCause;
-            }
-            else
-            {
-                // Something else
-                return null;
-            }
-        }
-        else if (retryCause instanceof UncategorizedSQLException)
-        {
-            // Handle error that slips out of MSSQL
-            if (retryCause.getMessage().contains("deadlock"))
-            {
-                // It is valid
-                return retryCause;
-            }
-            else
-            {
-                // Not valid
-                return null;
-            }
-        }
-        else if (retryCause instanceof ObjectNotFoundException)
-        {
-            // This is (I'm almost certain) an optimistic locking failure in disguise.
-            if (retryCause.getMessage().contains("No row"))
-            {
-                return retryCause;
-            }
-            return null;
-        }
         else
         {
+            // A simple match
             return retryCause;
         }
     }

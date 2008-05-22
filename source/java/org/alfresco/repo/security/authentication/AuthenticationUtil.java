@@ -529,6 +529,12 @@ public abstract class AuthenticationUtil
         return PermissionService.GUEST_AUTHORITY.toLowerCase();
     }
 
+    /* package */ static void clearCurrentSecurityContextOnly()
+    {
+        ContextHolder.setContext(null);
+        NDC.remove();
+    }
+    
     /**
      * Remove the current security information
      */
@@ -596,7 +602,7 @@ public abstract class AuthenticationUtil
         {
             if (realUser == null)
             {
-                AuthenticationUtil.clearCurrentSecurityContext();
+                AuthenticationUtil.clearCurrentSecurityContextOnly();
             }
             else
             {

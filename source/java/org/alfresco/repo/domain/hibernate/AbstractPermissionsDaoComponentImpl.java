@@ -245,7 +245,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections.<SimplePermissionEntry> emptyList());
             npe = snpe;
         }
         else
@@ -280,20 +280,28 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, true, Collections.<SimplePermissionEntry> emptyList());
             return snpe;
         }
         else
         {
             AccessControlList info = aclDaoComponent.getAccessControlList(acl.getId());
 
-            HashSet<SimplePermissionEntry> spes = new HashSet<SimplePermissionEntry>(info.getEntries().size(), 1.0f);
+            SimpleNodePermissionEntry cached = info.getCachedSimpleNodePermissionEntry();
+            if(cached != null)
+            {
+                return cached;
+            }
+            
+            ArrayList<SimplePermissionEntry> spes = new ArrayList<SimplePermissionEntry>(info.getEntries().size());
             for (AccessControlEntry entry : info.getEntries())
             {
-                SimplePermissionEntry spe = new SimplePermissionEntry(nodeRef, entry.getPermission(), entry.getAuthority(), entry.getAccessStatus());
+                SimplePermissionEntry spe = new SimplePermissionEntry(nodeRef, entry.getPermission(), entry.getAuthority(), entry.getAccessStatus(), entry.getPosition());
                 spes.add(spe);
             }
             SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(nodeRef, acl.getInherits(), spes);
+            
+            info.setCachedSimpleNodePermissionEntry(snpe);
             return snpe;
         }
     }
@@ -304,17 +312,17 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptyList());
             return snpe;
         }
         else
         {
             AccessControlList info = aclDaoComponent.getAccessControlList(acl.getId());
 
-            HashSet<SimplePermissionEntry> spes = new HashSet<SimplePermissionEntry>(info.getEntries().size(), 1.0f);
+            ArrayList<SimplePermissionEntry> spes = new ArrayList<SimplePermissionEntry>(info.getEntries().size());
             for (AccessControlEntry entry : info.getEntries())
             {
-                SimplePermissionEntry spe = new SimplePermissionEntry(null, entry.getPermission(), entry.getAuthority(), entry.getAccessStatus());
+                SimplePermissionEntry spe = new SimplePermissionEntry(null, entry.getPermission(), entry.getAuthority(), entry.getAccessStatus(), entry.getPosition());
                 spes.add(spe);
             }
             SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, acl.getInherits(), spes);
@@ -376,6 +384,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             CreationReport report = getMutableAccessControlList(nodeRef);
             SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
             pattern.setAuthority(authority);
+            pattern.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.deleteAccessControlEntries(report.getCreated().getId(), pattern);
             getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
             break;
@@ -412,6 +421,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
             pattern.setAuthority(authority);
             pattern.setPermission(permission);
+            pattern.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.deleteAccessControlEntries(report.getCreated().getId(), pattern);
             getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
             break;
@@ -437,6 +447,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             entry.setPermission(permission);
             entry.setAccessStatus(allow ? AccessStatus.ALLOWED : AccessStatus.DENIED);
             entry.setAceType(ACEType.ALL);
+            entry.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.setAccessControlEntry(report.getCreated().getId(), entry);
             List<AclChange> all = new ArrayList<AclChange>(changes.size() + report.getChanges().size());
             all.addAll(report.getChanges());
@@ -474,6 +485,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             entry.setPermission(pe.getPermissionReference());
             entry.setAccessStatus(pe.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED);
             entry.setAceType(ACEType.ALL);
+            entry.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.setAccessControlEntry(report.getCreated().getId(), entry);
             List<AclChange> all = new ArrayList<AclChange>(changes.size() + report.getChanges().size());
             all.addAll(report.getChanges());
@@ -525,6 +537,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setAuthority(authority);
         pattern.setPermission(permission);
+        pattern.setPosition(Integer.valueOf(0));
         aclDaoComponent.deleteAccessControlEntries(acl.getId(), pattern);
     }
 
@@ -570,6 +583,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         acl = getMutableAccessControlList(storeRef);
         SimpleAccessControlEntry pattern = new SimpleAccessControlEntry();
         pattern.setAuthority(authority);
+        pattern.setPosition(Integer.valueOf(0));
         aclDaoComponent.deleteAccessControlEntries(acl.getId(), pattern);
     }
 
@@ -587,6 +601,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         entry.setPermission(permission);
         entry.setAccessStatus(allow ? AccessStatus.ALLOWED : AccessStatus.DENIED);
         entry.setAceType(ACEType.ALL);
+        entry.setPosition(Integer.valueOf(0));
         aclDaoComponent.setAccessControlEntry(acl.getId(), entry); 
     }
 
@@ -612,7 +627,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
-            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptySet());
+            SimpleNodePermissionEntry snpe = new SimpleNodePermissionEntry(null, true, Collections.<SimplePermissionEntry> emptyList());
             npe = snpe;
         }
         else

@@ -93,4 +93,14 @@ public class GlobalPermissionEntry implements XMLModelInitialisable, PermissionE
         return AccessStatus.ALLOWED;
     }
 
+    public int getPosition()
+    {
+        return 0;
+    }
+
+    public boolean isInherited()
+    {
+        return false;
+    }
+
 }

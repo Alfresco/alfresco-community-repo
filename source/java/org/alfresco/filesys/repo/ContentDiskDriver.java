@@ -2130,6 +2130,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                 throw new AccessDeniedException("No write access to " + name);
             
+            if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
+                throw new AccessDeniedException("No delete access to " + name);
+            
             // Check if the file is being marked for deletion, if so then check if the file is locked
             
             if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())

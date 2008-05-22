@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -112,6 +113,18 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 rootNodeRef,
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 mlTextProperty);
+    }
+    
+    public void testNullMLText() throws Exception
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
+        // Set an ML value to null
+        properties.put(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+        nodeService.setProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, null);
+        // Get them again
+        Serializable mlTextSer = nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, mlTextSer);
+        assertNull("Value returned is not null", mlText);
     }
 
     /**

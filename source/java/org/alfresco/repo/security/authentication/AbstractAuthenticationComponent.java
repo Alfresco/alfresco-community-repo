@@ -144,6 +144,18 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         throw new UnsupportedOperationException();
     }
 
+    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
+    {
+        switch(validationMode)
+        {
+        case NONE:
+            return setCurrentUserImpl(userName);
+        case CHECK_AND_FIX:
+        default:
+            return setCurrentUser(userName);
+        }
+    }
+    
     public Authentication setCurrentUser(final String userName) throws AuthenticationException
     {
         if (isSystemUserName(userName))

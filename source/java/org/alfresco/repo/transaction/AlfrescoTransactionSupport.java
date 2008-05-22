@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
@@ -319,7 +321,7 @@ public abstract class AlfrescoTransactionSupport
         TransactionSynchronizationImpl synch = getSynchronization();
         
         // bind the service in
-        boolean bound = synch.getListeners().add(listener);
+        boolean bound = synch.addListener(listener);
         
         // done
         if (logger.isDebugEnabled())
@@ -387,7 +389,8 @@ public abstract class AlfrescoTransactionSupport
          */
         if (!TransactionSynchronizationManager.isSynchronizationActive())
         {
-            throw new AlfrescoRuntimeException("Transaction must be active and synchronization is required");
+            Thread currentThread = Thread.currentThread();
+            throw new AlfrescoRuntimeException("Transaction must be active and synchronization is required: " + currentThread);
         }
         TransactionSynchronizationImpl txnSynch =
             (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
@@ -453,6 +456,8 @@ public abstract class AlfrescoTransactionSupport
         private final Set<IntegrityChecker> integrityCheckers;
         private final Set<LuceneIndexerAndSearcher> lucenes;
         private final LinkedHashSet<TransactionListener> listeners;
+        private final Set<TransactionalCache<Serializable, Object>> transactionalCaches;
+//        private final Set<JGroupsEhCacheListener> jgroupsEhCacheListeners;
         private final Map<Object, Object> resources;
         
         /**
@@ -468,6 +473,8 @@ public abstract class AlfrescoTransactionSupport
             integrityCheckers = new HashSet<IntegrityChecker>(3);
             lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
             listeners = new LinkedHashSet<TransactionListener>(5);
+            transactionalCaches = new HashSet<TransactionalCache<Serializable, Object>>(3);
+//            jgroupsEhCacheListeners = new HashSet<JGroupsEhCacheListener>(3);
             resources = new HashMap<Object, Object>(17);
         }
         
@@ -512,9 +519,21 @@ public abstract class AlfrescoTransactionSupport
          * @return Returns a set of <tt>TransactionListener<tt> instances that will be called
          *      during end-of-transaction processing
          */
-        public Set<TransactionListener> getListeners()
+        @SuppressWarnings("unchecked")
+        public boolean addListener(TransactionListener listener)
         {
-            return listeners;
+            if (listener instanceof TransactionalCache)
+            {
+                return transactionalCaches.add((TransactionalCache<Serializable, Object>)listener);
+            }
+//            else if (listener instanceof JGroupsEhCacheListener)
+//            {
+//                return jgroupsEhCacheListeners.add((JGroupsEhCacheListener)listener);
+//            }
+            else
+            {
+                return listeners.add(listener);
+            }
         }
         
         /**
@@ -608,6 +627,18 @@ public abstract class AlfrescoTransactionSupport
             {
                 dao.beforeCommit();
             }
+            
+            // Flush the transactional caches
+            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
+            {
+                cache.beforeCommit(readOnly);
+            }
+//            
+//            // Flush the JGroups listeners
+//            for (JGroupsEhCacheListener listener : jgroupsEhCacheListeners)
+//            {
+//                listener.beforeCommit(readOnly);
+//            }
         }
         
         /**
@@ -621,7 +652,9 @@ public abstract class AlfrescoTransactionSupport
         }
         
         /**
-         * Executes the beforeCommit event handlers for the outstanding listeners
+         * Executes the beforeCommit event handlers for the outstanding listeners.
+         * This process is iterative as the process of calling listeners may lead to more listeners
+         * being added.  The new listeners will be processed until there no listeners remaining.
          * 
          * @param visitedListeners	a set containing the already visited listeners
          * @param readOnly			is read only

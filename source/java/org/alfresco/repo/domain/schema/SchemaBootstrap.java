@@ -111,6 +111,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_SCRIPT_NOT_FOUND = "schema.update.err.script_not_found";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
     
+    public static final int DEFAULT_LOCK_RETRY_COUNT = 24;
+    public static final int DEFAULT_LOCK_RETRY_WAIT_SECONDS = 5;
+    
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     
@@ -147,6 +150,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
+    private int schemaUpdateLockRetryCount = DEFAULT_LOCK_RETRY_COUNT;
+    private int schemaUpdateLockRetryWaitSeconds = DEFAULT_LOCK_RETRY_WAIT_SECONDS;
     private int maximumStringLength;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
@@ -235,6 +240,27 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setPostUpdateScriptPatches(List<SchemaUpgradeScriptPatch> scriptPatches)
     {
         this.postUpdateScriptPatches = scriptPatches;
+    }
+
+    /**
+     * Set the number times that the DB must be checked for the presence of the table
+     * indicating that a schema change is in progress.
+     * 
+     * @param schemaUpdateLockRetryCount        the number of times to retry (default 24)
+     */
+    public void setSchemaUpdateLockRetryCount(int schemaUpdateLockRetryCount)
+    {
+        this.schemaUpdateLockRetryCount = schemaUpdateLockRetryCount;
+    }
+
+    /**
+     * Set the wait time (seconds) between checks for the schema update lock.
+     * 
+     * @param schemaUpdateLockRetryWaitSeconds  the number of seconds between checks (default 5 seconds)
+     */
+    public void setSchemaUpdateLockRetryWaitSeconds(int schemaUpdateLockRetryWaitSeconds)
+    {
+        this.schemaUpdateLockRetryWaitSeconds = schemaUpdateLockRetryWaitSeconds;
     }
 
     /**
@@ -480,34 +506,34 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
+    private static class LockFailedException extends Exception
+    {
+        private static final long serialVersionUID = -6676398230191205456L;
+    }
+    
+    
     /**
      * Records that the bootstrap process has started
      */
     private synchronized void setBootstrapStarted(Connection connection) throws Exception
     {
-        // We wait a for a minute to give other instances starting against the same database a
-        // chance to get through this process
-        for (int i = 0; i < 12; i++)
+        // Create the marker table
+        Statement stmt = connection.createStatement();
+        try
         {
-            // Create the marker table
-            Statement stmt = connection.createStatement();
-            try
-            {
-                stmt.executeUpdate("create table alf_bootstrap_lock (charval CHAR(1) NOT NULL)");
-                // Success
-                return;
-            }
-            catch (Throwable e)
-            {
-                // Table exists - wait a bit
-                try { this.wait(5000L); } catch (InterruptedException ee) {}
-            }
-            finally
-            {
-                try { stmt.close(); } catch (Throwable e) {}
-            }
+            stmt.executeUpdate("create table alf_bootstrap_lock (charval CHAR(1) NOT NULL)");
+            // Success
+            return;
         }
-        throw AlfrescoRuntimeException.create(ERR_PREVIOUS_FAILED_BOOTSTRAP);
+        catch (Throwable e)
+        {
+            // We throw a well-known exception to be handled by retrying code if required
+            throw new LockFailedException();
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
     }
     
     /**
@@ -727,6 +753,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             File scriptFile,
             String scriptUrl) throws Exception
     {
+        StringBuilder executedStatements = executedStatementsThreadLocal.get();
+        if (executedStatements == null)
+        {
+            // There is no lock at this stage.  This process can fall out if the lock can't be applied.
+            setBootstrapStarted(connection);
+            executedStatements = new StringBuilder(8094);
+            executedStatementsThreadLocal.set(executedStatements);
+        }
+        
         if (scriptUrl == null)
         {
             LogUtil.info(logger, MSG_EXECUTING_GENERATED_SCRIPT, scriptFile);
@@ -818,6 +853,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private void executeStatement(Connection connection, String sql, boolean optional, int line, File file) throws Exception
     {
+        StringBuilder executedStatements = executedStatementsThreadLocal.get();
+        if (executedStatements == null)
+        {
+            throw new IllegalArgumentException("The executedStatementsThreadLocal must be populated");
+        }
+
         Statement stmt = connection.createStatement();
         try
         {
@@ -826,12 +867,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 LogUtil.debug(logger, MSG_EXECUTING_STATEMENT, sql);
             }
             stmt.execute(sql);
-            // Write the statement to the file, if necessary
-            StringBuilder executedStatements = executedStatementsThreadLocal.get();
-            if (executedStatements != null)
-            {
-                executedStatements.append(sql).append(";\n");
-            }
+            // Record the statement
+            executedStatements.append(sql).append(";\n");
         }
         catch (SQLException e)
         {
@@ -923,13 +960,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     @Override
-    protected void onBootstrap(ApplicationEvent event)
+    protected synchronized void onBootstrap(ApplicationEvent event)
     {
-//        System.out.println("\n" +
-//                "=============================================================================\n" +
-//                "= WARNING: USE OF THIS BUILD IS LIKELY TO BREAK CURRENT OR FUTURE UPGRADES. =\n" +
-//                "=============================================================================");
-//        
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
         try
@@ -949,14 +981,33 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             cfg.setProperty(Environment.CONNECTION_PROVIDER, SchemaBootstrapConnectionProvider.class.getName());
             SchemaBootstrapConnectionProvider.setBootstrapConnection(connection);
             
-            // update the schema, if required
+            // Update the schema, if required.
             if (updateSchema)
             {
-                // Check and record that the bootstrap has started
-                setBootstrapStarted(connection);
+                // Retries are required here as the DB lock will be applied lazily upon first statement execution.
+                // So if the schema is up to date (no statements executed) then the LockFailException cannot be
+                // thrown.  If it is thrown, the the update needs to be rerun as it will probably generate no SQL
+                // statements the second time around.
+                boolean updatedSchema = false;
+                for (int i = 0; i < schemaUpdateLockRetryCount; i++)
+                {
+                    try
+                    {
+                        updateSchema(cfg, session, connection);
+                        updatedSchema = true;
+                        break;
+                    }
+                    catch (LockFailedException e)
+                    {
+                        try { this.wait(schemaUpdateLockRetryWaitSeconds * 1000L); } catch (InterruptedException ee) {}
+                    }
+                }
                 
-                // Allocate buffer for executed statements
-                executedStatementsThreadLocal.set(new StringBuilder(1024));
+                if (!updatedSchema)
+                {
+                    // The retries were exceeded
+                    throw new AlfrescoRuntimeException(ERR_PREVIOUS_FAILED_BOOTSTRAP);
+                }
                 
                 boolean create = updateSchema(cfg, session, connection);
                 
@@ -970,8 +1021,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     schemaOutputFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-All_Statements-", ".sql");
                 }
-                String executedStatements = executedStatementsThreadLocal.get().toString();
-                if (executedStatements.length() == 0)
+                StringBuilder executedStatements = executedStatementsThreadLocal.get();
+                if (executedStatements == null)
                 {
                     LogUtil.info(logger, MSG_NO_CHANGES);
                 }
@@ -979,7 +1030,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     FileContentWriter writer = new FileContentWriter(schemaOutputFile);
                     writer.setEncoding("UTF-8");
-                    writer.putContent(executedStatements);
+                    String executedStatementsStr = executedStatements.toString();
+                    writer.putContent(executedStatementsStr);
                     LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
                 }
                 
@@ -991,8 +1043,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     checkSchemaPatchScripts(cfg, session, connection, postUpdateScriptPatches, false);      // check scripts
                 }
                 
-                // Remove the flag indicating a running bootstrap
-                setBootstrapCompleted(connection);
+                if (executedStatements != null)
+                {
+                    // Remove the flag indicating a running bootstrap
+                    setBootstrapCompleted(connection);
+                }
             }
             else
             {

@@ -29,6 +29,11 @@ import net.sf.acegisecurity.Authentication;
 public interface AuthenticationComponent
 {
     
+    public enum UserNameValidationMode
+    {
+        NONE, CHECK_AND_FIX;
+    }
+    
     /**
      * Authenticate
      * 
@@ -50,6 +55,13 @@ public interface AuthenticationComponent
      */
     
     public Authentication setCurrentUser(String userName);
+    
+    /**
+     * Explicitly set the current user to be authenticated.
+     * Specify if the userName is to be checked and fixed
+     */
+    
+    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode);
     
     /**
      * Remove the current security information

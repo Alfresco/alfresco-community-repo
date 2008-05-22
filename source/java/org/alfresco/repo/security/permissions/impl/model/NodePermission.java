@@ -24,9 +24,11 @@
  */
 package org.alfresco.repo.security.permissions.impl.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -55,7 +57,7 @@ public class NodePermission implements NodePermissionEntry, XMLModelInitialisabl
     // If null then it is the root.
     private NodeRef nodeRef;
     
-    private Set<PermissionEntry> permissionEntries = new HashSet<PermissionEntry>();
+    private List<PermissionEntry> permissionEntries = new ArrayList<PermissionEntry>();
     
     private boolean inheritPermissionsFromParent;
     
@@ -74,9 +76,9 @@ public class NodePermission implements NodePermissionEntry, XMLModelInitialisabl
         return inheritPermissionsFromParent;
     }
 
-    public Set<PermissionEntry> getPermissionEntries()
+    public List<PermissionEntry> getPermissionEntries()
     {
-       return Collections.unmodifiableSet(permissionEntries);
+       return Collections.unmodifiableList(permissionEntries);
     }
 
     public void initialise(Element element, NamespacePrefixResolver nspr, PermissionModel permissionModel)

@@ -277,15 +277,14 @@ public class AuditableAspect
          */
         public Boolean doWork() throws Exception
         {
-            // Set all the properties in one nodeService call to avoid multiple calls to onUpdateProperties 
-            Map<QName, Serializable> allProps = nodeService.getProperties(nodeRef); 
+            // Callback here must be done on a per-property basis to avoid the cm:name updates to the child association
             
-            for (QName propertyQName : properties.keySet()) 
-            { 
-                Serializable property = properties.get(propertyQName); 
-                allProps.put(propertyQName, property); 
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet()) 
+            {
+                QName propertyQName = entry.getKey();
+                Serializable propertyValue = entry.getValue(); 
+                nodeService.setProperty(nodeRef, propertyQName, propertyValue);
             } 
-            nodeService.setProperties(nodeRef, allProps); 
             return Boolean.TRUE; 
 
         }

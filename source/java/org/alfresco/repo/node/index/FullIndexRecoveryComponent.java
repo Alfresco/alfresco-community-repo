@@ -26,11 +26,13 @@ package org.alfresco.repo.node.index;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.node.index.IndexTransactionTracker.IndexTransactionTrackerListener;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,6 +54,9 @@ import org.apache.commons.logging.LogFactory;
 public class FullIndexRecoveryComponent extends AbstractReindexComponent
 {
     private static final String ERR_INDEX_OUT_OF_DATE = "index.recovery.out_of_date";
+    private static final String MSG_TRACKING_STARTING = "index.tracking.starting";
+    private static final String MSG_TRACKING_COMPLETE = "index.tracking.complete";
+    private static final String MSG_TRACKING_PROGRESS = "index.tracking.progress";
     private static final String MSG_RECOVERY_STARTING = "index.recovery.starting";
     private static final String MSG_RECOVERY_COMPLETE = "index.recovery.complete";
     private static final String MSG_RECOVERY_PROGRESS = "index.recovery.progress";
@@ -190,8 +195,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 }
                 else if (!endAllPresent)
                 {
-                    // Trigger the tracker, which will top up the indexes
-                    indexTracker.reindex();
+                    performPartialRecovery();
                 }
                 break;
             case VALIDATE:
@@ -213,6 +217,43 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             transactionService.setAllowWrite(allowWrite);
         }
         
+    }
+    
+    private void performPartialRecovery()
+    {
+        // Log the AUTO recovery
+        IndexTransactionTrackerListener trackerListener = new IndexTransactionTrackerListener()
+        {
+            long lastLogged = 0L;
+            public void indexedTransactions(long fromTimeInclusive, long toTimeExclusive)
+            {
+                long now = System.currentTimeMillis();
+                if (now - lastLogged < 10000L)
+                {
+                    // Don't log more than once a minute
+                    return;
+                }
+                lastLogged = now;
+                // Log it
+                Date toTimeDate = new Date(toTimeExclusive);
+                String msgAutoProgress = I18NUtil.getMessage(MSG_TRACKING_PROGRESS, toTimeDate.toString());
+                logger.info(msgAutoProgress);
+            }
+        };
+        try
+        {
+            // Register the listener
+            indexTracker.setListener(trackerListener);
+            // Trigger the tracker, which will top up the indexes
+            logger.info(I18NUtil.getMessage(MSG_TRACKING_STARTING));
+            indexTracker.reindex();
+            logger.info(I18NUtil.getMessage(MSG_TRACKING_COMPLETE));
+        }
+        finally
+        {
+            // Remove the listener
+            indexTracker.setListener(null);
+        }
     }
     
     private static final int MAX_TRANSACTIONS_PER_ITERATION = 1000;

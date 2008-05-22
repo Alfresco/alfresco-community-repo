@@ -1004,6 +1004,19 @@ public class Duration implements Comparable, Serializable
       System.out.println(" D: " + d.divide(10));
       System.out.println(" +: " + d.add(a2));
       //System.out.println(" +: " + d.add(a1));
+      
+      
+      d = new Duration("P1H");
+      System.out.println("V:  " + d);
+      System.out.println("F:  " + d.formattedString());
+      System.out.println(" D: " + d.divide(10));
+      System.out.println(" +: " + d.add(a2));
+      
+      d = new Duration("PT1H");
+      System.out.println("V:  " + d);
+      System.out.println("F:  " + d.formattedString());
+      System.out.println(" D: " + d.divide(10));
+      System.out.println(" +: " + d.add(a2));
 
    }
 }

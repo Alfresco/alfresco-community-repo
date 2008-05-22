@@ -565,22 +565,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * NO-OP
+     * Merge the transactional caches into the shared cache
      */
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
-    }
-
-    /**
-     * Merge the transactional caches into the shared cache
-     */
-    @SuppressWarnings("unchecked")
-    public void afterCommit()
-    {
         if (isDebugEnabled)
         {
-            logger.debug("Processing post-commit");
+            logger.debug("Processing before-commit");
         }
         
         TransactionData txnData = getTransactionData();
@@ -632,6 +624,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             removeCaches(txnData);
         }
+    }
+
+    /**
+     * NO-OP
+     */
+    @SuppressWarnings("unchecked")
+    public void afterCommit()
+    {
     }
 
     /**

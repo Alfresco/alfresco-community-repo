@@ -155,4 +155,14 @@ public class ModelPermissionEntry implements PermissionEntry, XMLModelInitialisa
         String name = permissionReferenceElement.attributeValue(NAME);
         permissionReference = PermissionReferenceImpl.getPermissionReference(typeQName, name);
     }
+
+    public int getPosition()
+    {
+        return 0;
+    }
+
+    public boolean isInherited()
+    {
+        return false;
+    }
 }

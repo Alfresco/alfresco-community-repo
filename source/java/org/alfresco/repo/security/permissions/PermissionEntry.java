@@ -81,4 +81,16 @@ public interface PermissionEntry
      * @return
      */
     public AccessStatus getAccessStatus();
+    
+    /**
+     * Is this permission inherited?
+     * @return
+     */
+    public boolean isInherited();
+    
+    /**
+     * Return the position in the inhertance chain (0 is not inherited and set on the object)
+     * @return
+     */
+    public int getPosition();
 }

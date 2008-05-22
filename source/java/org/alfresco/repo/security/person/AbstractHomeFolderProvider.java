@@ -90,7 +90,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * A set of permissions to set for the owner when a home folder is created
      */
-    private Set<String> ownerPemissionsToSetOnCreate;
+    private Set<String> ownerPermissionsToSetOnCreate;
 
     /**
      * General permissions to set on the node Map<(String)uid, Set<(String)permission>>.
@@ -100,7 +100,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * Permissions to set for the user - on create and reference.
      */
-    private Set<String> userPemissions;
+    private Set<String> userPermissions;
 
     /**
      * Clear existing permissions on new home folders (useful of created from a template.
@@ -251,11 +251,11 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * The owner permissions to set on create.
      * 
-     * @param ownerPemissionsToSetOnCreate
+     * @param ownerPermissionsToSetOnCreate
      */
-    public void setOwnerPemissionsToSetOnCreate(Set<String> ownerPemissionsToSetOnCreate)
+    public void setOwnerPermissionsToSetOnCreate(Set<String> ownerPermissionsToSetOnCreate)
     {
-        this.ownerPemissionsToSetOnCreate = ownerPemissionsToSetOnCreate;
+        this.ownerPermissionsToSetOnCreate = ownerPermissionsToSetOnCreate;
     }
 
     /**
@@ -271,11 +271,11 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * User permissions to set on create and on reference.
      * 
-     * @param userPemissions
+     * @param userPermissions
      */
-    public void setUserPemissions(Set<String> userPemissions)
+    public void setUserPermissions(Set<String> userPermissions)
     {
-        this.userPemissions = userPemissions;
+        this.userPermissions = userPermissions;
     }
 
     /**
@@ -400,9 +400,9 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
                     // Set owner permissions
 
-                    if (ownerPemissionsToSetOnCreate != null)
+                    if (ownerPermissionsToSetOnCreate != null)
                     {
-                        for (String permission : ownerPemissionsToSetOnCreate)
+                        for (String permission : ownerPermissionsToSetOnCreate)
                         {
                             serviceRegistry.getPermissionService().setPermission(homeFolder.getNodeRef(),
                                     PermissionService.OWNER_AUTHORITY, permission, true);
@@ -430,9 +430,9 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
                 // Add user permissions on create and reference
 
-                if (userPemissions != null)
+                if (userPermissions != null)
                 {
-                    for (String permission : userPemissions)
+                    for (String permission : userPermissions)
                     {
                         serviceRegistry.getPermissionService().setPermission(homeFolder.getNodeRef(), uid, permission,
                                 true);

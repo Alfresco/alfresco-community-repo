@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 
@@ -45,6 +46,7 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
+import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
@@ -63,6 +65,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -93,6 +96,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     static String QUERY_GET_ACES_FOR_ACL = "permission.GetAcesForAcl";
 
+    static String QUERY_LOAD_ACL = "permission.LoadAcl";
+
     static String QUERY_GET_ACLS_THAT_INHERIT_FROM_THIS_ACL = "permission.GetAclsThatInheritFromThisAcl";
 
     static String QUERY_GET_AVM_NODES_BY_ACL = "permission.FindAvmNodesByACL";
@@ -102,7 +107,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     static String QUERY_GET_LAYERED_DIRECTORIES = "permission.GetLayeredDirectories";
 
     static String QUERY_GET_LAYERED_FILES = "permission.GetLayeredFiles";
-    
+
     static String QUERY_GET_NEW_IN_STORE = "permission.GetNewInStore";
 
     /** Access to QName entities */
@@ -573,24 +578,71 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
      * @param depth
      */
     @SuppressWarnings("unchecked")
-    private void removeAcesFromAcl(final Long id, AccessControlEntry exclude, int depth)
+    private void removeAcesFromAcl(final Long id, final AccessControlEntry exclude, final int depth)
     {
         AcePatternMatcher excluder = new AcePatternMatcher(exclude);
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
-                query.setParameter("id", id);
-                return query.list();
+                if (exclude == null)
+                {
+                    Criteria criteria = session.createCriteria(DbAccessControlListMemberImpl.class, "member");
+                    criteria.createAlias("accessControlList", "acl");
+                    criteria.add(Restrictions.eq("acl.id", id));
+                    criteria.createAlias("accessControlEntry", "ace");
+                    criteria.createAlias("ace.authority", "authority");
+                    criteria.createAlias("ace.permission", "permission");
+                    criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+                    return criteria.list();
+                }
+                else
+                {
+                    Criteria criteria = session.createCriteria(DbAccessControlListMemberImpl.class, "member");
+                    criteria.createAlias("accessControlList", "acl");
+                    criteria.add(Restrictions.eq("acl.id", id));
+                    if ((exclude.getPosition() != null) && exclude.getPosition() >= 0)
+                    {
+                        criteria.add(Restrictions.eq("position", Integer.valueOf(depth)));
+                    }
+                    if ((exclude.getAccessStatus() != null) || (exclude.getAceType() != null) || (exclude.getAuthority() != null) || (exclude.getPermission() != null))
+                    {
+                        criteria.createAlias("accessControlEntry", "ace");
+                        if (exclude.getAccessStatus() != null)
+                        {
+                            criteria.add(Restrictions.eq("ace.allowed", exclude.getAccessStatus() == AccessStatus.ALLOWED ? Boolean.TRUE : Boolean.FALSE));
+                        }
+                        if (exclude.getAceType() != null)
+                        {
+                            criteria.add(Restrictions.eq("ace.applies", Integer.valueOf(exclude.getAceType().getId())));
+                        }
+                        if (exclude.getAuthority() != null)
+                        {
+                            criteria.createAlias("ace.authority", "authority");
+                            criteria.add(Restrictions.eq("authority.authority", exclude.getAuthority()));
+                        }
+                        if (exclude.getPermission() != null)
+                        {
+                            criteria.createAlias("ace.permission", "permission");
+                            criteria.add(Restrictions.eq("permission.name", exclude.getPermission().getName()));
+                            // TODO: Add typeQname
+                        }
+                    }
+
+                    criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+                    return criteria.list();
+
+                }
             }
         };
-        List<DbAccessControlListMember> members = (List<DbAccessControlListMember>) getHibernateTemplate().execute(callback);
+
+        List<Map<String, Object>> results = (List<Map<String, Object>>) getHibernateTemplate().execute(callback);
 
         boolean removed = false;
-        for (DbAccessControlListMember member : members)
+        for (Map<String, Object> result : results)
         {
-            if ((exclude != null) && excluder.matches(member.getAccessControlEntry(), depth, member.getPosition()))
+            DbAccessControlListMember member = (DbAccessControlListMember) result.get("member");
+            if ((exclude != null) && excluder.matches(result, depth))
             {
                 getHibernateTemplate().delete(member);
                 removed = true;
@@ -1066,34 +1118,42 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session.getNamedQuery(QUERY_GET_ACES_FOR_ACL);
+                Query query = session.getNamedQuery(QUERY_LOAD_ACL);
                 query.setParameter("id", id);
+                query.setCacheMode(CacheMode.IGNORE);
                 return query.list();
             }
         };
-        List<DbAccessControlListMember> members = (List<DbAccessControlListMember>) getHibernateTemplate().execute(callback);
+        List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(callback);
 
-        List<AccessControlEntry> entries = new ArrayList<AccessControlEntry>();
-        for (DbAccessControlListMember member : members)
+        List<AccessControlEntry> entries = new ArrayList<AccessControlEntry>(results.size());
+        for (Object[] result : results)
+        // for (DbAccessControlListMember member : members)
         {
-            SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
-            entry.setAccessStatus(member.getAccessControlEntry().isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED);
-            entry.setAceType(member.getAccessControlEntry().getAceType());
-            entry.setAuthority(member.getAccessControlEntry().getAuthority().getAuthority());
-            if (member.getAccessControlEntry().getContext() != null)
-            {
-                SimpleAccessControlEntryContext context = new SimpleAccessControlEntryContext();
-                context.setClassContext(member.getAccessControlEntry().getContext().getClassContext());
-                context.setKVPContext(member.getAccessControlEntry().getContext().getKvpContext());
-                context.setPropertyContext(member.getAccessControlEntry().getContext().getPropertyContext());
-                entry.setContext(context);
-            }
-            DbPermission perm = member.getAccessControlEntry().getPermission();
+            Boolean aceIsAllowed = (Boolean)result[0];
+            Integer aceType = (Integer)result[1];
+            String authority = (String)result[2];
+            Long permissionId = (Long)result[3];
+            Integer position = (Integer)result[4];
+            
+            SimpleAccessControlEntry sacEntry = new SimpleAccessControlEntry();
+            sacEntry.setAccessStatus(aceIsAllowed ? AccessStatus.ALLOWED : AccessStatus.DENIED);
+            sacEntry.setAceType(ACEType.getACETypeFromId(aceType));
+            sacEntry.setAuthority(authority);
+            // if (entry.getContext() != null)
+            // {
+            // SimpleAccessControlEntryContext context = new SimpleAccessControlEntryContext();
+            // context.setClassContext(entry.getContext().getClassContext());
+            // context.setKVPContext(entry.getContext().getKvpContext());
+            // context.setPropertyContext(entry.getContext().getPropertyContext());
+            //                sacEntry.setContext(context);
+            //            }
+            DbPermission perm = (DbPermission)getSession().get(DbPermissionImpl.class, permissionId);
             SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(perm.getTypeQName().getQName(), perm.getName());
-            entry.setPermission(permissionRefernce);
-            entry.setPosition(member.getPosition());
+            sacEntry.setPermission(permissionRefernce);
+            sacEntry.setPosition(position);
 
-            entries.add(entry);
+            entries.add(sacEntry);
 
         }
 
@@ -1714,13 +1774,16 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             this.pattern = pattern;
         }
 
-        boolean matches(DbAccessControlEntry entry, int position, int memberPosition)
+        boolean matches(Map<String, Object> result, int position)
         {
             if (pattern == null)
             {
                 return true;
             }
 
+            DbAccessControlListMember member = (DbAccessControlListMember) result.get("member");
+            DbAccessControlEntry entry = (DbAccessControlEntry) result.get("ace");
+            
             if (pattern.getAccessStatus() != null)
             {
                 if (pattern.getAccessStatus() != (entry.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED))
@@ -1739,7 +1802,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
             if (pattern.getAuthority() != null)
             {
-                if (!pattern.getAuthority().equals(entry.getAuthority().getAuthority()))
+                DbAuthority authority = (DbAuthority) result.get("authority");
+                if (!pattern.getAuthority().equals(authority.getAuthority()))
                 {
                     return false;
                 }
@@ -1752,13 +1816,14 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
             if (pattern.getPermission() != null)
             {
+                DbPermission permission = (DbPermission) result.get("permission");
                 final QName patternQName = pattern.getPermission().getQName();
-                if ((patternQName != null) && (!patternQName.equals(entry.getPermission().getTypeQName().getQName())))
+                if ((patternQName != null) && (!patternQName.equals(permission.getTypeQName().getQName())))
                 {
                     return false;
                 }
                 final String patternName = pattern.getPermission().getName();
-                if ((patternName != null) && (!patternName.equals(entry.getPermission().getName())))
+                if ((patternName != null) && (!patternName.equals(permission.getName())))
                 {
                     return false;
                 }
@@ -1768,14 +1833,14 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             {
                 if (pattern.getPosition().intValue() >= 0)
                 {
-                    if (memberPosition != position)
+                    if (member.getPosition() != position)
                     {
                         return false;
                     }
                 }
                 else if (pattern.getPosition().intValue() == -1)
                 {
-                    if (memberPosition <= position)
+                    if (member.getPosition() <= position)
                     {
                         return false;
                     }
@@ -2000,7 +2065,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
         }
     }
-    
+
     /**
      * How many nodes are noew in store (approximate)
      * @return - the number fo new nodes - approximate

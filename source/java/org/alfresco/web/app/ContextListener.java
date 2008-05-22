@@ -34,6 +34,7 @@ import javax.servlet.http.HttpSessionListener;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -129,11 +130,13 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    }
 
    /**
-    * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
+    * {@inheritDoc}
+    * <p>
+    * Forcibly kills Alfresco's EHCache CacheManager
     */
    public void contextDestroyed(ServletContextEvent event)
    {
-      // nothing to do
+      InternalEhCacheManagerFactoryBean.getInstance().shutdown();
    }
 
    /**

@@ -154,6 +154,21 @@
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/template/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/n/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/c/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/t/*</url-pattern>
+   </filter-mapping>
    -->
       
    <filter-mapping>
@@ -208,6 +223,10 @@
 
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
+   </listener>
+   
+   <listener>
+      <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
    </listener>
    
    <listener>

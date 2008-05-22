@@ -238,6 +238,18 @@ qname - a property name in the form {namespaceURI}localName
 
 ------
 
+setnodeproperty - Set the value of node propery.
+
+setnodeproperty, avmpath, qname, value
+
+value - the new property value - the type will be auto-detected. At present only TEXT, 
+NODE_REF and INT types are suppored as well as collections of these types. Collections 
+can be specified using a comma seperated list enclosed in square brackets.
+
+qname - the property name in the form {namespaceURI}localName
+
+------
+
 history - Get a list of the previous versions
 of a node.
 
@@ -274,8 +286,30 @@ resetLayer - Resets a layer.
 
 resetLayer, avmpath
 
-______
+------
 
 flatten - Flattens a layer against a target tree.
 
 flatten, avmpath, avmpath
+
+------
+
+getnodeaspects - List all aspects of a node.
+
+getnodeaspects, avmpath, #versionnumber#
+
+------
+
+addnodeaspect - Add an aspect to a node.
+
+addnodeaspect, avmpath, qname
+
+qname - an aspect name in the form {namespaceURI}localName
+
+------
+
+deletenodeaspect - Remove an aspect and it's properties from a node.
+
+deletenodeaspect, avmpath, qname
+
+qname - an aspect name in the form {namespaceURI}localName

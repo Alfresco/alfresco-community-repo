@@ -136,9 +136,10 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
     
     private PasswordEncryptor m_encryptor = new PasswordEncryptor();
     
-    // Allow guest access
+    // Allow guest access, map unknown users to the guest account
     
     private boolean m_allowGuest;
+    public boolean m_mapUnknownUserToGuest;
     
     // Login page address
     
@@ -255,6 +256,19 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
             
             if ( logger.isDebugEnabled() && m_allowGuest)
                 logger.debug("NTLM filter guest access allowed");
+        }
+
+        // Check if unknown users should be mapped to guest access
+        
+        String mapUnknownToGuest = args.getInitParameter("MapUnknownUserToGuest");
+        if ( mapUnknownToGuest != null)
+        {
+            m_mapUnknownUserToGuest = Boolean.parseBoolean(mapUnknownToGuest);
+            
+            // Debug
+            
+            if ( logger.isDebugEnabled() && m_mapUnknownUserToGuest)
+                logger.debug("NTLM filter map unknown users to guest");
         }
 
         // Get a list of the available locales
@@ -522,6 +536,8 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
             	String domain = type1Msg.getDomain();
             	if ( domain == null || domain.length() == 0)
             		domain = mapClientAddressToDomain( req.getRemoteAddr());
+            	else if ( logger.isDebugEnabled())
+            		logger.debug("Client domain " + domain);
             	
                 // Create an authentication token for the new logon
                 
@@ -678,64 +694,97 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
             
             if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
-                // Get the stored MD4 hashed password for the user, or null if the user does not exist
-                
-                String md4hash = m_authComponent.getMD4HashedPassword(userName);
-                
-                if ( md4hash != null)
-                {
-                    // Generate the local encrypted password using the challenge that was sent to the client
-                    
-                    byte[] p21 = new byte[21];
-                    byte[] md4byts = m_md4Encoder.decodeHash(md4hash);
-                    System.arraycopy(md4byts, 0, p21, 0, 16);
-                    
-                    // Generate the local hash of the password using the same challenge
-                    
-                    byte[] localHash = null;
-                    
-                    try
-                    {
-                        localHash = m_encryptor.doNTLM1Encryption(p21, ntlmDetails.getChallengeKey());
-                    }
-                    catch (NoSuchAlgorithmException ex)
-                    {
-                    }
-                    
-                    // Validate the password
-                    
-                    byte[] clientHash = type3Msg.getNTLMHash();
-
-                    if ( clientHash != null && localHash != null && clientHash.length == localHash.length)
-                    {
-                        int i = 0;
-
-                        while ( i < clientHash.length && clientHash[i] == localHash[i])
-                            i++;
-                        
-                        if ( i == clientHash.length)
-                            authenticated = true;
-                    }
-                }
-                else
-                {
+            	// Check if guest logons are allowed and this is a guest logon
+            	
+            	if ( m_allowGuest == true && userName.equalsIgnoreCase( m_authComponent.getGuestUserName()))
+            	{
+            		// Indicate that the user has been authenticated
+            		
+            		authenticated = true;
+            		
                     // Debug
                     
                     if ( logger.isDebugEnabled())
-                        logger.debug("User " + userName + " does not have Alfresco account");
-                    
-                    // Bypass NTLM authentication and display the logon screen, user account does not
-                    // exist in Alfresco
-                    
-                    authenticated = false;
-                }
+                        logger.debug("Guest logon");
+            	}
+            	else
+            	{
+	                // Get the stored MD4 hashed password for the user, or null if the user does not exist
+	                
+	                String md4hash = m_authComponent.getMD4HashedPassword(userName);
+	                
+	                if ( md4hash != null)
+	                {
+	                    // Generate the local encrypted password using the challenge that was sent to the client
+	                    
+	                    byte[] p21 = new byte[21];
+	                    byte[] md4byts = m_md4Encoder.decodeHash(md4hash);
+	                    System.arraycopy(md4byts, 0, p21, 0, 16);
+	                    
+	                    // Generate the local hash of the password using the same challenge
+	                    
+	                    byte[] localHash = null;
+	                    
+	                    try
+	                    {
+	                        localHash = m_encryptor.doNTLM1Encryption(p21, ntlmDetails.getChallengeKey());
+	                    }
+	                    catch (NoSuchAlgorithmException ex)
+	                    {
+	                    }
+	                    
+	                    // Validate the password
+	                    
+	                    byte[] clientHash = type3Msg.getNTLMHash();
+	
+	                    if ( clientHash != null && localHash != null && clientHash.length == localHash.length)
+	                    {
+	                        int i = 0;
+	
+	                        while ( i < clientHash.length && clientHash[i] == localHash[i])
+	                            i++;
+	                        
+	                        if ( i == clientHash.length)
+	                            authenticated = true;
+	                    }
+	                }
+	                else
+	                {
+	                	// Check if unknown users should be logged on as guest
+	                	
+	                	if ( m_mapUnknownUserToGuest == true)
+	                	{
+	                		// Reset the user name to be the guest user
+	                		
+	                		userName = m_authComponent.getGuestUserName();
+	                		authenticated = true;
+
+	                		// Debug
+		                    
+		                    if ( logger.isDebugEnabled())
+		                        logger.debug("User " + userName + " logged on as guest, no Alfresco account");
+	                	}
+	                	else
+	                	{
+		                    // Debug
+		                    
+		                    if ( logger.isDebugEnabled())
+		                        logger.debug("User " + userName + " does not have Alfresco account");
+		                    
+		                    // Bypass NTLM authentication and display the logon screen, user account does not
+		                    // exist in Alfresco
+		                    
+		                    authenticated = false;
+	                	}
+	                }
+            	}
             }
             else
             {
                 // Passthru mode, send the hashed password details to the passthru authentication server
                 
                 NTLMPassthruToken authToken = (NTLMPassthruToken) ntlmDetails.getAuthenticationToken();
-                authToken.setUserAndPassword( type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
+               	authToken.setUserAndPassword( type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
                 
                 try
                 {
@@ -796,14 +845,14 @@ public class NTLMAuthenticationFilter extends AbstractAuthenticationFilter imple
 
                     // User name should match the uid in the person entry found
                     
+                    m_authComponent.setSystemUserAsCurrentUser();
                     userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                    
                     m_authComponent.setCurrentUser(userName);
                     String currentTicket = m_authService.getCurrentTicket();
                     user = new User(userName, currentTicket, personNodeRef);
                     
-                    homeSpaceRef = (NodeRef) m_nodeService.getProperty(
-                            personNodeRef,
-                            ContentModel.PROP_HOMEFOLDER);
+                    homeSpaceRef = (NodeRef) m_nodeService.getProperty( personNodeRef, ContentModel.PROP_HOMEFOLDER);
                     user.setHomeSpaceId(homeSpaceRef.getId());
                     
                     // Commit

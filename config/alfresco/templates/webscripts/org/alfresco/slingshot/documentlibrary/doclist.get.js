@@ -1,8 +1,9 @@
-/*
- * doclist
+/**
+ * Document List Component: doclist
  *
  * Inputs:
  *  mandatory: nodeRef = parent space nodeRef
+ *         OR: path = parent space relative path from companyhome
  *
  * Outputs:
  *  doclist - object containing list of child folders and documents in the parent space
@@ -16,15 +17,15 @@ function getDoclist(nodeRef, path, type)
    
    /* nodeRef input */
    var parentSpace = null;
-   if ((nodeRef != null) && (nodeRef != ""))
+   if ((nodeRef !== null) && (nodeRef != ""))
    {
       parentSpace = search.findNode(nodeRef);
    }
-   else if ((path != null) && path != "")
+   else if ((path !== null) && path != "")
    {
       parentSpace = companyhome.childByNamePath(path);
    }
-   if (parentSpace == null)
+   if (parentSpace === null)
    {
       // return jsonError("Parent space nodeRef not supplied");
       parentSpace = companyhome;
@@ -33,7 +34,7 @@ function getDoclist(nodeRef, path, type)
    var showDocs = true,
       showFolders = true;
       
-   if ((type != null) && (type != ""))
+   if ((type !== null) && (type != ""))
    {
       showDocs = (type == "documents");
       showFolders = (type == "folders");
@@ -41,7 +42,7 @@ function getDoclist(nodeRef, path, type)
    
    for each(item in parentSpace.children)
    {
-      if ((item.isContainer && showFolders) || (!item.isContainer && showDocs))
+      if ((item.isContainer && showFolders) || (item.isDocument && showDocs))
       {
          items.push(item);
       }

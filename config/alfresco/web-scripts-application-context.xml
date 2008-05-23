@@ -77,18 +77,7 @@
    <!--  Web Script Repository (Server-Tier) Container -->
    <!--                                                -->
 
-   <bean id="webscripts.repo" class="org.alfresco.repo.web.scripts.Repository">
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="personService" ref="personService" />
-      <property name="fileFolderService" ref="fileFolderService" />
-      <property name="searchService" ref="searchService" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="companyHomeStore"><value>${spaces.store}</value></property>
-      <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
-   </bean>
+   
 
    <bean id="webscripts.repo.imageresolver" class="org.alfresco.repo.web.scripts.RepositoryImageResolver" />
    
@@ -114,7 +103,7 @@
       <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="permissionService" ref="permissionService" />
       <property name="authorityService" ref="authorityService" />
-      <property name="repository" ref="webscripts.repo" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
       <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
@@ -199,7 +188,7 @@
 
    <!--  Content Retrieval -->
    <bean id="webscript.org.alfresco.repository.store.content.get" class="org.alfresco.repo.web.scripts.bean.ContentGet" parent="webscript">
-      <property name="repository" ref="webscripts.repo" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="namespaceService" ref="NamespaceService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />

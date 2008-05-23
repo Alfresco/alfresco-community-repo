@@ -19,3 +19,4 @@ for (userName in memberships)
 model.site = site;
 model.memberships = memberships;
 model.people = peopleList;
+

@@ -4,18 +4,14 @@ function main()
 	var shortName = json.get("shortName");
 	if (shortName == null || shortName.length == 0)
 	{
-		status.code = 400;
-		status.message = "Short name missing when creating site.";
-		status.redirect = true;
+		status.setCode(status.STATUS_BAD_REQUEST, "Short name missing when creating site");
 		return;
 	}
 	
 	var sitePreset = json.get("sitePreset");
 	if (shortName == null || shortName.length == 0)
 	{
-		status.code = 400;
-		status.message = "Site preset missing when creating site.";
-		status.redirect = true;
+		status.setCode(status.STATUS_BAD_REQUEST, "Site preset missing when creating site");
 		return;
 	}
 	

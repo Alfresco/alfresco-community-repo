@@ -29,8 +29,8 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;

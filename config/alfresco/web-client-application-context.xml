@@ -311,7 +311,7 @@
    <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
 	
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory">
-      <property name="repository" ref="webscripts.repo" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="transactionService" ref="TransactionService" />
    </bean>

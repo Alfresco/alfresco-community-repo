@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   
+   <bean id="transformer.Pdf2swf" class="org.alfresco.repo.content.transform.swf.PDFToSWFContentTransformer" parent="baseContentTransformer">       
+      <property name="explicitTransformations">
+         <list>
+         	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
+            </bean>
+         </list>
+      </property>
+   
+   </bean>   
+   
+   <bean id="transformer.complex.OpenOffice.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.OpenOffice" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+   </bean>
+
+</beans>

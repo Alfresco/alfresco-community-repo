@@ -898,6 +898,16 @@
          </properties>
       </aspect>
       
+      <!-- Aspect containing swf transformation options -->
+      <aspect name="cm:swfTransformationOptions">
+         <properties>
+            <property name="cm:flashVerison">
+               <title>Flash Version</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
    </aspects>
 
 </model>

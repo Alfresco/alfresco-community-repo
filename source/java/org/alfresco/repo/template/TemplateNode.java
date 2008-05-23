@@ -139,6 +139,22 @@ public class TemplateNode extends BasePermissionsNode
     }
     
     /**
+     * @return  the store type for the node
+     */
+    public String getStoreType()
+    {
+        return this.nodeRef.getStoreRef().getProtocol();
+    }
+    
+    /**
+     * @return  the store id for the node
+     */
+    public String getStoreId()
+    {
+        return this.nodeRef.getStoreRef().getIdentifier();
+    }
+    
+    /**
      * @return Returns the NodeRef this Node object represents
      */
     public NodeRef getNodeRef()

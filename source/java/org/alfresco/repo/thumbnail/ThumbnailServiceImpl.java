@@ -40,10 +40,9 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.thumbnail.CreateOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
+import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.alfresco.service.cmr.thumbnail.CreateOptions.ParentAssociationDetails;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -60,7 +59,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
     private static final String ERR_DUPLICATE_NAME = "Thumbnail could not be created because of a duplicate name";
     private static final String ERR_NO_PARENT = "Thumbnail has no parent so update cannot take place.";
     private static final String ERR_TOO_PARENT = "Thumbnail has more than one source content node.  This is invalid so update cannot take place.";
-    private static final String ERR_TRANS_CLASS = "Unable to create transformation options from saved class.  Update of thumbnail cannnot take place.";
     
     /** Node service */
     private NodeService nodeService;
@@ -70,6 +68,9 @@ public class ThumbnailServiceImpl implements ThumbnailService
     
     /** Mimetype map */
     private MimetypeMap mimetypeMap;
+    
+    /** Thumbnail registry */
+    private ThumbnailRegistry thumbnailRegistry;
     
     /**
      * Set the node service
@@ -102,18 +103,46 @@ public class ThumbnailServiceImpl implements ThumbnailService
     }
     
     /**
-     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.thumbnail.GenerateOptions)
+     * Set thumbnail registry
+     * 
+     * @param thumbnailRegistry     thumbnail registry
      */
-    public NodeRef createThumbnail(NodeRef node, QName contentProperty, CreateOptions createOptions)
+    public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
+    {
+        this.thumbnailRegistry = thumbnailRegistry;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#getThumbnailRegistry()
+     */
+    public ThumbnailRegistry getThumbnailRegistry()
+    {
+       return this.thumbnailRegistry;
+    }    
+    
+    /**
+     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions, java.lang.String)
+     */
+    public NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String thumbnailName)
+    {
+        return createThumbnail(node, contentProperty, mimetype, transformationOptions, thumbnailName, null);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions, java.lang.String, org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails)
+     */
+    public NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String thumbnailName, ThumbnailParentAssociationDetails assocDetails)
     {
         // Parameter check
         ParameterCheck.mandatory("node", node); 
         ParameterCheck.mandatory("contentProperty", contentProperty);
+        ParameterCheck.mandatoryString( "mimetype", mimetype);
+        ParameterCheck.mandatory("transformationOptions", transformationOptions);
         
         NodeRef thumbnail = null;
         
         // Check for duplicate names
-        if (createOptions.getThumbnailName() != null && getThumbnailByName(node, contentProperty, createOptions.getThumbnailName()) != null)
+        if (thumbnailName != null && getThumbnailByName(node, contentProperty, thumbnailName) != null)
         {
             // We can't continue because there is already an thumnail with the given name for that content property
             throw new ThumbnailException(ERR_DUPLICATE_NAME);
@@ -126,15 +155,14 @@ public class ThumbnailServiceImpl implements ThumbnailService
         }
         
         // Get the name of the thumbnail and add to properties map
-        String thumbnailName = createOptions.getThumbnailName();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(2);
-        if (thumbnailName == null)
+        if (thumbnailName == null || thumbnailName.length() == 0)
         {
             thumbnailName = GUID.generate();
         }
         else
         {
-            String thumbnailFileName = generateThumbnailFileName(thumbnailName, createOptions.getDestinationMimetype());
+            String thumbnailFileName = generateThumbnailFileName(thumbnailName, mimetype);
             properties.put(ContentModel.PROP_NAME, thumbnailFileName);
         }
         
@@ -142,13 +170,12 @@ public class ThumbnailServiceImpl implements ThumbnailService
         properties.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, contentProperty);
        
         // Add the class name of the transformation options
-        if (createOptions.getTransformationOptions() != null)
+        if (transformationOptions != null)
         {
-            properties.put(ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS, createOptions.getTransformationOptions().getClass().getName());
+            properties.put(ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS, transformationOptions.getClass().getName());
         }
         
         // See if parent association details have been specified for the thumbnail
-        ParentAssociationDetails assocDetails = createOptions.getParentAssociationDetails();
         if (assocDetails == null)
         {
             // Create the thumbnail using the thumbnails child association
@@ -180,11 +207,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Get the content reader and writer for content nodes
         ContentReader reader = this.contentService.getReader(node, contentProperty);
         ContentWriter writer = this.contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(createOptions.getDestinationMimetype());
+        writer.setMimetype(mimetype);
         writer.setEncoding(reader.getEncoding());
         
         // Catch the failure to create the thumbnail
-        if (this.contentService.isTransformable(reader, writer, createOptions.getTransformationOptions()) == false)
+        if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
         {
             // Throw exception indicating that the thumbnail could not be created
             throw new ThumbnailException(ERR_NO_CREATE);
@@ -192,10 +219,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
         else
         {
             // Do the thumnail transformation
-            this.contentService.transform(reader, writer, createOptions.getTransformationOptions());
+            this.contentService.transform(reader, writer, transformationOptions);
             
             // Store the transformation options on the thumbnail
-            createOptions.getTransformationOptions().saveToNode(thumbnail, this.nodeService);
+            transformationOptions.saveToNode(thumbnail, this.nodeService);
         }
         
         // Return the created thumbnail
@@ -215,36 +242,36 @@ public class ThumbnailServiceImpl implements ThumbnailService
     }
 
     /**
-     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#updateThumbnail(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#updateThumbnail(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public void updateThumbnail(NodeRef thumbnail)
+    public void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions)
     {
         // First check that we are dealing with a thumbnail
         if (ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnail)) == true)
         {
             // Get the transformation options
-            TransformationOptions options = null;
-            String transformationOptionsClassName = (String)this.nodeService.getProperty(thumbnail, ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS);
-            if (transformationOptionsClassName == null)
-            {
-                options = new TransformationOptions();
-            }
-            else
-            {
-                // Create an options object of the type specified on the thumbnail
-                try
-                {
-                    Class transformationClass = Class.forName(transformationOptionsClassName);
-                    options = (TransformationOptions)transformationClass.newInstance();                    
-                }
-                catch (Exception exception)
-                {
-                    throw new ThumbnailException(ERR_TRANS_CLASS);
-                }
-                
-                // Populate the options from the node
-                options.populateFromNode(thumbnail, this.nodeService);
-            }            
+//            TransformationOptions options = null;
+//            String transformationOptionsClassName = (String)this.nodeService.getProperty(thumbnail, ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS);
+//            if (transformationOptionsClassName == null)
+//            {
+//                options = new TransformationOptions();
+//            }
+//            else
+//            {
+//                // Create an options object of the type specified on the thumbnail
+//                try
+//                {
+//                    Class transformationClass = Class.forName(transformationOptionsClassName);
+//                    options = (TransformationOptions)transformationClass.newInstance();                    
+//                }
+//                catch (Exception exception)
+//                {
+//                    throw new ThumbnailException(ERR_TRANS_CLASS);
+//                }
+//                
+//                // Populate the options from the node
+//                options.populateFromNode(thumbnail, this.nodeService);
+//            }            
             
             // Get the node that is the source of the thumbnail
             NodeRef node = null;
@@ -270,13 +297,13 @@ public class ThumbnailServiceImpl implements ThumbnailService
             ContentWriter writer = this.contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
             
             // Set the basic detail of the transformation options
-            options.setSourceNodeRef(node);
-            options.setSourceContentProperty(contentProperty);
-            options.setTargetNodeRef(thumbnail);
-            options.setTargetContentProperty(ContentModel.PROP_CONTENT);
+            transformationOptions.setSourceNodeRef(node);
+            transformationOptions.setSourceContentProperty(contentProperty);
+            transformationOptions.setTargetNodeRef(thumbnail);
+            transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
             
             // Catch the failure to create the thumbnail
-            if (this.contentService.isTransformable(reader, writer, options) == false)
+            if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
             {
                 // Throw exception indicating that the thumbnail could not be created
                 throw new ThumbnailException(ERR_NO_CREATE);
@@ -284,7 +311,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
             else
             {
                 // Do the thumnail transformation
-                this.contentService.transform(reader, writer, options);
+                this.contentService.transform(reader, writer, transformationOptions);
             }
         }
         // TODO else should we throw an exception?

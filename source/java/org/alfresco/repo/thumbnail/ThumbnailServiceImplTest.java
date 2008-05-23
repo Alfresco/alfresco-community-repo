@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.thumbnail.CreateOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -97,12 +96,12 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions.setResizeToThumbnail(true);
             ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
             imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-            CreateOptions createOptions = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions,
-                                                        "small");     
+            //ThumbnailDetails createOptions = new ThumbnailDetails();     
             
-            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions,
+                    "small");        
             assertNotNull(thumbnail1);
             checkThumbnailed(jpgOrig, "small");
             checkThumbnail(thumbnail1, imageTransformationOptions);
@@ -116,11 +115,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions2.setMaintainAspectRatio(false);
             ImageTransformationOptions imageTransformationOptions2 = new ImageTransformationOptions();
             imageTransformationOptions2.setResizeOptions(imageResizeOptions2);        
-            CreateOptions createOptions2 = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions2,
-                                                        "small2");  
-            NodeRef thumbnail2 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions2);
+            //ThumbnailDetails createOptions2 = new ThumbnailDetails();  
+            NodeRef thumbnail2 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions2,
+                    "small2");
             checkThumbnailed(jpgOrig, "small2");
             checkThumbnail(thumbnail2, imageTransformationOptions2);
             outputThumbnailTempContentLocation(thumbnail2, "jpg", "small2 - 64x64, aspect not maintained");
@@ -133,11 +132,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions3.setPercentResize(true);
             ImageTransformationOptions imageTransformationOptions3 = new ImageTransformationOptions();
             imageTransformationOptions3.setResizeOptions(imageResizeOptions3);        
-            CreateOptions createOptions3 = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions3,
-                                                        "half");  
-            NodeRef thumbnail3 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions3);
+           // ThumbnailDetails createOptions3 = new ThumbnailDetails();  
+            NodeRef thumbnail3 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions3,
+                    "half");
             checkThumbnailed(jpgOrig, "half");
             checkThumbnail(thumbnail3, imageTransformationOptions3);
             outputThumbnailTempContentLocation(thumbnail3, "jpg", "half - 50%x50%");
@@ -151,11 +150,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions4.setPercentResize(true);
             ImageTransformationOptions imageTransformationOptions4 = new ImageTransformationOptions();
             imageTransformationOptions4.setResizeOptions(imageResizeOptions4);        
-            CreateOptions createOptions4 = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions4,
-                                                        "half2");  
-            NodeRef thumbnail4 = this.thumbnailService.createThumbnail(gifOrig, ContentModel.PROP_CONTENT, createOptions4);
+           // ThumbnailDetails createOptions4 = new ThumbnailDetails();  
+            NodeRef thumbnail4 = this.thumbnailService.createThumbnail(gifOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions4,
+                    "half2");
             checkThumbnailed(gifOrig, "half2");
             checkThumbnail(thumbnail4, imageTransformationOptions4);
             outputThumbnailTempContentLocation(thumbnail4, "jpg", "half2 - 50%x50%, from gif");
@@ -174,18 +173,21 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions.setResizeToThumbnail(true);
             ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
             imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-            CreateOptions createOptions = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions,
-                                                        "small");        
-            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);        
+            //ThumbnailDetails createOptions = new ThumbnailDetails();        
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions,
+                    "small");        
             assertNotNull(thumbnail1);
             checkThumbnailed(jpgOrig, "small");
             checkThumbnail(thumbnail1, imageTransformationOptions);
             
             try
             {
-                this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
+                this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                        imageTransformationOptions,
+                        "small");
                 fail("A duplicate exception should have been raised");
             }
             catch (ThumbnailException exception)
@@ -207,15 +209,14 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions.setHeight(64);     
             imageResizeOptions.setResizeToThumbnail(true);
             ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-            CreateOptions createOptions = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions,
-                                                        "small");        
-            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);              
+            NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions,
+                    "small");
             
             // Update the thumbnail
-            this.thumbnailService.updateThumbnail(thumbnail1);
+            this.thumbnailService.updateThumbnail(thumbnail1, imageTransformationOptions);
         }
         
     }
@@ -237,12 +238,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             imageResizeOptions.setHeight(64);     
             imageResizeOptions.setResizeToThumbnail(true);
             ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-            imageTransformationOptions.setResizeOptions(imageResizeOptions);        
-            CreateOptions createOptions = new CreateOptions(
-                                                        MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                        imageTransformationOptions,
-                                                        "small");        
-            this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, createOptions);   
+            imageTransformationOptions.setResizeOptions(imageResizeOptions);              
+            this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, 
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                    imageTransformationOptions,
+                    "small");   
             
             // Try and retrieve the thumbnail
             NodeRef result2 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");

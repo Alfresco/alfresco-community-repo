@@ -281,11 +281,6 @@
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />
 
-   <!--
-   <bean id="transformer.JMagick" class="org.alfresco.repo.content.transform.magick.JMagickContentTransformer" init-method="init" />
-   </bean>
-   -->
-
    <bean id="transformer.ImageMagick"
         class="org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer"
         parent="baseContentTransformer"

@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -64,6 +65,9 @@ public final class Search extends BaseScopableProcessorExtension
 
     /** Default store reference */
     private StoreRef storeRef;
+    
+    /** Repository helper */
+    private Repository repository;
 
     /**
      * Set the default store reference
@@ -83,6 +87,16 @@ public final class Search extends BaseScopableProcessorExtension
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
+    }
+    
+    /**
+     * Set the repository helper
+     * 
+     * @param repository    the repository helper
+     */
+    public void setRepositoryHelper(Repository repository)
+    {
+        this.repository = repository;
     }
 
     /**
@@ -118,6 +132,40 @@ public final class Search extends BaseScopableProcessorExtension
         }
     }
 
+    /**
+     * Helper to convert a Web Script Request URL to a Node Ref
+     * 
+     * 1) Node - {store_type}/{store_id}/{node_id} 
+     *
+     *    Resolve to node via its Node Reference.
+     *     
+     * 2) Path - {store_type}/{store_id}/{path}
+     * 
+     *    Resolve to node via its display path.
+     *  
+     * 3) AVM Path - {store_id}/{path}
+     * 
+     *    Resolve to AVM node via its display path
+     *    
+     * 4) QName - {store_type}/{store_id}/{child_qname_path}
+     * 
+     *    Resolve to node via its child qname path.
+     * 
+     * @param  referenceType    one of node, path, avmpath or qname
+     * @param  reference        array of reference segments (as described above for each reference type)
+     * @return ScriptNode       the script node
+     */
+    public ScriptNode findNode(String referenceType, String[] reference)
+    {
+        ScriptNode result = null;
+        NodeRef nodeRef = this.repository.findNodeRef(referenceType, reference);
+        if (nodeRef != null)
+        {
+            result = new ScriptNode(nodeRef, this.services, getScope());
+        }
+        return result;
+    }
+    
     /**
      * Execute a XPath search
      * 

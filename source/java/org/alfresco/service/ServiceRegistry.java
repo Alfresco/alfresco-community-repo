@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -119,6 +120,7 @@ public interface ServiceRegistry
     static final QName ATTRIBUTE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AttributeService");
     static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
     static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
+    static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
 
     /**
      * Get the list of services provided by the Repository
@@ -384,4 +386,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     EditionService getEditionService();
+    
+    /**
+     * Get the Thumbnail Service
+     * @return
+     */
+    @NotAuditable
+    ThumbnailService getThumbnailService();
 }

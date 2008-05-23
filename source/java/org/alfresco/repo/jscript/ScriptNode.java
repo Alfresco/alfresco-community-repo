@@ -40,6 +40,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.thumbnail.ThumbnailDetails;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -235,6 +238,22 @@ public class ScriptNode implements Serializable, Scopeable
     public String getId()
     {
         return this.id;
+    }
+    
+    /**
+     * @return the store type for the node
+     */
+    public String getStoreType()
+    {
+        return this.nodeRef.getStoreRef().getProtocol();    
+    }
+    
+    /**
+     * @return the store id for the node
+     */
+    public String getStoreId()
+    {
+        return this.nodeRef.getStoreRef().getIdentifier();
     }
     
     /**
@@ -1870,6 +1889,58 @@ public class ScriptNode implements Serializable, Scopeable
         // execute template!
         // TODO: check that script modified nodes are reflected...
         return this.services.getTemplateService().processTemplateString(null, template, model);
+    }
+    
+    // ------------------------------------------------------------------------------
+    // Thumbnail Methods
+    
+    /**
+     * Creates a thumbnail for the content property of the node.
+     * 
+     * The thumbnail name correspionds to pre-set thumbnail details stored in the 
+     * repository.
+     * 
+     * @param  thumbnailName    the name of the thumbnail
+     * @return ScriptThumbnail  the newly create thumbnail node
+     */
+    public ScriptThumbnail createThumbnail(String thumbnailName)
+    {
+        // Use the thumbnail registy to get the details of the thumbail
+        ThumbnailRegistry registry = this.services.getThumbnailService().getThumbnailRegistry();
+        ThumbnailDetails details = registry.getThumbnailDetails(thumbnailName);
+        if (details == null)
+        {
+            // Throw exception 
+        }
+        
+        NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
+                this.nodeRef, 
+                ContentModel.PROP_CONTENT, 
+                details.getMimetype(), 
+                details.getTransformationOptions(), 
+                details.getName());
+        
+        // Return thumbnail
+        return new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+    }
+
+    public ScriptThumbnail getThumbnail(String thumbnailName)
+    {
+        ScriptThumbnail result = null;
+        NodeRef thumbnailNodeRef = this.services.getThumbnailService().getThumbnailByName(
+                this.nodeRef, 
+                ContentModel.PROP_CONTENT, 
+                thumbnailName);
+        if (thumbnailNodeRef != null)
+        {
+            result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+        }
+        return result;
+    }
+    
+    public ScriptableHashMap<String, ScriptThumbnail> getThumbnails()
+    {
+        return null;
     }
     
     

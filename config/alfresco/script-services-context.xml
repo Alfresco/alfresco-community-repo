@@ -81,6 +81,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="repositoryHelper">
+        	<ref bean="repositoryHelper"/>
+        </property>
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>

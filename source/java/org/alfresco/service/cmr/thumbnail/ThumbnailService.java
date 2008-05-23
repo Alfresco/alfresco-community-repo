@@ -26,6 +26,7 @@ package org.alfresco.service.cmr.thumbnail;
 
 import java.util.List;
 
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -38,11 +39,16 @@ import org.alfresco.service.namespace.QName;
  */
 public interface ThumbnailService
 {
+    ThumbnailRegistry getThumbnailRegistry();
+    
     /**
      * Creates a new thumbnail for the given node and content property.
      * 
-     * The passed create options specify the details of the thumbnail, including the 
-     * mimetpye, size and location of the thumbnail.
+     * The mimetype and transformation options are used to determine the content transformer that
+     * will be best suited to create the thumbnail.
+     * 
+     * The thumbnail name is optional, but is usally set to provide an easy way to identify a perticular
+     * 'type' of thumbnail.
      * 
      * Once created the source node will have the 'tn:thumbnailed' aspect applied and an
      * association to the thumbnail node (or type 'tn:thumbnail') will be created.
@@ -50,28 +56,35 @@ public interface ThumbnailService
      * The returned node reference is to the 'tn:thumbnail' content node that contains
      * the thumnail content in the standard 'cm:content' property.
      * 
-     * @see org.alfresco.service.cmr.thumnail.GenerateOptions
+     * @see org.alfresco.service.cmr.thumnail.ThumbnailDetails
      * 
-     * @param  node                 the source content node
-     * @param  contentProperty      the content property
-     * @param  createOptions        the create options
-     * @return NodeRef              node reference to the newly created thumbnail 
+     * @param  node                     the source content node
+     * @param  contentProperty          the content property
+     * @param  mimetype                 the thumbnail mimetype
+     * @param  transformationOptions    the thumbnail transformation options
+     * @param  name                     the name of the thumbnail (optional, pass null for unnamed thumbnail)
+     * @return NodeRef                  node reference to the newly created thumbnail 
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "createOptions"})
-    NodeRef createThumbnail(NodeRef node, QName contentProperty, CreateOptions createOptions);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name"})
+    NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name);
+    
+    NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name, ThumbnailParentAssociationDetails assocDetails);
     
     /**
      * Updates the content of a thumbnail.
      * 
-     * The original creation options are used when updating the thumbnail.  The content of 
-     * the associated thumbnailed node is used to update.
+     * The origional thumbnail content is updated from the source content using the transformation
+     * options provided.  The mimetype and name of the thumbnail remain unchanged.
+     * 
+     * To change the name or mimertpe of an updated thumbnail it should be deleted and recreated.
      * 
      * An error is raised if the original content no longer exisits.
      * 
      * @param thumbnail             the thumbnail node
+     * @param transformationOptions the transformation options used when updating the thumbnail
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"thumbnail"})
-    void updateThumbnail(NodeRef thumbnail);
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"thumbnail", "transformationOptions"})
+    void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions);
     
     /**
      * Get's the thumbnail for a given content property with a given name.

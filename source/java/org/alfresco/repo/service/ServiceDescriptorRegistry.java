@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -423,5 +424,13 @@ public class ServiceDescriptorRegistry
     public MultilingualContentService getMultilingualContentService()
     {
         return (MultilingualContentService) getService(MULTILINGUAL_CONTENT_SERVICE);
+    }
+    
+    /**
+     * @see org.alfresco.service.ServiceRegistry#getThumbnailService()
+     */
+    public ThumbnailService getThumbnailService()
+    {
+        return (ThumbnailService)getService(THUMBNAIL_SERVICE);
     }
 }

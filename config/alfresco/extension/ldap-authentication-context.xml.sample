@@ -61,7 +61,13 @@
         </property>
         <property name="transactionService">
             <ref bean="transactionService" />
-        </property>    
+        </property>   
+        <property name="escapeCommasInBind">
+            <value>${ldap.authentication.escapeCommasInBind}</value>
+        </property>
+        <property name="escapeCommasInUid">
+            <value>${ldap.authentication.escapeCommasInUid}</value>
+        </property> 
     </bean>
     
     <!--

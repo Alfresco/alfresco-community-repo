@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class QNameMap<K,V> implements Map, Cloneable, Serializable
 {
-    private static final long serialVersionUID = 2077228225832792605L;
+    private static final long serialVersionUID = -6578946123712939601L;
     
     protected static Log logger = LogFactory.getLog(QNameMap.class);
     protected Map<String, Object> contents = new HashMap<String, Object>(16, 1.0f);

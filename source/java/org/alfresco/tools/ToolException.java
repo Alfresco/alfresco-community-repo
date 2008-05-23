@@ -29,16 +29,16 @@ package org.alfresco.tools;
  * 
  * @author David Caruana
  */
-/*package*/ class ToolException extends RuntimeException
+public class ToolException extends RuntimeException
 {
     private static final long serialVersionUID = 3257008761007847733L;
 
-    /*package*/ ToolException(String msg)
+    public ToolException(String msg)
     {
         super(msg);
     }
 
-    /*package*/ ToolException(String msg, Throwable cause)
+    public ToolException(String msg, Throwable cause)
     {
         super(msg, cause);
     }

@@ -866,7 +866,7 @@
                 <value>getIndirectionPath</value>
                 <value>getHistory</value>
                 <value>getCommonAncestor</value>
-                <value>getLayereingInfo</value>
+                <value>getLayeringInfo</value>
                 <value>getNodeProperty</value>
                 <value>getNodeProperties</value>
                 <value>getStoreProperty</value>

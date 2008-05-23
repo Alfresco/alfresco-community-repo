@@ -37,28 +37,39 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
  */
 public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationComponent
 {
+    private boolean escapeCommasInBind = false;
     
+    private boolean escapeCommasInUid = false;
+
     private String userNameFormat;
-    
+
     private LDAPInitialDirContextFactory ldapInitialContextFactory;
-    
+
     public LDAPAuthenticationComponentImpl()
     {
         super();
     }
 
-    
     public void setLDAPInitialDirContextFactory(LDAPInitialDirContextFactory ldapInitialDirContextFactory)
     {
         this.ldapInitialContextFactory = ldapInitialDirContextFactory;
     }
-    
-    
+
     public void setUserNameFormat(String userNameFormat)
     {
         this.userNameFormat = userNameFormat;
     }
     
+    public void setEscapeCommasInBind(boolean escapeCommasInBind)
+    {
+        this.escapeCommasInBind = escapeCommasInBind;
+    }
+
+    public void setEscapeCommasInUid(boolean escapeCommasInUid)
+    {
+        this.escapeCommasInUid = escapeCommasInUid;
+    }
+
     /**
      * Implement the authentication method
      */
@@ -67,16 +78,16 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         InitialDirContext ctx = null;
         try
         {
-            ctx = ldapInitialContextFactory.getInitialDirContext(String.format(userNameFormat, new Object[]{userName}), new String(password));
-            
+            ctx = ldapInitialContextFactory.getInitialDirContext(String.format(userNameFormat, new Object[] { escapeUserName(userName, escapeCommasInBind) }), new String(password));
+
             // Authentication has been successful.
             // Set the current user, they are now authenticated.
-            setCurrentUser(userName);         
-            
+            setCurrentUser(escapeUserName(userName, escapeCommasInUid));
+
         }
         finally
         {
-            if(ctx != null)
+            if (ctx != null)
             {
                 try
                 {
@@ -91,6 +102,29 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         }
     }
 
+    private static String escapeUserName(String userName, boolean escape)
+    {
+        if (escape)
+        {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < userName.length(); i++)
+            {
+                char c = userName.charAt(i);
+                if (c == ',')
+                {
+                    sb.append('\\');
+                }
+                sb.append(c);
+            }
+            return sb.toString();
+
+        }
+        else
+        {
+            return userName;
+        }
+
+    }
 
     @Override
     protected boolean implementationAllowsGuestLogin()
@@ -99,16 +133,16 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         try
         {
             ctx = ldapInitialContextFactory.getDefaultIntialDirContext();
-            return true;       
-            
+            return true;
+
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             return false;
         }
         finally
         {
-            if(ctx != null)
+            if (ctx != null)
             {
                 try
                 {
@@ -121,6 +155,5 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
             }
         }
     }
-    
-    
+
 }

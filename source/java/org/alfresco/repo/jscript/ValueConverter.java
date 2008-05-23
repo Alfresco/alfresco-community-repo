@@ -152,11 +152,11 @@ public class ValueConverter
             // recursively call this method to convert the unwrapped value
             value = convertValueForRepo((Serializable)((Wrapper)value).unwrap());
         }
-        else if (value instanceof ScriptableObject)
+        else if (value instanceof Scriptable)
         {
             // a scriptable object will probably indicate a multi-value property
             // set using a JavaScript Array object
-            ScriptableObject values = (ScriptableObject)value;
+            Scriptable values = (Scriptable)value;
             
             if (value instanceof IdScriptableObject)
             {
@@ -230,14 +230,14 @@ public class ValueConverter
             }
             else
             {
-                // convert JavaScript map to values to a Map of Serializable objects
+                // convert Scriptable object of values to a Map of Serializable objects
                 Object[] propIds = values.getIds();
                 Map<String, Serializable> propValues = new HashMap<String, Serializable>(propIds.length);
                 for (int i=0; i<propIds.length; i++)
                 {
                     // work on each key in turn
                     Object propId = propIds[i];
-                    
+
                     // we are only interested in keys that indicate a list of values
                     if (propId instanceof String)
                     {

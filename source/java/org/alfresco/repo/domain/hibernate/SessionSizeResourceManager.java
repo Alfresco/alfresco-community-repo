@@ -175,7 +175,7 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
     {
         if (logger.isDebugEnabled())
         {
-            logger.error(stats);
+            logger.debug(stats);
         }
         Set<EntityKey> keys = new HashSet<EntityKey>((Set<EntityKey>)stats.getEntityKeys());
         for (EntityKey key : keys)

@@ -259,7 +259,13 @@ public class ContentStoreCleaner
         {
             logger.debug("Starting content store cleanup.");
         }
-
+        // Repeat attempts six times waiting 10 minutes between
+        executeInternal(0, 6, 600000);
+    }
+    
+    public void executeInternal(int currentAttempt, int maxAttempts, long waitTime)
+    {
+        currentAttempt++;
         // This handler removes the URLs from all the stores
         final org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler handler = new org.alfresco.repo.domain.ContentUrlDAO.ContentUrlHandler()
         {
@@ -315,6 +321,22 @@ public class ContentStoreCleaner
             if (logger.isDebugEnabled())
             {
                 logger.debug("   Content store cleanup aborted.");
+            }
+        }
+        catch (Throwable e)
+        {
+            if (currentAttempt >= maxAttempts)
+            {
+                throw new AlfrescoRuntimeException("Failed to initiate content store clean", e);
+            }
+            if (RetryingTransactionHelper.extractRetryCause(e) != null)
+            {
+                // There are grounds for waiting and retrying
+                synchronized(this)
+                {
+                    try { this.wait(waitTime); } catch (InterruptedException ee) {}
+                }
+                executeInternal(currentAttempt, maxAttempts, waitTime);
             }
         }
     }

@@ -148,6 +148,34 @@ public class ContentUrlDAOTest extends TestCase
         }
     }
     
+    public void testDeleteContentUrlSpeed() throws Throwable
+    {
+        UserTransaction txn = transactionService.getUserTransaction();
+        try
+        {
+            txn.begin();
+            
+            final Set<String> urls = makeUrls(1000);
+            // Delete them
+            long startTimeNs = System.nanoTime();
+            for (String url : urls)
+            {
+                dao.deleteContentUrl(url);
+            }
+            long endTimeNs = System.nanoTime();
+            double aveTimeMs = (double) (endTimeNs - startTimeNs) / 1000000D / 1000D;
+            
+            System.out.println("Average delete is " + aveTimeMs + "ms per content URL");
+            
+            txn.commit();
+        }
+        catch (Throwable e)
+        {
+            try { txn.rollback(); } catch (Throwable ee) {}
+            throw e;
+        }
+    }
+    
     public void testDeleteContentUrls() throws Throwable
     {
         UserTransaction txn = transactionService.getUserTransaction();

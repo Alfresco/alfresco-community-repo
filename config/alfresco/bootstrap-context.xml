@@ -201,6 +201,9 @@
 
     <bean id="spacesModelsBootstrap" parent="storeImporter" singleton="false">
     	<!-- NOOP for fresh bootstrap (will skip store creation) - provides ordering when performing a repo restore (bootstrap import) -->
+        <property name="storeUrl">
+            <value>noop://noop</value>
+        </property>
     </bean>
     
     <bean id="spacesBootstrap" parent="spacesStoreImporter" singleton="false">

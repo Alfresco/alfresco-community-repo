@@ -240,11 +240,11 @@ public final class AuthenticationHelper
             setUsernameCookie(req, res, loginBean.getUsernameInternal());
          }
          
-         // Set the current locale
-         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
-         
          // setup faces context
          FacesHelper.getFacesContext(req, res, sc);
+         
+         // Set the current locale
+         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
          
          if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
          {

@@ -30,4 +30,5 @@ if(object == null)
 // store onto model
 model.object = object;
 model.mimetype = object.mimetype;
-model.properties = object.properties;
+model.includeChildren = true;
+model.includeContent = false;

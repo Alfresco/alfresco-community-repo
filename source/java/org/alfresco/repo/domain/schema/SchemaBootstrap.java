@@ -989,11 +989,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // thrown.  If it is thrown, the the update needs to be rerun as it will probably generate no SQL
                 // statements the second time around.
                 boolean updatedSchema = false;
+                boolean createdSchema = false;
+                
                 for (int i = 0; i < schemaUpdateLockRetryCount; i++)
                 {
                     try
                     {
-                        updateSchema(cfg, session, connection);
+                        createdSchema = updateSchema(cfg, session, connection);
                         updatedSchema = true;
                         break;
                     }
@@ -1008,8 +1010,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     // The retries were exceeded
                     throw new AlfrescoRuntimeException(ERR_PREVIOUS_FAILED_BOOTSTRAP);
                 }
-                
-                boolean create = updateSchema(cfg, session, connection);
                 
                 // Copy the executed statements to the output file
                 File schemaOutputFile = null;
@@ -1035,7 +1035,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
                 }
                 
-                if (! create)
+                if (! createdSchema)
                 {
                     // verify that all patches have been applied correctly 
                     checkSchemaPatchScripts(cfg, session, connection, validateUpdateScriptPatches, false);  // check scripts

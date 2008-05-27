@@ -112,19 +112,5 @@
          <ref bean="fileFolderService" />
       </property>
    </bean>
-   
-   <!-- Repository helper class -->
-   <bean id="repositoryHelper" class="org.alfresco.repo.model.Repository">
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="personService" ref="personService" />
-      <property name="fileFolderService" ref="fileFolderService" />
-      <property name="searchService" ref="searchService" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="companyHomeStore"><value>${spaces.store}</value></property>
-      <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
-   </bean>
 
 </beans>

@@ -2,7 +2,7 @@
    "treenode":
    {
 <#if treenode.error?exists>
-      "error": "${treenodes.error}"
+      "error": "${treenode.error}"
 <#else>
       "items":
       [

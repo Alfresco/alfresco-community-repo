@@ -2,48 +2,68 @@
  * Document List Component: treenode
  *
  * Inputs:
- *  mandatory: nodeRef = parent space nodeRef
- *         OR: path = parent space relative path from companyhome
+ *  mandatory: site = the site containing the document library
+ *   optional: path = folder relative to root store
  *
  * Outputs:
  *  treenode - object containing list of child folder nodes for a TreeView widget
  */
-model.treenode = getTreenode(args["nodeRef"], args["path"]);
+model.treenode = getTreenode(args["site"], args["path"]);
 
 /* Create collection of folders in the given space */
-function getTreenode(nodeRef, path)
+function getTreenode(siteId, path)
 {
-   var items = new Array();
+   try
+   {
+      var items = new Array();
    
-   /* nodeRef input */
-   var parentSpace = null;
-   if ((nodeRef !== null) && (nodeRef != ""))
-   {
-      parentSpace = search.findNode(nodeRef);
-   }
-   else if ((path !== null) && path != "")
-   {
-      parentSpace = companyhome.childByNamePath(path);
-   }
-   if (parentSpace === null)
-   {
-      // return jsonError("Parent space nodeRef not supplied");
-      parentSpace = companyhome;
-   }
-
-   for each(item in parentSpace.children)
-   {
-      if (item.isContainer)
+      /* siteId input */
+      var site = siteService.getSite(siteId);
+      if (site === null)
       {
-         items.push(item);
+         return jsonError("Site not found: " + siteId);
       }
+   
+      // var parentNode = site.getComponentContainer("documentLibrary");
+      var parentNode = companyhome; // TODO: Remove hack
+      if (parentNode === null)
+      {
+         return jsonError("Document Library container not found in: " + siteId);
+      }
+
+      /* path input */
+      if ((path !== null) && (path != ""))
+      {
+         parentSpace = parentNode.childByNamePath(path);
+      }
+      else
+      {
+         parentSpace = parentNode;
+      }
+      
+      if (parentSpace === null)
+      {
+         parentSpace = parentNode;
+      }
+
+      for each(item in parentSpace.children)
+      {
+         if (item.isContainer)
+         {
+            items.push(item);
+         }
+      }
+   
+      items.sort(sortByName);
+   
+      return ({
+         "items": items
+      });
    }
-   
-   items.sort(sortByName);
-   
-   return ({
-      "items": items
-   });
+   catch(e)
+   {
+      return jsonError(e.toString());
+   }
 }
 
 

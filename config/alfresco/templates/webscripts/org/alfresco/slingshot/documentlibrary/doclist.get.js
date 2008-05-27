@@ -2,57 +2,76 @@
  * Document List Component: doclist
  *
  * Inputs:
- *  mandatory: nodeRef = parent space nodeRef
- *         OR: path = parent space relative path from companyhome
+ *  mandatory: site = the site containing the document library
+ *   optional: path = folder relative to root store
  *
  * Outputs:
- *  doclist - object containing list of child folders and documents in the parent space
+ *  doclist - object containing list of child folders and documents
  */
-model.doclist = getDoclist(args["nodeRef"], args["path"], args["type"]);
+model.doclist = getDoclist(args["site"], args["path"], args["type"]);
 
 /* Create collection of documents and folders in the given space */
-function getDoclist(nodeRef, path, type)
+function getDoclist(siteId, path, type)
 {
-   var items = new Array();
+   try
+   {
+      var items = new Array();
    
-   /* nodeRef input */
-   var parentSpace = null;
-   if ((nodeRef !== null) && (nodeRef != ""))
-   {
-      parentSpace = search.findNode(nodeRef);
-   }
-   else if ((path !== null) && path != "")
-   {
-      parentSpace = companyhome.childByNamePath(path);
-   }
-   if (parentSpace === null)
-   {
-      // return jsonError("Parent space nodeRef not supplied");
-      parentSpace = companyhome;
-   }
-
-   var showDocs = true,
-      showFolders = true;
-      
-   if ((type !== null) && (type != ""))
-   {
-      showDocs = (type == "documents");
-      showFolders = (type == "folders");
-   }
-   
-   for each(item in parentSpace.children)
-   {
-      if ((item.isContainer && showFolders) || (item.isDocument && showDocs))
+      /* siteId input */
+      var site = siteService.getSite(siteId);
+      if (site === null)
       {
-         items.push(item);
+         return jsonError("Site not found: " + siteId);
       }
+   
+      // var parentNode = site.getComponentContainer("documentLibrary");
+      var parentNode = companyhome; // TODO: Remove hack
+      if (parentNode === null)
+      {
+         return jsonError("Document Library container not found in: " + siteId);
+      }
+
+      /* path input */
+      if ((path !== null) && (path != ""))
+      {
+         parentSpace = parentNode.childByNamePath(path);
+      }
+      else
+      {
+         parentSpace = parentNode;
+      }
+      if (parentSpace === null)
+      {
+         parentSpace = parentNode;
+      }
+
+      var showDocs = true,
+         showFolders = true;
+      
+      if ((type !== null) && (type != ""))
+      {
+         showDocs = (type == "documents");
+         showFolders = (type == "folders");
+      }
+   
+      for each(item in parentSpace.children)
+      {
+         if ((item.isContainer && showFolders) || (item.isDocument && showDocs))
+         {
+            items.push(item);
+         }
+      }
+   
+      items.sort(sortByType);
+   
+      return ({
+         "items": items
+      });
    }
-   
-   items.sort(sortByType);
-   
-   return ({
-      "items": items
-   });
+   catch(e)
+   {
+      return jsonError(e.toString());
+   }
 }
 
 

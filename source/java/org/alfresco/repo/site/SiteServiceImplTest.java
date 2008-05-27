@@ -31,6 +31,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -334,6 +335,30 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // TODO .. try and remove the only site manager and should get a failure
     }
         
+    public void testContainer()
+    {
+        // Create a couple of sites as user one
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "testContainer", TEST_TITLE, TEST_DESCRIPTION, true);
+
+        boolean hasContainer = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component");
+        assertFalse(hasContainer);
+        NodeRef container1 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component");
+        assertNotNull(container1);
+        NodeRef container2 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component");
+        assertNotNull(container2);
+        assertTrue(container1.equals(container2));
+        boolean hasContainer2 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component");
+        assertTrue(hasContainer2);
+        boolean hasContainer3 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component2");
+        assertFalse(hasContainer3);
+        NodeRef container3 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component2");
+        assertNotNull(container3);
+        assertFalse(container1.equals(container3));
+        boolean hasContainer4 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component2");
+        assertTrue(hasContainer4);
+    }
+    
+    
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception

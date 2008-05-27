@@ -78,7 +78,26 @@ function testMembership()
 	
 }
 
+function testContainer()
+{
+	var site = siteService.getSite("siteShortName");
+	test.assertNotNull(site);
+
+    var hasContainer = site.hasContainer("folder.component");
+    test.assertFalse(hasContainer);
+    
+    var container = site.getContainer("folder.component");
+    test.assertNotNull(container);
+    var hasContainer2 = site.hasContainer("folder.component");
+    test.assertTrue(hasContainer2);
+    var container2 = site.getContainer("folder.component");
+    test.assertNotNull(container2);
+    test.assertEquals(container, container2);    
+}
+
+
 // Execute test's
 testCRUD();
 testListSites();
 testMembership();
+testContainer();

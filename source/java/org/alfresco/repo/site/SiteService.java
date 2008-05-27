@@ -3,6 +3,8 @@ package org.alfresco.repo.site;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * Site service fundamental API.
  * <p>
@@ -105,6 +107,23 @@ public interface SiteService
     void removeMembership(String shortName, String userName);
     
     
-    
+    /**
+     * Gets (or creates, if it doesn't exist) the "container" folder for the specified
+     * component.
+     *
+     * @param shortName  short name of site
+     * @param componentId  component id
+     * @return  noderef of folder container
+     */
+    NodeRef getContainer(String shortName, String componentId);
+
+    /**
+     * Determines if a "container" folder for the specified component exists.
+     * 
+     * @param shortName  short name of site
+     * @param componentId  component id
+     * @return  true => "container" folder exists for component
+     */
+    boolean hasContainer(String shortName, String componentId);
     
 }

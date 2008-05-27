@@ -27,9 +27,14 @@ package org.alfresco.repo.site.script;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Site JavaScript object
@@ -38,14 +43,22 @@ import org.alfresco.repo.site.SiteService;
  */
 public class Site implements Serializable
 {
+	// TODO: DC - Should Site derive from ScriptNode?
+	
     /** Serializable serial verion UID */
     private static final long serialVersionUID = 8013569574120957923L;
  
     /** Site information */
     private SiteInfo siteInfo;
     
+    /** Services Registry */
+    private ServiceRegistry serviceRegistry;
+    
     /** Site service */
     private SiteService siteService;
+
+    /** Scriptable */
+    private Scriptable scope;
     
     /** Indicates whether there are any outstanding changes that need to be saved */
     private boolean isDirty = false;
@@ -55,10 +68,12 @@ public class Site implements Serializable
      * 
      * @param siteInfo      site information
      */
-    /*package*/ Site(SiteService siteService, SiteInfo siteInfo)
+    /*package*/ Site(SiteInfo siteInfo, ServiceRegistry serviceRegistry, SiteService siteService, Scriptable scope)
     {
+    	this.serviceRegistry = serviceRegistry;
         this.siteService = siteService;
         this.siteInfo = siteInfo;
+        this.scope = scope;
     }
    
     /**
@@ -242,4 +257,48 @@ public class Site implements Serializable
     {
         this.siteService.removeMembership(getShortName(), userName);
     }
+
+    /**
+     * Gets (or creates) the "container" folder for the specified component id
+     * 
+     * @param componentId
+     * @return node representing the "container" folder
+     */
+    public ScriptNode getContainer(String componentId)
+    {
+    	ScriptNode container = null;
+    	try
+		{
+        	NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
+        	container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
+		}
+    	catch(AlfrescoRuntimeException e)
+    	{
+    		// NOTE: not good practice to catch all, but in general we're not throwing exceptions
+    		//       into the script layer
+    	}
+    	return container;
+    }
+    
+    /**
+     * Determine if the "container" folder for the specified component exists
+     * 
+     * @param componentId
+     * @return  true => "container" folder exists
+     */
+    public boolean hasContainer(String componentId)
+    {
+    	boolean hasContainer = false;
+    	try
+    	{
+    		hasContainer = this.siteService.hasContainer(getShortName(), componentId);
+    	}
+    	catch(AlfrescoRuntimeException e)
+    	{
+    		// NOTE: not good practice to catch all, but in general we're not throwing exceptions
+    		//       into the script layer
+    	}
+    	return hasContainer;
+    }
+    
 }

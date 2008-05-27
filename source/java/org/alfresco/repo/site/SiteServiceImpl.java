@@ -37,6 +37,9 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -74,6 +77,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final String ACTIVITY_TOOL = "siteService";
     
     private NodeService nodeService;
+    private FileFolderService fileFolderService;
     private SearchService searchService;
     private PermissionService permissionService;
     private ActivityService activityService;
@@ -84,6 +88,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
     
     public void setSearchService(SearchService searchService)
@@ -451,6 +460,93 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.site.SiteService#getContainer(java.lang.String)
+     */
+    public NodeRef getContainer(String shortName, String componentId)
+    {
+        if (componentId == null || componentId.length() ==0)
+        {
+        	throw new AlfrescoRuntimeException("Component id not provided");
+        }
+        
+        // retrieve site
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+
+        // retrieve component folder within site
+        // NOTE: component id is used for folder name
+        NodeRef containerNodeRef = null;
+        try
+        {
+        	containerNodeRef = findContainer(siteNodeRef, componentId);
+        }
+        catch(FileNotFoundException e)
+        {
+        	// create component folder
+        	FileInfo fileInfo = fileFolderService.create(siteNodeRef, componentId, ContentModel.TYPE_FOLDER);
+        	containerNodeRef = fileInfo.getNodeRef();
+        }
+        
+        return containerNodeRef;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.site.SiteService#hasContainer(java.lang.String)
+     */
+    public boolean hasContainer(String shortName, String componentId)
+    {
+        if (componentId == null || componentId.length() ==0)
+        {
+        	throw new AlfrescoRuntimeException("Component id not provided");
+        }
+        
+        // retrieve site
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+
+        // retrieve component folder within site
+        // NOTE: component id is used for folder name
+        boolean hasContainer = false;
+        try
+        {
+        	findContainer(siteNodeRef, componentId);
+        	hasContainer = true;
+        }
+        catch(FileNotFoundException e)
+        {
+        }
+        
+        return hasContainer;
+    }
+    
+    /**
+     * Locate site "container" folder for component
+     * 
+     * @param siteNodeRef  site
+     * @param componentId  component id
+     * @return  "container" node ref, if it exists
+     * @throws FileNotFoundException
+     */
+    private NodeRef findContainer(NodeRef siteNodeRef, String componentId)
+    	throws FileNotFoundException
+    {
+        List<String> paths = new ArrayList<String>(1);
+        paths.add(componentId);
+        FileInfo fileInfo = fileFolderService.resolveNamePath(siteNodeRef, paths);
+    	if (!fileInfo.isFolder())
+    	{
+    		throw new AlfrescoRuntimeException("Site container " + fileInfo.getName() + " does not refer to a folder ");
+    	}
+        return fileInfo.getNodeRef();
     }
     
     private String getActivityData(String userName, String role)

@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
+import org.alfresco.service.ServiceRegistry;
 
 
 /**
@@ -40,8 +40,21 @@ import org.alfresco.repo.site.SiteService;
  */
 public class ScriptSiteService extends BaseScopableProcessorExtension
 {
+	/** Service Registry */
+	private ServiceRegistry serviceRegistry;
+	
     /** The site service */
     private SiteService siteService;
+
+    /**
+     * Sets the Service Registry
+     * 
+     * @param serviceRegistry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+    	this.serviceRegistry = serviceRegistry;
+    }
     
     /**
      * Set the site service
@@ -61,14 +74,14 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * @param sitePreset    site preset
      * @param shortName     site short name
      * @param title         site title
-     * @param descripion    site description
+     * @param description    site description
      * @param isPublic      whether the site is public or not
      * @return Site         the created site
      */
-    public Site createSite(String sitePreset, String shortName, String title, String descripion, boolean isPublic)
+    public Site createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
     {                
-        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, descripion, isPublic);
-        return new Site(this.siteService, siteInfo);
+        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, isPublic);
+        return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
     
     /**
@@ -87,7 +100,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
         for (SiteInfo siteInfo : siteInfos)
         {
-            sites.add(new Site(this.siteService, siteInfo));
+            sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
         return (Site[])sites.toArray(new Site[sites.size()]);
     }      
@@ -106,7 +119,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         SiteInfo siteInfo = this.siteService.getSite(shortName);
         if (siteInfo != null)
         {
-            site = new Site(this.siteService, siteInfo);
+            site = new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
         }
         return site;
     }

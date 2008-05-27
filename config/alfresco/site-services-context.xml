@@ -18,6 +18,7 @@
     
     <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl">
        <property name="nodeService" ref="NodeService"/>
+       <property name="fileFolderService" ref="FileFolderService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="permissionService" ref="PermissionService" />
        <property name="authenticationComponent" ref="authenticationComponent"/>              
@@ -30,6 +31,7 @@
         <property name="extensionName">
             <value>siteService</value>
         </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="siteService" ref="siteService"/>
     </bean>
     

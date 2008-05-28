@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -76,7 +77,45 @@ public final class People extends BaseScopableProcessorExtension
     {
         this.authorityService = authorityService;
     }
+    
+    /**
+     * Delete a Person with the given username
+     * 
+     * @param username the username of the person to delete
+     */
+    public void deletePerson(String username)
+    {
+        PersonService personService = services.getPersonService();
+        personService.deletePerson(username);
+    }
 
+    /**
+     * Create a Person with the given username and password
+     * 
+     * @param username the username of the person to be created
+     * @param password the password of the person to be created
+     * @return the person node (type cm:person) created or null if the person already exists
+     */
+    public ScriptNode createPerson(String username, String password)
+    {
+        ParameterCheck.mandatoryString("Username", username);
+        ParameterCheck.mandatoryString("Password", password);
+        
+        ScriptNode person = null;
+        
+        PropertyMap properties = new PropertyMap();
+        properties.put(ContentModel.PROP_USERNAME, username);
+        properties.put(ContentModel.PROP_PASSWORD, password);
+        PersonService personService = services.getPersonService();
+        if (!personService.personExists(username))
+        {
+            NodeRef personRef = personService.createPerson(properties); 
+            person = new ScriptNode(personRef, services, getScope()); 
+        }
+        
+        return person;
+    }
+    
     /**
      * Gets the Person given the username
      * 

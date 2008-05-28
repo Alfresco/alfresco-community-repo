@@ -1,8 +1,8 @@
 <html>
- <head> 
+<head>
    <title>File's Uploaded</title>
- </head>
- <body>
- File's Uploaded
- </body>
+</head>
+<body>
+File's Uploaded
+</body>
 </html>

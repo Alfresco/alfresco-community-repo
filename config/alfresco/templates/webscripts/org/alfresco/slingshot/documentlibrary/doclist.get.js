@@ -31,7 +31,7 @@ function getDoclist(siteId, path, type)
       var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
-         return jsonError("Document Library container not found in: " + siteId);
+         return jsonError("Document Library container not found in: " + siteId + ". (No write permission?)");
       }
 
       /* path input */

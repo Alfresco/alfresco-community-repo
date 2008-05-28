@@ -1,0 +1,1 @@
+<#include "action.get.json.ftl">

@@ -7,50 +7,62 @@
 var filename = null;
 var content = null;
 var siteId = null;
+var componentId = null;
 var path = null;
 var title = "";
 var description = "";
 var contentType = "Content";
 var version = null;
 
-// locate file attributes
+// Parse file attributes
 for each (field in formdata.fields)
 {
-   if (field.name == "filedata" && field.isFile)
+   switch (String(field.name).toLowerCase())
    {
-      filename = field.filename;
-      content = field.content;
-   }
-   else if (field.name == "siteId")
-   {
-      siteId = field.value;
-   }
-   else if (field.name == "path")
-   {
-      // todo: Use this when the doclist is finished
-      //path = field.value;
-      path = "/Company Home" + field.value;
-   }
-   else if (field.name == "filename")
-   {
-      title = field.value;
-   }
-   else if (field.name == "description")
-   {
-      description = field.value;
-   }
-   else if (field.name == "contentType")
-   {
-      contentType = field.value;
-   }
-   else if (field.name == "version")
-   {
-      version = field.value;
+      case "filedata":
+         if (field.isFile)
+         {
+            filename = field.filename;
+            content = field.content;
+         }
+         break;
+      
+      case "siteid":
+         siteId = field.value;
+         break;
+         
+      case "componentid":
+         componentId = field.value;
+         break;
+      
+      case "path":
+         path = field.value;
+         if (path == "")
+         {
+            path = "/";
+         }
+         break;
+
+      case "filename":
+         title = field.value;
+         break;
+
+      case "description":
+         description = field.value;
+         break;
+
+      case "contenttype":
+         contentType = field.value;
+         break;
+
+      case "version":
+         version = field.value;
+         break;
    }
 }
 
-// ensure mandatory file attributes have been located
-if (siteId == undefined || path == undefined || filename == undefined || content == undefined)
+// Ensure mandatory file attributes have been located
+if (siteId === null || componentId === null || path === null || filename === null || content === null)
 {
    status.code = 400;
    status.message = "Uploaded file cannot be located in request";
@@ -58,44 +70,61 @@ if (siteId == undefined || path == undefined || filename == undefined || content
 }
 else
 {
-   var destination = roothome.childByNamePath(path);
-   if(destination !== undefined)
+   var site = siteService.getSite(siteId);
+   if (site === null)
    {
-      if(destination.isDocument)
+      status.code = 400;
+      status.message = "Site (" + siteId + ") not found.";
+      status.redirect = false;
+   }
+   else
+   {
+      var container = site.getContainer(componentId);
+      if (container === null)
       {
-         // Update content with correct version
-         model.upload = destination;
+         status.code = 400;
+         status.message = "Site container (" + containerId + ") not found.";
+         status.redirect = false;
       }
       else
       {
-         var tmp = roothome.childByNamePath(path + "/" + filename);
-         if(tmp)
+         var filepath = path + (path.substring(path.length() - 1) == "/" ? "" : "/") + filename;
+         var existsFile = container.childByNamePath(filepath);
+         if (existsFile !== null)
          {
-            // This shall result in a rename of the new file instead of an error probably
+            // TODO: Update existing file
             status.code = 400;
             status.message = "File " + filename + "already exists in folder " + path;
             status.redirect = false;
          }
          else
          {
-            // create new content with correct mimetype
-            upload = destination.createFile(filename) ;
-            upload.properties.contentType = contentType;
-            upload.properties.content.write(content);
-            upload.properties.content.mimetype = "UTF-8";
-            upload.properties.title = title;
-            upload.properties.description = description;
-            upload.save();
+            if (path.substring(0, 1) == "/")
+            {
+               path = path.substring(1);
+               filepath = filepath.substring(1);
+            }
+            var existsPath = container.childByNamePath(path);
+            if ((existsPath === null) && (path != ""))
+            {
+               status.code = 400;
+               status.message = "Cannot upload file since path '" + path + "' does not exist.";
+               status.redirect = false;
+            }
+            else
+            {
+               // Create new content with correct mimetype
+               upload = container.createFile(filepath) ;
+               upload.properties.contentType = contentType;
+               upload.properties.content.write(content);
+               upload.properties.content.mimetype = "UTF-8";
+               upload.properties.title = title;
+               upload.properties.description = description;
+               upload.save();
 
-            model.upload = upload;            
+               model.upload = upload;            
+            }
          }
       }
    }
-   else
-   {
-      status.code = 400;
-      status.message = "Cannot upload file since path '" + path + "' doesn't exist.";
-      status.redirect = false;
-   }
-
 }

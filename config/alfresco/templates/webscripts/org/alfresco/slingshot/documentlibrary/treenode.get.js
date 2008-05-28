@@ -24,8 +24,7 @@ function getTreenode(siteId, path)
          return jsonError("Site not found: " + siteId);
       }
    
-      // var parentNode = site.getComponentContainer("documentLibrary");
-      var parentNode = companyhome; // TODO: Remove hack
+      var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
          return jsonError("Document Library container not found in: " + siteId);

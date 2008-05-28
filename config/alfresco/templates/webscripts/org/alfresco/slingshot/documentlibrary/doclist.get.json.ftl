@@ -28,8 +28,7 @@
             "modifiedBy": "${d.properties.modifier}",
             "size": "${d.size}",
             "version": "${version}"
-         }
-         <#if d_has_next>,</#if>
+         }<#if d_has_next>,</#if>
       </#list>
       ]
 </#if>

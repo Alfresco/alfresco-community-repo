@@ -1,3 +1,7 @@
+/*
+JavaException: org.springframework.dao.DataIntegrityViolationException: could not update: [org.alfresco.repo.domain.hibernate.ChildAssocImpl#567]; nested exception is org.hibernate.exception.ConstraintViolationException: could not update: [org.alfresco.repo.domain.hibernate.ChildAssocImpl#567]
+*/
+
 /**
  * Document List Component: doclist
  *
@@ -24,8 +28,7 @@ function getDoclist(siteId, path, type)
          return jsonError("Site not found: " + siteId);
       }
    
-      // var parentNode = site.getComponentContainer("documentLibrary");
-      var parentNode = companyhome; // TODO: Remove hack
+      var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
          return jsonError("Document Library container not found in: " + siteId);

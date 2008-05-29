@@ -465,7 +465,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /* (non-Javadoc)
      * @see org.alfresco.repo.site.SiteService#getContainer(java.lang.String)
      */
-    public NodeRef getContainer(String shortName, String componentId)
+    public NodeRef getContainer(String shortName, String componentId, QName folderType)
     {
         if (componentId == null || componentId.length() ==0)
         {
@@ -489,7 +489,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         catch(FileNotFoundException e)
         {
         	// create component folder
-        	FileInfo fileInfo = fileFolderService.create(siteNodeRef, componentId, ContentModel.TYPE_FOLDER);
+        	FileInfo fileInfo = fileFolderService.create(siteNodeRef, componentId, folderType == null ? ContentModel.TYPE_FOLDER : folderType);
         	containerNodeRef = fileInfo.getNodeRef();
         }
         

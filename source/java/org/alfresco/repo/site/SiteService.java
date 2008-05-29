@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Site service fundamental API.
@@ -113,9 +114,10 @@ public interface SiteService
      *
      * @param shortName  short name of site
      * @param componentId  component id
-     * @return  noderef of folder container
+     * @param folderType  type of folder to create (if null, creates standard folder)
+     * @return  noderef of container
      */
-    NodeRef getContainer(String shortName, String componentId);
+    NodeRef getContainer(String shortName, String componentId, QName folderType);
 
     /**
      * Determines if a "container" folder for the specified component exists.

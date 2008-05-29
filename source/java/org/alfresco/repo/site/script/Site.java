@@ -34,6 +34,7 @@ import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -261,15 +262,31 @@ public class Site implements Serializable
     /**
      * Gets (or creates) the "container" folder for the specified component id
      * 
+     * NOTE: The container is of type cm:folder.
+     * 
      * @param componentId
      * @return node representing the "container" folder
      */
     public ScriptNode getContainer(String componentId)
     {
+    	return getContainer(componentId, null);
+    }
+
+    /**
+     * Gets (or creates) the "container" folder for the specified component id
+     * 
+     * @param componentId
+     * @param folderType  type of folder to create (if null, creates a standard folder)
+     * @return node representing the "container" folder (or null, if for some reason 
+     *         the container can not be created)
+     */
+    public ScriptNode getContainer(String componentId, String folderType)
+    {
     	ScriptNode container = null;
     	try
 		{
-        	NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
+    		QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
+        	NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId, folderQName);
         	container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
 		}
     	catch(AlfrescoRuntimeException e)
@@ -279,7 +296,7 @@ public class Site implements Serializable
     	}
     	return container;
     }
-    
+
     /**
      * Determine if the "container" folder for the specified component exists
      * 

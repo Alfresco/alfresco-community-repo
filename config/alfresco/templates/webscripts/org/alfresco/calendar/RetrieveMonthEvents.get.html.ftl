@@ -1,4 +1,4 @@
-<#assign days = DaysArray>
+<#assign days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]>
 
 <table id="tabMonthView" bordercolor="#FF00FF" bordercolordark="#FFFFFF" bordercolorlight="#99CCFF" border="1" cellspacing="0" cellpadding="2" width="100%">
 	<TR>

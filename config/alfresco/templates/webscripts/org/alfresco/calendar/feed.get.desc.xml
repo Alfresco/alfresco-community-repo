@@ -1,0 +1,6 @@
+<webscript>
+<shortname>Calendar Feed</shortname>
+<description>Calendar iCalendar feed</description>
+<url>/calendar/feed/{nodeId}</url>
+<authentication>guest</authentication>
+</webscript>

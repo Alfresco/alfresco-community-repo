@@ -122,7 +122,7 @@ else
                upload = destNode.createFile(filename) ;
                upload.properties.contentType = contentType;
                upload.properties.content.write(content);
-               upload.properties.content.mimetype = "UTF-8";
+               upload.properties.content.encoding = "UTF-8";
                upload.properties.title = title;
                upload.properties.description = description;
                upload.save();

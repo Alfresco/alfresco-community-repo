@@ -1,0 +1,1 @@
+<#include "docsummary.get.json.ftl">

@@ -42,8 +42,8 @@ for each (field in formdata.fields)
          {
             path = path.substr(1);
          }
-         // Ensure path ends with "/"
-         if (path.substring(path.length - 1) != "/")
+         // Ensure path ends with "/" if not the root folder
+         if ((path.length > 0) && (path.substring(path.length - 1) != "/"))
          {
             path = path + "/";
          }

@@ -25,9 +25,9 @@
 package org.alfresco.repo.security.person;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -47,71 +47,49 @@ import org.springframework.context.ApplicationContext;
 public class PersonServiceLoader
 {
     private static Log logger = LogFactory.getLog(PersonServiceLoader.class);
-    
+
     private final ApplicationContext ctx;
+
     private final int batchSize;
-    private final int batchCount;
-;
-    
+
+    private final int batchCount;;
+
     private PersonServiceLoader(ApplicationContext ctx, int batchSize, int batchCount)
     {
         this.ctx = ctx;
         this.batchSize = batchSize;
         this.batchCount = batchCount;
     }
-    
-    public void run(String user, String pwd) throws Exception
+
+    public void run(String user, String pwd, int threads) throws Exception
     {
-        final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
-        final PersonService personService = serviceRegistry.getPersonService();
-        final TransactionService transactionService = serviceRegistry.getTransactionService();
-        
-        authenticationService.authenticate(user, pwd.toCharArray());
-        
-        RetryingTransactionCallback<Integer> makeUsersCallback = new RetryingTransactionCallback<Integer>()
+
+        Thread runner = null;
+
+        for (int i = 0; i < threads; i++)
         {
-            public Integer execute() throws Throwable
-            {
-                for (int i = 0; i < batchSize; i++)
-                {
-                    String firstName = "" + System.currentTimeMillis();
-                    String lastName = String.format("%05d", i);
-                    String username = GUID.generate();
-                    String emailAddress = String.format("%s.%s@xyz.com", firstName, lastName);
-                    PropertyMap properties = new PropertyMap(7);
-                    properties.put(ContentModel.PROP_USERNAME, username);
-                    properties.put(ContentModel.PROP_FIRSTNAME, firstName);
-                    properties.put(ContentModel.PROP_LASTNAME, lastName);
-                    properties.put(ContentModel.PROP_EMAIL, emailAddress);
-                    personService.createPerson(properties);
-                }
-                return batchSize;
-            }
-        };
-        
-        for (int i = 0; i < batchCount; i ++)
-        {
-            long start = System.nanoTime();
-            transactionService.getRetryingTransactionHelper().doInTransaction(makeUsersCallback, false, true);
-            long end = System.nanoTime();
-            double deltaMs = (double) (end - start) / 1000000.0D;
-            double ave = deltaMs / (double) batchSize;
-            System.out.println("\n" +
-            		"Batch users created: \n" +
-            		"   Batch Number:    " + i + "\n" +
-            		"   Batch Size:      " + batchSize + "\n" +
-            		"   Batch Time (ms): " + Math.floor(deltaMs) + "\n" +
-            		"   Average (ms):    " + Math.floor(ave));
+            runner = new Nester("Loader-" + i, runner, ctx, batchSize, batchCount);
         }
+        if (runner != null)
+        {
+            runner.start();
+
+            try
+            {
+                runner.join();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
     }
-    
+
     public static void main(String[] args)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n")
-          .append("Usage\n")
-          .append("   PersonServiceLoader  --user=<username> --pwd=<password> --batch-count=<batch-count> -- batch-size=<batch-size> \n");
+        sb.append("\n").append("Usage\n").append("   PersonServiceLoader  --user=<username> --pwd=<password> --batch-count=<batch-count> --batch-size=<batch-size> --threads=<threads>\n");
         String usage = sb.toString();
         ArgumentHelper argHelper = new ArgumentHelper(usage, args);
         try
@@ -120,13 +98,14 @@ public class PersonServiceLoader
             String pwd = argHelper.getStringValue("pwd", true, true);
             int batchCount = argHelper.getIntegerValue("batch-count", true, 1, Integer.MAX_VALUE);
             int batchSize = argHelper.getIntegerValue("batch-size", true, 1, Integer.MAX_VALUE);
+            int threads = argHelper.getIntegerValue("threads", true, 1, Integer.MAX_VALUE);
 
             ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
             // Create the worker instance
             PersonServiceLoader loader = new PersonServiceLoader(ctx, batchSize, batchCount);
-            loader.run(user, pwd);
-            
+            loader.run(user, pwd, threads);
+
             // All done
             ApplicationContextHelper.closeApplicationContext();
             System.exit(0);
@@ -142,5 +121,100 @@ public class PersonServiceLoader
             logger.error("PersonServiceLoader (userCount, batchSize) failed.", e);
             System.exit(1);
         }
+    }
+
+    static class Nester extends Thread
+    {
+        Thread waiter;
+
+        int batchSize;
+        
+        int batchCount;
+
+        ApplicationContext ctx;
+
+        ServiceRegistry serviceRegistry;
+
+        PersonService personService;
+
+        TransactionService transactionService;
+
+        Nester(String name, Thread waiter, ApplicationContext ctx, int batchSize, int batchCount)
+        {
+            super(name);
+            this.setDaemon(true);
+            this.waiter = waiter;
+            this.ctx = ctx;
+            serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+            personService = serviceRegistry.getPersonService();
+            transactionService = serviceRegistry.getTransactionService();
+            this.batchSize = batchSize;
+            this.batchCount = batchCount;
+        }
+
+        public void run()
+        {
+            AuthenticationUtil.setSystemUserAsCurrentUser();
+            if (waiter != null)
+            {
+                waiter.start();
+            }
+            try
+            {
+                RetryingTransactionCallback<Integer> makeUsersCallback = new RetryingTransactionCallback<Integer>()
+                {
+                    public Integer execute() throws Throwable
+                    {
+                        for (int i = 0; i < batchSize; i++)
+                        {
+                            String firstName = "" + System.currentTimeMillis();
+                            String lastName = String.format("%05d", i);
+                            String username = GUID.generate();
+                            String emailAddress = String.format("%s.%s@xyz.com", firstName, lastName);
+                            PropertyMap properties = new PropertyMap(7);
+                            properties.put(ContentModel.PROP_USERNAME, username);
+                            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+                            properties.put(ContentModel.PROP_LASTNAME, lastName);
+                            properties.put(ContentModel.PROP_EMAIL, emailAddress);
+                            personService.createPerson(properties);
+                        }
+                        return batchSize;
+                    }
+                };
+
+                for (int i = 0; i < batchCount; i++)
+                {
+                    long start = System.nanoTime();
+                    transactionService.getRetryingTransactionHelper().doInTransaction(makeUsersCallback, false, true);
+                    long end = System.nanoTime();
+                    double deltaMs = (double) (end - start) / 1000000.0D;
+                    double ave = deltaMs / (double) batchSize;
+                    System.out.println("\n"
+                            + Thread.currentThread().getName() +"\n"
+                            + "Batch users created: \n" + "   Batch Number:    " + i + "\n" + "   Batch Size:      " + batchSize + "\n" + "   Batch Time (ms): "
+                            + Math.floor(deltaMs) + "\n" + "   Average (ms):    " + Math.floor(ave));
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+            if (waiter != null)
+            {
+                try
+                {
+                    waiter.join();
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+        }
+
     }
 }

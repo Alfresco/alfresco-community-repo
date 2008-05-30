@@ -37,9 +37,15 @@ for each (field in formdata.fields)
       
       case "path":
          path = field.value;
-         if (path == "")
+         // Remove any leading "/" from the path
+         if (path.substr(0, 1) == "/")
          {
-            path = "/";
+            path = path.substr(1);
+         }
+         // Ensure path ends with "/"
+         if (path.substring(path.length - 1) != "/")
+         {
+            path = path + "/";
          }
          break;
 
@@ -88,7 +94,7 @@ else
       }
       else
       {
-         var filepath = path + (path.substring(path.length() - 1) == "/" ? "" : "/") + filename;
+         var filepath = path + filename;
          var existsFile = container.childByNamePath(filepath);
          if (existsFile !== null)
          {
@@ -99,13 +105,12 @@ else
          }
          else
          {
-            if (path.substring(0, 1) == "/")
+            var destNode = container;
+            if (path != "")
             {
-               path = path.substring(1);
-               filepath = filepath.substring(1);
+               destNode = container.childByNamePath(path);
             }
-            var existsPath = container.childByNamePath(path);
-            if ((existsPath === null) && (path != ""))
+            if (destNode === null)
             {
                status.code = 400;
                status.message = "Cannot upload file since path '" + path + "' does not exist.";
@@ -114,7 +119,7 @@ else
             else
             {
                // Create new content with correct mimetype
-               upload = container.createFile(filepath) ;
+               upload = destNode.createFile(filename) ;
                upload.properties.contentType = contentType;
                upload.properties.content.write(content);
                upload.properties.content.mimetype = "UTF-8";

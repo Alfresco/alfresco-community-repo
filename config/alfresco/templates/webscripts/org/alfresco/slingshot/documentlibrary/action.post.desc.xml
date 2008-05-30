@@ -1,7 +1,7 @@
 <webscript>
   <shortname>action</shortname>
   <description>Document List Component - action data webscript</description>
-  <url>/slingshot/doclib/action/{action}?site={site}&amp;path={path?}&amp;file={file?}</url>
+  <url>/slingshot/doclib/action</url>
   <format default="json"></format>
   <authentication>user</authentication>
   <transaction>required</transaction>

@@ -6,19 +6,25 @@ function createEvent(siteId, params)
 {
   if (siteId === null)
   {
-    return "Site identifier is undefined";
+    return {
+      "error": "Site identifier is undefined"
+    };
   }
 
   var site = siteService.getSite(siteId);
   if (site === null)
   {
-    return "Could not find specified site";
+    return {
+      "error": "Could not find specified site"
+    };
   }
 
   var calendar = site.getContainer("calendar");
   if (calendar === null)
   {
-    return ""; /* TODO: return something more meaningful */
+    return {
+      "error": "Could not get container"
+    };
   }
 
   var timestamp = new Date().getTime();
@@ -26,7 +32,9 @@ function createEvent(siteId, params)
 
   if (event === null)
   {
-    return "Event creation failed";
+    return {
+      "error": "Could not create event"
+    };
   }
 
   event.properties["ia:whatEvent"] = params["what"];
@@ -42,7 +50,10 @@ function createEvent(siteId, params)
   event.properties["ia:toDate"] = to;
   event.save();
 
-  return "Event saved";
+  return {
+    "name": params["what"],
+    "from": from
+  };
 };
 
 

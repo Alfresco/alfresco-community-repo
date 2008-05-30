@@ -1,5 +1,5 @@
-
 var siteId = args["site"];
+
 model.events = getEvents(siteId);
 
 function getEvents(siteId)
@@ -16,9 +16,15 @@ function getEvents(siteId)
     return [];
   }
 
-  return calendar.children.sort(function(a,b) {
-	return a.properties["ia:fromDate"] - b.properties["ia:fromDate"];
-  });
+  var events = calendar.children;
+  if (events.length > 0)
+  {
+    events  = events.sort(function(a,b) {
+			    return a.properties["ia:fromDate"] - b.properties["ia:fromDate"];
+			  });
+  }
+
+  return events;
 };
 
 

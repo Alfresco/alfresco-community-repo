@@ -1,39 +1,49 @@
-logger.log("DEBUG: create event script called");
-logger.log("DEBUG: workspace://SpacesStore/" + args.id);
+var siteId = args["site"];
 
-var node = search.findNode("workspace://SpacesStore/" + args.id);
-logger.log("DEBUG: " + node);
-if (node !== null)
+model.result = createEvent(siteId, args);
+
+function createEvent(siteId, params)
 {
-   var eventsFolder = node.childByNamePath("CalEvents");
-   if (eventsFolder === null)
-   {
-      eventsFolder = node.createFolder("CalEvents");
-   }
+  if (siteId === null)
+  {
+    return "Site identifier is undefined";
+  }
 
-   var timestamp = new Date().getTime();
-   var event = eventsFolder.createNode(timestamp + ".ics", "ia:calendarEvent");
+  var site = siteService.getSite(siteId);
+  if (site === null)
+  {
+    return "Could not find specified site";
+  }
 
-   event.properties["ia:whatEvent"] = args.what;
-   event.properties["ia:whereEvent"] = args.where;
-   event.properties["ia:descriptionEvent"] = args.desc;
-   event.properties["ia:colorEvent"] = args.color;
+  var calendar = site.getContainer("calendar");
+  if (calendar === null)
+  {
+    return ""; /* TODO: return something more meaningful */
+  }
 
-   var fromDate = args.td + " " + args.tt;
-   var from = new Date(fromDate);
-   event.properties["ia:fromDate"] = from;
+  var timestamp = new Date().getTime();
+  var event = calendar.createNode(timestamp + ".ics", "ia:calendarEvent");
 
-   var toDate = args.td + " " + args.tt;
-   var to = new Date(toDate);
-   event.properties["ia:toDate"] = to;
-   event.save();
+  if (event === null)
+  {
+    return "Event creation failed";
+  }
 
-   var msg = "Event saved";
-}
-else
-{
-   var msg = "SPACE not found with Ref " + args.id;
-}
+  event.properties["ia:whatEvent"] = params["what"];
+  event.properties["ia:whereEvent"] = params["where"];
+  event.properties["ia:descriptionEvent"] = params["desc"];
 
-model.msg = msg;
+  var fromDate = params["from"] + " " + params["start"];
+  var from = new Date(fromDate);
+  event.properties["ia:fromDate"] = from;
+
+  var toDate = params["to"] + " " + params["end"];
+  var to = new Date(toDate);
+  event.properties["ia:toDate"] = to;
+  event.save();
+
+  return "Event saved";
+};
+
+
 

@@ -1,2 +1,2 @@
-${msg}
-Test
+${result}
+

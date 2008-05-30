@@ -165,7 +165,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             {
                 @SuppressWarnings("unused")
                 CounterSet update;
-                update = fixOldDmAcls(nodeService.getRootNode(store));
+                update = fixOldDmAcls(nodeService.getRootNode(store), null, true);
                 result.add(update);
             }
         }
@@ -180,12 +180,12 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         return toReturn;
     }
 
-    private CounterSet fixOldDmAcls(NodeRef nodeRef)
+    private CounterSet fixOldDmAcls(NodeRef nodeRef, Long inherited, boolean isRoot)
     {
         hibernateSessionHelper.mark();
         try
         {
-            return fixOldDmAclsImpl(nodeRef);
+            return fixOldDmAclsImpl(nodeRef, inherited, isRoot);
         }
         finally
         {
@@ -193,31 +193,23 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    private CounterSet fixOldDmAclsImpl(NodeRef nodeRef)
+    private CounterSet fixOldDmAclsImpl(NodeRef nodeRef, Long inherited, boolean isRoot)
     {
         CounterSet result = new CounterSet();
         // Do the children first
 
-        for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
-        {
-            if (child.isPrimary())
-            {
-                CounterSet update = fixOldDmAcls(child.getChildRef());
-                result.add(update);
-            }
-        }
-
         DbAccessControlList existingAcl = getAccessControlList(nodeRef);
+        Long toInherit = inherited;
 
         if (existingAcl != null)
         {
             if (existingAcl.getAclType() == ACLType.OLD)
             {
                 result.increment(ACLType.DEFINING);
-                // 
                 SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
-                // Accept default versioning
+                properties.setInherits(existingAcl.getInherits());
                 Long id = aclDaoComponent.createAccessControlList(properties);
+
                 DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);
 
                 AccessControlList existing = aclDaoComponent.getAccessControlList(existingAcl.getId());
@@ -228,18 +220,53 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                         aclDaoComponent.setAccessControlEntry(id, entry);
                     }
                 }
+                if (existingAcl.getInherits())
+                {
+                    if (toInherit != null)
+                    {
+                        aclDaoComponent.enableInheritance(id, toInherit);
+                    }
+                }
+
+                toInherit = aclDaoComponent.getInheritedAccessControlList(id);
+
                 setAccessControlList(nodeRef, newAcl);
-
-                // Cascade to children - changes should all be 1-1 so we do not have to post fix
-
-                List<AclChange> changes = new ArrayList<AclChange>();
-
-                setFixedAcls(nodeRef, aclDaoComponent.getInheritedAccessControlList(id), changes, false);
-
             }
             else
             {
-                // Already fixed up :-)
+                // Already fixed up
+                return result;
+            }
+        }
+        else
+        {
+            // Set default ACL on roots with no settings
+            if (isRoot)
+            {
+                result.increment(ACLType.DEFINING);
+                SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
+                Long id = aclDaoComponent.createAccessControlList(properties);
+
+                DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);
+
+                toInherit = aclDaoComponent.getInheritedAccessControlList(id);
+
+                setAccessControlList(nodeRef, newAcl);
+            }
+            else
+            {
+                // Unset - simple inherit
+                DbAccessControlList inheritedAcl = aclDaoComponent.getDbAccessControlList(toInherit);
+                setAccessControlList(nodeRef, inheritedAcl);
+            }
+        }
+
+        for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
+        {
+            if (child.isPrimary())
+            {
+                CounterSet update = fixOldDmAcls(child.getChildRef(), toInherit, false);
+                result.add(update);
             }
         }
 
@@ -320,8 +347,11 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                     }
                     else if (acl.getAclType() == ACLType.DEFINING)
                     {
-                        @SuppressWarnings("unused")
-                        List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
+                        if (acl.getInherits())
+                        {
+                            @SuppressWarnings("unused")
+                            List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
+                        }
                     }
                     else
                     {

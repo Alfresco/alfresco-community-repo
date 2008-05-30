@@ -38,9 +38,15 @@ function getDocs(siteId, filter)
       var fromQuery = date.getFullYear() + "\\-" + (date.getMonth()+1) + "\\-" + date.getDate();
       
       search.setStoreUrl("workspace://SiteStore");
-      var docs = search.luceneSearch("+PATH:\"" + path + "\"" +
-         " +@cm\\:modified:[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]",
-         "cm:modified", false);
+      var query = "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" +PATH:\"" + 
+                  path + "\" +@cm\\:modified:[" + fromQuery + "T00\\:00\\:00 TO " + 
+                  toQuery + "T23\\:59\\:59]";
+      
+      logger.log("docsummary query = " + query);
+      
+      var docs = search.luceneSearch(query, "cm:modified", false);
+      
+      logger.log("number of results = " + docs.length);
       
       var items = null;
       

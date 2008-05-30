@@ -15,7 +15,8 @@
             "createdOn": "${d.properties.created?datetime}",
             "createdBy": "${d.properties.creator}",
             "modifiedOn": "${d.properties.modified?datetime}",
-            "modifiedBy": "${d.properties.modifier}"
+            "modifiedBy": "${d.properties.modifier}",
+            "contentUrl": "/api/node/content/${d.storeType}/${d.storeId}/${d.id}"
          }<#if d_has_next>,</#if>
       </#list>
       ]

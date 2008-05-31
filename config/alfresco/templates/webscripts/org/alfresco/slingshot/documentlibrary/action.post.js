@@ -109,6 +109,10 @@ function runAction(rootNode)
          case "createfolder":
             results.push(createFolder(rootNode));
             break;
+
+         case "delete":
+            results.push(deleteAsset(rootNode));
+            break;
          
          default:
       		status.setCode(status.STATUS_BAD_REQUEST, "'" + action + "' is not a recognised action.");
@@ -134,11 +138,25 @@ function runAction(rootNode)
  */
 function createFolder(rootNode)
 {
-   var path = getInput("path");
-   var parentNode = rootNode;
-
    // "path" input
-   if ((path !== null) && (path != ""))
+   var path = getInput("path", true);
+   if (path == null)
+   {
+      return null;
+   }
+   // Remove any leading "/" from the path
+   if (path.substr(0, 1) == "/")
+   {
+      path = path.substr(1);
+   }
+   // Ensure path ends with "/" if not the root folder
+   if ((path.length > 0) && (path.substring(path.length - 1) != "/"))
+   {
+      path = path + "/";
+   }
+
+   var parentNode = rootNode;
+   if (path.length > 0)
    {
       parentNode = rootNode.childByNamePath(path);
    }
@@ -179,6 +197,69 @@ function createFolder(rootNode)
    {
       id: name,
       action: "createFolder",
+      success: true
+   });
+}
+
+/**
+ * Delete asset action
+ * Expects 'path' argument. If 'file' is also supplied, 'file' is deleted
+ * otherwise the folder at 'path' is deleted.
+ * @method deleteAsset
+ * @param rootNode {NodeRef} root node within which to perform the action
+ * @return {object} object representation of action result
+ */
+function deleteAsset(rootNode)
+{
+   // "path" input
+   var path = getInput("path", true);
+   if (path == null)
+   {
+      return null;
+   }
+   // Remove any leading "/" from the path
+   if (path.substr(0, 1) == "/")
+   {
+      path = path.substr(1);
+   }
+
+   // "file" is optional
+   var file = getInput("file");
+   if (file !== null)
+   {
+      // Ensure path ends with "/" if not the root folder
+      if ((path.length > 0) && (path.substring(path.length - 1) != "/"))
+      {
+         path += "/";
+      }
+      path += file;
+   }
+
+   var parentNode = null;
+   if (path.length > 0)
+   {
+      parentNode = rootNode.childByNamePath(path);
+   }
+
+   // Must have a parentNode by this point
+   if (parentNode === null)
+   {
+      status.setCode(status.STATUS_NOT_FOUND, "'" + path + "' not found in '" + json.get("site") + "'. (No write permission?)");
+      return null;
+   }
+   
+   if (!parentNode.remove())
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "'" + path + "' could not be deleted. (No write permission?)");
+      return null;
+   }
+   
+
+   // Construct the result object
+   return (
+   {
+      id: path,
+      action: "delete",
       success: true
    });
 }

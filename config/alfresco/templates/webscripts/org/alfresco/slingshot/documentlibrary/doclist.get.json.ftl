@@ -14,8 +14,10 @@
          <#if d.hasAspect("cm:workingcopy")><#assign status = status + ["workingcopy"]></#if>
          <#if d.hasAspect("cm:versionable")><#assign version = d.versionHistory?sort_by("versionLabel")?reverse[0].versionLabel></#if>
          {
+            "index": ${d_index},
             "nodeRef": "${d.nodeRef}",
             "type": "<#if d.isContainer>folder<#else>document</#if>",
+            "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
             "name": "${d.name}",
             "status": "<#list status as s>${s}<#if s_has_next>,</#if></#list>",
@@ -27,7 +29,8 @@
             "modifiedOn": "${d.properties.modified?datetime}",
             "modifiedBy": "${d.properties.modifier}",
             "size": "${d.size}",
-            "version": "${version}"
+            "version": "${version}",
+            "contentUrl": "/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}"
          }<#if d_has_next>,</#if>
       </#list>
       ]

@@ -13,8 +13,8 @@
          </#list>
          {
             "nodeRef": "${t.nodeRef}",
-            "name": "${t.name}",
-            "description": "${t.properties.description!""}",
+            "name": "${t.name?html}",
+            "description": "${(t.properties.description!"")?html}",
             "hasChildren": ${hasChildren?string}
          }
          <#if t_has_next>,</#if>

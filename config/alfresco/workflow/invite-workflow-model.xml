@@ -10,13 +10,9 @@
 
    <types>
       <!--  Custom Tasks -->
-
-      <type name="wf:startInviteTask">
-         <parent>bpm:startTask</parent>
-      </type>
-
+      
       <type name="wf:inviteToSiteTask">
-         <parent>bpm:workflowTask</parent>
+         <parent>bpm:startTask</parent>
       </type>
 
       <type name="wf:acceptInviteTask">

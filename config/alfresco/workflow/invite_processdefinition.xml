@@ -1,59 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:invite">
+
+   <swimlane name="inviter"/>
+   
+   <swimlane name="invitee"/>
+
+   <start-state name="start">
+      <task name="wf:inviteToSiteTask" swimlane="inviter" />
+      <transition name="" to="invitePending">
+         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+            <script>
+               /* TODO glen.johnson@alfresco.com generate username and password
+                * and create person with inactive account
+                */
+               var username = "jackblac12345";
+               var password = "password";
+               var person = people.createPerson("jackblac12345", "password");
     
-    <swimlane name="initiator" />
-        
-    <start-state name="start">
-        <task name="wf:startInviteTask" swimlane="initiator" />
-        <transition name="" to="inviteToSite"/>
-    </start-state>
-    
-    <task-node name="inviteToSite">
-        <task name="wf:inviteToSiteTask" swimlane="initiator" />
-        <transition name="" to="invitePending">
-            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                <script>
-                    var mail = actions.create("mail");
-                    mail.parameters.to = invitee.properties["cm:email"];
-                    <!-- TODO glen.johnson@alfresco.com - need to include Site name on subject line"
-                    need to include a variable to store this -->
-                    mail.parameters.subject = "Invitation to Alfresco Site";
-                    mail.parameters.from = bpm_assignee.properties["cm:email"];
-                    mail.parameters.text = "Hello,\n"
-                        + "You have been invited to join the some_site_name Site.\n"
-                        + "Your role in the site will be Collaborator.\n\n"
-                        + "Please click here http://localhost:8080/alfresco/service/api/inviteToSite?response=accept to accept the invitation\n"
-                        + "An account has been created for you with user" + invitee.properties["cm:name"] + "\n"
-                        + "An initial password has been generated for you" + some_generated_password"
-                        + ", please change it to a password of your choice once you have logged into the Site\n\n"   
-                        + "Please click here http://localhost:8080/alfresco/service/api/inviteToSite?response=reject to reject the invitation\n";
-                    mail.execute();
-                </script>
-            </action>
-        </transition>
-    </task-node>
-    
-    <fork name="invitePending">
-        <transition name="accept" to="inviteAccepted"/>
-        <transition name="reject" to="inviteRejected"/>
-        <transition name="cancel" to="acceptedOrRejectedOrCancelled"/>
-    </fork>
-    
-    <task-node name="inviteAccepted">
-        <task name="wf:acceptInviteTask" swimlane="initiator" />
-        <transition name="" to="acceptedOrRejectedOrCancelled"/>
-    </task-node>
-    
-    <task-node name="inviteRejected">
-        <task name="wf:rejectInviteTask" swimlane="initiator" />
-        <transition name="" to="acceptedOrRejectedOrCancelled"/>
-    </task-node>
-    
-    <join name="acceptedOrRejectedOrCancelled">
-        <transition name="" to="end"/>
-    </join>
-    
-    <end-state name="end"/>
-    
+               /** TODO glen.johnson@alfresco.com - need to include Site name on subject line"
+                *  need to pass this in from Invite Web Script as property into workflow
+                */
+               var sitename = null; 
+                
+               var mail = actions.create("mail");
+               mail.parameters.to = invitee.properties["cm:email"];
+               mail.parameters.subject = "Invitation to Alfresco Site";
+               mail.parameters.from = initiator.properties["cm:email"];
+               
+               /** TODO glen.johnson@alfresco.com - need to store id of current workflow instance
+                *  into wfid action script variable
+                */
+               var wfid = null;
+               
+               mail.parameters.text = "Hello,\n"
+                  + "You have been invited to join the " + sitename + " Site.\n"
+                  + "Your role in the site will be Collaborator.\n\n"
+                  + "Please click here http://{host}:{port}/alfresco/service/api/inviteresponse/accept?wfid={wfid}"
+                  + to accept the invitation\n"
+                  + "An account has been created for you with user"
+                  + username  + "\n"
+                  + "An initial password has been generated for you"
+                  + password
+                  + ", please change it to a password of your choice once you have logged into the Site\n\n"
+                  + "Please click here "
+                  + "http://{host}:{port}/alfresco/service/api/inviteresponse/reject?wfid={wfid}"
+                  + "to reject the invitation\n";
+                  
+               mail.execute();
+            </script>
+         </action>
+      </transition>
+   </start-state>
+
+   <fork name="invitePending">
+      <transition name="accept" to="inviteAccepted" />
+      <transition name="reject" to="inviteRejected" />
+      <transition name="cancel" to="acceptedOrRejectedOrCancelled" />
+   </fork>
+
+   <task-node name="inviteAccepted">
+      <task name="wf:acceptInviteTask" swimlane="invitee" />
+      <transition name="" to="acceptedOrRejectedOrCancelled" />
+   </task-node>
+
+   <task-node name="inviteRejected">
+      <task name="wf:rejectInviteTask" swimlane="invitee" />
+      <transition name="" to="acceptedOrRejectedOrCancelled" />
+   </task-node>
+
+   <join name="acceptedOrRejectedOrCancelled">
+      <transition name="" to="end" />
+   </join>
+
+   <end-state name="end" />
+
 </process-definition>

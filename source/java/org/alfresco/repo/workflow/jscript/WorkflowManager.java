@@ -74,6 +74,19 @@ public class WorkflowManager extends BaseScopableProcessorExtension
 			this.services.getWorkflowService().getDefinitionById(id);
 		return new JscriptWorkflowDefinition(cmrWorkflowDefinition, this.services, getScope());
 	}
+	
+	/**
+	 * Get deployed workflow definition by Name
+	 * 
+	 * @param name the workflow definition name
+	 * @return the workflow definition matching the given name
+	 */
+	public JscriptWorkflowDefinition getDefinitionByName(String name)
+	{
+        WorkflowDefinition cmrWorkflowDefinition =
+            this.services.getWorkflowService().getDefinitionByName(name);
+        return new JscriptWorkflowDefinition(cmrWorkflowDefinition, this.services, getScope());
+	}
 		
 	/**
 	 * Get tasks assigned to the current user. Note that this will only return in-progress 

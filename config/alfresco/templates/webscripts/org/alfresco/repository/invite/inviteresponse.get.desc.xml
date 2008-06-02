@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Invite Response</shortname>
+   <description>Processes invite response from Invitee</description>  
+   <url>/api/inviteresponse/{response}</url>
+   <format default="html">extension</format>
+   <authentication>guest</authentication>
+   <transaction>required</transaction>
+</webscript>

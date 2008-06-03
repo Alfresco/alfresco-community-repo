@@ -101,17 +101,21 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     
     public void testCreateThumbnail() throws Exception
     {
-        String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails";
-        System.out.println(url);
-        
-        JSONObject tn = new JSONObject();
-        tn.put("thumbnailName", "webpreview");
-        System.out.println(tn.toString());
-        
-        MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
-        //JSONObject result = new JSONObject(response.getContentAsString());
-        
-        System.out.println(response.getContentAsString());
+        // Check for pdfToSWF transformation before doing test
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
+        {
+            String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails";
+            System.out.println(url);
+            
+            JSONObject tn = new JSONObject();
+            tn.put("thumbnailName", "webpreview");
+            System.out.println(tn.toString());
+            
+            MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+            //JSONObject result = new JSONObject(response.getContentAsString());
+            
+            System.out.println(response.getContentAsString());
+        }
     }
     
     

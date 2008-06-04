@@ -1,3 +1,4 @@
+<#macro resultsJSON results>
 {
    "results":
    [
@@ -10,3 +11,4 @@
    </#list>
    ]
 }
+</#macro>

@@ -1924,6 +1924,12 @@ public class ScriptNode implements Serializable, Scopeable
         return new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
     }
 
+    /**
+     * Get the given thumbnail for the content property
+     * 
+     * @param thumbnailName     the thumbnail name
+     * @return ScriptThumbnail  the thumbnail
+     */
     public ScriptThumbnail getThumbnail(String thumbnailName)
     {
         ScriptThumbnail result = null;

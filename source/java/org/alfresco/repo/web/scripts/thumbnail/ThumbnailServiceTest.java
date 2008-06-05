@@ -105,17 +105,27 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
         {
             String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails";
-            System.out.println(url);
             
             JSONObject tn = new JSONObject();
             tn.put("thumbnailName", "webpreview");
-            System.out.println(tn.toString());
             
             MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
-            //JSONObject result = new JSONObject(response.getContentAsString());
             
             System.out.println(response.getContentAsString());
         }
+        
+        // Do a image transformation (medium)
+        String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails";
+        JSONObject tn = new JSONObject();
+        tn.put("thumbnailName", "medium");
+        MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+        System.out.println(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
+        String thumbnailUrl = result.getString("url").substring(17);
+        
+        System.out.println(thumbnailUrl);
+        response = getRequest(thumbnailUrl, 200);
+        
     }
     
     

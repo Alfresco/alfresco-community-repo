@@ -33,8 +33,7 @@ function main()
    // Prep the model
    model.node = node;
    model.thumbnailName = thumbnailName;
-   model.thumbnail = thumbnail;  
-  
+   model.thumbnail = thumbnail;    
 }
 
 main();

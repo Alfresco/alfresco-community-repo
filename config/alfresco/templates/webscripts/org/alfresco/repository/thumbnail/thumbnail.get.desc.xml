@@ -1,9 +1,9 @@
-<webscript>
+<webscript kind="org.alfresco.repository.content.stream">
   <shortname>Thumbnails</shortname>
-  <description>Create a new thumbnail for a content resource</description>
-  <url>/api/node/{store_type}/{store_id}/{id}/content{property?}/thumbnails</url>  
-  <url>/api/path/{store_type}/{store_id}/{id}/content{property?}/thumbnails</url>
-  <format default="json"/>
+  <description>Get a named thumbnail for a content resource</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>  
+  <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>
+  <format default="">argument</format>
   <authentication>guest</authentication>
   <transaction>required</transaction>
 </webscript>

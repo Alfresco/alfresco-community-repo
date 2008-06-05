@@ -131,11 +131,12 @@ public abstract class BaseWebScriptTest extends TestCase
         MockHttpServletResponse response = BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);
         if (expectedStatus > 0 && expectedStatus != response.getStatus())
         {
-            if (response.getStatus() == 500)
-            {
+            //if (response.getStatus() == 500)
+            //{
                 System.out.println(response.getContentAsString());
-            }
-            fail("Expected status code " + expectedStatus + " , " + response.getStatus() + " was returned.");
+            //}
+                        
+            fail("Expected status code " + expectedStatus + " , " + response.getStatus() + " was returned");
         }
         return response;
     }

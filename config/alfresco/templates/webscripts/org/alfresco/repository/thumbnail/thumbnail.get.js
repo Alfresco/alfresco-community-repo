@@ -13,17 +13,25 @@ function main()
    }
    
    // Get the thumbnail name from the JSON content 
-   var thumbnailName = pathSegments[8];
+   var thumbnailName = url.templateArgs.thumbnailname; //pathSegments[pathSegments.length - 1];
    
    // 404 if no thumbnail name found
    if (thumbnailName == null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "Thumbnail name was not provided");
+      return;
    }  
    
-	// Get the thumbnail ...
-	 
-  
+   // Get the thumbnail
+   var thumbnail = node.getThumbnail(thumbnailName);
+   if (thumbnail == null)
+   {
+      // 404 since no thumbnail was found
+      status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
+   }
+   
+   // Place the details of the thumbnail into the model, this will be used to stream the content to the client
+   model.contentNode = thumbnail; 
 }
 
 main();

@@ -1,6 +1,7 @@
 <webscript>
   <shortname>folder</shortname>
   <description>Document List Action - Create folder</description>
+  <url>/slingshot/doclib/action/folder/{siteid}/{componentid}</url>
   <url>/slingshot/doclib/action/folder/{siteid}/{componentid}/{filepath}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>

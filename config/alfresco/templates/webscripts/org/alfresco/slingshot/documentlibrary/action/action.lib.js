@@ -51,6 +51,7 @@ function main()
       }
       else if (typeof results.status == "object")
       {
+         status.redirect = true;
          for (var s in results.status)
          {
             status[s] = results.status[s];
@@ -78,9 +79,9 @@ function getInputParams()
    try
    {
       // First try to get the parameters from the URI
-      var siteId = "" + url.templateArgs.siteid;
-      var componentId = "" + url.templateArgs.componentid;
-      var filePath = "" + url.templateArgs.filepath;
+      var siteId = url.templateArgs.siteid;
+      var componentId = url.templateArgs.componentid;
+      var filePath = url.templateArgs.filepath;
 
       // Was a JSON parameter list supplied?
       // TODO: Also handle multiple files
@@ -109,6 +110,12 @@ function getInputParams()
    	if ((componentId === null) || (componentId.length === 0))
    	{
    		return "'componentId' parameter is missing.";
+   	}
+   	
+   	// filePath might be null for the root folder
+   	if (filePath === null)
+   	{
+   	   filePath = "";
    	}
 
       // Populate the return object

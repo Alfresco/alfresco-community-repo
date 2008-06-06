@@ -33,8 +33,8 @@
         </property>
     </bean>
 
-    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.rhinodebugger to DEBUG -->
-    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.jscript.AlfrescoRhinoScriptDebugger" init-method="start"/>
+    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
+    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
     
     <!-- base config implementation that script extension beans extend from - for auto registration
          as a global script with the ScriptService -->

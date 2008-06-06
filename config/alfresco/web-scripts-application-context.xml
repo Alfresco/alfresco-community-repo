@@ -141,10 +141,10 @@
    <!--            -->
 
    <!--  Javascript APIs -->
-   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.repo.web.scripts.bean.JavascriptDebugger" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.get" class="org.alfresco.web.scripts.bean.JavascriptDebugger" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
-   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.repo.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
+   <bean id="webscript.org.alfresco.jsdebugger.post" class="org.alfresco.web.scripts.bean.JavascriptDebuggerPost" parent="webscript">
       <property name="debugger" ref="rhinoScriptDebugger" />
    </bean>
 

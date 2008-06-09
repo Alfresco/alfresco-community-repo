@@ -40,11 +40,14 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDetails;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -1905,23 +1908,57 @@ public class ScriptNode implements Serializable, Scopeable
      */
     public ScriptThumbnail createThumbnail(String thumbnailName)
     {
+        return createThumbnail(thumbnailName, false);
+    }
+    
+    /**
+     * Creates a thumbnail for the content property of the node.
+     * 
+     * The thumbnail name correspionds to pre-set thumbnail details stored in the 
+     * repository.
+     * 
+     * If the thumbnail is created asynchronously then the result will be null and creation
+     * of the thumbnail will occure at some point in the background.
+     * 
+     * @param  thumbnailName    the name of the thumbnail
+     * @param  async            indicates whether the thumbnail is create asynchronously or not
+     * @return ScriptThumbnail  the newly create thumbnail node or null if async creation occures
+     */
+    public ScriptThumbnail createThumbnail(String thumbnailName, boolean async)
+    {
+        ScriptThumbnail result = null;
+        
         // Use the thumbnail registy to get the details of the thumbail
         ThumbnailRegistry registry = this.services.getThumbnailService().getThumbnailRegistry();
         ThumbnailDetails details = registry.getThumbnailDetails(thumbnailName);
         if (details == null)
         {
             // Throw exception 
+            throw new ScriptException("The thumbnail name '" + thumbnailName + "' is not registered");
         }
         
-        NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
-                this.nodeRef, 
-                ContentModel.PROP_CONTENT, 
-                details.getMimetype(), 
-                details.getTransformationOptions(), 
-                details.getName());
+        if (async == false)
+        {
+            // Create the thumbnail
+            NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
+                    this.nodeRef, 
+                    ContentModel.PROP_CONTENT, 
+                    details.getMimetype(), 
+                    details.getTransformationOptions(), 
+                    details.getName());
+            
+            // Create the thumbnail script object
+            result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+        }
+        else
+        {
+            // Queue async creation of thumbnail
+            Action action = this.services.getActionService().createAction(CreateThumbnailActionExecuter.NAME);
+            action.setParameterValue(CreateThumbnailActionExecuter.PARAM_THUMBANIL_NAME, thumbnailName);
+            this.services.getActionService().executeAction(action, this.nodeRef, false, true);
+        }
         
-        // Return thumbnail
-        return new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+        return result;
     }
 
     /**
@@ -1944,6 +1981,10 @@ public class ScriptNode implements Serializable, Scopeable
         return result;
     }
     
+    /**
+     * 
+     * @return
+     */
     public ScriptableHashMap<String, ScriptThumbnail> getThumbnails()
     {
         return null;

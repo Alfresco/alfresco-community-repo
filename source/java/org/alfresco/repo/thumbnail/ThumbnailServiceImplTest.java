@@ -36,10 +36,13 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -56,6 +59,7 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest 
 {
     private ThumbnailService thumbnailService;    
+    private ScriptService scriptService;
     private MimetypeMap mimetypeMap;    
     private NodeRef folder;
     
@@ -69,6 +73,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.thumbnailService = (ThumbnailService)this.applicationContext.getBean("ThumbnailService");
         this.mimetypeMap = (MimetypeMap)this.applicationContext.getBean("mimetypeService");
+        this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         
         // Create a folder and some content
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -339,6 +344,21 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         writer.putContent(origFile);
         
         return node;
+    }
+    
+    // == Test the JavaScript API ==
+    
+    public void testJSAPI() throws Exception
+    {
+        NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+        NodeRef gifOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_GIF);
+        
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("jpgOrig", jpgOrig);
+        model.put("gifOrig", gifOrig);
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/thumbnail/script/test_thumbnailAPI.js");
+        this.scriptService.executeScript(location, model);
     }
 
 }

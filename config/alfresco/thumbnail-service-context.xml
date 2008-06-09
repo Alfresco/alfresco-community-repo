@@ -80,6 +80,19 @@
     		
     		</list>
     	</property>
-    </bean>     
+    </bean>    
+    
+    <!-- Create Thumbnail Action -->
+    <bean id="create-thumbnail" class="org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="thumbnailService">
+            <ref bean="ThumbnailService" />
+        </property>
+    </bean> 
 
 </beans>

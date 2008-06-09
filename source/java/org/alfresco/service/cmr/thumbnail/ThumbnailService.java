@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
@@ -39,6 +40,12 @@ import org.alfresco.service.namespace.QName;
  */
 public interface ThumbnailService
 {
+    /**
+     * Gets the thumbnail registry
+     * 
+     * @return  {@link ThumbnailRegistry} thumbnail registry
+     */
+    @NotAuditable
     ThumbnailRegistry getThumbnailRegistry();
     
     /**
@@ -68,6 +75,21 @@ public interface ThumbnailService
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name"})
     NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name);
     
+    /**
+     * @see ThumbnailService#createThumbnail(NodeRef, QName, String, TransformationOptions, String)
+     * 
+     * If parent association details are specified then the thumbnail is created as a child of the specified parent and linked
+     * via a non-primary association to the origional content node.
+     * 
+     * @param node                      the source content node
+     * @param contentProperty           the content property
+     * @param mimetype                  the thumbnail mimetype
+     * @param transformationOptions     the thumbnail transformation options
+     * @param name                      the name of the thumbnail (optional, pass null for unnamed thumbnail)
+     * @param assocDetails              the thumbnail parent association details
+     * @return NodeRef                  node reference to the newly created thumbnail
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"node", "contentProperty", "mimetype", "transformationOptions", "name", "assocDetails"})
     NodeRef createThumbnail(NodeRef node, QName contentProperty, String mimetype, TransformationOptions transformationOptions, String name, ThumbnailParentAssociationDetails assocDetails);
     
     /**

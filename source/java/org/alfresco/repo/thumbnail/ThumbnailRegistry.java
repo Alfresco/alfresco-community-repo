@@ -77,29 +77,4 @@ public class ThumbnailRegistry
     {
         return this.thumbnailDetails.get(thumbnailName);
     }
-    
-//    /**
-//     * 
-//     * @param node
-//     * @param contentProperty
-//     * @param thumbnailName
-//     * @return
-//     */
-//    public NodeRef createThumbnail(NodeRef node, QName contentProperty, String thumbnailName)
-//    {
-//        // Check to see if we have details of the thumbnail in our list
-//        ThumbnailDetails details = getThumbnailDetails(thumbnailName);
-//        if (details == null)
-//        {
-//            throw new ThumbnailException("The thumbnail name '" + thumbnailName + "' is not recognised");
-//        }
-//        
-//        // Create the thumbnail
-//        return this.thumbnailService.createThumbnail(
-//                node, 
-//                contentProperty, 
-//                details.getMimetype(), 
-//                details.getTransformationOptions(), 
-//                thumbnailName);
-//    }
 }

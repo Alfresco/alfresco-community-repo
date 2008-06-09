@@ -27,13 +27,29 @@ function main()
    
    // TODO double check that the thumbnail name is valid
    
-   // Create the thumbnail
-   var thumbnail = node.createThumbnail(thumbnailName);
+   // Get the flag indicating whether to create the thumbnail asynchronously or not
+   var async = false;
+   var asyncString = args.as;
+   if (asyncString != null)
+   {
+      async = utils.toBoolean(asyncString);
+   }
    
-   // Prep the model
-   model.node = node;
-   model.thumbnailName = thumbnailName;
-   model.thumbnail = thumbnail;    
+   if (async == false)
+   {
+	   // Create the thumbnail
+	   var thumbnail = node.createThumbnail(thumbnailName);
+	   
+	   // Prep the model
+	   model.node = node;
+	   model.thumbnailName = thumbnailName;
+	   model.thumbnail = thumbnail;
+   }
+   else
+   {
+	   // Create the the thumbnail asyncronously
+	   node.createThumbnail(thumbnailName, true);
+   }    
 }
 
 main();

@@ -161,30 +161,6 @@ public class StreamContent extends AbstractWebScript
                 mergeScriptModelIntoTemplateModel(returnModel, model);
             }
             
-            // Get the content parameters from the model
-            NodeRef nodeRef = (NodeRef)model.get("contentNode");
-            if (nodeRef == null)
-            {
-                throw new WebScriptException("The content node was not specified so the content cannot be streamed to the client");
-            }
-            QName propertyQName = null;
-            String contentProperty = (String)model.get("contentProperty");
-            if (contentProperty == null)
-            {
-                // default to the standard content property
-                propertyQName = ContentModel.PROP_CONTENT;
-            }
-            else
-            {
-                propertyQName = QName.createQName(contentProperty);
-            }
-            Boolean attachBoolean = (Boolean)model.get("attach");
-            boolean attach = false;
-            if (attachBoolean != null)
-            {
-                attach = attachBoolean.booleanValue();
-            }
-            
             // is a redirect to a status specific template required?
             if (status.getRedirect())
             {
@@ -193,7 +169,31 @@ public class StreamContent extends AbstractWebScript
                 sendStatus(req, res, status, cache, format, templateModel);
             }
             else
-            {
+            {            
+                // Get the content parameters from the model
+                NodeRef nodeRef = (NodeRef)model.get("contentNode");
+                if (nodeRef == null)
+                {
+                    throw new WebScriptException("The content node was not specified so the content cannot be streamed to the client");
+                }
+                QName propertyQName = null;
+                String contentProperty = (String)model.get("contentProperty");
+                if (contentProperty == null)
+                {
+                    // default to the standard content property
+                    propertyQName = ContentModel.PROP_CONTENT;
+                }
+                else
+                {
+                    propertyQName = QName.createQName(contentProperty);
+                }
+                Boolean attachBoolean = (Boolean)model.get("attach");
+                boolean attach = false;
+                if (attachBoolean != null)
+                {
+                    attach = attachBoolean.booleanValue();
+                }
+            
                 // Stream the content
                 streamContent(req, res, nodeRef, propertyQName, attach);
             }

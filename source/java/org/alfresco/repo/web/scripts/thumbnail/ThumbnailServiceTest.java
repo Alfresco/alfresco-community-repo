@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
+import org.apache.tools.ant.taskdefs.Sleep;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -128,6 +129,55 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         
     }
     
+    public void testCreateAsyncThumbnail() throws Exception
+    {
+     // Check for pdfToSWF transformation before doing test
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
+        {
+            String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails?as=true";
+            
+            JSONObject tn = new JSONObject();
+            tn.put("thumbnailName", "webpreview");
+            
+            MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+            assertEquals("", response.getContentAsString().trim());
+            getWait(pdfNode, "webpreview");            
+        }
+        
+        // Do a image transformation (medium)
+        String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails?as=true";
+        JSONObject tn = new JSONObject();
+        tn.put("thumbnailName", "medium");
+        MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+
+        assertEquals("", response.getContentAsString().trim());
+        getWait(jpgNode, "medium");        
+    }
+    
+    
+    private void getWait(NodeRef node, String thumbnailName)
+        throws Exception
+    {
+        String url = "/api/node/" + node.getStoreRef().getProtocol() + "/" + node.getStoreRef().getIdentifier() + "/" + node.getId() + "/content/thumbnails/" + thumbnailName;
+       
+        while (true)
+        {
+            MockHttpServletResponse response = getRequest(url, 0);
+            if (response.getStatus() == 200)
+            {
+                break;
+            }
+            else if (response.getStatus() == 500)
+            {
+                System.out.println("Error during getWait: " + response.getContentAsString());
+                fail("A 500 status was found whilst waiting for the thumbnail to be processed");
+            }
+            else
+            {
+                Thread.sleep(100);
+            }
+        }        
+    } 
     
    
 }

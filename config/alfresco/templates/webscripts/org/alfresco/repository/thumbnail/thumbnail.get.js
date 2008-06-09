@@ -28,6 +28,7 @@ function main()
    {
       // 404 since no thumbnail was found
       status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
+      return;
    }
    
    // Place the details of the thumbnail into the model, this will be used to stream the content to the client

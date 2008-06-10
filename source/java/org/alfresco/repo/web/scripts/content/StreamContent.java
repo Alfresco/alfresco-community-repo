@@ -24,7 +24,10 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.net.SocketException;
 import java.util.Date;
@@ -36,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -45,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.Container;
@@ -59,6 +64,9 @@ import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
 import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.FileCopyUtils;
+
+import de.schlichtherle.io.FileOutputStream;
 
 /**
  * Web script 'type' that can be used when the binary data of a content property needs to be streamed back to the client
@@ -169,33 +177,44 @@ public class StreamContent extends AbstractWebScript
                 sendStatus(req, res, status, cache, format, templateModel);
             }
             else
-            {            
-                // Get the content parameters from the model
-                NodeRef nodeRef = (NodeRef)model.get("contentNode");
-                if (nodeRef == null)
-                {
-                    throw new WebScriptException("The content node was not specified so the content cannot be streamed to the client");
-                }
-                QName propertyQName = null;
-                String contentProperty = (String)model.get("contentProperty");
-                if (contentProperty == null)
-                {
-                    // default to the standard content property
-                    propertyQName = ContentModel.PROP_CONTENT;
-                }
-                else
-                {
-                    propertyQName = QName.createQName(contentProperty);
-                }
+            {         
+                // Get the attachement property value    
                 Boolean attachBoolean = (Boolean)model.get("attach");
                 boolean attach = false;
                 if (attachBoolean != null)
                 {
                     attach = attachBoolean.booleanValue();
                 }
-            
-                // Stream the content
-                streamContent(req, res, nodeRef, propertyQName, attach);
+                
+                String contentPath = (String)model.get("contentPath");
+                if (contentPath == null)
+                {
+                    // Get the content parameters from the model
+                    NodeRef nodeRef = (NodeRef)model.get("contentNode");
+                    if (nodeRef == null)
+                    {
+                        throw new WebScriptException("The content node was not specified so the content cannot be streamed to the client");
+                    }
+                    QName propertyQName = null;
+                    String contentProperty = (String)model.get("contentProperty");
+                    if (contentProperty == null)
+                    {
+                        // default to the standard content property
+                        propertyQName = ContentModel.PROP_CONTENT;
+                    }
+                    else
+                    {
+                        propertyQName = QName.createQName(contentProperty);
+                    }
+                
+                    // Stream the content
+                    streamContent(req, res, nodeRef, propertyQName, attach);
+                }
+                else
+                {
+                    // Stream the content
+                    streamContent(req, res, contentPath, attach);
+                }
             }
         }
         catch(Throwable e)
@@ -345,19 +364,78 @@ public class StreamContent extends AbstractWebScript
             }
         }
 
+        // get the content reader
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
+        if (reader == null || !reader.exists())
+        {
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
+        }
+        
+        // Stream the cotent
+        streamContentImpl(req, res, reader, attach, modified);        
+    }
+
+    /**
+     * Streams content back to client from a given resource path
+     * 
+     * @param req
+     * @param res
+     * @param resourcePath
+     * @param attach
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, boolean attach)
+        throws IOException
+    {
+        String ext = "";
+        String mimetype = MimetypeMap.MIMETYPE_BINARY;
+        int extIndex = resourcePath.lastIndexOf('.');
+        if (extIndex != -1)
+        {
+            ext = resourcePath.substring(extIndex + 1);
+            String mt = mimetypeService.getMimetypesByExtension().get(ext);
+            if (mt != null)
+            {
+                mimetype = mt;
+            }
+        }
+        
+        File file = TempFileProvider.createTempFile("streamContent-", ext);        
+        InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
+        OutputStream os = new FileOutputStream(file);        
+        FileCopyUtils.copy(is, os);        
+        
+        FileContentReader reader = new FileContentReader(file);
+        reader.setMimetype(mimetype);
+        reader.setEncoding("UTF-8");
+        
+        streamContentImpl(req, res, reader, attach, new Date(file.lastModified()));
+        
+    }
+    
+    /**
+     * Stream content implementation
+     * 
+     * @param req
+     * @param res
+     * @param reader
+     * @param attach
+     * @param modified
+     * @throws IOException
+     */
+    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified)
+        throws IOException
+    {
+
+        HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
+        HttpServletResponse httpRes = ((WebScriptServletResponse)res).getHttpServletResponse();
+        
         // handle attachment
         if (attach == true)
         {
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it
             // this is better than the default response of the browser trying to display the contents
             httpRes.setHeader("Content-Disposition", "attachment");
-        }
-
-        // get the content reader
-        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-        if (reader == null || !reader.exists())
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
         }
 
         // establish mimetype
@@ -401,13 +479,12 @@ public class StreamContent extends AbstractWebScript
         {
             // the client cut the connection - our mission was accomplished apart from a little error message
             if (logger.isInfoEnabled())
-                logger.info("Client aborted stream read:\n\tnode: " + nodeRef + "\n\tcontent: " + reader);
+                logger.info("Client aborted stream read:\n\tcontent: " + reader);
         }
         catch (ContentIOException e2)
         {
             if (logger.isInfoEnabled())
-                logger.info("Client aborted stream read:\n\tnode: " + nodeRef + "\n\tcontent: " + reader);
+                logger.info("Client aborted stream read:\n\tcontent: " + reader);
         }
     }
-
 }

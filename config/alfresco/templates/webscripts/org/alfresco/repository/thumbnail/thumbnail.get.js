@@ -22,17 +22,60 @@ function main()
       return;
    }  
    
+   // Get the queue create flag
+   var qc = false;
+   var qcString = args.qc;
+   if (qcString != null)
+   {
+      qc = utils.toBoolean(qcString);
+   }
+   
+   // Get the place holder flag
+   var ph = false;
+   var phString = args.ph;
+   if (phString != null)
+   {
+      ph = utils.toBoolean(phString);
+   }
+   
    // Get the thumbnail
    var thumbnail = node.getThumbnail(thumbnailName);
    if (thumbnail == null)
    {
-      // 404 since no thumbnail was found
-      status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
-      return;
+      // Queue the creation of the thumbnail if appropriate
+      if (qc == true)
+      {
+         node.createThumbnail(thumbnailName, true);
+      }		
+      
+      if (ph == true)
+      {
+         // Try and get the place holder resource
+         var phPath = thumbnailService.getPlaceHolderResourcePath(thumbnailName);
+         if (phPath == null)
+         {
+            // 404 since no thumbnail was found
+            status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holde resource set for '" + thumbnailName + "'");
+            return;
+         }
+         else
+         {
+            // Set the resouce path in the model ready for the content stream to send back to the client
+            model.contentPath = phPath;
+         }
+      }
+      else
+      {         
+         // 404 since no thumbnail was found
+         status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
+         return;
+      }
    }
-   
-   // Place the details of the thumbnail into the model, this will be used to stream the content to the client
-   model.contentNode = thumbnail; 
+   else
+   {
+   	  // Place the details of the thumbnail into the model, this will be used to stream the content to the client
+      model.contentNode = thumbnail;
+   } 
 }
 
 main();

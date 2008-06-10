@@ -131,7 +131,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     
     public void testCreateAsyncThumbnail() throws Exception
     {
-     // Check for pdfToSWF transformation before doing test
+        // Check for pdfToSWF transformation before doing test
         if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
         {
             String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails?as=true";
@@ -178,6 +178,28 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             }
         }        
     } 
+    
+    public void testPlaceHolder()
+        throws Exception
+    {
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
+        {
+            // Check that there is no place holder set for webpreview
+            this.getRequest(getThumbnailsURL(pdfNode) + "/webpreview", 404);
+            this.getRequest(getThumbnailsURL(pdfNode) + "/webpreview?ph=true", 404);
+        }
+        
+        // Check that here is a place holder for medium
+        this.getRequest(getThumbnailsURL(jpgNode) + "/medium", 404);
+        this.getRequest(getThumbnailsURL(jpgNode) + "/medium?ph=true", 200);
+        
+        System.out.println(getThumbnailsURL(jpgNode) + "/medium?ph=true");
+    }
+    
+    private String getThumbnailsURL(NodeRef nodeRef)
+    {
+        return "/api/node/" + nodeRef.getStoreRef().getProtocol() + "/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/content/thumbnails";
+    }
     
    
 }

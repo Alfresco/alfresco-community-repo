@@ -65,6 +65,7 @@
 	    					</property>
 	    				</bean>
 					</property>
+					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
 				</bean>
     			
     			<!-- Web Preview thumbnail options -->
@@ -94,5 +95,13 @@
             <ref bean="ThumbnailService" />
         </property>
     </bean> 
+    
+    <!-- Thumbnail service script API -->    
+    <bean id="thumbnailServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.thumbnail.script.ScriptThumbnailService">
+        <property name="extensionName">
+            <value>thumbnailService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
 
 </beans>

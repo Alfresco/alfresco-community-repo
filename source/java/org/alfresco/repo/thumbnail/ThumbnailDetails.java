@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import java.lang.reflect.Constructor;
+
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -40,7 +42,10 @@ public class ThumbnailDetails
     private String mimetype;
     
     /** Transformation options */
-    private TransformationOptions options;
+    private TransformationOptions options;    
+    
+    /** Path to placeholder thumbnail */
+    private String placeHolderResourcePath;
     
     /**
      * Default constructor
@@ -70,6 +75,20 @@ public class ThumbnailDetails
     {
         this(mimetype, options);
         this.name= thumbnailName;
+    }
+    
+    /**
+     * Constructor.  Specify the place holder thumbnail path.
+     * 
+     * @param mimetype          
+     * @param options
+     * @param thumbnailName
+     * @param placeHolderResourcePath
+     */
+    public ThumbnailDetails(String mimetype, TransformationOptions options, String thumbnailName, String placeHolderResourcePath)
+    {
+        this(mimetype, options, thumbnailName);
+        this.placeHolderResourcePath = placeHolderResourcePath;
     }
     
     /**
@@ -131,4 +150,22 @@ public class ThumbnailDetails
     {
         return name;
     }    
+    
+    /**
+     * 
+     * @param placeHolderResourcePath
+     */
+    public void setPlaceHolderResourcePath(String placeHolderResourcePath)
+    {
+        this.placeHolderResourcePath = placeHolderResourcePath;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public String getPlaceHolderResourcePath()
+    {   
+        return placeHolderResourcePath;
+    }
 }

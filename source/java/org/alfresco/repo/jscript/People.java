@@ -88,7 +88,7 @@ public final class People extends BaseScopableProcessorExtension
         PersonService personService = services.getPersonService();
         personService.deletePerson(username);
     }
-
+    
     /**
      * Create a Person with the given username and password
      * 

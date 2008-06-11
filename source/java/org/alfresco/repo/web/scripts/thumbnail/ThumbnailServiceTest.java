@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
 import org.apache.tools.ant.taskdefs.Sleep;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -115,6 +116,12 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             System.out.println(response.getContentAsString());
         }
         
+        // Check getAll whilst we are here 
+        MockHttpServletResponse getAllResp = this.getRequest(getThumbnailsURL(jpgNode), 200);
+        JSONArray getArr = new JSONArray(getAllResp.getContentAsString());
+        assertNotNull(getArr);
+        assertEquals(0, getArr.length());
+        
         // Do a image transformation (medium)
         String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails";
         JSONObject tn = new JSONObject();
@@ -126,6 +133,13 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         
         System.out.println(thumbnailUrl);
         response = getRequest(thumbnailUrl, 200);
+        
+        // Check getAll whilst we are here 
+        getAllResp = this.getRequest(getThumbnailsURL(jpgNode), 200);
+        getArr = new JSONArray(getAllResp.getContentAsString());
+        assertNotNull(getArr);
+        assertEquals(1, getArr.length());
+        assertEquals("medium", getArr.getJSONObject(0).get("thumbnailName"));
         
     }
     
@@ -153,7 +167,6 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         assertEquals("", response.getContentAsString().trim());
         getWait(jpgNode, "medium");        
     }
-    
     
     private void getWait(NodeRef node, String thumbnailName)
         throws Exception

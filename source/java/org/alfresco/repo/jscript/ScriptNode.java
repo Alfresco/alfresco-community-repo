@@ -1201,13 +1201,13 @@ public class ScriptNode implements Serializable, Scopeable
      * 
      * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
      * @param type QName type (fully qualified or short form such as 'cm:content')
-     * @param assocName QName of the child association (fully qualified or short form e.g. 'cm:contains')
+     * @param assocType QName of the child association type (fully qualified or short form e.g. 'cm:contains')
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public ScriptNode createNode(String name, String type, String assocName)
+    public ScriptNode createNode(String name, String type, String assocType)
     {
-        return createNode(name, type, null, assocName);
+        return createNode(name, type, null, assocType);
     }
     
     /**
@@ -1230,14 +1230,30 @@ public class ScriptNode implements Serializable, Scopeable
      * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
      * @param type QName type (fully qualified or short form such as 'cm:content')
      * @param properties Associative array of the default properties for the node.
-     * @param assocName QName of the child association (fully qualified or short form e.g. 'cm:contains')
+     * @param assocType QName of the child association type (fully qualified or short form e.g. 'cm:contains')
      * 
      * @return Newly created Node or null if failed to create.
      */
-    public ScriptNode createNode(String name, String type, Object properties, String assocName)
+    public ScriptNode createNode(String name, String type, Object properties, String assocType)
+    {
+        return createNode(name, type, properties, assocType, null);
+    }
+    
+    /**
+     * Create a new Node of the specified type as a child of this node.
+     * 
+     * @param name Name of the node to create (can be null for a node without a 'cm:name' property)
+     * @param type QName type (fully qualified or short form such as 'cm:content')
+     * @param properties Associative array of the default properties for the node.
+     * @param assocType QName of the child association type (fully qualified or short form e.g. 'cm:contains')
+     * @param assocName QName of the child association name (fully qualified or short form e.g. 'fm:discussion')
+     * 
+     * @return Newly created Node or null if failed to create.
+     */
+    public ScriptNode createNode(String name, String type, Object properties, String assocType, String assocName)
     {
         ParameterCheck.mandatoryString("Node Type", type);
-        ParameterCheck.mandatoryString("Association Name", assocName);
+        ParameterCheck.mandatoryString("Association Type", assocType);
         
         Map<QName, Serializable> props = null;
         
@@ -1259,9 +1275,13 @@ public class ScriptNode implements Serializable, Scopeable
         }
         
         ChildAssociationRef childAssocRef = this.nodeService.createNode(
-                this.nodeRef, createQName(assocName),
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
-                createQName(type), props);
+                this.nodeRef,
+                createQName(assocType),
+                assocName == null ?
+                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)) :
+                     createQName(assocName),
+                createQName(type),
+                props);
         
         reset();
         

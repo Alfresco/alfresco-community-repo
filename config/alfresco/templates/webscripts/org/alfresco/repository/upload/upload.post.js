@@ -1,9 +1,3 @@
-/**
- * Note!
- *
- * If an error occurr make sure to set redirect to false,
- * otherwise errors will not be displayed in the flash multi upload.
- */
 var filename = null;
 var content = null;
 var siteId = null;
@@ -11,7 +5,6 @@ var componentId = null;
 var path = null;
 var title = "";
 var description = "";
-var contentType = "Content";
 var version = null;
 
 // Parse file attributes
@@ -72,25 +65,25 @@ if (siteId === null || componentId === null || path === null || filename === nul
 {
    status.code = 400;
    status.message = "Uploaded file cannot be located in request";
-   status.redirect = false;
+   //status.redirect = false;
 }
 else
 {
    var site = siteService.getSite(siteId);
    if (site === null)
    {
-      status.code = 400;
+      status.code = 404;
       status.message = "Site (" + siteId + ") not found.";
-      status.redirect = false;
+      status.redirect = true;
    }
    else
    {
       var container = site.getContainer(componentId);
       if (container === null)
       {
-         status.code = 400;
+         status.code = 404;
          status.message = "Site container (" + containerId + ") not found.";
-         status.redirect = false;
+         status.redirect = true;
       }
       else
       {
@@ -98,10 +91,10 @@ else
          var existsFile = container.childByNamePath(filepath);
          if (existsFile !== null)
          {
-            // TODO: Update existing file
+            // TODO: what should happen?
             status.code = 400;
             status.message = "File " + filename + "already exists in folder " + path;
-            status.redirect = false;
+            status.redirect = true;
          }
          else
          {
@@ -112,13 +105,12 @@ else
             }
             if (destNode === null)
             {
-               status.code = 400;
+               status.code = 404;
                status.message = "Cannot upload file since path '" + path + "' does not exist.";
-               status.redirect = false;
+               status.redirect = true;
             }
             else
             {
-               // Create new content with correct mimetype
                upload = destNode.createFile(filename) ;
                upload.properties.contentType = contentType;
                upload.properties.content.write(content);

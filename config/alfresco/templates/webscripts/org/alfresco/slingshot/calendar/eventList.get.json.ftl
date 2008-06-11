@@ -10,7 +10,9 @@
 </#if>
 <#if counter &gt; 0>,</#if>
 {
-  "name" : "${event.properties["ia:whatEvent"]}"
+  "name" : "${event.properties["ia:whatEvent"]}",
+  "start" : "${event.properties["ia:fromDate"]?string("HH:mm")}",
+  "end" : "${event.properties["ia:toDate"]?string("HH:mm")}"
 }
 <#assign counter = counter + 1>
 <#if !event_has_next>]</#if>

@@ -52,7 +52,8 @@ function createEvent(siteId, params)
 
   return {
     "name": params["what"],
-    "from": from
+    "from": from,
+    "to": to
   };
 };
 

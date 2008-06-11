@@ -578,6 +578,17 @@ public class RepoStore implements Store, TenantDeployer
         ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
         writer.putContent(content);
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#removeDocument(java.lang.String)
+     */
+    public boolean removeDocument(String documentPath)
+        throws IOException
+    {
+        // TODO: Implement remove for Repository Store
+        return false;
+    }    
+    
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Store#getTemplateLoader()

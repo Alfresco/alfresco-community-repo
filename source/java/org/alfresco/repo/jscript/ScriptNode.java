@@ -2002,12 +2002,25 @@ public class ScriptNode implements Serializable, Scopeable
     }
     
     /**
+     * Get the all the thumbnails for a given node's content property.
      * 
-     * @return
+     * @return  ScriptThumbnail     list of thumbnails, empty if none available
      */
-    public ScriptableHashMap<String, ScriptThumbnail> getThumbnails()
+    public ScriptThumbnail[] getThumbnails()
     {
-        return null;
+        List<NodeRef> thumbnails = this.services.getThumbnailService().getThumbnails(
+                this.nodeRef, 
+                ContentModel.PROP_CONTENT, 
+                null, 
+                null);
+        
+        List<ScriptThumbnail> result = new ArrayList<ScriptThumbnail>(thumbnails.size());
+        for (NodeRef thumbnail : thumbnails)
+        {
+            ScriptThumbnail scriptThumbnail = new ScriptThumbnail(thumbnail, this.services, this.scope);
+            result.add(scriptThumbnail);
+        }
+        return (ScriptThumbnail[])result.toArray(new ScriptThumbnail[result.size()]);
     }
     
     

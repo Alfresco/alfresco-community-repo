@@ -37,6 +37,7 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -109,7 +110,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     "small");        
             assertNotNull(thumbnail1);
             checkThumbnailed(jpgOrig, "small");
-            checkThumbnail(thumbnail1, imageTransformationOptions);
+            checkThumbnail("small", thumbnail1);
             outputThumbnailTempContentLocation(thumbnail1, "jpg", "small - 64x64, marked as thumbnail");
             
             // ===== small2: 64x64, aspect not maintained ====
@@ -126,7 +127,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     imageTransformationOptions2,
                     "small2");
             checkThumbnailed(jpgOrig, "small2");
-            checkThumbnail(thumbnail2, imageTransformationOptions2);
+            checkThumbnail("small2", thumbnail2);
             outputThumbnailTempContentLocation(thumbnail2, "jpg", "small2 - 64x64, aspect not maintained");
             
             // ===== half: 50%x50  =====
@@ -143,7 +144,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     imageTransformationOptions3,
                     "half");
             checkThumbnailed(jpgOrig, "half");
-            checkThumbnail(thumbnail3, imageTransformationOptions3);
+            checkThumbnail("half", thumbnail3);
             outputThumbnailTempContentLocation(thumbnail3, "jpg", "half - 50%x50%");
             
             
@@ -161,7 +162,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     imageTransformationOptions4,
                     "half2");
             checkThumbnailed(gifOrig, "half2");
-            checkThumbnail(thumbnail4, imageTransformationOptions4);
+            checkThumbnail("half2", thumbnail4);
             outputThumbnailTempContentLocation(thumbnail4, "jpg", "half2 - 50%x50%, from gif");
         }        
     }
@@ -185,7 +186,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     "small");        
             assertNotNull(thumbnail1);
             checkThumbnailed(jpgOrig, "small");
-            checkThumbnail(thumbnail1, imageTransformationOptions);
+            checkThumbnail("small", thumbnail1);
             
             try
             {
@@ -252,7 +253,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             // Try and retrieve the thumbnail
             NodeRef result2 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "small");
             assertNotNull(result2);
-            checkThumbnail(result2, imageTransformationOptions);
+            checkThumbnail("small", result2);
             
             // Check for an other thumbnail that doesn't exist
             NodeRef result3 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "anotherone");
@@ -270,48 +271,17 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(1, assocs.size());
     }
     
-    private void checkThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions)
+    private void checkThumbnail(String thumbnailName, NodeRef thumbnail)
     {
         // Check the thumbnail is of the correct type
         assertEquals(ContentModel.TYPE_THUMBNAIL, this.nodeService.getType(thumbnail));
         
-        // Check the meta data on the thumnail
-        assertEquals(ContentModel.PROP_CONTENT, this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME));
-        assertEquals(transformationOptions.getClass().getName(), this.nodeService.getProperty(thumbnail, ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS));
+        // Check the name 
+        assertEquals(thumbnailName, this.nodeService.getProperty(thumbnail, ContentModel.PROP_THUMBNAIL_NAME));
         
-        if (transformationOptions instanceof ImageTransformationOptions)
-        {
-            ImageTransformationOptions imageTransformationOptions = (ImageTransformationOptions)transformationOptions;            
-            assertTrue(this.nodeService.hasAspect(thumbnail, ImageTransformationOptions.ASPECT_IMAGE_TRANSFORATION_OPTIONS));
-            assertEquals(
-                    imageTransformationOptions.getCommandOptions(), 
-                    this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_COMMAND_OPTIONS));
-            ImageResizeOptions resizeOptions = imageTransformationOptions.getResizeOptions();
-            if (resizeOptions != null)
-            {
-                assertTrue((Boolean)this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE));
-                assertEquals(
-                    imageTransformationOptions.getResizeOptions().getHeight(),
-                    this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE_HEIGHT));
-                assertEquals(
-                    imageTransformationOptions.getResizeOptions().getWidth(),
-                    this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE_WIDTH));
-                assertEquals(
-                        imageTransformationOptions.getResizeOptions().isMaintainAspectRatio(),
-                        this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE_MAINTAIN_ASPECT_RATIO));
-                assertEquals(
-                        imageTransformationOptions.getResizeOptions().isPercentResize(),
-                        this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE_PERCENT));
-                assertEquals(
-                        imageTransformationOptions.getResizeOptions().isResizeToThumbnail(),
-                        this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE_TO_THUMBNAIL));
-            }
-            else
-            {
-                assertFalse((Boolean)this.nodeService.getProperty(thumbnail, ImageTransformationOptions.PROP_RESIZE));
-            }
-            
-        }
+        // Check the contet property value
+        assertEquals(ContentModel.PROP_CONTENT, this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME));
+        
     }
     
     private void outputThumbnailTempContentLocation(NodeRef thumbnail, String ext, String message)
@@ -344,6 +314,37 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         writer.putContent(origFile);
         
         return node;
+    }
+    
+    public void testAutoUpdate() throws Exception
+    {
+        if (contentService.getImageTransformer() != null)
+        {
+            final NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            
+            ThumbnailDetails details = this.thumbnailService.getThumbnailRegistry().getThumbnailDetails("medium");
+            final NodeRef thumbnail = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, details.getMimetype(), details.getTransformationOptions(), details.getName());
+            
+            setComplete();
+            endTransaction();
+            
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {            
+                    String ext = ThumbnailServiceImplTest.this.mimetypeMap.getExtension(MimetypeMap.MIMETYPE_IMAGE_JPEG);
+                    File origFile = AbstractContentTransformerTest.loadQuickTestFile(ext);
+                    
+                    ContentWriter writer = ThumbnailServiceImplTest.this.contentService.getWriter(jpgOrig, ContentModel.PROP_CONTENT, true);
+                    writer.putContent(origFile);
+            
+                    return null;
+                }
+            });
+            
+            Thread.sleep(100000);
+            
+        }
     }
     
     // == Test the JavaScript API ==

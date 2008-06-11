@@ -165,15 +165,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
             String thumbnailFileName = generateThumbnailFileName(thumbnailName, mimetype);
             properties.put(ContentModel.PROP_NAME, thumbnailFileName);
         }
+        properties.put(ContentModel.PROP_THUMBNAIL_NAME, thumbnailName);
         
         // Add the name of the content property
         properties.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, contentProperty);
-       
-        // Add the class name of the transformation options
-        if (transformationOptions != null)
-        {
-            properties.put(ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS, transformationOptions.getClass().getName());
-        }
         
         // See if parent association details have been specified for the thumbnail
         if (assocDetails == null)
@@ -220,9 +215,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
         {
             // Do the thumnail transformation
             this.contentService.transform(reader, writer, transformationOptions);
-            
-            // Store the transformation options on the thumbnail
-            transformationOptions.saveToNode(thumbnail, this.nodeService);
         }
         
         // Return the created thumbnail
@@ -248,31 +240,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
     {
         // First check that we are dealing with a thumbnail
         if (ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnail)) == true)
-        {
-            // Get the transformation options
-//            TransformationOptions options = null;
-//            String transformationOptionsClassName = (String)this.nodeService.getProperty(thumbnail, ContentModel.PROP_TRANSFORMATION_OPTIONS_CLASS);
-//            if (transformationOptionsClassName == null)
-//            {
-//                options = new TransformationOptions();
-//            }
-//            else
-//            {
-//                // Create an options object of the type specified on the thumbnail
-//                try
-//                {
-//                    Class transformationClass = Class.forName(transformationOptionsClassName);
-//                    options = (TransformationOptions)transformationClass.newInstance();                    
-//                }
-//                catch (Exception exception)
-//                {
-//                    throw new ThumbnailException(ERR_TRANS_CLASS);
-//                }
-//                
-//                // Populate the options from the node
-//                options.populateFromNode(thumbnail, this.nodeService);
-//            }            
-            
+        {         
             // Get the node that is the source of the thumbnail
             NodeRef node = null;
             List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(thumbnail, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
@@ -294,7 +262,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
             
             // Get the reader and writer            
             ContentReader reader = this.contentService.getReader(node, contentProperty);
-            ContentWriter writer = this.contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
+            ContentWriter writer = this.contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
             
             // Set the basic detail of the transformation options
             transformationOptions.setSourceNodeRef(node);

@@ -96,6 +96,28 @@
         </property>
     </bean> 
     
+    <!-- Update Thumbnail Action -->
+    <bean id="update-thumbnail" class="org.alfresco.repo.thumbnail.UpdateThumbnailActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="thumbnailService">
+            <ref bean="ThumbnailService" />
+        </property>
+    </bean> 
+    
+    <!-- Thumbnailed aspect -->
+    <bean id="thumbnailedAspect" class="org.alfresco.repo.thumbnail.ThumbnailedAspect" init-method="init">
+    	<property name="nodeService" ref="NodeService"/>
+    	<property name="dictionaryService" ref="DictionaryService"/>
+    	<property name="policyComponent" ref="policyComponent"/>
+    	<property name="actionService" ref="ActionService"/>
+    	<property name="thumbnailService" ref="ThumbnailService"/>
+    </bean>
+    
     <!-- Thumbnail service script API -->    
     <bean id="thumbnailServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.thumbnail.script.ScriptThumbnailService">
         <property name="extensionName">

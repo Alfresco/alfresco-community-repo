@@ -240,8 +240,9 @@ public interface ContentModel
     
     // Thumbnail Type
     static final QName TYPE_THUMBNAIL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnail");
+    static final QName PROP_THUMBNAIL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnailName");
     static final QName PROP_CONTENT_PROPERTY_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "contentPropertyName");
-    static final QName PROP_TRANSFORMATION_OPTIONS_CLASS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "cm:transformationOptionsClass");
+    static final QName PROP_AUTOMATIC_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "automaticUpdate");
     
     // Thumbnailed Aspect
     static final QName ASPECT_THUMBNAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnailed");

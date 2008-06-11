@@ -24,15 +24,7 @@
  */
 package org.alfresco.repo.content.transform.swf;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * SFW transformation options
@@ -41,9 +33,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class SWFTransformationOptions extends TransformationOptions
 {
-    private final static QName ASPECT_SWF_TRANSFORMATION_OPTIONS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "swfTransformationOptions");
-    private final static QName PROP_FLASH_VERSION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "flashVerison");
-    
     /** The version of the flash to convert to */
     private String flashVersion = "9";
     
@@ -55,31 +44,5 @@ public class SWFTransformationOptions extends TransformationOptions
     public String getFlashVersion()
     {
         return flashVersion;
-    }
-    
-    @Override
-    public void saveToNode(NodeRef nodeRef, NodeService nodeService)
-    {
-        super.saveToNode(nodeRef, nodeService);
-        
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(7);
-        properties.put(PROP_FLASH_VERSION, this.flashVersion);
-        nodeService.addAspect(nodeRef, ASPECT_SWF_TRANSFORMATION_OPTIONS, properties);
-    }
-    
-    @Override
-    public void populateFromNode(NodeRef nodeRef, NodeService nodeService)
-    {
-        super.populateFromNode(nodeRef, nodeService);
-        
-        // Check whether the node has the image transformation options aspect
-        if (nodeService.hasAspect(nodeRef, ASPECT_SWF_TRANSFORMATION_OPTIONS) == true)
-        {
-            // Get the node's properties
-            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-            
-            // Set the properties
-            this.flashVersion = (String)properties.get(PROP_FLASH_VERSION);
-        }
     }
 }

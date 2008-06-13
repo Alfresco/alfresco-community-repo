@@ -4,6 +4,7 @@
   <url>/api/activities/feed/site/{siteId}</url>
   <url>/api/activities/feed/site/{siteId}?format=atomfeed</url>
   <url>/api/activities/feed/site/{siteId}?format=json</url>
+  <url>/api/activities/feed/site/{siteId}?format=rss</url>
   <format default="atomfeed"></format>
   <authentication>user</authentication>
   <transaction>required</transaction>

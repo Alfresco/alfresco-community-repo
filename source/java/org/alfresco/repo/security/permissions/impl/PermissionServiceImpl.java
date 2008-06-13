@@ -582,7 +582,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             }
             else
             {
-                if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+                if (AuthenticationUtil.getSystemUserName().equals(AuthenticationUtil.getCurrentEffectiveUserName()))
                 {
                     return AccessStatus.ALLOWED;
                 }

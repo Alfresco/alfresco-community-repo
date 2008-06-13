@@ -31,11 +31,13 @@ import java.net.SocketException;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptResponse;
 import org.alfresco.web.scripts.servlet.WebScriptServletResponse;
@@ -108,53 +110,62 @@ public class AVMRemoteStore extends BaseRemoteStore
             throw new WebScriptException("Unable to locate file: " + avmPath);
         }
         
-        ContentReader reader = this.avmService.getContentReader(-1, avmPath);
-        if (reader == null)
-        {
-            throw new WebScriptException("No content found for AVM file: " + avmPath);
-        }
-        
-        // establish mimetype
-        String mimetype = reader.getMimetype();
-        if (mimetype == null || mimetype.length() == 0)
-        {
-            mimetype = MimetypeMap.MIMETYPE_BINARY;
-            int extIndex = path.lastIndexOf('.');
-            if (extIndex != -1)
-            {
-                String ext = path.substring(extIndex + 1);
-                String mt = this.mimetypeService.getMimetypesByExtension().get(ext);
-                if (mt != null)
-                {
-                    mimetype = mt;
-                }
-            }
-        }
-
-        // set mimetype for the content and the character encoding + length for the stream
-        WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
-        httpRes.setContentType(mimetype);
-        httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
-        httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
-        httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
-        
-        // get the content and stream directly to the response output stream
-        // assuming the repository is capable of streaming in chunks, this should allow large files
-        // to be streamed directly to the browser response stream.
+        ContentReader reader;
         try
         {
-            reader.getContent(res.getOutputStream());
+            reader = this.avmService.getContentReader(-1, avmPath);
+            
+            if (reader == null)
+            {
+                throw new WebScriptException("No content found for AVM file: " + avmPath);
+            }
+            
+            // establish mimetype
+            String mimetype = reader.getMimetype();
+            if (mimetype == null || mimetype.length() == 0)
+            {
+                mimetype = MimetypeMap.MIMETYPE_BINARY;
+                int extIndex = path.lastIndexOf('.');
+                if (extIndex != -1)
+                {
+                    String ext = path.substring(extIndex + 1);
+                    String mt = this.mimetypeService.getMimetypesByExtension().get(ext);
+                    if (mt != null)
+                    {
+                        mimetype = mt;
+                    }
+                }
+            }
+    
+            // set mimetype for the content and the character encoding + length for the stream
+            WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
+            httpRes.setContentType(mimetype);
+            httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
+            httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
+            httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+            
+            // get the content and stream directly to the response output stream
+            // assuming the repository is capable of streaming in chunks, this should allow large files
+            // to be streamed directly to the browser response stream.
+            try
+            {
+                reader.getContent(res.getOutputStream());
+            }
+            catch (SocketException e1)
+            {
+                // the client cut the connection - our mission was accomplished apart from a little error message
+                if (logger.isInfoEnabled())
+                    logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
+            }
+            catch (ContentIOException e2)
+            {
+                if (logger.isInfoEnabled())
+                    logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
+            }
         }
-        catch (SocketException e1)
+        catch (AccessDeniedException ae)
         {
-            // the client cut the connection - our mission was accomplished apart from a little error message
-            if (logger.isInfoEnabled())
-                logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
-        }
-        catch (ContentIOException e2)
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
         }
     }
 
@@ -186,7 +197,14 @@ public class AVMRemoteStore extends BaseRemoteStore
         }
         
         String[] parts = AVMNodeConverter.SplitBase(avmPath);
-        this.avmService.createFile(parts[0], parts[1], content);
+        try
+        {
+            this.avmService.createFile(parts[0], parts[1], content);
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
     }
     
     /* (non-Javadoc)
@@ -202,8 +220,15 @@ public class AVMRemoteStore extends BaseRemoteStore
             throw new WebScriptException("Unable to locate file for update: " + avmPath);
         }
         
-        ContentWriter writer = this.avmService.getContentWriter(avmPath);
-        writer.putContent(content);
+        try
+        {
+            ContentWriter writer = this.avmService.getContentWriter(avmPath);
+            writer.putContent(content);
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
     }
     
     /**

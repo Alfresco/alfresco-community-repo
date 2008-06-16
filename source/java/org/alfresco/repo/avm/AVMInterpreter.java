@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
@@ -52,6 +53,8 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -63,10 +66,10 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  */
 public class AVMInterpreter
 {
-   private static final Pattern collectionPattern = Pattern.compile("^\\[(.*)\\]$");
-   private static final Pattern nodeRefPattern = Pattern.compile("^\\w+://\\w+\\w+$");
-   private static final Pattern integerPattern = Pattern.compile("^\\d+$");
-   private static final Pattern dateTimePattern = Pattern.compile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
+    private static final Pattern collectionPattern = Pattern.compile("^\\[(.*)\\]$");
+    private static final Pattern nodeRefPattern = Pattern.compile("^\\w+://\\w+\\w+$");
+    private static final Pattern integerPattern = Pattern.compile("^\\d+$");
+    private static final Pattern dateTimePattern = Pattern.compile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
 
     /**
      * The service interface.
@@ -82,7 +85,12 @@ public class AVMInterpreter
      * The locking service.
      */
     private AVMLockingService fLockingService;
-    
+
+    /**
+     * The permission service.
+     */
+    private PermissionService fPermissionService;
+
     /**
      * The reader for interaction.
      */
@@ -105,6 +113,7 @@ public class AVMInterpreter
         console.setAvmService((AVMService)context.getBean("AVMService"));
         console.setAvmSyncService((AVMSyncService)context.getBean("AVMSyncService"));
         console.setAvmLockingService((AVMLockingService)context.getBean("AVMLockingService"));
+        console.setPermissionService((PermissionService)context.getBean("PermissionService"));
         BulkLoader loader = new BulkLoader();
         loader.setAvmService((AVMService)context.getBean("AVMService"));
         console.setBulkLoader(loader);
@@ -137,7 +146,7 @@ public class AVMInterpreter
     {
         fSyncService = syncService;
     }
-    
+
     /**
      * Set the AVM locking service.
      * @param lockService
@@ -145,6 +154,15 @@ public class AVMInterpreter
     public void setAvmLockingService(AVMLockingService lockService)
     {
         fLockingService = lockService;
+    }
+    
+    /**
+     * Set the PermissionService.
+     * @param service The PermissionService instance.
+     */
+    public void setPermissionService(PermissionService service)
+    {
+        fPermissionService = service;
     }
 
     /**
@@ -181,280 +199,302 @@ public class AVMInterpreter
         }
     }
 
-   /**
-    * Interpret a single command using the BufferedReader passed in for any data needed.
-    * @param line The unparsed command
-    * @param in A Reader to be used for commands that need input data.
-    * @return The textual output of the command.
-    */
-   public String interpretCommand(String line, BufferedReader in)
-   {
-       String[] command = line.split(",\\s+");
-       if (command.length == 0)
-       {
-           command = new String[1];
-           command[0] = line;
-       }
-       try
-       {
-           ByteArrayOutputStream bout = new ByteArrayOutputStream();
-           PrintStream out = new PrintStream(bout);
-           if (command[0].equals("ls"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
-                                                        command[1]);
-               if (desc == null)
-               {
-                   return "Not Found.";
-               }
-               Map<String, AVMNodeDescriptor> listing =
-                   fService.getDirectoryListing(desc, true);
-               for (String name : listing.keySet())
-               {
-                   out.println(name + " " + listing.get(name));
-               }
-           }
-           else if (command[0].equals("lsr"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]),
-                                                        command[1]);
-               recursiveList(out, desc, 0);
-           }
-           else if (command[0].equals("lsrep"))
-           {
-               List<AVMStoreDescriptor> repos = fService.getStores();
-               for (AVMStoreDescriptor repo : repos)
-               {
-                   out.println(repo);
-               }
-           }
-           else if (command[0].equals("lsver"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               List<VersionDescriptor> listing = fService.getStoreVersions(command[1]);
-               for (VersionDescriptor desc : listing)
-               {
-                   out.println(desc);
-               }
-           }
-           else if (command[0].equals("mkrep"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createStore(command[1]);
-           }
-           else if (command[0].equals("load"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               fLoader.recursiveLoad(command[1], command[2]);
-           }
-           else if (command[0].equals("mkdir"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createDirectory(command[1], command[2]);
-           }
-           else if (command[0].equals("mkbr"))
-           {
-               if (command.length != 5)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createBranch(Integer.parseInt(command[4]), command[1], command[2], command[3]);
-           }
-           else if (command[0].equals("mkldir"))
-           {
-               if (command.length != 4)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createLayeredDirectory(command[1], command[2], command[3]);
-           }
-           else if (command[0].equals("rename"))
-           {
-               if (command.length != 5)
-               {
-                   return "Syntax Error.";
-               }
-               fService.rename(command[1], command[2], command[3], command[4]);
-           }
-           else if (command[0].equals("cp"))
-           {
-               if (command.length != 5)
-               {
-                   return "Syntax Error.";
-               }
-               InputStream fin = fService.getFileInputStream(Integer.parseInt(command[2]), command[1]);
-               OutputStream fout = fService.createFile(command[3], command[4]);
-               byte [] buff = new byte[8192];
-               int read;
-               while ((read = fin.read(buff)) != -1)
-               {
-                   fout.write(buff, 0, read);
-               }
-               fin.close();
-               fout.close();
-           }
-           else if (command[0].equals("retarget"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               fService.retargetLayeredDirectory(command[1], command[2]);
-           }
-           else if (command[0].equals("mkprimary"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               fService.makePrimary(command[1]);
-           }
-           else if (command[0].equals("mklfile"))
-           {
-               if (command.length != 4)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createLayeredFile(command[1], command[2], command[3]);
-           }
-           else if (command[0].equals("snap"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               fService.createSnapshot(command[1], null, null);
-           }
-           else if (command[0].equals("cat"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               BufferedReader reader =
-                   new BufferedReader(
-                       new InputStreamReader(fService.getFileInputStream(Integer.parseInt(command[2]),
-                                                                         command[1])));
-               String l;
-               while ((l = reader.readLine()) != null)
-               {
-                   out.println(l);
-               }
-               reader.close();
-           }
-           else if (command[0].equals("rm"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               fService.removeNode(command[1], command[2]);
-           }
-           else if (command[0].equals("rmrep"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               fService.purgeStore(command[1]);
-           }
-           else if (command[0].equals("rmver"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               fService.purgeVersion(Integer.parseInt(command[2]), command[1]);
-           }
-           else if (command[0].equals("write"))
-           {
-               if (command.length != 2)
-               {
-                   return "Syntax Error.";
-               }
-               PrintStream ps =
-                   new PrintStream(fService.getFileOutputStream(command[1]));
-               String l;
-               while (!(l = in.readLine()).equals(""))
-               {
-                   ps.println(l);
-               }
-               ps.close();
-           }
-           else if (command[0].equals("create"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               PrintStream ps =
-                   new PrintStream(fService.createFile(command[1], command[2]));
-               String l;
-               while (!(l = in.readLine()).equals(""))
-               {
-                   ps.println(l);
-               }
-               ps.close();
-           }
-           else if (command[0].equals("stat"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               AVMNodeDescriptor desc = fService.lookup(Integer.parseInt(command[2]), command[1]);
-               out.println(desc);
-               out.println("Version: " + desc.getVersionID());
-               out.println("Owner: " + desc.getOwner());
-               out.println("Mod Time: " + new Date(desc.getModDate()));
-           }
-           else if (command[0].equals("getnodeproperties"))
-           {
-               if (command.length != 3)
-               {
-                   return "Syntax Error.";
-               }
-               final Map<QName, PropertyValue> properties = fService.getNodeProperties(Integer.parseInt(command[2]), command[1]);
-               for (final Map.Entry<QName, PropertyValue> p : properties.entrySet())
-               {
-                  out.println(p.getKey() + ": " + p.getValue());
+    /**
+     * Interpret a single command using the BufferedReader passed in for any data needed.
+     * @param line The unparsed command
+     * @param in A Reader to be used for commands that need input data.
+     * @return The textual output of the command.
+     */
+    public String interpretCommand(String line, BufferedReader in)
+    {
+        String[] command = line.split(",\\s+");
+        if (command.length == 0)
+        {
+            command = new String[1];
+            command[0] = line;
+        }
+        try
+        {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(bout);
+            if (command[0].equals("ls"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                AVMNodeDescriptor desc = fService.lookup(version, command[1]);
+                if (desc == null)
+                {
+                    return "Not Found.";
+                }
+                Map<String, AVMNodeDescriptor> listing =
+                    fService.getDirectoryListing(desc, true);
+                for (String name : listing.keySet())
+                {
+                    out.println(name + " " + listing.get(name));
                 }
             }
-            else if (command[0].equals("descnode"))
+            else if (command[0].equals("lsr"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                AVMNodeDescriptor desc = fService.lookup(version, command[1]);
+                recursiveList(out, desc, 0);
+            }
+            else if (command[0].equals("lsrep"))
+            {
+                List<AVMStoreDescriptor> repos = fService.getStores();
+                for (AVMStoreDescriptor repo : repos)
+                {
+                    out.println(repo);
+                }
+            }
+            else if (command[0].equals("lsver"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                List<VersionDescriptor> listing = fService.getStoreVersions(command[1]);
+                for (VersionDescriptor desc : listing)
+                {
+                    out.println(desc);
+                }
+            }
+            else if (command[0].equals("mkrep"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createStore(command[1]);
+            }
+            else if (command[0].equals("load"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fLoader.recursiveLoad(command[1], command[2]);
+            }
+            else if (command[0].equals("mkdir"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createDirectory(command[1], command[2]);
+            }
+            else if (command[0].equals("mkbr"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createBranch(Integer.parseInt(command[4]), command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("mkldir"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createLayeredDirectory(command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("rename"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                fService.rename(command[1], command[2], command[3], command[4]);
+            }
+            else if (command[0].equals("cp"))
+            {
+                if (command.length != 5)
+                {
+                    return "Syntax Error.";
+                }
+                InputStream fin = fService.getFileInputStream(Integer.parseInt(command[2]), command[1]);
+                OutputStream fout = fService.createFile(command[3], command[4]);
+                byte [] buff = new byte[8192];
+                int read;
+                while ((read = fin.read(buff)) != -1)
+                {
+                    fout.write(buff, 0, read);
+                }
+                fin.close();
+                fout.close();
+            }
+            else if (command[0].equals("retarget"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.retargetLayeredDirectory(command[1], command[2]);
+            }
+            else if (command[0].equals("mkprimary"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.makePrimary(command[1]);
+            }
+            else if (command[0].equals("mklfile"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createLayeredFile(command[1], command[2], command[3]);
+            }
+            else if (command[0].equals("snap"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.createSnapshot(command[1], null, null);
+            }
+            else if (command[0].equals("cat"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(fService.getFileInputStream(version, command[1])));
+                String l;
+                while ((l = reader.readLine()) != null)
+                {
+                    out.println(l);
+                }
+                reader.close();
+            }
+            else if (command[0].equals("rm"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.removeNode(command[1], command[2]);
+            }
+            else if (command[0].equals("rmrep"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                fService.purgeStore(command[1]);
+            }
+            else if (command[0].equals("rmver"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                fService.purgeVersion(Integer.parseInt(command[2]), command[1]);
+            }
+            else if (command[0].equals("write"))
+            {
+                if (command.length != 2)
+                {
+                    return "Syntax Error.";
+                }
+                PrintStream ps =
+                    new PrintStream(fService.getFileOutputStream(command[1]));
+                String l;
+                while (!(l = in.readLine()).equals(""))
+                {
+                    ps.println(l);
+                }
+                ps.close();
+            }
+            else if (command[0].equals("create"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                PrintStream ps =
+                    new PrintStream(fService.createFile(command[1], command[2]));
+                String l;
+                while (!(l = in.readLine()).equals(""))
+                {
+                    ps.println(l);
+                }
+                ps.close();
+            }
+            else if (command[0].equals("stat"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                AVMNodeDescriptor desc = fService.lookup(version, command[1]);
+                out.println(desc);
+                out.println("Version: " + desc.getVersionID());
+                out.println("Owner: " + desc.getOwner());
+                out.println("Mod Time: " + new Date(desc.getModDate()));
+            }
+            else if (command[0].equals("getnodeproperties"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                final Map<QName, PropertyValue> properties = fService.getNodeProperties(version, command[1]);
+                for (final Map.Entry<QName, PropertyValue> p : properties.entrySet())
+                {
+                    out.println(p.getKey() + ": " + p.getValue());
+                }
+            }
+            else if (command[0].equals("setnodepermission"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                
+                fPermissionService.setPermission(
+                        AVMNodeConverter.ToNodeRef(-1, command[1]), command[2], command[3], true);
+            }
+            else if (command[0].equals("clearnodepermission"))
             {
                 if (command.length != 3)
                 {
                     return "Syntax Error.";
                 }
                 
+                fPermissionService.clearPermission(
+                        AVMNodeConverter.ToNodeRef(-1, command[1]), command[2]);
+            }
+            else if (command[0].equals("descnode"))
+            {
+                if (command.length < 2)
+                {
+                    return "Syntax Error.";
+                }
+
                 String path = command[1];
-                
-                AVMNodeDescriptor nodeDesc = fService.lookup(Integer.parseInt(command[2]), path);
+                int version = (command.length == 2) ? -1 : Integer.parseInt(command[2]);
+                AVMNodeDescriptor nodeDesc = fService.lookup(version, path);
                 if (nodeDesc == null)
                 {
-                   return "Path Not Found.";
+                    return "Path Not Found.";
                 }
-                
+
                 out.println(nodeDesc.toString());
                 out.println("isDirectory: " + nodeDesc.isDirectory());
                 out.println("isFile: " + nodeDesc.isFile());
@@ -466,39 +506,46 @@ public class AVMInterpreter
                 out.println("created: " + new Date(nodeDesc.getCreateDate()));
                 out.println("modified: " + new Date(nodeDesc.getModDate()));
                 out.println("lastAccess: " + new Date(nodeDesc.getAccessDate()));
-                
+
                 // get lock information
                 String lockPath = path.substring(path.indexOf("/"));
                 String store = path.substring(0, path.indexOf(":"));
                 String mainStore = store;
                 if (store.indexOf("--") != -1)
                 {
-                   mainStore = store.substring(0, store.indexOf("--"));
+                    mainStore = store.substring(0, store.indexOf("--"));
                 }
-                
-                AVMLock lock = fLockingService.getLock(mainStore, lockPath);
-                out.print("lock: ");
-                if (lock != null)
+
+                try
                 {
-                   out.print("store = ");
-                   out.print(lock.getStore());
-                   out.print(", owners = ");
-                   out.println(lock.getOwners());
+                    AVMLock lock = fLockingService.getLock(mainStore, lockPath);
+                    out.print("lock: ");
+                    if (lock != null)
+                    {
+                        out.print("store = ");
+                        out.print(lock.getStore());
+                        out.print(", owners = ");
+                        out.println(lock.getOwners());
+                    }
+                    else
+                    {
+                        out.println("No locks found");
+                    }
                 }
-                else
+                catch (AVMNotFoundException avmerr)
                 {
-                   out.println("No locks found");
+                    out.println("No locks found");
                 }
             }
             else if (command[0].equals("deletenodeproperty"))
             {
-               if (command.length != 3)
-               {
-                  return "Syntax Error.";
-               }
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
 
-               fService.deleteNodeProperty(command[1], QName.createQName(command[2]));
-               out.println("deleted property " + command[2] + " of " + command[1]);
+                fService.deleteNodeProperty(command[1], QName.createQName(command[2]));
+                out.println("deleted property " + command[2] + " of " + command[1]);
             }
             else if (command[0].equals("history"))
             {
@@ -540,7 +587,7 @@ public class AVMInterpreter
                 }
                 reader.close();
             }
-            */
+             */
             else if (command[0].equals("ca"))
             {
                 if (command.length != 5)
@@ -578,10 +625,10 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 List<AVMDifference> diffs = fSyncService.compare(Integer.parseInt(command[2]),
-                                                                 command[1],
-                                                                 Integer.parseInt(command[4]),
-                                                                 command[3],
-                                                                 null);
+                        command[1],
+                        Integer.parseInt(command[4]),
+                        command[3],
+                        null);
                 for (AVMDifference diff : diffs)
                 {
                     out.println(diff);
@@ -594,7 +641,7 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 AVMDifference diff = new AVMDifference(Integer.parseInt(command[2]), command[1],
-                                                       -1, command[3], AVMDifference.NEWER);
+                        -1, command[3], AVMDifference.NEWER);
                 List<AVMDifference> diffs = new ArrayList<AVMDifference>();
                 diffs.add(diff);
                 fSyncService.update(diffs, null, false, false, false, false, null, null);
@@ -614,78 +661,132 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 fSyncService.flatten(command[1], command[2]);
-           }
-           else if (command[0].equals("getnodeaspects"))
-           {
-               if (command.length != 3)
-               {
-                  return "Syntax Error.";
-               }
-
-               final Set<QName> aspects = fService.getAspects(Integer.parseInt(command[2]), command[1]);
-               for (final QName qn : aspects)
-               {
-                  out.println(qn.toString());
-               }
-           }
-           else if (command[0].equals("addnodeaspect"))
-           {
-               if (command.length != 3)
-               {
-                  return "Syntax Error.";
-               }
-
-               fService.addAspect(command[1], QName.createQName(command[2]));
-           }
-           else if (command[0].equals("deletenodeaspect"))
-           {
-               if (command.length != 3)
-               {
-                  return "Syntax Error.";
-               }
-
-               fService.removeAspect(command[1], QName.createQName(command[2]));
-           }
-           else if (command[0].equals("setnodeproperty"))
-           {
-              if (command.length < 4)
-              {
-                 return "Syntax Error.";
-              }
-
-              QName valueQName = QName.createQName(command[2]);
-
-              String propertyValue = "";
-
-              // If multiple values are specified then concatenate the values
-              if (command.length > 4)
-              {
-                  StringBuffer sb = new StringBuffer();
-                  for (int i=3; i<command.length; i++)
-                  {
-                      // Add each value in turn
-                      sb.append(command[i]);
-                  }
-                  propertyValue = sb.toString();
-              }
-              else
-              {
-                  propertyValue = command[3];
-              }
-
-              // Pass setNodeProperty() the serializable value
-
-              Serializable serializableValue = convertValueFromSring(propertyValue);
-              QName valueTypeQName = getValueTypeQName(propertyValue);
-
-              fService.setNodeProperty(command[1], valueQName, new PropertyValue(valueTypeQName, serializableValue));
-
-              out.println("set property " + command[2] + " of " + command[1]);
             }
+            else if (command[0].equals("getnodeaspects"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+
+                final Set<QName> aspects = fService.getAspects(Integer.parseInt(command[2]), command[1]);
+                for (final QName qn : aspects)
+                {
+                    out.println(qn.toString());
+                }
+            }
+            else if (command[0].equals("addnodeaspect"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+
+                fService.addAspect(command[1], QName.createQName(command[2]));
+            }
+            else if (command[0].equals("deletenodeaspect"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+
+                fService.removeAspect(command[1], QName.createQName(command[2]));
+            }
+            else if (command[0].equals("setnodeproperty"))
+            {
+                if (command.length < 4)
+                {
+                    return "Syntax Error.";
+                }
+
+                QName valueQName = QName.createQName(command[2]);
+
+                String propertyValue = "";
+
+                // If multiple values are specified then concatenate the values
+                if (command.length > 4)
+                {
+                    StringBuffer sb = new StringBuffer();
+                    for (int i=3; i<command.length; i++)
+                    {
+                        sb.append(command[i]);
+                    }
+                    propertyValue = sb.toString();
+                }
+                else
+                {
+                    propertyValue = command[3];
+                }
+
+                // Pass setNodeProperty() the serializable value
+
+                Serializable serializableValue = convertValueFromSring(propertyValue);
+                QName valueTypeQName = getValueTypeQName(propertyValue);
+
+                fService.setNodeProperty(command[1], valueQName, new PropertyValue(valueTypeQName, serializableValue));
+
+                out.println("set property " + command[2] + " of " + command[1]);
+            }
+            else if (command[0].equals("setstoreproperty"))
+            {
+                if (command.length < 4)
+                {
+                    return "Syntax Error.";
+                }
+
+                QName valueQName = QName.createQName(command[2]);
+
+                String propertyValue = "";
+
+                // If multiple values are specified then concatenate the values
+                if (command.length > 4)
+                {
+                    StringBuffer sb = new StringBuffer();
+                    for (int i=3; i<command.length; i++)
+                    {
+                        sb.append(command[i]);
+                    }
+                    propertyValue = sb.toString();
+                }
+                else
+                {
+                    propertyValue = command[3];
+                }
+
+                Serializable serializableValue = convertValueFromSring(propertyValue);
+                QName valueTypeQName = getValueTypeQName(propertyValue);
+
+                fService.setStoreProperty(command[1], valueQName, new PropertyValue(valueTypeQName, serializableValue));
+
+                out.println("set property " + command[2] + " of " + command[1]);
+            }
+            else if (command[0].equals("setstorepermission"))
+            {
+                if (command.length != 4)
+                {
+                    return "Syntax Error.";
+                }
+                
+                fPermissionService.setPermission(
+                        new StoreRef(StoreRef.PROTOCOL_AVM, command[1]), command[2], command[3], true);
+            }
+            else if (command[0].equals("clearstorepermission"))
+            {
+                if (command.length != 3)
+                {
+                    return "Syntax Error.";
+                }
+                
+                fPermissionService.clearPermission(
+                        new StoreRef(StoreRef.PROTOCOL_AVM, command[1]), command[2]);
+            }
+            // unknown or invalid command specified
             else
             {
                 return "Syntax Error.";
             }
+            
             out.flush();
             String retVal = new String(bout.toByteArray());
             out.close();
@@ -715,7 +816,7 @@ public class AVMInterpreter
             }
         }
     }
-    
+
     private static Serializable convertValueFromSring(String sValue)
     {
         Serializable retValue = "";
@@ -753,7 +854,7 @@ public class AVMInterpreter
             DateFormat df = DateFormat.getDateTimeInstance(dateStyle, timeStyle)df.pa
             Calendar cal = Calendar.getInstance();
             retValue = new NodeRef(dateTimePattern.matcher(seq).group(1));
-            */
+             */
         } else
         {
             retValue = sValue;
@@ -791,7 +892,7 @@ public class AVMInterpreter
             DateFormat df = DateFormat.getDateTimeInstance(dateStyle, timeStyle)df.pa
             Calendar cal = Calendar.getInstance();
             retValue = new NodeRef(dateTimePattern.matcher(seq).group(1));
-            */
+             */
             typeQName = DataTypeDefinition.DATETIME;
         } else
         {

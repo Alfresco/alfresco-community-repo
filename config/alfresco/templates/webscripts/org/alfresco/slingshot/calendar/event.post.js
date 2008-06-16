@@ -49,6 +49,16 @@ function createEvent(siteId, params)
   var to = new Date(toDate);
   event.properties["ia:toDate"] = to;
   event.save();
+  
+	try {
+		activities.postActivity("org.alfresco.calendar.event-created", siteId, "calendar", '{ "eventName" : ' + params["what"] + ' }');	
+	}
+	catch(e) {
+		if (logger.isLoggingEnabled()) 
+		{
+			logger.log(e);
+		}
+	}
 
   return {
     "name": params["what"],

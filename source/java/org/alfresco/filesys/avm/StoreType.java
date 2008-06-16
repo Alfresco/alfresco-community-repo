@@ -27,16 +27,20 @@ public class StoreType {
 	
 	public static final int Normal			= 0;
 	
+    // Site data store types
+    
+    public static final int SiteStore       = 1;
+    
 	// Web project store types
 	
-	public static final int WebAuthorMain		= 1;
-	public static final int WebAuthorPreview	= 2;
-	public static final int WebStagingPreview	= 3;
-	public static final int WebStagingMain      = 4;
+	public static final int WebAuthorMain		= 2;
+	public static final int WebAuthorPreview	= 3;
+	public static final int WebStagingPreview	= 4;
+	public static final int WebStagingMain      = 5;
 	
 	// Store type strings
 	
-	private static final String[] _types = { "Normal", "AuthorMain", "AuthorPreview", "StagingPreview", "StagingMain" };
+	private static final String[] _types = { "Normal", "SiteStore", "AuthorMain", "AuthorPreview", "StagingPreview", "StagingMain" };
 	
 	/**
 	 * Return a store type as a string

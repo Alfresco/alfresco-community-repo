@@ -340,6 +340,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 		if ( optList.containsString("normal"))
                 			showOptions += AVMContext.ShowNormalStores;
                 		
+                        if ( optList.containsString("site"))
+                            showOptions += AVMContext.ShowSiteStores;
+                        
                 		if ( optList.containsString("author"))
                 			showOptions += AVMContext.ShowAuthorStores;
                 		
@@ -353,8 +356,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 	{
                 		// Old style show options
                 		
-                		showOptions = AVMContext.ShowNormalStores + AVMContext.ShowAuthorStores +
-                					  AVMContext.ShowPreviewStores + AVMContext.ShowStagingStores;
+                		showOptions = AVMContext.ShowNormalStores + AVMContext.ShowSiteStores +
+                                      AVMContext.ShowAuthorStores + AVMContext.ShowPreviewStores +
+                                      AVMContext.ShowStagingStores;
                 	}
 
                     // Create the context
@@ -2365,6 +2369,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
 	                                webProjName = storeName.substring( 0, storeName.length() - "--preview".length());
 	                            }
+                                else if ( props.containsKey(QName.createQName(null, ".sitestore")))
+                                {
+                                    // Site data store type
+                                    
+                                    storeType = StoreType.SiteStore;
+                                }
 	                            
 	                            // DEBUG
 	                            
@@ -2378,12 +2388,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 	                            	// Create the pseudo folder for the store
 	                            	
 	                            	StorePseudoFile storeFolder = new StorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, storeType);
-	                            	if ( storeType != StoreType.Normal)
+	                            	if (storeType == StoreType.WebAuthorMain || storeType == StoreType.WebAuthorPreview ||
+                                        storeType == StoreType.WebStagingMain || storeType == StoreType.WebStagingPreview)
 	                            	{
 	                            		storeFolder.setWebProject( webProjName);
 	                            		storeFolder.setUserName( userName);
 	                            	}
-
+	                            	
 	                            	// Add the store pseudo folder to the root folder file list
 	                            	
 	                                fstate.addPseudoFile( storeFolder);
@@ -2903,7 +2914,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 								filterList.addFile( storeFolder);
 						}
 					}
-					else if ( avmCtx.showNormalStores())
+					else if ( avmCtx.showNormalStores() || avmCtx.showSiteStores())
 					{
 						// Store is not linked to a web project, allow access to the store
 						

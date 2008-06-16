@@ -61,9 +61,10 @@ public class AVMContext extends AlfrescoContext
 	// Store types to show in the virtualization view
 	
 	public static final int ShowNormalStores		= 0x0001;
-	public static final int ShowStagingStores		= 0x0002;
-	public static final int ShowAuthorStores		= 0x0004;	
-	public static final int ShowPreviewStores		= 0x0008;
+    public static final int ShowSiteStores          = 0x0002;
+	public static final int ShowStagingStores		= 0x0004;
+	public static final int ShowAuthorStores		= 0x0008;	
+	public static final int ShowPreviewStores		= 0x0010;
 	
     // Store, root path and version
     
@@ -183,6 +184,16 @@ public class AVMContext extends AlfrescoContext
     }
     
     /**
+     * Check if site data stores should be shown in the virtualization view
+     * 
+     * @return boolean
+     */
+    public final boolean showSiteStores()
+    {
+        return (m_showOptions & ShowSiteStores) != 0 ? true : false;
+    }
+    
+    /**
      * Check if author stores should be shown in the virtualization view
      * 
      * @return boolean
@@ -222,21 +233,24 @@ public class AVMContext extends AlfrescoContext
     {
     	boolean showStore = false;
     	
-    	switch ( storeType)
+    	switch (storeType)
     	{
-    	case StoreType.Normal:
-    		showStore = showNormalStores();
-    		break;
-    	case StoreType.WebAuthorMain:
-    		showStore = showAuthorStores();
-    		break;
-    	case StoreType.WebStagingMain:
-    		showStore = showStagingStores();
-    		break;
-    	case StoreType.WebAuthorPreview:
-    	case StoreType.WebStagingPreview:
-    		showStore = showPreviewStores();
-    		break;
+        	case StoreType.Normal:
+        		showStore = showNormalStores();
+        		break;
+            case StoreType.SiteStore:
+                showStore = showSiteStores();
+                break;
+        	case StoreType.WebAuthorMain:
+        		showStore = showAuthorStores();
+        		break;
+        	case StoreType.WebStagingMain:
+        		showStore = showStagingStores();
+        		break;
+        	case StoreType.WebAuthorPreview:
+        	case StoreType.WebStagingPreview:
+        		showStore = showPreviewStores();
+        		break;
     	}
     	
     	return showStore;

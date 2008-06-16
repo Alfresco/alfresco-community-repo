@@ -41,6 +41,8 @@
             (AVMSyncService)RawServices.Instance().getContext().getBean("AVMSyncService"));
         fgInterpreter.setAvmLockingService(
             (AVMLockingService)RawServices.Instance().getContext().getBean("AVMLockingService"));
+        fgInterpreter.setPermissionService(
+            (PermissionService)RawServices.Instance().getContext().getBean("PermissionService"));
         fgInterpreter.setBulkLoader(fgLoader);
     }
         

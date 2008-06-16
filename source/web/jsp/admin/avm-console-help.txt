@@ -60,6 +60,36 @@ storename as above.
 
 ------
 
+setstoreproperty - Set the value of store property.
+
+setstoreproperty, storename, qname, value
+
+value - the new property value - the type will be auto-detected. At present only TEXT
+and INT types are suppored as well as collections of these types. Collections 
+can be specified using a comma seperated list enclosed in square brackets.
+
+qname - the property name in the form {namespaceURI}localName
+
+------
+
+setstorepermission - Set a permission mask on a store.
+
+setstorepermission, storename, authority, permission
+
+authority - the user or group identifier.
+
+permission - the permission name to set.
+
+------
+
+clearstorepermission - Clears a permission mask on a store for a given authority.
+
+clearstorepermission, storename, authority
+
+authority - the user or group identifier.
+
+------
+
 load - Loads content recursively into an avm directory.
 
 load, fspath, avmpath
@@ -238,7 +268,7 @@ qname - a property name in the form {namespaceURI}localName
 
 ------
 
-setnodeproperty - Set the value of node propery.
+setnodeproperty - Set the value of node property.
 
 setnodeproperty, avmpath, qname, value
 
@@ -247,6 +277,24 @@ NODE_REF and INT types are suppored as well as collections of these types. Colle
 can be specified using a comma seperated list enclosed in square brackets.
 
 qname - the property name in the form {namespaceURI}localName
+
+------
+
+setnodepermission - Set a permission mask on a node.
+
+setnodepermission, avmpath, authority, permission
+
+authority - the user or group identifier.
+
+permission - the permission name to set.
+
+------
+
+clearnodepermission - Clears a permission mask on a node for a given authority.
+
+clearnodepermission, avmpath, authority
+
+authority - the user or group identifier.
 
 ------
 

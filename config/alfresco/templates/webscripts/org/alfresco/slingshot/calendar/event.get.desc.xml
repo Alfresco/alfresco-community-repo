@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>eventdetails</shortname>
+  <description>Event Action - Display event details</description>
+  <url>/calendar/event/{siteid}/{eventname}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

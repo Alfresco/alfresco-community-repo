@@ -63,7 +63,8 @@ function createEvent(siteId, params)
   return {
     "name": params["what"],
     "from": from,
-    "to": to
+    "to": to,
+    "uri": "/calendar/event/" + siteId + "/" + event.name
   };
 };
 

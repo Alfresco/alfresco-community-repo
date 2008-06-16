@@ -97,6 +97,8 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
            format = "atomentry";
         }
         
+        Map<String, Object> model = new HashMap<String, Object>();
+        
         // if site is null then either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
         SiteInfo siteInfo = siteService.getSite(siteId);
         if (siteInfo == null)
@@ -104,35 +106,37 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
             String currentUser = AuthenticationUtil.getCurrentUserName();
             status.setCode(Status.STATUS_UNAUTHORIZED);
             logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
-            return null;
-        }
-        
-        Map<String, Object> model = new HashMap<String, Object>();
-        
-        List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
-        
-        if (format.equals("json"))
-        { 
-            model.put("feedEntries", feedEntries);
-            model.put("siteId", siteId);
+            
+            model.put("feedEntries", null);
+            model.put("siteId", "");
         }
         else
-        {
-            List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
-            try
-            { 
-                for (String feedEntry : feedEntries)
-                {
-                    activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
-                }
-            }
-            catch (JSONException je)
-            {    
-                throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
-            }
+        {      
+            List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
             
-            model.put("feedEntries", activityFeedModels);
-            model.put("siteId", siteId);
+            if (format.equals("json"))
+            { 
+                model.put("feedEntries", feedEntries);
+                model.put("siteId", siteId);
+            }
+            else
+            {
+                List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+                try
+                { 
+                    for (String feedEntry : feedEntries)
+                    {
+                        activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
+                    }
+                }
+                catch (JSONException je)
+                {    
+                    throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+                }
+                
+                model.put("feedEntries", activityFeedModels);
+                model.put("siteId", siteId);
+            }
         }
         
         return model;

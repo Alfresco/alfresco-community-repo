@@ -1479,4 +1479,16 @@
         </property>
     </bean>
     
+    <bean id="patch.createSiteStore" class="org.alfresco.repo.admin.patch.impl.SiteStorePatch" parent="basePatch">
+        <property name="id"><value>patch.createSiteStore</value></property>
+        <property name="description"><value>patch.createSiteStore.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>126</value></property>
+        <property name="targetSchema"><value>127</value></property>
+        <!-- helper beans -->
+        <property name="siteAVMBootstrap">
+            <ref bean="siteAVMBootstrap" />
+        </property>
+    </bean>
+    
 </beans>

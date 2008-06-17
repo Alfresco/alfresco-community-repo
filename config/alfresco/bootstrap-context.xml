@@ -309,6 +309,17 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="siteAVMBootstrap" class="org.alfresco.repo.site.SiteAVMBootstrap">
+        <property name="avmService" ref="AVMService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="storename">
+            <value>sitestore</value>
+        </property>
+        <property name="rootdir">
+            <value>alfresco</value>
+        </property>
+    </bean>
 
     <import resource="classpath:alfresco/bootstrap/st-admin-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-admin-context.xml"/>

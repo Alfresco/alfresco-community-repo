@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>People</shortname>
+   <description>Adds a new person based on the details provided.</description>
+   <url>/api/people</url>
+   <format default="json" />
+   <authentication>guest</authentication>
+   <transaction>required</transaction>
+</webscript>

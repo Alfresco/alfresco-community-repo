@@ -1,0 +1,11 @@
+<webscript>
+   <shortname>People</shortname>
+   <description>
+      Get collection of people stored in the repository. This can optionally be
+      filtered according to some given filter query string
+   </description>
+   <url>/api/people?filter={filterQuery?}</url>
+   <format default="json" />
+   <authentication>guest</authentication>
+   <transaction>required</transaction>
+</webscript>

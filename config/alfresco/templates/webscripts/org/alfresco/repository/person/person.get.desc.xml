@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Person</shortname>
+   <description>Get the details of a person.</description>
+   <url>/api/person/{userName}</url>
+   <format default="json" />
+   <authentication>guest</authentication>
+   <transaction>required</transaction>
+</webscript>

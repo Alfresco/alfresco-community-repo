@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,6 +27,7 @@ package org.alfresco.repo.jscript;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,6 +50,18 @@ public final class People extends BaseScopableProcessorExtension
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
+    private PersonService personService;
+    private MutableAuthenticationDao mutableAuthenticationDao;
+    
+    /**
+     * Set the mutable authentication dao
+     * 
+     * @param mutableAuthenticationDao Mutable Authentication DAO 
+     */
+    public void setMutableAuthenticationDao(MutableAuthenticationDao mutableAuthenticationDao)
+    {
+        this.mutableAuthenticationDao = mutableAuthenticationDao;
+    }
 
     /**
      * Set the service registry
@@ -71,11 +84,23 @@ public final class People extends BaseScopableProcessorExtension
     }
     
     /**
+     * Set the authority service
+     * 
      * @param authorityService The authorityService to set.
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+    
+    /**
+     * Set the person service
+     * 
+     * @param personService The personService to set.
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
     
     /**
@@ -85,35 +110,81 @@ public final class People extends BaseScopableProcessorExtension
      */
     public void deletePerson(String username)
     {
-        PersonService personService = services.getPersonService();
         personService.deletePerson(username);
     }
     
     /**
-     * Create a Person with the given username and password
+     * Create a Person
      * 
-     * @param username the username of the person to be created
-     * @param password the password of the person to be created
-     * @return the person node (type cm:person) created or null if the person already exists
+     * @param createAccount set to 'true' to create an account for the person with a generated user name
+     *      and password
+     * @return the person node (type cm:person) created or null if the person could not be created
      */
-    public ScriptNode createPerson(String username, String password)
+    public ScriptNode createPerson(boolean createAccount)
     {
-        ParameterCheck.mandatoryString("Username", username);
-        ParameterCheck.mandatoryString("Password", password);
+        ParameterCheck.mandatory("createAccount", createAccount);
+        
+        // TODO glen.johnson@alfresco.com - create account with generated user name
+        // and password
+        String userName = null;
+        char[] password = null;
+        if (createAccount)
+        {
+            // TODO glen.johnson@alfresco.com - generate user name that does not already
+            // exist
+            
+            // TODO glen.johnson@alfresco.com - generate password according to some
+            // password generation scheme
+            
+            // TODO glen.johnson@alfresco.com - create user account if user name does not already exist
+            mutableAuthenticationDao.createUser(userName, password);
+        }
+        
+        ScriptNode person = createPerson(userName);
+        return person;
+    }
+    
+    /**
+     * Create a Person with the given user name
+     * 
+     * @param userName the user name of the person to create
+     * @return the person node (type cm:person) created or null if the user name already exists
+     */
+    public ScriptNode createPerson(String userName)
+    {
+        ParameterCheck.mandatoryString("userName", userName);
         
         ScriptNode person = null;
         
         PropertyMap properties = new PropertyMap();
-        properties.put(ContentModel.PROP_USERNAME, username);
-        properties.put(ContentModel.PROP_PASSWORD, password);
-        PersonService personService = services.getPersonService();
-        if (!personService.personExists(username))
+        properties.put(ContentModel.PROP_USERNAME, userName);
+        
+        if (!personService.personExists(userName))
         {
             NodeRef personRef = personService.createPerson(properties); 
             person = new ScriptNode(personRef, services, getScope()); 
         }
         
         return person;
+    }
+    
+    /**
+     * Get the collection of people stored in the repository.
+     * An optional filter query may be provided by which to filter the people collection.
+     * 
+     * @param filter filter query string by which to filter the collection of people.
+     *          If <pre>null</pre> then all people stored in the repository are returned
+     *          
+     * @return people collection as a JavaScript array
+     */
+    public Scriptable getPeople(String filter)
+    {
+        Object[] people = personService.getAllPeople().toArray();
+        
+        // TODO glen.johnson@alfresco.com - if filterQuery parameter provided, then filter the collection
+        // of people
+        
+        return Context.getCurrentContext().newArray(getScope(), people);
     }
     
     /**
@@ -126,7 +197,6 @@ public final class People extends BaseScopableProcessorExtension
     {
         ParameterCheck.mandatoryString("Username", username);
         ScriptNode person = null;
-        PersonService personService = services.getPersonService();
         if (personService.personExists(username))
         {
             NodeRef personRef = personService.getPerson(username);

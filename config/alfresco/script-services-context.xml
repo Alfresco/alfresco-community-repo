@@ -114,6 +114,12 @@
         <property name="authorityService">
             <ref bean="AuthorityService"/>
         </property>
+        <property name="personService">
+            <ref bean="PersonService"/>
+        </property>
+        <property name="mutableAuthenticationDao">
+            <ref bean="authenticationDao"/>
+        </property>
     </bean>
 
     <bean id="sessionScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Session">

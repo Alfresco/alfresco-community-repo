@@ -75,6 +75,7 @@ public abstract class BaseServlet extends HttpServlet
    {
       validRedirectJSPs.add("/jsp/browse/browse.jsp");
       validRedirectJSPs.add("/jsp/admin/admin-console.jsp");
+      validRedirectJSPs.add("/jsp/admin/avm-console.jsp");
       validRedirectJSPs.add("/jsp/admin/node-browser.jsp");
       validRedirectJSPs.add("/jsp/admin/store-browser.jsp");
       validRedirectJSPs.add("/jsp/users/user-console.jsp");

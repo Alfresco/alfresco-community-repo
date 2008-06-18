@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.ParameterCheck;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -69,6 +70,7 @@ public final class Search extends BaseScopableProcessorExtension
     /** Repository helper */
     private Repository repository;
 
+
     /**
      * Set the default store reference
      * 
@@ -76,6 +78,11 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public void setStoreUrl(String storeRef)
     {
+        // ensure this is not set again by a script instance!
+        if (this.storeRef != null)
+        {
+            throw new IllegalStateException("Default store URL can only be set once.");
+        }
         this.storeRef = new StoreRef(storeRef);
     }
 
@@ -99,6 +106,9 @@ public final class Search extends BaseScopableProcessorExtension
         this.repository = repository;
     }
 
+    
+    // JavaScript API
+    
     /**
      * Find a single Node by the Node reference
      * 
@@ -108,7 +118,17 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public ScriptNode findNode(NodeRef ref)
     {
-        return findNode(ref.toString());
+        ParameterCheck.mandatory("ref", ref);
+        String query = "ID:" + LuceneQueryParser.escape(ref.toString());
+        Object[] result = query(ref.getStoreRef().toString(), query, SearchService.LANGUAGE_LUCENE);
+        if (result.length != 0)
+        {
+            return (ScriptNode)result[0];
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -120,16 +140,8 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public ScriptNode findNode(String ref)
     {
-        String query = "ID:" + LuceneQueryParser.escape(ref);
-        Object[] result = query(query, SearchService.LANGUAGE_LUCENE);
-        if (result.length != 0)
-        {
-            return (ScriptNode)result[0];
-        }
-        else
-        {
-            return null;
-        }
+        ParameterCheck.mandatoryString("ref", ref);
+        return findNode(new NodeRef(ref));
     }
 
     /**
@@ -157,6 +169,8 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public ScriptNode findNode(String referenceType, String[] reference)
     {
+        ParameterCheck.mandatoryString("referenceType", referenceType);
+        ParameterCheck.mandatory("reference", reference);
         ScriptNode result = null;
         NodeRef nodeRef = this.repository.findNodeRef(referenceType, reference);
         if (nodeRef != null)
@@ -175,9 +189,22 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public Scriptable xpathSearch(String search)
     {
+        return xpathSearch(null, search);
+    }
+    
+    /**
+     * Execute a XPath search
+     * 
+     * @param store         Store reference to search against i.e. workspace://SpacesStore
+     * @param search        XPath search string to execute
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable xpathSearch(String store, String search)
+    {
         if (search != null && search.length() != 0)
         {
-            Object[] results = query(search, SearchService.LANGUAGE_XPATH);
+            Object[] results = query(store, search, SearchService.LANGUAGE_XPATH);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -195,9 +222,22 @@ public final class Search extends BaseScopableProcessorExtension
      */
     public Scriptable luceneSearch(String search)
     {
+        return luceneSearch(null, search);
+    }
+    
+    /**
+     * Execute a Lucene search
+     * 
+     * @param store         Store reference to search against i.e. workspace://SpacesStore
+     * @param search        Lucene search string to execute
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable luceneSearch(String store, String search)
+    {
         if (search != null && search.length() != 0)
         {
-            Object[] results = query(search, SearchService.LANGUAGE_LUCENE);
+            Object[] results = query(store, search, SearchService.LANGUAGE_LUCENE);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -209,13 +249,28 @@ public final class Search extends BaseScopableProcessorExtension
     /**
      * Execute a Lucene search (sorted)
      * 
-     * @param search  Lucene search string to execute
+     * @param search   Lucene search string to execute
      * @param sortKey  property name to sort on
-     * @param asc  true => ascending sort
+     * @param asc      true => ascending sort
      * 
      * @return JavaScript array of Node results from the search - can be empty but not null
      */
     public Scriptable luceneSearch(String search, String sortColumn, boolean asc)
+    {
+        return luceneSearch(null, search, sortColumn, asc);
+    }
+    
+    /**
+     * Execute a Lucene search (sorted)
+     * 
+     * @param store    Store reference to search against i.e. workspace://SpacesStore
+     * @param search   Lucene search string to execute
+     * @param sortKey  property name to sort on
+     * @param asc      true => ascending sort
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable luceneSearch(String store, String search, String sortColumn, boolean asc)
     {
         if (search == null || search.length() == 0)
         {
@@ -223,12 +278,12 @@ public final class Search extends BaseScopableProcessorExtension
         }
         if (sortColumn == null || sortColumn.length() == 0)
         {
-            return luceneSearch(search);
+            return luceneSearch(store, search);
         }
         
         SortColumn[] sort = new SortColumn[1];
         sort[0] = new SortColumn(sortColumn, asc);
-        Object[] results = query(search, sort, SearchService.LANGUAGE_LUCENE);
+        Object[] results = query(store, search, sort, SearchService.LANGUAGE_LUCENE);
         return Context.getCurrentContext().newArray(getScope(), results);
     }
     
@@ -272,7 +327,7 @@ public final class Search extends BaseScopableProcessorExtension
         
         if (search != null)
         {
-            Object[] results = query(search, SearchService.LANGUAGE_LUCENE);
+            Object[] results = query(null, search, SearchService.LANGUAGE_LUCENE);
             return Context.getCurrentContext().newArray(getScope(), results);
         }
         else
@@ -303,28 +358,31 @@ public final class Search extends BaseScopableProcessorExtension
     /**
      * Execute the query
      * 
-     * Removes any duplicates that may be present (ID search can cause duplicates - it is better to remove them here)
+     * Removes any duplicates that may be present (ID search can cause duplicates -
+     * it is better to remove them here)
      * 
+     * @param store     StoreRef to search against - null for default configured store
      * @param search    Lucene search to execute
      * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String search, String language)
+    private Object[] query(String store, String search, String language)
     {   
-        LinkedHashSet<ScriptNode> set = new LinkedHashSet<ScriptNode>();
-
+        LinkedHashSet<ScriptNode> set = null;
+        
         // perform the search against the repo
         ResultSet results = null;
         try
         {
             results = this.services.getSearchService().query(
-                    this.storeRef,
+                    store != null ? new StoreRef(store) : this.storeRef,
                     language,
                     search);
-
+            
             if (results.length() != 0)
             {
+                set = new LinkedHashSet<ScriptNode>(results.length(), 1.0f);
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
@@ -343,31 +401,33 @@ public final class Search extends BaseScopableProcessorExtension
                 results.close();
             }
         }
-
-        return set.toArray(new Object[(set.size())]);
+        
+        return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
     }
 
     /**
      * Execute the query
      * 
-     * Removes any duplicates that may be present (ID search can cause duplicates - it is better to remove them here)
+     * Removes any duplicates that may be present (ID search can cause duplicates -
+     * it is better to remove them here)
      * 
+     * @param store     StoreRef to search against - null for default configured store
      * @param search    Lucene search to execute
      * @param sort      Columns to sort by
      * @param language  Search language to use e.g. SearchService.LANGUAGE_LUCENE
      * 
      * @return Array of Node objects
      */
-    private Object[] query(String search, SortColumn[] sort, String language)
+    private Object[] query(String store, String search, SortColumn[] sort, String language)
     {   
-        LinkedHashSet<ScriptNode> set = new LinkedHashSet<ScriptNode>();
-
+        LinkedHashSet<ScriptNode> set = null;
+        
         // perform the search against the repo
         ResultSet results = null;
         try
         {
             SearchParameters sp = new SearchParameters();
-            sp.addStore(this.storeRef);
+            sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
             sp.setLanguage(language);
             sp.setQuery(search);
             if (sort != null)
@@ -379,9 +439,10 @@ public final class Search extends BaseScopableProcessorExtension
             }
             
             results = this.services.getSearchService().query(sp);
-
+            
             if (results.length() != 0)
             {
+                set = new LinkedHashSet<ScriptNode>(results.length(), 1.0f);
                 for (ResultSetRow row: results)
                 {
                     NodeRef nodeRef = row.getNodeRef();
@@ -400,9 +461,10 @@ public final class Search extends BaseScopableProcessorExtension
                 results.close();
             }
         }
-
-        return set.toArray(new Object[(set.size())]);
+        
+        return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
     }
+
 
     /**
      * Search sort column 
@@ -424,5 +486,4 @@ public final class Search extends BaseScopableProcessorExtension
         public String column;
         public boolean asc;
     }
-    
 }

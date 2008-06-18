@@ -52,11 +52,17 @@ function main()
 	  return status.STATUS_NOT_FOUND;
      }
 
-     var props = [
-	  "ia:whatEvent",
-	  "ia:descriptionEvent",
-	  "ia:whereEvent"
-     ];
+	var props = [
+		"what",
+		"desc",
+		"where"
+	];
+
+     var propsmap = {
+	  "what" : "ia:whatEvent",
+	  "desc" : "ia:descriptionEvent",
+	  "where" : "ia:whereEvent"
+     };
 
      for (var i=0; i < props.length; i++)
      {
@@ -67,7 +73,7 @@ function main()
 	       // TODO: deal with formatting date strings correctly
 	       if (value)
 	       {
-		    event.properties[prop] = value;
+		    event.properties[ propsmap[prop] ] = value;
 	       }
 	  }
 	  catch(e)

@@ -1,6 +1,7 @@
 var siteId = args["site"];
 
 model.events = getEvents(siteId);
+model.siteId = siteId;
 
 function getEvents(siteId)
 {

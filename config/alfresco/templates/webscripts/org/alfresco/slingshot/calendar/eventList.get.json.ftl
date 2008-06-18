@@ -11,8 +11,11 @@
 <#if counter &gt; 0>,</#if>
 {
   "name" : "${event.properties["ia:whatEvent"]}",
+  "from": "${event.properties["ia:fromDate"]?string("M/d/yyyy")}",
   "start" : "${event.properties["ia:fromDate"]?string("HH:mm")}",
-  "end" : "${event.properties["ia:toDate"]?string("HH:mm")}"
+  "to" : "${event.properties["ia:toDate"]?string("M/d/yyyy")}",
+  "end" : "${event.properties["ia:toDate"]?string("HH:mm")}",
+  "uri" : "calendar/event/${siteId}/${event.name}"
 }
 <#assign counter = counter + 1>
 <#if !event_has_next>]</#if>

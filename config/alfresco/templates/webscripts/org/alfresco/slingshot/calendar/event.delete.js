@@ -11,31 +11,45 @@ function deleteEvent()
      var params = getTemplateParams();
      if (params === null)
      {
-	  return status.STATUS_BAD_REQUEST;
+	  	return status.STATUS_BAD_REQUEST;
      }
 
      var site = siteService.getSite(params.siteid);
      if (site === null)
      {
-	  return status.STATUS_NOT_FOUND;
+	  	return status.STATUS_NOT_FOUND;
      }
 
      var eventsFolder = site.getContainer("calendar");
      if (eventsFolder === null)
      {
-	  return status.STATUS_NOT_FOUND;
+	  	return status.STATUS_NOT_FOUND;
      }
 
      var event = eventsFolder.childByNamePath(params.eventname);
      if (event === null)
      {
-	  return status.STATUS_NOT_FOUND;
+	 	return status.STATUS_NOT_FOUND;
      }
 
+	 var whatEvent = event.properties["ia:whatEvent"]; 
+	
      if (!event.remove())
      {
-	  return status.STATUS_INTERNAL_SERVER_ERROR;
+	  	return status.STATUS_INTERNAL_SERVER_ERROR;
      }
+
+	try 
+	{
+		activities.postActivity("org.alfresco.calendar.event-deleted", params.siteid, "calendar", '{ "eventName" : ' + whatEvent + ' }')
+	}
+	catch(e) 
+	{
+		if (logger.isLoggingEnabled())
+		{
+			logger.log(e);
+		}
+	}
 
      // Success
      return status.STATUS_NO_CONTENT;
@@ -58,7 +72,7 @@ function getTemplateParams()
      }
 
      return {
-	  "siteid": siteid,
-	  "eventname": eventname
+	  		"siteid": siteid,
+	  		"eventname": eventname
      };
 }

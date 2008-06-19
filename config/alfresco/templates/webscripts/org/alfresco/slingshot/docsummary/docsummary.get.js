@@ -1,4 +1,3 @@
-
 /**
  * Document Summary Component: docsummary
  *
@@ -37,16 +36,17 @@ function getDocs(siteId, filter)
       date.setDate(date.getDate() - 7);
       var fromQuery = date.getFullYear() + "\\-" + (date.getMonth()+1) + "\\-" + date.getDate();
       
-      search.setStoreUrl("workspace://SiteStore");
       var query = "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" +PATH:\"" + 
                   path + "\" +@cm\\:modified:[" + fromQuery + "T00\\:00\\:00 TO " + 
                   toQuery + "T23\\:59\\:59]";
       
-      logger.log("docsummary query = " + query);
+      if (logger.isLoggingEnabled())
+         logger.log("docsummary query = " + query);
       
-      var docs = search.luceneSearch(query, "cm:modified", false);
+      var docs = search.luceneSearch("workspace://SiteStore", query, "cm:modified", false);
       
-      logger.log("number of results = " + docs.length);
+      if (logger.isLoggingEnabled())
+         logger.log("number of results = " + docs.length);
       
       var items = null;
       

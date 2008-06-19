@@ -1,7 +1,3 @@
-/*
-JavaException: org.springframework.dao.DataIntegrityViolationException: could not update: [org.alfresco.repo.domain.hibernate.ChildAssocImpl#567]; nested exception is org.hibernate.exception.ConstraintViolationException: could not update: [org.alfresco.repo.domain.hibernate.ChildAssocImpl#567]
-*/
-
 /**
  * Document List Component: doclist
  *
@@ -25,13 +21,15 @@ function getDoclist(siteId, path, type)
       var site = siteService.getSite(siteId);
       if (site === null)
       {
-         return jsonError("Site not found: " + siteId);
+         status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
+         return;
       }
    
       var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
-         return jsonError("Document Library container not found in: " + siteId + ". (No write permission?)");
+         status.setCode(status.STATUS_BAD_REQUEST, "Document Library container not found in: " + siteId + ". (No write permission?)");
+         return;
       }
 
       /* path input */
@@ -43,13 +41,14 @@ function getDoclist(siteId, path, type)
       {
          parentSpace = parentNode;
       }
+
       if (parentSpace === null)
       {
          parentSpace = parentNode;
       }
 
-      var showDocs = true,
-         showFolders = true;
+      var showDocs = true;
+      var showFolders = true;
       
       if ((type !== null) && (type != ""))
       {
@@ -73,21 +72,11 @@ function getDoclist(siteId, path, type)
    }
    catch(e)
    {
-      return jsonError(e.toString());
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+      return;
    }
 }
 
-
-/* Format and return error object */
-function jsonError(errorString)
-{
-   var obj =
-   {
-      "error": errorString
-   };
-   
-   return obj;
-}
 
 function sortByType(a, b)
 {

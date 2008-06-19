@@ -51,16 +51,15 @@ function main()
       }
       else if (typeof results.status == "object")
       {
+         // Status fields have been manually set
          status.redirect = true;
          for (var s in results.status)
          {
             status[s] = results.status[s];
          }
       }
-      else
-      {
-         model.results = results;
-      }
+
+      model.results = results;
    }
 }
 

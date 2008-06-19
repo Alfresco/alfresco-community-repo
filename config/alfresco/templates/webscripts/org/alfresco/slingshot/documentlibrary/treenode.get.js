@@ -21,13 +21,15 @@ function getTreenode(siteId, path)
       var site = siteService.getSite(siteId);
       if (site === null)
       {
-         return jsonError("Site not found: " + siteId);
+         status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
+         return;
       }
    
       var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
-         return jsonError("Document Library container not found in: " + siteId);
+         status.setCode(status.STATUS_BAD_REQUEST, "Document Library container not found in: " + siteId + ". (No write permission?)");
+         return;
       }
 
       /* path input */
@@ -61,21 +63,11 @@ function getTreenode(siteId, path)
    }
    catch(e)
    {
-      return jsonError(e.toString());
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+      return;
    }
 }
 
-
-/* Format and return error object */
-function jsonError(errorString)
-{
-   var obj =
-   {
-      "error": errorString
-   };
-   
-   return obj;
-}
 
 /* Sort the results by case-insensitive name */
 function sortByName(a, b)

@@ -23,7 +23,7 @@ function runAction(p_rootNode, p_params)
    
    try
    {
-      results.status.redirect = false;
+      //results.status.redirect = false;
       var assetNode = getAssetNode(p_rootNode, p_params.filePath);
 
       // Must have assetNode by this point
@@ -39,8 +39,6 @@ function runAction(p_rootNode, p_params)
          results.status.code = status.STATUS_INTERNAL_SERVER_ERROR;
          return results;
       }
-
-      results.status.code = status.STATUS_NO_CONTENT;
    }
    catch(e)
    {

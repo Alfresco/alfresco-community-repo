@@ -27,30 +27,30 @@ function getTemplateParams()
 
 function main()
 {
-     var params = getTemplateParams();
-     if (params === null)
-     {
-	  return status.STATUS_BAD_REQUEST;
-     }
+	var params = getTemplateParams();
+    if (params === null)
+    {
+		return status.STATUS_BAD_REQUEST;
+    }
 
-     // Get the site
-     var site = siteService.getSite(params.siteid);
-     if (site === null)
-     {
-	  return status.STATUS_NOT_FOUND;
-     }
+    // Get the site
+    var site = siteService.getSite(params.siteid);
+    if (site === null)
+    {
+	 	return status.STATUS_NOT_FOUND;
+    }
 
-     var eventsFolder = site.getContainer("calendar");
-     if (eventsFolder === null)
-     {
-	  return status.STATUS_NOT_FOUND;
-     }
+    var eventsFolder = site.getContainer("calendar");
+    if (eventsFolder === null)
+    {
+	  	return status.STATUS_NOT_FOUND;
+    }
 
-     var event = eventsFolder.childByNamePath(params.eventname);
-     if (event === null)
-     {
-	  return status.STATUS_NOT_FOUND;
-     }
+	var event = eventsFolder.childByNamePath(params.eventname);
+    if (event === null)
+    {
+	 	return status.STATUS_NOT_FOUND;
+    }
 
 	var props = [
 		"what",
@@ -58,32 +58,51 @@ function main()
 		"where"
 	];
 
-     var propsmap = {
-	  "what" : "ia:whatEvent",
-	  "desc" : "ia:descriptionEvent",
-	  "where" : "ia:whereEvent"
-     };
+    var propsmap = {
+		"what" : "ia:whatEvent",
+	  	"desc" : "ia:descriptionEvent",
+	  	"where" : "ia:whereEvent"
+    };
 
-     for (var i=0; i < props.length; i++)
-     {
-	  var prop = props[i];
-	  try
-	  {
+    for (var i=0; i < props.length; i++)
+    {
+		var prop = props[i];
+	  	try
+	  	{
 	       var value = json.get(prop);
-	       // TODO: deal with formatting date strings correctly
 	       if (value)
 	       {
 		    event.properties[ propsmap[prop] ] = value;
 	       }
-	  }
-	  catch(e)
-	  {
+	  	}
+	  	catch(e)
+	  	{
 	       // Couldn't find the property in the JSON data
-	  }
-     }
+	  	}
+	}
+	
+	try 
+	{
+		// Handle date formatting as a separate case
+		var from = new Date(json.get("from") + " " + json.get("start"));
+		event.properties["ia:fromDate"] = from;
+		
+		var to = new Date(json.get("to") + " " + json.get("end"));
+		event.properties["ia:toDate"] = to;
+		
+		var eventName = json.get("what");		
+		activities.postActivity("org.alfresco.calendar.event-updated", params.siteid, "calendar", '{ "eventName" : ' + eventName + ' }');
+	}
+	catch(e)
+	{
+		if (logger.isLoggingEnabled())
+		{
+			logger.log(e);
+		}
+	}
 
-     event.save();
-     return status.STATUS_NO_CONTENT;
+    event.save();
+    return status.STATUS_NO_CONTENT;
 }
 
 var response = main();

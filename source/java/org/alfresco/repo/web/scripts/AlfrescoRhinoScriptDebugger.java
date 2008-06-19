@@ -65,6 +65,12 @@ public class AlfrescoRhinoScriptDebugger extends AlfrescoScriptDebugger
             show();
         }
     }
+    
+    @Override
+    protected String getTitle()
+    {
+        return "Alfresco Repository JavaScript Debugger";
+    }
 
 
     public static class AlfrescoDim extends Dim

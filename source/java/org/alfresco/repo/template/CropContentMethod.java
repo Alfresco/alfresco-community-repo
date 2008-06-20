@@ -26,6 +26,7 @@ package org.alfresco.repo.template;
 
 import java.util.List;
 
+import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.repo.template.BaseContentNode.TemplateContentData;
 
 import freemarker.ext.beans.BeanModel;
@@ -40,7 +41,7 @@ import freemarker.template.TemplateNumberModel;
  * <p>
  * Usage: String cropContent(TemplateContentData content, int length)
  */
-public final class CropContentMethod implements TemplateMethodModelEx
+public final class CropContentMethod extends BaseProcessorExtension implements TemplateMethodModelEx
 {
     /**
      * @see freemarker.template.TemplateMethodModel#exec(java.util.List)

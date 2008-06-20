@@ -117,9 +117,15 @@
         </property>
     </bean>
     
-    <bean id="urlEncodeTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.ISO8601DateFormatMethod">
+    <bean id="urlEncodeTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.UrlEncodeMethod">
         <property name="extensionName">
             <value>urlencode</value>
+        </property>
+    </bean>
+    
+    <bean id="cropContentTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.CropContentMethod">
+        <property name="extensionName">
+            <value>cropContent</value>
         </property>
     </bean>
     

@@ -125,7 +125,6 @@ public class NodeInfoBean implements Serializable
       
       // create api methods
       model.put("date", new Date());
-      model.put("cropContent", new CropContentMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(
               context.getExternalContext().getRequestContextPath()));
       if (nodeRef != null)

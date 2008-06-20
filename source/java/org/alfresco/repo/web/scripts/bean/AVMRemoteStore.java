@@ -28,11 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -47,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * AVM Remote Store service.
  * 
- * @see BaseRemoteStore for API methods.
+ * @see BaseRemoteStore for the available API methods.
  * 
  * @author Kevin Roast
  */
@@ -107,7 +110,8 @@ public class AVMRemoteStore extends BaseRemoteStore
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
-            throw new WebScriptException("Unable to locate file: " + avmPath);
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
         }
         
         ContentReader reader;
@@ -167,6 +171,10 @@ public class AVMRemoteStore extends BaseRemoteStore
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
         }
+        catch (AVMNotFoundException avmErr)
+        {
+            res.setStatus(Status.STATUS_NOT_FOUND);
+        }
     }
 
     /* (non-Javadoc)
@@ -190,20 +198,32 @@ public class AVMRemoteStore extends BaseRemoteStore
     protected void createDocument(WebScriptResponse res, String path, InputStream content)
     {
         String avmPath = buildAVMPath(path);
-        AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
-        if (desc != null)
-        {
-            throw new WebScriptException("Unable to create, file already exists: " + avmPath);
-        }
-        
-        String[] parts = AVMNodeConverter.SplitBase(avmPath);
         try
         {
+            String[] parts = AVMNodeConverter.SplitBase(avmPath);
+            String[] dirs = parts[0].split("/");
+            String parentPath =  dirs[0] + "/" + dirs[1];
+            int index = 2;
+            while (index < dirs.length)
+            {
+                String dirPath = parentPath + "/" + dirs[index];
+                if (this.avmService.lookup(-1, dirPath) == null)
+                {
+                    this.avmService.createDirectory(parentPath, dirs[index]);
+                }
+                parentPath = dirPath;
+                index++;
+            }
+            
             this.avmService.createFile(parts[0], parts[1], content);
         }
         catch (AccessDeniedException ae)
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
+        catch (AVMExistsException avmErr)
+        {
+            res.setStatus(Status.STATUS_CONFLICT);
         }
     }
     
@@ -217,7 +237,8 @@ public class AVMRemoteStore extends BaseRemoteStore
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
-            throw new WebScriptException("Unable to locate file for update: " + avmPath);
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
         }
         
         try
@@ -231,6 +252,53 @@ public class AVMRemoteStore extends BaseRemoteStore
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#listDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, boolean)
+     */
+    @Override
+    protected void listDocuments(WebScriptResponse res, String path, boolean recurse) throws IOException
+    {
+        String avmPath = buildAVMPath(path);
+        AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
+        if (node == null)
+        {
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
+        }
+        
+        try
+        {
+            traverseNode(res.getWriter(), node, recurse);
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
+        finally
+        {
+            res.getWriter().close();
+        }
+    }
+    
+    private void traverseNode(Writer out, AVMNodeDescriptor node, boolean recurse)
+        throws IOException
+    {
+        int cropPoint = this.store.length() + this.rootPath.length() + 3;
+        SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node);
+        for (AVMNodeDescriptor n : listing.values())
+        {
+            if (n.isFile())
+            {
+                out.write(n.getPath().substring(cropPoint));
+                out.write("\n");
+            }
+            else if (recurse && n.isDirectory())
+            {
+                traverseNode(out, n, recurse);
+            }
+        }
+    }
+
     /**
      * @param path      root path relative
      * 
@@ -238,6 +306,6 @@ public class AVMRemoteStore extends BaseRemoteStore
      */
     private String buildAVMPath(String path)
     {
-        return this.store + ":/" + this.rootPath + "/" + path;
+        return this.store + ":/" + this.rootPath + (path != null ? ("/" + path) : "");
     }
 }

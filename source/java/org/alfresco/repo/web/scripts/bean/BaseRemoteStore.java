@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
@@ -69,6 +68,8 @@ import org.apache.commons.logging.LogFactory;
  *      GET has -> return true/false of existence for a document
  *      GET get -> return document content - in addition the usual HTTP headers for the
  *                 character encoding, content type, length and modified date will be supplied
+ *      GET list -> return the list of available document paths under a path
+ *      GET listall -> return the list of available document paths (recursively) under a given path
  *      POST create -> create a new document with request content payload
  *      POST update -> update an existing document with request content payload
  * 
@@ -127,13 +128,13 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         {
             throw new WebScriptException("Remote Store expecting method name.");
         }
-        if (extParts.length < 2)
-        {
-            throw new WebScriptException("Remote Store expecting document path.");
-        }
         
-        // build path as a string and as a list of path elements
-        String path = req.getExtensionPath().substring(extParts[0].length() + 1);
+        // extract path from url extension
+        String path = null;
+        if (extParts.length >= 2)
+        {
+            path = req.getExtensionPath().substring(extParts[0].length() + 1);
+        }
         
         if (logger.isDebugEnabled())
             logger.debug("Remote store method: " + extParts[0] + " path: " + path);
@@ -147,22 +148,49 @@ public abstract class BaseRemoteStore extends AbstractWebScript
             switch (method)
             {
                 case LASTMODIFIED:
+                    if (path == null)
+                    {
+                        throw new WebScriptException("Remote Store expecting document path.");
+                    }
                     lastModified(res, path);
                     break;
                 
                 case HAS:
+                    if (path == null)
+                    {
+                        throw new WebScriptException("Remote Store expecting document path.");
+                    }
                     hasDocument(res, path);
                     break;
                 
                 case GET:
+                    if (path == null)
+                    {
+                        throw new WebScriptException("Remote Store expecting document path.");
+                    }
                     getDocument(res, path);
                     break;
                 
+                case LIST:
+                    listDocuments(res, path, false);
+                    break;
+                
+                case LISTALL:
+                    listDocuments(res, path, true);
+                
                 case CREATE:
+                    if (path == null)
+                    {
+                        throw new WebScriptException("Remote Store expecting document path.");
+                    }
                     createDocument(res, path, httpReq.getInputStream());
                     break;
                 
                 case UPDATE:
+                    if (path == null)
+                    {
+                        throw new WebScriptException("Remote Store expecting document path.");
+                    }
                     updateDocument(res, path, httpReq.getInputStream());
                     break;
             }
@@ -193,29 +221,48 @@ public abstract class BaseRemoteStore extends AbstractWebScript
     /**
      * Gets the last modified timestamp for the document.
      * 
+     * The output will be the last modified date as a long toString().
+     * 
      * @param path  document path to an existing document
      */
     protected abstract void lastModified(WebScriptResponse res, String path)
         throws IOException;
     
     /**
-     * Determines if the document exists
+     * Determines if the document exists.
+     * 
+     * The output will be either the string "true" or the string "false".
      * 
      * @param path  document path
-     * @return  true => exists, false => does not exist
      */
     protected abstract void hasDocument(WebScriptResponse res, String path)
         throws IOException;
 
     /**
-     * Gets a document
+     * Gets a document.
+     * 
+     * The output will be the document content stream.
      * 
      * @param path  document path
-     * @return  input stream onto document
+     * @return  
      * 
      * @throws IOException if the document does not exist in the store
      */
     protected abstract void getDocument(WebScriptResponse res, String path)
+        throws IOException;
+    
+    /**
+     * Lists the document paths under a given path.
+     * 
+     * The output will be the list of relative document paths found under the path.
+     * Separated by newline characters.
+     * 
+     * @param path      document path
+     * @param recurse   true to peform a recursive list, false for direct children only.
+     * 
+     * @throws IOException if the path does not exist in the store
+     */
+    protected abstract void listDocuments(WebScriptResponse res, String path, boolean recurse)
         throws IOException;
     
     /**
@@ -247,6 +294,8 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         LASTMODIFIED,
         HAS,
         GET,
+        LIST,
+        LISTALL,
         CREATE,
         UPDATE
     };

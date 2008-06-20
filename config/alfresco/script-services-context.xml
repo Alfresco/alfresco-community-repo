@@ -120,6 +120,12 @@
         <property name="mutableAuthenticationDao">
             <ref bean="authenticationDao"/>
         </property>
+        <property name="userNameGenerator">
+            <ref bean="userNameGenerator"/>
+        </property>
+        <property name="passwordGenerator">
+            <ref bean="passwordGenerator"/>
+        </property>
     </bean>
 
     <bean id="sessionScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Session">

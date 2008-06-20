@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authentication.PasswordGenerator;
+import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,6 +54,8 @@ public final class People extends BaseScopableProcessorExtension
     private AuthorityService authorityService;
     private PersonService personService;
     private MutableAuthenticationDao mutableAuthenticationDao;
+    private UserNameGenerator usernameGenerator;
+    private PasswordGenerator passwordGenerator;
     
     /**
      * Set the mutable authentication dao
@@ -104,6 +108,26 @@ public final class People extends BaseScopableProcessorExtension
     }
     
     /**
+     * Set the user name generator service
+     * 
+     * @param userNameGenerator the user name generator 
+     */
+    public void setUserNameGenerator(UserNameGenerator userNameGenerator)
+    {
+        this.usernameGenerator = userNameGenerator;
+    }
+    
+    /**
+     * Set the password generator service
+     * 
+     * @param passwordGenerator the password generator
+     */
+    public void setPasswordGenerator(PasswordGenerator passwordGenerator)
+    {
+        this.passwordGenerator = passwordGenerator;
+    }
+    
+    /**
      * Delete a Person with the given username
      * 
      * @param username the username of the person to delete
@@ -114,33 +138,36 @@ public final class People extends BaseScopableProcessorExtension
     }
     
     /**
-     * Create a Person
+     * Create a Person with a generated user name
      * 
-     * @param createAccount set to 'true' to create an account for the person with a generated user name
-     *      and password
+     * @param createUserAccount set to 'true' to create a user account for the person with the generated user name
+     *                              and password
      * @return the person node (type cm:person) created or null if the person could not be created
      */
-    public ScriptNode createPerson(boolean createAccount)
+    public ScriptNode createPerson(boolean createUserAccount)
     {
-        ParameterCheck.mandatory("createAccount", createAccount);
+        ParameterCheck.mandatory("createUserAccount", createUserAccount);
         
-        // TODO glen.johnson@alfresco.com - create account with generated user name
-        // and password
-        String userName = null;
-        char[] password = null;
-        if (createAccount)
+        ScriptNode person = null;
+        
+        // generate user name
+        String userName = usernameGenerator.generateUserName();
+
+        // create person if user name does not already exist
+        if (!personService.personExists(userName))
         {
-            // TODO glen.johnson@alfresco.com - generate user name that does not already
-            // exist
+            person = createPerson(userName);
             
-            // TODO glen.johnson@alfresco.com - generate password according to some
-            // password generation scheme
-            
-            // TODO glen.johnson@alfresco.com - create user account if user name does not already exist
-            mutableAuthenticationDao.createUser(userName, password);
+            if (createUserAccount)
+            {
+                // generate password
+                char[] password = passwordGenerator.generatePassword().toCharArray();
+                
+                // create account for person with generated userName and password 
+                mutableAuthenticationDao.createUser(userName, password);
+            }
         }
         
-        ScriptNode person = createPerson(userName);
         return person;
     }
     

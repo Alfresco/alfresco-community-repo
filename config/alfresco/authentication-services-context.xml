@@ -407,4 +407,18 @@
             <value>false</value>
         </property>
     </bean>
+    
+    <!-- Used for generating user names                                     -->
+    <bean id="userNameGenerator" class="org.alfresco.repo.security.authentication.BasicUserNameGenerator">
+        <property name="userNameLength">
+            <value>6</value>
+        </property>
+    </bean>
+    
+    <!-- Used for generating passwords -->
+    <bean id="passwordGenerator" class="org.alfresco.repo.security.authentication.BasicPasswordGenerator">
+        <property name="passwordLength">
+            <value>8</value>
+        </property>
+    </bean>
 </beans>

@@ -1,43 +1,52 @@
-var SITE_ROLE_COLABORATOR = "collaborator";
+var SITE_ROLE_COLLABORATOR = "collaborator";
 
 /**
  * Processes 'accept' response from invitee
- * 
+ *
  * @method accept
  * @static
- * @param {int} wfid
- * @param (string) username
- * @param (string) sitename 
+ * @param workflowId string id of invite process workflow instance
+ * @param inviteeUserName string user name of invitee 
+ * @param siteShortName string short name of site for which invitee is accepting invitation to join  
  */
-function accept(wfid, username, sitename)
+function accept(workflowId, inviteeUserName, siteShortName)
 {
-    var wfInstance = workflow.getInstance(wfid);
-    var wfPath = wfInstance.getPaths()[0];
-    wfPath.signal("accept");
-    
-    // TODO glen.johnson@alfresco.com Somehow activate inactive Invitee account
-    
-    /* TODO glen.johnson@alfresco.com Find out role string that Invitee
-     * should be added to Site as
-     */
-    
-    // Add Invitee to Site
-    var site = sites.getSite(sitename);
-    site.setMembership(username, SITE_ROLE_COLABORATOR);    
+   var wfInstance = workflow.getInstance(workflowId);
+   var wfPath = wfInstance.getPaths()[0];
+   wfPath.signal("accept");
+   
+   people.enablePerson(inviteeUserName);
+   
+   /* TODO glen johnson at alfresco dot com -
+    * Find out role string that Invitee should be added to Site as
+    */
+   // Add Invitee to Site
+   var site = sites.getSite(siteShortName);
+   site.setMembership(username, SITE_ROLE_COLLABORATOR);
+   
+   // add data to appear in rendition
+   model.response = "accept";
+   model.siteShortName = siteShortName;
 }
 
 /**
- * Processes 'reject' response from invitee
- * 
+ * Processes 'reject' invite response from invitee
+ *
  * @method reject
  * @static
- * @param {int} wfid
+ * @param workflowId string id of invite process workflow instance
+ * @param inviteeUserName string user name of invitee 
+ * @param siteShortName string short name of site for which invitee is rejecting invitation to join  
  */
-function reject(wfid)
+function reject(workflowId, inviteeUserName, siteShortName)
 {
-    var wfInstance = workflow.getInstance(wfid);
-    var wfPath = wfInstance.getPaths()[0];
-    wfPath.signal("reject");
+   var wfInstance = workflow.getInstance(wfid);
+   var wfPath = wfInstance.getPaths()[0];
+   wfPath.signal("reject");
+   
+   // add data to appear in rendition
+   model.response = "reject";
+   model.siteShortName = siteShortName;
 }
 
 function main()
@@ -50,26 +59,44 @@ function main()
       status.message = "response has not been provided as part of URL.";
       status.redirect = true;
    }
-   // check that workflow id has been provided
-   else if (args.wfid === null || args.wfid.length == 0)
+   // check that workflow id URL parameter has been provided
+   else if ((args["workflowId"] === null) || (args["workflowId"].length == 0)) 
    {
-      // handle response not provided
+      // handle workflow id not provided
       status.code = 400;
       status.message = "workflow id parameter has not been provided in the URL.";
       status.redirect = true;
    }
-   else
+   // check that inviteeUserName URL parameter has been provided
+   else if ((args["inviteeUserName"] === null) || (args["inviteeUserName"].length == 0)) 
+   {
+      // handle inviteeUserName not provided
+      status.code = 400;
+      status.message = "inviteeUserName parameter has not been provided in the URL.";
+      status.redirect = true;
+   }
+   // check that siteShortName URL parameter has been provided
+   else if ((args["siteShortName"] === null) || (args["siteShortName"].length == 0)) 
+   {
+      // handle siteShortName not provided
+      status.code = 400;
+      status.message = "siteShortName parameter has not been provided in the URL.";
+      status.redirect = true;
+   }
+   else 
    {
       // process response
       var response = url.extension;
-      var wfid = args.wfid;
+      var workflowId = args["workflowId"];
+      var inviteeUserName = args["inviteeUserName"];
+      var siteShortName = args["siteShortName"];
       if (response == "accept") 
       {
-         accept(wfid);
+         accept(workflowId, inviteeUserName, siteShortName);
       }
       else if (response == "reject") 
       {
-         reject(wfid);
+         reject(workflowId, inviteeUserName, siteShortName);
       }
       else 
       {

@@ -1,7 +1,7 @@
 <webscript>
    <shortname>Invite</shortname>
-   <description>Processes Inviter actions</description>  
-   <url>/api/invite/{action}</url>
+   <description>Processes Inviter actions ('start' or 'cancel' invite)</description>
+   <url>/api/invite/{action}?site={siteShortName}</url>
    <format default="html">extension</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

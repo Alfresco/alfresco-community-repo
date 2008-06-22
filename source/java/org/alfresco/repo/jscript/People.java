@@ -140,16 +140,23 @@ public final class People extends BaseScopableProcessorExtension
     /**
      * Create a Person with a generated user name
      * 
-     * @param createUserAccount set to 'true' to create a user account for the person with the generated user name
-     *                              and password
-     * @return the person node (type cm:person) created or null if the person could not be created
+     * @param createUserAccount
+     *            set to 'true' to create a user account for the person with the
+     *            generated user name and a generated password
+     * @param setAccountEnabled
+     *            set to 'true' to create enabled user account, or 'false' to
+     *            create disabled user account for created person.
+     * @return the person node (type cm:person) created or null if the person
+     *         could not be created
      */
-    public ScriptNode createPerson(boolean createUserAccount)
+    public ScriptNode createPerson(boolean createUserAccount,
+            boolean setAccountEnabled)
     {
         ParameterCheck.mandatory("createUserAccount", createUserAccount);
-        
+        ParameterCheck.mandatory("setAccountEnabled", setAccountEnabled);
+
         ScriptNode person = null;
-        
+
         // generate user name
         String userName = usernameGenerator.generateUserName();
 
@@ -157,20 +164,32 @@ public final class People extends BaseScopableProcessorExtension
         if (!personService.personExists(userName))
         {
             person = createPerson(userName);
-            
+
             if (createUserAccount)
             {
                 // generate password
                 char[] password = passwordGenerator.generatePassword().toCharArray();
-                
-                // create account for person with generated userName and password 
+
+                // create account for person with generated userName and
+                // password
                 mutableAuthenticationDao.createUser(userName, password);
+                mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
             }
         }
-        
+
         return person;
     }
-    
+
+    /**
+     * Enable person's user account
+     * 
+     * @param userName user name of person for which to enable user account
+     */
+    public void enablePerson(String userName)
+    {
+        mutableAuthenticationDao.setEnabled(userName, true);
+    }
+
     /**
      * Create a Person with the given user name
      * 

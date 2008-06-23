@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,9 +24,10 @@
 package org.alfresco.repo.avm;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -35,7 +36,6 @@ import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -46,8 +46,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
  * Base class for AVMService tests.
@@ -161,19 +159,17 @@ public class AVMServiceTestBase extends TestCase
     }
 
     /**
-     * Cleanup after a test. Purge all stores. Move alf_data
-     * directory aside.
+     * Cleanup after a test. Purge main store.
      */
     @Override
     protected void tearDown() throws Exception
     {
         long now = System.currentTimeMillis();
         System.out.println("Timing: " + (now - fStartTime) + "ms");
-        List<AVMStoreDescriptor> descriptors = fService.getStores();
-        for (AVMStoreDescriptor desc : descriptors)
-        {
-            fService.purgeStore(desc.getName());
-        }
+        
+        if (fService.getStore("main") != null) { fService.purgeStore("main"); }
+        
+        // Move alf_data directory aside.
         // fContext.close();
         // File alfData = new File("alf_data");
         // File target = new File("alf_data" + now);

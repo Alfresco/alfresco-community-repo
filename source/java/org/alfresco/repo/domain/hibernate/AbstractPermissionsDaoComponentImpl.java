@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,7 +26,6 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -220,6 +219,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             default:
                 // Force a copy on write if one is required
                 getACLDAO(nodeRef).forceCopy(nodeRef);
+                acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
                 return new CreationReport(acl, Collections.<AclChange> emptyList());
             }
         }

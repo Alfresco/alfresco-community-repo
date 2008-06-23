@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,8 +31,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.DbAccessControlList;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
+import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -40,6 +41,10 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.NameMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,6 +68,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * The AVMRepository.
      */
     private AVMRepository fAVMRepository;
+    
+    /**
+     * The PermissionService
+     */
+    private PermissionService fPermissionService;
 
     /**
      * Do nothing constructor.
@@ -83,6 +93,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
     public void setAvmRepository(AVMRepository avmRepository)
     {
         fAVMRepository = avmRepository;
+    }
+    
+    public void setPermissionService(PermissionService service)
+    {
+        fPermissionService = service;
     }
 
     /**
@@ -132,7 +147,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         else
         {
             // Invoke the recursive implementation.
-            compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder);
+            compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder, true);
         }
         return result;
     }
@@ -146,7 +161,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void compare(int srcVersion, AVMNodeDescriptor srcDesc,
                          int dstVersion, AVMNodeDescriptor dstDesc,
-                         List<AVMDifference> result, NameMatcher excluder)
+                         List<AVMDifference> result, NameMatcher excluder, boolean firstLevel)
     {
         // Determine how the source and destination nodes differ.
         if (excluder != null && (excluder.matches(srcDesc.getPath()) ||
@@ -154,7 +169,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return;
         }
-        int diffCode = compareOne(srcDesc, dstDesc);
+        int diffCode = compareOne(srcDesc, dstDesc, false);
         switch (diffCode)
         {
             case AVMDifference.SAME :
@@ -179,6 +194,33 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 if (srcDesc.isLayeredDirectory() &&
                     srcDesc.getIndirection().equals(dstDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
                 {
+                    // skip firstLevel (root)
+                    if (! firstLevel)
+                    {
+                        // compare directory itself - eg. for an ACL change
+                        int dirDiffCode = compareOne(srcDesc, dstDesc, true);
+                        switch (dirDiffCode)
+                        {
+                            case AVMDifference.OLDER :
+                            case AVMDifference.NEWER :
+                            case AVMDifference.CONFLICT :
+                            {
+                                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
+                                                             dstVersion, dstDesc.getPath(),
+                                                             dirDiffCode));
+                                return; // short circuit
+                            }
+                            case AVMDifference.SAME :
+                            {
+                                break;
+                            }
+                            default :
+                            {
+                                throw new AVMSyncException("Invalid Difference Code " + dirDiffCode + " - Internal Error.");
+                            }
+                        }
+                    }
+                    
                     // Get only a direct listing, since that's all that can be different.
                     Map<String, AVMNodeDescriptor> srcList =
                         fAVMService.getDirectoryListingDirect(srcDesc, true);
@@ -213,7 +255,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         // Otherwise recursively invoke.
                         compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
-                                result, excluder);
+                                result, excluder, false);
                     }
                     return;
                 }
@@ -221,6 +263,33 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 if (dstDesc.isLayeredDirectory() &&
                     dstDesc.getIndirection().equals(srcDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
                 {
+                    // skip firstLevel (root)
+                    if (! firstLevel)
+                    {
+                        // compare directory itself - eg. for an ACL change
+                        int dirDiffCode = compareOne(srcDesc, dstDesc, true);
+                        switch (dirDiffCode)
+                        {
+                            case AVMDifference.OLDER :
+                            case AVMDifference.NEWER :
+                            case AVMDifference.CONFLICT :
+                            {
+                                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
+                                                             dstVersion, dstDesc.getPath(),
+                                                             dirDiffCode));
+                                return; // short circuit
+                            }
+                            case AVMDifference.SAME :
+                            {
+                                break;
+                            }
+                            default :
+                            {
+                                throw new AVMSyncException("Invalid Difference Code " + dirDiffCode + " - Internal Error.");
+                            }
+                        }
+                    }
+                    
                     // Get direct content of destination.
                     Map<String, AVMNodeDescriptor> dstList =
                         fAVMService.getDirectoryListingDirect(dstDesc, true);
@@ -254,7 +323,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         // Otherwise, recursively invoke.
                         compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
-                                result, excluder);
+                                result, excluder, false);
                     }
                     return;
                 }
@@ -286,7 +355,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // Otherwise recursive invocation.
                     compare(srcVersion, srcChild,
                             dstVersion, dstChild,
-                            result, excluder);
+                            result, excluder, false);
                 }
                 // Iterate over the destination.
                 for (String name : dstList.keySet())
@@ -312,7 +381,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             default :
             {
-                throw new AVMSyncException("Invalid Difference Code, Internal Error.");
+                throw new AVMSyncException("Invalid Difference Code " + diffCode + " - Internal Error.");
             }
         }
     }
@@ -404,73 +473,15 @@ public class AVMSyncServiceImpl implements AVMSyncService
             int diffCode = AVMDifference.NEWER;
             if (dstDesc != null)
             {
-                diffCode = compareOne(srcDesc, dstDesc);
+                diffCode = compareOne(srcDesc, dstDesc, false);
             }
             // Keep track of stores updated so that they can all be snapshotted
             // at end of update.
             String dstPath = diff.getDestinationPath();
             destStores.add(dstPath.substring(0, dstPath.indexOf(':')));
-            // Dispatch.
-            switch (diffCode)
-            {
-                case AVMDifference.SAME :
-                {
-                    // Nada to do.
-                    continue;
-                }
-                case AVMDifference.NEWER :
-                {
-                    // You can't delete what isn't there.
-                    linkIn(dstParts[0], dstParts[1], srcDesc, excluder, dstDesc != null && !dstDesc.isDeleted());
-                    continue;
-                }
-                case AVMDifference.OLDER :
-                {
-                    // You can force it.
-                    if (overrideOlder)
-                    {
-                        linkIn(dstParts[0], dstParts[1], srcDesc, excluder, !dstDesc.isDeleted());
-                        continue;
-                    }
-                    // You can ignore it.
-                    if (ignoreOlder)
-                    {
-                        continue;
-                    }
-                    // Or it's an error.
-                    throw new AVMSyncException("Older version prevents update.");
-                }
-                case AVMDifference.CONFLICT :
-                {
-                    // You can force it.
-                    if (overrideConflicts)
-                    {
-                        linkIn(dstParts[0], dstParts[1], srcDesc, excluder, true);
-                        continue;
-                    }
-                    // You can ignore it.
-                    if (ignoreConflicts)
-                    {
-                        continue;
-                    }
-                    // Or it's an error.
-                    throw new AVMSyncException("Conflict prevents update.");
-                }
-                case AVMDifference.DIRECTORY :
-                {
-                    // You can only ignore this.
-                    if (ignoreConflicts)
-                    {
-                        continue;
-                    }
-                    // Otherwise it's an error.
-                    throw new AVMSyncException("Directory conflict prevents update.");
-                }
-                default :
-                {
-                    throw new AVMSyncException("Invalid Difference Code: Internal Error.");
-                }
-            }
+            
+            dispatchUpdate(diffCode, dstParts[0], dstParts[1], excluder, srcDesc, dstDesc, 
+                           ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder);
         }
         for (String storeName : destStores)
         {
@@ -479,6 +490,75 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (fgLogger.isDebugEnabled())
         {
             fgLogger.debug("Raw Update: " + (System.currentTimeMillis() - start));
+        }
+    }
+    
+    private void dispatchUpdate(int diffCode, String parentPath, String name, NameMatcher excluder, AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc, 
+                                boolean ignoreConflicts, boolean ignoreOlder, boolean overrideConflicts, boolean overrideOlder)
+    {
+        // Dispatch.
+        switch (diffCode)
+        {
+            case AVMDifference.SAME :
+            {
+                // Nada to do.
+                return;
+            }
+            case AVMDifference.NEWER :
+            {
+                // You can't delete what isn't there.
+                linkIn(parentPath, name, srcDesc, excluder, dstDesc != null && !dstDesc.isDeleted());
+                return;
+            }
+            case AVMDifference.OLDER :
+            {
+                // You can force it.
+                if (overrideOlder)
+                {
+                    linkIn(parentPath, name, srcDesc, excluder, !dstDesc.isDeleted());
+                    return;
+                }
+                // You can ignore it.
+                if (ignoreOlder)
+                {
+                    return;
+                }
+                // Or it's an error.
+                throw new AVMSyncException("Older version prevents update.");
+            }
+            case AVMDifference.CONFLICT :
+            {
+                // You can force it.
+                if (overrideConflicts)
+                {
+                    linkIn(parentPath, name, srcDesc, excluder, true);
+                    return;
+                }
+                // You can ignore it.
+                if (ignoreConflicts)
+                {
+                    return;
+                }
+                // Or it's an error.
+                throw new AVMSyncException("Conflict prevents update.");
+            }
+            case AVMDifference.DIRECTORY :
+            {
+             	int dirDiffCode = compareOne(srcDesc, dstDesc, true);
+             	if (dirDiffCode == AVMDifference.DIRECTORY)
+             	{
+             		// error
+             		throw new AVMSyncException("Unexpected diff code: " + dirDiffCode);
+                }
+                
+             	dispatchUpdate(dirDiffCode, parentPath, name, excluder, srcDesc, dstDesc, 
+                               ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder);
+             	return;
+            }
+            default :
+            {
+                throw new AVMSyncException("Invalid Difference Code " + diffCode + " - Internal Error.");
+            }
         }
     }
 
@@ -609,7 +689,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             recursiveCopy(newParentDesc, entry.getKey(), entry.getValue(), excluder);
         }
     }
-
+    
     /**
      * The workhorse of comparison and updating. Determine the versioning relationship
      * of two nodes.
@@ -617,7 +697,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * @param dstDesc Descriptor for the destination node.
      * @return One of SAME, OLDER, NEWER, CONFLICT, DIRECTORY
      */
-    private int compareOne(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
+    private int compareOne(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc, boolean compareDir)
     {
         if (srcDesc == null)
         {
@@ -625,21 +705,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         if (srcDesc.getId() == dstDesc.getId())
         {
+            // Identical
             return AVMDifference.SAME;
         }
-        // Matched directories that are not identical are nominally in conflict
-        // but get their own special difference code for comparison logic. The DIRECTORY
-        // difference code never gets returned to callers of compare.
-        if (srcDesc.isDirectory() && dstDesc.isDirectory())
-        {
-            return AVMDifference.DIRECTORY;
-        }
+        
         // Check for mismatched fundamental types.
         if ((srcDesc.isDirectory() && dstDesc.isFile()) ||
             (srcDesc.isFile() && dstDesc.isDirectory()))
         {
             return AVMDifference.CONFLICT;
         }
+        
         // A deleted node on either side means uniform handling because
         // a deleted node can be the descendent of any other type of node.
         if (srcDesc.isDeleted() || dstDesc.isDeleted())
@@ -659,6 +735,58 @@ public class AVMSyncServiceImpl implements AVMSyncService
             }
             // Must be a conflict.
             return AVMDifference.CONFLICT;
+        }
+        
+        if (srcDesc.isDirectory() && dstDesc.isDirectory())
+        {
+            // Both source and destination are both some kind of directory.
+            if (! compareDir)
+            {
+                // note: the DIRECTORY difference code never gets returned to external callers of compare.
+                return AVMDifference.DIRECTORY;
+            }
+            else
+            {
+                // Matched directories that are not identical should be compared (initially) based on ACLs to see if they're newer, older or in conflict
+                
+                if ((srcDesc.isLayeredDirectory() && srcDesc.getIndirection().equals(dstDesc.getPath())) ||
+                    (dstDesc.isLayeredDirectory() && dstDesc.getIndirection().equals(srcDesc.getPath())))
+                {
+                    // Either: Source is a layered directory and points at the destination plain/layered directory
+                    // Or:     Destination is a layered directory and points at the source plain directory
+
+                    // Check properties (eg. title/description)
+                    if (compareNodeProps(srcDesc, dstDesc) == AVMDifference.SAME)
+                    {
+                        // Check ACLs
+                        int dirDiffCode = compareACLs(srcDesc, dstDesc);
+                        if (dirDiffCode != AVMDifference.CONFLICT)
+                        {
+                            return dirDiffCode;
+                        }
+                    }
+                    
+                    // drop through to check common ancestor
+                }
+                
+                // Check common ancestor
+                AVMNodeDescriptor common = fAVMService.getCommonAncestor(srcDesc, dstDesc);
+                // Conflict case.
+                if (common == null)
+                {
+                    return AVMDifference.CONFLICT;
+                }
+                if (common.getId() == srcDesc.getId())
+                {
+                    return AVMDifference.OLDER;
+                }
+                if (common.getId() == dstDesc.getId())
+                {
+                    return AVMDifference.NEWER;
+                }
+                // They must, finally, be in conflict.
+                return AVMDifference.CONFLICT;
+            }
         }
         // At this point both source and destination are both some kind of file.
         if (srcDesc.isLayeredFile())
@@ -720,6 +848,156 @@ public class AVMSyncServiceImpl implements AVMSyncService
             return AVMDifference.NEWER;
         }
         // The must, finally, be in conflict.
+        return AVMDifference.CONFLICT;
+    }
+    
+    // compare node properties
+    private int compareNodeProps(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
+    {
+        Map<QName, PropertyValue> srcProps = fAVMService.getNodeProperties(srcDesc);
+        Map<QName, PropertyValue> dstProps = fAVMService.getNodeProperties(dstDesc);
+        
+        if (srcProps.size() == dstProps.size())
+        {
+            for (Map.Entry<QName, PropertyValue> srcEntry : srcProps.entrySet())
+            {
+                PropertyValue srcValue = srcEntry.getValue();
+                PropertyValue dstValue = dstProps.get(srcEntry.getKey());
+                if ((srcValue == null) && (dstValue == null))
+                {
+                    continue;
+                }
+                else if ((srcValue != null) && (dstValue != null) &&
+                         (srcValue.equals(dstValue)))
+                {
+                    continue;
+                }
+                else
+                {
+                    return AVMDifference.CONFLICT;
+                }
+            }
+            
+            return AVMDifference.SAME;
+        }
+        
+        return AVMDifference.CONFLICT;
+    }
+    
+    // compare ACLs
+    private int compareACLs(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
+    {
+        DbAccessControlList srcAcl = getACL(srcDesc.getPath());
+        DbAccessControlList dstAcl = getACL(dstDesc.getPath());
+        
+        if ((srcAcl == null) && (dstAcl == null))
+        {
+            return AVMDifference.SAME;
+        }
+        else if (srcAcl != null)
+        {
+            if ((dstAcl != null) && (srcAcl.getAclId() == dstAcl.getAclId()))
+            {
+                return AVMDifference.SAME;
+            }
+            
+            if (srcAcl.getAclType().equals(ACLType.LAYERED))
+            {
+                if ((dstAcl == null) || dstAcl.getAclType().equals(ACLType.SHARED) || dstAcl.getAclType().equals(ACLType.LAYERED) || dstAcl.getAclType().equals(ACLType.DEFINING))
+                {
+                    return AVMDifference.SAME;
+                }
+                else
+                {
+                    // TODO review
+                    throw new AVMSyncException("srcAcl type: " + srcAcl.getAclType() + ", unexpected dstAcl type: " + dstAcl.getAclType());
+                }
+            }
+            else if (srcAcl.getAclType().equals(ACLType.DEFINING))
+            {
+                if ((dstAcl == null) || dstAcl.getAclType().equals(ACLType.SHARED) || dstAcl.getAclType().equals(ACLType.LAYERED))
+                {
+                    return AVMDifference.NEWER;
+                }
+                else if (dstAcl.getAclType().equals(ACLType.DEFINING))
+                {
+                    // compare ACEs
+                    NodeRef srcNodeRef = AVMNodeConverter.ToNodeRef(-1, srcDesc.getPath());
+                    Set<AccessPermission> srcSet = fPermissionService.getAllSetPermissions(srcNodeRef);
+                    
+                    NodeRef dstNodeRef = AVMNodeConverter.ToNodeRef(-1, dstDesc.getPath());
+                    Set<AccessPermission> dstSet = fPermissionService.getAllSetPermissions(dstNodeRef);
+                    
+                    if (srcSet.size() == dstSet.size())
+                    {
+                        boolean same = true;
+                        for (AccessPermission srcPerm : srcSet)
+                        {
+                            if (! dstSet.contains(srcPerm))
+                            {
+                                same = false;
+                                break;
+                            }
+                        }
+                        
+                        if (same) 
+                        { 
+                            return AVMDifference.SAME; 
+                        }
+                    }
+                }
+                else
+                {
+                    // TODO review
+                    throw new AVMSyncException("srcAcl type: " + srcAcl.getAclType() + ", unexpected dstAcl type: " + dstAcl.getAclType());
+                }
+            }
+            else if (srcAcl.getAclType().equals(ACLType.SHARED))
+            {
+                if ((dstAcl == null) || dstAcl.getAclType().equals(ACLType.SHARED))
+                {
+                    // compare ACEs
+                    NodeRef srcNodeRef = AVMNodeConverter.ToNodeRef(-1, srcDesc.getPath());
+                    Set<AccessPermission> srcSet = fPermissionService.getAllSetPermissions(srcNodeRef);
+                    
+                    NodeRef dstNodeRef = AVMNodeConverter.ToNodeRef(-1, dstDesc.getPath());
+                    Set<AccessPermission> dstSet = fPermissionService.getAllSetPermissions(dstNodeRef);
+                    
+                    if (srcSet.size() == dstSet.size())
+                    {
+                        boolean same = true;
+                        for (AccessPermission srcPerm : srcSet)
+                        {
+                            if (! dstSet.contains(srcPerm))
+                            {
+                                same = false;
+                                break;
+                            }
+                        }
+                        
+                        if (same)
+                        {
+                            return AVMDifference.SAME;
+                        }
+                    }
+                    
+                    return AVMDifference.CONFLICT;
+                }
+                else
+                {
+                    // TODO review
+                    throw new AVMSyncException("srcAcl type: " + srcAcl.getAclType() + ", unexpected dstAcl type: " + dstAcl.getAclType());
+                }
+            }
+        }
+        else if (srcAcl == null)
+        {
+            if (dstAcl != null)
+            {
+                return AVMDifference.SAME;
+            }
+        }
+        
         return AVMDifference.CONFLICT;
     }
 

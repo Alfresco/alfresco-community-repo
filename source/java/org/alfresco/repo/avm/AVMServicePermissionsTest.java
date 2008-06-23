@@ -117,8 +117,6 @@ public class AVMServicePermissionsTest extends TestCase
 
     private AVMNodeDAO avmNodeDAO;
 
-    private Object fContext;
-
     private AVMSyncService avmSyncService;
 
     public AVMServicePermissionsTest()
@@ -1093,6 +1091,1046 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.purgeStore(storeName + "-layer-layer-layer-base");
         }
 
+    }
+    
+    /*
+     * create directories & file in main
+     * set file permission in layer
+     * update back to main
+     * flatten
+     */
+    public void testSimpleFilePermissionDiff() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+            
+            // create directories and file in main
+            System.out.println("create D: " + baseStore + ":/base");
+            avmService.createDirectory(baseStore + ":/", "base");
+            System.out.println("create D: " + baseStore + ":/base/d-a");
+            avmService.createDirectory(baseStore + ":/base", "d-a");
+            System.out.println("create F: " + baseStore + ":/base/d-a/f-aa");
+            avmService.createFile(baseStore + ":/base/d-a", "f-aa").close();          
+            
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/base/d-a/f-aa");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer-to-base -> " + baseStore + ":/base");
+            avmService.createLayeredDirectory(baseStore + ":/base", layeredStore + ":/", "layer-to-base");          
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer-to-base", -1, baseStore + ":/base", null);
+            assertEquals(0, diffs.size());          
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer-to-base/d-a/f-aa");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on file in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer-to-base/d-a/f-aa");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer-to-base", -1, baseStore + ":/base", null);
+            assertEquals("["+layeredStore+":/layer-to-base/d-a/f-aa[-1] > "+baseStore+":/base/d-a/f-aa[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());          
+            
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/base/d-a/f-aa");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // update main from layer
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/base/d-a/f-aa");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer-to-base", -1, baseStore + ":/base", null);
+            assertEquals(0, diffs.size());
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer-to-base", baseStore + ":/base");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer-to-base", -1, baseStore + ":/base", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main & layer
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/base/d-a/f-aa");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer-to-base/d-a/f-aa");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that file in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+
+    /*
+     * create directory in main
+     * set directory permission in main
+     */
+    public void testSimpleDirectoryPermissionDiff0() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+            
+            // create directory in main
+            System.out.println("create D: " + baseStore + ":/d-a");
+            avmService.createDirectory(baseStore + ":/", "d-a");
+
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef baseNodeRef = AVMNodeConverter.ToNodeRef(-1, baseNodeDesc.getPath());
+            
+            // set DELETE permission on directory in main
+            System.out.println("set P (DELETE): " + baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(baseNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+  
+            // update main from layer - NOOP
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // flatten - NOOP
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in main
+     * set directory permission in layer
+     * update back to main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff1() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+            
+            // create directory in main
+            System.out.println("create D: " + baseStore + ":/d-a");
+            avmService.createDirectory(baseStore + ":/", "d-a");
+
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+  
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // update main from layer
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in layer
+     * set directory permission in layer
+     * update back to main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff2() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+ 
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            // create directory in layer
+            System.out.println("create D: " + layeredStore + ":/layer/d-a");
+            avmService.createDirectory(layeredStore + ":/layer", "d-a");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // update main from layer
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in layer
+     * set directory permission in layer
+     * update back to main
+     * flatten
+     * set another directory permission in layer
+     * update back to main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff3() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+ 
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            // create directory in layer
+            System.out.println("create D: " + layeredStore + ":/layer/d-a");
+            avmService.createDirectory(layeredStore + ":/layer", "d-a");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // update main from layer
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+            
+            // repeat with another directory permission
+            
+            // set WRITE directory permission in layer
+            System.out.println("set P (WRITE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            // update main from layer
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);      
+
+            // check that the WRITE permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE and DELETE permissions are still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in layer
+     * set directory permission in layer
+     * snapshot layer, update back to main, snapshot main
+     * create file in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     * set another directory permission in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff4() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+ 
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            // create directory in layer
+            System.out.println("create D: " + layeredStore + ":/layer/d-a");
+            avmService.createDirectory(layeredStore + ":/layer", "d-a");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // create file in layer
+            System.out.println("create F: " + layeredStore + ":/layer/d-a/f-aa");
+            avmService.createFile(layeredStore + ":/layer/d-a", "f-aa").close();
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a/f-aa[-1] > "+baseStore+":/d-a/f-aa[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the DELETE permission is still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+            
+            // set another directory permission
+            
+            // set WRITE directory permission in layer
+            System.out.println("set P (WRITE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);      
+
+            // check that the WRITE permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE and DELETE permissions are still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in layer
+     * set two directory permissions in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     * remove one of the directory permissions in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff5() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+ 
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            // create directory in layer
+            System.out.println("create D: " + layeredStore + ":/layer/d-a");
+            avmService.createDirectory(layeredStore + ":/layer", "d-a");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // set WRITE permission on directory in layer
+            System.out.println("set P (WRITE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE and DELETE permissions are still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+                     
+            // remove one of the directory permissions
+            
+            // delete DELETE directory permission in layer
+            System.out.println("delete P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.deletePermission(layeredNodeRef, "andy", PermissionService.DELETE);
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);      
+
+            // check that the DELETE permission is no longer set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE permission is still set in main (and appears in layer)
+            // check that the DELETE permission is not set in main (or layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
+    }
+    
+    /*
+     * create directory in layer
+     * set two directory permissions in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     * remove one of the existing directory permissions in layer
+     * set a different directory permission in layer
+     * snapshot layer, update back to main, snapshot main
+     * flatten
+     */
+    public void testSimpleDirectoryPermissionDiff6() throws Throwable
+    {
+        runAs("admin");
+        
+        String baseStore = "main";
+        String layeredStore = "layer";
+        
+        try
+        {
+            System.out.println("create store: " + baseStore);
+            avmService.createStore(baseStore);
+ 
+            System.out.println("create store: " + layeredStore);
+            avmService.createStore(layeredStore);
+            
+            System.out.println("create LD: " + layeredStore + ":/layer -> " + baseStore + ":/");
+            avmService.createLayeredDirectory(baseStore + ":/", layeredStore + ":/", "layer");
+            
+            // create directory in layer
+            System.out.println("create D: " + layeredStore + ":/layer/d-a");
+            avmService.createDirectory(layeredStore + ":/layer", "d-a");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            AVMNodeDescriptor layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            AVMNodeDescriptor baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            NodeRef layeredNodeRef = AVMNodeConverter.ToNodeRef(-1, layeredNodeDesc.getPath());
+            
+            // set DELETE permission on directory in layer
+            System.out.println("set P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // set WRITE permission on directory in layer
+            System.out.println("set P (WRITE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            List<AVMDifference> diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE and DELETE permissions are still set in main (and appears in layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+                     
+            // remove one of the directory permissions
+            
+            // delete DELETE directory permission in layer
+            System.out.println("delete P (DELETE): " + layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            permissionService.deletePermission(layeredNodeRef, "andy", PermissionService.DELETE);
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // set READ permission on directory in layer
+            System.out.println("set P (READ): " + layeredStore + ":/layer/d-a");
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.READ, true);
+            permissionService.setPermission(layeredNodeRef, "andy", PermissionService.READ, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.READ, true);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals("["+layeredStore+":/layer/d-a[-1] > "+baseStore+":/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+            
+            // snapshot layer, update main from layer, snapshot main
+            System.out.println("snapshot: layer");
+            avmService.createSnapshot(layeredStore, null, null);
+            System.out.println("update: main from layer");
+            avmSyncService.update(diffs, null, false, false, false, false, null, null);
+            System.out.println("snapshot: main");
+            avmService.createSnapshot(baseStore, null, null);
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);      
+
+            // check that the DELETE permission is no longer set in main
+            // check that the READ permission is now set in main
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.READ, true);
+            
+            // flatten
+            System.out.println("flatten: layer to main");
+            avmSyncService.flatten(layeredStore + ":/layer", baseStore + ":/");
+            
+            recursiveList(baseStore);
+            recursiveList(layeredStore);
+            
+            diffs = avmSyncService.compare(-1, layeredStore + ":/layer", -1, baseStore + ":/", null);
+            assertEquals(0, diffs.size());
+            
+            // check that the WRITE & READ permissions are set in main (and appear in layer)
+            // check that the DELETE permission is not set in main (or layer)
+            baseNodeDesc = avmService.lookup(-1, baseStore + ":/d-a");
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(baseNodeDesc, "andy", PermissionService.READ, true);
+            checkHeadPermissionNotSet(baseNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            layeredNodeDesc = avmService.lookup(-1, layeredStore + ":/layer/d-a");
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            checkHeadPermission(layeredNodeDesc, "andy", PermissionService.WRITE, true);
+            checkHeadPermissionNotSet(layeredNodeDesc, "andy", PermissionService.DELETE, true);
+            
+            // check that directory in layer is the same as the one from main
+            assertEquals(baseNodeDesc, layeredNodeDesc);
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+        finally
+        {
+            avmService.purgeStore(baseStore);
+            avmService.purgeStore(layeredStore);
+        }
     }
 
     private void checkHeadPermissionForPath(String path, String authority, String permission, boolean allow, String[] excludes)
@@ -2214,7 +3252,7 @@ public class AVMServicePermissionsTest extends TestCase
         DbAccessControlList acl = avmACLDAO.getAccessControlList(nodeRef);
         System.out.println(path);
         System.out.println("\t => Ind="
-                + desc.getIndirection() + "Deleted,=" + desc.isDeleted() + ",LD=" + desc.isLayeredDirectory() + ",LF=" + desc.isLayeredFile() + ",PD=" + desc.isPlainDirectory()
+                + desc.getIndirection() + ",Deleted=" + desc.isDeleted() + ",LD=" + desc.isLayeredDirectory() + ",LF=" + desc.isLayeredFile() + ",PD=" + desc.isPlainDirectory()
                 + ",PF=" + desc.isPlainFile() + ",Primary=" + desc.isPrimary());
         System.out.println("\t => " + acl);
     }
@@ -2738,5 +3776,63 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.purgeStore(storeName);
             avmService.purgeStore(storeName + "-a-");
         }
+    }
+    
+    /**
+     * Helper to write a recursive listing of latest version of an AVMStore.
+     * @param repoName The name of the AVMStore.
+     */
+    protected void recursiveList(String store)
+    {
+        String list = recursiveList(store, -1, true);
+        System.out.println(store+":");
+        System.out.println(list);
+    }
+    
+    /**
+     * Helper to write a recursive listing of an AVMStore at a given version.
+     * @param repoName The name of the AVMStore.
+     * @param version The version to look under.
+     */
+    protected String recursiveList(String repoName, int version, boolean followLinks)
+    {
+        return recursiveList(repoName + ":/", version, 0, followLinks);
+    }
+    
+    /**
+     * Recursive list the given path.
+     * @param path The path.
+     * @param version The version.
+     * @param indent The current indent level.
+     */
+    protected String recursiveList(String path, int version, int indent, boolean followLinks)
+    {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < indent; i++)
+        {
+            builder.append(' ');
+        }
+        builder.append(path.substring(path.lastIndexOf('/') + 1));
+        builder.append(' ');
+        AVMNodeDescriptor desc = avmService.lookup(version, path, true);
+        builder.append(desc.toString());
+        builder.append(" - ");
+        
+        AVMNode layeredNode = avmNodeDAO.getByID(desc.getId());
+        DbAccessControlList acl = layeredNode.getAcl();
+        builder.append(acl);
+        
+        builder.append('\n');
+        if (desc.getType() == AVMNodeType.PLAIN_DIRECTORY ||
+            (desc.getType() == AVMNodeType.LAYERED_DIRECTORY && followLinks))
+        {
+            String basename = path.endsWith("/") ? path : path + "/";
+            Map<String, AVMNodeDescriptor> listing = avmService.getDirectoryListing(version, path);
+            for (String name : listing.keySet())
+            {
+                builder.append(recursiveList(basename + name, version, indent + 2, followLinks));
+            }
+        }
+        return builder.toString();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,28 +37,39 @@ public class AVMScaleTestP extends AVMServiceTestBase
     public void testScaling()
     {
         int n = 250; // The number of BulkLoads to do.
-        int futzCount = 10; // The number of post snapshot modifications to make after each load.
-        String load = "/Users/britt/hibernate-3.1"; // The tree of stuff to load.
-        BulkLoader loader = new BulkLoader();
-        loader.setAvmService(fService);
-        loader.setPropertyCount(50);
-        BulkReader reader = new BulkReader();
-        reader.setAvmService(fService);
-        long lastTime = System.currentTimeMillis();
-        for (int i = 0; i < n; i++)
+        
+        try
         {
-            System.out.println("Round " + (i + 1));
-            fService.createStore("store" + i);
-            loader.recursiveLoad(load, "store" + i + ":/");
-            fService.createSnapshot("store" + i, null, null);
-            long now = System.currentTimeMillis();
-            System.out.println("Load Time: " + (now - lastTime) + "ms");
-            lastTime = now;
-            reader.recursiveFutz("store" + i, "store" + i + ":/", futzCount);
-            now = System.currentTimeMillis();
-            System.out.println("Read Time: " + (now - lastTime) + "ms");
-            System.out.flush();
-            lastTime = now;
+            int futzCount = 10; // The number of post snapshot modifications to make after each load.       
+            String load = "config/alfresco"; // The tree of stuff to load.
+            BulkLoader loader = new BulkLoader();
+            loader.setAvmService(fService);
+            loader.setPropertyCount(50);
+            BulkReader reader = new BulkReader();
+            reader.setAvmService(fService);
+            long lastTime = System.currentTimeMillis();
+            for (int i = 0; i < n; i++)
+            {
+                System.out.println("Round " + (i + 1));
+                fService.createStore("store" + i);
+                loader.recursiveLoad(load, "store" + i + ":/");
+                fService.createSnapshot("store" + i, null, null);
+                long now = System.currentTimeMillis();
+                System.out.println("Load Time: " + (now - lastTime) + "ms");
+                lastTime = now;
+                reader.recursiveFutz("store" + i, "store" + i + ":/", futzCount);
+                now = System.currentTimeMillis();
+                System.out.println("Read Time: " + (now - lastTime) + "ms");
+                System.out.flush();
+                lastTime = now;
+            }
+        }
+        finally
+        {
+            for (int i = 0; i < n; i++)
+            {
+                if (fService.getStore("store" + i) != null) { fService.purgeStore("store" + i); }
+            }
         }
     }
 }

@@ -205,6 +205,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace();
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("I have spaces");
+        }
     }
 
     public void testHeadPathsInLayers() throws Exception
@@ -233,6 +237,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace();
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("user");
+            fService.purgeStore("sandbox");
         }
     }
 
@@ -280,6 +289,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fLockingService.removeStoreLocks("main");
             fLockingService.removeWebProject("main");
             authService.authenticate("admin", "admin".toCharArray());
+
+            fService.purgeStore("test");
         }
     }
 
@@ -489,6 +500,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace();
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("layer");
+        }
     }
 
     public void testBranchLayerSnapshot() throws Exception
@@ -523,6 +538,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace();
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("layer");
+            fService.purgeStore("branch");
         }
     }
 
@@ -1245,6 +1265,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace();
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("branch");
+        }
     }
 
     /**
@@ -1265,6 +1289,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace();
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("foo");
         }
     }
 
@@ -1761,6 +1789,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace(System.err);
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("layer");
+        }
     }
 
     /**
@@ -1810,6 +1842,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace();
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("area");
+        }
     }
 
     /**
@@ -1858,6 +1894,10 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace();
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("area");
+        }
     }
 
     /**
@@ -1897,6 +1937,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("source");
         }
     }
 
@@ -1944,6 +1988,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("foo-staging");
+            fService.purgeStore("area");
         }
     }
 
@@ -2144,6 +2193,11 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("source");
+            fService.purgeStore("dest");
         }
     }
 
@@ -2393,6 +2447,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("layer");
         }
     }
 
@@ -3539,9 +3597,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             setupBasicTree();
             fService.createStore("second");
             List<AVMStoreDescriptor> repos = fService.getStores();
-            assertEquals(2, repos.size());
-            System.out.println(repos.get(0));
-            System.out.println(repos.get(1));
+            assertTrue(checkStoreExists("main", repos));
+            assertTrue(checkStoreExists("second", repos));
             fService.createBranch(-1, "main:/", "second:/", "main");
             fService.createSnapshot("second", null, null);
             System.out.println(recursiveList("second", -1, true));
@@ -3563,6 +3620,22 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace(System.err);
             throw e;
         }
+        finally
+        {
+            fService.purgeStore("second");
+        }
+    }
+    
+    private boolean checkStoreExists(String storeName, List<AVMStoreDescriptor> stores)
+    {
+        for (AVMStoreDescriptor store : stores)
+        {
+            if (store.getName().equals(storeName))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -3626,6 +3699,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore("second");
         }
     }
 
@@ -5154,7 +5231,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createStore("second");
             fService.setStoreProperty("second", QName.createQName("", ".dns.alice"), new PropertyValue(null, "alice-space"));
             Map<String, Map<QName, PropertyValue>> matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.%"));
-            assertEquals(2, matches.size());
             assertEquals(1, matches.get("main").size());
             assertEquals(1, matches.get("second").size());
             assertEquals("alice-preview", matches.get("main").get(QName.createQName(null, ".dns.alice--preview")).getStringValue());
@@ -5164,6 +5240,10 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             e.printStackTrace(System.err);
             
+        }
+        finally
+        {
+            fService.purgeStore("second");
         }
     }
 }

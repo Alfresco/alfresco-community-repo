@@ -166,5 +166,7 @@ public class AVMServiceIndexTest extends AVMServiceTestBase
         results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
         assertEquals(4, results.length());
         results.close();
+        
+        fService.purgeStore("avmAsynchronousTest");
     }
 }

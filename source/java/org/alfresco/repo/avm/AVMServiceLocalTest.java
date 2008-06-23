@@ -27,19 +27,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.RemoteBulkLoader;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -291,50 +296,186 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
-    /**
-     * Test update to layered directory
-     */
-    public void testSimpleUpdateLD() throws Exception
+    //
+    // Test updates to layered directories
+    //
+    
+    public void testSimpleUpdateLD1() throws Throwable
+    {
+        try
+        {
+            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+
+            diffs = fSyncService.compare(-1, "layer:/", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+
+            // create file f-a in main root dir
+            fService.createFile("main:/", "f-a").close();
+
+            diffs = fSyncService.compare(-1, "layer:/", -1, "main:/", null);
+            assertEquals("[layer:/f-a[-1] < main:/f-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+
+            // create file f-b in main root dir
+            fService.createFile("main:/", "f-b").close();
+
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+
+            // edit file f-b in layer
+            fService.getFileOutputStream("layer:/layer/f-b").close();
+
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/f-b[-1] > main:/f-b[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+
+            // update main from layer
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+    }
+
+    public void testSimpleUpdateLD2() throws Throwable
+    {
+        try
+        {
+            // create directories base/d-a and file f-aa in main
+            fService.createDirectory("main:/", "base");
+            fService.createDirectory("main:/base", "d-a");
+            fService.createFile("main:/base/d-a", "f-aa").close();
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer" + ":/", -1, "main:/", null);
+            assertEquals("[layer:/base[-1] < main:/base[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+
+            fService.createLayeredDirectory("main:/base", "layer:/", "layer-to-base");
+
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals(0, diffs.size());
+
+            // edit file f-aa in main
+            fService.getFileOutputStream("main:/base/d-a/f-aa").close();
+
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals(0, diffs.size());
+
+            // edit file f-aa in layer
+            fService.getFileOutputStream("layer:/layer-to-base/d-a/f-aa").close();
+
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals("[layer:/layer-to-base/d-a/f-aa[-1] > main:/base/d-a/f-aa[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+
+            // update main from layer
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals(0, diffs.size());
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+    }
+
+    public void testSimpleUpdateLD3() throws Throwable
+    {
+        try
+        {
+            fService.createDirectory("main:/", "base");
+            
+            fService.createLayeredDirectory("main:/base", "layer:/", "layer-to-base");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals(0, diffs.size());
+            
+            // create directory d-a and file f-aa in layer
+            fService.createDirectory("layer:/layer-to-base", "d-a");
+            fService.createFile("layer:/layer-to-base/d-a", "f-aa").close();
+
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals("[layer:/layer-to-base/d-a[-1] > "+"main:/base/d-a[-1]]", diffs.toString());
+            assertEquals(1, diffs.size());
+
+            // update main from layer
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer-to-base", -1, "main:/base", null);
+            assertEquals(0, diffs.size());
+        }
+        catch (Throwable t)
+        {
+            t.printStackTrace();
+            throw t;
+        }
+    } 
+    
+    public void testSimpleUpdateLD4() throws Exception
     {
         try
         {
             fService.createLayeredDirectory("main:/", "layer:/", "layer");
             
-            // Create a directory.
+            // create directory b and file foo in layer
             fService.createDirectory("layer:/layer", "b");
-            // Create a file.
             fService.createFile("layer:/layer/b", "foo").close();
             
             List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
             assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
             fService.createSnapshot("layer", null, null);
+            
             fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
             fService.createSnapshot("main", null, null);
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(0, diffs.size());
+            
             fSyncService.flatten("layer:/layer", "main:/");
+            
             recursiveList("layer");
             recursiveList("main");
+            
             fService.createStore("layer2");
             fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
             
-            // Create a directory.
+            // create directory c and file foo in layer2
             fService.createDirectory("layer2:/layer/", "c");
-            // Create a file.
             fService.createFile("layer2:/layer/c", "foo").close();
             
             fService.createSnapshot("layer2", null, null);
+            
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
             assertEquals(1, diffs.size());
             assertEquals("[layer2:/layer/c[-1] > layer:/layer/c[-1]]", diffs.toString());
+            
             fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
             assertEquals(0, diffs.size());
+            
             fSyncService.flatten("layer2:/layer", "layer:/layer");
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
             assertEquals("[layer:/layer/c[-1] > main:/c[-1]]", diffs.toString());
+            
             recursiveList("layer2");
             recursiveList("layer");
             recursiveList("main");
@@ -720,6 +861,145 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace();
+            throw e;
+        }
+    }
+    
+    /**
+     * Test file properties update ...
+     */
+    public void testUpdateFileTitleAndDescription() throws Exception
+    {
+        try
+        {
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+            fService.createDirectory("layer:/layer", "b");
+            fService.createFile("layer:/layer/b", "foo").close();
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            assertEquals(0, fService.getNodeProperties(-1, "main:/b/foo").size());
+            assertEquals(0, fService.getNodeProperties(-1, "layer:/layer/b/foo").size());
+            
+            Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
+            properties.put(ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, "foo title"));
+            properties.put(ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, "foo descrip"));
+            fService.setNodeProperties("layer:/layer/b/foo", properties);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/b/foo[-1] > main:/b/foo[-1]]", diffs.toString());
+            
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            assertEquals(2, fService.getNodeProperties(-1, "main:/b/foo").size());
+            
+            assertEquals("foo title", fService.getNodeProperty(-1, "main:/b/foo", ContentModel.PROP_TITLE).getStringValue());
+            assertEquals("foo descrip", fService.getNodeProperty(-1, "main:/b/foo", ContentModel.PROP_DESCRIPTION).getStringValue());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
+    /**
+     * Test directory properties update ...
+     */
+    public void testUpdateDirectoryTitleAndDescription() throws Exception
+    {
+        try
+        {
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+            fService.createDirectory("layer:/layer", "b");
+            fService.createFile("layer:/layer/b", "foo").close();
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            assertEquals(0, fService.getNodeProperties(-1, "main:/b").size());
+            assertEquals(0, fService.getNodeProperties(-1, "layer:/layer/b").size());
+            
+            Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
+            properties.put(ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, "b title"));
+            properties.put(ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, "b descrip"));
+            fService.setNodeProperties("layer:/layer/b", properties);
+            
+            assertEquals(0, fService.getNodeProperties(-1, "main:/b").size());
+            assertEquals(2, fService.getNodeProperties(-1, "layer:/layer/b").size());
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
+            
+            assertEquals(2, fService.getNodeProperties(-1, "main:/b").size());
+            assertEquals(2, fService.getNodeProperties(-1, "layer:/layer/b").size());
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            assertEquals(2, fService.getNodeProperties(-1, "main:/b").size());
+            assertEquals(2, fService.getNodeProperties(-1, "layer:/layer/b").size());
+            
+            assertEquals("b title", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_TITLE).getStringValue());
+            assertEquals("b descrip", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_DESCRIPTION).getStringValue());
+            
+
+            fService.setNodeProperty("layer:/layer/b", ContentModel.PROP_TITLE, new PropertyValue(DataTypeDefinition.TEXT, "b title2"));
+            fService.setNodeProperty("layer:/layer/b", ContentModel.PROP_DESCRIPTION, new PropertyValue(DataTypeDefinition.TEXT, "b descrip2"));
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals("[layer:/layer/b[-1] > main:/b[-1]]", diffs.toString());
+            
+            fService.createSnapshot("layer", null, null);
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            fService.createSnapshot("main", null, null);
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/layer", "main:/");
+            
+            assertEquals(2, fService.getNodeProperties(-1, "main:/b").size());
+            assertEquals(2, fService.getNodeProperties(-1, "layer:/layer/b").size());
+            
+            assertEquals("b title2", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_TITLE).getStringValue());
+            assertEquals("b descrip2", fService.getNodeProperty(-1, "main:/b", ContentModel.PROP_DESCRIPTION).getStringValue());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
             throw e;
         }
     }

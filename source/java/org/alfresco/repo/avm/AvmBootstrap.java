@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,6 +50,9 @@ public class AvmBootstrap extends AbstractLifecycleBean
     private AVMRepository avmRepository;
 
     private PermissionService permissionService;
+    
+    private AVMSyncServiceImpl avmSyncService;
+    
 
     public AvmBootstrap()
     {
@@ -69,6 +72,11 @@ public class AvmBootstrap extends AbstractLifecycleBean
     public void setPermissionService(PermissionService service)
     {
         permissionService = service;
+    }
+    
+    public void setAvmSyncService(AVMSyncServiceImpl service)
+    {
+        avmSyncService = service;
     }
 
     /**
@@ -93,6 +101,7 @@ public class AvmBootstrap extends AbstractLifecycleBean
         }
         avmLockingAwareService.init();
         avmRepository.setPermissionService(permissionService);
+        avmSyncService.setPermissionService(permissionService);
     }
 
     /** NO-OP */

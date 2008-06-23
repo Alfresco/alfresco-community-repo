@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
@@ -51,14 +49,9 @@ import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.search.IndexMode;
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -68,15 +61,10 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
-import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
-import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -92,7 +80,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 
 /**
@@ -116,6 +103,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("SandBox:/www/TestFolder", "test1").close();
 
             List<AVMDifference> diffs = fSyncService.compare(-1, "SandBox:/www", -1, "StagingArea:/www", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
@@ -129,6 +118,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.removeNode("SandBox:/www/TestFolder");
 
             diffs = fSyncService.compare(-1, "SandBox:/www", -1, "StagingArea:/www", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
@@ -141,6 +132,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile("SandBox:/www/TestFolder", "test1").close();
 
             diffs = fSyncService.compare(-1, "SandBox:/www", -1, "StagingArea:/www", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[SandBox:/www/TestFolder[-1] > StagingArea:/www/TestFolder[-1]]", diffs.toString());
             fSyncService.update(diffs, null, true, true, false, false, "one", "one");
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             fSyncService.flatten("SandBox:/www", "StagingArea:/www");
@@ -199,42 +192,6 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
     }
 
-    public void testRename6() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createStore("layer");
-            fService.createLayeredDirectory("main:/a", "layer:/", "a");
-            fService.rename("layer:/a/b", "c", "layer:/a/b", "z");
-            System.out.println(recursiveContents("layer:/", -1, true));
-            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
-            System.out.println(diffs);
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            System.out.println(recursiveContents("layer:/", -1, true));
-            System.out.println(recursiveContents("main:/", -1, true));
-            fSyncService.flatten("layer:/a", "main:/a");
-            System.out.println(recursiveContents("layer:/", -1, true));
-            System.out.println(recursiveContents("main:/", -1, true));
-            fService.createFile("layer:/a/b/z", "fudge").close();
-            fService.rename("layer:/a/b", "z", "layer:/a/b", "y");
-            System.out.println(recursiveContents("layer:/", -1, true));
-            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
-            System.out.println(diffs);
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            System.out.println(recursiveContents("layer:/", -1, true));
-            System.out.println(recursiveContents("main:/", -1, true));
-            fSyncService.flatten("layer:/a", "main:/a");
-            System.out.println(recursiveContents("layer:/", -1, true));
-            System.out.println(recursiveContents("main:/", -1, true));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
     public void testSpacesInStoreNames() throws Exception
     {
         try
@@ -262,7 +219,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createDirectory("user:/a/b", "newdir");
             fService.createFile("user:/a/b/newdir", "bibble.txt").close();
             List<AVMDifference> diffs = fSyncService.compare(-1, "user:/a", -1, "sandbox:/a", null);
-            System.out.println(diffs);
+            assertEquals(1, diffs.size());
+            assertEquals("[user:/a/b/newdir[-1] > sandbox:/a/b/newdir[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             AVMNodeDescriptor dir = fService.lookup(-1, "user:/a/b/newdir");
             List<Pair<Integer, String>> paths = fService.getHeadPaths(dir);
@@ -295,6 +253,8 @@ public class AVMServiceTest extends AVMServiceTestBase
             authService.authenticateAsGuest();
             // assertEquals(0, fLockingService.getUsersLocks("admin").size());
             List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
+            assertEquals(2, diffs.size());
+            assertEquals("[main:/a[-1] > test:/a[-1], main:/d[-1] > test:/d[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
@@ -1265,10 +1225,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             List<AVMDifference> diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
             assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+            assertEquals("[branch:/a/b/c/foo[-1] > main:/a/b/c/foo[-1]]", diffs.toString());
             fService.createFile("branch:/a/b/c", "foo").close();
             diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
             assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+            assertEquals("[branch:/a/b/c/foo[-1] > main:/a/b/c/foo[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.removeNode("branch:/a/b/c/bar");
             fService.createFile("branch:/a/b/c", "pismo").close();
@@ -1276,6 +1238,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             diffs = fSyncService.compare(-1, "branch:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
             assertEquals(AVMDifference.NEWER, diffs.get(0).getDifferenceCode());
+            assertEquals("[branch:/a/b/c/bar[-1] > main:/a/b/c/bar[-1]]", diffs.toString());
         }
         catch (Exception e)
         {
@@ -1776,35 +1739,6 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
 
     /**
-     * Test partial flatten.
-     */
-    public void testPartialFlatten() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createStore("layer");
-            fService.createLayeredDirectory("main:/a", "layer:/", "a");
-            fService.getFileOutputStream("layer:/a/b/c/foo").close();
-            fService.createFile("layer:/a/b", "bing").close();
-            List<AVMDifference> diffs = new ArrayList<AVMDifference>();
-            diffs.add(new AVMDifference(-1, "layer:/a/b/c/foo", -1, "main:/a/b/c/foo", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            fSyncService.flatten("layer:/a", "main:/a");
-            AVMNodeDescriptor b = fService.lookup(-1, "layer:/a/b");
-            assertTrue(b.isLayeredDirectory());
-            AVMNodeDescriptor c = fService.lookup(-1, "layer:/a/b/c");
-            assertTrue(c.isPlainDirectory());
-            assertEquals(1, fSyncService.compare(-1, "layer:/a", -1, "main:/a", null).size());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
      * Test getIndirection.
      */
     public void testGetIndirection() throws Exception
@@ -1842,10 +1776,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.getFileOutputStream("area:/a/b/c/foo").close();
             List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/foo[-1] > main:/a/b/c/foo[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.getFileOutputStream("area:/a/b/c/bar").close();
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/bar[-1] > main:/a/b/c/bar[-1]]", diffs.toString());
             final ActionImpl action = new ActionImpl(null, GUID.generate(), AVMRevertListAction.NAME);
             List<String> paths = new ArrayList<String>();
             paths.add("area:/a/b");
@@ -1889,10 +1825,12 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.getFileOutputStream("area:/a/b/c/foo").close();
             List<AVMDifference> diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/foo[-1] > main:/a/b/c/foo[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.getFileOutputStream("area:/a/b/c/bar").close();
             diffs = fSyncService.compare(-1, "area:/a", -1, "main:/a", null);
             assertEquals(1, diffs.size());
+            assertEquals("[area:/a/b/c/bar[-1] > main:/a/b/c/bar[-1]]", diffs.toString());
             final ActionImpl action = new ActionImpl(null, GUID.generate(), AVMUndoSandboxListAction.NAME);
             List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
             versionPaths.add(new Pair<Integer, String>(-1, "area:/a/b/c/bar"));
@@ -1963,32 +1901,6 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
 
     /**
-     * Test a noodle update.
-     */
-    public void testNoodleUpdate() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createStore("staging");
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "staging:/", null);
-            assertEquals(2, diffs.size());
-            List<AVMDifference> noodle = new ArrayList<AVMDifference>();
-            noodle.add(new AVMDifference(-1, "main:/a/b/c/foo", -1, "staging:/a/b/c/foo", AVMDifference.NEWER));
-            noodle.add(new AVMDifference(-1, "main:/d", -1, "staging:/d", AVMDifference.NEWER));
-            fSyncService.update(noodle, null, false, false, false, false, null, null);
-            diffs = fSyncService.compare(-1, "main:/", -1, "staging:/", null);
-            assertEquals(1, diffs.size());
-            assertEquals("main:/a/b/c/bar", diffs.get(0).getSourcePath());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
      * Test the SimpleAVMSubmitAction.
      */
     public void testSubmitAction() throws Exception
@@ -2010,6 +1922,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.removeNode("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/bar");
             List<AVMDifference> diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
             assertEquals(3, diffs.size());
+            assertEquals("[area:/www/a/b/c/bar[-1] > foo-staging:/www/a/b/c/bar[-1], area:/www/a/b/c/foo[-1] > foo-staging:/www/a/b/c/foo[-1], area:/www/figs[-1] > foo-staging:/www/figs[-1]]", diffs.toString());
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction) fContext.getBean("simple-avm-submit");
             class TxnWork implements RetryingTransactionCallback<Object>
             {
@@ -2215,45 +2128,17 @@ public class AVMServiceTest extends AVMServiceTestBase
             List<AVMDifference> diffs = fSyncService.compare(version1, "source:/", -1, "dest:/", null);
             fService.createSnapshot("dest", null, null);
             assertEquals(1, diffs.size());
+            assertEquals("[source:/bootstrap[1] > dest:/bootstrap[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             diffs = fSyncService.compare(version1, "source:/", -1, "dest:/", null);
             assertEquals(0, diffs.size());
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/", null);
             assertEquals(1, diffs.size());
+            assertEquals("[source:/extension[2] > dest:/extension[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.createSnapshot("dest", null, null);
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/", null);
             assertEquals(0, diffs.size());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
-     * Test that an update forces a snapshot on the source.
-     */
-    public void testUpdateSnapshot() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createStore("branch");
-            fService.createBranch(-1, "main:/", "branch:/", "branch");
-            // Modify some things in the branch.
-            fService.createFile("branch:/branch/a/b", "fing").close();
-            fService.getFileOutputStream("branch:/branch/a/b/c/foo").close();
-            fService.removeNode("branch:/branch/a/b/c", "bar");
-            List<AVMDifference> diffs = fSyncService.compare(-1, "branch:/branch", -1, "main:/", null);
-            assertEquals(3, diffs.size());
-            // Now update.
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            diffs = fSyncService.compare(-1, "branch:/branch", -1, "main:/", null);
-            assertEquals(0, diffs.size());
-            fService.getFileOutputStream("branch:/branch/a/b/fing").close();
-            assertTrue(fService.lookup(-1, "branch:/branch/a/b/fing").getId() != fService.lookup(-1, "main:/a/b/fing").getId());
         }
         catch (Exception e)
         {
@@ -2282,93 +2167,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             throw e;
         }
     }
-
-    /**
-     * Test bulk update.
-     */
-    public void testBulkUpdate() throws Exception
-    {
-        try
-        {
-            BulkLoader loader = new BulkLoader();
-            loader.setAvmService(fService);
-            fService.createStore("layer");
-            fService.createLayeredDirectory("main:/", "layer:/", "layer");
-            loader.recursiveLoad("config/alfresco/bootstrap", "layer:/layer");
-            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
-            assertEquals(1, diffs.size());
-            fService.createSnapshot("layer", null, null);
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            fService.createSnapshot("main", null, null);
-            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
-            assertEquals(0, diffs.size());
-            fSyncService.flatten("layer:/layer", "main:/");
-            System.out.println("Layer:");
-            System.out.println(recursiveList("layer", -1, true));
-            System.out.println("Main:");
-            System.out.println(recursiveList("main", -1, true));
-            fService.createStore("layer2");
-            fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
-            loader.recursiveLoad("config/alfresco/bootstrap", "layer2:/layer/bootstrap");
-            fService.createSnapshot("layer2", null, null);
-            diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
-            assertEquals(1, diffs.size());
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
-            assertEquals(0, diffs.size());
-            fSyncService.flatten("layer2:/layer", "layer:/layer");
-            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
-            assertEquals(1, diffs.size());
-            System.out.println("Layer2:");
-            System.out.println(recursiveList("layer2", -1, true));
-            System.out.println("Layer:");
-            System.out.println(recursiveList("layer", -1, true));
-            System.out.println("Main:");
-            System.out.println(recursiveList("main", -1, true));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
-     * Test the flatten operation, with a little bit of compare and update.
-     */
-    public void testFlatten() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            // Change some stuff.
-            fService.createFile("main:/layer/b", "fig").close();
-            fService.getFileOutputStream("main:/layer/b/c/foo").close();
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            // Do a compare.
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/layer", -1, "main:/a", null);
-            for (AVMDifference diff : diffs)
-            {
-                System.out.println(diff);
-            }
-            // Update.
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            System.out.println(recursiveList("main", -1, true));
-            // Flatten.
-            fSyncService.flatten("main:/layer", "main:/a");
-            System.out.println(recursiveList("main", -1, true));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
+    
     /**
      * Test of Descriptor indirection field.
      */
@@ -2389,155 +2188,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals("main:/a/b", list.get("b").getIndirection());
             list = fService.getDirectoryListingDirect(-1, "main:/layer");
             assertEquals("main:/a/b", list.get("b").getIndirection());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
-     * Test AVMSyncService update.
-     */
-    public void testUpdate() throws Exception
-    {
-        try
-        {
-            NameMatcher excluder = (NameMatcher) fContext.getBean("globalPathExcluder");
-            setupBasicTree();
-            // Try branch to branch update.
-            fService.createBranch(-1, "main:/a", "main:/", "abranch");
-            fService.createFile("main:/abranch", "monkey").close();
-            fService.createFile("main:/abranch", "#foo").close();
-            fService.createFile("main:/abranch", "figs.tmp").close();
-            fService.getFileOutputStream("main:/abranch/b/c/foo").close();
-            System.out.println(recursiveList("main", -1, true));
-            List<AVMDifference> cmp = fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(2, cmp.size());
-            List<AVMDifference> diffs = new ArrayList<AVMDifference>();
-            diffs.add(new AVMDifference(-1, "main:/abranch/monkey", -1, "main:/a/monkey", AVMDifference.NEWER));
-            diffs.add(new AVMDifference(-1, "main:/abranch/b/c/foo", -1, "main:/a/b/c/foo", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/abranch/monkey").getId(), fService.lookup(-1, "main:/a/monkey").getId());
-            assertEquals(fService.lookup(-1, "main:/abranch/b/c/foo").getId(), fService.lookup(-1, "main:/a/b/c/foo").getId());
-            // Try updating a deletion.
-            fService.removeNode("main:/abranch", "monkey");
-            System.out.println(recursiveList("main", -1, true));
-            cmp = fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(1, cmp.size());
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/abranch/monkey", -1, "main:/a/monkey", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder).size());
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/abranch/monkey", true).getId(), fService.lookup(-1, "main:/a/monkey", true).getId());
-            // Try one that should fail.
-            fService.createFile("main:/abranch", "monkey").close();
-            cmp = fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(1, cmp.size());
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/a/monkey", -1, "main:/abranch/monkey", AVMDifference.NEWER));
-            try
-            {
-                fSyncService.update(diffs, null, false, false, false, false, null, null);
-                fail();
-            }
-            catch (AVMSyncException se)
-            {
-                // Do nothing.
-            }
-            // Get synced again by doing an override older.
-            System.out.println(recursiveList("main", -1, true));
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/a/monkey", -1, "main:/abranch/monkey", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, true, null, null);
-            assertEquals(0, fSyncService.compare(-1, "main:/abranch", -1, "main:/a", excluder).size());
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(), fService.lookup(-1, "main:/abranch/monkey", true).getId());
-            // Cleanup for layered tests.
-            fService.purgeStore("main");
-            fService.createStore("main");
-            setupBasicTree();
-            fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createFile("main:/layer", "monkey").close();
-            fService.getFileOutputStream("main:/layer/b/c/foo").close();
-            cmp = fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(2, cmp.size());
-            System.out.println(recursiveList("main", -1, true));
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/layer/monkey", -1, "main:/a/monkey", AVMDifference.NEWER));
-            diffs.add(new AVMDifference(-1, "main:/layer/b/c/foo", -1, "main:/a/b/c/foo", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder).size());
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/layer/monkey").getId(), fService.lookup(-1, "main:/a/monkey").getId());
-            assertEquals(fService.lookup(-1, "main:/layer/b/c/foo").getId(), fService.lookup(-1, "main:/a/b/c/foo").getId());
-            // Try updating a deletion.
-            fService.removeNode("main:/layer", "monkey");
-            System.out.println(recursiveList("main", -1, true));
-            cmp = fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(1, cmp.size());
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/layer/monkey", -1, "main:/a/monkey", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
-            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder).size());
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/layer/monkey", true).getId(), fService.lookup(-1, "main:/a/monkey", true).getId());
-            // Try one that should fail.
-            fService.createFile("main:/layer", "monkey").close();
-            cmp = fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder);
-            for (AVMDifference diff : cmp)
-            {
-                System.out.println(diff);
-            }
-            assertEquals(1, cmp.size());
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/a/monkey", -1, "main:/layer/monkey", AVMDifference.NEWER));
-            try
-            {
-                fSyncService.update(diffs, null, false, false, false, false, null, null);
-                fail();
-            }
-            catch (AVMSyncException se)
-            {
-                // Do nothing.
-            }
-            // Get synced again by doing an override older.
-            System.out.println(recursiveList("main", -1, true));
-            diffs.clear();
-            diffs.add(new AVMDifference(-1, "main:/a/monkey", -1, "main:/layer/monkey", AVMDifference.NEWER));
-            fSyncService.update(diffs, null, false, false, false, true, null, null);
-            assertEquals(0, fSyncService.compare(-1, "main:/layer", -1, "main:/a", excluder).size());
-            fService.createSnapshot("main", null, null);
-            System.out.println(recursiveList("main", -1, true));
-            assertEquals(fService.lookup(-1, "main:/a/monkey", true).getId(), fService.lookup(-1, "main:/layer/monkey", true).getId());
         }
         catch (Exception e)
         {
@@ -5515,159 +5165,5 @@ public class AVMServiceTest extends AVMServiceTestBase
             e.printStackTrace(System.err);
             
         }
-    }
-
-    /**
-     * Test AVMSyncService resetLayer.
-     */
-    public void testResetLayer() throws Exception
-    {
-        try
-        {
-            setupBasicTree();
-            fService.createLayeredDirectory("main:/a", "main:/", "layer");
-            fService.createFile("main:/layer", "figs").close();
-            assertFalse(recursiveContents("main:/a", -1, true).equals(recursiveContents("main:/layer", -1, true)));
-            System.out.println(recursiveList("main", -1, true));
-            fSyncService.resetLayer("main:/layer");
-            assertEquals(recursiveContents("main:/a", -1, true), recursiveContents("main:/layer", -1, true));
-            System.out.println(recursiveList("main", -1, true));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-            throw e;
-        }
-    }
-
-    /**
-     * Test async indexing.
-     *
-     * @throws Exception
-     */
-    public void testAsyncIndex() throws Exception
-    {
-        // Make sure the slate is clean ...
-        UserTransaction tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        if (fService.getStore("avmAsynchronousTest") != null)
-        {
-            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-            fService.purgeStore("avmAsynchronousTest");
-            assertTrue(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("bananaStoreWoof"));
-        }
-        else
-        {
-            assertFalse(fIndexingInterceptor.hasIndexBeenCreated("avmAsynchronousTest"));
-        }
-        StoreRef storeRef = AVMNodeConverter.ToStoreRef("avmAsynchronousTest");
-        Indexer indexer = fIndexerAndSearcher.getIndexer(storeRef);
-        if (indexer instanceof AVMLuceneIndexer)
-        {
-            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
-            avmIndexer.deleteIndex("avmAsynchronousTest", IndexMode.SYNCHRONOUS);
-        }
-        tx.commit();
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("bananaStoreWoof"));
-        assertEquals(-1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-
-        // TODO: Suspend and resume indexing in case we are really unlucky and hit an index before we expect it.
-
-        SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
-        ResultSet results;
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(0, results.length());
-        results.close();
-
-        fService.createStore("avmAsynchronousTest");
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        tx.commit();
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(1, results.length());
-        results.close();
-
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(0, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        tx.commit();
-
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        assertFalse(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
-        assertEquals(IndexMode.ASYNCHRONOUS, fIndexingInterceptor.getIndexMode("avmAsynchronousTest"));
-        assertEquals(IndexMode.SYNCHRONOUS, fIndexingInterceptor.getIndexMode("main"));
-        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 0));
-        assertTrue(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 1));
-        assertFalse(fIndexingInterceptor.isSnapshotIndexed("avmAsynchronousTest", 2));
-        tx.commit();
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(1, results.length());
-        results.close();
-
-        Thread.sleep(180000);
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(4, results.length());
-        results.close();
-
-        tx = fTransactionService.getUserTransaction();
-        tx.begin();
-        assertEquals(1, fIndexingInterceptor.getLastIndexedSnapshot("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDate("avmAsynchronousTest"));
-        assertTrue(fIndexingInterceptor.isIndexUpToDateAndSearchable("avmAsynchronousTest"));
-        tx.commit();
-
-        fService.purgeStore("avmAsynchronousTest");
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(0, results.length());
-        results.close();
-
-        fService.createStore("avmAsynchronousTest");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.purgeStore("avmAsynchronousTest");
-        fService.createStore("avmAsynchronousTest");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-        fService.createDirectory("avmAsynchronousTest:/", "a");
-        fService.createDirectory("avmAsynchronousTest:/a", "b");
-        fService.createDirectory("avmAsynchronousTest:/a/b", "c");
-        fService.createSnapshot("avmAsynchronousTest", null, null);
-
-        Thread.sleep(180000);
-
-        results = searchService.query(storeRef, "lucene", "PATH:\"//.\"");
-        assertEquals(4, results.length());
-        results.close();
     }
 }

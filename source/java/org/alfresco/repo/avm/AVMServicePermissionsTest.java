@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@
 
 package org.alfresco.repo.avm;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,9 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AccessControlListDAO;
@@ -66,12 +65,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.Pair;
-import org.odmg.DSet;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-
-import junit.framework.TestCase;
 
 /**
  * Specifically test AVM permissions with the updated ACL schema
@@ -533,7 +528,8 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
-
+            assertEquals(1, diffs.size());
+            assertEquals("["+storeName+"-layer-base:/layer-to-base/update-dir[-1] > "+storeName+":/base/update-dir[-1]]", diffs.toString());
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");
@@ -615,7 +611,8 @@ public class AVMServicePermissionsTest extends TestCase
             avmService.createSnapshot(storeName + "-layer-base", "store", "store");
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
-
+            assertEquals(1, diffs.size());
+            assertEquals("["+storeName+"-layer-base:/layer-to-base/update-dir[-1] > "+storeName+":/base/update-dir[-1]]", diffs.toString());
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");

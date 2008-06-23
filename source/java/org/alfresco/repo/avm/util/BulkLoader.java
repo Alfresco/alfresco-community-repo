@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,10 +31,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.avm.AVMRemoteLocal;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -44,7 +46,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class BulkLoader
 {
-    private AVMService fService;
+    private AVMRemote fService;
     
     private int fPropertyCount = 0;
     
@@ -60,6 +62,17 @@ public class BulkLoader
      * @param service
      */
     public void setAvmService(AVMService service)
+    {
+        fService = new AVMRemoteLocal();
+        ((AVMRemoteLocal)fService).setAvmService(service);
+        
+    }
+    
+    /**
+     * Set the AVMService.
+     * @param service
+     */
+    protected void setAvmRemoteService(AVMRemote service)
     {
         fService = service;
     }

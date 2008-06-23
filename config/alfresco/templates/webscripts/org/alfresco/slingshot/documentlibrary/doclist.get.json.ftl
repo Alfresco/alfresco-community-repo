@@ -30,7 +30,7 @@
             "modifiedBy": "${d.properties.modifier}",
             "size": "${d.size}",
             "version": "${version}",
-            "contentUrl": "/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}"
+            "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}"
          }<#if d_has_next>,</#if>
       </#list>
       ]

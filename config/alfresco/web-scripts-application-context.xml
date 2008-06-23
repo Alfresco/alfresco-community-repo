@@ -272,4 +272,9 @@
       </property>
    </bean>
    
+   <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
+   <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
+    
+    
+   
 </beans>

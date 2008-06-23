@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Preferences</shortname>
+  <description>Set a users preferences</description>
+  <url>/api/people/{userid}/preferences</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

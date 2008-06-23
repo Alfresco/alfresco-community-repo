@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Preferences</shortname>
+  <description>Delete a users preferences</description>
+  <url>/api/people/{userid}/preferences?pf={preferencefilter?}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

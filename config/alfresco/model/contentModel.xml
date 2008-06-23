@@ -862,6 +862,15 @@
          </associations>
       </aspect>
       
+      <aspect name="cm:preferences">
+	     <title>Preferences</title>
+	     <properties>
+	        <property name="cm:preferenceValues">
+	           <type>d:content</type>
+	        </property>
+	     </properties>
+	  </aspect>
+      
    </aspects>
 
 </model>

@@ -3,7 +3,7 @@
 /**
  * Create folder action
  * @method POST
- * @param uri {string} /{siteId}/{componentId}/{filepath}
+ * @param uri {string} /{siteId}/{containerId}/{filepath}
  * @param json.name {string} New folder name
  * @param json.title {string} Title metadata
  * @param json.description {string} Description metadata
@@ -29,9 +29,8 @@ function runAction(p_rootNode, p_params)
       // Mandatory: json.name
       if (json.isNull("name"))
       {
-         results.status.code = status.STATUS_BAD_REQUEST;
-         results.status.message = "Folder name is a mandatory parameter.";
-         return results;
+         status.setCode(status.STATUS_BAD_REQUEST, "Folder name is a mandatory parameter.");
+         return;
       }
       var folderName = json.get("name");
       
@@ -48,26 +47,24 @@ function runAction(p_rootNode, p_params)
          {
             aPaths.pop();
          }
-         parentPath = aPaths.join("/") + "/";
+         parentPath = aPaths.join("/");
       }
-      var folderPath = parentPath + folderName;
+      var folderPath = parentPath + "/" + folderName;
 
       // Check folder doesn't already exist
       var existsNode = getAssetNode(p_rootNode, folderPath);
       if (typeof existsNode == "object")
       {
-         results.status.code = status.STATUS_BAD_REQUEST;
-         results.status.message = "Folder '" + folderPath + "' already exists.";
-         return results;
+         status.setCode(status.STATUS_BAD_REQUEST, "Folder '" + folderPath + "' already exists.");
+         return;
       }
 
       // Check parent exists
       var parentNode = getAssetNode(p_rootNode, parentPath);
       if (typeof parentNode == "string")
       {
-         results.status.code = status.STATUS_NOT_FOUND;
-         results.status.message = "Parent folder '" + parentPath + "' not found.";
-         return results;
+         status.setCode(status.STATUS_NOT_FOUND, "Parent folder '" + parentPath + "' not found.");
+         return;
       }
       
       // Title and description
@@ -95,15 +92,18 @@ function runAction(p_rootNode, p_params)
       // Construct the result object
       results = [
       {
-         id: folderName,
+         id: folderPath,
+         name: folderName,
+         parentPath: (parentPath.length > 0 ? "/" : "") + parentPath,
+         nodeRef: folderNode.nodeRef.toString(),
          action: "createFolder",
          success: true
       }];
    }
    catch(e)
    {
-		results.status.code = status.STATUS_INTERNAL_SERVER_ERROR;
-		results.status.message = e.toString();
+		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+		return;
    }
    
    return results;

@@ -1,8 +1,8 @@
 <webscript>
   <shortname>file</shortname>
   <description>Document List Action - Delete file</description>
-  <url>/slingshot/doclib/action/file/{siteid}/{componentid}/{filepath}</url>
-  <url>/slingshot/doclib/action/folder/{siteid}/{componentid}/{filepath}</url>
+  <url>/slingshot/doclib/action/file/{siteid}/{containerId}/{filepath}</url>
+  <url>/slingshot/doclib/action/folder/{siteid}/{containerId}/{filepath}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>

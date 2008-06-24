@@ -1,7 +1,7 @@
 var filename = null;
 var content = null;
 var siteId = null;
-var componentId = null;
+var containerId = null;
 var path = null;
 var title = "";
 var description = "";
@@ -24,8 +24,8 @@ for each (field in formdata.fields)
          siteId = field.value;
          break;
          
-      case "componentid":
-         componentId = field.value;
+      case "containerid":
+         containerId = field.value;
          break;
       
       case "path":
@@ -61,7 +61,7 @@ for each (field in formdata.fields)
 }
 
 // Ensure mandatory file attributes have been located
-if (siteId === null || componentId === null || path === null || filename === null || content === null)
+if (siteId === null || containerId === null || path === null || filename === null || content === null)
 {
    status.code = 400;
    status.message = "Uploaded file cannot be located in request";
@@ -78,11 +78,11 @@ else
    }
    else
    {
-      var container = site.getContainer(componentId);
+      var container = site.getContainer(containerId);
       if (container === null)
       {
          status.code = 404;
-         status.message = "Site container (" + containerId + ") not found.";
+         status.message = "Component container (" + containerId + ") not found.";
          status.redirect = true;
       }
       else

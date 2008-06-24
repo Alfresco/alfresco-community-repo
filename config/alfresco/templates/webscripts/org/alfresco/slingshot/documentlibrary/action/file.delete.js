@@ -3,7 +3,7 @@
 /**
  * Delete file action
  * @method DELETE
- * @param uri {string} /{siteId}/{componentId}/{filepath}
+ * @param uri {string} /{siteId}/{containerId}/{filepath}
  */
 
 /**
@@ -23,26 +23,38 @@ function runAction(p_rootNode, p_params)
    
    try
    {
-      //results.status.redirect = false;
       var assetNode = getAssetNode(p_rootNode, p_params.filePath);
 
       // Must have assetNode by this point
       if (typeof assetNode == "string")
       {
-         results.status.code = status.STATUS_NOT_FOUND;
-         return results;
+         status.setCode(status.STATUS_NOT_FOUND, "Not found.");
+         return;
       }
+      
+      var rId = assetNode.name;
+      var rNodeRef = assetNode.nodeRef.toString();
 
       // Delete the asset
       if (!assetNode.remove())
       {
-         results.status.code = status.STATUS_INTERNAL_SERVER_ERROR;
-         return results;
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not delete.");
+         return;
       }
+
+      // Construct the result object
+      results = [
+      {
+         id: rId,
+         nodeRef: rNodeRef,
+         action: "deleteFile",
+         success: true
+      }];
    }
    catch(e)
    {
-		results.status.code = status.STATUS_INTERNAL_SERVER_ERROR;
+		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+		return;
    }
    
    return results;

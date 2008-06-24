@@ -4,8 +4,8 @@
  * Parameters are either supplied as JSON object literal in content body,
  * or on request URI (e.g. HTTP DELETE methods must use URI)
  *
- * @param uri {string} /{siteId}/{componentId}/{filepath} : full path to file or folder name involved in the action
- * @param content {json} /{siteId}/{componentId}/{filepath} : full path to file or folder name involved in the action
+ * @param uri {string} /{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
+ * @param content {json} /{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
  */
 
 /* Bootstrap action script */
@@ -43,7 +43,7 @@ function main()
 
    // Actually run the action
    var results = runAction(node, params);
-   if (results !== null)
+   if ((results !== null) && (results !== undefined))
    {
       if (typeof results == "string")
       {
@@ -58,8 +58,10 @@ function main()
             status[s] = results.status[s];
          }
       }
-
-      model.results = results;
+      else
+      {
+         model.results = results;
+      }
    }
 }
 
@@ -79,7 +81,7 @@ function getInputParams()
    {
       // First try to get the parameters from the URI
       var siteId = url.templateArgs.siteid;
-      var componentId = url.templateArgs.componentid;
+      var containerId = url.templateArgs.containerId;
       var filePath = url.templateArgs.filepath;
 
       // Was a JSON parameter list supplied?
@@ -90,9 +92,9 @@ function getInputParams()
          {
             siteId = json.get("siteid");
          }
-         if (!json.isNull("componentid"))
+         if (!json.isNull("containerId"))
          {
-            componentId = json.get("componentid");
+            containerId = json.get("containerId");
          }
          if (!json.isNull("filepath"))
          {
@@ -105,10 +107,10 @@ function getInputParams()
    		return "'siteId' parameter is missing.";
    	}
 
-      // componentId
-   	if ((componentId === null) || (componentId.length === 0))
+      // containerId
+   	if ((containerId === null) || (containerId.length === 0))
    	{
-   		return "'componentId' parameter is missing.";
+   		return "'containerId' parameter is missing.";
    	}
    	
    	// filePath might be null for the root folder
@@ -118,9 +120,12 @@ function getInputParams()
    	}
 
       // Populate the return object
-   	params.componentId = componentId;
-   	params.siteId = siteId;
-   	params.filePath = filePath;
+      params =
+      {
+      	containerId: containerId,
+      	siteId: siteId,
+      	filePath: filePath
+      }
    }
    catch(e)
    {
@@ -153,10 +158,10 @@ function getRootNode(p_params)
       }
          
       // Find the component container
-      rootNode = siteNode.getContainer(p_params.componentId);
+      rootNode = siteNode.getContainer(p_params.containerId);
       if (rootNode === null)
       {
-   		return "Component container '" + p_params.componentId + "' not found in '" + p_params.siteId + "'.";
+   		return "Component container '" + p_params.containerId + "' not found in '" + p_params.siteId + "'.";
       }
    }
    catch(e)

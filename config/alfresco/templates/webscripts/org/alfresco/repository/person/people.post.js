@@ -8,25 +8,23 @@ function main()
       return;
    }
    
-   var title = json.get("title");
-   var firstName = json.get("firstName");
-   var lastName = json.get("lastName");
-   var organisation = json.get("organisation");
-   var jobTitle = json.get("jobTitle");
-   var email = json.get("email");
-   var bio = json.get("bio");
-   var avatarUrl = json.get("avatarUrl");
-   
-   // Create the person 
+   // Create the person with the supplied user name
    var person = people.createPerson(userName);
-   person.properties.title = title;
-   person.properties.firstName = firstName;
-   person.properties.lastName = lastName;
-   person.properties.organisation = organisation;
-   person.properties.jobTitle = jobTitle;
-   person.properties.email = email;
-   person.properties.bio = bio;
-   person.properties.avatarUrl = avatarUrl;
+   
+   // return error message if a person with that user name could not be created
+   if (person === null)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Person could not be created with user name: " + userName);
+      return;
+   }
+   
+   // assign values to the person's properties   
+   person.properties.title = json.get("title");
+   person.properties.firstName = json.get("firstName");
+   person.properties.lastName = json.get("lastName");
+   person.properties.organization = json.get("organisation");
+   person.properties.jobTitle = json.get("jobTitle");
+   person.properties.email = json.get("email");
    person.save();
    
    // Put the created person into the model

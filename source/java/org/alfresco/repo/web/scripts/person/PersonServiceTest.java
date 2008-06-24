@@ -101,18 +101,20 @@ public class PersonServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        String adminUser = this.authenticationComponent.getSystemUserName();
+        this.authenticationComponent.setCurrentUser(adminUser);
         
         /*
          * TODO: glen.johnson at alfresco dot com -
          * When DELETE /people/{userid} becomes a requirement and is subsequently implemented,
          * include this section to tidy-up people's resources created during the execution of the test
          *
+         */ 
         for (String userName : this.createdPeople)
         {
-            deleteRequest(URL_PEOPLE + "/" + userName, 0);
+            // deleteRequest(URL_PEOPLE + "/" + userName, 0);
+            personService.deletePerson(userName);
         }
-         */ 
         
         // Clear the list
         this.createdPeople.clear();
@@ -123,7 +125,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         String userName  = RandomStringUtils.randomNumeric(6);
                 
         // Create a new site
-        JSONObject result = createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
+        JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                                 "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 200);        
         assertEquals(userName, result.get("userName"));
         assertEquals("myTitle", result.get("title"));
@@ -132,8 +134,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         assertEquals("myOrganisation", result.get("organisation"));
         assertEquals("myJobTitle", result.get("jobTitle"));
         assertEquals("firstName.lastName@email.com", result.get("email"));
-        assertEquals("myBio", result.get("bio"));
-        assertEquals("images/avatar.jpg", result.get("avatarUrl"));
         
         // Check for duplicate names
         createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
@@ -144,6 +144,11 @@ public class PersonServiceTest extends BaseWebScriptTest
                         String organisation, String jobTitle, String email, String bio, String avatarUrl, int expectedStatus)
         throws Exception
     {
+        // switch to admin user to create a person
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        String adminUser = this.authenticationComponent.getSystemUserName();
+        this.authenticationComponent.setCurrentUser(adminUser);
+        
         JSONObject person = new JSONObject();
         person.put("userName", userName);
         person.put("title", title);
@@ -152,11 +157,13 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("organisation", organisation);
         person.put("jobTitle", jobTitle);
         person.put("email", email);
-        person.put("bio", bio);
-        person.put("avatarUrl", avatarUrl);
         
         MockHttpServletResponse response = postRequest(URL_PEOPLE, expectedStatus, person.toString(), "application/json"); 
         this.createdPeople.add(userName);
+        
+        // switch back to non-admin user
+        this.authenticationComponent.setCurrentUser(currentUser);
+        
         return new JSONObject(response.getContentAsString());
     }
     

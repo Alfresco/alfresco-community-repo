@@ -1,23 +1,37 @@
 <#macro personJSON person>
 {
-   "url" : "${url.serviceContext}/api/person/${person.userName}",
-   "userName" : "${person.userName}",
-   "title" : "${person.title}",
-   "firstName" : "${person.firstName}",
-   "lastName" : "${person.lastName}",
-   "organisation" : "${person.organisation}",
-   "jobTitle" : "${person.jobTitle}",
-   "email" : "${person.email}",
-   "bio" : "${person.bio}",
-   "avatarUrl" : "${person.avatarUrl}",
+   "url" : "${url.serviceContext}/api/person/${person.properties.userName}",
+   "userName" : "${person.properties.userName}",
+   <#if person.properties.title??>
+      "title" : "${person.properties.title}",
+   <#else>
+      "title" : undefined,
+   </#if>
+   "firstName" : "${person.properties.firstName}",
+   "lastName" : "${person.properties.lastName}",
+   <#if person.properties.organization??>
+      "organisation" : "${person.properties.organization}",
+   <#else>
+      "organisation" : undefined,
+   </#if>
+   <#if person.properties.jobtitle??>
+      "jobTitle" : "${person.properties.jobtitle}",
+   <#else>
+      "jobTitle" : undefined,
+   </#if>
+   <#if person.properties.email??>
+      "email" : "${person.properties.email}"
+   <#else>
+      "email" : undefined
+   </#if>
 }
 </#macro>
 
 <#macro personSummaryJSON person>
 {
-   "url" : "${url.serviceContext}/api/person/${person.userName}",
-   "userName" : "${person.userName}",
-   "firstName" : "${person.firstName}",
-   "lastName" : "${person.lastName}"
+   "url" : "${url.serviceContext}/api/person/${person.properties.userName}",
+   "userName" : "${person.properties.userName}",
+   "firstName" : "${person.properties.firstName}",
+   "lastName" : "${person.properties.lastName}"
 }
 </#macro>

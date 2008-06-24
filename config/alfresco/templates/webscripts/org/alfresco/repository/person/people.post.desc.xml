@@ -1,8 +1,8 @@
 <webscript>
-   <shortname>People</shortname>
+   <shortname>Add Person</shortname>
    <description>Adds a new person based on the details provided.</description>
    <url>/api/people</url>
    <format default="json" />
-   <authentication>guest</authentication>
+   <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

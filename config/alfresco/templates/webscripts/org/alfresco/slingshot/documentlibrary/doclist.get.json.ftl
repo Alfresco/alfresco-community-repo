@@ -1,9 +1,7 @@
 {
    "doclist":
    {
-<#if doclist.error?exists>
-      "error": "${doclist.error}"
-<#else>
+      "totalItems": ${doclist.items?size},
       "items":
       [
       <#list doclist.items as d>
@@ -34,6 +32,5 @@
          }<#if d_has_next>,</#if>
       </#list>
       ]
-</#if>
    }
 }

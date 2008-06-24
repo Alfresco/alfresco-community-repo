@@ -41,6 +41,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -674,5 +675,21 @@ public class CifsHelper
         }
         
         return fname;
+    }
+    
+    /**
+     * Check if the folder node is empty
+     * 
+     * @param folderNode NodeRef
+     * @return boolean
+     */
+    public boolean isFolderEmpty( NodeRef folderNode) {
+
+    	// Check if the node has any child files/folders
+    	
+    	List<FileInfo> files = fileFolderService.listFiles( folderNode);
+    	if ( files == null || files.size() == 0)
+    		return true;
+    	return false;
     }
 }

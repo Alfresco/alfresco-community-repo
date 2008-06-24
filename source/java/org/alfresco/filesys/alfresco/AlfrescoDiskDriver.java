@@ -54,6 +54,10 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
     // Logging
     
     private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
+
+    // Transaction logging
+    
+    private static final Log txLogger = LogFactory.getLog( "org.alfresco.fileserver.transaction");
     
     // Service registry for desktop actions
     
@@ -180,9 +184,9 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
      * End an active transaction
      * 
      * @param sess SrvSession
-     * @param tx ThreadLocal<Object>
+     * @param tx Object
      */
-    public void endTransaction(SrvSession sess, ThreadLocal<Object> tx) {
+    public void endTransaction(SrvSession sess, Object tx) {
 
       // Check that the transaction object is valid
       
@@ -191,7 +195,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
       
       // Get the filesystem transaction
       
-      FilesysTransaction filesysTx = (FilesysTransaction) tx.get();
+      FilesysTransaction filesysTx = (FilesysTransaction) tx;
 
       // Check if there is an active transaction
       
@@ -205,7 +209,9 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
           {
               // Commit or rollback the transaction
               
-              if ( ftx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+              if ( ftx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+            	   ftx.getStatus() == Status.STATUS_ROLLEDBACK ||
+            	   ftx.getStatus() == Status.STATUS_ROLLING_BACK)
               {
                   // Transaction is marked for rollback
                   
@@ -218,7 +224,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
               }
               else
               {
-                  // Commit the transaction
+            	  // Commit the transaction
                   
                   ftx.commit();
                   
@@ -230,19 +236,17 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
           }
           catch ( Exception ex)
           {
-              throw new AlfrescoRuntimeException("Failed to end transaction", ex);
+        	  if ( logger.isDebugEnabled())
+        		  logger.debug("Failed to end transaction, " + ex.getMessage());
+//              throw new AlfrescoRuntimeException("Failed to end transaction", ex);
           }
           finally
           {
               // Clear the current transaction
               
-              filesysTx.clearTransaction();
+              sess.clearTransaction();
           }
         }
-      
-        // Clear the active transaction interface, leave the transaction object as we will reuse it
-      
-        sess.setTransaction( null);
     }
 
     /**
@@ -272,7 +276,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
 
         if ( filesysTx.hasTransaction())
         {
-          // Get the active transaction
+        	// Get the active transaction
           
             UserTransaction tx = filesysTx.getTransaction();
             
@@ -311,7 +315,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
                 {
                     // Clear the active transaction
 
-                    filesysTx.clearTransaction();
+                	sess.clearTransaction();
                 }
             }
         }
@@ -322,7 +326,9 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
         {
             try
             {
-                UserTransaction userTrans = m_transactionService.getUserTransaction(readOnly);
+            	// Create a new transaction
+            	
+            	UserTransaction userTrans = m_transactionService.getUserTransaction(readOnly);
                 userTrans.begin();
 
                 // Store the transaction

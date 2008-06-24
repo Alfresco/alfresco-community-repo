@@ -435,6 +435,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         modified = true;
         
+        // Set the new file size
+        
+        setFileSize( size);
+        
         // DEBUG
         
         if (logger.isDebugEnabled())
@@ -465,6 +469,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         // Set modification flag
         
         modified = true;
+        incrementWriteCount();
 
         // Update the current file size
         

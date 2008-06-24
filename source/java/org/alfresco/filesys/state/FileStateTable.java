@@ -159,6 +159,13 @@ public class FileStateTable
 
             state.setExpiryTime(System.currentTimeMillis() + getCacheTimer());
             m_stateTable.put(state.getPath(), state);
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled() && state.getPath().length() > 0 && state.getPath().indexOf("\\") == -1) {
+            	logger.debug("*** File state path is not relative - " + state.getPath() + " ***");
+            	Thread.dumpStack();
+            }
         }
 
         // Return the file state

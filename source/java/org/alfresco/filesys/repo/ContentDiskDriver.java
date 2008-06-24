@@ -43,6 +43,7 @@ import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
+import org.alfresco.jlan.server.filesys.DirectoryNotEmptyException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
@@ -1462,7 +1463,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( ctx.hasStateTable())
             {
-                FileState fstate = ctx.getStateTable().findFileState(path, false, true);
+                FileState fstate = ctx.getStateTable().findFileState(params.getPath(), false, true);
                 if ( fstate != null)
                 {
                     // Indicate that the file is open
@@ -1577,7 +1578,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( ctx.hasStateTable())
             {
-                FileState fstate = ctx.getStateTable().findFileState(path, true, true);
+                FileState fstate = ctx.getStateTable().findFileState( params.getPath(), true, true);
                 if ( fstate != null)
                 {
                     // Indicate that the file is open
@@ -1647,17 +1648,28 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         try
         {
-            // get the node
+            // Get the node for the folder
+        	
             NodeRef nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, dir);
             if (nodeService.exists(nodeRef))
             {
-                nodeService.deleteNode(nodeRef);
-                
-                // Remove the file state
-                
-                if ( ctx.hasStateTable())
-                    ctx.getStateTable().removeFileState(dir);
+            	// Check if the folder is empty
+            	
+            	if ( cifsHelper.isFolderEmpty( nodeRef) == true) {
+            		
+	           		// Delete the folder node
+	
+	           		nodeService.deleteNode(nodeRef);
+	                
+	                // Remove the file state
+		                
+	                if ( ctx.hasStateTable())
+	                    ctx.getStateTable().removeFileState(dir);
+            	}
+            	else
+            		throw new DirectoryNotEmptyException( dir);
             }
+            
             // done
             if (logger.isDebugEnabled())
             {
@@ -1768,6 +1780,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         if ( ctx.hasStateTable())
                             ctx.getStateTable().removeFileState(file.getFullName());
+                        
+                        // Commit the current transaction
+                        
+//                        sess.endTransaction();
+//                        beginReadTransaction( sess);
+                        
+                        if ( nodeService.exists( nodeRef))
+                        	System.out.println("Node still exists - " + file.getFullName());
                     }
                     catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
                     {

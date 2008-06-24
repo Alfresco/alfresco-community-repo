@@ -61,6 +61,7 @@ import org.alfresco.jlan.server.auth.acl.InvalidACLTypeException;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.auth.passthru.RangeDomainMapping;
 import org.alfresco.jlan.server.auth.passthru.SubnetDomainMapping;
+import org.alfresco.jlan.server.config.CoreServerConfigSection;
 import org.alfresco.jlan.server.config.GlobalConfigSection;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
@@ -70,8 +71,10 @@ import org.alfresco.jlan.server.core.ShareType;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
+import org.alfresco.jlan.server.thread.ThreadRequestPool;
 import org.alfresco.jlan.smb.server.CIFSConfigSection;
 import org.alfresco.jlan.util.IPAddress;
+import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
@@ -106,6 +109,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.sf.acegisecurity.AuthenticationManager;
 
@@ -128,6 +133,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   private static final String ConfigNFS         = "NFS Server";
   private static final String ConfigFilesystems = "Filesystems";
   private static final String ConfigSecurity    = "Filesystem Security";
+  private static final String ConfigCoreServer  = "Server Core";
 
   // Server configuration bean name
   
@@ -139,7 +145,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
   private static final String m_sessDbgStr[] = { "NETBIOS", "STATE", "RXDATA", "TXDATA", "DUMPDATA", "NEGOTIATE", "TREE", "SEARCH", "INFO", "FILE",
           "FILEIO", "TRANSACT", "ECHO", "ERROR", "IPC", "LOCK", "PKTTYPE", "DCERPC", "STATECACHE", "TIMING", "NOTIFY",
-          "STREAMS", "SOCKET" };
+          "STREAMS", "SOCKET", "PKTPOOL", "PKTSTATS", "THREADPOOL", "BENCHMARK" };
 
   // FTP server debug type strings
 
@@ -163,6 +169,27 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
   private static final String TokenLocalName = "${localname}";
   
+  // Default thread pool size
+	
+  private static final int DefaultThreadPoolInit	= 25;
+  private static final int DefaultThreadPoolMax		= 50;
+	
+  // Default memory pool settings
+	
+  private static final int[] DefaultMemoryPoolBufSizes  = { 256, 4096, 16384, 66000 };
+  private static final int[] DefaultMemoryPoolInitAlloc = {  20,   20,     5,     5 };
+  private static final int[] DefaultMemoryPoolMaxAlloc  = { 100,   50,    50,    50 };
+	
+  // Memory pool packet size limits
+	
+  private static final int MemoryPoolMinimumPacketSize	= 256;
+  private static final int MemoryPoolMaximumPacketSize	= 128 * (int) MemorySize.KILOBYTE; 
+		
+  // Memory pool allocation limits
+	
+  private static final int MemoryPoolMinimumAllocation	= 5;
+  private static final int MemoryPoolMaximumAllocation   = 500;
+	
   // Authentication manager
   
   private AuthenticationManager m_authenticationManager;
@@ -411,7 +438,8 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    */
   public void init()
   {
-      // check that all required properties have been set
+      // Check that all required properties have been set
+	  
       if (m_authenticationManager == null)
       {
           throw new AlfrescoRuntimeException("Property 'authenticationManager' not set");
@@ -480,15 +508,20 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
       
       try
       {
+    	  // Process the core server configuration
+    	  
+    	  config = m_configService.getConfig(ConfigCoreServer, configCtx);
+    	  processCoreServerConfig( config);
+    	  
           // Process the security configuration
   
           config = m_configService.getConfig(ConfigSecurity, configCtx);
-          processSecurityConfig(config);
+          processSecurityConfig( config);
 
           // Process the filesystems configuration
 
           config = m_configService.getConfig(ConfigFilesystems, configCtx);
-          processFilesystemsConfig(config);
+          processFilesystemsConfig( config);
           
           // Indicate that the filesystems were initialized
           
@@ -1509,7 +1542,6 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
                 while (token.hasMoreTokens())
                 {
-  
                     // Get the current debug flag token
   
                     String dbg = token.nextToken().trim();
@@ -1533,6 +1565,20 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
             // Set the session debug flags
   
             cifsConfig.setSessionDebugFlags(sessDbg);
+        }
+        
+        // Check if NIO based socket code should be disabled
+        
+        if ( config.getConfigElement( "disableNIO") != null) {
+        		
+        	// Disable NIO based code
+        	
+        	cifsConfig.setDisableNIOCode( true);
+        		
+        	// DEBUG
+        		
+        	if ( logger.isDebugEnabled())
+        		logger.debug("NIO based code disabled for CIFS server");
         }
       }
       catch ( InvalidConfigurationException ex)
@@ -2385,6 +2431,257 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
       {
         throw new AlfrescoRuntimeException( ex.getMessage());
       }
+  }
+
+  /**
+   * Process the core server configuration
+   * 
+   * @param config Config
+   * @exception InvalidConfigurationException
+   */
+  private final void processCoreServerConfig(Config config)
+  	throws InvalidConfigurationException
+  {
+		// Create the core server configuration section
+
+		CoreServerConfigSection coreConfig = new CoreServerConfigSection(this);
+
+		// Check if the server core element has been specified
+
+		if ( config == null) {
+			
+			// Configure a default memory pool
+			
+			coreConfig.setMemoryPool( DefaultMemoryPoolBufSizes, DefaultMemoryPoolInitAlloc, DefaultMemoryPoolMaxAlloc);
+			
+			// Configure a default thread pool size
+			
+			coreConfig.setThreadPool( DefaultThreadPoolInit, DefaultThreadPoolMax);
+			return;
+		}
+
+		// Check if the thread pool size has been specified
+		
+		ConfigElement elem = config.getConfigElement("threadPool");
+		if ( elem != null) {
+			
+			// Get the initial thread pool size
+			
+			String initSizeStr = elem.getAttribute("init");
+			if ( initSizeStr == null || initSizeStr.length() == 0)
+				throw new InvalidConfigurationException("Thread pool initial size not specified");
+			
+			// Validate the initial thread pool size
+			
+			int initSize = 0;
+			
+			try {
+				initSize = Integer.parseInt( initSizeStr);
+			}
+			catch (NumberFormatException ex) {
+				throw new InvalidConfigurationException("Invalid thread pool size value, " + initSizeStr);
+			}
+			
+			// Range check the thread pool size
+			
+			if ( initSize < ThreadRequestPool.MinimumWorkerThreads)
+				throw new InvalidConfigurationException("Thread pool size below minimum allowed size");
+			
+			if ( initSize > ThreadRequestPool.MaximumWorkerThreads)
+				throw new InvalidConfigurationException("Thread pool size above maximum allowed size");
+			
+			// Get the maximum thread pool size
+			
+			String maxSizeStr = elem.getAttribute("max");
+			int maxSize = initSize;
+			
+			if ( maxSizeStr.length() > 0) {
+				
+				// Validate the maximum thread pool size
+				
+				try {
+					maxSize = Integer.parseInt( maxSizeStr);
+				}
+				catch (NumberFormatException ex) {
+					throw new InvalidConfigurationException(" Invalid thread pool maximum size value, " + maxSizeStr);
+				}
+				
+				// Range check the maximum thread pool size
+				
+				if ( maxSize < ThreadRequestPool.MinimumWorkerThreads)
+					throw new InvalidConfigurationException("Thread pool maximum size below minimum allowed size");
+				
+				if ( maxSize > ThreadRequestPool.MaximumWorkerThreads)
+					throw new InvalidConfigurationException("Thread pool maximum size above maximum allowed size");
+				
+				if ( maxSize < initSize)
+					throw new InvalidConfigurationException("Initial size is larger than maxmimum size");
+			}
+			else if ( maxSizeStr != null)
+				throw new InvalidConfigurationException("Thread pool maximum size not specified");
+			
+			// Configure the thread pool
+			
+			coreConfig.setThreadPool( initSize, maxSize);
+		}
+		else {
+			
+			// Configure a default thread pool size
+			
+			coreConfig.setThreadPool( DefaultThreadPoolInit, DefaultThreadPoolMax);
+		}
+		
+		// Check if thread pool debug output is enabled
+		
+		if ( config.getConfigElement( "threadPoolDebug") != null)
+			coreConfig.getThreadPool().setDebug( true);
+		
+		// Check if the memory pool configuration has been specified
+		
+		elem = config.getConfigElement( "memoryPool");
+		if ( elem != null) {
+			
+			// Check if the packet sizes/allocations have been specified
+
+			ConfigElement pktElem = elem.getChild( "packetSizes");
+			if ( pktElem != null) {
+
+				// Calculate the array size for the packet size/allocation arrays
+				
+				int elemCnt = pktElem.getChildCount();
+				
+				// Create the packet size, initial allocation and maximum allocation arrays
+				
+				int[] pktSizes  = new int[elemCnt];
+				int[] initSizes = new int[elemCnt];
+				int[] maxSizes  = new int[elemCnt];
+				
+				int elemIdx = 0;
+				
+				// Process the packet size elements
+
+				List<ConfigElement> pktSizeList = pktElem.getChildren();
+				for ( int i = 0; i < pktSizeList.size(); i++) {
+					
+					// Get the current element
+					
+					ConfigElement curChild = pktSizeList.get( i);
+					if ( curChild.getName().equals( "packet")) {
+						
+						// Get the packet size
+						
+						int pktSize   = -1;
+						int initAlloc = -1;
+						int maxAlloc  = -1;
+						
+						String pktSizeStr = curChild.getAttribute("size");
+						if ( pktSizeStr == null || pktSizeStr.length() == 0)
+							throw new InvalidConfigurationException("Memory pool packet size not specified");
+						
+						// Parse the packet size
+						
+						try {
+							pktSize = MemorySize.getByteValueInt( pktSizeStr);
+						}
+						catch ( NumberFormatException ex) {
+							throw new InvalidConfigurationException("Memory pool packet size, invalid size value, " + pktSizeStr);
+						}
+
+						// Make sure the packet sizes have been specified in ascending order
+						
+						if ( elemIdx > 0 && pktSizes[elemIdx - 1] >= pktSize)
+							throw new InvalidConfigurationException("Invalid packet size specified, less than/equal to previous packet size");
+						
+						// Get the initial allocation for the current packet size
+						
+						String initSizeStr = curChild.getAttribute("init");
+						if ( initSizeStr == null || initSizeStr.length() == 0)
+							throw new InvalidConfigurationException("Memory pool initial allocation not specified");
+						
+						// Parse the initial allocation
+						
+						try {
+							initAlloc = Integer.parseInt( initSizeStr);
+						}
+						catch (NumberFormatException ex) {
+							throw new InvalidConfigurationException("Invalid initial allocation, " + initSizeStr);
+						}
+						
+						// Range check the initial allocation
+						
+						if ( initAlloc < MemoryPoolMinimumAllocation)
+							throw new InvalidConfigurationException("Initial memory pool allocation below minimum of " + MemoryPoolMinimumAllocation);
+						
+						if ( initAlloc > MemoryPoolMaximumAllocation)
+							throw new InvalidConfigurationException("Initial memory pool allocation above maximum of " + MemoryPoolMaximumAllocation);
+						
+						// Get the maximum allocation for the current packet size
+
+						String maxSizeStr = curChild.getAttribute("max");
+						if ( maxSizeStr == null || maxSizeStr.length() == 0)
+							throw new InvalidConfigurationException("Memory pool maximum allocation not specified");
+						
+						// Parse the maximum allocation
+						
+						try {
+							maxAlloc = Integer.parseInt( maxSizeStr);
+						}
+						catch (NumberFormatException ex) {
+							throw new InvalidConfigurationException("Invalid maximum allocation, " + maxSizeStr);
+						}
+
+						// Range check the maximum allocation
+						
+						if ( maxAlloc < MemoryPoolMinimumAllocation)
+							throw new InvalidConfigurationException("Maximum memory pool allocation below minimum of " + MemoryPoolMinimumAllocation);
+						
+						if ( initAlloc > MemoryPoolMaximumAllocation)
+							throw new InvalidConfigurationException("Maximum memory pool allocation above maximum of " + MemoryPoolMaximumAllocation);
+
+						// Set the current packet size elements
+						
+						pktSizes[elemIdx]  = pktSize;
+						initSizes[elemIdx] = initAlloc;
+						maxSizes[elemIdx]  = maxAlloc;
+						
+						elemIdx++;
+					}
+				}
+				
+				// Check if all elements were used in the packet size/allocation arrays
+				
+				if ( elemIdx < pktSizes.length) {
+					
+					// Re-allocate the packet size/allocation arrays
+					
+					int[] newPktSizes  = new int[elemIdx];
+					int[] newInitSizes = new int[elemIdx];
+					int[] newMaxSizes  = new int[elemIdx];
+					
+					// Copy the values to the shorter arrays
+					
+					System.arraycopy(pktSizes, 0, newPktSizes, 0, elemIdx);
+					System.arraycopy(initSizes, 0, newInitSizes, 0, elemIdx);
+					System.arraycopy(maxSizes, 0, newMaxSizes, 0, elemIdx);
+					
+					// Move the new arrays into place
+					
+					pktSizes  = newPktSizes;
+					initSizes = newInitSizes;
+					maxSizes  = newMaxSizes;
+				}
+				
+				// Configure the memory pool
+				
+				coreConfig.setMemoryPool( pktSizes, initSizes, maxSizes);
+			}
+		}
+		else {
+			
+			// Configure a default memory pool
+			
+			coreConfig.setMemoryPool( DefaultMemoryPoolBufSizes, DefaultMemoryPoolInitAlloc, DefaultMemoryPoolMaxAlloc);
+		}
   }
 
   /**

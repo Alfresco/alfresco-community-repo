@@ -501,10 +501,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      * 
      * @param sess SMBSrvSession
      * @param reqPkt SMBSrvPacket
-     * @param respPkt SMBSrvPacket
      * @exception SMBSrvException
      */
-    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt, SMBSrvPacket respPkt)
+    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
         //  Check that the received packet looks like a valid NT session setup andX request
@@ -518,7 +517,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         {
             //  Process the standard password session setup
                 
-        	super.processSessionSetup( sess, reqPkt, respPkt);
+        	super.processSessionSetup( sess, reqPkt);
             return;
         }
         
@@ -684,43 +683,43 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             //  required
             
             if ( sess.hasSetupObject( client.getProcessId()))
-                respPkt.setLongErrorCode( SMBStatus.NTMoreProcessingRequired);
+                reqPkt.setLongErrorCode( SMBStatus.NTMoreProcessingRequired);
             else
             {
-                respPkt.setLongErrorCode( SMBStatus.NTSuccess);
+                reqPkt.setLongErrorCode( SMBStatus.NTSuccess);
                 
                 // Indicate that the user is logged on
                 
                 loggedOn = true;
             }
 
-            respPkt.setParameterCount(4);
-            respPkt.setParameter(0, 0xFF);      //  No chained response
-            respPkt.setParameter(1, 0);         //  Offset to chained response
+            reqPkt.setParameterCount(4);
+            reqPkt.setParameter(0, 0xFF);      //  No chained response
+            reqPkt.setParameter(1, 0);         //  Offset to chained response
             
-            respPkt.setParameter(2, 0);         //  Action
-            respPkt.setParameter(3, respLen);
+            reqPkt.setParameter(2, 0);         //  Action
+            reqPkt.setParameter(3, respLen);
         }
         else
         {
             //  Build a completed session setup response
             
-            respPkt.setLongErrorCode( SMBStatus.NTSuccess);
+            reqPkt.setLongErrorCode( SMBStatus.NTSuccess);
             
             //  Build the session setup response SMB
     
-            respPkt.setParameterCount(12);
-            respPkt.setParameter(0, 0xFF);      //  No chained response
-            respPkt.setParameter(1, 0);         //  Offset to chained response
+            reqPkt.setParameterCount(12);
+            reqPkt.setParameter(0, 0xFF);      //  No chained response
+            reqPkt.setParameter(1, 0);         //  Offset to chained response
     
-            respPkt.setParameter(2, SMBSrvSession.DefaultBufferSize);
-            respPkt.setParameter(3, SMBSrvSession.NTMaxMultiplexed);
-            respPkt.setParameter(4, 0);         //  virtual circuit number
-            respPkt.setParameterLong(5, 0);     //  session key
-            respPkt.setParameter(7, respLen);
+            reqPkt.setParameter(2, SMBSrvSession.DefaultBufferSize);
+            reqPkt.setParameter(3, SMBSrvSession.NTMaxMultiplexed);
+            reqPkt.setParameter(4, 0);         //  virtual circuit number
+            reqPkt.setParameterLong(5, 0);     //  session key
+            reqPkt.setParameter(7, respLen);
                                                 //  security blob length
-            respPkt.setParameterLong(8, 0);     //  reserved
-            respPkt.setParameterLong(10, getServerCapabilities());
+            reqPkt.setParameterLong(8, 0);     //  reserved
+            reqPkt.setParameterLong(10, getServerCapabilities());
             
             // Indicate that the user is logged on
             
@@ -763,27 +762,27 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         
         // Common session setup response
         
-        respPkt.setCommand( reqPkt.getCommand());
-        respPkt.setByteCount(0);
+        reqPkt.setCommand( reqPkt.getCommand());
+        reqPkt.setByteCount(0);
 
-        respPkt.setTreeId( 0);
-        respPkt.setUserId( uid);
+        reqPkt.setTreeId( 0);
+        reqPkt.setUserId( uid);
 
         //  Set the various flags
 
-        int flags = respPkt.getFlags();
+        int flags = reqPkt.getFlags();
         flags &= ~SMBSrvPacket.FLG_CASELESS;
-        respPkt.setFlags(flags);
+        reqPkt.setFlags(flags);
         
         int flags2 = SMBSrvPacket.FLG2_LONGFILENAMES + SMBSrvPacket.FLG2_EXTENDEDSECURITY + SMBSrvPacket.FLG2_LONGERRORCODE;
         if ( isUni)
           flags2 += SMBSrvPacket.FLG2_UNICODE;
-        respPkt.setFlags2( flags2);
+        reqPkt.setFlags2( flags2);
         
         //  Pack the security blob
 
-        int pos = respPkt.getByteOffset();
-        buf = respPkt.getBuffer();
+        int pos = reqPkt.getByteOffset();
+        buf = reqPkt.getBuffer();
 
         if ( respBlob != null)
         {
@@ -800,7 +799,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         pos = DataPacker.putString("Alfresco CIFS Server " + sess.getServer().isVersion(), buf, pos, true, isUni);
         pos = DataPacker.putString(getCIFSConfig().getDomainName(), buf, pos, true, isUni);
         
-        respPkt.setByteCount(pos - respPkt.getByteOffset());
+        reqPkt.setByteCount(pos - reqPkt.getByteOffset());
     }
 
     /**

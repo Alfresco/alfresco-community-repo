@@ -46,6 +46,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
+import org.alfresco.jlan.debug.Debug;
 import org.alfresco.jlan.server.auth.AuthenticatorException;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.NTLanManAuthContext;
@@ -64,6 +65,7 @@ import org.alfresco.jlan.server.auth.spnego.OID;
 import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
+import org.alfresco.jlan.server.core.NoPooledMemoryException;
 import org.alfresco.jlan.smb.Capability;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.smb.dcerpc.UUID;
@@ -502,10 +504,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      * 
      * @param sess SMBSrvSession
      * @param reqPkt SMBSrvPacket
-     * @param respPkt SMBSrvPacket
      * @exception SMBSrvException
      */
-    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt, SMBSrvPacket respPkt)
+    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
         //  Check that the received packet looks like a valid NT session setup andX request
@@ -528,7 +529,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
                 //  Process the hashed password session setup
                     
-                doHashedPasswordLogon( sess, reqPkt, respPkt);
+                doHashedPasswordLogon( sess, reqPkt);
             }
             catch ( Exception ex)
             {
@@ -766,6 +767,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         int respLen = respBlob != null ? respBlob.length : 0;
         
+		// Use the original packet for the response
+
+		SMBSrvPacket respPkt = reqPkt;
+		
         //  Check if there is/was a session setup object stored in the session, this indicates a multi-stage session
         //  setup so set the status code accordingly
         
@@ -787,12 +792,41 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 loggedOn = true;
             }
 
-            respPkt.setParameterCount(4);
-            respPkt.setParameter(0, 0xFF);      //  No chained response
-            respPkt.setParameter(1, 0);         //  Offset to chained response
-            
-            respPkt.setParameter(2, 0);         //  Action
-            respPkt.setParameter(3, respLen);
+			// Set the parameter count then check if the security blob will fit into the current
+			// packet buffer
+
+			respPkt.setParameterCount(4);
+			int reqLen = respLen + 100; // allow for strings
+
+			if ( reqLen > respPkt.getAvailableLength()) {
+
+				try {
+
+					// Allocate a new buffer for the response
+
+					respPkt = sess.getPacketPool().allocatePacket(respPkt.getByteOffset() + reqLen, reqPkt);
+				}
+				catch (NoPooledMemoryException ex) {
+
+					// DEBUG
+
+					if ( Debug.EnableDbg && hasDebug())
+						Debug.println("Authenticator failed to allocate packet from pool, reqSiz="
+								+ (respPkt.getByteOffset() + respLen));
+
+					// Return a server error to the client
+
+					throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNoBuffers, SMBStatus.ErrSrv);
+				}
+			}
+
+			// Fill in the rest of the packet header
+
+			respPkt.setParameter(0, 0xFF); 	// No chained response
+			respPkt.setParameter(1, 0); 	// Offset to chained response
+
+			respPkt.setParameter(2, 0); 	// Action
+			respPkt.setParameter(3, respLen);
         }
         else
         {
@@ -1970,10 +2004,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      * 
      * @param sess SMBSrvSession
      * @param reqPkt SMBSrvPacket
-     * @param respPkt SMBSrvPacket
      * @exception SMBSrvException
      */
-    private final void doHashedPasswordLogon( SMBSrvSession sess, SMBSrvPacket reqPkt, SMBSrvPacket respPkt)
+    private final void doHashedPasswordLogon( SMBSrvSession sess, SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
         // Check that the received packet looks like a valid NT session setup andX request
@@ -2159,30 +2192,30 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         // Build the session setup response SMB
 
-        respPkt.setParameterCount(3);
-        respPkt.setParameter(0, 0); // No chained response
-        respPkt.setParameter(1, 0); // Offset to chained response
-        respPkt.setParameter(2, isGuest ? 1 : 0);
-        respPkt.setByteCount(0);
+        reqPkt.setParameterCount(3);
+        reqPkt.setParameter(0, 0); // No chained response
+        reqPkt.setParameter(1, 0); // Offset to chained response
+        reqPkt.setParameter(2, isGuest ? 1 : 0);
+        reqPkt.setByteCount(0);
 
-        respPkt.setTreeId(0);
-        respPkt.setUserId(uid);
+        reqPkt.setTreeId(0);
+        reqPkt.setUserId(uid);
 
         // Set the various flags
 
-        int flags = respPkt.getFlags();
+        int flags = reqPkt.getFlags();
         flags &= ~SMBSrvPacket.FLG_CASELESS;
-        respPkt.setFlags(flags);
+        reqPkt.setFlags(flags);
 
         int flags2 = SMBSrvPacket.FLG2_LONGFILENAMES;
         if (isUni)
             flags2 += SMBSrvPacket.FLG2_UNICODE;
-        respPkt.setFlags2(flags2);
+        reqPkt.setFlags2(flags2);
 
         // Pack the OS, dialect and domain name strings.
 
-        int pos = respPkt.getByteOffset();
-        buf = respPkt.getBuffer();
+        int pos = reqPkt.getByteOffset();
+        buf = reqPkt.getBuffer();
 
         if (isUni)
             pos = DataPacker.wordAlign(pos);
@@ -2191,6 +2224,6 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         pos = DataPacker.putString("Alfresco CIFS Server " + sess.getServer().isVersion(), buf, pos, true, isUni);
         pos = DataPacker.putString(getCIFSConfig().getDomainName(), buf, pos, true, isUni);
 
-        respPkt.setByteCount(pos - respPkt.getByteOffset());
+        reqPkt.setByteCount(pos - reqPkt.getByteOffset());
     }
 }

@@ -95,7 +95,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return FileSystem.TypeNTFS;
     }
-    
+
     /**
      * Determine if the file state table is enabled
      * 

@@ -94,8 +94,8 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 			int nameLen = rpc.unpackInt();
 			rpc.skipBytes(nameLen);
 
-			int gid = rpc.unpackInt();
 			int uid = rpc.unpackInt();
+			int gid = rpc.unpackInt();
 
 			// DEBUG
 			

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ActivityFeed">
+
+   <typeAlias alias="ActivityFeed" type="org.alfresco.repo.activities.feed.ActivityFeedDAO"/>
+
+   <resultMap id="ActivityFeedResult" class="ActivityFeed">
+      <result property="id" column="ID"/>
+      <result property="feedUserId" column="FEED_USER_ID"/>
+      <result property="postUserId" column="POST_USER_ID"/>
+      <result property="postDate" column="POST_DATE"/>
+      <result property="postId" column="POST_ID"/> <!-- not an explicit FK constraint, can dangle if and when activity post is deleted -->
+      <result property="siteNetwork" column="SITE_NETWORK"/>
+      <result property="activityType" column="ACTIVITY_TYPE"/>
+      <result property="activitySummary" column="ACTIVITY_SUMMARY"/>
+      <result property="activitySummaryFormat" column="ACTIVITY_FORMAT"/>
+      <result property="feedDate" column="FEED_DATE"/>
+   </resultMap>
+  
+   <select id="select.activity.feed.for.feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and post_user_id != #feedUserId#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <select id="select.activity.feed.for.feeduser.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and post_user_id != #feedUserId#
+      and site_network = #siteNetwork#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <select id="select.activity.feed.for.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      from alf_activity_feed
+      where feed_user_id = ''
+      and site_network = #siteNetwork#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+
+   <insert id="insert.activity.feed" parameterClass="ActivityFeed">
+      insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
+      values (DEFAULT, #activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
+      
+      <!-- optionally return auto-generated primary key - only required for debug (can be commented out) -->
+      <selectKey resultClass="long" keyProperty="id" type="post">
+         values IDENTITY_VAL_LOCAL()
+      </selectKey>
+   </insert>
+  
+   <delete id="delete.activity.feed.entries.older.than.date" parameterClass="Date">
+      <![CDATA[
+      delete from alf_activity_feed where post_date < #keepdate#
+      ]]>
+   </delete>
+
+</sqlMap>

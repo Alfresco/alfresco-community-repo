@@ -5,7 +5,7 @@
 #
 # Sample custom content and index data location
 #
-#dir.root=/srv/alfresco/data
+#dir.root=/srv/alfresco/alf_data
 
 #
 # Sample database connection properties
@@ -27,6 +27,12 @@
 # upgrading to a new version, this can be disabled.
 #
 #db.schema.update=true
+
+#
+# Derby connection
+#
+#db.driver=org.apache.derby.jdbc.EmbeddedDriver
+#db.url=jdbc:derby:/srv/alfresco/alf_data/derby_data/alfresco;create=true
 
 #
 # HSQL connection

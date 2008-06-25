@@ -58,6 +58,7 @@ public class FeedControlDAO
         this.feedUserId = feedUserId;
         this.siteNetwork = feedControl.getSiteId();
         this.appTool = feedControl.getAppToolId();
+        this.lastModified = new Date();
     }
     
     public FeedControl getFeedControl()

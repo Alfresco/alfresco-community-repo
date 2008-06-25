@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ActivityPost">
+
+   <typeAlias alias="ActivityPost" type="org.alfresco.repo.activities.post.ActivityPostDAO"/>
+
+   <resultMap id="ActivityPostResult" class="ActivityPost">
+      <result property="id" column="SEQUENCE_ID"/>
+      <result property="activityData" column="ACTIVITY_DATA"/>
+      <result property="activityType" column="ACTIVITY_TYPE"/>
+      <result property="userId" column="POST_USER_ID"/>
+      <result property="postDate" column="POST_DATE"/>
+      <result property="jobTaskNode" column="JOB_TASK_NODE"/>
+      <result property="siteNetwork" column="SITE_NETWORK"/>
+      <result property="appTool" column="APP_TOOL"/>
+      <result property="status" column="STATUS"/>
+      <result property="lastModified" column="LAST_MODIFIED"/>
+   </resultMap>
+
+   <select id="select.activity.posts" parameterClass="ActivityPost" resultClass="ActivityPost">
+      <![CDATA[
+      select 
+         sequence_id as id,
+         activity_data as activityData,
+         activity_type as activityType,
+         post_user_id as userId,
+         post_date as postDate,
+         job_task_node as jobTaskNode,
+         site_network as siteNetwork,
+         app_tool as appTool,
+         status as status
+      from 
+         alf_activity_post
+      where 
+         job_task_node = #jobTaskNode# and
+         sequence_id >= #minId# and
+         sequence_id <= #maxId# and
+         status = #status#
+      ]]>
+   </select>
+  
+   <select id="select.activity.posts.by.status.only" parameterClass="ActivityPost" resultClass="ActivityPost">
+      <![CDATA[
+      select 
+         sequence_id as id,
+         activity_data as activityData,
+         activity_type as activityType,
+         post_user_id as userId,
+         post_date as postDate,
+         job_task_node as jobTaskNode,
+         site_network as siteNetwork,
+         app_tool as appTool,
+         status as status
+      from 
+         alf_activity_post
+      where 
+         status = #status#
+      ]]>
+   </select>
+  
+   <select id="select.activity.post.max.seq" resultClass="long">
+      select max(sequence_id) as maxId
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+  
+   <select id="select.activity.post.min.seq" resultClass="long">
+      select min(sequence_id) as minId
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+  
+   <select id="select.activity.post.max.jobtasknode" resultClass="int">
+      select max(job_task_node) as maxJobTaskNode
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+
+   <insert id="insert.activity.post" parameterClass="ActivityPost">
+      insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
+      values (DEFAULT, #status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
+      
+      <!-- optionally return auto-generated primary key - only required for debug (can be commented out) -->
+      <selectKey resultClass="long" keyProperty="id" type="post">
+         values IDENTITY_VAL_LOCAL()
+      </selectKey>    
+   </insert>
+
+   <delete id="delete.activity.posts.older.than.date" parameterClass="ActivityPost">
+      <![CDATA[
+      delete from alf_activity_post 
+      where post_date < #postDate#
+      and status = #status#
+      ]]>
+   </delete>
+  
+   <update id="update.activity.post.data" parameterClass="ActivityPost">
+      update alf_activity_post set status = #status#, activity_data=#activityData#, site_network=#siteNetwork#, last_modified=#lastModified#
+      where sequence_id = #id#
+      and status != #status#
+   </update>
+  
+   <update id="update.activity.post.status" parameterClass="ActivityPost">
+      update alf_activity_post set status = #status#, last_modified=#lastModified#
+      where sequence_id = #id#
+      and status != #status#
+   </update>
+
+</sqlMap>

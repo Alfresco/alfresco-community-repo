@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" singleton="true">
+      <property name="configLocation"><value>classpath:alfresco/extension/custom-activities-SqlMapConfig.xml</value></property> 
+      <property name="dataSource" ref="iBatisDataSource"/>
+   </bean> 
+
+</beans>

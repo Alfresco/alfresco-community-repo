@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+  <!-- NOTE: although we use iBatis here rather than Hibernate, for consistency we make use of single SQL dialect property (hibernate.dialect) for consistency -->
+  <properties resource="alfresco/extension/custom-hibernate-dialect.properties" />
+
+  <!-- SQL Map XML files loaded from the classpath -->
+  
+  <!-- note: dialect property is set in properties resource above -->
+  <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityPost.xml"/>
+  <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityFeed.xml"/>
+  <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityFeedControl.xml"/>
+
+</sqlMapConfig>

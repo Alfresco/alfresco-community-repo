@@ -4,6 +4,11 @@
 #
 
 #
+# Derby dialect
+#
+#hibernate.dialect=org.hibernate.dialect.DerbyDialect
+
+#
 # HSQL dialect
 #
 #hibernate.dialect=org.hibernate.dialect.HSQLDialect

@@ -75,7 +75,7 @@ public class SiteActivitySystemTest extends TestCase
     private static final String URL_ACTIVITIES = "/api/activities";
     private static final String URL_SITE_FEED = "/feed/site";
     private static final String URL_USER_FEED = "/feed/user";
-    private static final String URL_USER_FEED_CTRL = "/feed/user/control";
+    private static final String URL_USER_FEED_CTRL = "/feed/control";
     
     // Test users & passwords
     private static final String ADMIN_USER = "admin";

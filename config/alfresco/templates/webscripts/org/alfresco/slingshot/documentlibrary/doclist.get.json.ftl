@@ -17,7 +17,7 @@
             "type": "<#if d.isContainer>folder<#else>document</#if>",
             "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
-            "name": "${d.name?html}",
+            "name": "${d.name?replace(" (Working Copy)", "")?html}",
             "status": "<#list status as s>${s}<#if s_has_next>,</#if></#list>",
             "lockedBy": "${lockedBy}",
             "title": "${(d.properties.title!"")?html}",

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>checkout</shortname>
+  <description>Document List Action - Check-out file</description>
+  <url>/slingshot/doclib/action/checkout/{siteid}/{containerId}/{filepath}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

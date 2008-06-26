@@ -33,6 +33,7 @@ function main()
       status.setCode(status.STATUS_NOT_FOUND, node);
       return;
    }
+   params.rootNode = node;
 
    // Check runAction function is provided the action's webscript
    if (typeof runAction != "function")
@@ -42,7 +43,7 @@ function main()
    }
 
    // Actually run the action
-   var results = runAction(node, params);
+   var results = runAction(params);
    if ((results !== null) && (results !== undefined))
    {
       if (typeof results == "string")
@@ -118,6 +119,21 @@ function getInputParams()
    	{
    	   filePath = "";
    	}
+      // Remove any leading or trailing "/" from the path
+      // Fix-up parent path to have no leading or trailing slashes
+      if (filePath.length > 0)
+      {
+         var aPaths = filePath.split("/");
+         while (aPaths[0] === "")
+         {
+            aPaths.shift();
+         }
+         while (aPaths[aPaths.length-1] === "")
+         {
+            aPaths.pop();
+         }
+         filePath = aPaths.join("/");
+      }
 
       // Populate the return object
       params =
@@ -154,7 +170,7 @@ function getRootNode(p_params)
       var siteNode = siteService.getSite(p_params.siteId);
       if (siteNode === null)
       {
-   		/* return ("Site '" + p_siteId + "' not found."); */
+   		return "Site '" + p_params.siteId + "' not found.";
       }
          
       // Find the component container
@@ -179,31 +195,24 @@ function getRootNode(p_params)
  *
  * @method getAssetNode
  * @param p_rootNode {object} valid repository node
- * @param p_filePath {string} rootNode-relative path to asset
+ * @param p_assetPath {string} rootNode-relative path to asset
  * @return {object|string} valid repository node or string error
  */
-function getAssetNode(p_rootNode, p_filePath)
+function getAssetNode(p_rootNode, p_assetPath)
 {
    var assetNode = p_rootNode;
    var error = null;
 
    try
    {
-      // Remove any leading "/" from the path
-      var path = p_filePath;
-      if (path.substr(0, 1) == "/")
+      if (p_assetPath.length > 0)
       {
-         path = path.substr(1);
-      }
-
-      if (path.length > 0)
-      {
-         assetNode = p_rootNode.childByNamePath(path);
+         assetNode = assetNode.childByNamePath(p_assetPath);
       }
       
       if (assetNode === null)
       {
-         return "Asset '" + path + " not found.";
+         return "Asset '" + p_assetPath + " not found.";
       }
    }
    catch(e)

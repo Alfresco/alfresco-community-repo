@@ -13,16 +13,12 @@
  * Entrypoint required by action.lib.js
  *
  * @method runAction
- * @param p_rootNode {NodeRef} root node within which to perform the action
  * @param p_params {object} common parameters
  * @return {object|null} object representation of action result
  */
-function runAction(p_rootNode, p_params)
+function runAction(p_params)
 {
-   var results =
-   {
-      status: {}
-   };
+   var results;
    
    try
    {
@@ -34,25 +30,11 @@ function runAction(p_rootNode, p_params)
       }
       var folderName = json.get("name");
       
-      // Fix-up parent path to have no leading or trailing slashes
       var parentPath = p_params.filePath;
-      if (parentPath.length > 0)
-      {
-         var aPaths = parentPath.split("/");
-         while (aPaths[0] === "")
-         {
-            aPaths.shift();
-         }
-         while (aPaths[aPaths.length-1] === "")
-         {
-            aPaths.pop();
-         }
-         parentPath = aPaths.join("/");
-      }
       var folderPath = parentPath + "/" + folderName;
 
       // Check folder doesn't already exist
-      var existsNode = getAssetNode(p_rootNode, folderPath);
+      var existsNode = getAssetNode(p_params.rootNode, folderPath);
       if (typeof existsNode == "object")
       {
          status.setCode(status.STATUS_BAD_REQUEST, "Folder '" + folderPath + "' already exists.");
@@ -60,7 +42,7 @@ function runAction(p_rootNode, p_params)
       }
 
       // Check parent exists
-      var parentNode = getAssetNode(p_rootNode, parentPath);
+      var parentNode = getAssetNode(p_params.rootNode, parentPath);
       if (typeof parentNode == "string")
       {
          status.setCode(status.STATUS_NOT_FOUND, "Parent folder '" + parentPath + "' not found.");
@@ -94,7 +76,7 @@ function runAction(p_rootNode, p_params)
       {
          id: folderPath,
          name: folderName,
-         parentPath: (parentPath.length > 0 ? "/" : "") + parentPath,
+         parentPath: parentPath,
          nodeRef: folderNode.nodeRef.toString(),
          action: "createFolder",
          success: true

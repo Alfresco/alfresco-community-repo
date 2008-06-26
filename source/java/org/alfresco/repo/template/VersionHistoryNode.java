@@ -203,6 +203,7 @@ public class VersionHistoryNode extends BaseContentNode
     /**
      * @return The list of aspects applied to this node
      */
+    @Override
     public Set<QName> getAspects()
     {
         if (this.aspects == null)
@@ -218,6 +219,7 @@ public class VersionHistoryNode extends BaseContentNode
      * 
      * @return true if the node has the aspect false otherwise
      */
+    @Override
     public boolean hasAspect(String aspect)
     {
         if (this.aspects == null)
@@ -247,6 +249,7 @@ public class VersionHistoryNode extends BaseContentNode
     /**
      * @see org.alfresco.repo.template.TemplateProperties#getChildren()
      */
+    @Override
     public List<TemplateProperties> getChildren()
     {
         return null;

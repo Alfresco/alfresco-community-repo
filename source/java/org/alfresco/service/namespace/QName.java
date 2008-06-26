@@ -44,10 +44,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable
 {
     private static final long serialVersionUID = 3977016258204348976L;
 
-    private String namespaceURI;                // never null
-    private String localName;                   // never null
+    private final String namespaceURI;                // never null
+    private final String localName;                   // never null
     private int hashCode;
-    private String prefix;
+    private final String prefix;
 
     public static final char NAMESPACE_PREFIX = ':';
     public static final char NAMESPACE_BEGIN = '{';
@@ -342,10 +342,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable
      */
     public String toString()
     {
-        return new StringBuffer(80).append(NAMESPACE_BEGIN)
-                                   .append(namespaceURI)
-                                   .append(NAMESPACE_END)
-                                   .append(localName).toString();
+        return new StringBuilder(80).append(NAMESPACE_BEGIN)
+                                    .append(namespaceURI)
+                                    .append(NAMESPACE_END)
+                                    .append(localName).toString();
     }
 
     

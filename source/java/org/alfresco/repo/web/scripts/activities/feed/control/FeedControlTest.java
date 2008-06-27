@@ -54,8 +54,8 @@ public class FeedControlTest extends BaseWebScriptTest
     private static final String TEST_SITE_ID = "my site";
     private static final String TEST_APP_TOOL_ID = "my app tool";
     
-    private static final String URL_CONTROLS = "/api/activities/feed/user/controls";
-    private static final String URL_CONTROL = "/api/activities/feed/user/control";
+    private static final String URL_CONTROLS = "/api/activities/feed/controls";
+    private static final String URL_CONTROL = "/api/activities/feed/control";
 
     
     @Override

@@ -26,10 +26,11 @@ package org.alfresco.repo.workflow.jscript;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.jscript.ScriptableQNameMap;
 import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
@@ -37,7 +38,9 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 public class JscriptWorkflowDefinition implements Serializable
 {
@@ -159,24 +162,57 @@ public class JscriptWorkflowDefinition implements Serializable
 	}
 	
 	/**
+	 * Start workflow instance from workflow definition without
+	 * attaching any package node to the workflow
+	 * 
+     * @param properties Associative array of properties used to populate the 
+     *      start task properties
+     * @return the initial workflow path
+	 */
+    @SuppressWarnings("unchecked")
+    public JscriptWorkflowPath startWorkflow(Object properties)
+    {
+        return startWorkflow(null, properties);
+    }
+	
+	/**
 	 * Start workflow instance from workflow definition
 	 * 
-	 * @param workflowPackage workflow package object to 'attach' to the new workflow
+	 * @param workflowPackage workflow package node to 'attach' to the new workflow
 	 * 		instance
-	 * @param properties properties (map of key-value pairs) used to populate the 
+	 * @param properties Associative array of properties used to populate the 
 	 * 		start task properties
 	 * @return the initial workflow path
 	 */
 	@SuppressWarnings("unchecked")
 	public JscriptWorkflowPath startWorkflow(ScriptNode workflowPackage,
-		ScriptableQNameMap<String, Serializable> properties)
+		Object properties)
 	{
 		WorkflowService workflowService = this.serviceRegistry.getWorkflowService();
 		
-		properties.put(WorkflowModel.ASPECT_WORKFLOW_PACKAGE, workflowPackage);
+		// if properties object is a scriptable object, then extract property name/value pairs
+		// into property Map<QName, Serializable>, otherwise leave property map as null
+		Map<QName, Serializable> props = null;
+        if (properties instanceof ScriptableObject)
+        {
+            ScriptableObject scriptableProps = (ScriptableObject)properties;
+            props = new HashMap<QName, Serializable>(scriptableProps.getIds().length);
+            extractScriptablePropertiesToMap((ScriptableObject)properties, props);
+        }
+		
+		// attach given workflow package node if it is not null
+        if (workflowPackage != null)
+        {
+            if (props == null)
+            {
+                new HashMap<QName, Serializable>(1);
+            }
+            props.put(WorkflowModel.ASPECT_WORKFLOW_PACKAGE, workflowPackage);
+        }        
 		
 		WorkflowPath cmrWorkflowPath = 
-			workflowService.startWorkflow(id, properties);
+			workflowService.startWorkflow(this.id, props);
+		
 		return new JscriptWorkflowPath(cmrWorkflowPath, this.serviceRegistry, this.scope);
 	}
 	
@@ -201,4 +237,55 @@ public class JscriptWorkflowDefinition implements Serializable
 		
 		return activeInstancesScriptable;
 	}
+	
+    /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     * 
+     * @param s Fully qualified or short-name QName string
+     * 
+     * @return QName
+     */
+    private QName createQName(String s)
+    {
+        QName qname;
+        if (s.indexOf("" + QName.NAMESPACE_BEGIN) != -1)
+        {
+            qname = QName.createQName(s);
+        }
+        else
+        {
+            qname = QName.createQName(s, this.serviceRegistry.getNamespaceService());
+        }
+        return qname;
+    }
+    
+    /**
+     * Helper to extract a map of properties from a scriptable object (generally an associative array)
+     * 
+     * @param scriptable    The scriptable object to extract name/value pairs from.
+     * @param map           The map to add the converted name/value pairs to.
+     */
+    private void extractScriptablePropertiesToMap(ScriptableObject scriptable, Map<QName, Serializable> map)
+    {
+        // get all the keys to the provided properties
+        // and convert them to a Map of QName to Serializable objects
+        Object[] propIds = scriptable.getIds();
+        for (int i = 0; i < propIds.length; i++)
+        {
+            // work on each key in turn
+            Object propId = propIds[i];
+            
+            // we are only interested in keys that are formed of Strings i.e. QName.toString()
+            if (propId instanceof String)
+            {
+                // get the value out for the specified key - it must be Serializable
+                String key = (String)propId;
+                Object value = scriptable.get(key, scriptable);
+                if (value instanceof Serializable)
+                {
+                    map.put(createQName(key), (Serializable)value);
+                }
+            }
+        }
+    }
 }

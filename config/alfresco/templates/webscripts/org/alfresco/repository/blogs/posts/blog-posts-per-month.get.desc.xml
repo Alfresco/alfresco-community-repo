@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Blog posts per month</shortname>
+  <description>Get all months for which there are blog posts plus the number of posts in each</description>
+  <url>/blog/site/{site}/{container}/{path}/postspermonth</url>
+  <url>/blog/site/{site}/{container}/postspermonth</url>
+  <url>/blog/node/{store_type}/{store_id}/{id}/postspermonth</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

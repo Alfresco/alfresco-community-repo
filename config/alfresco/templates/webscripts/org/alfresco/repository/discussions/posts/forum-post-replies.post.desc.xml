@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Forum post replies</shortname>
+  <description>Adds a reply to a post</description>
+  <url>/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

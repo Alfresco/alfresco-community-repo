@@ -1,0 +1,63 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/searchutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
+
+/**
+ * Fetches all posts found in the forum.
+ */
+function getBlogPostList(node, fromDate, toDate, index, count)
+{
+	// query information
+	var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
+	                    " +PATH:\"" + node.qnamePath + "/*\" ";
+	// date query ?
+	if (fromDate != null || toDate != null)
+	{
+		luceneQuery += getCreationDateRangeQuery(fromDate, toDate);
+	}
+	
+	var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+	
+	// get the data
+	return getBlogPostListByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count);
+}
+
+function main()
+{
+	// get requested node
+	var node = getRequestNode();
+	if (status.getCode() != status.STATUS_OK)
+	{
+		return;
+	}
+
+	// process additional parameters
+	var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
+	var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
+
+	// begin and end date
+	var fromDate = null;
+	if (args["fromDate"] != undefined)
+	{
+		var tmp = parseInt(args["fromDate"]);
+		if (tmp != Number.NaN)
+		{
+			fromDate = new Date(tmp);
+		}
+	}
+	var toDate = null;
+	if (args["toDate"] != undefined)
+	{
+		var tmp = parseInt(args["toDate"]);
+		if (tmp != Number.NaN)
+		{
+			toDate = new Date(tmp);
+		}
+	}
+	
+	model.data = getBlogPostList(node, fromDate, toDate, index, count);
+	
+	model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
+}
+
+main();

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Comments</shortname>
+  <description>Get all comments for a node</description>
+  <url>/node/{store_type}/{store_id}/{id}/comments</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

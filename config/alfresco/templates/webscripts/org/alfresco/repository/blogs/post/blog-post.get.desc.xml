@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Blogs</shortname>
+  <description>Get all blogs</description>
+  <url>/blog/post/site/{site}/{container}/{path}</url>
+  <url>/blog/post/node/{store_type}/{store_id}/{id}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

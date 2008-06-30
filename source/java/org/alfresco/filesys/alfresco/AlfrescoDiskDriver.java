@@ -316,6 +316,7 @@ public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesyst
                     // Clear the active transaction
 
                 	sess.clearTransaction();
+                	filesysTx.clearTransaction();
                 }
             }
         }

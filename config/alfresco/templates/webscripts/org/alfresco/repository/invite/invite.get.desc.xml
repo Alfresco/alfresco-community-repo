@@ -1,8 +1,9 @@
 <webscript>
    <shortname>Invite</shortname>
    <description>Processes Inviter actions ('start' or 'cancel' invite)</description>
-   <url>/api/invite/{action}?site={siteShortName}</url>
-   <format default="html">extension</format>
+   <url>/api/invite/start?inviteeEmail={inviteeEmailAddress}&amp;siteShortName={siteShortName}</url>
+   <url>/api/invite/cancel?workflowId={workflowId}</url>
+   <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

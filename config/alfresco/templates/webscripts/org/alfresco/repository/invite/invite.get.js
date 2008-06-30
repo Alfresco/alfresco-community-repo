@@ -1,33 +1,57 @@
+var WORKFLOW_DEFINITION_NAME = "jbpm$wf:invite";
+var ACTION_START = "start";
+var ACTION_CANCEL = "cancel";
+var TRANSITION_SEND_INVITE = "sendInvite";
+
 /**
  * Starts the Invite workflow
  *
  * @method start
  * @static
+ * @param inviteeEmail string email address of invitee
  * @param siteShortName string short name of site that the invitee is being
  *          invited to by the inviter
  *
  */
-function start(siteShortName)
+function start(inviteeEmail, siteShortName)
 {
-   var wfDefinition = workflow.getDefinitionByName("wf:invite");
+   var wfDefinition = workflow.getDefinitionByName(WORKFLOW_DEFINITION_NAME);
    
-   // create invitee with generated user name and password, and with a
+   // handle workflow definition does not exist
+   if (wfDefinition === null)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Workflow definition "
+      + "for name " + WORKFLOW_DEFINITION_NAME + " does not exist");
+      return; 
+   } 
+   
+   // create invitee person with generated user name and password, and with a
    // disabled user account
    var invitee = people.createPerson(true, false);
+   invitee.properties["cm:email"] = inviteeEmail;
+   invitee.save();
    
-   // create workflow properties, containing inviter and invitee user name, 
-   // and site short name
+   var inviteeUserName = invitee.properties.userName;
+   
+   // create workflow properties
    var workflowProps = [];
-   workflowProps["inviterUserName"] = person.properties.userName;
-   workflowProps["inviteeUserName"] = invitee.properties.userName;
-   workflowProps["siteShortName"] = siteShortName;
-   wfDefinition.startWorkflow(null, workflowProps);
+   workflowProps["wf:inviterUserName"] = person.properties.userName;
+   workflowProps["wf:inviteeUserName"] = inviteeUserName;
+   workflowProps["wf:inviteeGenPassword"] = invitee.properties.generatedPassword;
+   workflowProps["wf:siteShortName"] = siteShortName;
    
-   // add action context info to model
-   model.action = "start";
+   // start the workflow
+   var wfPath = wfDefinition.startWorkflow(workflowProps);
+   var workflowId = wfPath.instance.id;
+   
+   // send out the invite
+   wfPath.signal(TRANSITION_SEND_INVITE);
+   
+   // add action info to model for template processing
+   model.action = ACTION_START;
+   model.workflowId = workflowId;
    model.inviteeUserName = inviteeUserName;
    model.siteShortName = siteShortName;
-   
 }
 
 /**
@@ -42,10 +66,20 @@ function start(siteShortName)
 function cancel(workflowId)
 {
    var workflowInstance = workflow.getInstance(workflowId);
+   
+   // handle workflow instance for given workflow ID does not exist
+   if (workflowInstance === null)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Workflow instance for given "
+      + "workflow ID " + workflowId + " does not exist");
+      return;
+   }
+   
+   // cancel the workflow
    workflowInstance.cancel();
    
-   // add action context info to model
-   model.action = "cancel";
+   // add action info to model for template
+   model.action = ACTION_CANCEL;
    model.workflowId = workflowId;
 }
 
@@ -57,60 +91,77 @@ function cancel(workflowId)
  */
 function main()
 {
-   // check that the action ('start' or 'cancel') has been provided on the URL
-   // and that URL parameters have been provided
-   if ((url.extension === null) || (args.length == 0)) 
+   // extract action string from URL
+   var action = null;
+   var actionStartIndex = url.service.lastIndexOf("/") + 1;
+   if (actionStartIndex <= url.service.length() - 1) 
    {
-      // handle action not provided or no parameters given
-      status.code = 400;
-      status.message = "Action has not been provided in URL or " +
-      "no parameters have been provided on URL";
-      status.redirect = true;
+      action = url.service.substring(actionStartIndex, url.service.length());
    }
+   
+   // check that the action has been provided on the URL
+   // and that URL parameters have been provided
+   if ((action === null) || (action.length == 0)) 
+   {
+      // handle action not provided on URL
+      status.setCode(status.STATUS_BAD_REQUEST, "Action has not been provided in URL");
+      return;
+   }
+   
+   // handle no parameters given on URL
+   if (args.length == 0) 
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "No parameters have been provided on URL");
+      return;
+   }
+   
+   // handle action 'start'
+   if (action == ACTION_START) 
+   {
+      // check for 'inviteeEmail' parameter not provided
+      if ((args["inviteeEmail"] === null) || (args["inviteeEmail"].length == 0)) 
+      {
+         // handle inviteeEmail URL parameter not provided
+         status.setCode(status.STATUS_BAD_REQUEST, "'inviteeEmail' parameter " +
+         "has not been provided in URL for action '" + ACTION_START + "'");
+         return;
+      }
+      
+      // check for 'siteShortName' parameter not provided
+      if ((args["siteShortName"] === null) || (args["siteShortName"].length == 0)) 
+      {
+         // handle siteShortName URL parameter not provided
+         status.setCode(status.STATUS_BAD_REQUEST, "'siteShortName' parameter " +
+         "has not been provided in URL for action '" + ACTION_START + "'");
+         return;
+      }
+      
+      // process action 'start' with provided parameters
+      var inviteeEmail = args["inviteeEmail"];
+      var siteShortName = args["siteShortName"];
+      start(inviteeEmail, siteShortName);
+   }
+   // else handle if provided 'action' is 'cancel' 
+   else if (action == ACTION_CANCEL) 
+   {
+      // check for 'workflowId' parameter not provided
+      if ((args["workflowId"] === null) || (args["workflowId"].length == 0)) 
+      {
+         // handle workflowId URL parameter not provided
+         status.setCode(status.STATUS_BAD_REQUEST, "'workflowId' parameter has "
+         + "not been provided in URL for action '" + ACTION_CANCEL +"'");
+         return;
+      }
+      
+      // process action 'cancel' with provided parameters
+      var workflowId = args["workflowId"];
+      cancel(workflowId);
+   }
+   // handle action not recognised
    else 
    {
-      // handle action provided in URL ('start' or 'cancel')
-      var action = url.extension;
-      
-      // handle if provided 'action' is 'start'
-      if (action == "start") 
-      {
-         // check for 'siteShortName' parameter
-         if ((args["siteShortName"] === null) || (args["siteShortName"].length == 0)) 
-         {
-            // handle siteShortName URL parameter not provided
-            status.code = 400;
-            status.message = "'siteShortName' parameter has not been provided in URL for action 'start'";
-            status.redirect = true;
-         }
-         else 
-         {
-            start(args["siteShortName"]);
-         }
-      }
-      // else handle if provided 'action' is 'cancel' 
-      else if (action == "cancel") 
-      {
-         // check for 'workflowId' parameter
-         if ((args["workflowId"] === null) || (args["workflowId"].length == 0)) 
-         {
-            // handle workflowId URL parameter not provided
-            status.code = 400;
-            status.message = "'workflowId' parameter has not been provided in URL for action 'cancel'";
-            status.redirect = true;
-         }
-         else 
-         {
-            cancel(args["workflowId"]);
-         }
-      }
-      // handle action not recognised
-      else 
-      {
-         status.code = 400;
-         status.message = "Action, '" + action + "', provided in URL has not been recognised.";
-         status.redirect = true;
-      }
+      status.setCode(status.STATUS_BAD_REQUEST, "Action, '" + action + "', "
+      + "provided in URL has not been recognised.");
    }
 }
 

@@ -1,4 +1,6 @@
-var SITE_ROLE_COLLABORATOR = "collaborator";
+var SITE_ROLE_COLLABORATOR = "SiteCollaborator";
+var TRANSITION_ACCEPT = "accept";
+var TRANSITION_REJECT = "reject";
 
 /**
  * Processes 'accept' response from invitee
@@ -12,8 +14,22 @@ var SITE_ROLE_COLLABORATOR = "collaborator";
 function accept(workflowId, inviteeUserName, siteShortName)
 {
    var wfInstance = workflow.getInstance(workflowId);
-   var wfPath = wfInstance.getPaths()[0];
-   wfPath.signal("accept");
+   var wfPaths = wfInstance.getPaths();
+   
+   // return error message if no workflow paths found for
+   // supplied workflow id
+   if ((wfPaths === null) || (wfPaths.length == 0)) 
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR,
+                        "No workflow paths associated with workflow ID: "
+                        + workflowId);
+      return;
+   }
+   
+   // get the first workflow path off the workflow paths array
+   // (there should only be one) and signal a transition to "accept"
+   var wfPath = wfPaths[0];
+   wfPath.signal(TRANSITION_ACCEPT);
    
    people.enablePerson(inviteeUserName);
    
@@ -21,8 +37,8 @@ function accept(workflowId, inviteeUserName, siteShortName)
     * Find out role string that Invitee should be added to Site as
     */
    // Add Invitee to Site
-   var site = sites.getSite(siteShortName);
-   site.setMembership(username, SITE_ROLE_COLLABORATOR);
+   var site = siteService.getSite(siteShortName);
+   site.setMembership(inviteeUserName, SITE_ROLE_COLLABORATOR);
    
    // add data to appear in rendition
    model.response = "accept";
@@ -40,9 +56,12 @@ function accept(workflowId, inviteeUserName, siteShortName)
  */
 function reject(workflowId, inviteeUserName, siteShortName)
 {
-   var wfInstance = workflow.getInstance(wfid);
+   var wfInstance = workflow.getInstance(workflowId);
    var wfPath = wfInstance.getPaths()[0];
-   wfPath.signal("reject");
+   wfPath.signal(TRANSITION_REJECT);
+   
+   // delete the person created for invitee
+   people.deletePerson(inviteeUserName);
    
    // add data to appear in rendition
    model.response = "reject";

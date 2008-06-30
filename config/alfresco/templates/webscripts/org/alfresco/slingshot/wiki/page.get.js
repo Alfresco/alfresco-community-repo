@@ -35,20 +35,23 @@ function main()
     var params = getTemplateParams();
     if (params === null)
     {
-		return jsonError("No parameters supplied");
+		//return jsonError("No parameters supplied");
+		return null;
     }
 
     // Get the site
     var site = siteService.getSite(params.siteId);
     if (site === null)
     {
-		return jsonError("Could not find site: " + siteId);
+		//return jsonError("Could not find site: " + siteId);
+		return null;
     }
 
     var wiki = site.getContainer("wiki");
     if (wiki === null)
     {
-		return jsonError("Could not locate wiki container");
+		//return jsonError("Could not locate wiki container");
+		return null;
     }
 
     var page = wiki.childByNamePath(params.pageTitle);
@@ -57,18 +60,16 @@ function main()
 		// NOTE: may need a custom content type for a wiki entry
 		page = wiki.createFile(params.pageTitle);
 		page.addAspect("cm:versionable");
-		page.content = '<h2>' + params.pageTitle + '</h2><p>This page contains no content. You can <a href="#edit">edit</a> it.</p>'; 
+		page.content = 'This is a new page. It contains no content.'; 
 		page.save();
     }
-	
-	// Handle wiki markup - well, one instance of it
-	var re = /\[\[([^\]]*)\]\]/g;
-	var content = new String(page.content); 
-	
-	return {
-		pagetext: "" + content.replace(re, '<a href="$1">$1</a>')
-	};
+
+	return page;
 }
 
-var result = main();
-model.result = result;
+var page = main();
+model.page = page;
+// NOTE: until there are some general purposes functions in the Freemarker for escaping 
+// certain characters for the JSON representation, we have to do it here for now.
+var result = eval('(' + jsonUtils.toJSONString({ content: page.content }) + ')'); 
+model.jsonPageText = result.content; // the escaped text

@@ -2,7 +2,7 @@
   <shortname>wikipage</shortname>
   <description>Wiki - Page details</description>
   <url>/slingshot/wiki/page/{siteId}/{pageTitle}</url>
-  <format default="html">argument</format>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

@@ -4,22 +4,19 @@
       "totalItems": ${doclist.items?size},
       "items":
       [
-      <#list doclist.items as d>
-         <#assign status = []>
-         <#assign lockedBy = "">
+      <#list doclist.items as item>
+         <#assign d = item.asset>
          <#assign version = "1.0">
-         <#if d.isLocked><#assign status = status + ["locked"]><#assign lockedBy = d.properties["cm:lockOwner"]></#if>
-         <#if d.hasAspect("cm:workingcopy")><#assign status = status + ["workingcopy"]></#if>
          <#if d.hasAspect("cm:versionable")><#assign version = d.versionHistory?sort_by("versionLabel")?reverse[0].versionLabel></#if>
          {
-            "index": ${d_index},
+            "index": ${item_index},
             "nodeRef": "${d.nodeRef}",
             "type": "<#if d.isContainer>folder<#else>document</#if>",
             "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
             "name": "${d.name?replace(" (Working Copy)", "")?html}",
-            "status": "<#list status as s>${s}<#if s_has_next>,</#if></#list>",
-            "lockedBy": "${lockedBy}",
+            "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
+            "lockedBy": "${item.owner}",
             "title": "${(d.properties.title!"")?html}",
             "description": "${(d.properties.description!"")?html}",
             "createdOn": "${d.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
@@ -28,8 +25,9 @@
             "modifiedBy": "${d.properties.modifier}",
             "size": "${d.size}",
             "version": "${version}",
-            "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}"
-         }<#if d_has_next>,</#if>
+            "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
+            "actionSet": "${item.actionSet}"
+         }<#if item_has_next>,</#if>
       </#list>
       ]
    }

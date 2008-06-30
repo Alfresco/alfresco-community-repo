@@ -174,6 +174,13 @@ public final class People extends BaseScopableProcessorExtension
                 // password
                 mutableAuthenticationDao.createUser(userName, password);
                 mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
+                
+                // TODO glen johnson at alfresco dot com -
+                // find a more secure way of making generated password
+                // available. I need to make it available for the invite
+                // workflow/service
+                person.getProperties().put("generatedPassword", new String(password));
+                person.save();
             }
         }
 

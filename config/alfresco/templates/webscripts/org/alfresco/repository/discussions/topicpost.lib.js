@@ -1,12 +1,33 @@
+
 /**
- * This library contains functions to work with topics (aka top level posts).
- *
- * Top-level posts are different from post that act as replies in that
- * they have some additional data available:
- * lastReplyOn:
- * lastReplyFrom: 
- * totalReplyCount:
+ * Returns the fm:post node given a fm:topic or fm:post node.
+ * 
+ * This function makes sure that a post is returned in case the passed node is a topic.
  */
+function findPostNode(node)
+{
+   if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
+   {
+      return node;
+   }
+   else if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
+   {
+      var nodes = getOrderedPosts(node);
+      if (nodes.length > 0)
+      {
+         return nodes[0];
+      }
+      else
+      {
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "First post of topic node" + node.nodeRef + " missing");
+      }
+   }
+   else
+   {
+      status.setCode(STATUS_BAD_REQUEST, "Incompatible node type. Required either fm:topic or fm:post. Received: " + node.type);
+      return null;
+   }
+}
 
  
  /** Returns the topic posts for a topic, ordered by creation date.

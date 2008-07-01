@@ -1,88 +1,102 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/generic-paged-results.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
-<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/forum/forum-posts.lib.js">
 
-/**
- * Prepends a number with zeros to make it a 4numgth string
- */
-function toFourDigitString(num)
-{
-	if (num < 10) return "000" + num;
-	if (num < 100) return "00" + num;
-	if (num < 1000) return "0" + num;
-	return "" + num;
-}
+var MAX_NUM_OF_PROCESSED_POSTS = 20;
 
 /**
  * Fetches the hot topics found in the forum.
- * Hot topics are the one with the most replies recently.
+ * Hot topics are topics with the most replies over the last x days.
  *
- * We implement this follows: We fetch all posts in the forum, ordered by inverse
- * creation date and fetch the nodes for the first 20 posts
+ * The current implementation fetches all posts in the forum ordered by inverse
+ * creation date. It then analyzes the last x posts and fetches the topics thereof,
+ * keeping track of the number of posts for each.
+ * 
+ * Note: We only look at topics with replies, the others will therefore not show up
+ *       in that list.
  */
 function getHotTopicPostList(node, index, count)
 {
-	var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
-					  " +PATH:\"" + node.qnamePath + "/*/*\"" +
-					  " +ASPECT:\"cm:referencing\"";
-	var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
-	posts = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, false);
+   // get the posts to check
+   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
+                 " +PATH:\"" + node.qnamePath + "/*/*\"" +
+                 " +ASPECT:\"cm:referencing\"";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var posts = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, false);
 
-	/** Implement sort and order logic to show the node with most replies first. */
-	// PENDING: quick and dirty version, works but needs cleanup!
-	var max = 20; // only process so many posts
-	if (posts.length < max) max = posts.length;
-	
-	var idToNode = new Array();
-	var idToCount = new Array();
+   // check how many posts we check in the result set 
+   var max = MAX_NUM_OF_PROCESSED_POSTS;
+   if (posts.length < max)
+   {
+      max = posts.length;
+   }
+   
+   // get for each the topic, keeping track of the number of replies and the first occurance
+   // of the post.
+   var idToData = {};
+   for (var x=0; x < max; x++)
+   {
+      // get the topic node (which is the direct parent of the post)
+      var parent = posts[x].parent;
+      var id = parent.nodeRef.id;
+      if (idToData[id] != null) {
+         idToData[id].count += 1;
+      } else {
+         idToData[id] = { count: 1, pos: x, node: parent};
+      }
+   }
+   
+   // copy the elements to an array as we will have to sort it
+   // afterwards
+   var dataArr = new Array();
+   for (n in idToData)
+   {
+      dataArr.push(idToData[n]);
+   }
+   
+   // sort the elements by number of replies, then by the position
+   var sorter = function(a, b)
+   {
+       if (a.count != b.count)
+       {
+           // more replies first
+           return b.count - a.count
+       }
+       else {
+           // lower pos first
+           return a.pos - b.pos;
+       }
+   }
+   dataArr.sort(sorter);
 
-	for (var x=0; x < max; x++)
-	{
-		var parent = posts[x].parent;
-		var id = parent.nodeRef.id;
-		if (idToCount[id] != null) {
-			idToCount[id] = idToCount[id] + 1;
-		} else {
-			idToNode[id] = parent;
-			idToCount[id] = 1;
-		}
-	}
-	
-	// get the list sorted by number of replies
-	var tmp = new Array();
-	for (var id in idToCount) {
-		tmp.push(toFourDigitString(idToCount[id]) + id);
-	}
-	tmp.sort();
-	tmp.reverse();
-	
-	var nodes = Array();
-	for (var x=0; x < tmp.length; x++)
-	{
-		nodes.push(idToNode[tmp[x].substring(4)]);
-	}
+   // extract now the nodes
+   var nodes = Array();
+   for (var x=0; x < dataArr.length; x++)
+   {
+      nodes.push(dataArr[x].node);
+   }
 
-	// get the data
-	return getTopicPostListData(nodes, index, count);
+   // get the paginated data
+   return getPagedResultsData(nodes, index, count, getTopicPostData);
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	// process additional parameters
-	var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
-	var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
-	
-	// fetch the data and assign it to the model
-	model.data = getHotTopicPostList(node, index, count);
-	
-	model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
+   // process additional parameters
+   var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
+   var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
+   
+   // fetch the data and assign it to the model
+   model.data = getHotTopicPostList(node, index, count);
+   
+   model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }
 
 main();

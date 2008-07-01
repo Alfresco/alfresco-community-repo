@@ -3,17 +3,18 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
 
 /**
- * Creates a post inside the passed forum node.
+ * Adds a post to the passed forum node.
  */
 function createPost(forumNode)
 {
    // fetch the data required to create a topic
    var title = json.get("title");
    var content = json.get("content");
-   logger.log("Creating New post " + title + " with text " + content);
    
    // create the topic node, and add the first child node representing the topic text
-   // NOTE: this is a change from the old web client, where the topic title was used as name for the node
+   // NOTE: this is a change from the old web client, where the topic title was used as name
+   //       for the topic node. We will use generated names to make sure we won't have naming
+   //       clashes.
    var name = getUniqueChildName(forumNode, "post");
    var topicNode = forumNode.createNode(name, "fm:topic");
 
@@ -29,15 +30,16 @@ function createPost(forumNode)
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	var topicPost = createPost(node);
-	model.topicpost = getTopicPostData(topicPost);
+   var topicPost = createPost(node);
+   
+   model.topicpost = getTopicPostData(topicPost);
 }
 
 main();

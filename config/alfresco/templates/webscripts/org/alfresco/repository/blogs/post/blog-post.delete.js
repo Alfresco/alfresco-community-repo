@@ -1,33 +1,31 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
 
 /**
- * Deletes a topic node.
+ * Deletes a blog post node.
  */
-function deletePost(postNode)
+function deleteBlogPost(postNode)
 {
-	// we simply delete the topic
-	var qnamePath = postNode.qnamePath;
-	logger.log("Deleting node " + qnamePath);
-	var isDeleted = postNode.remove();
-	logger.log("Node deleted: " + isDeleted);
-	if (! isDeleted)
-	{
-		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + qnamePath);
-		return;
-	}
-	model.message = "Node " + qnamePath + " deleted";
+   // delete the node
+   var nodeRef = postNode.nodeRef;
+   var isDeleted = postNode.remove();
+   if (! isDeleted)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodeRef);
+      return;
+   }
+   model.message = "Node " + nodeRef + " deleted";
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	deletePost(node);
+   deleteBlogPost(node);
 }
 
 main();

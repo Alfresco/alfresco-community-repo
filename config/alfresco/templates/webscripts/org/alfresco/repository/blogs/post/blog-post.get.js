@@ -3,19 +3,16 @@
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	// PENDING: type check?
-	
-	// assign data
-	model.item = getBlogPostData(node);
-	
-	model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
+   // assign data
+   model.item = getBlogPostData(node);
+   model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }
 
 main();

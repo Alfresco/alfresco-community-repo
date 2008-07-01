@@ -2,39 +2,30 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
 /**
- * Creates a post inside the passed forum node.
+ * Updates a blog post node
  */
-function updatePost(postNode)
+function updateBlogPost(postNode)
 {
-	/*var name = "";
-	if (json.has("name"))
-	{
-		title = json.get("name");
-	}*/
-	var title = "";
-	if (json.has("title"))
-	{
-		title = json.get("title");
-	}
-	var content = json.get("content");
+   // fetch the new data
+   var title = "";
+   if (json.has("title"))
+   {
+      title = json.get("title");
+   }
+   var content = json.get("content");
 	
-	// update the topic title
-	postNode.properties.title = title;
-	postNode.mimetype = "text/html";
-	postNode.content = content;
-	postNode.save();
+   // update the node
+   postNode.properties.title = title;
+   postNode.mimetype = "text/html";
+   postNode.content = content;
+   postNode.save();
 	
+   // PENDING:
    // check whether it is draft mode
    /*if (postNode.hasAspect("cm:workingcopy") && json.get("draft") == "false")
    {
       postNode.removeAspect("cm:workingcopy");
    }*/
-	
-	// try to change the file name
-	/*if (name.length > 0)
-	{
-		postNode.name = name;
-	}*/
 }
 
 function main()
@@ -46,8 +37,8 @@ function main()
 		return;
 	}
 
-	// update
-	updatePost(node);
+	// update blog post
+	updateBlogPost(node);
 	
 	model.item = getBlogPostData(node);
 }

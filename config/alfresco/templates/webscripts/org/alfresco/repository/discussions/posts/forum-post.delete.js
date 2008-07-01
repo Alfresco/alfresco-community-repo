@@ -1,61 +1,40 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
 
+const DELETED_REPLY_POST_MARKER = "[[deleted]]";
+
 /**
  * Deletes a topic node.
  */
 function deleteTopicPost(topicNode)
 {
-	// we simply delete the topic
-	var qnamePath = topicNode.qnamePath;
-	logger.log("Deleting node " + qnamePath);
-	var isDeleted = topicNode.remove();
-	logger.log("Node deleted: " + isDeleted);
-	if (! isDeleted)
-	{
-		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + qnamePath);
-		return;
-	}
-	model.message = "Node " + qnamePath + " deleted";
+   // we simply delete the complete topic
+   var nodeRef = topicNode.nodeRef;
+   var isDeleted = topicNode.remove();
+   if (! isDeleted)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodeRef);
+      return;
+   }
+   model.message = "Node " + nodeRef + " deleted";
 }
-
-function addRepliesOfPostRecursive(node, arr)
-{
-	var replies = node.sourceAssocs["cm:references"];
-	if (replies != null)
-	{
-		var x;
-		for (x = 0; x < replies.length; x++)
-		{
-			addRepliesOfPostRecursive(replies[x], arr);
-			arr.push(replies[x]);
-		}
-	}
-}
-
+ 
 /**
- * Deletes a reply post.
+ * Delete a reply post.
+ * Note: Because posts are recursive, we can't simply delete the node.
+ *       For now we set a marker text [[delete]] as title and content.
  */
-function deleteReplyPost(postNode)
+function deleteReplyPost(node)
 {
-	// we have to delete the node as well as all replies
-	// PENDING: what happens if the user has the right to delete its node
-	// but not the replies to it?
-	var nodes = new Array();
-	addRepliesOfPostRecursive(postNode, nodes);
-	nodes.push(postNode);
-	
-	var qnamePath = postNode.qnamePath
-	var isDeleted = false;
-	for (x = 0; x < nodes.length; x++)
-	{
-		isDeleted = nodes[x].remove();
-		if (! isDeleted)
-		{
-			status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodes[x].nodeRef);
-			return;
-		}
-	}
-	model.message = "Node " + qnamePath + " deleted";
+   var title = DELETED_REPLY_POST_MARKER;
+   var content = DELETED_REPLY_POST_MARKER;
+   
+   // update the topic title
+   node.properties.title = title;
+   node.mimetype = "text/html";
+   node.content = content;
+   node.save();
+   
+   model.message = "Node " + node.nodeRef + " marked as removed";
 }
  
 /**
@@ -64,31 +43,31 @@ function deleteReplyPost(postNode)
  */
 function deletePost(node)
 {
-	// simple case: topic post
-	if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
-	{
-		deleteTopicPost(node);
-	}
-	else if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
-	{
-		deleteReplyPost(node);
-	}
-	else
-	{
-		status.setCode(status.STATUS_BAD_REQUEST, "Node is not of type fm:topic or fm:post");
-	}
+   // simple case: topic post
+   if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
+   {
+      deleteTopicPost(node);
+   }
+   else if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
+   {
+      deleteReplyPost(node);
+   }
+   else
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Node is not of type fm:topic or fm:post");
+   }
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	deletePost(node);
+   deletePost(node);
 }
 
 main();

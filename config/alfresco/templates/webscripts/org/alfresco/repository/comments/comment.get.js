@@ -3,16 +3,14 @@
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	model.item = node;
-	
-	// process additional parameters
+   model.item = getCommentData(node);
 }
 
 main();

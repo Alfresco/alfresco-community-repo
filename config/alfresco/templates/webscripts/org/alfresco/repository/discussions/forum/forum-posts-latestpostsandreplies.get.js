@@ -1,32 +1,17 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/generic-paged-results.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
-<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/forum/forum-posts.lib.js">
 
-
-function getLatestAddedPostsListData(nodes, index, count)
+function getLatestAddedPostData(node)
 {
-   var items = new Array();
-   var i;
-   var added = 0;
-   for (i = index; i < nodes.length && added < count; i++) 
-   {
-      // fetch the topic post data and then add the node as reply.
-	  // in case of a new topicpost, the reply and the post will be the
-	  // same, otherwise they differ. The topic post will be used to fetch
-	  // the topic title, while the reply will be used to show the text
-	  var data = getTopicPostData(nodes[i].parent);
-	  data.reply = nodes[i];
-      items.push(data);
-	  added++;
-   }
-   
-   return ({
-      "total" : nodes.length,
-	  "pageSize" : count,
-	  "startIndex" : index,
-	  "itemCount" : items.length,
-      "items": items
-   });
+   // fetch the topic post data and then add the node as reply.
+   // in case of a new topic post, the reply and the post will be the
+   // same, otherwise they differ. The topic post will be used to fetch
+   // the topic title, while the reply will be used to show the text
+   var data = getTopicPostData(node.parent);
+   data.reply = node;
+   data.isRootPost = data.post.nodeRef == data.reply.nodeRef;
+   return data;
 }
 
 /**
@@ -37,10 +22,9 @@ function getLatestAddedPosts(node, index, count)
 	var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
 					  " +PATH:\"" + node.qnamePath + "/*/*\"";
 	var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
-	nodes = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, false);
 
 	// get the data
-	return getLatestAddedPostsListData(nodes, index, count);
+	return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getLatestAddedPostData);
 }
 
 function main()
@@ -63,4 +47,3 @@ function main()
 }
 
 main();
-var x = 0;

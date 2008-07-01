@@ -7,37 +7,41 @@
  */
 function addComment(node)
 {
-    // fetch the data required to create a comment
-    //var title = json.get("title");
-    var content = json.get("content");
-    logger.log("Creating new comment with text " + content);
+   // fetch the data required to create a comment
+   var title = "";
+   if (json.has("title"))
+   {
+      title = json.get("title");
+   }
+   var content = json.get("content");
 
-	var commentsFolder = getOrCreateCommentsFolder(node);
+   // fetch the parent to add the node to
+   var commentsFolder = getOrCreateCommentsFolder(node);
 
-	// get a unique name
-    var name = getUniqueChildName(commentsFolder, "comment");
-	
-	// we simply create a new file inside the blog folder
-    var commentNode = commentsFolder.createNode(name, "fm:post");
-	commentNode.mimetype = "text/html";
-    //commentNode.properties.title = title;
-    commentNode.content = content;
-    commentNode.save();
-	 
-    return commentNode;
+   // get a unique name
+   var name = getUniqueChildName(commentsFolder, "comment");
+   
+   // create the comment
+   var commentNode = commentsFolder.createNode(name, "fm:post");
+   commentNode.mimetype = "text/html";
+   commentNode.properties.title = title;
+   commentNode.content = content;
+   commentNode.save();
+    
+   return commentNode;
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	var comment = addComment(node);
-	model.item = comment;
+   var comment = addComment(node);
+   model.item = getCommentData(comment);
 }
 
 main();

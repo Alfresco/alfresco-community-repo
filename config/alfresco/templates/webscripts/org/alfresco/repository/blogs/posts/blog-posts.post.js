@@ -3,14 +3,13 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
 /**
- * Creates a post inside the passed forum node.
+ * Creates a blog post
  */
 function createBlogPost(blogNode)
 {
-   // fetch the data required to create a topic
+   // fetch the data required to create the post
    var title = json.get("title");
    var content = json.get("content");
-   logger.log("Creating new blog post " + title + " with text " + content);
    
    // get a unique name
    var name = getUniqueChildName(blogNode, "post");

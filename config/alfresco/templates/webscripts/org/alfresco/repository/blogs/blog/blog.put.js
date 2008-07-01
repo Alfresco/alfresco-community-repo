@@ -6,38 +6,38 @@
  */
 function updateBlog(node)
 {
-	var arr = getBlogPropertiesArray();
+   var arr = getBlogPropertiesArray();
 	
-	// check whether we already have the aspect added to the node.
-	if (node.hasAspect(BLOG_DETAILS_ASPECT))
-	{
-		for (propName in arr)
-		{
-			node.properties[propName] = arr[propName];
-		}
-	}
-	else
-	{
-		// if not, add the aspect on the fly
-		node.addAspect(BLOG_DETAILS_ASPECT, arr);
-	}
+   // check whether we already have the aspect added to the node.
+   if (node.hasAspect(BLOG_DETAILS_ASPECT))
+   {
+      for (propName in arr)
+      {
+         node.properties[propName] = arr[propName];
+      }
+   }
+   else
+   {
+      // if not, add the aspect on the fly
+      node.addAspect(BLOG_DETAILS_ASPECT, arr);
+   }
 	
-	node.save();
+   node.save();
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+   return;
+   }
 
-	// update
-	updateBlog(node);
+   // update blog
+   updateBlog(node);
 	
-	model.item = node;
+   model.item = getBlogData(node);
 }
 
 main();

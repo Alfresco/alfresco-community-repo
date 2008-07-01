@@ -1,91 +1,103 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
-
+/**
+ * Returns the date representing the begin of a month (the first day at 00:00:00)
+ */
 function getBeginOfMonthDate(date)
 {
-	return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-
-
-function getEndOfMonthDate(date)
-{
-	var year = date.getFullYear();
-	var month = date.getMonth();
-	var beginOfNextMonth = new Date(year, month + 1, 1); // will increment year by 1 if month > 11 
-	return new Date(beginOfNextMonth.getTime() - 1);
+   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 /**
- * Creates an object containing information about the month.
- * This object holds all the data returned.
+ * Returns the date representing the last second of a month (23:59:59)
+ */
+function getEndOfMonthDate(date)
+{
+   var year = date.getFullYear();
+   var month = date.getMonth();
+   var beginOfNextMonth = new Date(year, month + 1, 1); // will increment year if month > 11 
+   return new Date(beginOfNextMonth.getTime() - 1); // one less to get the last millisecond of the previous day
+}
+
+/**
+ * Create an object containing information about the month specified by date.
  */
 function getMonthDataObject(date)
 {
-	var data = {};
-	data.year = date.getFullYear();
-	data.month = date.getMonth();
-	data.firstPostInMonth = date;
-	data.beginOfMonth = getBeginOfMonthDate(date);
-	data.beginOfMonthMillis = data.beginOfMonth.getTime();
-	data.endOfMonth = getEndOfMonthDate(date);
-	data.endOfMonthMillis = data.endOfMonth.getTime();
-	data.count = 1;
-	return data;
+   var data = {};
+   data.year = date.getFullYear();
+   data.month = date.getMonth();
+   data.firstPostInMonth = date;
+   data.beginOfMonth = getBeginOfMonthDate(date);
+   data.endOfMonth = getEndOfMonthDate(date);
+   data.count = 1;
+   return data;
 }
 
 /**
- * Fetches all posts found in the forum.
+ * Fetches data for each month for which posts exist, plus the count of each.
+ * Note: If no posts could be found, this method will return the current month
+ *       but with a count of posts equals zero.
  */
 function getBlogPostMonths(node)
 {
-	// query information
-	var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
-	                    " +PATH:\"" + node.qnamePath + "/*\" ";
-	var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
-	nodes = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, true);
-	
-	// fetch all dates with different month and year. Throw away doubles.
-	var data = new Array();
-	
-	if (nodes.length > 0) {
-		var curr = nodes[0].properties["cm:created"];
-		var currData = getMonthDataObject(curr);
-		data.push(currData);
-		
-		for (var x=1; x < nodes.length; x++)
-		{
-			var date = nodes[x].properties["cm:created"];
-			// check whether we are in a new month
-			if (curr.getFullYear() != date.getFullYear() || curr.getMonth() != date.getMonth())
-			{
-				curr = node;
-				currData = getMonthDataObject(curr);
-				data.push(currData);
-			}
-			// or still the same one
-			else
-			{
-				currData.count += 1;
-			}
-		}
-	}
-	
-	return data;
+   // query information
+   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
+                       " +PATH:\"" + node.qnamePath + "/*\" ";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   nodes = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, true);
+   
+   // will hold the months information
+   var data = new Array();
+   
+   // do we have posts?
+   if (nodes.length > 0)
+   {
+      var currYear = -1;
+      var currMonth = -1;
+      var currData = null;
+      for (var x=0; x < nodes.length; x++)
+      {
+         var date = nodes[x].properties["cm:created"];
+         
+         // is this a new month?
+         if (currYear != date.getFullYear() || currMonth != date.getMonth())
+         {
+            currYear = date.getFullYear();
+            currMonth = date.getMonth();
+            currData = getMonthDataObject(date);
+            data.push(currData);
+         }
+         // otherwise just increment the counter
+         else
+         {
+            currData.count += 1;
+         }
+      }
+   }
+   // if not, add the current month with count = 0
+   else
+   {
+      var emptyData = getMonthdataObject(new Date());
+      emptyData.count = 0;
+      data.push(emptyData);
+   }
+   
+   return data;
 }
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
 
-	// fetch the months
-	model.data = getBlogPostMonths(node);
+   // fetch the months
+   model.data = getBlogPostMonths(node);
 }
 
 main();

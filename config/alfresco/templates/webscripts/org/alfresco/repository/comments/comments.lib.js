@@ -1,23 +1,44 @@
 
+/** Name used for the topic that contains all comments. */
+const COMMENTS_TOPIC_NAME = "Comments";
+
+/**
+ * Returns all comment nodes for a given node.
+ * @return an array of comments.
+ */
+function getComments(node)
+{
+   var commentsFolder = getCommentsFolder(node);
+   if (commentsFolder != null)
+   {
+      var elems = commentsFolder.childAssocs["cm:contains"];
+      if (elems != null)
+      {
+         return elems;
+      }
+   }
+   // no comments found, return an empty array
+   return new Array();
+}
+
 /**
  * Returns the folder that contains all the comments.
- * We currently use the forum model for testing purpose
- * PENDING: use a proper model!
- */ 
+ * 
+ * We currently use the fm:discussable aspect where we
+ * add a "Comments" topic to it.
+ */
 function getCommentsFolder(node)
 {
-	if (node.hasAspect("fm:discussable"))
-	{
-		var forumFolder = node.childAssocs["fm:discussion"][0];
-		// we simply take the first topic folder in it
-		// PENDING: this is error prone!
-		var topicFolder = forumFolder.childAssocs["cm:contains"][0];
-		return topicFolder;
-	}
-	else
-	{
-		return null;
-	}
+   if (node.hasAspect("fm:discussable"))
+   {
+      var forumFolder = node.childAssocs["fm:discussion"][0];
+      var topicFolder = forumFolder.childByNamePath(COMMENTS_TOPIC_NAME);
+      return topicFolder;
+   }
+   else
+   {
+      return null;
+   }
 }
 
 /**
@@ -25,75 +46,31 @@ function getCommentsFolder(node)
  */
 function getOrCreateCommentsFolder(node)
 {
-	var commentsFolder = getCommentsFolder(node);
-	if (commentsFolder != null)
-	{
-		return commentsFolder;
-	}
-	
-	node.addAspect("fm:discussable");
-	var forumNode = node.createNode("Comments Forum", "fm:forum", "fm:discussion");
-	commentsFolder = forumNode.createNode("Comments", "fm:topic", "cm:contains");
-	return commentsFolder;
+   var commentsFolder = getCommentsFolder(node);
+   if (commentsFolder != null)
+   {
+      return commentsFolder;
+   }
+ 
+   // add the aspect and create the forum as well as the comments topic  
+   node.addAspect("fm:discussable");
+   var forumNode = node.createNode("Forum", "fm:forum", "fm:discussion");
+   commentsFolder = forumNode.createNode(COMMENTS_TOPIC_NAME, "fm:topic", "cm:contains");
+   return commentsFolder;
 }
 
 /**
- * Deletes the comments folder for a node if there are no comments in it.
+ * Returns the data object for a comment node
  */
-function deleteCommentsFolder(node)
-{
-	var commentsFolder = getCommentFolder(node);
-	if (commentsFolder != null && commentsFolder.childAssocs["cm:contains"] == 0)
-	{
-		var forumFolder = node.childAssocs["fm:discussion"][0];
-		node.removeNode(forumNode);
-		node.removeAspect("fm:discussable");
-	}
-}
-
 function getCommentData(node)
 {
-	return node;
+   return node;
 }
 
 /**
- * Returns an array containing all topics found in the passed array.
- * Filters out non-fm:topic nodes.
+ * Returns the count of comments for a node.
  */
-function getCommentListData(nodes, index, count)
+function getCommentsCount(node)
 {
-   var items = new Array();
-   var i;
-   var added = 0;
-   for (i = index; i < nodes.length && added < count; i++) 
-   {
-      items.push(getCommentData(nodes[i]));
-	  added++;
-   }
-   
-   return ({
-      "total" : nodes.length,
-	  "pageSize" : count,
-	  "startIndex" : index,
-	  "itemCount" : items.length,
-      "items": items
-   });
+   return getComments(node).length;
 }
-
-
-/**
- * Returns a list of topics, as returned by the lucene query
- */
-/*function getBlogsListByLuceneQuery(node, luceneQuery, sortAttribute, ascending, index, count)
-{
-   var nodes = null;
-   if (sortAttribute != null)
-   {
-      nodes = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, ascending);
-   }
-   else
-   {
-      nodes = search.luceneSearch(luceneQuery);
-   }
-   return getBlogListData(nodes, index, count);
-}*/

@@ -114,6 +114,8 @@ else
                upload = destNode.createFile(filename) ;
                upload.properties.contentType = contentType;
                upload.properties.content.write(content);
+               // reapply mimetype as upload may have been via Flash - which always sends binary mimetype
+               upload.properties.content.guessMimetype(filename);
                upload.properties.content.encoding = "UTF-8";
                upload.properties.title = title;
                upload.properties.description = description;

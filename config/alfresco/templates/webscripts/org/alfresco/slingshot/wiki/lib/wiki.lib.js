@@ -2,6 +2,25 @@
  * A collection of general functions used across most wiki scripts.
  */
 
+/**
+ * Takes an array of template parameter arguments
+ * and returns an object keyed on parameter name.
+ *
+ */
+function getTemplateArgs(params)
+{
+	var p = {};
+
+	var param;
+	for (var i=0; i < params.length; i++)
+	{
+		param = params[i];
+		p[param] =  url.templateArgs[param];
+	}
+
+	return p;
+}
+
 /* Format and return error object */
 function jsonError(errorString)
 {
@@ -12,3 +31,26 @@ function jsonError(errorString)
    
    return obj;
 }
+
+// NOTE: may need a custom content type for a wiki entry
+function createWikiPage(name, folder, options)
+{
+	var page = folder.createFile(name);
+	if (options)
+	{
+		if (options.versionable)
+		{
+			page.addAspect("cm:versionable");
+		}
+		
+		if (options.content)
+		{
+			page.content = options.content;
+		}
+	}
+	// TODO: sort out appropriate permission(s)
+	page.save();	
+	return page;
+}
+
+

@@ -53,22 +53,28 @@ function main()
 		//return jsonError("Could not locate wiki container");
 		return null;
     }
-
-    var page = wiki.childByNamePath(params.pageTitle);
+    
+	var page = wiki.childByNamePath(params.pageTitle);
     if (page === null)
     {
-		// NOTE: may need a custom content type for a wiki entry
-		page = wiki.createFile(params.pageTitle);
-		page.addAspect("cm:versionable");
-		page.content = 'This is a new page. It contains no content.'; 
-		page.save();
+		page = createWikiPage(params.pageTitle, wiki, {
+			content: 'This is a new page. It contains no content',
+			versionable: true
+		});
     }
 
+/**
+	if (page.type == "{http://www.alfresco.org/model/content/1.0}link")
+	{
+		page = search.findNode(page.properties["cm:destination"].nodeRef);
+	}
+**/
 	return page;
 }
 
 var page = main();
 model.page = page;
+
 // NOTE: until there are some general purposes functions in the Freemarker for escaping 
 // certain characters for the JSON representation, we have to do it here for now.
 var result = eval('(' + jsonUtils.toJSONString({ content: page.content }) + ')'); 

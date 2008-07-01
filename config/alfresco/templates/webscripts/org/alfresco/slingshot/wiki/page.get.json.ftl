@@ -1,8 +1,9 @@
 {
 <#if page?exists>
-  "pagetext" : '${jsonPageText}'
+  "pagetext" : '${jsonPageText}',
+  "editable" : '<#if page.hasPermission("Write")>true<#else>false</#if>'
   <#if page.hasAspect("cm:versionable")>
-	, "versionhistory" : [
+, "versionhistory" : [
 	<#list page.versionHistory?sort_by("versionLabel")?reverse as record>
 	{
 	  "version": "${record.versionLabel}",

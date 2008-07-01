@@ -26,7 +26,7 @@ function createBlogPost(blogNode)
    {
       // let's for now add a marker aspect, we can still change that later
 	  var props = new Array();
-	  props["cm:workingCopyOwner"] = "admin"; // PENDING
+	  props["cm:workingCopyOwner"] = person.properties["userName"];
 	  postNode.addAspect("cm:workingcopy", props);
    }
    

@@ -4,6 +4,7 @@
 <#macro latestPostJSON item>
 {
 	"topicTitle" : "${item.post.properties.title?js_string}",
+	"topicName" : "${item.topic.name}",
 	"isRootPost" : ${item.isRootPost?string},
 	<@postLib.postDataJSON refNode=item.topic post=item.reply />
 }

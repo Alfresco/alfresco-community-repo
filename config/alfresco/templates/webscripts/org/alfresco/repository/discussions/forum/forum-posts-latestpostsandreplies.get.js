@@ -10,7 +10,7 @@ function getLatestAddedPostData(node)
    // the topic title, while the reply will be used to show the text
    var data = getTopicPostData(node.parent);
    data.reply = node;
-   data.isRootPost = data.post.nodeRef == data.reply.nodeRef;
+   data.isRootPost = data.post.nodeRef.equals(data.reply.nodeRef);
    return data;
 }
 

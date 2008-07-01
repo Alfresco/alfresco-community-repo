@@ -2431,6 +2431,11 @@ public class ScriptNode implements Serializable, Scopeable
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
         
+        public void guessMimetype(String filename)
+        {
+            setMimetype(services.getMimetypeService().guessMimetype(filename));
+        }
+        
         private ContentData contentData;
         private QName property;
     }

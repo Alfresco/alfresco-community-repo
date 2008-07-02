@@ -79,7 +79,7 @@ function getBlogPostMonths(node)
    // if not, add the current month with count = 0
    else
    {
-      var emptyData = getMonthdataObject(new Date());
+      var emptyData = getMonthDataObject(new Date());
       emptyData.count = 0;
       data.push(emptyData);
    }

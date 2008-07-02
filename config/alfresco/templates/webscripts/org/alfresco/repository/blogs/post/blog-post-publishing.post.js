@@ -58,9 +58,12 @@ function executeAction(node, action)
       blog.parameters.action = blogAction;
       blog.execute(node);
       
-      // PENDING: how do we know that the action succeeded?
-      model.result = blog.parameters["result"];
-      logger.log("Blog action result: " + result);      
+      // check whether we got an error - if result is non-empty
+      if (blog.parameters["result"].length > 0)
+      {
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, blog.parameters["result"]);
+         return;
+      }
    }
 }
 

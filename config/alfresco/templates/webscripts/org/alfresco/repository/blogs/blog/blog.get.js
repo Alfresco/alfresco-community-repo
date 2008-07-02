@@ -1,4 +1,5 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blog.lib.js">
 
 function main()
 {

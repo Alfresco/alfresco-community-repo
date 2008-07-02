@@ -57,6 +57,14 @@ function update()
 		var workingCopy = page.checkout();
 		workingCopy.content = json.get("pagecontent");
 		workingCopy.checkin();
+
+      // Log page update to activity service
+		var d = {
+		   pageName: params.pageTitle.replace(/_/g, " "),
+		   pageContext: (args.context ? unescape(args.context) : "")
+		}
+
+		activities.postActivity("org.alfresco.wiki.page-edited", params.siteId, "wiki", jsonUtils.toJSONString(d));
 	}
 	catch(e)
 	{

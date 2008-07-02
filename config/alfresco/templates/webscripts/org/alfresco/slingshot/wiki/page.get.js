@@ -54,13 +54,28 @@ function main()
 		return null;
     }
     
-	var page = wiki.childByNamePath(params.pageTitle);
+	 var page = wiki.childByNamePath(params.pageTitle);
     if (page === null)
     {
 		page = createWikiPage(params.pageTitle, wiki, {
 			content: 'This is a new page. It contains no content',
 			versionable: true
 		});
+	  
+		try
+		{
+		   // Log page create to activity service
+		   var d = {
+		      pageName: params.pageTitle.replace(/_/g, " "),
+		      pageContext: (args.context ? args.context : "")
+		   }
+
+			activities.postActivity("org.alfresco.wiki.page-created", params.siteId, "wiki", jsonUtils.toJSONString(d));
+		}
+		catch(e)
+		{
+			logger.log(e);
+		}
     }
 
 /**

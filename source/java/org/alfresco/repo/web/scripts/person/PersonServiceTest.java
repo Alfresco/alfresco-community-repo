@@ -29,16 +29,11 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.RandomStringUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -94,6 +89,8 @@ public class PersonServiceTest extends BaseWebScriptTest
             personProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
             
             this.personService.createPerson(personProps);
+            
+            this.createdPeople.add(userName);
         }        
     }
     
@@ -115,6 +112,11 @@ public class PersonServiceTest extends BaseWebScriptTest
             // deleteRequest(URL_PEOPLE + "/" + userName, 0);
             personService.deletePerson(userName);
         }
+        
+        // delete authentications for users created in setUp()
+        this.authenticationService.deleteAuthentication(USER_ONE);
+        this.authenticationService.deleteAuthentication(USER_TWO);
+        this.authenticationService.deleteAuthentication(USER_THREE);
         
         // Clear the list
         this.createdPeople.clear();

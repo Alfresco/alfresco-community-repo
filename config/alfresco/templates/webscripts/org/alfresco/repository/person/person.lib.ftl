@@ -7,8 +7,16 @@
    <#else>
       "title" : undefined,
    </#if>
-   "firstName" : "${person.properties.firstName}",
-   "lastName" : "${person.properties.lastName}",
+   <#if person.properties.firstName??>
+      "firstName" : "${person.properties.firstName}",
+   <#else>
+      "firstName" : undefined,
+   </#if>
+   <#if person.properties.lastName??>
+      "lastName" : "${person.properties.lastName}",
+   <#else>
+      "lastName" : undefined,
+   </#if>
    <#if person.properties.organization??>
       "organisation" : "${person.properties.organization}",
    <#else>

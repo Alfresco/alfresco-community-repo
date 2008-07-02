@@ -19,12 +19,12 @@ function main()
    }
    
    // assign values to the person's properties   
-   person.properties.title = json.get("title");
-   person.properties.firstName = json.get("firstName");
-   person.properties.lastName = json.get("lastName");
-   person.properties.organization = json.get("organisation");
-   person.properties.jobTitle = json.get("jobTitle");
-   person.properties.email = json.get("email");
+   person.properties["title"] = json.get("title");
+   person.properties["firstName"] = json.get("firstName");
+   person.properties["lastName"] = json.get("lastName");
+   person.properties["organization"] = json.get("organisation");
+   person.properties["jobTitle"] = json.get("jobTitle");
+   person.properties["email"] = json.get("email");
    person.save();
    
    // Put the created person into the model

@@ -27,19 +27,68 @@ package org.alfresco.service.cmr.preference;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
+
 /**
  * @author Roy Wetherall
  */
 public interface PreferenceService
 {
+    /**
+     * Get all preferences for a particular user
+     * 
+     * @param  userName                     the user name
+     * @return Map<String, Serializable>    a map containing the preference values, empty if none
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName"})
     Map<String, Serializable> getPreferences(String userName);
-    
+
+    /**
+     * Get the preferences for a particular user.
+     * <p>
+     * If no filter if provided all preferences are returned.
+     * <p>
+     * If a filter is provided it's used to filter the results.  For example the filter
+     * "alfresco.myComp" will only return filters that are in the "namespace" alfresco.myComp.
+     * 
+     * @param userName                      the user name
+     * @param preferenceFilter              the preference filter
+     * @return Map<String, Serializable>    a map containing the preference values, empty if none
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferenceFilter"})
     Map<String, Serializable> getPreferences(String userName, String preferenceFilter);
     
+    /**
+     * Sets the preference values for a user.
+     * <p>
+     * Values provided overlay those already present.
+     * <p>
+     * Preference value names can be "namespaced" by using package notation.  For example 
+     * "alfresc.myComp.myValue".
+     *
+     * @param userName      the user name
+     * @param preferences   the preference values
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferences"})
     void setPreferences(String userName, Map<String, Serializable> preferences);
     
+    /**
+     * Clears all the preferences for a particular user.
+     * 
+     * @param userName      the user name
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName"})
     void clearPreferences(String userName);
-    
+
+    /**
+     * Clears the preferences for a particular user that match the filter optionally provided.
+     * <p> 
+     * If no filter if present then all preferences are cleared.
+     * 
+     * @param userName          the user name
+     * @param preferenceFilter  the preference filter
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"userName", "preferenceFilter"})
     void clearPreferences(String userName, String preferenceFilter);
 
 }

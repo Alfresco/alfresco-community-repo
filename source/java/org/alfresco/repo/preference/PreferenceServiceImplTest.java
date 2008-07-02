@@ -101,7 +101,7 @@ public class PreferenceServiceImplTest extends BaseAlfrescoSpringTest
         prefs.put("atTheRoot", "thisIsAtTheRoot");
         this.preferenceService.setPreferences(USER_ONE, prefs);
         
-       // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
+        //assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
         
         NodeRef personNodeRef = this.personService.getPerson(USER_ONE);
         ContentReader reader = this.contentService.getReader(personNodeRef, ContentModel.PROP_PREFERENCE_VALUES);
@@ -133,13 +133,13 @@ public class PreferenceServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(prefs);
         assertEquals(0, prefs.size());
         
-       // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
+        //assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
         
     }
     
     public void xtestBadUser()
     {
-        //assertEquals(USER_ONE, authenticationComponent.getCurrentUserName());
+        assertEquals(USER_ONE, authenticationComponent.getCurrentUserName());
         
         try
         {

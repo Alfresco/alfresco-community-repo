@@ -762,6 +762,17 @@
             </property>         
          </properties>
       </aspect>
+      
+      <aspect name="cm:tagscope">
+         <title>Tag Scope</title>
+         <properties>
+            <property name="cm:tagScopeCache">
+               <title>Tags</title>
+               <type>d:content</type>
+               <protected>true</protected>
+            </property>        
+         </properties>    
+      </aspect>
    
       <aspect name="cm:attachable">
          <title>Attachable</title>

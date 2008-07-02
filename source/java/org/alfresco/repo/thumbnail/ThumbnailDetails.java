@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.thumbnail;
 
-import java.lang.reflect.Constructor;
-
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**

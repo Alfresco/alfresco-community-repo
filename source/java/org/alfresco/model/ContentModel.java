@@ -142,6 +142,10 @@ public interface ContentModel
     static final QName ASPECT_TAGGABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "taggable");
     static final QName PROP_TAGS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "taggable");
     
+    // tagscope aspect
+    static final QName ASPECT_TAGSCOPE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tagscope");
+    static final QName PROP_TAGSCOPE_CACHE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tagScopeCache");
+    
     // lock aspect
     public final static QName ASPECT_LOCKABLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lockable");
     public final static QName PROP_LOCK_OWNER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lockOwner");
@@ -275,6 +279,6 @@ public interface ContentModel
     static final QName TYPE_AUTHORITY_CONTAINER = QName.createQName(USER_MODEL_URI, "authorityContainer");
     static final QName PROP_AUTHORITY_NAME = QName.createQName(USER_MODEL_URI, "authorityName");
     static final QName ASSOC_MEMBER = QName.createQName(USER_MODEL_URI, "member");
-    static final QName PROP_MEMBERS = QName.createQName(USER_MODEL_URI, "members");
+    static final QName PROP_MEMBERS = QName.createQName(USER_MODEL_URI, "members");    
     
 }

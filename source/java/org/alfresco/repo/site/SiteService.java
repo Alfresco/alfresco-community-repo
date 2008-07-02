@@ -3,6 +3,7 @@ package org.alfresco.repo.site;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -25,7 +26,6 @@ public interface SiteService
      * @param isPublic      whether the site is public or not
      * @return SiteInfo     information about the created site
      */
-    // TODO ... audit information
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic);
     
     /**
@@ -35,7 +35,6 @@ public interface SiteService
      * @param sitePresetFilter      site preset filter
      * @return List<SiteInfo>       list of site information
      */
-    // TODO audit information
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
     
     /**

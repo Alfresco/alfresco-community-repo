@@ -76,12 +76,7 @@ function getDoclist(siteId, path, type, filter)
          showFolders = (type == "folders");
       }
       
-      // Locked/working copy status
-      /*
-         <#if d.isLocked><#assign status = status + ["locked"]><#assign lockedBy = d.properties["cm:lockOwner"]></#if>
-         <#if d.hasAspect("cm:workingcopy")><#assign status = status + ["workingcopy"]><#assign lockedBy = d.properties["cm:workingCopyOwner"]></#if>
-      */
-
+      // Locked/working copy status defines action set
       var itemStatus;
       var itemOwner;
       var actionSet;

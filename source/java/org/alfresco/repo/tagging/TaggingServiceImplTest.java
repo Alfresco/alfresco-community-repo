@@ -64,9 +64,12 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     private NodeRef document;
     private NodeRef subDocument;
     
-    private static final String TAG_1 = "tagOne";
-    private static final String TAG_2 = "tagTwo";
-    private static final String TAG_3 = "tagThree";
+    private static final String TAG_1 = "tag one";
+    private static final String TAG_2 = "tag two";
+    private static final String TAG_3 = "Tag Three";
+    
+    private static final String UPPER_TAG = "House";
+    private static final String LOWER_TAG = "house";
     
     private static boolean init = false;
     
@@ -173,6 +176,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         
         // Create a tag
         this.taggingService.createTag(TaggingServiceImplTest.storeRef, TAG_1);
+        this.taggingService.createTag(TaggingServiceImplTest.storeRef, UPPER_TAG);
         
         setComplete();
         endTransaction();
@@ -183,13 +187,15 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         // Get all the tags
         tags = this.taggingService.getTags(TaggingServiceImplTest.storeRef);
         assertNotNull(tags);
-        assertEquals(1, tags.size());
+        assertEquals(2, tags.size());
         assertTrue(tags.contains(TAG_1));
-                
+        assertTrue(tags.contains(LOWER_TAG));
+        
         // Check isTag method
         assertFalse(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_2));
         assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_1));
-        
+        assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, UPPER_TAG));
+        assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, LOWER_TAG));
         tx.commit();               
     }
     
@@ -315,7 +321,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(2, ts2.getTags().get(1).getTagCount());
         assertEquals(TAG_1, ts2.getTags().get(1).getTagName());
         assertEquals(1, ts2.getTags().get(2).getTagCount());
-        assertEquals(TAG_3, ts2.getTags().get(2).getTagName());
+        assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getTagName());
         
         tx.commit();
         
@@ -341,6 +347,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     private void addTag(NodeRef nodeRef, String tag, int tagCount, NodeRef tagScopeNodeRef)
         throws Exception
     {
+        tag = tag.toLowerCase();
+        
         UserTransaction tx = this.transactionService.getUserTransaction();
         tx.begin();
         

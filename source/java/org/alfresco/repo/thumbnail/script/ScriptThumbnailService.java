@@ -24,12 +24,7 @@
  */
 package org.alfresco.repo.thumbnail.script;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.site.SiteInfo;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.thumbnail.ThumbnailDetails;
 import org.alfresco.service.ServiceRegistry;
 

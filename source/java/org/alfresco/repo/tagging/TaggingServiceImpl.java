@@ -132,6 +132,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public boolean isTag(StoreRef storeRef, String tag)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         return (getTagNodeRef(storeRef, tag) != null);
     }
 
@@ -140,6 +143,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public void createTag(StoreRef storeRef, String tag)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         if (isTag(storeRef, tag) == false)
         {
             this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_TAGGABLE, tag);
@@ -166,6 +172,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public void addTag(NodeRef nodeRef, String tag)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         // Get the tag node reference
         NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
         if (newTagNodeRef == null)
@@ -241,6 +250,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public void removeTag(NodeRef nodeRef, String tag)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         // Check for the taggable aspect
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
         {        
@@ -406,6 +418,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public List<NodeRef> findTaggedNodes(String tag)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         // TODO 
         return null;
     }
@@ -415,6 +430,9 @@ public class TaggingServiceImpl implements TaggingService
      */
     public List<NodeRef> findTaggedNodes(String tag, TagScope tagScope)
     {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
         // TODO 
         return null;
     }

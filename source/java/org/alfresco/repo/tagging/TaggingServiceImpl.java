@@ -153,6 +153,21 @@ public class TaggingServiceImpl implements TaggingService
     }  
 
     /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#deleteTag(org.alfresco.service.cmr.repository.StoreRef, java.lang.String)
+     */
+    public void deleteTag(StoreRef storeRef, String tag)
+    {
+        // Lower the case of the tag
+        tag = tag.toLowerCase();
+        
+        NodeRef tagNodeRef = getTagNodeRef(storeRef, tag);
+        if (tagNodeRef != null)
+        {
+            this.categoryService.deleteCategory(tagNodeRef);
+        }
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags()
      */
     public List<String> getTags(StoreRef storeRef)
@@ -165,6 +180,15 @@ public class TaggingServiceImpl implements TaggingService
             result.add(name);
         }
         return result;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, java.lang.String)
+     */
+    public List<String> getTags(StoreRef storeRef, String filter)
+    {
+        // TODO
+        return null;
     }
     
     /**
@@ -298,6 +322,14 @@ public class TaggingServiceImpl implements TaggingService
         
         return result;
     }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#isTagScope(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isTagScope(NodeRef nodeRef)
+    {
+        return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE);
+    }
      
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTagScope(org.alfresco.service.cmr.repository.NodeRef)
@@ -421,26 +453,33 @@ public class TaggingServiceImpl implements TaggingService
         // Lower the case of the tag
         tag = tag.toLowerCase();
         
+        //
+        // "+PATH:\"/cm:taggable/cm:" + ISOed(tag) + "/member\""
+        
         // TODO 
         return null;
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String, org.alfresco.service.cmr.tagging.TagScope)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public List<NodeRef> findTaggedNodes(String tag, TagScope tagScope)
+    public List<NodeRef> findTaggedNodes(String tag, NodeRef nodeRef)
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
+        
+        //
+        // "+PATH:\"/cm:taggable/cm:" + ISOed(tag) + "/member\" +PATH:\"" + pathOfTheNode + "//*\""
         
         // TODO 
         return null;
     }
     
     /**
+     * Helper method that takes an input stream and converts it into a list of tag details
      * 
-     * @param is
-     * @return
+     * @param is                    input stream
+     * @return List<TagDetails>     list of tag details
      */
     /*package*/ static List<TagDetails> readTagDetails(InputStream is)
     {
@@ -460,7 +499,6 @@ public class TaggingServiceImpl implements TaggingService
         }
         catch (IOException exception)
         {
-
             throw new AlfrescoRuntimeException("Unable to read tag details", exception);
         }
         
@@ -468,9 +506,10 @@ public class TaggingServiceImpl implements TaggingService
     }
     
     /**
+     * Helper method to convert a list of tag details into a string.
      * 
-     * @param tagDetails
-     * @param os
+     * @param tagDetails    list of tag details
+     * @return String       string of tag details
      */
     /*package*/ static String tagDetailsToString(List<TagDetails> tagDetails)
     {

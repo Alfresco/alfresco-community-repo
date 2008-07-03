@@ -413,7 +413,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
             
             LuceneIndexerAndSearcher lias = (LuceneIndexerAndSearcher) indexerAndSearcher;
             String field = "@" + catProperty;
-            SearchService searchService = lias.getSearcher(storeRef, true);
+            SearchService searchService = lias.getSearcher(storeRef, false);
             if (searchService instanceof LuceneSearcher)
             {
                 LuceneSearcher luceneSearcher = (LuceneSearcher)searchService;

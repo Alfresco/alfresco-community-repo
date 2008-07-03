@@ -30,6 +30,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
+ * Taggin Service Interface
+ * 
  * @author Roy Wetherall
  */
 public interface TaggingService
@@ -37,48 +39,77 @@ public interface TaggingService
     /**
      * Indicates whether the tag already exists
      * 
-     * @param tag
-     * @return
+     * @param storeRef      store reference
+     * @param tag           tag name
+     * @return boolean      true if the tag exists, false otherwise
      */
     boolean isTag(StoreRef storeRef, String tag);
     
     /**
      * Get all the tags currently available
      * 
-     * @return
+     * @return List<String> list of tags
      */
     List<String> getTags(StoreRef storeRef);
+    
+    /** 
+     * Get all the tags currently available that match the provided filter.
+     * 
+     * @param storeRef      store reference
+     * @param filter        tag filter
+     * @return List<String> list of tags
+     */
+    List<String> getTags(StoreRef storeRef, String filter);
     
     /**
      * Create a new tag
      * 
-     * @param tag
+     * @param storeRef  store reference
+     * @param tag       tag name
      */
     void createTag(StoreRef storeRef, String tag);
     
     /**
+     * Delete an existing tag
+     * 
+     * @param storeRef  store reference
+     * @param tag       tag name
+     */
+    void deleteTag(StoreRef storeRef, String tag);
+    
+    /**
      * Add a tag to a node.  Creating the tag if it does not already exist.
      * 
-     * @param nodeRef
-     * @param tag
+     * @param nodeRef   node reference
+     * @param tag       tag name
      */
     void addTag(NodeRef nodeRef, String tag);
     
     /**
      * Remove a tag from a node.
      * 
-     * @param nodeRef
-     * @param tag
+     * @param nodeRef   node reference
+     * @param tag       tag name
      */
     void removeTag(NodeRef nodeRef, String tag);
     
     /**
      * Get all the tags on a node
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef           node reference
+     * @return List<String>     list of tags on the node
      */
     List<String> getTags(NodeRef nodeRef);
+    
+    
+    
+    /** 
+     * Indicates whether the node reference is a tag scope
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if node is a tag scope, false otherwise
+     */
+    boolean isTagScope(NodeRef nodeRef);
     
     /**    
      * Adds a tag scope to the specified node
@@ -88,8 +119,11 @@ public interface TaggingService
     void addTagScope(NodeRef nodeRef);
     
     /**
+     * Removes a tag scope from a specified node.
      * 
-     * @param nodeRef
+     * Note that any tag count information will be lost when the scope if removed.
+     * 
+     * @param nodeRef   node reference
      */
     void removeTagScope(NodeRef nodeRef);
     
@@ -107,9 +141,14 @@ public interface TaggingService
     TagScope findTagScope(NodeRef nodeRef);
     
     /**
+     * Finds all the tag scopes for the specified node.
+     * <p>
+     * The resulting list of tag scopes is ordered with the 'nearest' at the bedining of the list.
+     * <p>
+     * If no tag scopes are found an empty list is returned.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef           node reference
+     * @return List<TagScope>   list of tag scopes
      */
     List<TagScope> findAllTagScopes(NodeRef nodeRef);
     
@@ -123,13 +162,13 @@ public interface TaggingService
     
     /**
      * Find all nodes that have been tagged with the specified tag and reside within
-     * the tag scope.
+     * the context of the node reference provided.
      * 
-     * @param tag
-     * @param tagScope
-     * @return
+     * @param tag               tag name
+     * @param nodeRef           node providing context for the search
+     * @return List<NodeRef>    list of nodes tagged in the context specified, empty if none found
      */
-    List<NodeRef> findTaggedNodes(String tag, TagScope tagScope);
+    List<NodeRef> findTaggedNodes(String tag, NodeRef nodeRef);
 }
 
 

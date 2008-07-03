@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
@@ -432,5 +433,13 @@ public class ServiceDescriptorRegistry
     public ThumbnailService getThumbnailService()
     {
         return (ThumbnailService)getService(THUMBNAIL_SERVICE);
+    }
+
+    /**
+     * @see org.alfresco.service.ServiceRegistry#getTaggingService()
+     */
+    public TaggingService getTaggingService()
+    {
+        return (TaggingService)getService(TAGGING_SERVICE);
     }
 }

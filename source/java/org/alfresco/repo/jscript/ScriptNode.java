@@ -2023,6 +2023,72 @@ public class ScriptNode implements Serializable, Scopeable
         return (ScriptThumbnail[])result.toArray(new ScriptThumbnail[result.size()]);
     }
     
+    // ------------------------------------------------------------------------------
+    // Tag methods
+    
+    /**
+     * Adds a tag to the node
+     * 
+     * @param tag   tag name
+     */
+    public void addTag(String tag)
+    {
+        this.services.getTaggingService().addTag(this.nodeRef, tag);
+    }
+    
+    /**
+     * Removes a tag from the node
+     * 
+     * @param tag   tag name
+     */
+    public void removeTag(String tag)
+    {
+        this.services.getTaggingService().removeTag(this.nodeRef, tag);
+    }
+    
+    /**
+     * Get all the tags applied to this node
+     * 
+     * @return String[]     array containing all the tag applied to this node
+     */
+    public String[] getTags()
+    {
+        List<String> tags = this.services.getTaggingService().getTags(this.nodeRef);
+        return (String[])tags.toArray(new String[tags.size()]);
+    }
+    
+    /**
+     * Sets whether this node is a tag scope or not
+     * 
+     * @param value     true if this node is a tag scope, false otherwise
+     */
+    public void setIsTagScope(boolean value)
+    {
+        boolean currentValue = this.services.getTaggingService().isTagScope(this.nodeRef);
+        if (currentValue != value)
+        {
+            if (value == true)
+            {
+                // Add the tag scope
+                this.services.getTaggingService().addTagScope(this.nodeRef);
+            }
+            else
+            {
+                // Remove the tag scope
+                this.services.getTaggingService().removeTagScope(this.nodeRef);
+            }
+        }
+    }
+    
+    /**
+     * Gets whether this node is a tag scope
+     * 
+     * @return  boolean     true if this node is a tag scope, false otherwise
+     */
+    public boolean getIsTagScope()
+    {
+        return this.services.getTaggingService().isTagScope(this.nodeRef);
+    }
     
     // ------------------------------------------------------------------------------
     // Helper methods

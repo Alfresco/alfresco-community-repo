@@ -32,11 +32,14 @@ import java.util.Map;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.tagging.TagDetails;
@@ -56,6 +59,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
 {
     /** Services */
     private TaggingService taggingService;
+    private ScriptService scriptService;
     
     private static StoreRef storeRef;
     private static NodeRef rootNode;
@@ -85,6 +89,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationService = (AuthenticationService) this.applicationContext.getBean("authenticationService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
+        this.scriptService = (ScriptService)this.applicationContext.getBean("scriptService");
 
         if (init == false)
         {
@@ -196,7 +201,28 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_1));
         assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, UPPER_TAG));
         assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, LOWER_TAG));
-        tx.commit();               
+        
+        // Remove a tag
+        this.taggingService.deleteTag(TaggingServiceImplTest.storeRef, UPPER_TAG);
+        
+        tx.commit();   
+        tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
+        // Get all the tags
+        tags = this.taggingService.getTags(TaggingServiceImplTest.storeRef);
+        assertNotNull(tags);
+        assertEquals(1, tags.size());
+        assertTrue(tags.contains(TAG_1));
+        assertFalse(tags.contains(LOWER_TAG));
+        
+        // Check isTag method
+        assertFalse(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_2));
+        assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_1));
+        assertFalse(this.taggingService.isTag(TaggingServiceImplTest.storeRef, UPPER_TAG));
+        assertFalse(this.taggingService.isTag(TaggingServiceImplTest.storeRef, LOWER_TAG));
+        
+        tx.commit();
     }
     
     public void testAddRemoveTag()
@@ -233,6 +259,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     public void testTagScopeFindAddRemove()
+        throws Exception
     {
         // Get scopes for node without
         TagScope tagScope = this.taggingService.findTagScope(this.subDocument);
@@ -340,8 +367,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(2, ts1.getTags().size());
         assertEquals(2, ts2.getTags().size());
         
-        tx.commit();
-        
+        tx.commit();        
     }
     
     private void addTag(NodeRef nodeRef, String tag, int tagCount, NodeRef tagScopeNodeRef)
@@ -488,5 +514,19 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 tx2.commit();
             }
         } 
+    }
+    
+    // == Test the JavaScript API ==
+    
+    public void testJSAPI() throws Exception
+    {
+        Map model = new HashMap<String, Object>(0);
+        model.put("folder", this.folder);
+        model.put("subFolder", this.subFolder);
+        model.put("document", this.document);
+        model.put("subDocument", this.subDocument);
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
+        this.scriptService.executeScript(location, model);
     }
 }

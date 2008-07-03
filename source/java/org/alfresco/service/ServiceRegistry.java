@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
@@ -121,6 +122,7 @@ public interface ServiceRegistry
     static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
     static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
     static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
+    static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
 
     /**
      * Get the list of services provided by the Repository
@@ -393,4 +395,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     ThumbnailService getThumbnailService();
+    
+    /**
+     * Get the Tagging Service
+     * @return
+     */
+    @NotAuditable
+    TaggingService getTaggingService();
 }

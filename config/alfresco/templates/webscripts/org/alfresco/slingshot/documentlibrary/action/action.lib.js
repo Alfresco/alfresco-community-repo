@@ -19,7 +19,15 @@ main();
 function main()
 {
    // Params object contains commonly-used arguments
-   var params = getInputParams();
+   var params;
+   if (url.templateArgs.storetype != undefined)
+   {
+      params = getNodeRefInputParams();
+   }
+   else
+   {
+      params = getSiteInputParams();
+   }
    if (typeof params == "string")
    {
       status.setCode(status.STATUS_BAD_REQUEST, params);
@@ -68,12 +76,12 @@ function main()
 
 
 /**
- * Get and check existence of mandatory input parameter
+ * Get and check existence of mandatory input parameters (Site-based)
  *
- * @method getInputParams
+ * @method getSiteInputParams
  * @return {object|string} object literal containing parameters value or string error
  */
-function getInputParams()
+function getSiteInputParams()
 {
    var params = {};
    var error = null;
@@ -140,7 +148,68 @@ function getInputParams()
       {
       	containerId: containerId,
       	siteId: siteId,
-      	filePath: filePath
+      	filePath: filePath,
+      	usingNodeRef: false
+      }
+   }
+   catch(e)
+   {
+      error = e.toString();
+   }
+   
+	// Return the params object, or the error string if it was set
+	return (error !== null ? error : params);
+}
+
+/**
+ * Get and check existence of mandatory input parameters (nodeRef-based)
+ *
+ * @method getNodeRefInputParams
+ * @return {object|string} object literal containing parameters value or string error
+ */
+function getNodeRefInputParams()
+{
+   var params = {};
+   var error = null;
+   
+   try
+   {
+      // First try to get the parameters from the URI
+      var storeType = url.templateArgs.storetype;
+      var storeId = url.templateArgs.storeid;
+      var id = url.templateArgs.id;
+
+      // Was a JSON parameter list supplied?
+      // TODO: Also handle multiple files
+      if (typeof json == "object")
+      {
+         if (!json.isNull("storetype"))
+         {
+            storeType = json.get("storetype");
+         }
+         if (!json.isNull("storeid"))
+         {
+            storeId = json.get("storeid");
+         }
+         if (!json.isNull("id"))
+         {
+            id = json.get("id");
+         }
+      }
+      
+      var nodeRef = storeType + "://" + storeId + "/" + id;
+      var node = search.findNode(nodeRef);
+
+   	if (node === null)
+   	{
+   		return "'" + nodeRef  + "' is not valid.";
+   	}
+
+      // Populate the return object
+      params =
+      {
+         nodeRef: nodeRef,
+         usingNodeRef: true
       }
    }
    catch(e)
@@ -163,6 +232,11 @@ function getRootNode(p_params)
 {
    var rootNode = null;
    var error = null;
+
+   if (p_params.usingNodeRef)
+   {
+      return search.findNode(p_params.nodeRef);
+   }
 
    try
    {
@@ -205,7 +279,7 @@ function getAssetNode(p_rootNode, p_assetPath)
 
    try
    {
-      if (p_assetPath.length > 0)
+      if (p_assetPath && (p_assetPath.length > 0))
       {
          assetNode = assetNode.childByNamePath(p_assetPath);
       }

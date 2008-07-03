@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>checkin</shortname>
+  <description>Document List Action - Check-in file</description>
+  <url>/slingshot/doclib/action/checkin/site/{siteid}/{containerId}/{filepath}</url>
+  <url>/slingshot/doclib/action/checkin/node/{storetype}/{storeid}/{id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

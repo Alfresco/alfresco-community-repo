@@ -1,9 +1,11 @@
 <webscript>
   <shortname>folder</shortname>
   <description>Document List Action - Create folder</description>
-  <url>/slingshot/doclib/action/folder/{siteid}/{containerId}</url>
-  <url>/slingshot/doclib/action/folder/{siteid}/{containerId}/{filepath}</url>
+  <url>/slingshot/doclib/action/folder/site/{siteid}/{containerId}</url>
+  <url>/slingshot/doclib/action/folder/site/{siteid}/{containerId}/{filepath}</url>
+  <url>/slingshot/doclib/action/folder/node/{storetype}/{storeid}/{id}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>
+

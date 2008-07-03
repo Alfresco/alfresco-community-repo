@@ -1,8 +1,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action/action.lib.js">
 
 /**
- * Delete file action
- * @method DELETE
+ * Cancel checkout file action
+ * @method POST
  * @param uri {string} /{siteId}/{containerId}/{filepath}
  */
 
@@ -16,50 +16,43 @@
 function runAction(p_params)
 {
    var results;
-   
+
    try
    {
-      var assetNode;
-      if (p_params.usingNodeRef)
-      {
-         assetNode = p_params.nodeRef;
-      }
-      else
-      {
-         assetNode = getAssetNode(p_params.rootNode, p_params.filePath);
-      }
+      var assetNode = getAssetNode(p_params.rootNode, p_params.filePath);
 
       // Must have assetNode by this point
       if (typeof assetNode == "string")
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found.");
+         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.filePath);
          return;
       }
-      
-      var resultId = assetNode.name;
-      var resultNodeRef = assetNode.nodeRef.toString();
 
-      // Delete the asset
-      if (!assetNode.remove())
+      // Checkin the asset
+      var originalDoc = assetNode.cancelCheckout();
+      if (originalDoc === null)
       {
-         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not delete.");
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not cancel checkout: " + p_params.filePath);
          return;
       }
+
+      var resultId = originalDoc.name;
+      var resultNodeRef = originalDoc.nodeRef.toString();
 
       // Construct the result object
       results = [
       {
          id: resultId,
          nodeRef: resultNodeRef,
-         action: "deleteFile",
+         action: "cancelCheckoutAsset",
          success: true
       }];
    }
    catch(e)
    {
-		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
-		return;
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+      return;
    }
-   
+
    return results;
 }

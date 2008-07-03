@@ -15,6 +15,7 @@
             "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
             "name": "${d.name?replace(" (Working Copy)", "")?html}",
+            "parent": "${item.parent}",
             "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
             "lockedBy": "${item.owner}",
             "title": "${(d.properties.title!"")?html}",

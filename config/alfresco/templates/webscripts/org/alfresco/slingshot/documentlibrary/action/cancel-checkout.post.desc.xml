@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>cancel-checkout</shortname>
+  <description>Document List Action - Cancel check-out for file</description>
+  <url>/slingshot/doclib/action/cancel-checkout/site/{siteid}/{containerId}/{filepath}</url>
+  <url>/slingshot/doclib/action/cancel-checkout/node/{storetype}/{storeid}/{id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

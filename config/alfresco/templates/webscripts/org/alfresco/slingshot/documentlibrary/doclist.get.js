@@ -43,6 +43,7 @@ function getDoclist(siteId, path, type, filter)
       else
       {
          pathNode = containerNode;
+         path = "";
       }
 
       if (pathNode === null)
@@ -114,6 +115,7 @@ function getDoclist(siteId, path, type, filter)
             items.push(
             {
                asset: asset,
+               parent: path,
                status: itemStatus,
                owner: itemOwner,
                actionSet: actionSet

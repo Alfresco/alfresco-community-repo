@@ -89,8 +89,3 @@ function main()
 
 var page = main();
 model.page = page;
-
-// NOTE: until there are some general purposes functions in the Freemarker for escaping 
-// certain characters for the JSON representation, we have to do it here for now.
-var result = eval('(' + jsonUtils.toJSONString({ content: page.content }) + ')'); 
-model.jsonPageText = result.content; // the escaped text

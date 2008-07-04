@@ -1,0 +1,18 @@
+{
+   "totalPages" : ${pageList.pages?size},
+   "pages":
+   [
+   <#list pageList.pages as page>
+      {
+         "name" : "${page.name}",
+         "editable" : "<#if page.hasPermission("Write")>true<#else>false</#if>",
+         "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
+         "text" : "${page.content?js_string}",
+         "createdOn": "${page.properties.created?string("MMM dd yyyy, HH:mm:ss")}",
+         "createdBy": "${page.properties.creator}",
+         "modifiedOn": "${page.properties.modified?string("MMM dd yyyy, HH:mm:ss")}",
+         "modifiedBy": "${page.properties.modifier}"
+      }<#if page_has_next>,</#if>
+   </#list>
+   ]
+}

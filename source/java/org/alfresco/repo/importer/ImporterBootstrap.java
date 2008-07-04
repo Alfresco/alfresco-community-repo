@@ -304,8 +304,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "importerService", importerService);
         PropertyCheck.mandatory(this, "storeRef", storeRef);
 
-        
-        Authentication authentication = authenticationComponent.setSystemUserAsCurrentUser();
+        // note: in MT case, this will run in System context of tenant domain
+        Authentication authentication = authenticationComponent.getCurrentAuthentication();
+        if (authenticationComponent.getCurrentUserName() == null)
+        {
+            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+        }
 
         RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
         {

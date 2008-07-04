@@ -44,6 +44,15 @@ function deleteEvent()
       status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Failed to delete page");
 	   return;
    }
+   else
+   {
+      // Log to page deletion to activity service
+      var d = {
+	      pageName: params.pageTitle.replace(/_/g, " "),
+	   }
+   	
+		activities.postActivity("org.alfresco.wiki.page-deleted", params.siteId, "wiki", jsonUtils.toJSONString(d));
+	}
    
    // Success
    status.setCode(status.STATUS_NO_CONTENT); // Nothing to do here yet

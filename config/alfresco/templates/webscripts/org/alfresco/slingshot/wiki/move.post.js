@@ -56,7 +56,13 @@ function main()
 			content: "This page has been moved [["  + args.name + "|here]]."
 		});
 		
-		//placeholder.setPermission("Read");
+	   var d = {
+		   currentName: newName,
+		   previousName: currentName,
+		   pageContext: ""
+		}
+
+		activities.postActivity("org.alfresco.wiki.page-renamed", params.siteId, "wiki", jsonUtils.toJSONString(d));
 		
 		return {
 			name: newName // Return the new name to the client (?)

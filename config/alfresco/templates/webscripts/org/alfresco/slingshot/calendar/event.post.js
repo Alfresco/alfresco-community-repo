@@ -1,6 +1,34 @@
-var siteId = args["site"];
+var siteId = null;
+if (!json.isNull("site"))
+{
+   siteId = json.get("site");
+}
 
-model.result = createEvent(siteId, args);
+var params = {};
+// Variables we are expecting
+var props = [
+   "from",
+   "to",
+   "what",
+   "where",
+   "desc",
+   "datefrom",
+   "start",
+   "dateto",
+   "end"
+];
+
+var p;
+for(var k=0; k < props.length; k++)
+{
+   p = props[k];
+   if (!json.isNull(p))
+   {
+      params[p] = json.get(p);
+   }
+}
+
+model.result = createEvent(siteId, params);
 
 function createEvent(siteId, params)
 {

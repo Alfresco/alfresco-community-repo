@@ -419,13 +419,6 @@
          <icon name="space-icon-pen" path="/images/icons/space-icon-pen.gif" />
          <icon name="space-icon-cd" path="/images/icons/space-icon-cd.gif" />
          <icon name="space-icon-image" path="/images/icons/space-icon-image.gif" />
-         <icon name="project-icon-blog" path="/images/icons/project-icon-blog.gif" />
-         <icon name="project-icon-calendar" path="/images/icons/project-icon-calendar.gif" />
-         <icon name="project-icon-doclibrary" path="/images/icons/project-icon-doclibrary.gif" />
-         <icon name="project-icon-emailarchive" path="/images/icons/project-icon-emailarchive.gif" />
-         <icon name="project-icon-forums" path="/images/icons/project-icon-forums.gif" />
-         <icon name="project-icon-gallery" path="/images/icons/project-icon-gallery.gif" />
-         <icon name="project-icon-wiki" path="/images/icons/project-icon-wiki.gif" />
       </icons>
    </config>
 
@@ -448,61 +441,5 @@
          <icon name="topic_question" path="/images/icons/topic_question.gif" />
       </icons>
    </config>
-   
-   <config evaluator="string-compare" condition="app:projectfolder icons">
-      <icons>
-         <icon name="project" path="/images/icons/project.gif" />
-      </icons>
-   </config>
-   
-   <config evaluator="node-type" condition="ia:calendarEvent">
-      <property-sheet>
-         <show-property name="mimetype" display-label-id="content_type" 
-                        component-generator="MimeTypeSelectorGenerator" />
-         <show-property name="size" display-label-id="size" 
-                        converter="org.alfresco.faces.ByteSizeConverter" 
-                        show-in-edit-mode="false" />               
-         <show-property name="ia:whatEvent" />
-         <show-property name="ia:fromDate" />
-         <show-property name="ia:toDate" />
-         <show-property name="ia:whereEvent" />
-         <show-property name="ia:descriptionEvent" />
-         <show-property name="ia:colorEvent" />
-      </property-sheet>
-   </config>
-   
-   <config evaluator="node-type" condition="ia:calendar">
-      <property-sheet>
-         <show-property name="ia:whatEventDefault" />
-         <show-property name="ia:fromDateDefault" />
-         <show-property name="ia:toDateDefault" />
-         <show-property name="ia:whereEventDefault" />
-         <show-property name="ia:colorEventDefault" />
-      </property-sheet>
-   </config>
-
-   <config evaluator="aspect-name" condition="blg:blogDetails">
-      <property-sheet>
-         <separator name="sepBlogDetails" display-label="Blog Details" component-generator="HeaderSeparatorGenerator" />         
-         <show-property name="blg:blogImplementation" component-generator="BlogSelectorGenerator"/>
-         <show-property name="blg:id" />         
-         <show-property name="blg:name" />
-         <show-property name="blg:description" />
-         <show-property name="blg:url" component-generator="LinkGenerator"/>
-         <show-property name="blg:userName" />
-         <show-property name="blg:password" />     
-      </property-sheet>
-   </config>   
-   
-   <config evaluator="aspect-name" condition="blg:blogPost">
-      <property-sheet>
-         <separator name="seprmTransferInstrustions" display-label="Blog Post Details" component-generator="HeaderSeparatorGenerator"  show-in-edit-mode="false"/> 
-         <show-property name="blg:postId" show-in-edit-mode="false"/>
-         <show-property name="blg:link" component-generator="LinkGenerator"  show-in-edit-mode="false"/>
-         <show-property name="blg:posted"  show-in-edit-mode="false"/>
-         <show-property name="blg:lastUpdate"  show-in-edit-mode="false"/>
-         <show-property name="blg:published"  show-in-edit-mode="false"/>             
-      </property-sheet>
-   </config>
-   
+      
 </alfresco-config>

@@ -574,14 +574,6 @@
             <action>wizard:createWebsite</action>
          </action>
          
-         <!-- Create Project -->
-         <action id="create_project">
-            <evaluator>org.alfresco.web.action.evaluator.CreateProjectEvaluator</evaluator>
-            <label-id>create_project</label-id>
-            <image>/images/icons/create_project.gif</image>
-            <action>dialog:createProject</action>
-         </action>
-
          <!-- Manage Space Users -->
          <action id="manage_space_users">
             <permissions>
@@ -1077,7 +1069,6 @@
             <action idref="create_form" />
             <action idref="create_web_form" />      
             <action idref="create_website_wizard" />
-            <action idref="create_project" />
             <action idref="create_space" />
             <action idref="create_space_wizard" />
          </action-group>

@@ -124,16 +124,19 @@
      
       <!-- content change date  -->
       <aspect name="blg:releaseDetails">
+        <title>Release details</title>
          <properties>
          	<!-- Released = not a draft anymore -->
             <property name="blg:released">
                <title>Post released</title>
                <type>d:datetime</type>
+               <mandatory>true</mandatory>
             </property>
             <!-- Updated timestamp. -->
             <property name="blg:updated">
                <title>Post released</title>
                <type>d:datetime</type>
+               <mandatory>false</mandatory>
             </property>
          </properties>
       </aspect>

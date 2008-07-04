@@ -6,6 +6,22 @@ const FUTURE_DATE = "3000\\-12\\-31T00:00:00";
 const ZERO_DATE = "1970\\-01\\-01T00:00:00";
 
 /**
+ * Returns the date object for the date "numdays" ago
+ */
+function getTodayMinusXDays(numdays)
+{
+   var date = new Date();
+   var dateMillis = new Date().getTime();
+   dateMillis -= 1000 * 60 * 60 * 24 * numdays;
+   date.setTime(dateMillis);
+   
+   // PENDING: should it be from the beginning of the date or exactly x days back?
+   
+   return date;
+}
+
+
+/**
  * Returns the date string as required by Lucene,
  * thus in the format "1970\\-01\\-01T00:00:00"
  *

@@ -1,25 +1,27 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/searchutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/generic-paged-results.lib.js">
-<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
-const DEFAULT_NUM_DAYS = 30;
+const DEFAULT_NUM_DAYS = 7;
 
 /**
- * Fetches all posts added to the forum in the last numdays days
+ * Fetches all posts of the given blog
  */
-function getTopicPostList(node, numdays, index, count)
+function getBlogPostList(node, numdays, index, count)
 {
    var fromDate = getTodayMinusXDays(numdays);
-   
+
    // query information
-   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
+   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
                      " +PATH:\"" + node.qnamePath + "/*\" " +
+                     " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
                      getCreationDateRangeQuery(fromDate, null);
+
    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
-  
+
    // get the data
-   return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getTopicPostData);
+   return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);
 }
 
 function main()
@@ -36,9 +38,8 @@ function main()
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
    var numdays = args["numdays"] != undefined ? parseInt(args["numdays"]) : DEFAULT_NUM_DAYS;
    
-   // fetch the data and assign it to the model
-   model.data = getTopicPostList(node, numdays, index, count);
-   
+   // fetch and assign the data
+   model.data = getBlogPostList(node, fromDate, toDate, index, count);
    model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }
 

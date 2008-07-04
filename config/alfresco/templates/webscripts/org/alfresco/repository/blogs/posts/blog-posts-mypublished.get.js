@@ -6,27 +6,18 @@
 /**
  * Fetches all posts of the given blog
  */
-function getBlogPostList(node, fromDate, toDate, index, count)
+function getBlogPostList(node, index, count)
 {
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
                        " +PATH:\"" + node.qnamePath + "/*\" ";
-                       
-   // include all published + my drafts
-   luceneQuery += "((" +
-                    " -ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
-                    "+@cm\\:creator:\"" + person.properties.userName + "\"" +
-                   ") OR (" +
-                    " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
-                   "))";
-                       
-   // date query ?
-   if (fromDate != null || toDate != null)
-   {
-      luceneQuery += getCreationDateRangeQuery(fromDate, toDate);
-   }
 
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   // add the drafts part
+   luceneQuery += "+ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
+                  "+@cm\\:creator:\"" + person.properties.userName + "\"";
+
+
+   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
 
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);
@@ -44,29 +35,9 @@ function main()
    // process additional parameters
    var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
-
-   // begin and end date
-   var fromDate = null;
-   if (args["fromDate"] != undefined)
-   {
-      var tmp = parseInt(args["fromDate"]);
-      if (tmp != Number.NaN)
-      {
-         fromDate = new Date(tmp);
-      }
-   }
-   var toDate = null;
-   if (args["toDate"] != undefined)
-   {
-      var tmp = parseInt(args["toDate"]);
-      if (tmp != Number.NaN)
-      {
-         toDate = new Date(tmp);
-      }
-   }
    
    // fetch and assign the data
-   model.data = getBlogPostList(node, fromDate, toDate, index, count);
+   model.data = getBlogPostList(node, index, count);
    model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }
 

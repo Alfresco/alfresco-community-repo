@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Blog posts</shortname>
+  <description>Get all posts for a blog</description>
+  <url>/blog/site/{site}/{container}/{path}/posts/publishedext</url>
+  <url>/blog/site/{site}/{container}/posts/publishedext</url>
+  <url>/blog/node/{store_type}/{store_id}/{id}/posts/publishedext</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

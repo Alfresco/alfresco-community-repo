@@ -23,7 +23,7 @@
   
    <select id="select.activity.feed.for.feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id != #feedUserId#
@@ -34,7 +34,7 @@
    
    <select id="select.activity.feed.for.feeduser.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #feedUserId#
       and post_user_id != #feedUserId#
@@ -46,9 +46,9 @@
    
    <select id="select.activity.feed.for.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
-      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date postDate
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
-      where (feed_user_id = '' or feed_user_id is null)
+      where feed_user_id = ''
       and site_network = #siteNetwork#
       and activity_format = #activitySummaryFormat#
       order by post_date desc
@@ -56,9 +56,9 @@
    </select>
 
    <insert id="insert.activity.feed" parameterClass="ActivityFeed">
-   
-      <selectKey resultClass="long" keyProperty="id" type="pre">
-         select alf_activity_feed_seq.nextval as value from dual
+      
+      <selectKey keyProperty="id" resultClass="long">
+         select nextVal('alf_activity_feed_seq')
       </selectKey>
       
       insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 

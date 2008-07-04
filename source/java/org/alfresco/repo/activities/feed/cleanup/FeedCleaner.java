@@ -78,7 +78,7 @@ public class FeedCleaner
         try
         { 
             long nowTimeOffset = new Date().getTime();
-            long keepTimeOffset = nowTimeOffset - (maxAgeMins*60*1000); // millsecs = mins * 60 secs * 1000 msecs
+            long keepTimeOffset = nowTimeOffset - ((long)maxAgeMins*60000L); // millsecs = mins * 60 secs * 1000 msecs
             Date keepDate = new Date(keepTimeOffset);
              
             // clean old entries   

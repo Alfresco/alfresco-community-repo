@@ -40,7 +40,7 @@
    <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner">
       <property name="feedDaoService" ref="feedDaoService"/>
       <property name="maxAgeMins">
-         <value>20160</value> <!-- 20160 mins = 2 weeks -->
+         <value>44640</value> <!-- 44640 mins = 31 days -->
       </property>
    </bean>
    

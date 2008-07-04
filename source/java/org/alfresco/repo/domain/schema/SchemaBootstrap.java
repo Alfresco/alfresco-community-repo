@@ -64,6 +64,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.connection.UserSuppliedConnectionProvider;
 import org.hibernate.dialect.DB2Dialect;
+import org.hibernate.dialect.DerbyDialect;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.HSQLDialect;
 import org.hibernate.dialect.MySQL5Dialect;
@@ -102,6 +103,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
+    private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
@@ -904,6 +906,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         if (dialectClazz.equals(HSQLDialect.class))
         {
             LogUtil.info(logger, WARN_DIALECT_HSQL);
+        }
+        if (dialectClazz.equals(DerbyDialect.class))
+        {
+            LogUtil.info(logger, WARN_DIALECT_DERBY);
         }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;

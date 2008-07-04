@@ -262,12 +262,16 @@ public class ActivityServiceImpl implements ActivityService
             }
             catch (SQLException e) 
             {
-              throw new AlfrescoRuntimeException("Failed to post activity: " + e, e);
+                throw new AlfrescoRuntimeException("Failed to post activity: " + e, e);
+            }
+            catch (Throwable t) 
+            {
+                throw new AlfrescoRuntimeException("Failed to post activity: " + t, t);
             }
         } 
         catch (AlfrescoRuntimeException e)
         {
-            // log error, subsume exception
+            // log error, subsume exception (for post activity)
             logger.error(e);
         }
     }
@@ -313,13 +317,17 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException se)
         {
-            throw new AlfrescoRuntimeException("Unable to get user feed entries: " + se.getMessage());
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get user feed entries: " + se.getMessage());
+            logger.error(are);
+            throw are;
         }
         catch (JSONException je)
         {    
-            throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
+            logger.error(are);
+            throw are;
         }
-    
+        
         return activityFeedEntries;
     }
     
@@ -350,11 +358,15 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException se)
         {
-            throw new AlfrescoRuntimeException("Unable to get site feed entries: " + se.getMessage());
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get site feed entries: " + se.getMessage());
+            logger.error(are);
+            throw are;
         }
         catch (JSONException je)
         {    
-            throw new AlfrescoRuntimeException("Unable to get site feed entries: " + je.getMessage());
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get site feed entries: " + je.getMessage());
+            logger.error(are);
+            throw are;
         }
         
         return activityFeedEntries;
@@ -382,7 +394,9 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-          throw new AlfrescoRuntimeException("Failed to set feed control: " + e, e);
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Failed to set feed control: " + e, e);
+            logger.error(are);
+            throw are;
         }
     }
     
@@ -433,7 +447,9 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-          throw new AlfrescoRuntimeException("Failed to get feed controls: " + e, e);
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Failed to get feed controls: " + e, e);
+            logger.error(are);
+            throw are;
         }
     }
     
@@ -456,7 +472,9 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-          throw new AlfrescoRuntimeException("Failed to unset feed control: " + e, e);
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Failed to unset feed control: " + e, e);
+            logger.error(are);
+            throw are;
         }
     }
     
@@ -481,7 +499,9 @@ public class ActivityServiceImpl implements ActivityService
         }
         catch (SQLException e) 
         {
-            throw new AlfrescoRuntimeException("Failed to query feed control: " + e, e);
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Failed to query feed control: " + e, e);
+            logger.error(are);
+            throw are;
         }
     }
 }

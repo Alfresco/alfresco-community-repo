@@ -81,11 +81,11 @@
    </select>
 
    <insert id="insert.activity.post" parameterClass="ActivityPost">
-   
-      <selectKey resultClass="long" keyProperty="id" type="pre">
-         select alf_activity_post_seq.nextval as value from dual
+      
+      <selectKey keyProperty="id" resultClass="long">
+         select nextVal('alf_activity_post_seq')
       </selectKey>
-    
+      
       insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
       values (#id#, #status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
       

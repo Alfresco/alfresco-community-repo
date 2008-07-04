@@ -19,7 +19,7 @@
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
    </imports>
 
-   <!-- Records Management Namespace -->
+   <!-- Sites Namespace -->
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
    </namespaces>
@@ -42,6 +42,11 @@
          <mandatory-aspects>
             <aspect>cm:titled</aspect>
          </mandatory-aspects>
+      </type>
+
+      <type name="st:sites">
+         <title>Sites</title>
+         <parent>cm:folder</parent>         
       </type>
      
    </types>

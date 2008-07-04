@@ -12,24 +12,22 @@ function createBlogPost(blogNode)
    var content = json.get("content");
    
    // get a unique name
-   var name = getUniqueChildName(blogNode, "post");
+   var nodeName = getUniqueChildName(blogNode, "post");
    
    // we simply create a new file inside the blog folder
-   var postNode = blogNode.createNode(name, "cm:content");
+   var postNode = blogNode.createNode(nodeName, "cm:content");
    postNode.mimetype = "text/html";
    postNode.properties.title = title;
    postNode.content = content;
    postNode.save();
    
-   // check whether it is draft mode
-   if (json.get("draft") == "true")
+   // check whether it is in draft mode
+   var isDraft = json.get("draft") == "true";
+   if (! isDraft)
    {
-      // let's for now add a marker aspect, we can still change that later
-	  var props = new Array();
-	  props["cm:workingCopyOwner"] = person.properties["userName"];
-	  postNode.addAspect("cm:workingcopy", props);
+      setOrUpdateReleasedAndUpdatedDates(postNode);
    }
-   
+
    return postNode;
 }
 

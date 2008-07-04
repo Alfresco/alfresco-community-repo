@@ -2,6 +2,31 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
 /**
+ * Updates the draft mode part of the post
+ */
+function updateBlogPostDraftMode(postNode)
+{
+   // make sure the user doesn't try to put a non-draft
+   // post back into draft node
+   var currentDraft = (! postNode.hasAspect("blg:releaseDetails")) ||
+                      (postNode.properties["blg:released"] == undefined);
+   var isDraft = json.get("draft") == "true";
+   
+   // requested draft, previously non-draft: throw an exception
+   if (isDraft && ! currentDraft)
+   {
+       // set an error
+      status.setCode(status.STATUS_BAD_REQUEST, "Cannot put a released post back into draft mode!");
+      return null;
+   }
+   
+   if (! isDraft)
+   {
+      setOrUpdateReleasedAndUpdatedDates(postNode);
+   }
+}
+
+/**
  * Updates a blog post node
  */
 function updateBlogPost(postNode)
@@ -20,12 +45,7 @@ function updateBlogPost(postNode)
    postNode.content = content;
    postNode.save();
 	
-   // PENDING:
-   // check whether it is draft mode
-   /*if (postNode.hasAspect("cm:workingcopy") && json.get("draft") == "false")
-   {
-      postNode.removeAspect("cm:workingcopy");
-   }*/
+   updateBlogPostDraftMode(postNode);
 }
 
 function main()

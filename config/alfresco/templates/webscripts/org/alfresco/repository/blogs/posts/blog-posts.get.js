@@ -36,6 +36,9 @@ function main()
    var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
 
+   // check what drafts we want to fetch
+   
+
    // begin and end date
    var fromDate = null;
    if (args["fromDate"] != undefined)

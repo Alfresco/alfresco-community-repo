@@ -31,15 +31,15 @@
     "title" : "${(item.node.properties.title!'')?j_string}",
 	<@addContent item=item />
 	"author" : "${item.node.properties.creator?j_string}",
-	"createdOn" : "${item.node.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-	"modifiedOn" : "${item.node.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"createdOn" : "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
 	"permissions" : {"edit" : true, "publishExt" : true, "delete" : true},
 	"commentCount" : ${item.commentCount?c},
 	"tags" : ["ECM", "Design"],
 	
 	<#-- draft vs internal published -->
 	"isDraft" : ${item.isDraft?string},
-	<#-- true if the post has been updated 
+	<#-- true if the post has been updated -->
 	"isUpdated" : ${item.isUpdated?string},
 	
 	<#-- external publishing -->

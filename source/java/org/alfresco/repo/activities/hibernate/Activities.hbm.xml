@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    '-//Hibernate/Hibernate Mapping DTD 3.0//EN' 
+    'http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd'>
+
+<!-- Hibernate mapping is used to auto-generate Activity tables (based on configured Hibernate Dialect) -->
+
+<hibernate-mapping>
+
+   <class
+         name="org.alfresco.repo.activities.post.ActivityPostDAO"
+         table="alf_activity_post" >
+      
+      <!-- auto-generated ID -->
+      <id name="id" column="SEQUENCE_ID" type="long">
+         <generator class="native"/>
+      </id>  
+      
+      <property name="postDate" column="POST_DATE" not-null="true" type="timestamp"/>
+      <property name="status" column="STATUS" not-null="true" type="string" length="10"/>
+      <property name="activityData" column="ACTIVITY_DATA" not-null="true" type="string" length="4000"/>
+      <property name="userId" column="POST_USER_ID" not-null="true" type="string" length="255"/>
+      <property name="jobTaskNode" column="JOB_TASK_NODE" not-null="true" type="integer"/>
+      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
+      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
+      <property name="activityType" column="ACTIVITY_TYPE" not-null="true" type="string" length="255"/>
+      <property name="lastModified" column="LAST_MODIFIED" not-null="true" type="timestamp"/>
+      
+   </class>
+   
+   <class
+         name="org.alfresco.repo.activities.feed.ActivityFeedDAO"
+         table="alf_activity_feed" >
+      
+      <!-- auto-generated ID -->
+      <id name="id" column="ID" type="long">
+         <generator class="native"/>
+      </id>    
+      
+      <property name="postId" column="POST_ID" type="long"/>
+      <property name="postDate" column="POST_DATE" not-null="true" type="timestamp"/>
+      <property name="activitySummary" column="ACTIVITY_SUMMARY" type="string" length="4000"/>
+      <property name="feedUserId" column="FEED_USER_ID" type="string" length="255"/>
+      <property name="activityType" column="ACTIVITY_TYPE" not-null="true" type="string" length="255"/>
+      <property name="activitySummaryFormat" column="ACTIVITY_FORMAT" type="string" length="10"/>
+      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
+      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
+      <property name="postUserId" column="POST_USER_ID" not-null="true" type="string" length="255"/>
+      <property name="feedDate" column="FEED_DATE" not-null="true" type="timestamp"/>
+
+   </class>
+   
+   <class
+         name="org.alfresco.repo.activities.feed.control.FeedControlDAO"
+         table="alf_activity_feed_control" >
+      
+      <!-- auto-generated ID -->
+      <id name="id" column="ID" type="long">
+         <generator class="native"/>
+      </id>  
+      
+      <property name="feedUserId" column="FEED_USER_ID" not-null="true" type="string" length="255"/>
+      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
+      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
+      <property name="lastModified" column="LAST_MODIFIED" not-null="true" type="timestamp"/>
+      
+   </class>
+   
+</hibernate-mapping>

@@ -64,6 +64,7 @@
                 <value>org/alfresco/repo/avm/hibernate/AVM.hbm.xml</value>
                 <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/UsageDelta.hbm.xml</value>
+                <value>org/alfresco/repo/activities/hibernate/Activities.hbm.xml</value>
 
                 <!-- Audit config -->
                 <!-- TODO: Move into org/alfresco/repo/domain/hibernate/ -->

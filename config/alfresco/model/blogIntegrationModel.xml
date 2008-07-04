@@ -122,6 +122,21 @@
          </associations>
    	 </aspect>
      
+      <!-- content change date  -->
+      <aspect name="blg:releaseDetails">
+         <properties>
+         	<!-- Released = not a draft anymore -->
+            <property name="blg:released">
+               <title>Post released</title>
+               <type>d:datetime</type>
+            </property>
+            <!-- Updated timestamp. -->
+            <property name="blg:updated">
+               <title>Post released</title>
+               <type>d:datetime</type>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
    
 </model>

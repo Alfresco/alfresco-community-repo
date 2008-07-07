@@ -27,7 +27,6 @@ package org.alfresco.repo.activities.post.lookup;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.ActivityPostDAO;
@@ -42,14 +41,14 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.JSONtoFmModel;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
-import org.json.JSONStringer;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.quartz.JobExecutionException;
 
 /**
@@ -120,33 +119,37 @@ public class PostLookup
             }
             
             for (ActivityPostDAO activityPost : activityPosts)
-            {             
-                Map<String, Object> model = JSONtoFmModel.convertJSONObjectToMap(activityPost.getActivityData());
-                
-                String postUserId = activityPost.getUserId();
-                
-                String name = (String)model.get("name"); // can be null
-                
-                String nodeRefStr = (String)model.get("nodeRef"); // required
-                NodeRef nodeRef = new NodeRef(nodeRefStr);
-                
-                String parentNodeRefStr = (String)model.get("parentNodeRef"); // optional
-                NodeRef parentNodeRef = null;
-                if (parentNodeRefStr != null)
-                {
-                    parentNodeRef = new NodeRef(parentNodeRefStr);
-                }
-                
-                String typeQName = (String)model.get("typeQName");
-                
+            {
                 try
                 {
                     postDaoService.startTransaction();
                     
-                    Pair<String, String> siteNetworkActivityData = lookup(activityPost.getSiteNetwork(), nodeRef, name, typeQName, parentNodeRef, postUserId);
+                    JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
+                    String postUserId = activityPost.getUserId();
                     
-                    activityPost.setSiteNetwork(siteNetworkActivityData.getFirst());
-                    activityPost.setActivityData(siteNetworkActivityData.getSecond());
+                    if (! jo.isNull("nodeRef"))
+                    {
+                        String nodeRefStr = jo.getString("nodeRef");
+                        NodeRef nodeRef = new NodeRef(nodeRefStr);
+                        
+                        // lookup additional node data
+                        JSONObject activityData = lookupNode(nodeRef, postUserId, jo);
+                        
+                        activityPost.setActivityData(activityData.toString());
+                    }
+                    else
+                    {
+                        // lookup additional person data
+                        Pair<String, String> firstLastName = lookupPerson(postUserId);
+                        if (firstLastName != null)
+                        {
+                            jo.put("firstName", firstLastName.getFirst());
+                            jo.put("lastName", firstLastName.getSecond());
+                            
+                            activityPost.setActivityData(jo.toString());
+                        }
+                    }
+
                     activityPost.setLastModified(new Date());
                     
                     postDaoService.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostDAO.STATUS.POSTED);
@@ -193,7 +196,7 @@ public class PostLookup
         }
     }
     
-    private Pair<String, String> lookup(final String networkIn, final NodeRef nodeRef, final String nameIn, final String typeQNameIn, final NodeRef parentNodeRef, final String postUserId) throws JSONException
+    private Pair<String, String> lookupPerson(final String postUserId) throws JSONException
     {
         return AuthenticationUtil.runAs(new RunAsWork<Pair<String, String>>()
         {
@@ -206,12 +209,6 @@ public class PostLookup
                 {
                     public Pair<String, String> execute() throws Throwable
                     {
-                        String jsonString = null;
-                        String displayPath = "";
-                        String name = nameIn;
-                        String network = networkIn;
-                        String typeQName = typeQNameIn;
-                        Path path = null;
                         String firstName = "";
                         String lastName = "";
                         
@@ -221,29 +218,93 @@ public class PostLookup
                            
                            firstName = (String)nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
                            lastName = (String)nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+                           
+                           return new Pair<String, String>(firstName, lastName);
+                        }
+
+                        return null;
+                    }
+                };
+                
+                // execute in txn
+                return txnHelper.doInTransaction(lookup, true);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private JSONObject lookupNode(final NodeRef nodeRef, final String postUserId, final JSONObject jo) throws JSONException
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<JSONObject>()
+        {
+            public JSONObject doWork() throws Exception
+            {
+                RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                
+                // wrap to make the request in a transaction
+                RetryingTransactionCallback<JSONObject> lookup = new RetryingTransactionCallback<JSONObject>()
+                {
+                    public JSONObject execute() throws Throwable
+                    {
+                        String name = "";
+                        if (! jo.isNull("name"))
+                        {
+                            name = jo.getString("name");
                         }
                         
-                        if (((name == null) || (name.length() == 0)) && (nodeRef != null) && (nodeService.exists(nodeRef)))
+                        NodeRef parentNodeRef = null;
+                        if (! jo.isNull("parentNodeRef"))
                         {
-                            // node exists, lookup node name
-                            if ((name == null) || (name.length() == 0))
+                            parentNodeRef = new NodeRef(jo.getString("parentNodeRef"));
+                        }
+                        
+                        
+                        String typeQName = "";
+                        if (! jo.isNull("typeQName"))
+                        {
+                            typeQName = jo.getString("typeQName");
+                        }
+                        
+                        String displayPath = "";
+                        Path path = null;
+                        String firstName = "";
+                        String lastName = "";
+                        
+                        if (personService.personExists(postUserId))
+                        {
+                           // lookup firstname, lastname
+                           NodeRef personRef = personService.getPerson(postUserId);
+                           
+                           firstName = (String)nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+                           lastName = (String)nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+                        }
+                        
+                        if ((nodeRef != null) && (nodeService.exists(nodeRef)))
+                        {
+                            if (name.length() == 0)
                             {
+                                // lookup node name
                                 name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                             }
                             
-                            path = nodeService.getPath(nodeRef);
+                            if (typeQName.length() == 0)
+                            {
+                                // lookup type
+                                typeQName = nodeService.getType(nodeRef).toPrefixString(); // TODO: missing the prefix ?
+                            }
                             
-                            // TODO: missing the prefix ?
-                            typeQName = nodeService.getType(nodeRef).toPrefixString();
+                            if (parentNodeRef == null)
+                            {
+                                // lookup parent node
+                                parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                            }
                         }
                         
-                        if (((path == null) || (path.size() == 0)) && (parentNodeRef != null) && (nodeService.exists(parentNodeRef)))
+                        if ((parentNodeRef != null) && (nodeService.exists(parentNodeRef)))
                         {
                             // parent node exists, lookup parent node path
                             path = nodeService.getPath(parentNodeRef);
                         }
 
-                        
                         if (path != null)
                         {
                             // lookup display path
@@ -253,34 +314,16 @@ public class PostLookup
                             displayPath += "/" + name;
                         }
                         
-                        if (name == null)
-                        {
-                            name = "";
-                        }
-                        
-                        if (typeQName == null)
-                        {
-                            typeQName = "";
-                        }
-                        
-                        // activity data
-                        jsonString = new JSONStringer()
-                            .object()
-                            .key("name")
-                            .value(name)
-                            .key("nodeRef")
-                            .value(nodeRef)
-                            .key("typeQName")
-                            .value(typeQName)
-                            .key("displayPath")
-                            .value(displayPath)
-                            .key("firstName")
-                            .value(firstName)
-                            .key("lastName")
-                            .value(lastName)
-                        .endObject().toString();
+                        // merge with existing activity data
+                        jo.put("name", name);
+                        jo.put("nodeRef", nodeRef.toString());
+                        jo.put("typeQName", typeQName);
+                        jo.put("parentNodeRef", (parentNodeRef != null ? parentNodeRef.toString() : null));
+                        jo.put("displayPath", displayPath);
+                        jo.put("firstName", firstName);
+                        jo.put("lastName", lastName);
 
-                        return new Pair<String, String>(network, jsonString);
+                        return jo;
                     }
                 };
                 

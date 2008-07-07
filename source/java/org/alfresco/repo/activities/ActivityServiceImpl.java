@@ -114,7 +114,7 @@ public class ActivityServiceImpl implements ActivityService
      */
     public void postActivity(String activityType, String network, String appTool, String activityData)
     {
-        postActivity(activityType, network, appTool, activityData, ActivityPostDAO.STATUS.POSTED);
+        postActivity(activityType, network, appTool, activityData, ActivityPostDAO.STATUS.PENDING);
     }
     
     /* (non-Javadoc)

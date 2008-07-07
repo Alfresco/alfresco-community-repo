@@ -1,6 +1,8 @@
 
 var siteId = url.templateArgs.siteId;
-model.pageList = getWikiPages(siteId);
+var filter = args.filter;
+
+model.pageList = getWikiPages(siteId, filter);
 
 function getWikiPages(siteId)
 {
@@ -24,8 +26,15 @@ function getWikiPages(siteId)
 	   return;
    }
    
+   var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
+   
+   if (filter && filter != "all")
+   {
+      query += getFilterQuery(filter);
+   }
+   
    var pages = [];
-   var wikiPages = wiki.children;
+   var wikiPages = search.luceneSearch("workspace://SiteStore", query);
    
    var page;
    for (var i=0; i < wikiPages.length; i++)
@@ -38,4 +47,48 @@ function getWikiPages(siteId)
    {
       "pages": pages
    });
+}
+
+function getFilterQuery(filter)
+{
+   var filterQuery = "";
+   
+   switch (String(filter))
+   {
+      case "all":
+         // Nothing to do
+         break;
+      case "recentlyModified":
+         var usingModified = true;
+         // fall through...
+      case "recentlyAdded":
+         // Which query: created, or modified?
+         var dateField = "modified";
+         if (typeof usingModified === "undefined")
+         {
+            dateField = "created";
+         }
+         
+         // Default to 7 days - can be overridden using "days" argument
+         var dayCount = 7;
+         var argDays = args["days"];
+         if ((argDays != null) && !isNaN(argDays))
+         {
+            dayCount = argDays;
+         }
+         var date = new Date();
+         var toQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
+         date.setDate(date.getDate() - dayCount);
+         var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
+
+         filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
+         filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         break;
+         
+      case "myPages":
+         filterQuery += "+@cm\\:creator:" + person.properties.userName;
+         break;   
+   }
+   
+   return filterQuery;
 }

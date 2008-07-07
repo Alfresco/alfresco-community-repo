@@ -2,7 +2,7 @@
    "totalPages" : ${pageList.pages?size},
    "pages":
    [
-   <#list pageList.pages as page>
+   <#list pageList.pages?sort_by(['properties','modified'])?reverse as page>
       {
          "name" : "${page.name}",
          "editable" : "<#if page.hasPermission("Write")>true<#else>false</#if>",

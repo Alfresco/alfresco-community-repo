@@ -25,6 +25,8 @@
 package org.alfresco.repo.site;
 
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -91,7 +93,15 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        bootstrap();
+        // run as System on bootstrap
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork()
+            {            
+                bootstrap();
+                return null;
+            }                               
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**

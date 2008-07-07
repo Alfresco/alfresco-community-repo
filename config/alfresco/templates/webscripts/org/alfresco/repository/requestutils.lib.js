@@ -29,7 +29,7 @@ function findNodeInSite()
    var node = site.getContainer(containerId);
    if (node === null)
    {
-      status.setCode(status.STATUS_NOT_FOUND, "The container " + containerId + "could not be found in site " + siteId + ". (No write permission?)");
+      status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
       return null;
    }
    

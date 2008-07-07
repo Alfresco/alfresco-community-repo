@@ -64,7 +64,10 @@ function getOrCreateCommentsFolder(node)
  */
 function getCommentData(node)
 {
-   return node;
+   var data = {};
+   data.node = node;
+   data.isUpdated = (node.properties["cm:modified"] - node.properties["cm:created"]) > 5000;
+   return data;
 }
 
 /**

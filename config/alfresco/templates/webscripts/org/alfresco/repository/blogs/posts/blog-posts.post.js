@@ -22,8 +22,14 @@ function createBlogPost(blogNode)
    postNode.save();
    
    // check whether it is in draft mode
-   var isDraft = json.get("draft") == "true";
-   if (! isDraft)
+   var isDraft = json.has("draft") && json.get("draft").toString() == "true";
+   if (isDraft)
+   {
+      // disable permission inheritance. The result is that only
+      // the creator will have access to the draft
+      postNode.setInheritsPermissions(false);
+   }
+   else
    {
       setOrUpdateReleasedAndUpdatedDates(postNode);
    }

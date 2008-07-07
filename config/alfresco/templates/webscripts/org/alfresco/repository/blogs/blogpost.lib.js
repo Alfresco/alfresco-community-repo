@@ -17,6 +17,9 @@ function setOrUpdateReleasedAndUpdatedDates(node)
       props["blg:released"] = new Date();
       props["blg:updated"] = new Date();	  
       node.addAspect("blg:releaseDetails", props);
+      
+      // re-enable permission inheritance
+      node.setInheritsPermissions(true);
    }
 }
 

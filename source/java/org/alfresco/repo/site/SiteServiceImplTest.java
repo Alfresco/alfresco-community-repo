@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ApplicationModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -369,13 +369,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(container6);
         assertTrue(container5.equals(container6));
         assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(container6));
-        NodeRef container7 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3", ApplicationModel.TYPE_PROJECTSPACE);
+        NodeRef container7 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3", ForumModel.TYPE_FORUM);
         assertNotNull(container7);
         assertTrue(container5.equals(container7));
         assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(container7));
-        NodeRef container8 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component4", ApplicationModel.TYPE_PROJECTSPACE);
+        NodeRef container8 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component4", ForumModel.TYPE_FORUM);
         assertNotNull(container8);
-        assertEquals(ApplicationModel.TYPE_PROJECTSPACE, nodeService.getType(container8));
+        assertEquals(ForumModel.TYPE_FORUM, nodeService.getType(container8));
     }
     
     

@@ -36,12 +36,12 @@ public interface TagDetails extends Comparable<TagDetails>
      * 
      * @return  String  tag name
      */
-    String getTagName();
+    String getName();
     
     /**
      * Get the tag count
      * 
      * @return  int     tag count
      */
-    int getTagCount();
+    int getCount();
 }

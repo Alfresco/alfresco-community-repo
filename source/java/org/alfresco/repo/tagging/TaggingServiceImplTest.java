@@ -25,6 +25,7 @@
 package org.alfresco.repo.tagging;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -255,7 +256,23 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(tags);
         assertEquals(1, tags.size());
         assertFalse(tags.contains(TAG_1));
-        assertTrue(tags.contains(TAG_2));       
+        assertTrue(tags.contains(TAG_2));      
+        
+        List<String> setTags = new ArrayList<String>(2);
+        setTags.add(TAG_3);
+        setTags.add(TAG_1);
+        this.taggingService.setTags(this.document, setTags);
+        tags = this.taggingService.getTags(this.document);
+        assertNotNull(tags);
+        assertEquals(2, tags.size());
+        assertTrue(tags.contains(TAG_1));
+        assertFalse(tags.contains(TAG_2));
+        assertTrue(tags.contains(TAG_3.toLowerCase()));
+        
+        this.taggingService.clearTags(this.document);
+        tags = this.taggingService.getTags(this.document);
+        assertNotNull(tags);
+        assertTrue(tags.isEmpty());
     }
     
     public void testTagScopeFindAddRemove()
@@ -340,15 +357,15 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         ts2 = this.taggingService.findTagScope(this.folder);
         
         // check the order and count of the tagscopes
-        assertEquals(2, ts1.getTags().get(0).getTagCount());
-        assertEquals(2, ts1.getTags().get(1).getTagCount());
-        assertEquals(1, ts1.getTags().get(2).getTagCount());
-        assertEquals(3, ts2.getTags().get(0).getTagCount());
-        assertEquals(TAG_2, ts2.getTags().get(0).getTagName());
-        assertEquals(2, ts2.getTags().get(1).getTagCount());
-        assertEquals(TAG_1, ts2.getTags().get(1).getTagName());
-        assertEquals(1, ts2.getTags().get(2).getTagCount());
-        assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getTagName());
+        assertEquals(2, ts1.getTags().get(0).getCount());
+        assertEquals(2, ts1.getTags().get(1).getCount());
+        assertEquals(1, ts1.getTags().get(2).getCount());
+        assertEquals(3, ts2.getTags().get(0).getCount());
+        assertEquals(TAG_2, ts2.getTags().get(0).getName());
+        assertEquals(2, ts2.getTags().get(1).getCount());
+        assertEquals(TAG_1, ts2.getTags().get(1).getName());
+        assertEquals(1, ts2.getTags().get(2).getCount());
+        assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getName());
         
         tx.commit();
         
@@ -410,8 +427,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 List<TagDetails> tagDetailsList = checkTagScope.getTags();
                 for (TagDetails tagDetails : tagDetailsList)
                 {
-                    if (tagDetails.getTagName().equals(tag) == true &&
-                        tagDetails.getTagCount() == tagCount)
+                    if (tagDetails.getName().equals(tag) == true &&
+                        tagDetails.getCount() == tagCount)
                     {
                         bCreated = true;
                         break;
@@ -479,9 +496,9 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 List<TagDetails> tagDetailsList = checkTagScope.getTags();
                 for (TagDetails tagDetails : tagDetailsList)
                 {
-                    if (tagDetails.getTagName().equals(tag) == true )
+                    if (tagDetails.getName().equals(tag) == true )
                     {
-                        if (tagDetails.getTagCount() == tagCount)
+                        if (tagDetails.getCount() == tagCount)
                         {
                             bRemoved = true;                            
                         }
@@ -525,8 +542,55 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         model.put("subFolder", this.subFolder);
         model.put("document", this.document);
         model.put("subDocument", this.subDocument);
+        model.put("tagScopeTest", false);
         
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
         this.scriptService.executeScript(location, model);
+    }
+    
+    public void testJSTagScope() throws Exception
+    {
+        // Add a load of tags to test the global tag methods with
+        this.taggingService.createTag(storeRef, "alpha");
+        this.taggingService.createTag(storeRef, "alpha double");
+        this.taggingService.createTag(storeRef, "beta");
+        this.taggingService.createTag(storeRef, "gamma");
+        this.taggingService.createTag(storeRef, "delta");
+        
+        // Add a load of tags and tag scopes to the object and commit before executing the script
+        this.taggingService.addTagScope(this.folder);
+        this.taggingService.addTagScope(this.subFolder);
+        
+        // Get the tag scope 
+        TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
+        TagScope ts2 = this.taggingService.findTagScope(this.folder);
+   
+        setComplete();
+        endTransaction();   
+        
+        addTag(this.subDocument, TAG_1, 1, ts1.getNodeRef());
+        addTag(this.subDocument, TAG_2, 1, ts1.getNodeRef());   
+        addTag(this.subDocument, TAG_3, 1, ts1.getNodeRef());   
+        addTag(this.subFolder, TAG_1, 2, ts1.getNodeRef());
+        addTag(this.subFolder, TAG_2, 2, ts1.getNodeRef());
+        addTag(this.document, TAG_1, 3, ts2.getNodeRef());
+        addTag(this.document, TAG_2, 3, ts2.getNodeRef());
+        addTag(this.folder, TAG_1, 4, ts2.getNodeRef());
+        
+        Map model = new HashMap<String, Object>(0);
+        model.put("folder", this.folder);
+        model.put("subFolder", this.subFolder);
+        model.put("document", this.document);
+        model.put("subDocument", this.subDocument);
+        model.put("tagScopeTest", true);
+        model.put("store", storeRef.toString());
+        
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
+        this.scriptService.executeScript(location, model);
+        
+        tx.commit();
     }
 }

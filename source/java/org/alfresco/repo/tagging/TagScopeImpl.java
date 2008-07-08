@@ -90,7 +90,7 @@ public class TagScopeImpl implements TagScope
         TagDetails result = null;
         for (TagDetails tagDetails : this.tagDetails)
         {
-            if (tagDetails.getTagName().equals(tag) == true)
+            if (tagDetails.getName().equals(tag) == true)
             {
                 result = tagDetails;
                 break;

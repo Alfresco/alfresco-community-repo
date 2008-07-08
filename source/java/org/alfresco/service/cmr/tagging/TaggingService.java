@@ -86,12 +86,30 @@ public interface TaggingService
     void addTag(NodeRef nodeRef, String tag);
     
     /**
+     * Adds a list of tags to a node.
+     * <p>
+     * Tags are created if they do not exist.
+     * 
+     * @param nodeRef   node reference
+     * @param tags      list of tags
+     */
+    void addTags(NodeRef nodeRef, List<String> tags);
+    
+    /**
      * Remove a tag from a node.
      * 
      * @param nodeRef   node reference
      * @param tag       tag name
      */
     void removeTag(NodeRef nodeRef, String tag);
+    
+    /**
+     * Removes a list of tags from a node.
+     * 
+     * @param nodeRef   node reference
+     * @param tags      list of tags
+     */
+    void removeTags(NodeRef nodeRef, List<String> tags);
     
     /**
      * Get all the tags on a node
@@ -101,7 +119,21 @@ public interface TaggingService
      */
     List<String> getTags(NodeRef nodeRef);
     
+    /**
+     * Sets the list of tags that are applied to a node, replaces any existing
+     * tags with those provided.
+     * 
+     * @param nodeRef   node reference
+     * @param tags      list of tags
+     */
+    void setTags(NodeRef nodeRef, List<String> tags);
     
+    /**
+     * Clears all tags from an already tagged node.
+     * 
+     * @param nodeRef   node reference
+     */
+    void clearTags(NodeRef nodeRef);
     
     /** 
      * Indicates whether the node reference is a tag scope
@@ -158,7 +190,7 @@ public interface TaggingService
      * @param  tag              tag name
      * @return List<NodeRef>    list of nodes tagged with specified tag, empty of none found
      */
-    List<NodeRef> findTaggedNodes(String tag);
+    List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag);
     
     /**
      * Find all nodes that have been tagged with the specified tag and reside within
@@ -168,7 +200,7 @@ public interface TaggingService
      * @param nodeRef           node providing context for the search
      * @return List<NodeRef>    list of nodes tagged in the context specified, empty if none found
      */
-    List<NodeRef> findTaggedNodes(String tag, NodeRef nodeRef);
+    List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef);
 }
 
 

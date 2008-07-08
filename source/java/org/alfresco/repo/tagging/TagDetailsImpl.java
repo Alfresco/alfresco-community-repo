@@ -55,7 +55,7 @@ public class TagDetailsImpl implements TagDetails
     /**
      * @see org.alfresco.service.cmr.tagging.TagDetails#getTagName()
      */
-    public String getTagName()
+    public String getName()
     {
         return this.tagName;
     }
@@ -63,7 +63,7 @@ public class TagDetailsImpl implements TagDetails
     /**
      * @see org.alfresco.service.cmr.tagging.TagDetails#getTagCount()
      */
-    public int getTagCount()
+    public int getCount()
     {
         return this.tagCount;
     }
@@ -120,11 +120,11 @@ public class TagDetailsImpl implements TagDetails
     public int compareTo(TagDetails o)
     {
         int result = 0;
-        if (this.tagCount < o.getTagCount())
+        if (this.tagCount < o.getCount())
         {
             result = 1;
         }
-        else if (this.tagCount > o.getTagCount())
+        else if (this.tagCount > o.getCount())
         {
             result =  -1;
         }

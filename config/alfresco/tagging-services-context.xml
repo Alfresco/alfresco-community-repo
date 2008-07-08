@@ -39,6 +39,7 @@
     	<property name="searchService" ref="SearchService"/>
     	<property name="actionService" ref="ActionService"/>
     	<property name="contentService" ref="ContentService"/>
+    	<property name="namespaceService" ref="NamespaceService"/>
     </bean>
     
     <bean id="update-tagscope" class="org.alfresco.repo.tagging.UpdateTagScopesActionExecuter" parent="action-executer">
@@ -49,5 +50,12 @@
         <property name="contentService" ref="ContentService"/>
         <property name="taggingService" ref="TaggingService"/>
     </bean> 
+    
+    <bean id="scriptTaggingService" parent="baseJavaScriptExtension" class="org.alfresco.repo.tagging.script.ScriptTaggingService">
+        <property name="extensionName">
+            <value>taggingService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
     
 </beans>

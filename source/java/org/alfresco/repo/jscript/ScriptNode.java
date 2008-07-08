@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDetails;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
@@ -2004,7 +2006,7 @@ public class ScriptNode implements Serializable, Scopeable
     /**
      * Get the all the thumbnails for a given node's content property.
      * 
-     * @return  ScriptThumbnail     list of thumbnails, empty if none available
+     * @return  Scriptable     list of thumbnails, empty if none available
      */
     public ScriptThumbnail[] getThumbnails()
     {
@@ -2027,6 +2029,14 @@ public class ScriptNode implements Serializable, Scopeable
     // Tag methods
     
     /**
+     * Clear the node's tags
+     */
+    public void clearTags()
+    {
+        this.services.getTaggingService().clearTags(this.nodeRef);
+    }
+    
+    /**
      * Adds a tag to the node
      * 
      * @param tag   tag name
@@ -2034,6 +2044,16 @@ public class ScriptNode implements Serializable, Scopeable
     public void addTag(String tag)
     {
         this.services.getTaggingService().addTag(this.nodeRef, tag);
+    }
+    
+    /**
+     * Adds all the tags to the node
+     * 
+     * @param tags  array of tag names
+     */
+    public void addTags(String[] tags)
+    {
+        this.services.getTaggingService().addTags(this.nodeRef, Arrays.asList(tags));
     }
     
     /**
@@ -2047,6 +2067,16 @@ public class ScriptNode implements Serializable, Scopeable
     }
     
     /**
+     * Removes all the tags from the node
+     * 
+     * @param tags  array of tag names
+     */
+    public void removeTags(String[] tags)
+    {
+        this.services.getTaggingService().removeTags(this.nodeRef, Arrays.asList(tags));
+    }
+    
+    /**
      * Get all the tags applied to this node
      * 
      * @return String[]     array containing all the tag applied to this node
@@ -2055,6 +2085,17 @@ public class ScriptNode implements Serializable, Scopeable
     {
         List<String> tags = this.services.getTaggingService().getTags(this.nodeRef);
         return (String[])tags.toArray(new String[tags.size()]);
+    }
+    
+    /**
+     * Set the tags applied to this node.  This overwirtes the list of tags currently applied to the 
+     * node.
+     * 
+     * @param tags  array of tags
+     */
+    public void setTags(String[] tags)
+    {
+        this.services.getTaggingService().setTags(this.nodeRef, Arrays.asList(tags));
     }
     
     /**
@@ -2088,6 +2129,43 @@ public class ScriptNode implements Serializable, Scopeable
     public boolean getIsTagScope()
     {
         return this.services.getTaggingService().isTagScope(this.nodeRef);
+    }
+    
+    /**
+     * Gets the 'nearest' tag scope to this node by travesing up the parent hierarchy untill one is found.
+     * <p>
+     * If none is found, null is returned.
+     *
+     * @return  TagScope    the 'nearest' tag scope
+     */
+    public TagScope getTagScope()
+    {
+        TagScope tagScope = null;
+        org.alfresco.service.cmr.tagging.TagScope tagScopeImpl = this.services.getTaggingService().findTagScope(this.nodeRef);
+        if (tagScopeImpl != null)
+        {
+            tagScope = new TagScope(tagScopeImpl);
+        }        
+        return tagScope;
+    }
+    
+    /**
+     * Gets all (deep) children of this node that have the tag specified.
+     * 
+     * @param tag               tag name
+     * @return ScriptNode[]     nodes that are deep children of the node with the tag
+     */
+    public ScriptNode[] childrenByTags(String tag)
+    {
+        List<NodeRef> nodeRefs = this.services.getTaggingService().findTaggedNodes(this.nodeRef.getStoreRef(), tag, this.nodeRef);
+        ScriptNode[] nodes = new ScriptNode[nodeRefs.size()];
+        int index = 0;
+        for (NodeRef node : nodeRefs)
+        {
+            nodes[index] = new ScriptNode(node, this.services, this.scope);
+            index ++;
+        }
+        return nodes;
     }
     
     // ------------------------------------------------------------------------------

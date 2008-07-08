@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ISO9075;
 
 /**
@@ -73,6 +75,9 @@ public class TaggingServiceImpl implements TaggingService
     
     /** Content Service */
     private ContentService contentService;
+    
+    /** Namespace Service */
+    private NamespaceService namespaceService;
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
@@ -125,6 +130,16 @@ public class TaggingServiceImpl implements TaggingService
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * Set the namespace service
+     * 
+     * @param namespaceService  namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
     
     /**
@@ -187,8 +202,17 @@ public class TaggingServiceImpl implements TaggingService
      */
     public List<String> getTags(StoreRef storeRef, String filter)
     {
-        // TODO
-        return null;
+        Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
+        List<String> result = new ArrayList<String>(rootCategories.size());
+        for (ChildAssociationRef rootCategory : rootCategories)
+        {
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            if (name.contains(filter.toLowerCase()) == true)
+            {
+                result.add(name);
+            }
+        }
+        return result;
     }
     
     /**
@@ -229,6 +253,17 @@ public class TaggingServiceImpl implements TaggingService
             tagNodeRefs.add(newTagNodeRef);
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
             updateTagScope(nodeRef, tag, true);
+        }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#addTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     */
+    public void addTags(NodeRef nodeRef, List<String> tags)
+    {
+        for (String tag : tags)
+        {
+            addTag(nodeRef, tag);
         }
     }
     
@@ -296,7 +331,18 @@ public class TaggingServiceImpl implements TaggingService
                 }
             }
         }
-    }    
+    }  
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#removeTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     */
+    public void removeTags(NodeRef nodeRef, List<String> tags)
+    {
+        for (String tag : tags)
+        {
+            removeTag(nodeRef, tag);
+        }
+    }
 
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef)
@@ -321,6 +367,50 @@ public class TaggingServiceImpl implements TaggingService
         }
         
         return result;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#setTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     */
+    public void setTags(NodeRef nodeRef, List<String> tags)
+    {       
+        List<NodeRef> tagNodeRefs = new ArrayList(tags.size());
+        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
+        {
+            // Add the aspect
+            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
+        }
+        
+        for (String tag : tags)
+        {   
+            // Lower the case of the tag
+            tag = tag.toLowerCase();
+            
+            // Get the tag node reference
+            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
+            if (newTagNodeRef == null)
+            {
+                // Create the new tag
+                newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
+            } 
+            
+            // Add to the list
+            tagNodeRefs.add(newTagNodeRef);
+            
+            // Trigger scope update
+            updateTagScope(nodeRef, tag, true);
+        }
+        
+        // Update category property
+        this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);       
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#clearTags(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void clearTags(NodeRef nodeRef)
+    {
+        setTags(nodeRef, Collections.EMPTY_LIST);
     }
     
     /**
@@ -448,31 +538,37 @@ public class TaggingServiceImpl implements TaggingService
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String)
      */
-    public List<NodeRef> findTaggedNodes(String tag)
+    public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag)
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
         
-        //
-        // "+PATH:\"/cm:taggable/cm:" + ISOed(tag) + "/member\""
-        
-        // TODO 
-        return null;
+        // Do the search for nodes
+        ResultSet resultSet = this.searchService.query(
+                storeRef, 
+                SearchService.LANGUAGE_LUCENE, 
+                "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+        return resultSet.getNodeRefs();
     }
 
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public List<NodeRef> findTaggedNodes(String tag, NodeRef nodeRef)
+    public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef)
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
         
-        //
-        // "+PATH:\"/cm:taggable/cm:" + ISOed(tag) + "/member\" +PATH:\"" + pathOfTheNode + "//*\""
+        // Get path
+        Path nodePath = this.nodeService.getPath(nodeRef);
+        String pathString = nodePath.toPrefixString(this.namespaceService);
         
-        // TODO 
-        return null;
+        // Do query
+        ResultSet resultSet = this.searchService.query(
+                storeRef, 
+                SearchService.LANGUAGE_LUCENE, 
+                "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+        return resultSet.getNodeRefs();
     }
     
     /**
@@ -527,9 +623,9 @@ public class TaggingServiceImpl implements TaggingService
                 bFirst = false;
             }
             
-            result.append(details.getTagName());
+            result.append(details.getName());
             result.append(TAG_DETAILS_DELIMITER);
-            result.append(details.getTagCount());
+            result.append(details.getCount());
         }
             
         return result.toString();

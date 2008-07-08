@@ -132,7 +132,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                 TagDetails currentTag = null;
                 for (TagDetails tag : tags)
                 {
-                    if (tag.getTagName().equals(tagName) == true)
+                    if (tag.getName().equals(tagName) == true)
                     {
                         currentTag = tag;
                         break;
@@ -155,7 +155,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                 {
                     if (currentTag != null)
                     {
-                        int currentTagCount = currentTag.getTagCount();                        
+                        int currentTagCount = currentTag.getCount();                        
                         if (currentTagCount == 1)
                         {
                             tags.remove(currentTag);

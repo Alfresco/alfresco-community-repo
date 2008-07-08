@@ -26,6 +26,7 @@ package org.alfresco.repo.jscript;
 
 import java.io.StringReader;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -353,6 +354,36 @@ public final class Search extends BaseScopableProcessorExtension
         {
             return Context.getCurrentContext().newArray(getScope(), 0);
         }
+    }
+    
+    /**
+     * Searchs the store for all nodes with the given tag applied.
+     * 
+     * @param store             store ref string, default used if null provided
+     * @param tag               tag name
+     * @return ScriptNode[]     nodes with tag applied
+     */
+    public ScriptNode[] tagSearch(String store, String tag)
+    {
+        StoreRef searchStoreRef = null;
+        if (store != null)
+        {
+            searchStoreRef = new StoreRef(store);
+        }
+        else
+        {
+            searchStoreRef = this.storeRef;
+        }
+        
+        List<NodeRef> nodeRefs = this.services.getTaggingService().findTaggedNodes(searchStoreRef, tag);
+        ScriptNode[] nodes = new ScriptNode[nodeRefs.size()];
+        int index = 0;
+        for (NodeRef node : nodeRefs)
+        {
+            nodes[index] = new ScriptNode(node, this.services, getScope());
+            index ++;
+        }
+        return nodes;
     }
 
     /**

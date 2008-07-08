@@ -97,9 +97,9 @@ function testContainer()
     var container3 = site.getContainer("folder.component2", "cm:folder");
     test.assertNotNull(container3);
     test.assertEquals("{http://www.alfresco.org/model/content/1.0}folder", container3.type);
-    var container4 = site.getContainer("folder.component3", "app:projectfolder");
+    var container4 = site.getContainer("folder.component3", "fm:forum");
     test.assertNotNull(container4);
-    test.assertEquals("{http://www.alfresco.org/model/application/1.0}projectfolder", container4.type);
+    test.assertEquals("{http://www.alfresco.org/model/forum/1.0}forum", container4.type);
 }
 
 

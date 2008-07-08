@@ -338,13 +338,6 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                <!-- Remote API invite workflow definition -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/invite_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
                <props>
                <!-- WCM workflow definition -->
                     <prop key="engineId">jbpm</prop>
@@ -365,8 +358,6 @@
             <list>
                <value>alfresco/workflow/workflowModel.xml</value>
                <value>alfresco/workflow/wcmWorkflowModel.xml</value>
-               <!-- Remote API invite workflow Model -->
-               <value>alfresco/workflow/invite-workflow-model.xml</value>
             </list>
         </property>
         <property name="labels">

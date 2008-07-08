@@ -164,7 +164,10 @@ public class PostLookup
                 catch (JSONException e)
                 {
                     // log error, but consume exception (skip this post)
-                    logger.error(e);
+                    logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
+                    postDaoService.updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                    
+                    postDaoService.commitTransaction();
                 }
                 catch (SQLException e)
                 {

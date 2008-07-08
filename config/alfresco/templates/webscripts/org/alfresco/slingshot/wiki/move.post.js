@@ -12,13 +12,13 @@ model.result = main();
 
 function main()
 {
-	var newName = args.name;
-	if (!newName)
+	if (json.isNull("name"))
 	{
-		return jsonError("No name property specified");
+		return jsonError("No new name property specified");
 	}
 	// Remove any whitespace and replace with "_"
-	newName = newName.replace(/\\s+/g, "_");
+	var newName = String(json.get("name")).replace(/\\s+/g, "_");
+
 	var params = getTemplateArgs(["siteId", "pageTitle"]);
 	
 	// Get the site

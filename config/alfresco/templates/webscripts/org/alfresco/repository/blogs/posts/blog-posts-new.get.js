@@ -39,7 +39,7 @@ function main()
    var numdays = args["numdays"] != undefined ? parseInt(args["numdays"]) : DEFAULT_NUM_DAYS;
    
    // fetch and assign the data
-   model.data = getBlogPostList(node, fromDate, toDate, index, count);
+   model.data = getBlogPostList(node, numdays, index, count);
    model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }
 

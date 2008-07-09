@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -141,13 +142,35 @@ public class BlogServiceTest extends BaseWebScriptTest
     
     // Test helper methods 
     
-    private JSONObject createPost(String title, String content, boolean isDraft, int expectedStatus)
+    private JSONObject getRequestObject(String title, String content, String[] tags, boolean isDraft)
     throws Exception
     {
         JSONObject post = new JSONObject();
-        post.put("title", title);
-        post.put("content", content);
+        if (title != null)
+        {
+        	post.put("title", title);
+        }
+        if (content != null)
+        {
+        	post.put("content", content);
+        }
+        if (tags != null)
+        {
+        	JSONArray arr = new JSONArray();
+        	for(String s : tags)
+        	{
+        		arr.put(s);
+        	}
+        	post.put("tags", arr);
+        }
         post.put("draft", isDraft);
+        return post;
+    }
+    
+    private JSONObject createPost(String title, String content, String[] tags, boolean isDraft, int expectedStatus)
+    throws Exception
+    {
+        JSONObject post = getRequestObject(title, content, tags, isDraft);
 	    MockHttpServletResponse response = postRequest(URL_BLOG_POSTS, expectedStatus, post.toString(), "application/json");
 	    
 	    if (expectedStatus != 200)
@@ -169,13 +192,10 @@ public class BlogServiceTest extends BaseWebScriptTest
     	return item;
     }
     
-    private JSONObject updatePost(String name, String title, String content, boolean isDraft, int expectedStatus)
+    private JSONObject updatePost(String name, String title, String content, String[] tags, boolean isDraft, int expectedStatus)
     throws Exception
     {
-        JSONObject post = new JSONObject();
-        post.put("title", title);
-        post.put("content", content);
-        post.put("draft", isDraft);
+    	JSONObject post = getRequestObject(title, content, tags, isDraft);
 	    MockHttpServletResponse response = putRequest(URL_BLOG_POST + name, expectedStatus, post.toString(), "application/json");
 	    
 	    if (expectedStatus != 200)
@@ -255,7 +275,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     {
     	String title = "test";
     	String content = "test";
-    	JSONObject item = createPost(title, content, true, 200);
+    	JSONObject item = createPost(title, content, null, true, 200);
     	
     	// check that the values
     	assertEquals(title, item.get("title"));
@@ -273,7 +293,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	String title = "published";
     	String content = "content";
     	
-    	JSONObject item = createPost(title, content, false, 200);
+    	JSONObject item = createPost(title, content, null, false, 200);
     	
     	// check the values
     	assertEquals(title, item.get("title"));
@@ -286,24 +306,50 @@ public class BlogServiceTest extends BaseWebScriptTest
     	this.authenticationComponent.setCurrentUser(USER_ONE);
     }
     
+    public void testCreateEmptyPost() throws Exception
+    {
+    	JSONObject item = createPost(null, null, null, false, 200);
+    	
+    	// check the values
+    	assertEquals("", item.get("title"));
+    	assertEquals("", item.get("content"));
+    	assertEquals(false, item.get("isDraft"));
+    	
+    	// check that user two has access to it as well
+    	this.authenticationComponent.setCurrentUser(USER_TWO);
+    	getPost(item.getString("name"), 200);
+    	this.authenticationComponent.setCurrentUser(USER_ONE);
+    }
+    
     public void testUpdated() throws Exception
     {
-    	JSONObject item = createPost("test", "test", false, 200);
+    	JSONObject item = createPost("test", "test", null, false, 200);
     	String name = item.getString("name");
     	assertEquals(false, item.getBoolean("isUpdated"));
     	
     	// wait for 5 sec
     	Thread.sleep(5000);
     	
-    	item = updatePost(name, "new title", "new content", false, 200);
+    	item = updatePost(name, "new title", "new content", null, false, 200);
     	assertEquals(true, item.getBoolean("isUpdated"));
     	assertEquals("new title", item.getString("title"));
     	assertEquals("new content", item.getString("content"));
     }
     
+    public void testUpdateWithEmptyValues() throws Exception
+    {
+    	JSONObject item = createPost("test", "test", null, false, 200);
+    	String name = item.getString("name");
+    	assertEquals(false, item.getBoolean("isUpdated"));
+    	
+    	item = updatePost(item.getString("name"), null, null, null, false, 200);
+    	assertEquals("test", item.getString("title"));
+    	assertEquals("test", item.getString("content"));
+    }
+    
     public void testPublishThroughUpdate() throws Exception
     {
-    	JSONObject item = createPost("test", "test", true, 200);
+    	JSONObject item = createPost("test", "test", null, true, 200);
     	String name = item.getString("name");
     	assertEquals(true, item.getBoolean("isDraft"));
     	
@@ -312,7 +358,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	getPost(name, 404);
     	this.authenticationComponent.setCurrentUser(USER_ONE);
     	
-    	item = updatePost(name, "new title", "new content", false, 200);
+    	item = updatePost(name, "new title", "new content", null, false, 200);
     	assertEquals("new title", item.getString("title"));
     	assertEquals("new content", item.getString("content"));
     	assertEquals(false, item.getBoolean("isDraft"));
@@ -325,11 +371,11 @@ public class BlogServiceTest extends BaseWebScriptTest
 
     public void testCannotDoUnpublish() throws Exception
     {
-    	JSONObject item = createPost("test", "test", false, 200);
+    	JSONObject item = createPost("test", "test", null, false, 200);
     	String name = item.getString("name");
     	assertEquals(false, item.getBoolean("isDraft"));
     	
-    	item = updatePost(name, "new title", "new content", true, 400); // should return bad request
+    	item = updatePost(name, "new title", "new content", null, true, 400); // should return bad request
     }
     
     public void testGetAll() throws Exception
@@ -340,6 +386,16 @@ public class BlogServiceTest extends BaseWebScriptTest
     	
     	// we should have posts.size + drafts.size together
     	assertEquals(this.posts.size() + this.drafts.size(), result.getInt("total"));
+    }
+    
+    public void testGetNew() throws Exception
+    {
+    	String url = URL_BLOG_POSTS + "/new";
+    	MockHttpServletResponse response = getRequest(url, 200);
+    	JSONObject result = new JSONObject(response.getContentAsString());
+    	
+    	// we should have posts.size
+    	assertEquals(this.posts.size(), result.getInt("total"));
     }
     
     public void _testGetDrafts() throws Exception
@@ -379,7 +435,7 @@ public class BlogServiceTest extends BaseWebScriptTest
 
     public void testComments() throws Exception
     {
-    	JSONObject item = createPost("test", "test", false, 200);
+    	JSONObject item = createPost("test", "test", null, false, 200);
     	String name = item.getString("name");
     	String nodeRef = item.getString("nodeRef");
     	
@@ -408,5 +464,30 @@ public class BlogServiceTest extends BaseWebScriptTest
     	JSONObject commentTwoUpdated = updateComment(commentTwo.getString("nodeRef"), "new title", "new content", 200);
     	assertEquals("new title", commentTwoUpdated.getString("title"));
     	assertEquals("new content", commentTwoUpdated.getString("content"));
+    }
+    
+    public void _testPostTags() throws Exception
+    {
+    	String[] tags = { "First", "Test" };
+    	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
+    	assertEquals(2, item.getJSONArray("tags").length());
+    	assertEquals("First", item.getJSONArray("tags").get(0));
+    	assertEquals("Test", item.getJSONArray("tags").get(0));
+    	
+    	item = updatePost(item.getString("name"), null, null, new String[] { "First", "Test", "Second" }, false, 200);
+    	assertEquals(3, item.getJSONArray("tags").length());
+    	assertEquals("First", item.getJSONArray("tags").get(0));
+    	assertEquals("Test", item.getJSONArray("tags").get(0));
+    	assertEquals("Second", item.getJSONArray("tags").get(0));
+    }
+    
+    public void _testClearTags() throws Exception
+    {
+    	String[] tags = { "abc", "def"};
+    	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
+    	assertEquals(2, item.getJSONArray("tags").length());
+    	
+    	item = updatePost(item.getString("name"), null, null, new String[0], false, 200);
+    	assertEquals(0, item.getJSONArray("tags").length());
     }
 }

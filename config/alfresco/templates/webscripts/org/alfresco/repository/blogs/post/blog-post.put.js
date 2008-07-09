@@ -32,17 +32,42 @@ function updateBlogPostDraftMode(postNode)
 function updateBlogPost(postNode)
 {
    // fetch the new data
-   var title = "";
+   var title = null;
    if (json.has("title"))
    {
       title = json.get("title");
    }
-   var content = json.get("content");
-	
+   var content = null;
+   if (json.has("content"))
+   {
+      content = json.get("content");
+   }
+   var tags = null;
+   if (json.has("tags"))
+   {
+      // get the tags JSONArray and copy it into a real javascript array object
+      var tmp = json.get("tags");
+      tags = new Array();
+      for (var x=0; x < tmp.length(); x++)
+      {
+          tags.push(tmp.get(x));
+      }
+   }
+   
    // update the node
-   postNode.properties.title = title;
-   postNode.mimetype = "text/html";
-   postNode.content = content;
+   if (title !== null)
+   {
+      postNode.properties.title = title;
+   }
+   if (content !== null)
+   {
+      postNode.mimetype = "text/html";
+      postNode.content = content
+   }
+   /*if (tags !== null)
+   {
+      postNode.tags = tags;
+   }*/
    postNode.save();
 	
    updateBlogPostDraftMode(postNode);

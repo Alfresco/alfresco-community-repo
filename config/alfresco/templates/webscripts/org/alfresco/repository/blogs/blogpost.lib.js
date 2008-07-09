@@ -23,6 +23,69 @@ function setOrUpdateReleasedAndUpdatedDates(node)
    }
 }
 
+function setTags(node, tags)
+{
+    // convert tags, which is probably not of type array
+    var t = new Array();
+    for (var a=0; a < tags.length(); a++)
+    {
+        t.push(tags.get(a));
+    }
+    tags = t;
+   
+    logger.log("set tags: " + tags);
+    
+    // get current tags
+    var oldTags = node.tags;
+    if (oldTags == undefined)
+    {
+        oldTags = [];
+    }
+
+    // remove the tags that should be removed
+    for (var x=0; x < oldTags.length; x++)
+    {
+        var toRemove = true;
+        for (var y=0; y < tags.length; y++)
+        {
+            if (oldTags[x] == tags[y])
+            {
+                toRemove = false;
+                break;
+            }
+        }
+        if (toRemove)
+        {
+            logger.log("removing tag " + tags[x]);
+            oldTags.removeTag(oldTags[x]);
+        }
+    }
+    
+    // add new 
+    for (var x=0; x < tags.length; x++)
+    {
+        var toAdd = true;
+        for (var y=0; y < oldTags.length; y++)
+        {
+            if (tags[x] == oldTags[y])
+            {
+                toAdd = false;
+                break;
+            }
+        }
+        if (toAdd)
+        {
+            logger.log("adding tag " + tags[x]);
+            node.addTag(tags[x]);
+        }
+        else
+        {
+            logger.log("tag " + tags[x] + " already added.");
+        }
+    }
+    logger.log("finished setting tags");
+}
+
 /**
  * Returns the data of a blog post.
  */
@@ -68,6 +131,16 @@ function getBlogPostData(node)
    else
    {
       data.outOfDate = false;
+   }
+   
+   // tags
+   if (node.tags != undefined)
+   {
+       data.tags = node.tags;
+   }
+   else
+   {
+       data.tags = [];
    }
    
    return data;

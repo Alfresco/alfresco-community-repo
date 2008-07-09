@@ -1,4 +1,8 @@
 
+<#macro renderTags tags>
+[<#list tags as x>"${x?j_string}"<#if x_has_next>, </#if></#list>]
+</#macro>
+
 <#macro addContent item>
 	<#assign maxTextLength=512>
 	<#if (! contentFormat??) || contentFormat == "" || contentFormat == "full">
@@ -35,7 +39,7 @@
 	"modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
 	"permissions" : {"edit" : true, "publishExt" : true, "delete" : true},
 	"commentCount" : ${item.commentCount?c},
-	"tags" : ["ECM", "Design"],
+	"tags" : <@renderTags tags=item.tags />,
 	
 	<#-- draft vs internal published -->
 	"isDraft" : ${item.isDraft?string},

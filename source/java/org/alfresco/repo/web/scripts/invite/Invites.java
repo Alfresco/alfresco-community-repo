@@ -40,17 +40,20 @@ import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 
 /**
- * Web Script which returns either
- * (1) Site invitations pending against a given
- * person (user name). i.e. including both invitations which have been sent 
- * by that person (inviter) which have not been responded to (accepted or rejected)
- * by the recipient (invitee), and also invitations which have been received by that 
- * person, but which he/she hasn't responded to yet.
- * (2) Invitations pending against a given site (site short name)  
- * invoked by a Site Manager (Inviter) to either send
- * (action='start') an invitation to a another person (Invitee) to join a Site
- * as a Site Collaborator, or to cancel (action='cancel') a pending invitation
- * that has already been sent out
+ * Web Script which returns pending Site invitations matching at least one of
+ *  
+ * (1) inviter (inviter user name). i.e. pending invitations which have been sent 
+ * by that inviter, but which have not been responded to (accepted or rejected)
+ * by the invitee, and have not been cancelled by that inviter
+ * 
+ * (2) invitee (invitee user name), i.e. pending invitations which have not been accepted or
+ * rejected yet by that inviter
+ *  
+ * (3) site (site short name), i.e. pending invitations sent out to join that Site.
+ *       If only the site is given, then all pending invites are returned, irrespective of who 
+ *       the inviters or invitees are
+ *       
+ * At least one of the above parameters needs to be passed to this web script
  * 
  * @author glen dot johnson at alfresco dot com
  */
@@ -61,14 +64,14 @@ public class Invites extends DeclarativeWebScript
     private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName";
     
-    // service instances
-    private WorkflowService workflowService;
+    // model key names
+    private static final String MODEL_KEY_NAME_INVITES = "invites";
     
     // invite process definition name
     private static final QName WF_INVITE_PROCESS_DEFINITION_QNAME = QName.createQName("wf:invite");
     
-    // model key names
-    private static final String MODEL_KEY_NAME_INVITES = "invites";
+    // service instances
+    private WorkflowService workflowService;
     
     /**
      * Set the workflow service property
@@ -94,6 +97,7 @@ public class Invites extends DeclarativeWebScript
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
+        
         // Get parameter names
         String[] paramNames = req.getParameterNames();
 
@@ -141,8 +145,9 @@ public class Invites extends DeclarativeWebScript
         wfTaskQuery.setActive(Boolean.TRUE);
         
         // create the query properties from the invite URL request parameters
-        // - because this web script class will terminate if no invite URL request
+        // - because this web script class will terminate if no 'invites' URL request
         // - parameters are set, at least one of these query properties will always be set
+        // - at this point
         final HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(3, 1.0f);
         if (inviterUserName != null)
         {
@@ -150,11 +155,11 @@ public class Invites extends DeclarativeWebScript
         }
         if (inviteeUserName != null)
         {
-            wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITER_USER_NAME), inviteeUserName);
+            wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME), inviteeUserName);
         }
         if (siteShortName != null)
         {
-            wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITER_USER_NAME), siteShortName);
+            wfQueryProps.put(QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME), siteShortName);
         }
         
         // set workflow task query parameters
@@ -170,11 +175,10 @@ public class Invites extends DeclarativeWebScript
         // InviteInfo List to place onto model
         List<InviteInfo> inviteInfoList = new ArrayList<InviteInfo>();
         
-        // Put InviteInfo object (containing workflow path properties
-        //    wf:inviteUserName, wf:inviterUserName, wf:siteShortName,
+        // Put InviteInfo objects (containing workflow path properties
+        //    wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
         //    and invite id property (from workflow instance id))
-        // for each invite workflow task returned by the query
-        // onto model (that is passed onto the template for rendering)
+        // onto model for each invite workflow task returned by the query
         for (WorkflowTask workflowTask : wf_invite_tasks)
         {
             // get wf:inviterUserName, wf:inviteeUserName, wf:siteShortName

@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Invites</shortname>
+   <description>Returns pending invites filtered by Inviter user name, Invitee user name & Site short name</description>
+   <url>/api/invites?inviterUserName={inviterUserName}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName?}</url>
+   <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName}&amp;siteShortName={siteShortName?}</url>
+   <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

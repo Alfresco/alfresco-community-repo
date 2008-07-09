@@ -4,6 +4,7 @@
    <url>/api/invites?inviterUserName={inviterUserName}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName?}</url>
    <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName}&amp;siteShortName={siteShortName?}</url>
    <url>/api/invites?inviterUserName={inviterUserName?}&amp;inviteeUserName={inviteeUserName?}&amp;siteShortName={siteShortName}</url>
+   <url>/api/invites?inviteId={inviteId}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>

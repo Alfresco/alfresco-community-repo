@@ -42,18 +42,21 @@ import org.alfresco.web.scripts.WebScriptRequest;
 /**
  * Web Script which returns pending Site invitations matching at least one of
  *  
- * (1) inviter (inviter user name). i.e. pending invitations which have been sent 
+ * (1a) inviter (inviter user name). i.e. pending invitations which have been sent 
  * by that inviter, but which have not been responded to (accepted or rejected)
  * by the invitee, and have not been cancelled by that inviter
  * 
- * (2) invitee (invitee user name), i.e. pending invitations which have not been accepted or
+ * (1b) invitee (invitee user name), i.e. pending invitations which have not been accepted or
  * rejected yet by that inviter
  *  
- * (3) site (site short name), i.e. pending invitations sent out to join that Site.
+ * (1c) site (site short name), i.e. pending invitations sent out to join that Site.
  *       If only the site is given, then all pending invites are returned, irrespective of who 
  *       the inviters or invitees are
  *       
- * At least one of the above parameters needs to be passed to this web script
+ *    or 
+ * 
+ * (2) matching the given invite ID
+ * 
  * 
  * @author glen dot johnson at alfresco dot com
  */
@@ -63,6 +66,7 @@ public class Invites extends DeclarativeWebScript
     private static final String PARAM_INVITER_USER_NAME = "inviterUserName";
     private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName";
+    private static final String PARAM_INVITE_ID = "inviteId";
     
     // model key names
     private static final String MODEL_KEY_NAME_INVITES = "invites";
@@ -108,33 +112,31 @@ public class Invites extends DeclarativeWebScript
                     "No parameters have been provided on URL");
         }
         
-        // get URL request parameters
+        // get URL request parameters, checking if they have been provided
         
+        // check if 'inviterUserName' parameter provided
         String inviterUserName = req.getParameter(PARAM_INVITER_USER_NAME);
-        // check for 'inviterUserName' parameter not provided
-        if ((inviterUserName == null) || (inviterUserName.length() == 0))
-        {
-            // handle inviterUserName URL parameter not provided
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "'inviterUserName' parameter has not been provided in URL");
-        }
+        boolean inviterUserNameProvided = (inviterUserName != null) && (inviterUserName.length() != 0); 
 
+        // check if 'inviteeUserName' parameter provided
         String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
-        // check for 'inviteeUserName' parameter not provided
-        if ((inviteeUserName == null) || (inviteeUserName.length() == 0))
-        {
-            // handle inviteeUserName URL parameter not provided
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "'inviteeUserName' parameter has not been provided in URL");
-        }
+        boolean inviteeUserNameProvided = (inviteeUserName != null) && (inviteeUserName.length() != 0);
 
+        // check if 'siteShortName' parameter provided
         String siteShortName = req.getParameter(PARAM_SITE_SHORT_NAME);
-        // check for 'siteShortName' parameter not provided
-        if ((siteShortName == null) || (siteShortName.length() == 0))
+        boolean siteShortNameProvided = (siteShortName != null) && (siteShortName.length() != 0);
+        
+        // check if 'inviteId' parameter provided
+        String inviteId = req.getParameter(PARAM_INVITE_ID);
+        boolean inviteIdProvided = (inviteId != null) && (inviteId.length() != 0);
+
+        // throw web script exception if at least one of 'inviterUserName', 'inviteeUserName', 'siteShortName',
+        // 'inviteId' URL request parameters has not been provided
+        if (!(inviterUserNameProvided || inviteeUserNameProvided || siteShortNameProvided || inviteIdProvided))
         {
-            // handle siteShortName URL parameter not provided
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "'siteShortName' parameter has not been provided in URL");
+                    "At least one of the following URL request parameters must be provided in URL "
+                  + "'inviterUserName', 'inviteeUserName', 'siteShortName' or 'inviteId'");
         }
         
         // query for workflow tasks by given parameters
@@ -144,26 +146,40 @@ public class Invites extends DeclarativeWebScript
         // query only active workflows
         wfTaskQuery.setActive(Boolean.TRUE);
         
-        // create the query properties from the invite URL request parameters
-        // - because this web script class will terminate if no 'invites' URL request
-        // - parameters are set, at least one of these query properties will always be set
-        // - at this point
-        final HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(3, 1.0f);
-        if (inviterUserName != null)
-        {
-            wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITER_USER_NAME), inviterUserName);
-        }
-        if (inviteeUserName != null)
-        {
-            wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME), inviteeUserName);
-        }
-        if (siteShortName != null)
-        {
-            wfQueryProps.put(QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME), siteShortName);
-        }
+        // workflow query properties
+        HashMap<QName, Object> wfQueryProps = null;
         
-        // set workflow task query parameters
-        wfTaskQuery.setProcessCustomProps(wfQueryProps);
+        // if 'inviteId' has been provided then set that as the workflow query process ID
+        // - since this is unique don't bother about setting the other workflow query
+        // - properties
+        if (inviteIdProvided)
+        {
+            wfTaskQuery.setProcessId(inviteId);
+        }
+        else
+        // 'inviteId' has not been provided, so create the query properties from the invite URL request 
+        //     parameters
+        // - because this web script class will terminate with a web script exception if none of the required 
+        //   request parameters are provided, at least one of these query properties will be set
+        //   at this point
+        {
+            wfQueryProps = new HashMap<QName, Object>(3, 1.0f);
+            if (inviterUserName != null)
+            {
+                wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITER_USER_NAME), inviterUserName);
+            }
+            if (inviteeUserName != null)
+            {
+                wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME), inviteeUserName);
+            }
+            if (siteShortName != null)
+            {
+                wfQueryProps.put(QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME), siteShortName);
+            }
+            
+            // set workflow task query parameters
+            wfTaskQuery.setProcessCustomProps(wfQueryProps);
+        }
         
         // set process name to "wf:invite" so that only tasks associated with invite workflow instances 
         // are returned by query

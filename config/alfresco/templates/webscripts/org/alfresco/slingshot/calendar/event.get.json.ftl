@@ -10,6 +10,7 @@
   start: "${result.from?string("HH:mm")}",
   to: "${result.to?string("M/d/yyyy")}",
   end: "${result.to?string("HH:mm")}"
+  <#if result.allday?exists>, allday: "true"</#if>
 </#if>
 }
 

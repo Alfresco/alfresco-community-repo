@@ -15,7 +15,8 @@ var props = [
    "datefrom",
    "start",
    "dateto",
-   "end"
+   "end",
+   "allday"
 ];
 
 var p;
@@ -69,11 +70,19 @@ function createEvent(siteId, params)
   event.properties["ia:whereEvent"] = params["where"];
   event.properties["ia:descriptionEvent"] = params["desc"];
 
-  var fromDate = params["from"] + " " + params["start"];
+  var fromDate = params["from"];
+  var toDate = params["to"];
+  
+  var allday = params["allday"];
+  if (!allday)
+  {
+     fromDate += " " + params["start"];
+     toDate += " " + params["end"];
+  }
+  
   var from = new Date(fromDate);
   event.properties["ia:fromDate"] = from;
 
-  var toDate = params["to"] + " " + params["end"];
   var to = new Date(toDate);
   event.properties["ia:toDate"] = to;
   event.save();

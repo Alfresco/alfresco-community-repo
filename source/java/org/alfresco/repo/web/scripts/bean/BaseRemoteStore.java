@@ -63,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  * For content create and update the request should be POSTed and the content sent as the
  * payload of the request content.
  * 
- * Supported method API:
+ * Supported API methods:
  *      GET lastmodified -> return long timestamp of a document
  *      GET has -> return true/false of existence for a document
  *      GET get -> return document content - in addition the usual HTTP headers for the
@@ -72,6 +72,7 @@ import org.apache.commons.logging.LogFactory;
  *      GET listall -> return the list of available document paths (recursively) under a given path
  *      POST create -> create a new document with request content payload
  *      POST update -> update an existing document with request content payload
+ *      DELETE delete -> delete an existing document 
  * 
  * @author Kevin Roast
  */
@@ -148,26 +149,17 @@ public abstract class BaseRemoteStore extends AbstractWebScript
             switch (method)
             {
                 case LASTMODIFIED:
-                    if (path == null)
-                    {
-                        throw new WebScriptException("Remote Store expecting document path.");
-                    }
+                    validatePath(path);
                     lastModified(res, path);
                     break;
                 
                 case HAS:
-                    if (path == null)
-                    {
-                        throw new WebScriptException("Remote Store expecting document path.");
-                    }
+                    validatePath(path);
                     hasDocument(res, path);
                     break;
                 
                 case GET:
-                    if (path == null)
-                    {
-                        throw new WebScriptException("Remote Store expecting document path.");
-                    }
+                    validatePath(path);
                     getDocument(res, path);
                     break;
                 
@@ -179,19 +171,18 @@ public abstract class BaseRemoteStore extends AbstractWebScript
                     listDocuments(res, path, true);
                 
                 case CREATE:
-                    if (path == null)
-                    {
-                        throw new WebScriptException("Remote Store expecting document path.");
-                    }
+                    validatePath(path);
                     createDocument(res, path, httpReq.getInputStream());
                     break;
                 
                 case UPDATE:
-                    if (path == null)
-                    {
-                        throw new WebScriptException("Remote Store expecting document path.");
-                    }
+                    validatePath(path);
                     updateDocument(res, path, httpReq.getInputStream());
+                    break;
+                
+                case DELETE:
+                    validatePath(path);
+                    deleteDocument(res, path);
                     break;
             }
         }
@@ -202,6 +193,17 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         catch (IOException ioErr)
         {
             throw new WebScriptException("Error during remote store API: " + ioErr.getMessage());
+        }
+    }
+
+    /**
+     * Validate we have a path argument.
+     */
+    private static void validatePath(String path)
+    {
+        if (path == null)
+        {
+            throw new WebScriptException("Remote Store expecting document path elements.");
         }
     }
     
@@ -246,7 +248,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path  document path
      * @return  
      * 
-     * @throws IOException if the document does not exist in the store
+     * @throws IOException if an error occurs retrieving the document
      */
     protected abstract void getDocument(WebScriptResponse res, String path)
         throws IOException;
@@ -260,7 +262,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path      document path
      * @param recurse   true to peform a recursive list, false for direct children only.
      * 
-     * @throws IOException if the path does not exist in the store
+     * @throws IOException if an error occurs listing the documents
      */
     protected abstract void listDocuments(WebScriptResponse res, String path, boolean recurse)
         throws IOException;
@@ -271,7 +273,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path  document path
      * @param content       content of the document to write
      * 
-     * @throws IOException if the document already exists or the create fails
+     * @throws IOException if the create fails
      */
     protected abstract void createDocument(WebScriptResponse res, String path, InputStream content);
     
@@ -281,13 +283,22 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path  document path
      * @param content       content to update the document with
      * 
-     * @throws IOException if the document does not exist or the update fails
+     * @throws IOException if the update fails
      */
     protected abstract void updateDocument(WebScriptResponse res, String path, InputStream content);
     
+    /**
+     * Deletes an existing document.
+     * 
+     * @param path  document path
+     * 
+     * @throws IOException if the delete fails
+     */
+    protected abstract void deleteDocument(WebScriptResponse res, String path);
+    
     
     /**
-     * Enum representing the API method on the Store.
+     * Enum representing the available API methods on the Store.
      */
     private enum APIMethod
     {
@@ -297,6 +308,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         LIST,
         LISTALL,
         CREATE,
-        UPDATE
+        UPDATE,
+        DELETE
     };
 }

@@ -253,6 +253,30 @@ public class AVMRemoteStore extends BaseRemoteStore
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#deleteDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
+     */
+    @Override
+    protected void deleteDocument(WebScriptResponse res, String path)
+    {
+        String avmPath = buildAVMPath(path);
+        AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
+        if (desc == null)
+        {
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
+        }
+        
+        try
+        {
+            this.avmService.removeNode(avmPath);
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#listDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, boolean)
      */
     @Override

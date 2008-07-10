@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Remote AVM Store</shortname>
+  <description>Remote service mirroring the Store interface - to an AVM store</description>
+  <url>/remotestore/{method}/{path}</url>
+  <authentication>admin</authentication>
+  <format default="">argument</format>
+</webscript>

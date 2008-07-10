@@ -1447,5 +1447,27 @@
             <ref bean="siteAVMBootstrap" />
         </property>
     </bean>
+
+    <bean id="patch.sitesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.sitesFolder</value></property>
+        <property name="description"><value>patch.sitesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>127</value></property>
+        <property name="targetSchema"><value>128</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/st:sites</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}</prop>
+                <prop key="location">alfresco/bootstrap/sitesSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
     
 </beans>

@@ -1,5 +1,5 @@
 {
-   "nodeRef": "${upload.nodeRef}",
+   "nodeRef": "${document.nodeRef}",
    "status":
    {
       "code": 200,

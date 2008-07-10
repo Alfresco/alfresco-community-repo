@@ -1,11 +1,13 @@
 var filename = null;
 var content = null;
+var mimetype = null;
 var siteId = null;
 var containerId = null;
 var path = null;
 var title = "";
 var description = "";
-var version = null;
+var majorVersion = false;
+var overwrite = false;
 
 // Parse file attributes
 for each (field in formdata.fields)
@@ -17,6 +19,7 @@ for each (field in formdata.fields)
          {
             filename = field.filename;
             content = field.content;
+            mimetype = field.mimetype;
          }
          break;
       
@@ -38,7 +41,7 @@ for each (field in formdata.fields)
          // Ensure path ends with "/" if not the root folder
          if ((path.length > 0) && (path.substring(path.length - 1) != "/"))
          {
-            path = path + "/";
+            path = path+ "/";
          }
          break;
 
@@ -54,8 +57,12 @@ for each (field in formdata.fields)
          contentType = field.value;
          break;
 
-      case "version":
-         version = field.value;
+      case "majorVersion":
+         majorVersion = field.value == "true";
+         break;
+
+      case "overwrite":
+         overwrite = field.value == "true";
          break;
    }
 }
@@ -64,7 +71,7 @@ for each (field in formdata.fields)
 if (siteId === null || containerId === null || path === null || filename === null || content === null)
 {
    status.code = 400;
-   status.message = "Uploaded file cannot be located in request";
+   status.message = "Required parameters are missing";
    //status.redirect = false;
 }
 else
@@ -87,41 +94,87 @@ else
       }
       else
       {
-         var filepath = path + filename;
-         var existsFile = container.childByNamePath(filepath);
-         if (existsFile !== null)
+         var destNode = container;
+         if (path != "")
          {
-            // TODO: what should happen?
-            status.code = 400;
-            status.message = "File " + filename + "already exists in folder " + path;
+            destNode = container.childByNamePath(path);
+         }
+         if (destNode === null)
+         {
+            status.code = 404;
+            status.message = "Cannot upload file since path '" + path + "' does not exist.";
             status.redirect = true;
+         }
+         if(destNode.isDocument)
+         {
+            // Update mode, since path pointed to a file
+            var workingCopy = destNode;
+            if(workingCopy.isLocked)
+            {
+               // Its not a working copy, should have been the working copy, throw error
+               status.code = 404;
+               status.message = "Cannot upload document since path '" + path + "' points to a locked document, supply a path to its working copy instead.";
+               status.redirect = true;
+            }
+            else if(!workingCopy.hasAspect("cm:workingcopy"))
+            {
+               // Its not a working copy, do a check out to get the working copy
+               workingCopy = workingCopy.checkout();
+            }
+            // Update the working copy
+            workingCopy.properties.content.write(content);
+            // check it in again, but with a version history note and as minor or major version increment
+            workingCopy = workingCopy.checkin(description, majorVersion);
+            model.document = workingCopy;
          }
          else
          {
-            var destNode = container;
-            if (path != "")
+            // Upload mode, since path pointed to a directory
+            var existingFile = container.childByNamePath(path + filename);
+            var overwritten = false;
+            if (existingFile !== null)
             {
-               destNode = container.childByNamePath(path);
+               // File already exists, decide what to do
+               if(overwrite)
+               {
+                  // Upload component was configured to overwrite files if name clashes
+                  existingFile.properties.content.write(content);
+                  model.document = existingFile;
+                  // Stop creation of new file below
+                  overwritten = true;
+               }
+               else
+               {
+                  // Upload component was configured to find a new unique name for clashing filenames
+                  var suffix = 1;
+                  var tmpFilename;
+                  while(existingFile !== null)
+                  {
+                     tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
+                     existingFile = container.childByNamePath(path + tmpFilename);
+                     suffix++;
+                  }
+                  filename = tmpFilename;
+               }
             }
-            if (destNode === null)
-            {
-               status.code = 404;
-               status.message = "Cannot upload file since path '" + path + "' does not exist.";
-               status.redirect = true;
-            }
-            else
-            {
-               upload = destNode.createFile(filename) ;
-               upload.properties.contentType = contentType;
-               upload.properties.content.write(content);
-               // reapply mimetype as upload may have been via Flash - which always sends binary mimetype
-               upload.properties.content.guessMimetype(filename);
-               upload.properties.content.encoding = "UTF-8";
-               upload.properties.title = title;
-               upload.properties.description = description;
-               upload.save();
 
-               model.upload = upload;            
+            // save the new file (original or renamed file) as long as an overwrite hasn't been performed
+            if(!overwritten)
+            {
+               var newFile = destNode.createFile(filename);
+               newFile.properties.contentType = contentType;
+               newFile.properties.content.write(content);
+               // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
+               newFile.properties.content.guessMimetype(filename);
+               newFile.properties.content.encoding = "UTF-8";
+               newFile.properties.content.mimetype = mimetype;
+               newFile.properties.title = title;
+               newFile.properties.description = description;
+               // Make file versionable
+               newFile.addAspect("cm:versionable");
+               // Save new file
+               newFile.save();
+               model.document = newFile;
             }
          }
       }

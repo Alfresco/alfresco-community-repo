@@ -44,6 +44,8 @@
          </mandatory-aspects>
       </type>
 
+	  <!-- Site Root Folder:                                                               -->
+	  <!--    - all sites are stored beneth the site root folder                           -->
       <type name="st:sites">
          <title>Sites</title>
          <parent>cm:folder</parent>         

@@ -21,8 +21,7 @@
        <property name="fileFolderService" ref="FileFolderService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="permissionService" ref="PermissionService" />
-       <property name="authenticationComponent" ref="authenticationComponent"/>              
-       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+       <property name="authenticationComponent" ref="authenticationComponent"/>      
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
     </bean>

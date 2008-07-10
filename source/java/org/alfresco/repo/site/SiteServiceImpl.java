@@ -53,29 +53,30 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl extends AbstractLifecycleBean implements SiteService, SiteModel
+public class SiteServiceImpl implements SiteService, SiteModel
 {
+    /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
     
-    public static final String SITE_AVM_STORE = "SiteStore";
-    public static final StoreRef SITE_DM_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SiteStore");
+    /** The DM store where site's are kept */
+    public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
     
+    /** Activiti tool */
     private static final String ACTIVITY_TOOL = "siteService";
     
+    /** Services */
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private SearchService searchService;
@@ -83,48 +84,80 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private ActivityService activityService;
     private PersonService personService;
     private AuthenticationComponent authenticationComponent;
-    private RetryingTransactionHelper retryingTransactionHelper;
     
+    /**
+     * Set node service
+     * 
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
+    /**
+     * Set file folder service
+     * 
+     * @param fileFolderService     file folder service
+     */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
     
+    /**
+     * Set search service
+     * 
+     * @param searchService     search service
+     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
     
+    /**
+     * Set permission service
+     * 
+     * @param permissionService     permission service
+     */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
     
+    /**
+     * Set activity service
+     * 
+     * @param activityService   activity service
+     */
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
     }
     
+    /**
+     * Set person service
+     * 
+     * @param personService     person service
+     */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
     
+    /**
+     * Set authentication component
+     * 
+     * @param authenticationComponent   authententication component
+     */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
     }
     
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
-    
+    /**
+     * @see org.alfresco.repo.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     */
     public SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
     {
         /// TODO check for shortname duplicates
@@ -162,6 +195,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
        return siteInfo;
     }
     
+    /**
+     * Gets a sites parent folder based on it's short name
+     * ]
+     * @param shortName     site short name
+     * @return NodeRef      the site's parent
+     */
     private NodeRef getSiteParent(String shortName)
     {
         // TODO
@@ -173,23 +212,19 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private NodeRef getSiteRoot()
     {
         // Get the root 'sites' folder
-        ResultSet resultSet = this.searchService.query(SITE_DM_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\"cm:sites\"");
+        ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
         if (resultSet.length() == 0)
         {
-            // TODO
+            // No root site folder exists
             throw new AlfrescoRuntimeException("No root sites folder exists");
         }
         else if (resultSet.length() != 1)
         {
-            // TODO
+            // More than one root site folder exits
             throw new AlfrescoRuntimeException("More than one root sites folder exists");
         }        
-        NodeRef sitesRoot = resultSet.getNodeRef(0);
-        
-        // TODO
-        // In time we will use some sort of algorithm to spread the creation of sites across an arbitary structure
-                
-        return sitesRoot;
+     
+        return resultSet.getNodeRef(0);
     }
     
     public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter)
@@ -266,7 +301,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private NodeRef getSiteNodeRef(String shortName)
     {
         NodeRef result = null;
-        ResultSet resultSet = this.searchService.query(SITE_DM_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\"cm:sites/cm:" + ISO9075.encode(shortName) + "\"");
+        
+        //String query = "PATH:\"cm:sites/cm:" + ISO9075.encode(shortName) + "\"";        
+        String query = "+TYPE:\"st:site\" +@cm\\:name:\"" + shortName + "\"";
+        ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, query);
         if (resultSet.length() == 1)
         {
             result = resultSet.getNodeRef(0);
@@ -573,78 +611,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             // log error, subsume exception
             logger.error("Failed to get activity data: " + je);
             return "";
-        }
-    }
-    
-    /**
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-     */
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-        // Ensure execution occures in a transaction
-        this.retryingTransactionHelper.doInTransaction(
-            new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-            {        
-                public Object execute() throws Throwable
-                {
-                    String currentUserName = SiteServiceImpl.this.authenticationComponent.getCurrentUserName();
-                    SiteServiceImpl.this.authenticationComponent.setSystemUserAsCurrentUser();
-                    try
-                    {
-                        // Bootstrap the site stores
-                        bootstrapSiteStore(SITE_DM_STORE);
-                    }
-                    finally
-                    {
-                        if (currentUserName != null)
-                        {
-                            SiteServiceImpl.this.authenticationComponent.setCurrentUser(currentUserName);
-                        }
-                        else
-                        {
-                            SiteServiceImpl.this.authenticationComponent.clearCurrentSecurityContext();
-                        }
-                    }
-                    
-                    return null;
-                }                
-            });        
-    }
-    
-    /**
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-        // Do nothing
-    }
-    
-    /**
-     * Bootstrap the DM site store
-     * 
-     * @param storeRef  the store reference
-     */
-    private void bootstrapSiteStore(StoreRef storeRef)
-    {
-        // Check to see if the sotre exists
-        if (this.nodeService.exists(storeRef) == false)
-        {
-            // Create the store
-            this.nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
-            NodeRef rootNode = this.nodeService.getRootNode(storeRef);
-            
-            // Create the root folder where sites will be stored
-            NodeRef rootStoreNode = this.nodeService.createNode(rootNode, 
-                                        ContentModel.ASSOC_CHILDREN, 
-                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sites"), 
-                                        ContentModel.TYPE_FOLDER).getChildRef();
-            
-            // Set the permissions for the root store node
-            this.permissionService.setInheritParentPermissions(rootStoreNode, false);
-            this.permissionService.setPermission(rootStoreNode, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-            this.permissionService.setPermission(rootStoreNode, PermissionService.ALL_AUTHORITIES, PermissionService.CREATE_CHILDREN, true);
         }
     }
 }

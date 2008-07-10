@@ -2034,6 +2034,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void clearTags()
     {
         this.services.getTaggingService().clearTags(this.nodeRef);
+        updateTagProperty();
     }
     
     /**
@@ -2044,6 +2045,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void addTag(String tag)
     {
         this.services.getTaggingService().addTag(this.nodeRef, tag);
+        updateTagProperty();
     }
     
     /**
@@ -2054,6 +2056,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void addTags(String[] tags)
     {
         this.services.getTaggingService().addTags(this.nodeRef, Arrays.asList(tags));
+        updateTagProperty();
     }
     
     /**
@@ -2064,6 +2067,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void removeTag(String tag)
     {
         this.services.getTaggingService().removeTag(this.nodeRef, tag);
+        updateTagProperty();
     }
     
     /**
@@ -2074,6 +2078,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void removeTags(String[] tags)
     {
         this.services.getTaggingService().removeTags(this.nodeRef, Arrays.asList(tags));
+        updateTagProperty();
     }
     
     /**
@@ -2096,6 +2101,16 @@ public class ScriptNode implements Serializable, Scopeable
     public void setTags(String[] tags)
     {
         this.services.getTaggingService().setTags(this.nodeRef, Arrays.asList(tags));
+        updateTagProperty();
+    }
+    
+    private void updateTagProperty()
+    {
+        Serializable tags = this.services.getNodeService().getProperty(this.nodeRef, ContentModel.PROP_TAGS);
+        if (this.properties != null)
+        {
+            this.properties.put(ContentModel.PROP_TAGS.toString(), getValueConverter().convertValueForScript(ContentModel.PROP_TAGS, tags));
+        }
     }
     
     /**

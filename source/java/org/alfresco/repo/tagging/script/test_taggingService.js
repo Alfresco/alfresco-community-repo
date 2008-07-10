@@ -16,9 +16,11 @@ function testAddRemoveTag()
 	test.assertNotNull(tags);
 	test.assertEquals(0, tags.length);
 	
+	document.properties.title = "A change is as good as a rest!";	
 	document.addTag("mouse");
 	document.addTag("snake");
 	document.addTag("snail");
+	document.save();
 	
 	tags = document.tags;
 	test.assertNotNull(tags);
@@ -32,7 +34,8 @@ function testAddRemoveTag()
 	test.assertEquals(2, tags.length);
 	
 	document.tags = ["moo", "quack", "squeak"];
-	
+	document.properties.title = "A change is as good as a rest!";
+	document.save();
 	tags = document.tags;
 	test.assertNotNull(tags);
 	test.assertEquals(3, tags.length);

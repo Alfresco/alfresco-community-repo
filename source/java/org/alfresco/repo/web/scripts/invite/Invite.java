@@ -53,7 +53,6 @@ import org.alfresco.web.scripts.WebScriptRequest;
  */
 public class Invite extends DeclarativeWebScript
 {
-    private static final String WORKFLOW_DEFINITION_NAME = "jbpm$wf:invite";
     private static final String ACTION_START = "start";
     private static final String ACTION_CANCEL = "cancel";
     private static final String TRANSITION_SEND_INVITE = "sendInvite";
@@ -68,12 +67,6 @@ public class Invite extends DeclarativeWebScript
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName"; 
     private static final String PARAM_WORKFLOW_ID = "workflowId";
     
-    // workflow properties
-    public static final String WF_PROP_INVITER_USER_NAME = "wf:inviterUserName";
-    public static final String WF_PROP_INVITEE_USER_NAME = "wf:inviteeUserName";
-    public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
-    private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
-    
     // services
     private WorkflowService workflowService;
     private PersonService personService;
@@ -84,6 +77,14 @@ public class Invite extends DeclarativeWebScript
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
 
+    // workflow properties
+    public static final String WF_PROP_INVITER_USER_NAME = "wf:inviterUserName";
+    public static final String WF_PROP_INVITEE_USER_NAME = "wf:inviteeUserName";
+    public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
+    private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
+    
+    public static final String WORKFLOW_DEFINITION_NAME = "jbpm$wf:invite";
+    
     /**
      * Sets the workflowService property
      * 

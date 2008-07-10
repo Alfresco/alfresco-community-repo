@@ -71,9 +71,6 @@ public class Invites extends DeclarativeWebScript
     // model key names
     private static final String MODEL_KEY_NAME_INVITES = "invites";
     
-    // invite process definition name
-    private static final QName WF_INVITE_PROCESS_DEFINITION_QNAME = QName.createQName("wf:invite");
-    
     // service instances
     private WorkflowService workflowService;
     
@@ -183,7 +180,7 @@ public class Invites extends DeclarativeWebScript
         
         // set process name to "wf:invite" so that only tasks associated with invite workflow instances 
         // are returned by query
-        wfTaskQuery.setProcessName(WF_INVITE_PROCESS_DEFINITION_QNAME);
+        wfTaskQuery.setProcessName(QName.createQName(Invite.WORKFLOW_DEFINITION_NAME));
         
         // query for invite workflow tasks
         List<WorkflowTask> wf_invite_tasks = this.workflowService.queryTasks(wfTaskQuery);

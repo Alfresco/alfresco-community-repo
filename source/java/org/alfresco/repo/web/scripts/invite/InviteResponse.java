@@ -25,12 +25,14 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -193,7 +195,23 @@ public class InviteResponse extends DeclarativeWebScript
     private void acceptInvite(Map<String, Object> model, String workflowId,
             String inviteeUserName, String siteShortName)
     {
-        this.workflowService.signal(workflowId, TRANSITION_ACCEPT);
+        // get workflow paths associated with given workflow ID
+        List<WorkflowPath> wfPaths = this.workflowService.getWorkflowPaths(workflowId);
+        
+        // throw web script exception if there is not at least one workflow path 
+        // associated with this workflow ID
+        if ((wfPaths == null) || (wfPaths.size() == 0))
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "There are no workflow paths associated with workflow ID: "
+                  + workflowId);   
+        }
+        
+        // get workflow path ID for path matching workflow ID
+        WorkflowPath wfPath = wfPaths.get(0);
+        String wfPathID = wfPath.id;
+        
+        this.workflowService.signal(wfPathID, TRANSITION_ACCEPT);
 
         // enable invitee person's user account because he/she has accepted the
         // site invitation
@@ -225,7 +243,23 @@ public class InviteResponse extends DeclarativeWebScript
     private void rejectInvite(Map<String, Object> model, String workflowId,
             String inviteeUserName, String siteShortName)
     {
-        this.workflowService.signal(workflowId, TRANSITION_REJECT);
+        // get workflow paths associated with given workflow ID
+        List<WorkflowPath> wfPaths = this.workflowService.getWorkflowPaths(workflowId);
+        
+        // throw web script exception if there is not at least one workflow path 
+        // associated with this workflow ID
+        if ((wfPaths == null) || (wfPaths.size() == 0))
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "There are no workflow paths associated with workflow ID: "
+                  + workflowId);   
+        }
+        
+        // get workflow path ID for path matching workflow ID
+        WorkflowPath wfPath = wfPaths.get(0);
+        String wfPathID = wfPath.id;
+        
+        this.workflowService.signal(wfPathID, TRANSITION_REJECT);
 
         // delete the person created for invitee
         this.personService.deletePerson(inviteeUserName);

@@ -53,6 +53,6 @@ public class BasicPasswordGenerator implements PasswordGenerator
      */
     public String generatePassword()
     {
-        return RandomStringUtils.randomAscii(passwordLength);
+        return RandomStringUtils.randomAlphanumeric(passwordLength);
     }
 }

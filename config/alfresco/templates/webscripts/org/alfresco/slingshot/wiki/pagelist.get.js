@@ -34,7 +34,7 @@ function getWikiPages(siteId)
    }
    
    var pages = [];
-   var wikiPages = search.luceneSearch("workspace://SiteStore", query);
+   var wikiPages = search.luceneSearch(query);
    
    var page;
    for (var i=0; i < wikiPages.length; i++)

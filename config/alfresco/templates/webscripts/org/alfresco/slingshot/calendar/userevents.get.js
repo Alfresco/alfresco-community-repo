@@ -36,7 +36,7 @@ function getUserEvents(user, range)
 		var site = availableSites[j];
 		if (site.isMember(user))
 		{
-			paths.push("PATH:\"/cm:sites/cm:" + site.shortName + "/cm:calendar/*\"");
+			paths.push("PATH:\"/app:company_home/st:sites/cm:" + site.shortName + "/cm:calendar/*\"");
 		}
 	}
 	
@@ -52,7 +52,7 @@ function getUserEvents(user, range)
 			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2032\\-1\\-1T00:00:00]";
 			luceneQuery += dateClause;
 		}
-		results = search.luceneSearch("workspace://SiteStore", luceneQuery, "ia:fromDate", true);
+		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
 	}
 
 	return results;

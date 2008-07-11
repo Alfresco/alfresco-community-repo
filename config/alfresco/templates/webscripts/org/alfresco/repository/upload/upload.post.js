@@ -176,7 +176,6 @@ else
             // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
             newFile.properties.content.guessMimetype(filename);
             newFile.properties.content.encoding = "UTF-8";
-            newFile.properties.content.mimetype = mimetype;
             newFile.properties.title = title;
             newFile.properties.description = description;
             // Make file versionable (todo: check that this is ok depending on version store development)

@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.version.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -219,7 +220,7 @@ public class VersionHistoryImpl implements VersionHistory
      * 
      * Note: Descending create date order 
      */
-    public class VersionComparator implements Comparator<Date>
+    public class VersionComparator implements Comparator<Date>, Serializable
     {
         public int compare(Date o1, Date o2)
         {

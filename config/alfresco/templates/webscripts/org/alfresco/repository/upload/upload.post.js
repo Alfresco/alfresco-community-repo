@@ -3,11 +3,16 @@ var content = null;
 var mimetype = null;
 var siteId = null;
 var containerId = null;
-var path = null;
+
+// Upload specific
+var uploadDirectory = null;
 var title = "";
-var description = "";
-var majorVersion = false;
 var overwrite = false;
+
+// Update specific
+var updateNodeRef = null;
+var majorVersion = false;
+var description = "";
 
 // Parse file attributes
 for each (field in formdata.fields)
@@ -31,18 +36,22 @@ for each (field in formdata.fields)
          containerId = field.value;
          break;
       
-      case "path":
-         path = field.value;
-         // Remove any leading "/" from the path
-         if (path.substr(0, 1) == "/")
+      case "uploaddirectory":
+         uploadDirectory = field.value;
+         // Remove any leading "/" from the uploadDirectory
+         if (uploadDirectory.substr(0, 1) == "/")
          {
-            path = path.substr(1);
+            uploadDirectory = uploadDirectory.substr(1);
          }
-         // Ensure path ends with "/" if not the root folder
-         if ((path.length > 0) && (path.substring(path.length - 1) != "/"))
+         // Ensure uploadDirectory ends with "/" if not the root folder
+         if ((uploadDirectory.length > 0) && (uploadDirectory.substring(uploadDirectory.length - 1) != "/"))
          {
-            path = path+ "/";
+            uploadDirectory = uploadDirectory + "/";
          }
+         break;
+
+      case "updatenoderef":
+         updateNodeRef = field.value;
          break;
 
       case "filename":
@@ -57,7 +66,7 @@ for each (field in formdata.fields)
          contentType = field.value;
          break;
 
-      case "majorVersion":
+      case "majorversion":
          majorVersion = field.value == "true";
          break;
 
@@ -68,7 +77,7 @@ for each (field in formdata.fields)
 }
 
 // Ensure mandatory file attributes have been located
-if (siteId === null || containerId === null || path === null || filename === null || content === null)
+if (siteId === null || containerId === null || filename === null || content === null)
 {
    status.code = 400;
    status.message = "Required parameters are missing";
@@ -85,6 +94,7 @@ else
    }
    else
    {
+      // Upload mode, since uploadDirectory was used
       var container = site.getContainer(containerId);
       if (container === null)
       {
@@ -92,91 +102,95 @@ else
          status.message = "Component container (" + containerId + ") not found.";
          status.redirect = true;
       }
-      else
+      if(updateNodeRef !== null && uploadDirectory === null)
+      {
+         // Update mode, since updateNodeRef was used
+
+         var workingCopy = search.findNode(updateNodeRef);
+         if(workingCopy.isLocked)
+         {
+            // Its not a working copy, should have been the working copy, throw error
+            status.code = 404;
+            status.message = "Cannot upload document since updateNodeRef '" + updateNodeRef + "' points to a locked document, supply a nodeRef to its working copy instead.";
+            status.redirect = true;
+         }
+         else if(!workingCopy.hasAspect("cm:workingcopy"))
+         {
+            // Its not a working copy, do a check out to get the working copy
+            workingCopy = workingCopy.checkout();
+         }
+         // Update the working copy
+         workingCopy.properties.content.write(content);
+         // check it in again, but with a version history note and as minor or major version increment
+         workingCopy = workingCopy.checkin(description, majorVersion);
+         model.document = workingCopy;
+      }
+      else if(uploadDirectory !== null && updateNodeRef === null)
       {
          var destNode = container;
-         if (path != "")
+         if (uploadDirectory != "")
          {
-            destNode = container.childByNamePath(path);
+            destNode = container.childByNamePath(uploadDirectory);
          }
          if (destNode === null)
          {
             status.code = 404;
-            status.message = "Cannot upload file since path '" + path + "' does not exist.";
+            status.message = "Cannot upload file since uploadDirectory '" + uploadDirectory + "' does not exist.";
             status.redirect = true;
          }
-         if(destNode.isDocument)
-         {
-            // Update mode, since path pointed to a file
-            var workingCopy = destNode;
-            if(workingCopy.isLocked)
-            {
-               // Its not a working copy, should have been the working copy, throw error
-               status.code = 404;
-               status.message = "Cannot upload document since path '" + path + "' points to a locked document, supply a path to its working copy instead.";
-               status.redirect = true;
-            }
-            else if(!workingCopy.hasAspect("cm:workingcopy"))
-            {
-               // Its not a working copy, do a check out to get the working copy
-               workingCopy = workingCopy.checkout();
-            }
-            // Update the working copy
-            workingCopy.properties.content.write(content);
-            // check it in again, but with a version history note and as minor or major version increment
-            workingCopy = workingCopy.checkin(description, majorVersion);
-            model.document = workingCopy;
-         }
-         else
-         {
-            // Upload mode, since path pointed to a directory
-            var existingFile = container.childByNamePath(path + filename);
-            var overwritten = false;
-            if (existingFile !== null)
-            {
-               // File already exists, decide what to do
-               if(overwrite)
-               {
-                  // Upload component was configured to overwrite files if name clashes
-                  existingFile.properties.content.write(content);
-                  model.document = existingFile;
-                  // Stop creation of new file below
-                  overwritten = true;
-               }
-               else
-               {
-                  // Upload component was configured to find a new unique name for clashing filenames
-                  var suffix = 1;
-                  var tmpFilename;
-                  while(existingFile !== null)
-                  {
-                     tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
-                     existingFile = container.childByNamePath(path + tmpFilename);
-                     suffix++;
-                  }
-                  filename = tmpFilename;
-               }
-            }
 
-            // save the new file (original or renamed file) as long as an overwrite hasn't been performed
-            if(!overwritten)
+         var existingFile = container.childByNamePath(uploadDirectory + filename);
+         var overwritten = false;
+         if (existingFile !== null)
+         {
+            // File already exists, decide what to do
+            if(overwrite)
             {
-               var newFile = destNode.createFile(filename);
-               newFile.properties.contentType = contentType;
-               newFile.properties.content.write(content);
-               // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
-               newFile.properties.content.guessMimetype(filename);
-               newFile.properties.content.encoding = "UTF-8";
-               newFile.properties.content.mimetype = mimetype;
-               newFile.properties.title = title;
-               newFile.properties.description = description;
-               // Make file versionable
-               newFile.addAspect("cm:versionable");
-               // Save new file
-               newFile.save();
-               model.document = newFile;
+               // Upload component was configured to overwrite files if name clashes
+               existingFile.properties.content.write(content);
+               model.document = existingFile;
+               // Stop creation of new file below
+               overwritten = true;
+            }
+            else
+            {
+               // Upload component was configured to find a new unique name for clashing filenames
+               var suffix = 1;
+               var tmpFilename;
+               while(existingFile !== null)
+               {
+                  tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
+                  existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
+                  suffix++;
+               }
+               filename = tmpFilename;
             }
          }
+
+         // save the new file (original or renamed file) as long as an overwrite hasn't been performed
+         if(!overwritten)
+         {
+            var newFile = destNode.createFile(filename);
+            newFile.properties.contentType = contentType;
+            newFile.properties.content.write(content);
+            // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
+            newFile.properties.content.guessMimetype(filename);
+            newFile.properties.content.encoding = "UTF-8";
+            newFile.properties.content.mimetype = mimetype;
+            newFile.properties.title = title;
+            newFile.properties.description = description;
+            // Make file versionable (todo: check that this is ok depending on version store development)
+            newFile.addAspect("cm:versionable");
+            // Save new file
+            newFile.save();
+            model.document = newFile;
+         }
+      }
+      else
+      {
+         status.code = 404;
+         status.message = "Illegal arguments: updateNodeRef OR uploadDirectory must be provided (not both)";
+         status.redirect = true;
       }
    }
 }

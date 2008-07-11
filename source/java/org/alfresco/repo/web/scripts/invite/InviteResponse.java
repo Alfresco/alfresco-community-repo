@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -42,19 +44,52 @@ import org.alfresco.web.scripts.WebScriptRequest;
 /**
  * Web Script invoked by Invitee to either accept (response='accept') an
  * invitation from a Site Manager (Inviter) to join a Site as a Site
- * Collaborator, or to reject (response='reject') an invitation that has
- * already been sent out
+ * Collaborator, or to reject (response='reject') an invitation that has already
+ * been sent out
  * 
  * @author glen dot johnson at alfresco dot com
  */
 public class InviteResponse extends DeclarativeWebScript
 {
+    /**
+     * Inner class providing functionality (which needs to run under admin
+     * rights) to set membership of invitee (given as invitee user name) to site
+     * (given as site short name) as given site role
+     */
+    private class SetSiteMembershipWorker implements
+            AuthenticationUtil.RunAsWork<Boolean>
+    {
+        private String siteShortName;
+        private String inviteeUserName;
+        private String siteRole;
+
+        private SetSiteMembershipWorker(String siteShortName,
+                String inviteeUserName, String siteRole)
+        {
+            this.siteShortName = siteShortName;
+            this.inviteeUserName = inviteeUserName;
+            this.siteRole = siteRole;
+        }
+
+        /**
+         * Does the work to set the site membership
+         */
+        public Boolean doWork() throws Exception
+        {
+            InviteResponse.this.siteService.setMembership(this.siteShortName,
+                    this.inviteeUserName, this.siteRole);
+
+            return Boolean.TRUE;
+        }
+    }
+
     private static final String RESPONSE_ACCEPT = "accept";
     private static final String RESPONSE_REJECT = "reject";
     private static final String TRANSITION_ACCEPT = "accept";
     private static final String TRANSITION_REJECT = "reject";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
+    private static final String USER_ADMIN = "admin";
 
     // properties for services
     private WorkflowService workflowService;
@@ -196,21 +231,22 @@ public class InviteResponse extends DeclarativeWebScript
             String inviteeUserName, String siteShortName)
     {
         // get workflow paths associated with given workflow ID
-        List<WorkflowPath> wfPaths = this.workflowService.getWorkflowPaths(workflowId);
-        
-        // throw web script exception if there is not at least one workflow path 
+        List<WorkflowPath> wfPaths = this.workflowService
+                .getWorkflowPaths(workflowId);
+
+        // throw web script exception if there is not at least one workflow path
         // associated with this workflow ID
         if ((wfPaths == null) || (wfPaths.size() == 0))
         {
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "There are no workflow paths associated with workflow ID: "
-                  + workflowId);   
+                            + workflowId);
         }
-        
+
         // get workflow path ID for path matching workflow ID
         WorkflowPath wfPath = wfPaths.get(0);
         String wfPathID = wfPath.id;
-        
+
         this.workflowService.signal(wfPathID, TRANSITION_ACCEPT);
 
         // enable invitee person's user account because he/she has accepted the
@@ -218,8 +254,9 @@ public class InviteResponse extends DeclarativeWebScript
         this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
 
         // Add Invitee to Site as "Site Collaborator" role
-        this.siteService.setMembership(siteShortName, inviteeUserName,
-                SiteModel.SITE_COLLABORATOR);
+        RunAsWork<Boolean> setSiteMembershipWorker = new InviteResponse.SetSiteMembershipWorker(
+                siteShortName, inviteeUserName, SiteModel.SITE_COLLABORATOR);
+        AuthenticationUtil.runAs(setSiteMembershipWorker, USER_ADMIN);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
@@ -244,21 +281,22 @@ public class InviteResponse extends DeclarativeWebScript
             String inviteeUserName, String siteShortName)
     {
         // get workflow paths associated with given workflow ID
-        List<WorkflowPath> wfPaths = this.workflowService.getWorkflowPaths(workflowId);
-        
-        // throw web script exception if there is not at least one workflow path 
+        List<WorkflowPath> wfPaths = this.workflowService
+                .getWorkflowPaths(workflowId);
+
+        // throw web script exception if there is not at least one workflow path
         // associated with this workflow ID
         if ((wfPaths == null) || (wfPaths.size() == 0))
         {
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "There are no workflow paths associated with workflow ID: "
-                  + workflowId);   
+                            + workflowId);
         }
-        
+
         // get workflow path ID for path matching workflow ID
         WorkflowPath wfPath = wfPaths.get(0);
         String wfPathID = wfPath.id;
-        
+
         this.workflowService.signal(wfPathID, TRANSITION_REJECT);
 
         // delete the person created for invitee

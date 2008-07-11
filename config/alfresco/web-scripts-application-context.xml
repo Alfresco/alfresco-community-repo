@@ -277,9 +277,55 @@
       </property>
    </bean>
    
+   <!--                         -->
+   <!-- Invite Service REST API -->
+   <!--                         -->
+   
+   <!--                                                                                                       -->
+   <!-- Invite Web Script - Invoked by a Site Manager (Inviter) to either invite another person (Invitee) to  -->
+   <!-- join a Site as a Site Collaborator, or to cancel a pending invitation that has already been sent out  -->
+   <!--                                                                                                       -->
+   <bean id="webscript.org.alfresco.repository.invite.invite.get"
+         class="org.alfresco.repo.web.scripts.invite.Invite"
+         parent="webscript">
+      <property name="workflowService" ref="workflowServiceImpl"/>
+      <property name="personService" ref="personService"/>
+      <property name="authenticationService" ref="authenticationService"/>
+      <property name="mutableAuthenticationDao" ref="authenticationDao"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="userNameGenerator" ref="userNameGenerator"/>
+      <property name="passwordGenerator" ref="passwordGenerator"/>
+   </bean>
+   
+   <!--                                                                                                       -->
+   <!-- Invite Response Web Script - invoked by Invitee to either 'accept' an invitation from a               -->
+   <!-- Site Manager (Inviter), or to reject an invitation that has already been sent out                     -->
+   <!--                                                                                                       -->
+   
+   <bean id="webscript.org.alfresco.repository.invite.inviteresponse.get"
+         class="org.alfresco.repo.web.scripts.invite.InviteResponse"
+         parent="webscript">
+      <property name="workflowService" ref="workflowServiceImpl"/>
+      <property name="mutableAuthenticationDao" ref="authenticationDao"/>
+      <property name="siteService" ref="siteService"/>
+      <property name="personService" ref="personService"/>
+   </bean>
+   
+   <!--                                                                                                       -->
+   <!-- Invites Web Script (pending invites) - returns pending invites matching the given                     -->
+   <!-- inviter user name, invitee user name, site short name, or invite ID URL request parameters            -->
+   <!-- (at least one of the above parameters must be provided)                                               -->
+   <!--                                                                                                       -->
+   
+   <bean id="webscript.org.alfresco.repository.invite.invites.get"
+         class="org.alfresco.repo.web.scripts.invite.Invites"
+         parent="webscript">
+      <property name="workflowService" ref="workflowServiceImpl"/>
+      <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+   
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
-    
-    
    
 </beans>

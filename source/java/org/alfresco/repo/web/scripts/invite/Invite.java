@@ -26,17 +26,23 @@ package org.alfresco.repo.web.scripts.invite;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -72,6 +78,8 @@ public class Invite extends DeclarativeWebScript
     private PersonService personService;
     private AuthenticationService authenticationService;
     private MutableAuthenticationDao mutableAuthenticationDao;
+    private NamespaceService namespaceService;
+    private AuthenticationComponent authenticationComponent;
 
     // user name and password generation beans
     private UserNameGenerator usernameGenerator;
@@ -83,6 +91,7 @@ public class Invite extends DeclarativeWebScript
     public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
     private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
     
+    public static final String WF_INVITE_TASK_INVITE_TO_SITE = "wf:inviteToSiteTask";
     public static final String WORKFLOW_DEFINITION_NAME = "jbpm$wf:invite";
     
     /**
@@ -129,6 +138,27 @@ public class Invite extends DeclarativeWebScript
             MutableAuthenticationDao mutableAuthenticationDao)
     {
         this.mutableAuthenticationDao = mutableAuthenticationDao;
+    }
+    
+    /**
+     * Set the namespace service
+     * 
+     * @param namespaceService the namespace service to set
+     */
+    public void setNamespaceService(
+            NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Set the authentication component
+     * 
+     * @param authenticationComponent the authentication component to set
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
     }
 
     /**
@@ -266,9 +296,14 @@ public class Invite extends DeclarativeWebScript
     private void startInvite(Map<String, Object> model, String inviteeEmail,
             String siteShortName)
     {
+        // get the inviter user name (the name of user web script is executed under)
+        // - needs to be assigned here because various system calls further on
+        // - in this method set the current user to the system user
+        String inviterUserName = this.authenticationService.getCurrentUserName();
+        
         WorkflowDefinition wfDefinition = this.workflowService
                 .getDefinitionByName(WORKFLOW_DEFINITION_NAME);
-
+        
         // handle workflow definition does not exist
         if (wfDefinition == null)
         {
@@ -314,21 +349,55 @@ public class Invite extends DeclarativeWebScript
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
                 4);
-        workflowProps.put(QName.createQName(WF_PROP_INVITER_USER_NAME),
-                this.authenticationService.getCurrentUserName());
-        workflowProps.put(QName.createQName(WF_PROP_INVITEE_USER_NAME),
+        workflowProps.put(QName.createQName(WF_PROP_INVITER_USER_NAME, this.namespaceService),
+                inviterUserName);
+        workflowProps.put(QName.createQName(WF_PROP_INVITEE_USER_NAME, this.namespaceService),
                 inviteeUserName);
-        workflowProps.put(QName.createQName(WF_PROP_INVITEE_GEN_PASSWORD),
-                generatedPassword);
-        workflowProps.put(QName.createQName(WF_PROP_SITE_SHORT_NAME), siteShortName);
+        workflowProps.put(QName.createQName(WF_PROP_INVITEE_GEN_PASSWORD, this.namespaceService),
+                String.valueOf(generatedPassword));
+        workflowProps.put(QName.createQName(WF_PROP_SITE_SHORT_NAME, this.namespaceService),
+                siteShortName);
 
         // start the workflow
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition
                 .getId(), workflowProps);
+        
+        // get the workflow instance and path IDs
         String workflowId = wfPath.instance.id;
-
+        String wfPathId = wfPath.id;
+        
+        // complete the start task
+        List<WorkflowTask> wfTasks = this.workflowService.getTasksForWorkflowPath(wfPathId);
+        
+        // throw an exception if no tasks where found on the workflow path
+        if (wfTasks.size() == 0)
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "No workflow tasks where found on workflow path ID: " + wfPathId);
+        }
+        
+        // first task in workflow task list associated with the workflow path id above
+        // should be "wf:inviteToSiteTask", otherwise throw web script exception
+        String wfTaskTitle = wfTasks.get(0).title;
+        if (!wfTaskTitle.equals(WF_INVITE_TASK_INVITE_TO_SITE))
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "First workflow task found on workflow path ID: " + wfPathId
+                  + " should be " + WF_INVITE_TASK_INVITE_TO_SITE);
+        }
+        
+        // complete invite workflow start task
+        WorkflowTask wfStartTask = wfTasks.get(0);
+        
         // send out the invite
-        this.workflowService.signal(wfPath.id, TRANSITION_SEND_INVITE);
+        
+        // attach empty package to start task, end it and follow transition
+        // thats sends out invite
+        NodeRef wfPackage = this.workflowService.createPackage(null);
+        Map<QName, Serializable> wfTaskProps = new HashMap<QName, Serializable>(1, 1.0f);
+        wfTaskProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        this.workflowService.updateTask(wfStartTask.id, wfTaskProps, null, null);
+        this.workflowService.endTask(wfStartTask.id, TRANSITION_SEND_INVITE);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_ACTION, ACTION_START);

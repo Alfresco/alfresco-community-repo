@@ -27,25 +27,25 @@ function getFilterQuery(filter, obj)
          date.setDate(date.getDate() - dayCount);
          var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
 
-         filterQuery = "+PATH:\"" + obj.containerNode.qnamePath + "//*\" ";
+         filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
          filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          break;
          
       case "editingMe":
-         filterQuery = "+PATH:\"" + obj.containerNode.qnamePath + "//*\" ";
+         filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "+@cm\\:workingCopyOwner:" + person.properties.userName;
          break;
       
       case "editingOthers":
-         filterQuery = "+PATH:\"" + obj.containerNode.qnamePath + "//*\" ";
+         filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "-@cm\\:workingCopyOwner:" + person.properties.userName;
          break;
       
       default:
-         filterQuery = "+PATH:\"" + obj.pathNode.qnamePath + "/*\" ";
+         filterQuery = "+PATH:\"" + obj.parentNode.qnamePath + "/*\" ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          break;
    }

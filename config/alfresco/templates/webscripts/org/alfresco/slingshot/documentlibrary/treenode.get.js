@@ -1,14 +1,9 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
+
 /**
  * Document List Component: treenode
- *
- * Inputs:
- *  mandatory: site = the site containing the document library
- *   optional: path = folder relative to root store
- *
- * Outputs:
- *  treenode - object containing list of child folder nodes for a TreeView widget
  */
-model.treenode = getTreenode(args["site"], args["path"]);
+model.treenode = getTreenode();
 
 /* Create collection of folders in the given space */
 function getTreenode(siteId, path)
@@ -17,37 +12,15 @@ function getTreenode(siteId, path)
    {
       var items = new Array();
    
-      /* siteId input */
-      var site = siteService.getSite(siteId);
-      if (site === null)
+      // Use helper function to get the arguments
+      var parsedArgs = getParsedArgs();
+      if (parsedArgs === null)
       {
-         status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
-         return;
-      }
-   
-      var parentNode = site.getContainer("documentLibrary");
-      if (parentNode === null)
-      {
-         status.setCode(status.STATUS_BAD_REQUEST, "Document Library container not found in: " + siteId + ". (No write permission?)");
          return;
       }
 
-      /* path input */
-      if ((path !== null) && (path != ""))
-      {
-         parentSpace = parentNode.childByNamePath(path);
-      }
-      else
-      {
-         parentSpace = parentNode;
-      }
-      
-      if (parentSpace === null)
-      {
-         parentSpace = parentNode;
-      }
-
-      for each(item in parentSpace.children)
+      // Look for folders in the parentNode
+      for each(item in parsedArgs.parentNode.children)
       {
          if (item.isContainer)
          {
@@ -57,7 +30,8 @@ function getTreenode(siteId, path)
    
       items.sort(sortByName);
    
-      return ({
+      return (
+      {
          "items": items
       });
    }

@@ -45,6 +45,7 @@ function runAction(p_params)
       {
          id: resultId,
          nodeRef: resultNodeRef,
+         downloadUrl: "api/node/content/" + resultNodeRef.replace(":/", "") + "/" + workingCopy.name + "?a=true",
          action: "checkoutAsset",
          success: true
       }];

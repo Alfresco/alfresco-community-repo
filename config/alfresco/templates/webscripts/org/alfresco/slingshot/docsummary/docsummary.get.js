@@ -43,7 +43,7 @@ function getDocs(siteId, filter)
       if (logger.isLoggingEnabled())
          logger.log("docsummary query = " + query);
       
-      var docs = search.luceneSearch("workspace://SiteStore", query, "cm:modified", false);
+      var docs = search.luceneSearch(query, "cm:modified", false);
       
       if (logger.isLoggingEnabled())
          logger.log("number of results = " + docs.length);

@@ -20,7 +20,7 @@ function main()
 {
    // Params object contains commonly-used arguments
    var params;
-   if (url.templateArgs.storetype != undefined)
+   if (url.templateArgs.store_type != undefined)
    {
       params = getNodeRefInputParams();
    }
@@ -89,37 +89,37 @@ function getSiteInputParams()
    try
    {
       // First try to get the parameters from the URI
-      var siteId = url.templateArgs.siteid;
-      var containerId = url.templateArgs.containerId;
-      var filePath = url.templateArgs.filepath;
+      var siteId = url.templateArgs.site;
+      var containerId = url.templateArgs.container;
+      var filePath = url.templateArgs.path;
 
       // Was a JSON parameter list supplied?
       // TODO: Also handle multiple files
       if (typeof json == "object")
       {
-         if (!json.isNull("siteid"))
+         if (!json.isNull("site"))
          {
-            siteId = json.get("siteid");
+            siteId = json.get("site");
          }
-         if (!json.isNull("containerId"))
+         if (!json.isNull("container"))
          {
-            containerId = json.get("containerId");
+            containerId = json.get("container");
          }
-         if (!json.isNull("filepath"))
+         if (!json.isNull("path"))
          {
-            filePath = json.get("filepath");
+            filePath = json.get("path");
          }
       }
 
    	if ((siteId === null) || (siteId.length === 0))
    	{
-   		return "'siteId' parameter is missing.";
+   		return "'site' parameter is missing.";
    	}
 
       // containerId
    	if ((containerId === null) || (containerId.length === 0))
    	{
-   		return "'containerId' parameter is missing.";
+   		return "'container' parameter is missing.";
    	}
    	
    	// filePath might be null for the root folder
@@ -175,21 +175,21 @@ function getNodeRefInputParams()
    try
    {
       // First try to get the parameters from the URI
-      var storeType = url.templateArgs.storetype;
-      var storeId = url.templateArgs.storeid;
+      var storeType = url.templateArgs.store_type;
+      var storeId = url.templateArgs.store_id;
       var id = url.templateArgs.id;
 
       // Was a JSON parameter list supplied?
       // TODO: Also handle multiple files
       if (typeof json == "object")
       {
-         if (!json.isNull("storetype"))
+         if (!json.isNull("store_type"))
          {
-            storeType = json.get("storetype");
+            storeType = json.get("store_type");
          }
-         if (!json.isNull("storeid"))
+         if (!json.isNull("store_id"))
          {
-            storeId = json.get("storeid");
+            storeId = json.get("store_id");
          }
          if (!json.isNull("id"))
          {

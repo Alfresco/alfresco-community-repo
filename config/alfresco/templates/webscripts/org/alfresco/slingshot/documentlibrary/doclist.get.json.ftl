@@ -1,3 +1,4 @@
+<#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 {
    "doclist":
    {
@@ -14,9 +15,8 @@
             "type": "<#if d.isContainer>folder<#else>document</#if>",
             "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
-            "displayName": "${d.name?replace(" (Working Copy)", "")?html}",
-            "actualName": "${d.name?html}",
-            "parent": "${item.parent}",
+            "fileName": "${d.name?html}",
+            "displayName": "${d.name?replace(workingCopyLabel, "")?html}",
             "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
             "lockedBy": "${item.owner}",
             "title": "${(d.properties.title!"")?html}",

@@ -343,8 +343,8 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals(false, item.getBoolean("isUpdated"));
     	
     	item = updatePost(item.getString("name"), null, null, null, false, 200);
-    	assertEquals("test", item.getString("title"));
-    	assertEquals("test", item.getString("content"));
+    	assertEquals("", item.getString("title"));
+    	assertEquals("", item.getString("content"));
     }
     
     public void testPublishThroughUpdate() throws Exception
@@ -466,22 +466,22 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals("new content", commentTwoUpdated.getString("content"));
     }
     
-    public void _testPostTags() throws Exception
+    public void testPostTags() throws Exception
     {
-    	String[] tags = { "First", "Test" };
+    	String[] tags = { "first", "test" };
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
     	assertEquals(2, item.getJSONArray("tags").length());
-    	assertEquals("First", item.getJSONArray("tags").get(0));
-    	assertEquals("Test", item.getJSONArray("tags").get(0));
+    	assertEquals("first", item.getJSONArray("tags").get(0));
+    	assertEquals("test", item.getJSONArray("tags").get(1));
     	
     	item = updatePost(item.getString("name"), null, null, new String[] { "First", "Test", "Second" }, false, 200);
     	assertEquals(3, item.getJSONArray("tags").length());
-    	assertEquals("First", item.getJSONArray("tags").get(0));
-    	assertEquals("Test", item.getJSONArray("tags").get(0));
-    	assertEquals("Second", item.getJSONArray("tags").get(0));
+    	assertEquals("first", item.getJSONArray("tags").get(0));
+    	assertEquals("test", item.getJSONArray("tags").get(1));
+    	assertEquals("second", item.getJSONArray("tags").get(2));
     }
     
-    public void _testClearTags() throws Exception
+    public void testClearTags() throws Exception
     {
     	String[] tags = { "abc", "def"};
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);

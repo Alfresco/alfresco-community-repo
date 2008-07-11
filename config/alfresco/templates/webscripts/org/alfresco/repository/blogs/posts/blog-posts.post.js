@@ -2,28 +2,35 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/nodenameutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
+function ensureTagScope(node)
+{
+   if (! node.isTagScope)
+   {
+      node.isTagScope = true;
+   }
+}
+
 /**
  * Creates a blog post
  */
 function createBlogPost(blogNode)
 {
    // fetch the data required to create the post
-   var title = null;
+   var title = "";
    if (json.has("title"))
    {
       title = json.get("title");
    }
-   var content = null;
+   var content = "";
    if (json.has("content"))
    {
       content = json.get("content");
    }
-   var tags = null;
+   var tags = [];
    if (json.has("tags"))
    {
       // get the tags JSONArray and copy it into a real javascript array object
       var tmp = json.get("tags");
-      tags = new Array();
       for (var x=0; x < tmp.length(); x++)
       {
           tags.push(tmp.get(x));
@@ -37,19 +44,10 @@ function createBlogPost(blogNode)
    var postNode = blogNode.createNode(nodeName, "cm:content");
 
    // set values where supplied
-   if (title !== null)
-   {
-      postNode.properties.title = title;
-   }   
-   if (content !== null)
-   {
-      postNode.mimetype = "text/html";
-      postNode.content = content;
-   }
-   /*if (tags !== null)
-   {
-      postNode.tags = tags;
-   }*/
+   postNode.properties.title = title;
+   postNode.mimetype = "text/html";
+   postNode.content = content;
+   postNode.tags = tags;
    postNode.save();
    
    // check whether it is in draft mode
@@ -76,9 +74,22 @@ function main()
 	{
 		return;
 	}
+	
+	ensureTagScope(node);
 
 	var post = createBlogPost(node);
 	model.item = getBlogPostData(post);
+	
+   // post an activitiy item, but only if we got a site
+   if (url.templateArgs.site != null && ! model.item.isDraft)
+   {
+      var browsePostUrl = '/page/site/' + url.templateArgs.site + '/blog-postview?container=' + url.templateArgs.container + '&postId=' + post.name;      
+      var data = {
+          title: post.properties.title,
+          browsePostUrl: browsePostUrl
+      }
+      activities.postActivity("org.alfresco.blog.post-created", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+   }
 }
 
 main();

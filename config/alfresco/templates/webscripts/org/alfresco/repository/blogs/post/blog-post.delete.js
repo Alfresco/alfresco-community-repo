@@ -25,7 +25,21 @@ function main()
       return;
    }
 
+   var title = node.properties.title;
+   var tags = node.properties.tags;
+          
    deleteBlogPost(node);
+   
+   // post an activitiy item, but only if we got a site
+   if (url.templateArgs.site != null)
+   {
+      var browsePostListUrl = '/page/site/' + url.templateArgs.site + '/blog-postlist?container=' + url.templateArgs.container;
+      var data = {
+          title: title,
+          browsePostListUrl: browsePostListUrl
+      }
+      activities.postActivity("org.alfresco.blog.post-deleted", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+   }
 }
 
 main();

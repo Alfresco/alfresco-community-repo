@@ -5,27 +5,27 @@ model.siteId = siteId;
 
 function getEvents(siteId)
 {
-  var site = siteService.getSite(siteId);
-  if (site === null)
-  {
-    return [];
-  }
+   var site = siteService.getSite(siteId);
+   if (site === null)
+   {
+      return [];
+   }
 
-  var calendar = site.getContainer("calendar");
-  if (calendar === null)
-  {
-    return [];
-  }
+   var calendar = site.getContainer("calendar");
+   if (calendar === null)
+   {
+      return [];
+   }
+   
+   if (!calendar.isTagScope)
+   {
+      calendar.isTagScope = true;
+   }
 
-  var events = calendar.children;
-  if (events.length > 0)
-  {
-    events  = events.sort(function(a,b) {
-			    return a.properties["ia:fromDate"] - b.properties["ia:fromDate"];
-			  });
-  }
+   var query = "+PATH:\"/app:company_home/st:sites/cm:" + site.shortName + "/cm:calendar/*\" ";
+   query += "+TYPE:\"{com.infoaxon.alfresco.calendar}calendarEvent\"";
 
-  return events;
+   return search.luceneSearch(query, "ia:fromDate", true);
 };
 
 

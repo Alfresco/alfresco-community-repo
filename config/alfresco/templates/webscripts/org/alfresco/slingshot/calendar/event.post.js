@@ -16,7 +16,8 @@ var props = [
    "start",
    "dateto",
    "end",
-   "allday"
+   "allday",
+   "tags"
 ];
 
 var p;
@@ -55,6 +56,11 @@ function createEvent(siteId, params)
       "error": "Could not get container"
     };
   }
+  
+  if (!calendar.isTagScope)
+  {
+     calendar.isTagScope = true;
+  }
 
   var timestamp = new Date().getTime();
   var event = calendar.createNode(timestamp + ".ics", "ia:calendarEvent");
@@ -78,6 +84,13 @@ function createEvent(siteId, params)
   {
      fromDate += " " + params["start"];
      toDate += " " + params["end"];
+  }
+  
+  var tags = params["tags"]; // space delimited string
+  if (tags)
+  {
+     var tagsArray = tags.split(" ");
+     event.tags = tagsArray;
   }
   
   var from = new Date(fromDate);

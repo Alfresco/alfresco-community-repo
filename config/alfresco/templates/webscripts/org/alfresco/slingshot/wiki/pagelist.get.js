@@ -26,6 +26,11 @@ function getWikiPages(siteId)
 	   return;
    }
    
+   if (!wiki.isTagScope)
+   {
+      wiki.isTagScope = true;
+   }
+   
    var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
    
    if (filter && filter != "all")

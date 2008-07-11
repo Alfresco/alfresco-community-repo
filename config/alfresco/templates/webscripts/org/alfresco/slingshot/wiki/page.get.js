@@ -54,11 +54,16 @@ function main()
 		return null;
     }
     
+    if (!wiki.isTagScope)
+    {
+       wiki.isTagScope = true;
+    }
+    
 	 var page = wiki.childByNamePath(params.pageTitle);
     if (page === null)
     {
 		page = createWikiPage(params.pageTitle, wiki, {
-			content: 'This is a new page. It contains no content',
+			content: DEFAULT_PAGE_CONTENT,
 			versionable: true
 		});
 	  

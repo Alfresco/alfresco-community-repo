@@ -1,7 +1,7 @@
 /**
  * A collection of general functions used across most wiki scripts.
  */
-
+const DEFAULT_PAGE_CONTENT = "This is a new page. It has no content";
 /**
  * Takes an array of template parameter arguments
  * and returns an object keyed on parameter name.

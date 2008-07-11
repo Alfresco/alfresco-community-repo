@@ -142,7 +142,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public boolean exists(StoreRef storeRef)
     {
-        return dbNodeService.exists(storeRef);
+        return dbNodeService.exists(VersionUtil.convertStoreRef(storeRef));
     }
 
     /**

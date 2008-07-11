@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -142,7 +144,10 @@ public class ScriptNode implements Serializable, Scopeable
     
     /** The properties of this node */
     private ScriptableQNameMap<String, Serializable> properties = null;
-    
+
+    /** The versions of this node */
+    private Scriptable versions = null;
+
     protected ServiceRegistry services = null;
     private NodeService nodeService = null;
     private Boolean isDocument = null;
@@ -1522,6 +1527,78 @@ public class ScriptNode implements Serializable, Scopeable
     
     // ------------------------------------------------------------------------------
     // Checkout/Checkin Services
+
+    /**
+     * Create a version of this document.  Note: this will add the cm:versionable aspect.
+     * 
+     * @param history       Version history note
+     * @param majorVersion  True to save as a major version increment, false for minor version.
+     */
+    public ScriptVersion createVersion(String history, boolean majorVersion)
+    {
+        Map<String, Serializable> props = new HashMap<String, Serializable>(2, 1.0f);
+        props.put(Version.PROP_DESCRIPTION, history);
+        props.put(VersionModel.PROP_VERSION_TYPE, majorVersion ? VersionType.MAJOR : VersionType.MINOR);
+        ScriptVersion version = new ScriptVersion(this.services.getVersionService().createVersion(this.nodeRef, props), this.services, this.scope);
+        this.versions = null;
+        return version;
+    }
+
+    /**
+     * Determines if this node is versioned
+     * 
+     * @return  true => is versioned
+     */
+    public boolean getIsVersioned()
+    {
+        return this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE);
+    }
+    
+    /**
+     * Gets the version history
+     * 
+     * @return  version history
+     */
+    public Scriptable getVersionHistory()
+    {
+        if (this.versions == null && getIsVersioned())
+        {
+            VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
+            if (history != null)
+            {
+                Collection<Version> allVersions = history.getAllVersions();
+                Object[] versions = new Object[allVersions.size()];
+                int i = 0;
+                for (Version version : allVersions)
+                {
+                    versions[i++] = new ScriptVersion(version, this.services, this.scope);
+                }
+                this.versions = Context.getCurrentContext().newArray(this.scope, versions);
+            }
+        }
+        return this.versions;
+    }
+    
+    /**
+     * Gets the version of this node specified by version label
+     * 
+     * @param versionLabel  version label
+     * @return  version of node, or null if node is not versioned, or label does not exist
+     */
+    public ScriptVersion getVersion(String versionLabel)
+    {
+        if (!getIsVersioned())
+        {
+            return null;
+        }
+        VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
+        Version version = history.getVersion(versionLabel);
+        if (version == null)
+        {
+            return null;
+        }
+        return new ScriptVersion(version, this.services, this.scope); 
+    }
     
     /**
      * Perform a check-out of this document into the current parent space.
@@ -1605,6 +1682,7 @@ public class ScriptNode implements Serializable, Scopeable
         props.put(Version.PROP_DESCRIPTION, history);
         props.put(VersionModel.PROP_VERSION_TYPE, majorVersion ? VersionType.MAJOR : VersionType.MINOR);
         NodeRef original = this.services.getCheckOutCheckInService().checkin(this.nodeRef, props);
+        this.versions = null;
         return newInstance(original, this.services, this.scope);
     }
     
@@ -1620,8 +1698,7 @@ public class ScriptNode implements Serializable, Scopeable
         NodeRef original = this.services.getCheckOutCheckInService().cancelCheckout(this.nodeRef);
         return newInstance(original, this.services, this.scope);
     }
-    
-    
+        
     // ------------------------------------------------------------------------------
     // Transformation and Rendering API
     

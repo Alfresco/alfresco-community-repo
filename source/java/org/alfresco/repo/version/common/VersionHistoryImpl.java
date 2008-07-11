@@ -26,7 +26,11 @@ package org.alfresco.repo.version.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
@@ -63,8 +67,16 @@ public class VersionHistoryImpl implements VersionHistory
     /*
      * Label to version object map
      */
-    private HashMap<String, Version> versions = null;
+    private HashMap<String, Version> versionsByLabel = null;
     
+    /*
+     * Versions ordered by creation date (descending)
+     */
+    private Map<Date, Version> versions = new TreeMap<Date, Version>(new VersionComparator());
+
+    /**
+     * Root version
+     */
     private Version rootVersion;
     
     /**
@@ -82,7 +94,7 @@ public class VersionHistoryImpl implements VersionHistory
         }
         
         this.versionHistory = new HashMap<String, String>();
-        this.versions = new HashMap<String, Version>();
+        this.versionsByLabel = new HashMap<String, Version>();
         
         this.rootVersion = rootVersion;
         this.rootVersionLabel = rootVersion.getVersionLabel();
@@ -103,7 +115,7 @@ public class VersionHistoryImpl implements VersionHistory
      * Gets a collection containing all the versions within the
      * version history.
      * <p>
-     * The order of the versions is not guarenteed.
+     * Versions are returned in descending create date order.
      * 
      * @return  collection containing all the versions
      */
@@ -170,7 +182,7 @@ public class VersionHistoryImpl implements VersionHistory
         Version result = null;
         if (versionLabel != null)
         {
-            result = this.versions.get(versionLabel);
+            result = this.versionsByLabel.get(versionLabel);
             
             if (result == null)
             {
@@ -193,11 +205,26 @@ public class VersionHistoryImpl implements VersionHistory
     {
         // TODO cope with exception case where duplicate version labels have been specified
         
-        this.versions.put(version.getVersionLabel(), version);
+        this.versionsByLabel.put(version.getVersionLabel(), version);
+        this.versions.put(version.getCreatedDate(), version);
         
         if (predecessor != null)
         {
             this.versionHistory.put(version.getVersionLabel(), predecessor.getVersionLabel());
         }
     }
+
+    /**
+     * Version Comparator
+     * 
+     * Note: Descending create date order 
+     */
+    public class VersionComparator implements Comparator<Date>
+    {
+        public int compare(Date o1, Date o2)
+        {
+            return o2.compareTo(o1);
+        }
+    }
+
 }

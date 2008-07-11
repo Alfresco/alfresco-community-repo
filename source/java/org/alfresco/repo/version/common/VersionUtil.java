@@ -72,6 +72,17 @@ public class VersionUtil
     }
 
     /**
+     * Create Version Store Ref
+     * 
+     * @param  store ref
+     * @return  store ref for version store
+     */
+    public static StoreRef convertStoreRef(StoreRef storeRef)
+    {
+        return new StoreRef(StoreRef.PROTOCOL_WORKSPACE, storeRef.getIdentifier());
+    }
+    
+    /**
      * Convert the incomming node ref (with the version store protocol specified)
      * to the internal representation with the workspace protocol.
      *
@@ -80,6 +91,6 @@ public class VersionUtil
      */
     public static NodeRef convertNodeRef(NodeRef nodeRef)
     {
-        return new NodeRef(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionModel.STORE_ID), nodeRef.getId());
+        return new NodeRef(convertStoreRef(nodeRef.getStoreRef()), nodeRef.getId());
     }
 }

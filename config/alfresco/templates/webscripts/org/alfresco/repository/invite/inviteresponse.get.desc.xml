@@ -1,7 +1,7 @@
 <webscript>
    <shortname>Invite Response</shortname>
    <description>Processes invite response from Invitee</description>
-   <url>/api/inviteresponse/{response}?workflowId={workflowId}&amp;inviteeUserName={inviteeUserName}&amp;siteShortName={siteShortName}</url>
+   <url>/api/inviteresponse/{response}?inviteId={inviteId}&amp;inviteeUserName={inviteeUserName}&amp;siteShortName={siteShortName}</url>
    <format default="json"/>
    <authentication>guest</authentication>
    <transaction>required</transaction>

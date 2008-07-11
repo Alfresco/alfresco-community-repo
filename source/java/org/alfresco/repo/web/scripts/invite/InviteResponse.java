@@ -158,7 +158,7 @@ public class InviteResponse extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>();
 
         // get the URL parameter values
-        String workflowId = req.getParameter("workflowId");
+        String inviteId = req.getParameter("inviteId");
         String inviteeUserName = req.getParameter("inviteeUserName");
         String siteShortName = req.getParameter("siteShortName");
 
@@ -172,12 +172,12 @@ public class InviteResponse extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "response has not been provided as part of URL.");
         }
-        // check that workflow id URL parameter has been provided
-        else if ((workflowId == null) || (workflowId.length() == 0))
+        // check that invite id URL parameter has been provided
+        else if ((inviteId == null) || (inviteId.length() == 0))
         {
-            // handle workflow id not provided
+            // handle invite id not provided
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "workflow id parameter has not been provided in the URL.");
+                    "invite id parameter has not been provided in the URL.");
         }
         // check that inviteeUserName URL parameter has been provided
         else if ((inviteeUserName == null) || (inviteeUserName.length() == 0))
@@ -197,10 +197,10 @@ public class InviteResponse extends DeclarativeWebScript
             // process response
             if (response.equals(RESPONSE_ACCEPT))
             {
-                acceptInvite(model, workflowId, inviteeUserName, siteShortName);
+                acceptInvite(model, inviteId, inviteeUserName, siteShortName);
             } else if (response.equals(RESPONSE_REJECT))
             {
-                rejectInvite(model, workflowId, inviteeUserName, siteShortName);
+                rejectInvite(model, inviteId, inviteeUserName, siteShortName);
             } else
             {
                 /* handle unrecognised response */
@@ -219,18 +219,22 @@ public class InviteResponse extends DeclarativeWebScript
      * @param model
      *            model to add objects to, which will be passed to the template
      *            for rendering
-     * @param workflowId
-     *            string id of invite process workflow instance
+     * @param inviteId
+     *            ID of invite
      * @param inviteeUserName
-     *            string user name of invitee
+     *            user name of invitee
      * @param siteShortName
-     *            string short name of site for which invitee is accepting
+     *            short name of site for which invitee is accepting
      *            invitation to join
      */
-    private void acceptInvite(Map<String, Object> model, String workflowId,
+    private void acceptInvite(Map<String, Object> model, String inviteId,
             String inviteeUserName, String siteShortName)
     {
-        // get workflow paths associated with given workflow ID
+        // get workflow ID from invite ID (of which the value is actually
+        // just the ID of the invite workflow instance)
+        String workflowId = inviteId;
+        
+        // get workflow paths associated with workflow ID
         List<WorkflowPath> wfPaths = this.workflowService
                 .getWorkflowPaths(workflowId);
 
@@ -269,18 +273,22 @@ public class InviteResponse extends DeclarativeWebScript
      * @param model
      *            model to add objects to, which will be passed to the template
      *            for rendering
-     * @param workflowId
-     *            string id of invite process workflow instance
+     * @param inviteId
+     *            ID of invite
      * @param inviteeUserName
-     *            string user name of invitee
+     *            user name of invitee
      * @param siteShortName
-     *            string short name of site for which invitee is rejecting
+     *            short name of site for which invitee is rejecting
      *            invitation to join
      */
-    private void rejectInvite(Map<String, Object> model, String workflowId,
+    private void rejectInvite(Map<String, Object> model, String inviteId,
             String inviteeUserName, String siteShortName)
     {
-        // get workflow paths associated with given workflow ID
+        // get workflow ID from invite ID (of which the value is actually
+        // just the ID of the invite workflow instance)
+        String workflowId = inviteId;
+        
+        // get workflow paths associated with workflow ID
         List<WorkflowPath> wfPaths = this.workflowService
                 .getWorkflowPaths(workflowId);
 

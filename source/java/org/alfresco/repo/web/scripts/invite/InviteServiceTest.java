@@ -235,24 +235,24 @@ public class InviteServiceTest extends BaseWebScriptTest
         JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
                 Status.STATUS_OK);
 
-        // get hold of workflow ID of started invite workflow instance
-        String workflowId = result.getString("workflowId");
+        // get hold of invite ID of started invite
+        String inviteId = result.getString("inviteId");
 
         // Inviter cancels pending invitation
         String cancelInviteUrl = URL_INVITE_SERVICE + "/"
-                + INVITE_ACTION_CANCEL + "?workflowId=" + workflowId;
+                + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
         MockHttpServletResponse response = getRequest(cancelInviteUrl,
                 Status.STATUS_OK);
     }
 
     public void testAcceptInvite() throws Exception
     {
-        // inviter starts invite workflow
+        // inviter starts invite (sends out invitation)
         JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
                 Status.STATUS_OK);
 
-        // get hold of workflow ID of started invite workflow instance
-        String workflowId = result.getString("workflowId");
+        // get hold of invite ID of started invite
+        String inviteId = result.getString("inviteId");
 
         // get hold of invitee user name that was generated as part of starting
         // the invite
@@ -260,7 +260,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // Invitee accepts invitation to a Site from Inviter
         String acceptInviteUrl = URL_INVITERSP_SERVICE + "/"
-                + INVITE_RSP_ACCEPT + "?workflowId=" + workflowId
+                + INVITE_RSP_ACCEPT + "?inviteId=" + inviteId
                 + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
                 + SITE_SHORT_NAME_INVITE;
         MockHttpServletResponse response = getRequest(acceptInviteUrl,
@@ -269,12 +269,12 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     public void testRejectInvite() throws Exception
     {
-        // inviter starts invite workflow
+        // inviter starts invite (sends out invitation)
         JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
                 Status.STATUS_OK);
 
-        // get hold of workflow ID of started invite workflow instance
-        String workflowId = result.getString("workflowId");
+        // get hold of invite ID of started invite
+        String inviteId = result.getString("inviteId");
 
         // get hold of invitee user name that was generated as part of starting
         // the invite
@@ -282,7 +282,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // Invitee rejects invitation to a Site from Inviter
         String rejectInviteUrl = URL_INVITERSP_SERVICE + "/"
-                + INVITE_RSP_REJECT + "?workflowId=" + workflowId
+                + INVITE_RSP_REJECT + "?inviteId=" + inviteId
                 + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
                 + SITE_SHORT_NAME_INVITE;
         MockHttpServletResponse response = getRequest(rejectInviteUrl,
@@ -297,7 +297,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get hold of workflow ID of started invite workflow instance
         
-        String inviteId = startInviteResult.getString("workflowId");
+        String inviteId = startInviteResult.getString("inviteId");
 
         assertEquals(true, ((inviteId != null) && (inviteId.length() != 0)));
         

@@ -1,9 +1,9 @@
 {
    "action" : "${action}",
-   <#if workflowId??>
-      "workflowId" : "${workflowId}",
+   <#if inviteId??>
+      "inviteId" : "${inviteId}",
    <#else>
-      "workflowId" : undefined,
+      "inviteId" : undefined,
    </#if>
    <#if inviteeUserName??>
       "inviteeUserName" : "${inviteeUserName}",

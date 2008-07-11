@@ -64,14 +64,14 @@ public class Invite extends DeclarativeWebScript
     private static final String TRANSITION_SEND_INVITE = "sendInvite";
 
     private static final String MODEL_PROP_KEY_ACTION = "action";
-    private static final String MODEL_PROP_KEY_WORKFLOW_ID = "workflowId";
+    private static final String MODEL_PROP_KEY_INVITE_ID = "inviteId";
     private static final String MODEL_PROP_KEY_INVITEE_USER_NAME = "inviteeUserName";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
     
     // URL request parameter names
     private static final String PARAM_INVITEE_EMAIL = "inviteeEmail";
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName"; 
-    private static final String PARAM_WORKFLOW_ID = "workflowId";
+    private static final String PARAM_INVITE_ID = "inviteId";
     
     // services
     private WorkflowService workflowService;
@@ -255,19 +255,19 @@ public class Invite extends DeclarativeWebScript
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
         {
-            // check for 'workflowId' parameter not provided
-            String workflowId = req.getParameter(PARAM_WORKFLOW_ID);
-            if ((workflowId == null) || (workflowId.length() == 0))
+            // check for 'inviteId' parameter not provided
+            String inviteId = req.getParameter(PARAM_INVITE_ID);
+            if ((inviteId == null) || (inviteId.length() == 0))
             {
-                // handle workflowId URL parameter not provided
+                // handle inviteId URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "'workflowId' parameter has "
+                        "'inviteId' parameter has "
                                 + "not been provided in URL for action '"
                                 + ACTION_CANCEL + "'");
             }
 
             // process action 'cancel' with provided parameters
-            cancelInvite(model, workflowId);
+            cancelInvite(model, inviteId);
         }
         // handle action not recognised
         else
@@ -401,7 +401,7 @@ public class Invite extends DeclarativeWebScript
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
-        model.put(MODEL_PROP_KEY_WORKFLOW_ID, workflowId);
+        model.put(MODEL_PROP_KEY_INVITE_ID, workflowId);
         model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, inviteeUserName);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
     }
@@ -413,25 +413,25 @@ public class Invite extends DeclarativeWebScript
      * @param model
      *            model to add objects to, which will be passed to the template
      *            for rendering
-     * @param workflowId
-     *            workflow id of the invite process that inviter wishes to
+     * @param inviteId
+     *            invite id of the invitation that inviter wishes to
      *            cancel
      */
-    private void cancelInvite(Map<String, Object> model, String workflowId)
+    private void cancelInvite(Map<String, Object> model, String inviteId)
     {
-        // handle workflow instance for given workflow ID does not exist
-        if ((workflowId == null) || (workflowId.length() == 0))
+        // handle given invite ID null or empty
+        if ((inviteId == null) || (inviteId.length() == 0))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Workflow instance for given " + "workflow ID "
-                            + workflowId + " does not exist");
+                    "Given invite ID " + inviteId + " null or empty");
         }
 
-        // cancel the workflow
-        this.workflowService.cancelWorkflow(workflowId);
+        // cancel the workflow with the given invite ID
+        // which is actually the workflow ID
+        this.workflowService.cancelWorkflow(inviteId);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
-        model.put(MODEL_PROP_KEY_WORKFLOW_ID, workflowId);
+        model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
     }
 }

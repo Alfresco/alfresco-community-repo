@@ -27,11 +27,10 @@ package org.alfresco.repo.version.common;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.List;
 
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
@@ -73,12 +72,15 @@ public class VersionHistoryImpl implements VersionHistory
     /*
      * Versions ordered by creation date (descending)
      */
-    private Map<Date, Version> versions = new TreeMap<Date, Version>(new VersionComparator());
+    private static VersionComparator versionComparator = new VersionComparator();
+    private List<Version> versions = new ArrayList<Version>();
 
     /**
      * Root version
      */
     private Version rootVersion;
+    
+    
     
     /**
      * Constructor, ensures the root version is set.
@@ -122,7 +124,8 @@ public class VersionHistoryImpl implements VersionHistory
      */
     public Collection<Version> getAllVersions()
     {
-        return this.versions.values();
+    	Collections.sort(versions, versionComparator);
+        return versions;
     }
     
     /**
@@ -207,7 +210,7 @@ public class VersionHistoryImpl implements VersionHistory
         // TODO cope with exception case where duplicate version labels have been specified
         
         this.versionsByLabel.put(version.getVersionLabel(), version);
-        this.versions.put(version.getCreatedDate(), version);
+        this.versions.add(version);
         
         if (predecessor != null)
         {
@@ -220,11 +223,13 @@ public class VersionHistoryImpl implements VersionHistory
      * 
      * Note: Descending create date order 
      */
-    public class VersionComparator implements Comparator<Date>, Serializable
+    public static class VersionComparator implements Comparator<Version>, Serializable
     {
-        public int compare(Date o1, Date o2)
+		private static final long serialVersionUID = 6227528170880231770L;
+
+		public int compare(Version v1, Version v2)
         {
-            return o2.compareTo(o1);
+        	return v2.getCreatedDate().compareTo(v1.getCreatedDate());
         }
     }
 

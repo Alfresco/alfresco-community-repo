@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.SearchPath;
 import org.alfresco.web.scripts.Status;
@@ -53,11 +54,11 @@ public class TemplatesWebScript extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
-        // process arguments 
-        String p = req.getParameter("p"); // optional
-        
         String path = "/";
         String templatePattern = "*.ftl";
+        
+        // process extension
+        String p = req.getExtensionPath(); // optional
         
         if ((p != null) && (p.length() > 0))
         {

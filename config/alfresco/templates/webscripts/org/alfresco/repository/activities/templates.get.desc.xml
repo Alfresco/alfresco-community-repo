@@ -2,10 +2,10 @@
   <shortname>Activity Template Paths</shortname>
   <description>Get a collection of the template paths.</description>
   <url>/api/activities/templates</url>
-  <url>/api/activities/templates?p={path}&amp;format=json</url>
-  <url>/api/activities/templates?p={path}</url>
-  <url>/api/activities/templates?p={path}&amp;format=json</url>
-  <format default="json"/>
+  <url>/api/activities/templates?format=json</url>
+  <url>/api/activities/templates/{path}</url>
+  <url>/api/activities/templates/{path}?format=json</url>
+  <format default="json">argument</format>
   <authentication>admin</authentication>
   <transaction>required</transaction>
 </webscript>

@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.SearchPath;
 import org.alfresco.web.scripts.Status;
@@ -61,10 +62,16 @@ public class TemplateWebScript extends DeclarativeWebScript
     {
         Map<String, Object> model = new HashMap<String, Object>();
         
-        // process arguments 
-        String path = req.getParameter("p"); // required
+        // process extension
+        String path = req.getExtensionPath(); // required
         
-        if ((path != null) && (path.length() != 0))
+        if ((path == null) || (path.length() == 0))
+        {
+            String msg = "Failed to getTemplate: missing {path}";
+            logger.error(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+        else
         {        
             if (path.endsWith(".ftl"))
             {    

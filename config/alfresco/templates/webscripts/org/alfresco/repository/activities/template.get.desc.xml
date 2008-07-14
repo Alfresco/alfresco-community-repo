@@ -1,9 +1,9 @@
 <webscript>
   <shortname>Activity Type Template</shortname>
   <description>Get the activity type template.</description>
-  <url>/api/activities/template?p={path}</url>
-  <url>/api/activities/template?p={path}&amp;format=text</url>
-  <format default="text"/>
+  <url>/api/activities/template/{path}</url>
+  <url>/api/activities/template/{path}?format=text</url>
+  <format default="text">argument</format>
   <authentication>admin</authentication>
   <transaction>required</transaction>
 </webscript>

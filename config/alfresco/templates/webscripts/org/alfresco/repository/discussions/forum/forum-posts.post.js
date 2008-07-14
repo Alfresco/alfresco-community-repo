@@ -2,14 +2,40 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/nodenameutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
 
+function ensureTagScope(node)
+{
+   if (! node.isTagScope)
+   {
+      node.isTagScope = true;
+   }
+}
+
 /**
  * Adds a post to the passed forum node.
  */
 function createPost(forumNode)
 {
    // fetch the data required to create a topic
-   var title = json.get("title");
-   var content = json.get("content");
+   var title = "";
+   if (json.has("title"))
+   {
+      title = json.get("title");
+   }
+   var content = "";
+   if (json.has("title"))
+   {
+      content = json.get("content");
+   }
+   var tags = [];
+   if (json.has("tags"))
+   {
+      // get the tags JSONArray and copy it into a real javascript array object
+      var tmp = json.get("tags");
+      for (var x=0; x < tmp.length(); x++)
+      {
+          tags.push(tmp.get(x));
+      }
+   }
    
    // create the topic node, and add the first child node representing the topic text
    // NOTE: this is a change from the old web client, where the topic title was used as name
@@ -25,6 +51,9 @@ function createPost(forumNode)
    contentNode.content = content;
    contentNode.save();
 
+   // add the tags to the topic node for now
+   topicNode.tags = tags;
+
    return topicNode;
 }
 
@@ -37,9 +66,14 @@ function main()
       return;
    }
 
+   ensureTagScope(node);
+
    var topicPost = createPost(node);
    
    model.topicpost = getTopicPostData(topicPost);
+   
+   // add post created activitiy
+   
 }
 
 main();

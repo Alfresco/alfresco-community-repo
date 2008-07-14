@@ -5,13 +5,19 @@
 /**
  * Fetches all posts found in the forum.
  */
-function getTopicPostList(node, index, count)
+function getTopicPostList(node, tag, index, count)
 {
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
                        " +PATH:\"" + node.qnamePath + "/*\" ";
    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
      
+   // is a tag selected?
+   if (tag != null)
+   {
+      luceneQuery += " +PATH:\"/cm:taggable/cm:" + tag /*ISO9075.encode(tag)*/ + "/member\" ";
+   }
+   
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getTopicPostData);
 }
@@ -29,7 +35,10 @@ function main()
    var index = args["startIndex"] != undefined ? parseInt(args["startIndex"]) : 0;
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
 
-   model.data = getTopicPostList(node, index, count);
+   // selected tag
+   var tag = args["tag"] != undefined && args["tag"].length > 0 ? args["tag"] : null;
+
+   model.data = getTopicPostList(node, tag, index, count);
     
    model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
 }

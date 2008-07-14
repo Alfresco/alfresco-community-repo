@@ -58,7 +58,6 @@
 	"author" : "${post.properties.creator?j_string}",
 	<@addContent post=post />
 	"replyCount" : <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
-	"tags" : [ "ECM", "Alfresco" ],
 	"permissions" : { "edit": true, "delete" : true, "reply" : true }
 </#macro>
 

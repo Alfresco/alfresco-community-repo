@@ -49,32 +49,42 @@ function getOrderedPosts(topic)
  */
 function getTopicPostData(topicNode)
 {  
-    // fetch the posts
-    var posts = getOrderedPosts(topicNode);
+   // fetch the posts
+   var posts = getOrderedPosts(topicNode);
    
-	return getTopicPostDataFromTopicAndPosts(topicNode, posts);
+   return getTopicPostDataFromTopicAndPosts(topicNode, posts);
 }
 
 function getTopicPostDataFromTopicAndPosts(topicNode, posts)
 {
-    // check the first post (which is the main post)
-    if (posts.length < 1)
-	{
-		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "First post of topic node" + topicNode.nodeRef + " missing");
-		return;
-    }
-	
-	var item = new Object();
-	
-	// fetch the data
-	item.topic = topicNode;
-	item.post = posts[0];
-    item.totalReplyCount = posts.length - 1;
-	// in case of replies, find the last reply
-	if (posts.length > 1)
-	{
-		item.lastReply = posts[posts.length - 1];
-	}
+   // check the first post (which is the main post)
+   if (posts.length < 1)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "First post of topic node" + topicNode.nodeRef + " missing");
+      return;
+   }
+   
+   var item = new Object();
+   
+   // fetch the data
+   item.topic = topicNode;
+   item.post = posts[0];
+   item.totalReplyCount = posts.length - 1;
+   // in case of replies, find the last reply
+   if (posts.length > 1)
+   {
+      item.lastReply = posts[posts.length - 1];
+   }
 
-    return item;
+   // tags
+   if (topicNode.tags != undefined)
+   {
+       item.tags = topicNode.tags;
+   }
+   else
+   {
+       item.tags = [];
+   }
+
+   return item;
 }

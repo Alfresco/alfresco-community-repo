@@ -13,7 +13,11 @@ function createPostReplyImpl(topicNode, parentPostNode)
    {
       title = json.get("title");
    }
-   var content = json.get("content");
+   var content = "";
+   if (json.has("content"))
+   {
+      content = json.get("content");
+   }
 
    // create the post node using a unique name
    var name = getUniqueChildName(topicNode, "post");

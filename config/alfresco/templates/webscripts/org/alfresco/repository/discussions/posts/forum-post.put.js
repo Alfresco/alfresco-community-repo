@@ -3,21 +3,44 @@
 
 /**
  * Updates the passed forum post node.
+ * @param topic the topic node if the post is the top level post
+ * @param post the post node.
  */
-function updatePost(node)
+function updatePost(topic, post)
 {
    var title = "";
    if (json.has("title"))
    {
       title = json.get("title");
    }
-   var content = json.get("content");
+   var content = "";
+   if (json.has("content"))
+   {
+      content = json.get("content");
+   }
+   var tags = [];
+   if (json.has("tags"))
+   {
+      // get the tags JSONArray and copy it into a real javascript array object
+      var tmp = json.get("tags");
+      for (var x=0; x < tmp.length(); x++)
+      {
+          tags.push(tmp.get(x));
+      }
+   }
    
    // update the topic title
-   node.properties.title = title;
-   node.mimetype = "text/html";
-   node.content = content;
-   node.save();
+   post.properties.title = title;
+   post.mimetype = "text/html";
+   post.content = content;
+   post.save();
+   
+   // Only set the tags if it is a topic post
+   // as we currently don't support individual post tagging
+   if (topic != null)
+   {
+      topic.tags = tags;
+   }
 }
 
 function main()
@@ -29,15 +52,8 @@ function main()
       return;
    }
    
-   // find the post node - returns the passed node in case node is a post,
-   // or the primary post in case node is a topic
-   /* Due to https://issues.alfresco.com/browse/ALFCOM-1775
-      we will do the search here as we have to reuse the lucene result later
-   var postNode = findPostNode(node);
-   if (status.getCode() != status.STATUS_OK)
-   {
-      return;
-   }*/
+   // find the post node if this is a topic node
+   var topicNode = null;
    var postNode = null;
    if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
    {
@@ -45,6 +61,7 @@ function main()
    }
    else if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
    {
+      topicNode = node;
       var nodes = getOrderedPosts(node);
       if (nodes.length > 0)
       {
@@ -63,18 +80,22 @@ function main()
    }
    
    // update
-   updatePost(postNode);
-   
-   // fetch the data to render the result
-   if (node.nodeRef.equals(postNode.nodeRef)) // false for topic posts
+   updatePost(topicNode, postNode);
+
+   // Due to https://issues.alfresco.com/browse/ALFCOM-1775
+   // we have to reuse the search results from before altering the nodes,
+   // that's why we don't use the function fetchPostData here (which would
+   // do another lucene search in case of a topic post
+   if (topicNode == null)
    {
       model.post = node;
    }
    else
    {
+      // we will do the search here as we have to reuse the lucene result later
       // See above, use getTopicPostDataFromTopicAndPosts instead of getTopicPostData
       //model.topicpost = getTopicPostData(node);
-      model.topicpost = getTopicPostDataFromTopicAndPosts(node, nodes);
+      model.topicpost = getTopicPostDataFromTopicAndPosts(topicNode, nodes);
    }
 }
 

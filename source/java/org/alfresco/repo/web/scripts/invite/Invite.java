@@ -66,9 +66,14 @@ public class Invite extends DeclarativeWebScript
     private static final String MODEL_PROP_KEY_ACTION = "action";
     private static final String MODEL_PROP_KEY_INVITE_ID = "inviteId";
     private static final String MODEL_PROP_KEY_INVITEE_USER_NAME = "inviteeUserName";
+    private static final String MODEL_PROP_KEY_INVITEE_FIRSTNAME = "inviteeFirstName";
+    private static final String MODEL_PROP_KEY_INVITEE_LASTNAME = "inviteeLastName";
+    private static final String MODEL_PROP_KEY_INVITEE_EMAIL = "inviteeEmail";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
     
     // URL request parameter names
+    private static final String PARAM_INVITEE_FIRSTNAME = "inviteeFirstName";
+    private static final String PARAM_INVITEE_LASTNAME = "inviteeLastName";
     private static final String PARAM_INVITEE_EMAIL = "inviteeEmail";
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName"; 
     private static final String PARAM_INVITE_ID = "inviteId";
@@ -227,6 +232,28 @@ public class Invite extends DeclarativeWebScript
         // handle action 'start'
         if (action.equals(ACTION_START))
         {
+            // check for 'inviteeFirstName' parameter not provided
+            String inviteeFirstName = req.getParameter(PARAM_INVITEE_FIRSTNAME);
+            if ((inviteeFirstName == null) || (inviteeFirstName.length() == 0))
+            {
+                // handle inviteeFirstName URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'inviteeFirstName' parameter "
+                                + "has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
+
+            // check for 'inviteeLastName' parameter not provided
+            String inviteeLastName = req.getParameter(PARAM_INVITEE_LASTNAME);
+            if ((inviteeLastName == null) || (inviteeLastName.length() == 0))
+            {
+                // handle inviteeLastName URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'inviteeLastName' parameter "
+                                + "has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
+
             // check for 'inviteeEmail' parameter not provided
             String inviteeEmail = req.getParameter(PARAM_INVITEE_EMAIL);
             if ((inviteeEmail == null) || (inviteeEmail.length() == 0))
@@ -250,7 +277,7 @@ public class Invite extends DeclarativeWebScript
             }
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeEmail, siteShortName);
+            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -286,6 +313,10 @@ public class Invite extends DeclarativeWebScript
      * @param model
      *            model to add objects to, which will be passed to the template
      *            for rendering
+     * @param inviteeFirstName
+     *            first name of invitee
+     * @param inviteeLastNamme
+     *            last name of invitee
      * @param inviteeEmail
      *            email address of invitee
      * @param siteShortName
@@ -293,8 +324,8 @@ public class Invite extends DeclarativeWebScript
      *            inviter
      * 
      */
-    private void startInvite(Map<String, Object> model, String inviteeEmail,
-            String siteShortName)
+    private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
+            String inviteeEmail, String siteShortName)
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
@@ -323,6 +354,8 @@ public class Invite extends DeclarativeWebScript
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
 
             properties.put(ContentModel.PROP_USERNAME, inviteeUserName);
+            properties.put(ContentModel.PROP_FIRSTNAME, inviteeFirstName);
+            properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
             properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
 
             this.personService.createPerson(properties);
@@ -403,6 +436,9 @@ public class Invite extends DeclarativeWebScript
         model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
         model.put(MODEL_PROP_KEY_INVITE_ID, workflowId);
         model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, inviteeUserName);
+        model.put(MODEL_PROP_KEY_INVITEE_FIRSTNAME, inviteeFirstName);
+        model.put(MODEL_PROP_KEY_INVITEE_LASTNAME, inviteeLastName);
+        model.put(MODEL_PROP_KEY_INVITEE_EMAIL, inviteeEmail);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
     }
 

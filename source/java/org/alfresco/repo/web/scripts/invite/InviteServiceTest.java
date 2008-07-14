@@ -51,6 +51,8 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     private static final String USER_ADMIN = "admin";
     private static final String USER_INVITER = "InviteeUser";
+    private static final String INVITEE_FIRSTNAME = "InviteeFirstName";
+    private static final String INVITEE_LASTNAME = "InviteeLastName";
     private static final String INVITEE_EMAIL = "inviter123@email.com";
     private static final String SITE_SHORT_NAME_INVITE = "InviteSiteShortName";
 
@@ -145,15 +147,14 @@ public class InviteServiceTest extends BaseWebScriptTest
         }
     }
 
-    private JSONObject startInvite(String inviteeEmail, String siteShortName,
-            int expectedStatus) throws Exception
+    private JSONObject startInvite(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
+            String siteShortName, int expectedStatus) throws Exception
     {
         // Inviter sends invitation to Invitee to join a Site
         String startInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_START
-                + "?inviteeEmail=" + inviteeEmail + "&siteShortName="
-                + siteShortName;
-        MockHttpServletResponse response = getRequest(startInviteUrl,
-                expectedStatus);
+                + "?inviteeFirstName=" + inviteeFirstName + "&inviteeLastName=" + inviteeLastName
+                + "&inviteeEmail=" + inviteeEmail + "&siteShortName=" + siteShortName;
+        MockHttpServletResponse response = getRequest(startInviteUrl, expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -222,18 +223,21 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     public void testStartInvite() throws Exception
     {
-        JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
 
         assertEquals(INVITE_ACTION_START, result.get("action"));
+        assertEquals(INVITEE_FIRSTNAME, result.get("inviteeFirstName"));
+        assertEquals(INVITEE_LASTNAME, result.get("inviteeLastName"));
+        assertEquals(INVITEE_EMAIL, result.get("inviteeEmail"));
         assertEquals(SITE_SHORT_NAME_INVITE, result.get("siteShortName"));
     }
 
     public void testCancelInvite() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -248,8 +252,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testAcceptInvite() throws Exception
     {
         // inviter starts invite (sends out invitation)
-        JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -270,8 +274,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testRejectInvite() throws Exception
     {
         // inviter starts invite (sends out invitation)
-        JSONObject result = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -292,8 +296,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testGetInvitesByInviteId() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject startInviteResult = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
 
         // get hold of workflow ID of started invite workflow instance
         
@@ -314,8 +318,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testGetInvitesByInviterUserName() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject startInviteResult = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
         
         // get pending invites matching inviter user name used in invite started above
         JSONArray getInvitesResult = getInvitesByInviterUserName(USER_INVITER, Status.STATUS_OK);
@@ -330,8 +334,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testGetInvitesByInviteeUserName() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject startInviteResult = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
         
         // get hold of invitee user name property of started invite workflow instance
         String inviteeUserName = startInviteResult.getString("inviteeUserName");
@@ -351,8 +355,8 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testGetInvitesBySiteShortName() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject startInviteResult = startInvite(INVITEE_EMAIL, SITE_SHORT_NAME_INVITE,
-                Status.STATUS_OK);
+        JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_EMAIL,
+                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
         
         // get hold of site short name property of started invite workflow instance
         String siteShortName = startInviteResult.getString("siteShortName");

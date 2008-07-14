@@ -425,7 +425,7 @@ public abstract class FeedTaskProcessor
     protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception
     {
         StringBuffer sbUrl = new StringBuffer();
-        sbUrl.append(repoEndPoint).append(URL_SERVICE_TEMPLATES).append("?p=").append(subPath).append("*").append("&format=json");
+        sbUrl.append(repoEndPoint).append(URL_SERVICE_TEMPLATES).append(subPath).append("*").append("?format=json");
         
         String jsonArrayResult = null;
         try
@@ -623,8 +623,8 @@ public abstract class FeedTaskProcessor
     		{
     			StringBuffer sb = new StringBuffer();
     			sb.append(this.repoEndPoint).
-    			   append(URL_SERVICE_TEMPLATE).append("?p=").append(templatePath).
-    			   append("&format=text").
+    			   append(URL_SERVICE_TEMPLATE).append("/").append(templatePath).
+    			   append("?format=text").
     		       append("&alf_ticket=").append(ticketId);
     			
     			if (logger.isDebugEnabled())

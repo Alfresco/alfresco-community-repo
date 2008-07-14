@@ -6,6 +6,11 @@
   what: "${result.what}",
   description: "${result.description}",
   location: "${result.location}",
+  tags: [
+  <#list result.tags as tag>
+   "${tag}"<#if tag_has_next>,</#if>
+  </#list>
+  ],
   from: "${result.from?string("M/d/yyyy")}",
   start: "${result.from?string("HH:mm")}",
   to: "${result.to?string("M/d/yyyy")}",

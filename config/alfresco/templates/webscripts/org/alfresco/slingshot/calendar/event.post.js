@@ -80,17 +80,20 @@ function createEvent(siteId, params)
   var toDate = params["to"];
   
   var allday = params["allday"];
-  if (!allday)
+  if (allday === undefined)
   {
      fromDate += " " + params["start"];
      toDate += " " + params["end"];
   }
   
-  var tags = params["tags"]; // space delimited string
-  if (tags)
+  var tags = String(params["tags"]); // space delimited string
+  if (tags !== "")
   {
      var tagsArray = tags.split(" ");
-     event.tags = tagsArray;
+     if (tagsArray.length > 0)
+     {
+        event.tags = tagsArray;
+     }
   }
   
   var from = new Date(fromDate);

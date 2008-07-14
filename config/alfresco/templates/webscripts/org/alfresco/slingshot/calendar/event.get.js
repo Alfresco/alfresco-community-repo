@@ -72,6 +72,7 @@ function main()
    	"location": event.properties["ia:whereEvent"],
       "from": event.properties["ia:fromDate"],
       "to": event.properties["ia:toDate"],
+      "tags": event.tags
    };
  
    // Figure out if this an all day event
@@ -97,6 +98,8 @@ function isAllDayEvent(event)
    
    var startTime = startDate.getHours() + ":" + startDate.getMinutes();
    var endTime = endDate.getHours() + ":" + endDate.getMinutes();
+   
+   logger.log("STARTTIME: " + startTime + " " + endTime + " " + (startTime == "0:0" && (startTime == endTime)));
   
-   return (startTime === "0:0" && (startTime === endTime));
+   return (startTime == "0:0" && (startTime == endTime));
 }

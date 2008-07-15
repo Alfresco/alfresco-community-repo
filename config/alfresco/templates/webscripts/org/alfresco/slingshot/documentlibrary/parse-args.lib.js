@@ -3,7 +3,7 @@ function getParsedArgs()
    var rootNode = null;
    var parentNode = null;
 
-   if (url.templateArgs.store_type != undefined)
+   if (url.templateArgs.store_type !== null)
    {
       // nodeRef input
       var storeType = url.templateArgs.store_type;
@@ -13,8 +13,8 @@ function getParsedArgs()
       rootNode = search.findNode(nodeRef);
    	if (rootNode === null)
    	{
-         status.setCode(status.STATUS_BAD_REQUEST, "Not a valid nodeRef: '" + nodeRef + "'");
-         return;
+         status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
+         return null;
    	}
    }
    else
@@ -26,15 +26,15 @@ function getParsedArgs()
       var siteNode = siteService.getSite(site);
       if (siteNode === null)
       {
-         status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + site + "'");
-         return;
+         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + site + "'");
+         return null;
       }
 
       rootNode = siteNode.getContainer(container);
       if (rootNode === null)
       {
-         status.setCode(status.STATUS_BAD_REQUEST, "Document Library container '" + container + "' not found in '" + site + "'. (No permission?)");
-         return;
+         status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + container + "' not found in '" + site + "'. (No permission?)");
+         return null;
       }
    }
 

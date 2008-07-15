@@ -8,7 +8,7 @@
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} added <a href="${contentURL}">${fileName}</a> to the <a href="${browseURL}">Document Library</a>.]]>
+      <![CDATA[${username} added <a href="${contentURL}" target="_blank">${fileName}</a> to the <a href="${browseURL}">Document Library</a>.]]>
    </summary>
    <author>
    <name>${userId!""}</name>

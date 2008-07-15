@@ -11,14 +11,14 @@ function postActivity()
    var type = json.get("type");
 	if (type == null || type.length == 0)
 	{
-		status.setCode(status.STATUS_BAD_REQUEST, "Activity type missing when posting activity");
+		status.setCode(status.STATUS_BAD_REQUEST, "Activity 'type' parameter missing when posting activity");
 		return;
 	}
 
-   var siteId = json.get("siteId");
+   var siteId = json.get("site");
 	if (siteId == null || siteId.length == 0)
 	{
-		status.setCode(status.STATUS_BAD_REQUEST, "SiteId missing when posting activity");
+		status.setCode(status.STATUS_BAD_REQUEST, "'site' parameter missing when posting activity");
 		return;
 	}
 

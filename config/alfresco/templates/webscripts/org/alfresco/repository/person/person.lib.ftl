@@ -23,9 +23,9 @@
       "organisation" : undefined,
    </#if>
    <#if person.properties.jobtitle??>
-      "jobTitle" : "${person.properties.jobtitle}",
+      "jobtitle" : "${person.properties.jobtitle}",
    <#else>
-      "jobTitle" : undefined,
+      "jobtitle" : undefined,
    </#if>
    <#if person.properties.email??>
       "email" : "${person.properties.email}"

@@ -3,6 +3,6 @@
    <description>Adds a new person based on the details provided.</description>
    <url>/api/people</url>
    <format default="json" />
-   <authentication>user</authentication>
+   <authentication>admin</authentication>
    <transaction>required</transaction>
 </webscript>

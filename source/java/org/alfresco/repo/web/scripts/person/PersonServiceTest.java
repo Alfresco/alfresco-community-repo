@@ -33,6 +33,7 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.Status;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -122,6 +123,27 @@ public class PersonServiceTest extends BaseWebScriptTest
         this.createdPeople.clear();
     }
     
+    public void testUpdatePerson() throws Exception
+    {
+        // Create a new person
+        String userName  = RandomStringUtils.randomNumeric(6);                
+        createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 200);
+        
+        // Update the person's details
+        JSONObject result = updatePerson(userName, "updatedTitle", "updatedFirstName", "updatedLastName",
+                "updatedOrganisation", "updatedJobTitle", "updatedFN.updatedLN@email.com", "updatedBio",
+                "images/updatedAvatar.jpg", 200);
+
+        assertEquals(userName, result.get("userName"));
+        assertEquals("updatedTitle", result.get("title"));
+        assertEquals("updatedFirstName", result.get("firstName"));
+        assertEquals("updatedLastName", result.get("lastName"));
+        assertEquals("updatedOrganisation", result.get("organisation"));
+        assertEquals("updatedJobTitle", result.get("jobtitle"));
+        assertEquals("updatedFN.updatedLN@email.com", result.get("email"));
+    }
+    
     public void testCreatePerson() throws Exception
     {
         String userName  = RandomStringUtils.randomNumeric(6);
@@ -134,7 +156,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         assertEquals("myFirstName", result.get("firstName"));
         assertEquals("myLastName", result.get("lastName"));
         assertEquals("myOrganisation", result.get("organisation"));
-        assertEquals("myJobTitle", result.get("jobTitle"));
+        assertEquals("myJobTitle", result.get("jobtitle"));
         assertEquals("firstName.lastName@email.com", result.get("email"));
         
         // Check for duplicate names
@@ -142,6 +164,33 @@ public class PersonServiceTest extends BaseWebScriptTest
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 500);
     }
     
+    private JSONObject updatePerson(String userName, String title, String firstName, String lastName, 
+            String organisation, String jobTitle, String email, String bio, String avatarUrl, int expectedStatus)
+    throws Exception
+    {
+        // switch to admin user to create a person
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        String adminUser = this.authenticationComponent.getSystemUserName();
+        this.authenticationComponent.setCurrentUser(adminUser);
+        
+        JSONObject person = new JSONObject();
+        person.put("userName", userName);
+        person.put("title", title);
+        person.put("firstName", firstName);
+        person.put("lastName", lastName);
+        person.put("organisation", organisation);
+        person.put("jobtitle", jobTitle);
+        person.put("email", email);
+        
+        MockHttpServletResponse response = putRequest(
+                URL_PEOPLE + "/" + userName, expectedStatus, person.toString(), "application/json"); 
+        
+        // switch back to non-admin user
+        this.authenticationComponent.setCurrentUser(currentUser);
+        
+        return new JSONObject(response.getContentAsString());
+    }
+
     private JSONObject createPerson(String userName, String title, String firstName, String lastName, 
                         String organisation, String jobTitle, String email, String bio, String avatarUrl, int expectedStatus)
         throws Exception
@@ -157,7 +206,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("firstName", firstName);
         person.put("lastName", lastName);
         person.put("organisation", organisation);
-        person.put("jobTitle", jobTitle);
+        person.put("jobtitle", jobTitle);
         person.put("email", email);
         
         MockHttpServletResponse response = postRequest(URL_PEOPLE, expectedStatus, person.toString(), "application/json"); 
@@ -187,7 +236,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         String userName  = RandomStringUtils.randomNumeric(6);
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                                 "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 200);
-        response = getRequest(URL_PEOPLE + "/" + userName, 200);
+        response = getRequest(URL_PEOPLE + "/" + userName, Status.STATUS_OK);
        
     }
 }

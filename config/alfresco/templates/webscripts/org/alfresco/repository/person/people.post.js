@@ -23,7 +23,7 @@ function main()
    person.properties["firstName"] = json.get("firstName");
    person.properties["lastName"] = json.get("lastName");
    person.properties["organization"] = json.get("organisation");
-   person.properties["jobTitle"] = json.get("jobTitle");
+   person.properties["jobtitle"] = json.get("jobtitle");
    person.properties["email"] = json.get("email");
    person.save();
    

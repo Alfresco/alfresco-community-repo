@@ -14,10 +14,10 @@ function getBlogPostList(node, fromDate, toDate, tag, index, count)
                        
    // include all published + my drafts
    luceneQuery += " ((" +
-                    " -ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
+                    " -ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
                     "+@cm\\:creator:\"" + person.properties.userName + "\"" +
                    ") OR (" +
-                    " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
+                    " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
                    ")) ";
                        
    // date query ?
@@ -32,7 +32,7 @@ function getBlogPostList(node, fromDate, toDate, tag, index, count)
       luceneQuery += " +PATH:\"/cm:taggable/cm:" + tag /*ISO9075.encode(tag)*/ + "/member\" ";
    }
 
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
 
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);

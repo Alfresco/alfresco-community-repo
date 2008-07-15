@@ -160,13 +160,13 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	return item;
     }
     
-    private JSONObject updatePost(String name, String title, String content, boolean isDraft, int expectedStatus)
+    private JSONObject updatePost(String nodeRef, String title, String content, int expectedStatus)
     throws Exception
     {
         JSONObject post = new JSONObject();
         post.put("title", title);
         post.put("content", content);
-	    MockHttpServletResponse response = putRequest(URL_FORUM_POST + name, expectedStatus, post.toString(), "application/json");
+	    MockHttpServletResponse response = putRequest(getPostUrl(nodeRef), expectedStatus, post.toString(), "application/json");
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -219,24 +219,6 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	return result.getJSONObject("item");
     }
     
-    private JSONObject updateComment(String nodeRef, String title, String content, int expectedStatus)
-    throws Exception
-    {
-    	JSONObject comment = new JSONObject();
-        comment.put("title", title);
-        comment.put("content", content);
-	    MockHttpServletResponse response = putRequest(getPostUrl(nodeRef), expectedStatus, comment.toString(), "application/json");
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
-	    
-	    //logger.debug("Comment updated: " + response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	return result.getJSONObject("item");
-    }
-    
     
     // Tests
     
@@ -252,6 +234,30 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	
     	// fetch the post
     	getPost(item.getString("name"), 200);
+    }
+    
+    public void testUpdateForumPost() throws Exception
+    {
+    	String title = "test";
+    	String content = "test";
+    	JSONObject item = createPost(title, content, 200);
+    	
+    	// check that the values
+    	assertEquals(title, item.get("title"));
+    	assertEquals(content, item.get("content"));
+    	assertEquals(false, item.getBoolean("isUpdated"));
+    	
+    	// fetch the post
+    	getPost(item.getString("name"), 200);
+    	
+    	String title2 = "test";
+    	String content2 = "test";
+    	item = updatePost(item.getString("nodeRef"), title2, content2, 200);
+    	
+    	// check that the values
+    	assertEquals(title2, item.get("title"));
+    	assertEquals(content2, item.get("content"));
+    	assertEquals(true, item.getBoolean("isUpdated"));
     }
     
     public void testGetAll() throws Exception
@@ -308,6 +314,27 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	assertEquals(1, item.getInt("replyCount"));
     }
 
+    public void testUpdateReply() throws Exception
+    {
+    	// create a root post
+    	JSONObject item = createPost("test", "test", 200);
+    	String postName = item.getString("name");
+    	String postNodeRef = item.getString("nodeRef");
+    	
+    	// add a reply
+    	JSONObject reply = createReply(postNodeRef, "test", "test", 200);
+    	String replyNodeRef = reply.getString("nodeRef");
+    	assertEquals("test", reply.getString("title"));
+    	assertEquals("test", reply.getString("content"));
+    	assertEquals(false, reply.getBoolean("isUpdated"));
+    	
+    	// now update it
+    	JSONObject reply2 = updatePost(reply.getString("nodeRef"), "test2", "test2", 200);
+    	assertEquals("test2", reply2.getString("title"));
+    	assertEquals("test2", reply2.getString("content"));
+    	assertEquals(true, reply2.getBoolean("isUpdated"));
+    }
+    
     /*
     public void testDeleteReplyPost() throws Exception
     {

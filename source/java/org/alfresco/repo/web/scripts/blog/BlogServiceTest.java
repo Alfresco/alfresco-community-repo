@@ -327,9 +327,6 @@ public class BlogServiceTest extends BaseWebScriptTest
     	String name = item.getString("name");
     	assertEquals(false, item.getBoolean("isUpdated"));
     	
-    	// wait for 5 sec
-    	Thread.sleep(5000);
-    	
     	item = updatePost(name, "new title", "new content", null, false, 200);
     	assertEquals(true, item.getBoolean("isUpdated"));
     	assertEquals("new title", item.getString("title"));

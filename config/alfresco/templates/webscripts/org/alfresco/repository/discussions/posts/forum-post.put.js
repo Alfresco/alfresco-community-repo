@@ -35,6 +35,12 @@ function updatePost(topic, post)
    post.content = content;
    post.save();
    
+   // add the content updated aspect
+   var now = new Date();
+   var props = new Array();
+   props["cm:contentupdatedate"] = now;
+   post.addAspect("cm:contentupdated", props);
+   
    // Only set the tags if it is a topic post
    // as we currently don't support individual post tagging
    if (topic != null)

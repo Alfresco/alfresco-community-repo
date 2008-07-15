@@ -13,7 +13,7 @@ function getBlogPostList(node, index, count)
                        "+PATH:\"" + node.qnamePath + "/*\" ";
                        
    // add the drafts part
-   luceneQuery += "-ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
+   luceneQuery += "-ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
                   "+@cm\\:creator:\"" + person.properties.userName + "\"";
 
    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";

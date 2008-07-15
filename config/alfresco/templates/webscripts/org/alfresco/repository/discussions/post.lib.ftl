@@ -56,6 +56,10 @@
 	"createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
 	"modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
 	"author" : "${post.properties.creator?j_string}",
+	"isUpdated" : ${post.hasAspect("cm:contentupdated")?string},
+	<#if (post.hasAspect("cm:contentupdated"))>
+	   "updatedOn" : "${post.properties["cm:contentupdatedate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	</#if>
 	<@addContent post=post />
 	"replyCount" : <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
 	"permissions" : { "edit": true, "delete" : true, "reply" : true }

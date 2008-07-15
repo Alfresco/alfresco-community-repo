@@ -15,10 +15,10 @@ function getBlogPostList(node, numdays, index, count)
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
                      " +PATH:\"" + node.qnamePath + "/*\" " +
-                     " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}releaseDetails\" " +
+                     " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
                      getCreationDateRangeQuery(fromDate, null);
 
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
 
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);

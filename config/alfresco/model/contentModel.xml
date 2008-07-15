@@ -882,6 +882,18 @@
 	     </properties>
 	  </aspect>
       
+      <aspect name="cm:contentupdated">
+         <title>Content updated</title>
+         <properties>
+            <!-- Last updated timestamp of node "content". -->
+            <property name="cm:contentupdatedate">
+               <title>Last updated</title>
+               <type>d:datetime</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
    </aspects>
 
 </model>

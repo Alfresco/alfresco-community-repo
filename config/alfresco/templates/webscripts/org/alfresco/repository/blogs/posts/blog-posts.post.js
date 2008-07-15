@@ -8,6 +8,12 @@ function ensureTagScope(node)
    {
       node.isTagScope = true;
    }
+   
+   // also check the parent (the site!)
+   if (! node.parent.isTagScope)
+   {
+      node.parent.isTagScope = true;
+   }
 }
 
 /**

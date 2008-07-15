@@ -80,7 +80,7 @@ function main()
    // post an activitiy item, but only if we got a site
    if (url.templateArgs.site != null && ! model.item.isDraft)
    {
-      var browsePostUrl = '/page/site/' + url.templateArgs.site + '/blog-postview?container=' + url.templateArgs.container + '&postId=' + node.name;      
+      var browsePostUrl = '/page/site/' + url.templateArgs.site + '/blog-topicview?container=' + url.templateArgs.container + '&postId=' + node.name;      
       var data = {
           title: node.properties.title,
           browsePostUrl: browsePostUrl

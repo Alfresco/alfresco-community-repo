@@ -73,6 +73,23 @@ function main()
    }
    
    model.post = createPostReply(node);
+   
+   // add an activity item
+   if (json.has("site"))
+   {
+      // fetch the topic (and with it the root post
+      var topicData = getTopicPostData(model.post.parent);       
+      var site = json.get("site");
+      var container = json.get("container");
+      var path = json.has("path") ? json.get("path") : '';
+      var browseTopicUrl = '/page/site/' + site + '/discussions-topicview?container=' + container +
+                          + '&path=' + path + '&postId=' +  topicData.topic.name;
+      var data = {
+         title: topicData.post.properties.title,
+         browseTopicUrl: browseTopicUrl
+      }
+      activities.postActivity("org.alfresco.discussions.reply-created", site, container, jsonUtils.toJSONString(data));
+   }
 }
 
 main();

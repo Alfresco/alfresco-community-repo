@@ -8,6 +8,12 @@ function ensureTagScope(node)
    {
       node.isTagScope = true;
    }
+   
+   // also check the parent (the site!)
+   if (! node.parent.isTagScope)
+   {
+      node.parent.isTagScope = true;
+   }
 }
 
 /**
@@ -72,7 +78,17 @@ function main()
    
    model.topicpost = getTopicPostData(topicPost);
    
-   // add post created activitiy
+   // post an activitiy item, but only if we got a site
+   if (url.templateArgs.site != null)
+   {
+      var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-postview?container=' + url.templateArgs.container +
+                           + '&path=' + url.templateArgs.path + '&postId=' + topicPost.name;
+      var data = {
+          title: model.topicpost.post.properties.title,
+          browseTopicUrl: browseTopicUrl
+      }
+      activities.postActivity("org.alfresco.discussions.post-created", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+   }
    
 }
 

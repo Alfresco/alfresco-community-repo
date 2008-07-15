@@ -17,7 +17,11 @@ function findTargetNode()
       }
       else if (containerId == undefined)
       {
-         return site;
+         // PENDING: hack!
+         // site is not a node reference, which we need though to get the tagscope.
+         // simply take a container we know it exists and fetch the parent
+         return site.getContainer("blog").parent;
+         //return site;
       }
       
       // fetch container
@@ -55,7 +59,18 @@ function main()
    }
    else
    {
-      model.tags = scope.tags;
+      var topN = args["topN"] != undefined ? parseInt(args["topN"]) : -1;
+      if (topN > -1)
+      {
+         // PENDING:
+         // getTopTags currently throws an AIOOB exception if topN > tags.length() :-/
+         if (scope.tags.length < topN) topN = scope.tags.length;
+         model.tags = scope.getTopTags(topN);
+      }
+      else
+      {
+         model.tags = scope.tags;
+      }
    }
 }
 

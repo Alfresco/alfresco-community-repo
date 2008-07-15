@@ -89,6 +89,23 @@ function main()
    if (topicNode == null)
    {
       model.post = node;
+      
+      // add an activity item
+      if (json.has("site"))
+      {
+         // fetch the topic (and with it the root post
+         var topicData = getTopicPostData(model.post.parent);       
+         var site = json.get("site");
+         var container = json.get("container");
+         var path = json.has("path") ? json.get("path") : '';
+         var browseTopicUrl = '/page/site/' + site + '/discussions-topicview?container=' + container +
+                          + '&path=' + path + '&postId=' +  topicData.topic.name;
+         var data = {
+            title: topicData.post.properties.title,
+            browseTopicUrl: browseTopicUrl
+         }
+         activities.postActivity("org.alfresco.discussions.reply-updated", site, container, jsonUtils.toJSONString(data));
+      }
    }
    else
    {
@@ -96,6 +113,18 @@ function main()
       // See above, use getTopicPostDataFromTopicAndPosts instead of getTopicPostData
       //model.topicpost = getTopicPostData(node);
       model.topicpost = getTopicPostDataFromTopicAndPosts(topicNode, nodes);
+      
+      // post an activitiy item, but only if we got a site
+      if (url.templateArgs.site != null)
+      {
+         var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-topicview?container=' + url.templateArgs.container +
+                             + '&path=' + url.templateArgs.path + '&postId=' + model.topicpost.topic.name;
+         var data = {
+            title: model.topicpost.post.properties.title,
+            browseTopicUrl: browseTopicUrl
+         }
+         activities.postActivity("org.alfresco.discussions.post-updated", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+      }
    }
 }
 

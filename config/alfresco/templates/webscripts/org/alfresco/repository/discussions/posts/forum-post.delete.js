@@ -1,4 +1,5 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
 
 const DELETED_REPLY_POST_MARKER = "[[deleted]]";
 
@@ -7,6 +8,10 @@ const DELETED_REPLY_POST_MARKER = "[[deleted]]";
  */
 function deleteTopicPost(topicNode)
 {
+   // fetch the topic info as we need to get the title for the post for the activity
+   var data = getTopicPostData(topicNode);
+   var title = data.post.properties.title;
+    
    // we simply delete the complete topic
    var nodeRef = topicNode.nodeRef;
    var isDeleted = topicNode.remove();
@@ -16,6 +21,18 @@ function deleteTopicPost(topicNode)
       return;
    }
    model.message = "Node " + nodeRef + " deleted";
+   
+   // post an activitiy item, but only if we got a site
+   if (url.templateArgs.site != null)
+   {
+      var browseTopicListUrl = '/page/site/' + url.templateArgs.site + '/discussions-topiclist?container=' + url.templateArgs.container +
+                           + '&path=' + url.templateArgs.path;
+      var data = {
+          browseTopicListUrl: browseTopicListUrl,
+          title: title
+      }
+      activities.postActivity("org.alfresco.discussions.post-deleted", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+   }
 }
  
 /**

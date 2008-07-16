@@ -123,47 +123,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         this.createdPeople.clear();
     }
     
-    public void testUpdatePerson() throws Exception
-    {
-        // Create a new person
-        String userName  = RandomStringUtils.randomNumeric(6);                
-        createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 200);
-        
-        // Update the person's details
-        JSONObject result = updatePerson(userName, "updatedTitle", "updatedFirstName", "updatedLastName",
-                "updatedOrganisation", "updatedJobTitle", "updatedFN.updatedLN@email.com", "updatedBio",
-                "images/updatedAvatar.jpg", 200);
-
-        assertEquals(userName, result.get("userName"));
-        assertEquals("updatedTitle", result.get("title"));
-        assertEquals("updatedFirstName", result.get("firstName"));
-        assertEquals("updatedLastName", result.get("lastName"));
-        assertEquals("updatedOrganisation", result.get("organisation"));
-        assertEquals("updatedJobTitle", result.get("jobtitle"));
-        assertEquals("updatedFN.updatedLN@email.com", result.get("email"));
-    }
-    
-    public void testCreatePerson() throws Exception
-    {
-        String userName  = RandomStringUtils.randomNumeric(6);
-                
-        // Create a new site
-        JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 200);        
-        assertEquals(userName, result.get("userName"));
-        assertEquals("myTitle", result.get("title"));
-        assertEquals("myFirstName", result.get("firstName"));
-        assertEquals("myLastName", result.get("lastName"));
-        assertEquals("myOrganisation", result.get("organisation"));
-        assertEquals("myJobTitle", result.get("jobtitle"));
-        assertEquals("firstName.lastName@email.com", result.get("email"));
-        
-        // Check for duplicate names
-        createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
-                "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 500);
-    }
-    
     private JSONObject updatePerson(String userName, String title, String firstName, String lastName, 
             String organisation, String jobTitle, String email, String bio, String avatarUrl, int expectedStatus)
     throws Exception
@@ -218,11 +177,28 @@ public class PersonServiceTest extends BaseWebScriptTest
         return new JSONObject(response.getContentAsString());
     }
     
+    private JSONObject deletePerson(String userName, int expectedStatus)
+    throws Exception
+    {
+        // switch to admin user to delete a person
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        String adminUser = this.authenticationComponent.getSystemUserName();
+        this.authenticationComponent.setCurrentUser(adminUser);
+        
+        MockHttpServletResponse response = deleteRequest(URL_PEOPLE + "/" + userName, expectedStatus); 
+        this.createdPeople.remove(userName);
+        
+        // switch back to non-admin user
+        this.authenticationComponent.setCurrentUser(currentUser);
+        
+        return new JSONObject(response.getContentAsString());
+    }
+    
     public void testGetPeople() throws Exception
     {
         // Test basic GET people with no filters ==
         
-        MockHttpServletResponse response = getRequest(URL_PEOPLE, 200);        
+        MockHttpServletResponse response = getRequest(URL_PEOPLE, Status.STATUS_OK);        
                 
         System.out.println(response.getContentAsString());
     }
@@ -235,8 +211,73 @@ public class PersonServiceTest extends BaseWebScriptTest
         // Create a person and get him/her
         String userName  = RandomStringUtils.randomNumeric(6);
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 200);
+                                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", Status.STATUS_OK);
         response = getRequest(URL_PEOPLE + "/" + userName, Status.STATUS_OK);
        
     }
+    
+    public void testUpdatePerson() throws Exception
+    {
+        // Create a new person
+        String userName  = RandomStringUtils.randomNumeric(6);                
+        createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                                Status.STATUS_OK);
+        
+        // Update the person's details
+        JSONObject result = updatePerson(userName, "updatedTitle", "updatedFirstName", "updatedLastName",
+                "updatedOrganisation", "updatedJobTitle", "updatedFN.updatedLN@email.com", "updatedBio",
+                "images/updatedAvatar.jpg", Status.STATUS_OK);
+
+        assertEquals(userName, result.get("userName"));
+        assertEquals("updatedTitle", result.get("title"));
+        assertEquals("updatedFirstName", result.get("firstName"));
+        assertEquals("updatedLastName", result.get("lastName"));
+        assertEquals("updatedOrganisation", result.get("organisation"));
+        assertEquals("updatedJobTitle", result.get("jobtitle"));
+        assertEquals("updatedFN.updatedLN@email.com", result.get("email"));
+    }
+    
+    public void testDeletePerson() throws Exception
+    {
+        // Create a new person
+        String userName  = RandomStringUtils.randomNumeric(6);                
+        createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                                Status.STATUS_OK);
+        
+        // Delete the person
+        JSONObject result = deletePerson(userName, Status.STATUS_OK);
+
+        assertEquals(userName, result.get("userName"));
+        assertEquals("myTitle", result.get("title"));
+        assertEquals("myFirstName", result.get("firstName"));
+        assertEquals("myLastName", result.get("lastName"));
+        assertEquals("myOrganisation", result.get("organisation"));
+        assertEquals("myJobTitle", result.get("jobtitle"));
+        assertEquals("firstName.lastName@email.com", result.get("email"));
+        
+        // Make sure that the person has been deleted and no longer exists
+        deletePerson(userName, Status.STATUS_NOT_FOUND);
+    }
+    
+    public void testCreatePerson() throws Exception
+    {
+        String userName  = RandomStringUtils.randomNumeric(6);
+                
+        // Create a new site
+        JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", Status.STATUS_OK);        
+        assertEquals(userName, result.get("userName"));
+        assertEquals("myTitle", result.get("title"));
+        assertEquals("myFirstName", result.get("firstName"));
+        assertEquals("myLastName", result.get("lastName"));
+        assertEquals("myOrganisation", result.get("organisation"));
+        assertEquals("myJobTitle", result.get("jobtitle"));
+        assertEquals("firstName.lastName@email.com", result.get("email"));
+        
+        // Check for duplicate names
+        createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
+                "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 500);
+    }    
 }

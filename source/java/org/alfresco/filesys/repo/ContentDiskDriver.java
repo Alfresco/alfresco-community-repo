@@ -374,6 +374,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 rootNodeRef = relPathNode;
             }
+            else {
+            	
+            	// Make sure the default root node is a folder
+            	
+                if ( cifsHelper.isDirectory( rootNodeRef) == false)
+                    throw new DeviceContextException("Root node is not a folder type node");
+            }
             
             // Commit the transaction
             

@@ -29,6 +29,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
       item.type = "file";
       item.icon32 = node.icon32;
       item.qnamePath = node.qnamePath;
+      item.tags = (node.tags != null) ? node.tags : [];
       item.viewUrl = "/proxy/alfresco/api/node/content/" + node.nodeRef.toString().replace('://', '/') + "/" + node.name;
       item.detailsUrl = "page/site/" + siteId + "/" + containerId;
       item.containerUrl = "page/site/" + siteId + "/" + containerId;
@@ -143,11 +144,12 @@ function getSearchResults(term, maxResults, siteId, containerId)
       }
 	  
       var luceneQuery = "+PATH:\"" +path     + "/*\"";
-      if (term.length > 0)
+      if (term != null && term.length > 0)
       {
          luceneQuery += " +(" +
-                        "    TEXT:\"" + term + "\"" +
-                        "    @cm\\:name:\"" + term + "\"" +
+                        "    TEXT:\"" + term + "\"" +          // full text
+                        "    @cm\\:name:\"*" + term + "*\"" +  // name property
+                        "    +PATH:\"/cm:taggable/cm:" + term /*ISO9075.encode(tag)*/ + "/member\"" + // tag: PENDING: strip off invalid characters!
                         "  )";
       }
          
@@ -166,7 +168,7 @@ function main()
 {
    var siteId = (args["site"] != undefined) ? args["site"] : null;
    var containerId = (args["container"] != undefined) ? args["container"] : null;
-   var term = args["term"];
+   var term = (args["term"] != undefined) ? args["term"] : null;
    var maxResults = (args["maxResults"] != undefined) ? parseInt(args["maxResults"]) : DEFAULT_MAX_RESULTS;
    
    model.data = getSearchResults(term, maxResults, siteId, containerId);

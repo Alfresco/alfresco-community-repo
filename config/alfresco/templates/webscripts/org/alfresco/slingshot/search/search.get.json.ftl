@@ -11,11 +11,13 @@
          "icon32": "${item.icon32}",
          "name" : "${(item.name!'')?j_string}",
          "displayName": "${item.name?replace(workingCopyLabel, "")?html}",
+         "tags" : [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
          "title" : "${(item.title!'')?j_string}",
          "viewUrl" : "${item.viewUrl?j_string}",
          "detailsUrl" : "${item.detailsUrl?j_string}",
-         "componentUrl" : "${item.containerUrl?j_string}"
-
+         "componentUrl" : "${item.containerUrl?j_string}",
+         "site" : "${item.site}",
+         "container" : "${item.container}"
       }<#if item_has_next>,</#if>
       </#list>
    ]

@@ -20,7 +20,7 @@ function runAction(p_params)
 
    try
    {
-      var assetNode = getAssetNode(p_params.rootNode, p_params.filePath);
+      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.filePath);
 
       // Must have assetNode by this point
       if (typeof assetNode == "string")

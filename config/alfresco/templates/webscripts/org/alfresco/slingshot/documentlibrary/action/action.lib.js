@@ -19,12 +19,14 @@ main();
 function main()
 {
    // Params object contains commonly-used arguments
-   var params;
+   var params = {};
+   var files, rootNode;
+   
    if (url.templateArgs.store_type != undefined)
    {
       params = getNodeRefInputParams();
    }
-   else
+   else if (url.templateArgs.site != undefined)
    {
       params = getSiteInputParams();
    }
@@ -33,16 +35,26 @@ function main()
       status.setCode(status.STATUS_BAD_REQUEST, params);
       return;
    }
-   
-   // Try to get the root node from the parameters passed-in
-   var node = getRootNode(params);
-   if (typeof node == "string")
-   {
-      status.setCode(status.STATUS_NOT_FOUND, node);
-      return;
-   }
-   params.rootNode = node;
 
+   // Try to get the root node if templateArg parameters passed-in
+   if (params.hasRootNode)
+   {
+      rootNode = getRootNode(params);
+      if (typeof node == "string")
+      {
+         status.setCode(status.STATUS_NOT_FOUND, node);
+         return;
+      }
+      params.rootNode = rootNode;
+   }
+
+   // Multiple input files in the JSON body?
+   files = getMultipleInputFiles();
+   if (typeof files != "string")
+   {
+      params.files = files;
+   }
+   
    // Check runAction function is provided the action's webscript
    if (typeof runAction != "function")
    {
@@ -93,24 +105,6 @@ function getSiteInputParams()
       var containerId = url.templateArgs.container;
       var filePath = url.templateArgs.path;
 
-      // Was a JSON parameter list supplied?
-      // TODO: Also handle multiple files
-      if (typeof json == "object")
-      {
-         if (!json.isNull("site"))
-         {
-            siteId = json.get("site");
-         }
-         if (!json.isNull("container"))
-         {
-            containerId = json.get("container");
-         }
-         if (!json.isNull("path"))
-         {
-            filePath = json.get("path");
-         }
-      }
-
    	if ((siteId === null) || (siteId.length === 0))
    	{
    		return "'site' parameter is missing.";
@@ -149,7 +143,8 @@ function getSiteInputParams()
       	containerId: containerId,
       	siteId: siteId,
       	filePath: filePath,
-      	usingNodeRef: false
+      	usingNodeRef: false,
+      	hasRootNode: true
       }
    }
    catch(e)
@@ -209,7 +204,9 @@ function getNodeRefInputParams()
       params =
       {
          nodeRef: nodeRef,
-         usingNodeRef: true
+         node: node,
+         usingNodeRef: true,
+      	hasRootNode: true
       }
    }
    catch(e)
@@ -220,6 +217,43 @@ function getNodeRefInputParams()
 	// Return the params object, or the error string if it was set
 	return (error !== null ? error : params);
 }
+
+/**
+ * Get multiple input files (nodeRef-based)
+ *
+ * @method getMultipleInputFiles
+ * @return {array|string} Array containing multiple files, or string error
+ */
+function getMultipleInputFiles()
+{
+   var files = [];
+   var error = null;
+   
+   try
+   {
+      // Was a JSON parameter list supplied?
+      if (typeof json == "object")
+      {
+         if (!json.isNull("nodeRefs"))
+         {
+            var jsonFiles = json.get("nodeRefs");
+            // Convert from JSONArray to JavaScript array
+            for (var i = 0, j = jsonFiles.length(); i < j; i++)
+            {
+               files.push(jsonFiles.get(i));
+            }
+         }
+      }
+   }
+   catch(e)
+   {
+      error = e.toString();
+   }
+   
+	// Return the files array, or the error string if it was set
+	return (error !== null ? error : files);
+}
+
 
 /**
  * Obtain the root node for the given site and component
@@ -235,7 +269,7 @@ function getRootNode(p_params)
 
    if (p_params.usingNodeRef)
    {
-      return search.findNode(p_params.nodeRef);
+      return p_params.node;
    }
 
    try

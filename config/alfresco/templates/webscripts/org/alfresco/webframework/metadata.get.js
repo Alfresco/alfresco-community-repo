@@ -7,21 +7,28 @@ if(args["id"] != null)
 	object = search.findNode(id);
 }
 
-// if not by id, then allow for user id
-if(object == null && args["user"] != null)
+// if not by id, then allow for user id - but only if current user is the user!
+else if(args["user"] != null)
 {
 	var userId = args["user"];
-	object = people.getPerson(userId);
+	if (userId == person.properties.userName)
+	{
+	   object = person;
+	}
 }
 
 // load content by relative path
-if(object == null)
+else
 {
 	var path = args["path"];
 	if(path == null || path == "" || path == "/")
+	{
 		path = "/Company Home";
+	}
 	else
+	{
 		path = "/Company Home" + path;
+	}
 	
 	// look up the content by path
 	object = roothome.childByNamePath(path);

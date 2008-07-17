@@ -32,6 +32,8 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -104,77 +106,85 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#getDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
      */
     @Override
-    protected void getDocument(WebScriptResponse res, String path) throws IOException
+    protected void getDocument(final WebScriptResponse res, final String path) throws IOException
     {
-        String avmPath = buildAVMPath(path);
-        AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
+        final String avmPath = buildAVMPath(path);
+        final AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
             res.setStatus(Status.STATUS_NOT_FOUND);
             return;
         }
         
-        ContentReader reader;
-        try
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            reader = this.avmService.getContentReader(-1, avmPath);
-            
-            if (reader == null)
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
             {
-                throw new WebScriptException("No content found for AVM file: " + avmPath);
-            }
-            
-            // establish mimetype
-            String mimetype = reader.getMimetype();
-            if (mimetype == null || mimetype.length() == 0)
-            {
-                mimetype = MimetypeMap.MIMETYPE_BINARY;
-                int extIndex = path.lastIndexOf('.');
-                if (extIndex != -1)
+                ContentReader reader;
+                try
                 {
-                    String ext = path.substring(extIndex + 1);
-                    String mt = this.mimetypeService.getMimetypesByExtension().get(ext);
-                    if (mt != null)
+                    reader = avmService.getContentReader(-1, avmPath);
+
+                    if (reader == null)
                     {
-                        mimetype = mt;
+                        throw new WebScriptException("No content found for AVM file: " + avmPath);
+                    }
+                    
+                    // establish mimetype
+                    String mimetype = reader.getMimetype();
+                    if (mimetype == null || mimetype.length() == 0)
+                    {
+                        mimetype = MimetypeMap.MIMETYPE_BINARY;
+                        int extIndex = path.lastIndexOf('.');
+                        if (extIndex != -1)
+                        {
+                            String ext = path.substring(extIndex + 1);
+                            String mt = mimetypeService.getMimetypesByExtension().get(ext);
+                            if (mt != null)
+                            {
+                                mimetype = mt;
+                            }
+                        }
+                    }
+            
+                    // set mimetype for the content and the character encoding + length for the stream
+                    WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
+                    httpRes.setContentType(mimetype);
+                    httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
+                    httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
+                    httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+                    
+                    // get the content and stream directly to the response output stream
+                    // assuming the repository is capable of streaming in chunks, this should allow large files
+                    // to be streamed directly to the browser response stream.
+                    try
+                    {
+                        reader.getContent(res.getOutputStream());
+                    }
+                    catch (SocketException e1)
+                    {
+                        // the client cut the connection - our mission was accomplished apart from a little error message
+                        if (logger.isInfoEnabled())
+                            logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
+                    }
+                    catch (ContentIOException e2)
+                    {
+                        if (logger.isInfoEnabled())
+                            logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
                     }
                 }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                }
+                catch (AVMNotFoundException avmErr)
+                {
+                    res.setStatus(Status.STATUS_NOT_FOUND);
+                }
+                return null;
             }
-    
-            // set mimetype for the content and the character encoding + length for the stream
-            WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
-            httpRes.setContentType(mimetype);
-            httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
-            httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
-            httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
-            
-            // get the content and stream directly to the response output stream
-            // assuming the repository is capable of streaming in chunks, this should allow large files
-            // to be streamed directly to the browser response stream.
-            try
-            {
-                reader.getContent(res.getOutputStream());
-            }
-            catch (SocketException e1)
-            {
-                // the client cut the connection - our mission was accomplished apart from a little error message
-                if (logger.isInfoEnabled())
-                    logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
-            }
-            catch (ContentIOException e2)
-            {
-                if (logger.isInfoEnabled())
-                    logger.info("Client aborted stream read:\n\tnode: " + avmPath + "\n\tcontent: " + reader);
-            }
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-        }
-        catch (AVMNotFoundException avmErr)
-        {
-            res.setStatus(Status.STATUS_NOT_FOUND);
-        }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /* (non-Javadoc)
@@ -195,45 +205,53 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#createDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.io.InputStream)
      */
     @Override
-    protected void createDocument(WebScriptResponse res, String path, InputStream content)
+    protected void createDocument(final WebScriptResponse res, final String path, final InputStream content)
     {
-        String avmPath = buildAVMPath(path);
-        try
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            String[] parts = AVMNodeConverter.SplitBase(avmPath);
-            String[] dirs = parts[0].split("/");
-            String parentPath =  dirs[0] + "/" + dirs[1];
-            int index = 2;
-            while (index < dirs.length)
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
             {
-                String dirPath = parentPath + "/" + dirs[index];
-                if (this.avmService.lookup(-1, dirPath) == null)
+                String avmPath = buildAVMPath(path);
+                try
                 {
-                    this.avmService.createDirectory(parentPath, dirs[index]);
+                    String[] parts = AVMNodeConverter.SplitBase(avmPath);
+                    String[] dirs = parts[0].split("/");
+                    String parentPath =  dirs[0] + "/" + dirs[1];
+                    int index = 2;
+                    while (index < dirs.length)
+                    {
+                        String dirPath = parentPath + "/" + dirs[index];
+                        if (avmService.lookup(-1, dirPath) == null)
+                        {
+                            avmService.createDirectory(parentPath, dirs[index]);
+                        }
+                        parentPath = dirPath;
+                        index++;
+                    }
+
+                    avmService.createFile(parts[0], parts[1], content);
                 }
-                parentPath = dirPath;
-                index++;
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                }
+                catch (AVMExistsException avmErr)
+                {
+                    res.setStatus(Status.STATUS_CONFLICT);
+                }
+                return null;
             }
-            
-            this.avmService.createFile(parts[0], parts[1], content);
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-        }
-        catch (AVMExistsException avmErr)
-        {
-            res.setStatus(Status.STATUS_CONFLICT);
-        }
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#updateDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.io.InputStream)
      */
     @Override
-    protected void updateDocument(WebScriptResponse res, String path, InputStream content)
+    protected void updateDocument(final WebScriptResponse res, final String path, final InputStream content)
     {
-        String avmPath = buildAVMPath(path);
+        final String avmPath = buildAVMPath(path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -241,24 +259,32 @@ public class AVMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        try
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            ContentWriter writer = this.avmService.getContentWriter(avmPath);
-            writer.putContent(content);
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-        }
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+                try
+                {
+                    ContentWriter writer = avmService.getContentWriter(avmPath);
+                    writer.putContent(content);
+                }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#deleteDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
      */
     @Override
-    protected void deleteDocument(WebScriptResponse res, String path)
+    protected void deleteDocument(final WebScriptResponse res, final String path)
     {
-        String avmPath = buildAVMPath(path);
+        final String avmPath = buildAVMPath(path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -266,14 +292,22 @@ public class AVMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        try
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            this.avmService.removeNode(avmPath);
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-        }
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+                try
+                {
+                    avmService.removeNode(avmPath);
+                }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /* (non-Javadoc)

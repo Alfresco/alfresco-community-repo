@@ -55,11 +55,9 @@
 			<#assign renderable = false>
 			<#if val?is_string == true>
 				<#assign renderable = true>
-			</#if>
-			<#if val?is_date == true>
+			<#elseif val?is_date == true>
 				<#assign renderable = true>
-			</#if>
-			<#if val?is_boolean == true>
+			<#elseif val?is_boolean == true>
 				<#assign renderable = true>
 			</#if>
 			<#if renderable == true>			
@@ -67,12 +65,10 @@
 					,
 				</#if>
 				<#if val?is_string == true>			
-					"${key}" : "${val}"
-				</#if>
-				<#if val?is_date == true>			
+					"${key}" : "${val?js_string}"
+				<#elseif val?is_date == true>			
 					"${key}" : "${val?datetime}"
-				</#if>
-				<#if val?is_boolean == true>			
+				<#elseif val?is_boolean == true>			
 					"${key}" : "${val}"
 				</#if>
 				<#assign first = false>				

@@ -3,6 +3,6 @@
   <description>Content Metadata Retrieval Service</description>
   <url>/webframework/content/metadata</url>
   <format default="html">argument</format>
-  <authentication>admin</authentication>
+  <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

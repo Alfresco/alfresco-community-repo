@@ -29,8 +29,12 @@ function findNodeInSite()
    var node = site.getContainer(containerId);
    if (node === null)
    {
-      status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
-      return null;
+      node = site.createContainer(containerId);
+      if (node === null)
+      {
+      	status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
+     	return null;
+      }
    }
    
    // try to fetch the the path is there is any

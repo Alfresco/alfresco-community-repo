@@ -3,6 +3,6 @@
   <description>Get a colleciton of the sites in the repository.  The collection can be filtered by name and/or site preset.</description>
   <url>/api/sites?nf={namefilter?}&amp;spf={sitepresetfilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
   <format default="json"/>
-  <authentication>guest</authentication>
+  <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

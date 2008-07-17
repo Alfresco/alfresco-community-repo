@@ -98,6 +98,11 @@ else
       var container = site.getContainer(containerId);
       if (container === null)
       {
+         container = site.createContainer(containerId);
+      }
+      
+      if (container === null)
+      {
          status.code = 404;
          status.message = "Component container (" + containerId + ") not found.";
          status.redirect = true;

@@ -56,7 +56,11 @@ function main()
    var eventsFolder = site.getContainer("calendar");
    if (eventsFolder === null)
    {
-      return jsonError("Could not locate events container");
+      eventsFolder = site.createContainer("calendar");
+      if (eventsFolder === null)
+      {
+      	return jsonError("Could not locate events container");
+      }
    }
 
    var event = eventsFolder.childByNamePath(params.eventname);

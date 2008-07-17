@@ -17,19 +17,20 @@ function findTargetNode()
       }
       else if (containerId == undefined)
       {
-         // PENDING: hack!
-         // site is not a node reference, which we need though to get the tagscope.
-         // simply take a container we know it exists and fetch the parent
-         return site.getContainer("blog").parent;
-         //return site;
+         // get site node
+         return site.node;
       }
       
       // fetch container
       node = site.getContainer(containerId);
       if (node === null)
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
-         return null;
+         node = site.createContainer(containerId);
+         if (node === null)
+         {
+         	status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
+         	return null;
+         }
       }
       else if (path == undefined)
       {

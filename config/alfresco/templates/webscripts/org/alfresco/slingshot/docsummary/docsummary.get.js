@@ -25,7 +25,11 @@ function getDocs(siteId, filter)
       var parentNode = site.getContainer("documentLibrary");
       if (parentNode === null)
       {
-         return jsonError("Document Library container not found in: " + siteId + ". (No write permission?)");
+         parentNode = site.createContainer("documentLibrary");
+         if (parentNode === null)
+         {
+         	return jsonError("Document Library container not found in: " + siteId + ". (No write permission?)");
+         }
       }
 
       // build up the query to get documents modified in the last 7 days

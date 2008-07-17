@@ -22,8 +22,12 @@ function getWikiPages(siteId)
    var wiki = site.getContainer("wiki");
    if (wiki === null)
    {
-	   status.setCode(status.STATUS_BAD_REQUEST, "Wiki container not found");
-	   return;
+   	   wiki = site.createContainer("wiki");
+   	   if (wiki === null)
+   	   {
+	   		status.setCode(status.STATUS_BAD_REQUEST, "Wiki container not found");
+	   		return;
+	   	}
    }
    
    if (!wiki.isTagScope)

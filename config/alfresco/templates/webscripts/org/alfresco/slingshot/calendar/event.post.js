@@ -52,9 +52,13 @@ function createEvent(siteId, params)
   var calendar = site.getContainer("calendar");
   if (calendar === null)
   {
-    return {
-      "error": "Could not get container"
-    };
+    calendar = site.createContainer("calendar");
+    if (calendar === null)
+    {
+      return {
+        "error": "Could not get container"
+      };
+    }
   }
   
   if (!calendar.isTagScope)

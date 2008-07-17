@@ -285,7 +285,11 @@ function getRootNode(p_params)
       rootNode = siteNode.getContainer(p_params.containerId);
       if (rootNode === null)
       {
-   		return "Component container '" + p_params.containerId + "' not found in '" + p_params.siteId + "'.";
+        rootNode = siteNode.createContainer(p_params.containerId);
+        if (rootNode === null)
+        {
+   			return "Component container '" + p_params.containerId + "' not found in '" + p_params.siteId + "'.";
+   		}
       }
    }
    catch(e)

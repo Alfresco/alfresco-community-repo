@@ -3,6 +3,6 @@
   <description>Update the details of a site.</description>
   <url>/api/sites/{shortname}</url>
   <format default="json"/>
-  <authentication>guest</authentication>
+  <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

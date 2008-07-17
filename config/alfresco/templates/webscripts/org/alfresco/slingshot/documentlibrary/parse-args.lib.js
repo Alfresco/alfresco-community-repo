@@ -33,8 +33,12 @@ function getParsedArgs()
       rootNode = siteNode.getContainer(container);
       if (rootNode === null)
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + container + "' not found in '" + site + "'. (No permission?)");
-         return null;
+      	 rootNode = siteNode.createContainer(container);
+      	 if (rootNode === null)
+      	 {
+         	status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + container + "' not found in '" + site + "'. (No permission?)");
+         	return null;
+         }
       }
    }
 

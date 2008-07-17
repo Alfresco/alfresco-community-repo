@@ -14,7 +14,11 @@ function getEvents(siteId)
    var calendar = site.getContainer("calendar");
    if (calendar === null)
    {
-      return [];
+      calendar = site.createContainer("calendar");
+      if (calendar === null)
+      {
+      	return [];
+      }
    }
    
    if (!calendar.isTagScope)

@@ -3,6 +3,6 @@
   <description>Creates a new site based on the site preset and details provided.</description>
   <url>/api/sites</url>
   <format default="json"/>
-  <authentication>guest</authentication>
+  <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

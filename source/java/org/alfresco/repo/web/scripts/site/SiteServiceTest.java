@@ -120,6 +120,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals(shortName, result.get("shortName"));
         assertEquals("myTitle", result.get("title"));
         assertEquals("myDescription", result.get("description"));
+        assertNotNull(result.get("node"));
+        assertNotNull(result.get("tagScope"));
         assertTrue(result.getBoolean("isPublic"));
         
         // Check for duplicate names

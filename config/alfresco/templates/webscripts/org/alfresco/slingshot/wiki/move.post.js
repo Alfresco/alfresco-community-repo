@@ -31,8 +31,12 @@ function main()
 	var wiki = site.getContainer("wiki");
     if (wiki === null)
     {
-		return jsonError("Could not locate wiki");
-    }
+        wiki = site.createContainer("wiki");
+		if (wiki === null)
+		{
+			return jsonError("Could not locate wiki");
+		}
+	}
 
 	var page = wiki.childByNamePath(params.pageTitle);
 	if (!page)

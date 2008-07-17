@@ -13,7 +13,7 @@ function main()
    }
    
    // Get the thumbnail name from the JSON content 
-   var thumbnailName = url.templateArgs.thumbnailname; //pathSegments[pathSegments.length - 1];
+   var thumbnailName = url.templateArgs.thumbnailname; 
    
    // 404 if no thumbnail name found
    if (thumbnailName == null)

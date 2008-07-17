@@ -50,8 +50,12 @@ function main()
     var wiki = site.getContainer("wiki");
     if (wiki === null)
     {
-		//return jsonError("Could not locate wiki container");
-		return null;
+    	wiki = site.createContainer("wiki");
+    	if (wiki === null)
+    	{
+			//return jsonError("Could not locate wiki container");
+			return null;
+		}
     }
     
     if (!wiki.isTagScope)

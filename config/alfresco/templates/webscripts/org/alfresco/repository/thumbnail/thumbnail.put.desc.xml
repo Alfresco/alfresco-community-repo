@@ -4,6 +4,6 @@
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}</url>
   <format default="json"/>
-  <authentication>guest</authentication>
+  <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

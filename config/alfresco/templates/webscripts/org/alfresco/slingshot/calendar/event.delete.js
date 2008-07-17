@@ -23,7 +23,11 @@ function deleteEvent()
      var eventsFolder = site.getContainer("calendar");
      if (eventsFolder === null)
      {
-	  	return status.STATUS_NOT_FOUND;
+        eventsFolder = site.createContainer("calendar");
+        if (eventsFolder === null)
+        {
+	  		return status.STATUS_NOT_FOUND;
+	  	}
      }
 
      var event = eventsFolder.childByNamePath(params.eventname);

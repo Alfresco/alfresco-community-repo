@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.ParameterCheck;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -384,6 +385,18 @@ public final class Search extends BaseScopableProcessorExtension
             index ++;
         }
         return nodes;
+    }
+    
+    /**
+     * Encode a string to ISO907 - used to build valid paths for Lucene queries etc.
+     * 
+     * @param s     Value to encode
+     * 
+     * @return encoded value
+     */
+    public String ISO9075Encode(String s)
+    {
+        return ISO9075.encode(s);
     }
 
     /**

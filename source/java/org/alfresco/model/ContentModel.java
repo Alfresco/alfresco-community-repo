@@ -180,6 +180,17 @@ public interface ContentModel
     static final QName PROP_JOBTITLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "jobtitle");
     static final QName PROP_LOCATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "location");
     static final QName PROP_PERSONDESC = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "persondescription");
+    static final QName PROP_TELEPHONE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "telephone");
+    static final QName PROP_MOBILE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mobile");
+    static final QName PROP_COMPANYADDRESS1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyaddress1");
+    static final QName PROP_COMPANYADDRESS2 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyaddress2");
+    static final QName PROP_COMPANYADDRESS3 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyaddress3");
+    static final QName PROP_COMPANYPOSTCODE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companypostcode");
+    static final QName PROP_COMPANYTELEPHONE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companytelephone");
+    static final QName PROP_COMPANYFAX = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyfax");
+    static final QName PROP_COMPANYEMAIL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyemail");
+    static final QName PROP_SKYPE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "skype");
+    static final QName PROP_INSTANTMSG = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "instantmsg");
     
     static final QName PROP_SIZE_CURRENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sizeCurrent");
     static final QName PROP_SIZE_QUOTA = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sizeQuota");

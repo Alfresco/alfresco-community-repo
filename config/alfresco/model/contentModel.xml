@@ -197,6 +197,39 @@
             <property name="cm:persondescription">
             	<type>d:content</type>
             </property>
+            <property name="cm:telephone">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:mobile">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companyaddress1">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companyaddress2">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companyaddress3">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companypostcode">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companytelephone">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companyfax">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:companyemail">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:skype">
+            	<type>d:text</type>
+            </property>
+            <property name="cm:instantmsg">
+            	<type>d:text</type>
+            </property>
             
             <!-- system maintained values -->
             <property name="cm:sizeCurrent">

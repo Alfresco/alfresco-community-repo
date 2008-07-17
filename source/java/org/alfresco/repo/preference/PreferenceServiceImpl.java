@@ -269,7 +269,7 @@ public class PreferenceServiceImpl implements PreferenceService
                     return null;
                 }
                 
-            }, "admin");            
+            }, AuthenticationUtil.SYSTEM_USER_NAME);            
         }
         else
         {

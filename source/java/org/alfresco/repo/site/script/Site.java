@@ -30,12 +30,15 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 /**
  * Site JavaScript object
@@ -307,9 +310,9 @@ public class Site implements Serializable
      */
     public ScriptNode createContainer(String componentId)
     {
-        return createContainer(componentId, null);
+        return createContainer(componentId, null, null);
     }
-
+    
     /**
      * Creates a new site container
      * 
@@ -319,11 +322,60 @@ public class Site implements Serializable
      */
     public ScriptNode createContainer(String componentId, String folderType)
     {
+        return createContainer(componentId, folderType, null);
+    }
+
+    /**
+     * Creates a new site container
+     * 
+     * @param componentId   component id
+     * @param folderType    folder type to create
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode createContainer(String componentId, String folderType, Object permissions)
+    {
         ScriptNode container = null;
         try
         {
+            // Get the container type
             QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
-            NodeRef containerNodeRef = this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+            
+            // Create the container node
+            final NodeRef containerNodeRef = this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+            
+            // Set any permissions that might have been provided for the container
+            if (permissions != null && permissions instanceof ScriptableObject)
+            {
+                ScriptableObject scriptable = (ScriptableObject)permissions;
+                Object[] propIds = scriptable.getIds();
+                for (int i = 0; i < propIds.length; i++)
+                {
+                    // work on each key in turn
+                    Object propId = propIds[i];
+                    
+                    // we are only interested in keys that are formed of Strings
+                    if (propId instanceof String)
+                    {
+                        // get the value out for the specified key - it must be String
+                        final String key = (String)propId;
+                        final Object value = scriptable.get(key, scriptable);
+                        if (value instanceof String)
+                        {
+                            AuthenticationUtil.runAs(new RunAsWork<Object>()
+                            {
+                                public Object doWork() throws Exception
+                                {
+                                    // Set the permission on the container
+                                    Site.this.serviceRegistry.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
+                                    return null;
+                                }
+                            }, AuthenticationUtil.SYSTEM_USER_NAME);
+                        }
+                    }
+                }
+            }            
+            
+            // Create the script node for the container
             container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
         }
         catch(AlfrescoRuntimeException e)

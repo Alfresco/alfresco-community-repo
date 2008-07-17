@@ -110,6 +110,24 @@ function testContainer()
     container4 = site.createContainer("folder.component3", "fm:forum");
     test.assertNotNull(container4);
     test.assertEquals("{http://www.alfresco.org/model/forum/1.0}forum", container4.type);
+    
+    var perms = Array();
+    perms["GROUP_EVERYONE"] = "SiteCollaborator";
+    var containerWithPerms = site.createContainer("folder.component4", null, perms);
+    var setPerms = containerWithPerms.getPermissions();
+    test.assertNotNull(setPerms);
+    var bFound = false;
+    for (index in setPerms)
+    {
+    	if (setPerms[index] == "ALLOWED;GROUP_EVERYONE;SiteCollaborator")
+    	{
+    		bFound = true;
+    	}
+    }
+    if (bFound == false)
+    {
+    	test.fail("Unable to find set permission");
+    }
 }
 
 

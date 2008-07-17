@@ -19,21 +19,6 @@
 #hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
 
 #
-# Oracle dialect
-#
-#hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
-
-#
-# Sybase dialect
-#
-#hibernate.dialect=org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect
-
-#
-# SQLServer dialect
-#
-#hibernate.dialect=org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect
-
-#
 # PostgreSQL dialect
 #
 #hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect

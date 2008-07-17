@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1088,8 +1089,22 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        // NOOP
-    }
+		Configuration cfg = localSessionFactory.getConfiguration();
+		// Shut down DB, if required
+		Dialect dialect = Dialect.getDialect(cfg.getProperties());
+		Class dialectClazz = dialect.getClass();
+		if (dialectClazz.equals(DerbyDialect.class))
+		{
+			try
+			{
+				DriverManager.getConnection("jdbc:derby:;shutdown=true");
+			}
+			// Derby shutdown always triggers an exception, even when clean
+			catch (Throwable e) 
+			{
+			}
+		}
+	}
     
     /**
      * This is a workaround for the odd Spring-Hibernate interaction during configuration.

@@ -43,9 +43,7 @@ import org.mozilla.javascript.Scriptable;
  * @author Roy Wetherall
  */
 public class Site implements Serializable
-{
-	// TODO: DC - Should Site derive from ScriptNode?
-	
+{	
     /** Serializable serial verion UID */
     private static final long serialVersionUID = 8013569574120957923L;
  
@@ -161,6 +159,22 @@ public class Site implements Serializable
     }
     
     /**
+     * Get the site node, null if none
+     * 
+     * @return  ScriptNode  site node
+     */
+    public ScriptNode getNode()
+    {
+        ScriptNode node = null;
+        if (this.siteInfo.getNodeRef() != null)
+        {
+            node = new ScriptNode(this.siteInfo.getNodeRef(), this.serviceRegistry, this.scope);
+        }
+        
+        return node;
+    }
+    
+    /**
      * Saves any outstanding updates to the site details.  
      * <p>
      * If properties of the site are changed and save is not called, those changes will be lost.
@@ -262,32 +276,20 @@ public class Site implements Serializable
     /**
      * Gets (or creates) the "container" folder for the specified component id
      * 
-     * NOTE: The container is of type cm:folder.
-     * 
      * @param componentId
-     * @return node representing the "container" folder
-     */
-    public ScriptNode getContainer(String componentId)
-    {
-    	return getContainer(componentId, null);
-    }
-
-    /**
-     * Gets (or creates) the "container" folder for the specified component id
-     * 
-     * @param componentId
-     * @param folderType  type of folder to create (if null, creates a standard folder)
      * @return node representing the "container" folder (or null, if for some reason 
      *         the container can not be created)
      */
-    public ScriptNode getContainer(String componentId, String folderType)
+    public ScriptNode getContainer(String componentId)
     {
     	ScriptNode container = null;
     	try
 		{
-    		QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
-        	NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId, folderQName);
-        	container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
+    		NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
+    		if (containerNodeRef != null)
+    		{
+    		    container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
+    		}
 		}
     	catch(AlfrescoRuntimeException e)
     	{
@@ -296,7 +298,42 @@ public class Site implements Serializable
     	}
     	return container;
     }
+    
+    /**
+     * Creates a new site container 
+     * 
+     * @param componentId   component id
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode createContainer(String componentId)
+    {
+        return createContainer(componentId, null);
+    }
 
+    /**
+     * Creates a new site container
+     * 
+     * @param componentId   component id
+     * @param folderType    folder type to create
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode createContainer(String componentId, String folderType)
+    {
+        ScriptNode container = null;
+        try
+        {
+            QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
+            NodeRef containerNodeRef = this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+            container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
+        }
+        catch(AlfrescoRuntimeException e)
+        {
+            // NOTE: not good practice to catch all, but in general we're not throwing exceptions
+            //       into the script layer
+        }
+        return container;        
+    }
+    
     /**
      * Determine if the "container" folder for the specified component exists
      * 

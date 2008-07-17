@@ -35,7 +35,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -50,10 +49,10 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,6 +83,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private ActivityService activityService;
     private PersonService personService;
     private AuthenticationComponent authenticationComponent;
+    private TaggingService taggingService;
     
     /**
      * Set node service
@@ -156,6 +156,16 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
     
     /**
+     * Set the taggin service
+     * 
+     * @param taggingService    tagging service
+     */
+    public void setTaggingService(TaggingService taggingService)
+    {
+        this.taggingService = taggingService;
+    }
+    
+    /**
      * @see org.alfresco.repo.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
     public SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
@@ -178,6 +188,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 SiteModel.TYPE_SITE,
                 properties).getChildRef();
         
+        // Make the new site a tag scope
+        this.taggingService.addTagScope(siteNodeRef);
+        
        // Set the memberhips details
        //    - give all authorities read permissions if site is public
        //    - give all authorities read permission on permissions so memberships can be calculated
@@ -191,7 +204,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
        this.permissionService.setPermission(siteNodeRef, authenticationComponent.getCurrentUserName(), SiteModel.SITE_MANAGER, true);
         
        // Return created site information
-       SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
+       SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, siteNodeRef);
        return siteInfo;
     }
     
@@ -259,7 +272,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         boolean isPublic = isSitePublic(siteNodeRef);
         
         // Create and return the site information
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic);
+        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, siteNodeRef);
         return siteInfo;
     }   
     
@@ -298,11 +311,16 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return result;
     }
     
+    /**
+     * Gets the site's node reference based on its short name
+     * 
+     * @param shortName     short name
+     * @return NodeRef      node reference
+     */
     private NodeRef getSiteNodeRef(String shortName)
     {
         NodeRef result = null;
-        
-        //String query = "PATH:\"cm:sites/cm:" + ISO9075.encode(shortName) + "\"";        
+                
         String query = "+TYPE:\"st:site\" +@cm\\:name:\"" + shortName + "\"";
         ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, query);
         if (resultSet.length() == 1)
@@ -312,6 +330,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return result;
     }
 
+    /**
+     * @see org.alfresco.repo.site.SiteService#updateSite(org.alfresco.repo.site.SiteInfo)
+     */
     public void updateSite(SiteInfo siteInfo)
     {
         NodeRef siteNodeRef = getSiteNodeRef(siteInfo.getShortName());
@@ -500,10 +521,72 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
     }
 
-    /* (non-Javadoc)
+    /**
+     * @see org.alfresco.repo.site.SiteService#createContainer(java.lang.String, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map)
+     */
+    public NodeRef createContainer(String shortName, String componentId, QName containerType, Map<QName, Serializable> containerProperties)
+    {
+        // Check for the component id
+        if (componentId == null || componentId.length() ==0)
+        {
+            throw new AlfrescoRuntimeException("Component id not provided");
+        }
+    
+        // retrieve site
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
+        }
+
+        // retrieve component folder within site
+        NodeRef containerNodeRef = null;
+        try
+        {
+            containerNodeRef = findContainer(siteNodeRef, componentId);            
+        }
+        catch(FileNotFoundException e)
+        {
+        }
+        
+        // create the container node reference
+        if (containerNodeRef == null)
+        {
+            if (containerType == null)
+            {
+                containerType = ContentModel.TYPE_FOLDER;
+            }
+            
+            // create component folder
+            FileInfo fileInfo = fileFolderService.create(siteNodeRef, componentId, containerType);
+            
+            // Get the created container 
+            containerNodeRef = fileInfo.getNodeRef();
+            
+            // Set the properties if they have been provided
+            if (containerProperties != null)
+            {
+                Map<QName, Serializable> props = this.nodeService.getProperties(containerNodeRef);
+                props.putAll(containerProperties);
+                this.nodeService.setProperties(containerNodeRef, props);
+            }
+            
+            // Add the container aspect
+            Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(1);
+            aspectProps.put(SiteModel.PROP_COMPONENT_ID, componentId);
+            this.nodeService.addAspect(containerNodeRef, ASPECT_SITE_CONTAINER, aspectProps);
+            
+            // Make the container a tag scope
+            this.taggingService.addTagScope(containerNodeRef);
+        }
+       
+        return containerNodeRef;
+    }
+    
+    /**
      * @see org.alfresco.repo.site.SiteService#getContainer(java.lang.String)
      */
-    public NodeRef getContainer(String shortName, String componentId, QName folderType)
+    public NodeRef getContainer(String shortName, String componentId)
     {
         if (componentId == null || componentId.length() ==0)
         {
@@ -525,16 +608,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
         	containerNodeRef = findContainer(siteNodeRef, componentId);
         }
         catch(FileNotFoundException e)
-        {
-        	// create component folder
-        	FileInfo fileInfo = fileFolderService.create(siteNodeRef, componentId, folderType == null ? ContentModel.TYPE_FOLDER : folderType);
-        	containerNodeRef = fileInfo.getNodeRef();
+        {        	
         }
         
         return containerNodeRef;
     }
 
-    /* (non-Javadoc)
+    /**
      * @see org.alfresco.repo.site.SiteService#hasContainer(java.lang.String)
      */
     public boolean hasContainer(String shortName, String componentId)

@@ -1,9 +1,9 @@
 package org.alfresco.repo.site;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -76,39 +76,58 @@ public interface SiteService
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter);
     
     /**
+     * Gets the role of the specified user
      * 
-     * @param shortName
-     * @param userName
-     * @return
+     * @param shortName     site short name
+     * @param userName      user name
+     * @return String       site role, null if none
      */
     String getMembersRole(String shortName, String userName);
     
     /**
+     * Inidiactes whether a user is a member of a site or not
      * 
-     * @param shortName
-     * @param userName
-     * @return
+     * @param shortName     site short name
+     * @param userName      user name
+     * @return boolean      true if the user is a member of the site, false otherwise
      */
     boolean isMember(String shortName, String userName);
     
     /**
+     * Sets the role of a user withint a site
      * 
-     * @param shortName
-     * @param userName
-     * @param role
+     * @param shortName     site short name
+     * @param userName      user name
+     * @param role          site role
      */
     void setMembership(String shortName, String userName, String role);
     
     /**
+     * Clears a users role within a site
      * 
-     * @param shortName
-     * @param userName
+     * @param shortName     site short name
+     * @param userName      user name
      */
     void removeMembership(String shortName, String userName);
     
+    /**
+     * Creates a container for a component is a site of the given container type (must be a sub-type of st:siteContainer)
+     * <p>
+     * If no container type is specified then a node of type st:siteContainer is created.
+     * <p>
+     * The map of container properties are set on the created container node.  Null can be provided when no properties
+     * need to be set.
+     * 
+     * @param shortName                 site short name
+     * @param componentId               component id
+     * @param containerType             container type to create (can be null)
+     * @param containerProperties       container property values (can be null)
+     * @return
+     */
+    NodeRef createContainer(String shortName, String componentId, QName containerType, Map<QName, Serializable> containerProperties);
     
     /**
-     * Gets (or creates, if it doesn't exist) the "container" folder for the specified
+     * Gets the "container" folder for the specified
      * component.
      *
      * @param shortName  short name of site
@@ -116,7 +135,7 @@ public interface SiteService
      * @param folderType  type of folder to create (if null, creates standard folder)
      * @return  noderef of container
      */
-    NodeRef getContainer(String shortName, String componentId, QName folderType);
+    NodeRef getContainer(String shortName, String componentId);
 
     /**
      * Determines if a "container" folder for the specified component exists.

@@ -49,8 +49,23 @@
       <type name="st:sites">
          <title>Sites</title>
          <parent>cm:folder</parent>         
-      </type>
+      </type>    
      
    </types>
+   
+   <aspects>
+   
+      <!-- Site Container Aspect -->
+      <aspect name="st:siteContainer">
+     	<title>Site Container</title> 	      
+         <properties>
+            <property name="st:componentId">
+            	<title>Component Id</title>
+            	<type>d:text</type>        
+            </property>
+         </properties>
+  	   </aspect>
+   
+   </aspects>
    
 </model>

@@ -29,14 +29,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ForumModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TestWithUserUtils;
 
@@ -60,6 +61,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private ScriptService scriptService;
     private NodeService nodeService;
     private AuthenticationComponent authenticationComponent;
+    private TaggingService taggingService;
     
     /**
      * Called during the transaction setup
@@ -73,6 +75,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.taggingService = (TaggingService)this.applicationContext.getBean("TaggingService");
         
         // Do the test's as userOne
         TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
@@ -96,6 +99,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(expectedTitle, siteInfo.getTitle());
         assertEquals(expectedDescription, siteInfo.getDescription());
         assertEquals(expectedIsPublic, siteInfo.getIsPublic());
+        assertNotNull(siteInfo.getNodeRef());
+        
+        // Check that the site is a tag scope
+        assertTrue(this.taggingService.isTagScope(siteInfo.getNodeRef()));
     }
     
     public void testListSites() throws Exception
@@ -347,33 +354,50 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
         boolean hasContainer = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component");
         assertFalse(hasContainer);
-        NodeRef container1 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component", null);
-        assertNotNull(container1);
-        NodeRef container2 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component", null);
+        NodeRef container1 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component");
+        assertNull(container1);
+        container1 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component", null, null);
+        assertTrue(this.taggingService.isTagScope(container1));
+        NodeRef container2 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component");
         assertNotNull(container2);
+        assertTrue(this.taggingService.isTagScope(container2));
         assertTrue(container1.equals(container2));
         boolean hasContainer2 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component");
         assertTrue(hasContainer2);
         boolean hasContainer3 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component2");
         assertFalse(hasContainer3);
-        NodeRef container3 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component2", null);
+        
+        NodeRef container3 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component2");
+        assertNull(container3);
+        container3 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component2", null, null);
         assertNotNull(container3);
+        assertTrue(this.taggingService.isTagScope(container3));        
         assertFalse(container1.equals(container3));
+        
         boolean hasContainer4 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component2");
         assertTrue(hasContainer4);
         boolean hasContainer5 = this.siteService.hasContainer(siteInfo.getShortName(), "folder.component3");
         assertFalse(hasContainer5);
-        NodeRef container5 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3", ContentModel.TYPE_FOLDER);
+        NodeRef container5 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3");
+        assertNull(container5);
+        container5 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component3", ContentModel.TYPE_FOLDER, null);
         assertNotNull(container5);
-        NodeRef container6 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3", null);
+        
+        NodeRef container6 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3");
+        assertNotNull(container6);
+        container6 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component3", null, null);
         assertNotNull(container6);
         assertTrue(container5.equals(container6));
         assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(container6));
-        NodeRef container7 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3", ForumModel.TYPE_FORUM);
+        NodeRef container7 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component3");
+        assertNotNull(container7);
+        container7 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component3", ForumModel.TYPE_FORUM, null);
         assertNotNull(container7);
         assertTrue(container5.equals(container7));
         assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(container7));
-        NodeRef container8 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component4", ForumModel.TYPE_FORUM);
+        NodeRef container8 = this.siteService.getContainer(siteInfo.getShortName(), "folder.component4");
+        assertNull(container8);
+        container8 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component4", ForumModel.TYPE_FORUM, null);
         assertNotNull(container8);
         assertEquals(ForumModel.TYPE_FORUM, nodeService.getType(container8));
     }

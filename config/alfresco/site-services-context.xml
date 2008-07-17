@@ -24,6 +24,7 @@
        <property name="authenticationComponent" ref="authenticationComponent"/>      
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
+       <property name="taggingService" ref="TaggingService"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

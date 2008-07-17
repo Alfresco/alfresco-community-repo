@@ -41,6 +41,10 @@ public interface SiteModel
     public static final QName TYPE_SITE = QName.createQName(SITE_MODEL_URL, "site");
     public static final QName PROP_SITE_PRESET = QName.createQName(SITE_MODEL_URL, "sitePreset");
     
+    /** Site Container */
+    public static final QName ASPECT_SITE_CONTAINER = QName.createQName(SITE_MODEL_URL, "siteContainer");
+    public static final QName PROP_COMPONENT_ID = QName.createQName(SITE_MODEL_URL, "componentId");
+    
     /** Site Permission */
     public static final String SITE_MANAGER = "SiteManager";
     public static final String SITE_COLLABORATOR = "SiteCollaborator";

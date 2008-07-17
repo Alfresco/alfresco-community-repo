@@ -79,6 +79,10 @@ public class TagScopeImpl implements TagScope
      */
     public List<TagDetails> getTags(int topN)
     {
+        if (this.tagDetails.size() < topN)
+        {
+            topN = this.tagDetails.size();
+        }
         return this.tagDetails.subList(0, topN);
     }
     

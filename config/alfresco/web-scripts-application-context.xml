@@ -325,6 +325,21 @@
       <property name="namespaceService" ref="namespaceService"/>
    </bean>
    
+   <!--                                                     -->
+   <!-- Java-backed Web Scripts for Person Service REST API -->
+   <!--                                                     -->
+   
+   <!--                                                                                                       -->
+   <!-- person.put Web Script - updates a person with the given person properties                             -->
+   <!--                                                                                                       -->
+   
+   <bean id="webscript.org.alfresco.repository.person.person.put"
+         class="org.alfresco.repo.web.scripts.person.PersonPut"
+         parent="webscript">
+      <property name="serviceRegistry" ref="ServiceRegistry"/>
+      <property name="authenticationComponent" ref="AuthenticationComponent"/>
+   </bean>
+   
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
    

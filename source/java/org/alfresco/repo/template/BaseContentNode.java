@@ -471,6 +471,18 @@ public abstract class BaseContentNode implements TemplateContent
         return (content != null ? content.getSize() : 0L);
     }
     
+    /**
+     * Helper to return true if the supplied property value is a TemplateContentData object
+     * 
+     * @param o     Object to test
+     * 
+     * @return true if instanceof TemplateContentData, false otherwise
+     */
+    public boolean isTemplateContent(Object o)
+    {
+        return (o instanceof TemplateContentData);
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Inner classes 

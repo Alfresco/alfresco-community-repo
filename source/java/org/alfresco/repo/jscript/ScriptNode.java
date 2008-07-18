@@ -2434,6 +2434,18 @@ public class ScriptNode implements Serializable, Scopeable
         return result != null ? result : new Object[0];
     }
     
+    /**
+     * Helper to return true if the supplied property value is a ScriptContentData object
+     * 
+     * @param o     Object to test
+     * 
+     * @return true if instanceof ScriptContentData, false otherwise
+     */
+    public boolean isScriptContent(Object o)
+    {
+        return (o instanceof ScriptContentData);
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Value Conversion

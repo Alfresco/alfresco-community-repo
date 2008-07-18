@@ -441,6 +441,19 @@ public final class People extends BaseScopableProcessorExtension
         }
         return Context.getCurrentContext().newArray(getScope(), parents);
     }
+    
+    /**
+     * Return true if the specified user is an Administrator authority.
+     * 
+     * @param person to test
+     * 
+     * @return true if an admin, false otherwise
+     */
+    public boolean isAdmin(ScriptNode person)
+    {
+        ParameterCheck.mandatory("Person", person);
+        return this.authorityService.isAdminAuthority((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+    }
 
     /**
      * Get Contained Authorities

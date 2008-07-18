@@ -22,15 +22,16 @@ function findTargetNode()
       }
       
       // fetch container
-      node = site.getContainer(containerId);
-      if (node === null)
+      var node = null;
+      if (site.hasContainer(containerId))
       {
-         node = site.createContainer(containerId);
-         if (node === null)
-         {
-         	status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
-         	return null;
-         }
+         node = site.getContainer(containerId);
+      }
+      if (node == null)
+      {
+         // Container might not be there as it hasn't been created yet!
+         //status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
+         return null;
       }
       else if (path == undefined)
       {
@@ -49,7 +50,12 @@ function findTargetNode()
 function main()
 {
    var node = findTargetNode();
-
+   if (node == null)
+   {
+      model.noscopefound=true;
+      return;
+   }
+   
    // fetch the nearest available tagscope
    var scope = node.tagScope;
    if (scope == null)

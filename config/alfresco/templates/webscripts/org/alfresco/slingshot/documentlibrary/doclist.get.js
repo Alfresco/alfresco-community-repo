@@ -5,10 +5,10 @@
 /**
  * Document List Component: doclist
  */
-model.doclist = getDoclist(args["filter"]);
+model.doclist = getDocList(args["filter"]);
 
 /* Create collection of documents and folders in the given space */
-function getDoclist(filter)
+function getDocList(filter)
 {
    var items = new Array();
    var assets;

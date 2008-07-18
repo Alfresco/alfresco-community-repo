@@ -1,3 +1,5 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/calendar/lib/calendar.lib.js">
+
 var siteId = args["site"];
 
 model.events = getEvents(siteId);
@@ -11,19 +13,10 @@ function getEvents(siteId)
       return [];
    }
 
-   var calendar = site.getContainer("calendar");
+   var calendar = getCalendarContainer(site);
    if (calendar === null)
    {
-      calendar = site.createContainer("calendar");
-      if (calendar === null)
-      {
-      	return [];
-      }
-   }
-   
-   if (!calendar.isTagScope)
-   {
-      calendar.isTagScope = true;
+      return [];
    }
 
    var query = "+PATH:\"/app:company_home/st:sites/cm:" + site.shortName + "/cm:calendar/*\" ";

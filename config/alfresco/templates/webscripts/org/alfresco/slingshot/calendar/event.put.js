@@ -1,3 +1,4 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/calendar/lib/calendar.lib.js">
 /**
  * Update event properties
  * @method PUT
@@ -40,14 +41,10 @@ function main()
       return status.STATUS_NOT_FOUND;
    }
 
-   var eventsFolder = site.getContainer("calendar");
+   var eventsFolder = getCalendarContainer(site);
    if (eventsFolder === null)
    {
-   	  eventsFolder = site.createContainer("calendar");
-   	  if (eventsFolder === null)
-   	  {
-      	return status.STATUS_NOT_FOUND;
-      }
+      return status.STATUS_NOT_FOUND;
    }
 
 	var event = eventsFolder.childByNamePath(params.eventname);

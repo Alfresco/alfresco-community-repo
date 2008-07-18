@@ -1,3 +1,4 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/calendar/lib/calendar.lib.js">
 /**
  * Update event properties
  * @method GET
@@ -53,14 +54,10 @@ function main()
       return jsonError("Could not find site: " + siteid);
    }
 
-   var eventsFolder = site.getContainer("calendar");
+   var eventsFolder = getCalendarContainer(site);
    if (eventsFolder === null)
    {
-      eventsFolder = site.createContainer("calendar");
-      if (eventsFolder === null)
-      {
-      	return jsonError("Could not locate events container");
-      }
+      return jsonError("Could not locate events container");
    }
 
    var event = eventsFolder.childByNamePath(params.eventname);

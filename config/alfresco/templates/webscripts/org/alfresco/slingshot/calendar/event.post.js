@@ -1,3 +1,5 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/calendar/lib/calendar.lib.js">
+
 var siteId = null;
 if (!json.isNull("site"))
 {
@@ -49,21 +51,12 @@ function createEvent(siteId, params)
     };
   }
 
-  var calendar = site.getContainer("calendar");
+  var calendar = getCalendarContainer(site);
   if (calendar === null)
   {
-    calendar = site.createContainer("calendar");
-    if (calendar === null)
-    {
-      return {
+     return {
         "error": "Could not get container"
-      };
-    }
-  }
-  
-  if (!calendar.isTagScope)
-  {
-     calendar.isTagScope = true;
+     }
   }
 
   var timestamp = new Date().getTime();

@@ -10,13 +10,18 @@
          "type": "${item.type}",
          "icon32": "${item.icon32}",
          "name" : "${(item.name!'')?j_string}",
-         "displayName": "${item.name?replace(workingCopyLabel, "")?html}",
+         "displayName": "${(item.displayName!'')?j_string}",
          "tags" : [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
-         "title" : "${(item.title!'')?j_string}",
-         "viewUrl" : "${item.viewUrl?j_string}",
-         "detailsUrl" : "${item.detailsUrl?j_string}",
-         "componentUrl" : "${item.containerUrl?j_string}",
-         "site" : "${item.site}",
+         <#if item.downloadUrl??>
+         "downloadUrl" : "${item.downloadUrl?j_string}",
+         </#if>
+         <#if item.browseUrl??>
+         "browseUrl" : "${item.browseUrl?j_string}",
+         </#if>
+         "site" : {
+           "shortName" : "${item.site.shortName}",
+           "title" : "${item.site.title}"
+         },
          "container" : "${item.container}"
       }<#if item_has_next>,</#if>
       </#list>

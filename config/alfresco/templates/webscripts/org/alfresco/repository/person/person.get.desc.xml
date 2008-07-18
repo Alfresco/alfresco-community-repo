@@ -3,6 +3,6 @@
    <description>Get the details of a person.</description>
    <url>/api/people/{userName}</url>
    <format default="json" />
-   <authentication>guest</authentication>
+   <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

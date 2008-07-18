@@ -13,8 +13,8 @@ function main()
    }
    else 
    {
-      // Return 404
-      status.setCode(404, "Person " + userName + " does not exist");
+      // Return 404 - Not Found      
+      status.setCode(status.STATUS_NOT_FOUND, "Person " + userName + " does not exist");
       return;
    }
 }

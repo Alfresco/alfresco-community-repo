@@ -28,14 +28,10 @@ function main()
 		return jsonError("Could not find site: " + params.siteId);
     }
 
-	var wiki = site.getContainer("wiki");
-    if (wiki === null)
-    {
-        wiki = site.createContainer("wiki");
-		if (wiki === null)
-		{
-			return jsonError("Could not locate wiki");
-		}
+	var wiki = getWikiContainer(site);
+   if (wiki === null)
+   {
+	   return jsonError("Could not locate wiki");
 	}
 
 	var page = wiki.childByNamePath(params.pageTitle);

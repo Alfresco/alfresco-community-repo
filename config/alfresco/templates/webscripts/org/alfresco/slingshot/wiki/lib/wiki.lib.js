@@ -53,4 +53,27 @@ function createWikiPage(name, folder, options)
 	return page;
 }
 
+function getWikiContainer(site)
+{
+   var wiki;
+   
+   if (site.hasContainer("wiki"))
+   {
+      wiki = site.getContainer("wiki");
+   }
+   else
+   {
+      var perms = Array();
+      perms["GROUP_EVERYONE"] = "SiteCollaborator"; 
+      wiki = site.createContainer("wiki", null, perms);
+   }
+
+   if (!wiki.isTagScope)
+   {
+      wiki.isTagScope = true;
+   }
+   
+   return wiki;
+}
+
 

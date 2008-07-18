@@ -44,14 +44,10 @@ function update()
 		return jsonError("Could not find site: " + siteId);
     }
 
-    var wiki = site.getContainer("wiki");
+    var wiki = getWikiContainer(site);
     if (wiki === null)
     {
-    	wiki = site.createContainer("wiki");
-    	if (wiki === null)
-    	{
-			return jsonError("Could not locate wiki container");
-		}
+       return jsonError("Could not locate wiki container");
     }
 	
 	var page = wiki.childByNamePath(params.pageTitle);

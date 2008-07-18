@@ -35,7 +35,6 @@ function main()
     var params = getTemplateParams();
     if (params === null)
     {
-		//return jsonError("No parameters supplied");
 		return null;
     }
 
@@ -43,24 +42,13 @@ function main()
     var site = siteService.getSite(params.siteId);
     if (site === null)
     {
-		//return jsonError("Could not find site: " + siteId);
 		return null;
     }
 
-    var wiki = site.getContainer("wiki");
+    var wiki = getWikiContainer(site);
     if (wiki === null)
     {
-    	wiki = site.createContainer("wiki");
-    	if (wiki === null)
-    	{
-			//return jsonError("Could not locate wiki container");
-			return null;
-		}
-    }
-    
-    if (!wiki.isTagScope)
-    {
-       wiki.isTagScope = true;
+       return null;
     }
     
 	 var page = wiki.childByNamePath(params.pageTitle);

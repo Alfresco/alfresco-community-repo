@@ -23,15 +23,11 @@ function deleteEvent()
 	   return;
    }
    
-   	var wiki = site.getContainer("wiki");
-    if (wiki === null)
-    {
-        wiki = site.createContainer("wiki");
-		if (wiki === null)
-		{
-			status.setCode(status.STATUS_NOT_FOUND, "Could not find wiki container.");
-	   		return;
-		}
+   var wiki = getWikiContainer(site);
+   if (wiki === null)
+   {
+      status.setCode(status.STATUS_NOT_FOUND, "Could not find wiki container.");
+	   return;
 	}
 
    var page = wiki.childByNamePath(params.pageTitle);

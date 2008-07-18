@@ -1,3 +1,4 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/wiki/lib/wiki.lib.js">
 
 var siteId = url.templateArgs.siteId;
 var filter = args.filter;
@@ -19,20 +20,11 @@ function getWikiPages(siteId)
 	   return;
    }
    
-   var wiki = site.getContainer("wiki");
+   var wiki = getWikiContainer(site);
    if (wiki === null)
    {
-   	   wiki = site.createContainer("wiki");
-   	   if (wiki === null)
-   	   {
-	   		status.setCode(status.STATUS_BAD_REQUEST, "Wiki container not found");
-	   		return;
-	   	}
-   }
-   
-   if (!wiki.isTagScope)
-   {
-      wiki.isTagScope = true;
+      status.setCode(status.STATUS_BAD_REQUEST, "Wiki container not found");
+	   return;
    }
    
    var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";

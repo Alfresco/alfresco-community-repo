@@ -87,7 +87,7 @@ public class TaggingServiceTest extends BaseWebScriptTest
         super.tearDown();
     }
     
-    public void getTagsTest()
+    public void testGetTags()
     {
         
     }

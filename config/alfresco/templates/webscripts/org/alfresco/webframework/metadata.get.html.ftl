@@ -50,28 +50,32 @@
 	{
 	<#assign first = true>
 	<#list object.properties?keys as key>
-		<#assign val = object.properties[key]>
-		<#if val?exists>
-			<#assign renderable = false>
-			<#if val?is_string == true>
-				<#assign renderable = true>
-			<#elseif val?is_date == true>
-				<#assign renderable = true>
-			<#elseif val?is_boolean == true>
-				<#assign renderable = true>
-			</#if>
-			<#if renderable == true>			
+		<#if object.properties[key]?exists>
+			<#assign val = object.properties[key]>
+			<#if includeContent && object.isTemplateContent(val)>
 				<#if first == false>
 					,
 				</#if>
-				<#if val?is_string == true>			
-					"${key}" : "${val?js_string}"
-				<#elseif val?is_date == true>			
-					"${key}" : "${val?datetime}"
-				<#elseif val?is_boolean == true>			
-					"${key}" : "${val}"
+				"${key}" : "${val.content?js_string}"
+				<#assign first = false>
+			<#elseif val?is_string == true>
+				<#if first == false>
+					,
 				</#if>
-				<#assign first = false>				
+				"${key}" : "${val?js_string}"
+				<#assign first = false>
+			<#elseif val?is_date == true>
+				<#if first == false>
+					,
+				</#if>
+				"${key}" : "${val?datetime}"
+				<#assign first = false>
+			<#elseif val?is_boolean == true>
+				<#if first == false>
+					,
+				</#if>
+				"${key}" : "${val}"
+				<#assign first = false>
 			</#if>
 		</#if>
 	</#list>
@@ -95,7 +99,7 @@
 	]
 <#else>
 	,
-	"children" : [ ]
+	"children" : []
 </#if>
 
 </#macro>

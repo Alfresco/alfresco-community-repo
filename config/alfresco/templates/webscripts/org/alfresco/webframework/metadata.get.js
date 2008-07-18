@@ -1,3 +1,6 @@
+model.includeChildren = true;
+model.includeContent = false;
+
 var object = null;
 
 // allow for content to be loaded from id
@@ -11,9 +14,10 @@ if(args["id"] != null)
 else if(args["user"] != null)
 {
 	var userId = args["user"];
-	if (userId == person.properties.userName)
+	if (userId == person.properties.userName || people.isAdmin(person))
 	{
 	   object = person;
+	   model.includeContent = true;
 	}
 }
 
@@ -34,8 +38,5 @@ else
 	object = roothome.childByNamePath(path);
 }
 
-// store onto model
 model.object = object;
 model.mimetype = object.mimetype;
-model.includeChildren = true;
-model.includeContent = false;

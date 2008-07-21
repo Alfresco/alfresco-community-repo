@@ -1,5 +1,6 @@
 model.includeChildren = true;
 model.includeContent = false;
+model.isUser = false;
 
 var object = null;
 
@@ -17,7 +18,8 @@ else if(args["user"] != null)
 	if (userId == person.properties.userName || people.isAdmin(person))
 	{
 	   object = person;
-	   model.includeContent = true;
+	   model.isUser = true;
+	   model.includeChildren = false;
 	}
 }
 

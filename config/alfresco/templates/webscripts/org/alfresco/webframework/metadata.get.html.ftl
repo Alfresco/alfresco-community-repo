@@ -34,15 +34,6 @@
 	"type" : "${object.type}"
 	,
 	"isCategory" : ${object.isCategory?string}
-	,
-	
-<#if object.children?exists>
-	<#if object.children?size &gt; 0>
-		"hasChildren" : true
-	<#else>
-		"hasChildren" : false
-	</#if>
-</#if>
 	
 <#if object.properties?exists>
 	,
@@ -52,28 +43,20 @@
 	<#list object.properties?keys as key>
 		<#if object.properties[key]?exists>
 			<#assign val = object.properties[key]>
-			<#if includeContent && object.isTemplateContent(val)>
-				<#if first == false>
-					,
-				</#if>
+			<#if isUser && object.isTemplateContent(val)>
+				<#if first == false>,</#if>
 				"${key}" : "${val.content?js_string}"
 				<#assign first = false>
 			<#elseif val?is_string == true>
-				<#if first == false>
-					,
-				</#if>
+				<#if first == false>,</#if>
 				"${key}" : "${val?js_string}"
 				<#assign first = false>
 			<#elseif val?is_date == true>
-				<#if first == false>
-					,
-				</#if>
+				<#if first == false>,</#if>
 				"${key}" : "${val?datetime}"
 				<#assign first = false>
 			<#elseif val?is_boolean == true>
-				<#if first == false>
-					,
-				</#if>
+				<#if first == false>,</#if>
 				"${key}" : "${val}"
 				<#assign first = false>
 			</#if>
@@ -100,6 +83,14 @@
 <#else>
 	,
 	"children" : []
+</#if>
+
+<#if isUser && object.associations["cm:avatar"]?exists>
+	,
+	"associations" :
+	{
+		"{http://www.alfresco.org/model/content/1.0}avatar" : ["${object.associations["cm:avatar"][0].nodeRef}"]
+	}
 </#if>
 
 </#macro>

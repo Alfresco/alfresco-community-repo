@@ -332,48 +332,49 @@ public class Site implements Serializable
      * @param folderType    folder type to create
      * @return ScriptNode   the created container
      */
-    public ScriptNode createContainer(String componentId, String folderType, Object permissions)
+    public ScriptNode createContainer(final String componentId, final String folderType, final Object permissions)
     {
         ScriptNode container = null;
         try
         {
-            // Get the container type
-            QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
-            
-            // Create the container node
-            final NodeRef containerNodeRef = this.siteService.createContainer(getShortName(), componentId, folderQName, null);
-            
-            // Set any permissions that might have been provided for the container
-            if (permissions != null && permissions instanceof ScriptableObject)
+            NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
-                ScriptableObject scriptable = (ScriptableObject)permissions;
-                Object[] propIds = scriptable.getIds();
-                for (int i = 0; i < propIds.length; i++)
+                public NodeRef doWork() throws Exception
                 {
-                    // work on each key in turn
-                    Object propId = propIds[i];
+                    // Get the container type
+                    QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
                     
-                    // we are only interested in keys that are formed of Strings
-                    if (propId instanceof String)
+                    // Create the container node
+                    NodeRef containerNodeRef = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+                    
+                    // Set any permissions that might have been provided for the container
+                    if (permissions != null && permissions instanceof ScriptableObject)
                     {
-                        // get the value out for the specified key - it must be String
-                        final String key = (String)propId;
-                        final Object value = scriptable.get(key, scriptable);
-                        if (value instanceof String)
+                        ScriptableObject scriptable = (ScriptableObject)permissions;
+                        Object[] propIds = scriptable.getIds();
+                        for (int i = 0; i < propIds.length; i++)
                         {
-                            AuthenticationUtil.runAs(new RunAsWork<Object>()
+                            // work on each key in turn
+                            Object propId = propIds[i];
+                            
+                            // we are only interested in keys that are formed of Strings
+                            if (propId instanceof String)
                             {
-                                public Object doWork() throws Exception
-                                {
+                                // get the value out for the specified key - it must be String
+                                final String key = (String)propId;
+                                final Object value = scriptable.get(key, scriptable);
+                                if (value instanceof String)
+                                {                                   
                                     // Set the permission on the container
                                     Site.this.serviceRegistry.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
-                                    return null;
                                 }
-                            }, AuthenticationUtil.SYSTEM_USER_NAME);
+                            }
                         }
-                    }
+                    }            
+            
+                    return containerNodeRef;
                 }
-            }            
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
             
             // Create the script node for the container
             container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 

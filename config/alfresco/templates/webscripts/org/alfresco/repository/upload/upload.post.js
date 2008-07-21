@@ -3,6 +3,7 @@ var content = null;
 var mimetype = null;
 var siteId = null;
 var containerId = null;
+var thumbnailName = null;
 
 // Upload specific
 var uploadDirectory = null;
@@ -73,6 +74,10 @@ for each (field in formdata.fields)
       case "overwrite":
          overwrite = field.value == "true";
          break;
+      
+      case "thumbnail":
+         thumbnailName = field.value;
+         break;
    }
 }
 
@@ -107,21 +112,21 @@ else
          status.message = "Component container (" + containerId + ") not found.";
          status.redirect = true;
       }
-      if(updateNodeRef !== null && uploadDirectory === null)
+      
+      if (updateNodeRef !== null && uploadDirectory === null)
       {
          // Update mode, since updateNodeRef was used
-
          var workingCopy = search.findNode(updateNodeRef);
-         if(workingCopy.isLocked)
+         if (workingCopy.isLocked)
          {
-            // Its not a working copy, should have been the working copy, throw error
+            // It's not a working copy, should have been the working copy, throw error
             status.code = 404;
             status.message = "Cannot upload document since updateNodeRef '" + updateNodeRef + "' points to a locked document, supply a nodeRef to its working copy instead.";
             status.redirect = true;
          }
-         else if(!workingCopy.hasAspect("cm:workingcopy"))
+         else if (!workingCopy.hasAspect("cm:workingcopy"))
          {
-            // Its not a working copy, do a check out to get the working copy
+            // It's not a working copy, do a check out to get the working copy
             workingCopy = workingCopy.checkout();
          }
          // Update the working copy
@@ -130,7 +135,7 @@ else
          workingCopy = workingCopy.checkin(description, majorVersion);
          model.document = workingCopy;
       }
-      else if(uploadDirectory !== null && updateNodeRef === null)
+      else if (uploadDirectory !== null && updateNodeRef === null)
       {
          var destNode = container;
          if (uploadDirectory != "")
@@ -149,7 +154,7 @@ else
          if (existingFile !== null)
          {
             // File already exists, decide what to do
-            if(overwrite)
+            if (overwrite)
             {
                // Upload component was configured to overwrite files if name clashes
                existingFile.properties.content.write(content);
@@ -173,7 +178,7 @@ else
          }
 
          // save the new file (original or renamed file) as long as an overwrite hasn't been performed
-         if(!overwritten)
+         if (!overwritten)
          {
             var newFile = destNode.createFile(filename);
             newFile.properties.contentType = contentType;
@@ -187,6 +192,11 @@ else
             newFile.addAspect("cm:versionable");
             // Save new file
             newFile.save();
+            // Create thumbnail?
+            if (thumbnailName && thumbnailService.isThumbnailNameRegistered(thumbnailName))
+            {
+               newFile.createThumbnail(thumbnailName, true);
+            }
             model.document = newFile;
          }
       }

@@ -30,6 +30,7 @@ function getFilterQuery(filter, obj)
          filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
          filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         filterQuery += "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          break;
          
       case "editingMe":

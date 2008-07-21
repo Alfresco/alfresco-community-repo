@@ -2,6 +2,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
+var THUMBNAIL_NAME = "doclib";
+
 /**
  * Document List Component: doclist
  */
@@ -12,6 +14,9 @@ function getDocList(filter)
 {
    var items = new Array();
    var assets;
+   
+   // Is our thumbnail tpe registered?
+   var haveThumbnails = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME);
 
    // Use helper function to get the arguments
    var parsedArgs = getParsedArgs();
@@ -44,9 +49,7 @@ function getDocList(filter)
    }
    
    // Locked/working copy status defines action set
-   var itemStatus;
-   var itemOwner;
-   var actionSet;
+   var itemStatus, itemOwner, actionSet, thumbnail;
    
    for each(asset in assets)
    {
@@ -69,6 +72,17 @@ function getDocList(filter)
          if (itemOwner == person.properties.userName)
          {
             itemStatus.push("lockedBySelf");
+         }
+         
+         // Make sure we have a thumbnail
+         if (haveThumbnails)
+         {
+            thumbnail = asset.getThumbnail(THUMBNAIL_NAME);
+            if (thumbnail === null)
+            {
+               // No thumbnail, so queue creation
+               asset.createThumbnail(THUMBNAIL_NAME, true);
+            }
          }
          
          // Get relevant actions set

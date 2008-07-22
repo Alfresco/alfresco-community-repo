@@ -1,4 +1,4 @@
-<#import "../topicpost.lib.ftl" as topicpostLib/>
+<#import "../post.lib.ftl" as postLib />
 {
-	"item" : <@topicpostLib.topicpostJSON item=topicpost/>
+   "item": <@postLib.postJSON postData=postData />
 }

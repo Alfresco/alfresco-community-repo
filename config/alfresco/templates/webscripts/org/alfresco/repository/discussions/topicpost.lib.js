@@ -42,10 +42,8 @@ function getOrderedPosts(topic)
 }
 
 /*
- * This method encapsulates a topic object into a JavaScript object with the following properties
- * node: The topic node
- * content: The topic text
- * replyCount: The number of replies
+ * Returns a JavaScript object that is used by the freemarker template
+ * to render a topic post
  */
 function getTopicPostData(topicNode)
 {  
@@ -55,6 +53,10 @@ function getTopicPostData(topicNode)
    return getTopicPostDataFromTopicAndPosts(topicNode, posts);
 }
 
+/*
+ * Returns a JavaScript object that is used by the freemarker template
+ * to render a topic post
+ */
 function getTopicPostDataFromTopicAndPosts(topicNode, posts)
 {
    // check the first post (which is the main post)
@@ -64,16 +66,19 @@ function getTopicPostDataFromTopicAndPosts(topicNode, posts)
       return;
    }
    
-   var item = new Object();
+   var item = {};
    
    // fetch the data
+   item.isTopicPost = true;
    item.topic = topicNode;
    item.post = posts[0];
+   item.author = people.getPerson(item.post.properties["cm:creator"]);
    item.totalReplyCount = posts.length - 1;
    // in case of replies, find the last reply
    if (posts.length > 1)
    {
       item.lastReply = posts[posts.length - 1];
+      item.lastReplyBy = people.getPerson(item.lastReply.properties["cm:creator"]);
    }
 
    // tags
@@ -86,5 +91,17 @@ function getTopicPostDataFromTopicAndPosts(topicNode, posts)
        item.tags = [];
    }
 
+   return item;
+}
+
+/**
+ * Returns the data object that is used by the freemarker template to render a reply post
+ */
+function getReplyPostData(post)
+{
+   var item = {};
+   item.isTopicPost = false;
+   item.post = post;
+   item.author = people.getPerson(item.post.properties["cm:creator"]);
    return item;
 }

@@ -76,7 +76,7 @@ function main()
 
    var topicPost = createPost(node);
    
-   model.topicpost = getTopicPostData(topicPost);
+   model.postData = getTopicPostData(topicPost);
    
    // post an activitiy item, but only if we got a site
    if (url.templateArgs.site != null)
@@ -84,7 +84,7 @@ function main()
       var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-postview?container=' + url.templateArgs.container +
                            + '&path=' + url.templateArgs.path + '&postId=' + topicPost.name;
       var data = {
-          title: model.topicpost.post.properties.title,
+          title: model.postData.post.properties.title,
           browseTopicUrl: browseTopicUrl
       }
       activities.postActivity("org.alfresco.discussions.post-created", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));

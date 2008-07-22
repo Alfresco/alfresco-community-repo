@@ -25,8 +25,7 @@ function getRepliesForPost(post)
 function getReplyDataRecursive(post, levels)
 {
    // encapsulates the data: node, childCount, children
-   var data = new Object();
-   data.post = post;
+   var data = getReplyPostData(post);
    var children = getRepliesForPost(post);
    data.childCount = children.length;
    if (levels > 1)

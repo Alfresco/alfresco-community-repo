@@ -32,7 +32,7 @@ function createPostReplyImpl(topicNode, parentPostNode)
    postNode.createAssociation(parentPostNode, "cm:references");
    postNode.save(); // probably not necessary here
 
-   return postNode;
+   return getReplyPostData(postNode);
 }
 
 /**
@@ -72,13 +72,13 @@ function main()
       return;
    }
    
-   model.post = createPostReply(node);
+   model.postData = createPostReply(node);
    
    // add an activity item
    if (json.has("site"))
    {
       // fetch the topic (and with it the root post
-      var topicData = getTopicPostData(model.post.parent);       
+      var topicData = getTopicPostData(model.postData.post.parent);       
       var site = json.get("site");
       var container = json.get("container");
       var path = json.has("path") ? json.get("path") : '';

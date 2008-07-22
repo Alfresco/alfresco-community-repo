@@ -10,11 +10,11 @@ function fetchPostData(node)
    // only in the first case we fetch all information (as returned by forum/.../posts)
    if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
    {
-      model.topicpost = getTopicPostData(node);
+      model.postData = getTopicPostData(node);
    }
    else if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
    {
-      model.post = node;
+      model.postData = getReplyPostData(node);
    }
    else
    {

@@ -94,13 +94,13 @@ function main()
    // do another lucene search in case of a topic post
    if (topicNode == null)
    {
-      model.post = node;
+      model.postData = getReplyPostData(postNode);
       
       // add an activity item
       if (json.has("site"))
       {
          // fetch the topic (and with it the root post
-         var topicData = getTopicPostData(model.post.parent);       
+         var topicData = getTopicPostData(model.postData.post.parent);       
          var site = json.get("site");
          var container = json.get("container");
          var path = json.has("path") ? json.get("path") : '';
@@ -118,15 +118,15 @@ function main()
       // we will do the search here as we have to reuse the lucene result later
       // See above, use getTopicPostDataFromTopicAndPosts instead of getTopicPostData
       //model.topicpost = getTopicPostData(node);
-      model.topicpost = getTopicPostDataFromTopicAndPosts(topicNode, nodes);
+      model.postData = getTopicPostDataFromTopicAndPosts(topicNode, nodes);
       
       // post an activitiy item, but only if we got a site
       if (url.templateArgs.site != null)
       {
          var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-topicview?container=' + url.templateArgs.container +
-                             + '&path=' + url.templateArgs.path + '&postId=' + model.topicpost.topic.name;
+                             + '&path=' + url.templateArgs.path + '&postId=' + model.postData.topic.name;
          var data = {
-            title: model.topicpost.post.properties.title,
+            title: model.postData.post.properties.title,
             browseTopicUrl: browseTopicUrl
          }
          activities.postActivity("org.alfresco.discussions.post-updated", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));

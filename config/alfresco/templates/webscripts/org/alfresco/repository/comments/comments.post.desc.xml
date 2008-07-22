@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Comments</shortname>
   <description>Add a new comment to a node</description>
-  <url>/node/{store_type}/{store_id}/{id}/comments</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/comments</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

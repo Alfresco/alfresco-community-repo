@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Forum post replies</shortname>
   <description>Get the forum posts</description>
-  <url>/forum/post/site/{site}/{container}/{path}/replies</url>
-  <url>/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
+  <url>/api/forum/post/site/{site}/{container}/{path}/replies</url>
+  <url>/api/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

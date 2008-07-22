@@ -1,9 +1,9 @@
 <webscript>
   <shortname>Forum posts</shortname>
   <description>Get the new forum posts</description>
-  <url>/forum/site/{site}/{container}/{path}/posts/hot</url>
-  <url>/forum/site/{site}/{container}/posts/hot</url>
-  <url>/forum/node/{store_type}/{store_id}/{id}/posts/hot</url>
+  <url>/api/forum/site/{site}/{container}/{path}/posts/hot</url>
+  <url>/api/forum/site/{site}/{container}/posts/hot</url>
+  <url>/api/forum/node/{store_type}/{store_id}/{id}/posts/hot</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

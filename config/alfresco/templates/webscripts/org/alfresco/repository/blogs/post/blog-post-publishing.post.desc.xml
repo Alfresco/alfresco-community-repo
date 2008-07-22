@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Blog post publishing</shortname>
   <description>Performs external blog publishing functions on a blog post</description>
-  <url>/blog/post/site/{site}/{container}/{path}/publishing</url>
-  <url>/blog/post/node/{store_type}/{store_id}/{id}/publishing</url>
+  <url>/api/blog/post/site/{site}/{container}/{path}/publishing</url>
+  <url>/api/blog/post/node/{store_type}/{store_id}/{id}/publishing</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

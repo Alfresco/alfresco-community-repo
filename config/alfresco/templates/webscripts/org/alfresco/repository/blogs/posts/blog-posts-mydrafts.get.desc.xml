@@ -1,9 +1,9 @@
 <webscript>
   <shortname>Blog posts</shortname>
   <description>Get all posts for a blog</description>
-  <url>/blog/site/{site}/{container}/{path}/posts/mydrafts</url>
-  <url>/blog/site/{site}/{container}/posts/mydrafts</url>
-  <url>/blog/node/{store_type}/{store_id}/{id}/posts/mydrafts</url>
+  <url>/api/blog/site/{site}/{container}/{path}/posts/mydrafts</url>
+  <url>/api/blog/site/{site}/{container}/posts/mydrafts</url>
+  <url>/api/blog/node/{store_type}/{store_id}/{id}/posts/mydrafts</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

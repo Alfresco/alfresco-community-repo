@@ -1,9 +1,9 @@
 <webscript>
   <shortname>Forum posts</shortname>
   <description>Adds a post to a forum</description>
-  <url>/forum/site/{site}/{container}/{path}/posts</url>
-  <url>/forum/site/{site}/{container}/posts</url>
-  <url>/forum/node/{store_type}/{store_id}/{id}/posts</url>
+  <url>/api/forum/site/{site}/{container}/{path}/posts</url>
+  <url>/api/forum/site/{site}/{container}/posts</url>
+  <url>/api/forum/node/{store_type}/{store_id}/{id}/posts</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

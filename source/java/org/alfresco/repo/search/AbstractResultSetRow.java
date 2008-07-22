@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -77,6 +78,16 @@ public abstract class AbstractResultSetRow implements ResultSetRow
         return getResultSet().getNodeRef(getIndex());
     }
 
+    public QName getQName()
+    {
+        return getResultSet().getChildAssocRef(getIndex()).getQName();
+    }
+    
+    public ChildAssociationRef getChildAssocRef()
+    {
+        return getResultSet().getChildAssocRef(getIndex());
+    }
+    
     public float getScore()
     {
         return getResultSet().getScore(getIndex());
@@ -92,6 +103,11 @@ public abstract class AbstractResultSetRow implements ResultSetRow
         return Collections.unmodifiableMap(properties);
     }
 
+    public Serializable getValue(Path path)
+    {
+        return properties.get(path);
+    }
+    
     protected Map<QName, Serializable> getDirectProperties()
     {
         return Collections.<QName, Serializable>emptyMap();

@@ -44,6 +44,7 @@ import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -261,6 +262,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                 Hits hits;
 
+                boolean requiresPostSort = false;
                 if (searchParameters.getSortDefinitions().size() > 0)
                 {
                     int index = 0;
@@ -284,6 +286,10 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                     {
                                         field = field + ".sort";
                                     }
+                                    else
+                                    {
+                                        requiresPostSort = true;
+                                    }
                                 }
 
                             }
@@ -306,6 +312,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                     }
                     hits = searcher.search(query, new Sort(fields));
+                    
                 }
                 else
                 {
@@ -313,7 +320,16 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters);
+                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters);
+                if(requiresPostSort)
+                {
+                    ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
+                    return sorted;
+                }
+                else
+                {
+                    return rs;
+                }
             }
             catch (ParseException e)
             {

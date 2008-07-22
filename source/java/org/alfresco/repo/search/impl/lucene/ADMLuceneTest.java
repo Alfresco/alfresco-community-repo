@@ -409,8 +409,12 @@ public class ADMLuceneTest extends TestCase
         nodeService.addChild(n12, n14, ASSOC_TYPE_QNAME, QName.createQName("{namespace}common"));
         nodeService.addChild(n13, n14, ASSOC_TYPE_QNAME, QName.createQName("{namespace}common"));
 
-        documentOrder = new NodeRef[] { rootNodeRef, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14 };
+        documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n3, n1, n2 };
 
+        nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.setProperty(n1, ContentModel.PROP_MODIFIED, new Date(new Date().getTime() - 1000*60*60));
+        nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
     }
 
     private double orderDoubleCount = -0.11d;
@@ -1617,7 +1621,7 @@ public class ADMLuceneTest extends TestCase
             date = currentBun;
         }
         results.close();
-
+        
         SearchParameters sp_7 = new SearchParameters();
         sp_7.addStore(rootNodeRef.getStoreRef());
         sp_7.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -1629,7 +1633,7 @@ public class ADMLuceneTest extends TestCase
         for (ResultSetRow row : results)
         {
             Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_MODIFIED));
-            // System.out.println(currentBun);
+            //System.out.println("A " + currentBun + " "+row.getQName());
             if (date != null)
             {
                 assertTrue(date.compareTo(currentBun) <= 0);
@@ -1835,7 +1839,7 @@ public class ADMLuceneTest extends TestCase
         sp17.addSort("cabbage", false);
         results = searcher.query(sp17);
         results.close();
-
+        
         luceneFTS.resume();
     }
 
@@ -2155,6 +2159,9 @@ public class ADMLuceneTest extends TestCase
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n5, QName.createQName("{namespace}twelve"), n12));
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n12, QName.createQName("{namespace}thirteen"), n13));
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n13, QName.createQName("{namespace}fourteen"), n14));
+        indexer.updateNode(n3);
+        indexer.updateNode(n1);
+        indexer.updateNode(n2);
         indexer.prepare();
         indexer.commit();
     }

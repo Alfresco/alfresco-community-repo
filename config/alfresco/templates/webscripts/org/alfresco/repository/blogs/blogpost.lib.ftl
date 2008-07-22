@@ -1,3 +1,15 @@
+<#-- Renders a person object. -->
+<#macro renderPerson person fieldName>
+   "${fieldName}" : {
+      <#if person.assocs["cm:avatar"]??>
+      "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
+      </#if>
+      "username" : "${person.properties["cm:userName"]}",
+      "firstName" : "${person.properties["cm:firstName"]}",
+      "lastName" : "${person.properties["cm:lastName"]}"
+   },
+</#macro>
+
 
 <#macro renderTags tags>
 [<#list tags as x>"${x?j_string}"<#if x_has_next>, </#if></#list>]
@@ -34,7 +46,11 @@
    "name" : "${(item.node.properties.name!'')?j_string}",
     "title" : "${(item.node.properties.title!'')?j_string}",
    <@addContent item=item />
-   "author" : "${item.node.properties.creator?j_string}",
+   <#if item.author??>
+   <@renderPerson person=item.author fieldName="author" />
+   <#else>
+   "author" : { "username" : "${item.node.properties.creator?j_string}" },
+   </#if>
    "createdOn" : "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "permissions" : {"edit" : true, "publishExt" : true, "delete" : true},

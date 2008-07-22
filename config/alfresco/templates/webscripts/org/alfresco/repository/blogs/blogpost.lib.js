@@ -45,6 +45,7 @@ function getBlogPostData(node)
 {
    var data = {};
    data.node = node;
+   data.author = people.getPerson(node.properties["cm:creator"]);
    data.commentCount = getCommentsCount(node);
    
    // draft

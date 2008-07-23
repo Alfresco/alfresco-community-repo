@@ -3,9 +3,9 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <item>
-    <title>${fileName!"File uploaded"}</title>
-    <link>${browseURL?replace("&", "&amp;")}</link>
+    <title>${(fileName!"File uploaded")?xml}</title>
+    <link>${browseURL?xml}</link>
     <guid>${id}</guid>
-    <description>${username} added ${fileName} to the Document Library.</description>
+    <description>${username?xml} added ${(fileName!'a new file')?xml} to the Document Library.</description>
 </item>
 

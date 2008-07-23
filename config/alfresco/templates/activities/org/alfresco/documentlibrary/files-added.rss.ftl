@@ -4,8 +4,8 @@
 </#if>
 <item>
     <title>${fileCount!"Many"} files uploaded</title>
-    <link>${browseURL?replace("&", "&amp;")}</link>
+    <link>${browseURL?xml}</link>
     <guid>${id}</guid>
-    <description>${username} added ${fileCount!"multiple"} files to the Document Library.</description>
+    <description>${username?xml} added ${fileCount!"multiple"} files to the Document Library.</description>
 </item>
 

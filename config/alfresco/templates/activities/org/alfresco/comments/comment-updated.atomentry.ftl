@@ -4,7 +4,7 @@
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
    <title>Comment updated</title>
-   <link rel="alternate" type="text/html" href="${(browsePostUrl!'')?replace("&", "&amp;")}" />
+   <link rel="alternate" type="text/html" href="${(browsePostUrl!'')?xml}" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">

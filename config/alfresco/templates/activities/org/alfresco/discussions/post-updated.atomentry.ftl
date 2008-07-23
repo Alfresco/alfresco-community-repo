@@ -3,8 +3,8 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>Discussion topic updated: ${topicTitle!'unknown'}</title>
-   <link rel="alternate" type="text/html" href="${(browseTopicUrl!'')?replace("&", "&amp;")}" />
+   <title>Discussion topic updated: ${(topicTitle!'unknown')?xml}</title>
+   <link rel="alternate" type="text/html" href="${(browseTopicUrl!'')?xml}" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">

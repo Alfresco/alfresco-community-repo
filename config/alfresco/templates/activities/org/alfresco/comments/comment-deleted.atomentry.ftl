@@ -4,7 +4,7 @@
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
    <title>Comment deleted</title>
-   <link rel="alternate" type="text/html" href="${(browsePostListUrl!'')?replace("&", "&amp;")}" />
+   <link rel="alternate" type="text/html" href="${(browsePostListUrl!'')?xml}" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">

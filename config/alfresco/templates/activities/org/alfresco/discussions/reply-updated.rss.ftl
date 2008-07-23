@@ -3,9 +3,9 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <item>
-    <title>Reply updated: ${topicTitle!"unknown"}</title>
-    <link>${(browseTopicUrl!'')?replace("&", "&amp;")}</link>
+    <title>Reply updated: ${(topicTitle!"unknown")?xml}</title>
+    <link>${(browseTopicUrl!'')?xml}</link>
     <guid>${id}</guid>
-    <description>${username} updated a reply of topic '${topicTitle!'unknown'}'.</description>
+    <description>${username?xml} updated a reply of topic '${(topicTitle!'unknown')?xml}'.</description>
 </item>
 

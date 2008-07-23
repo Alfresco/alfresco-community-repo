@@ -1,7 +1,7 @@
 <item>
-    <title>Event deleted: ${eventName!""}</title>
+    <title>Event deleted: ${(eventName!"")?xml}</title>
     <link></link> 
     <guid>${id}</guid>
-    <description>${firstName!"anon"} ${lastName!""} deleted the event ${eventName}.</description>
+    <description>${(firstName!"anon")?xml} ${(lastName!"")?xml} deleted the event ${(eventName!"")?xml}.</description>
 </item>
 

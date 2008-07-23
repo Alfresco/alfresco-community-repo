@@ -3,9 +3,9 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <item>
-    <title>Blog post updated: ${postTitle!"unknown"}</title>
-    <link>${(browsePostUrl!'')?replace("&", "&amp;")}</link>
+    <title>Blog post updated: ${(postTitle!"unknown")?xml}</title>
+    <link>${(browsePostUrl!'')?xml}</link>
     <guid>${id}</guid>
-    <description>${username} updated blog post ${postTitle}.</description>
+    <description>${username?xml} updated blog post ${(postTitle!"unknown")?xml}.</description>
 </item>
 

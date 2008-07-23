@@ -1,10 +1,10 @@
   <entry xmlns='http://www.w3.org/2005/Atom'>
-    <title>${memberFirstName}<#if memberLastName??> ${memberLastName}</#if> left ${siteNetwork} site</title>
+    <title>${memberFirstName?xml}<#if memberLastName??> ${memberLastName?xml}</#if> left ${siteNetwork?xml} site</title>
     <link rel="alternate" type="text/html"/>
     <icon></icon>
     <id>${id}</id>
     <updated>${xmldate(date)}</updated>
-    <summary>${memberFirstName}<#if memberLastName??> ${memberLastName}</#if> left ${siteNetwork} site</summary>
+    <summary>${memberFirstName?xml}<#if memberLastName??> ${memberLastName?xml}</#if> left ${siteNetwork?xml} site</summary>
     <author>
       <name>${userId}</name>
     </author> 

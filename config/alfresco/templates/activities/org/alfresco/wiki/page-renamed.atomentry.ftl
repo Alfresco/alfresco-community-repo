@@ -1,7 +1,7 @@
 <entry xmlns='http://www.w3.org/2005/Atom'>
-    <title>${currentName!""}</title>
+    <title>${(currentName!"")?xml}</title>
     <link rel="alternate" type="text/html" 
-	href="${pageContext?replace("&", "&amp;")}"
+	href="${pageContext?xml}"
     />
     <id>${id}</id>
     <updated>${xmldate(date)}</updated>

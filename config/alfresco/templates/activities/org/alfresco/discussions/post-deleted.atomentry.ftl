@@ -3,7 +3,7 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>Discussion topic deleted: ${topicTitle!'unknown'}</title>
+   <title>Discussion topic deleted: ${(topicTitle!'unknown')?xml}</title>
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">

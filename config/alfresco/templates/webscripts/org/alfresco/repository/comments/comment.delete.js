@@ -28,6 +28,19 @@ function main()
    }
 
    deleteComment(node);
+   
+   // post an activitiy item, but only if we got a site
+   if ((args["site"] != undefined) &&
+       (args["container"] != undefined) &&
+       (args["itemTitle"] != undefined) &&
+       (args["browseItemUrl"] != undefined))
+   {
+      var data = {
+          itemTitle: decodeURIComponent(args["itemTitle"]),
+          browseItemUrl: decodeURIComponent(args["browseItemUrl"])
+      }
+      activities.postActivity("org.alfresco.comments.comment-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
+   }
 }
 
 main();

@@ -30,9 +30,21 @@ function main()
    }
 
    // update comment
-   updateComment(node);
-   
+   updateComment(node);   
    model.item = getCommentData(node);
+   
+   // post an activitiy item, but only if we got a site
+   if (json.has("site") &&
+       json.has("container") &&
+       json.has("itemTitle") &&
+       json.has("browseItemUrl"))
+   {
+      var data = {
+          itemTitle: json.get("itemTitle"),
+          browseItemUrl: json.get("browseItemUrl")
+      }
+      activities.postActivity("org.alfresco.comments.comment-updated", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+   }
 }
 
 main();

@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.node.NodeRefPropertyMethodInterceptor;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -37,6 +38,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Create thumbnail action executer.
@@ -47,6 +50,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
+    private static Log logger = LogFactory.getLog(CreateThumbnailActionExecuter.class);
+    
     /** Thumbnail Service */
     private ThumbnailService thumbnailService;
     
@@ -105,8 +110,15 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 contentProperty = ContentModel.PROP_CONTENT;
             }
             
-            // Create the thumbnail
-            this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), details.getTransformationOptions(), thumbnailName, null);
+            try
+            {
+                // Create the thumbnail
+                this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), details.getTransformationOptions(), thumbnailName, null);
+            }
+            catch (Exception exception)
+            {
+                logger.info("Creation of thumbnail '" + details.getName() + "' failed");
+            }
         }
     }
 

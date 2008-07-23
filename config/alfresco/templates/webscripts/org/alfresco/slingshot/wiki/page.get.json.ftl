@@ -8,6 +8,7 @@
 	   <#list page.versionHistory?sort_by("versionLabel")?reverse as record>
 	   {
 	      "version": "${record.versionLabel}",
+	      "versionId": "${record.id}",
          "date": "${record.createdDate?datetime}",
 	      "author": "${record.creator}"  	
 	   }<#if record_has_next>,</#if>

@@ -25,7 +25,7 @@ function deleteTopicPost(topicNode)
    // post an activitiy item, but only if we got a site
    if (url.templateArgs.site != null)
    {
-      var browseTopicListUrl = '/page/site/' + url.templateArgs.site + '/discussions-topiclist?container=' + url.templateArgs.container +
+      var browseTopicListUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-topiclist?container=' + url.templateArgs.container +
                            + '&path=' + url.templateArgs.path;
       var data = {
           browseTopicListUrl: browseTopicListUrl,

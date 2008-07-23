@@ -33,7 +33,7 @@ function main()
    // post an activitiy item, but only if we got a site
    if (url.templateArgs.site != null)
    {
-      var browsePostListUrl = '/page/site/' + url.templateArgs.site + '/blog-postlist?container=' + url.templateArgs.container;
+      var browsePostListUrl = '/share/page/site/' + url.templateArgs.site + '/blog-postlist?container=' + url.templateArgs.container;
       var data = {
           title: title,
           browsePostListUrl: browsePostListUrl

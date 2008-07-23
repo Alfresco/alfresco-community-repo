@@ -81,7 +81,7 @@ function main()
    // post an activitiy item, but only if we got a site
    if (url.templateArgs.site != null)
    {
-      var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-postview?container=' + url.templateArgs.container +
+      var browseTopicUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-postview?container=' + url.templateArgs.container +
                            + '&path=' + url.templateArgs.path + '&postId=' + topicPost.name;
       var data = {
           title: model.postData.post.properties.title,

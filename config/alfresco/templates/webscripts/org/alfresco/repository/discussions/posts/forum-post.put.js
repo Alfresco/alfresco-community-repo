@@ -104,7 +104,7 @@ function main()
          var site = json.get("site");
          var container = json.get("container");
          var path = json.has("path") ? json.get("path") : '';
-         var browseTopicUrl = '/page/site/' + site + '/discussions-topicview?container=' + container +
+         var browseTopicUrl = '/share/page/site/' + site + '/discussions-topicview?container=' + container +
                           + '&path=' + path + '&postId=' +  topicData.topic.name;
          var data = {
             title: topicData.post.properties.title,
@@ -123,7 +123,7 @@ function main()
       // post an activitiy item, but only if we got a site
       if (url.templateArgs.site != null)
       {
-         var browseTopicUrl = '/page/site/' + url.templateArgs.site + '/discussions-topicview?container=' + url.templateArgs.container +
+         var browseTopicUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-topicview?container=' + url.templateArgs.container +
                              + '&path=' + url.templateArgs.path + '&postId=' + model.postData.topic.name;
          var data = {
             title: model.postData.post.properties.title,

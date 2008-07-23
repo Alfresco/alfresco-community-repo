@@ -8,7 +8,7 @@ var thumbnailName = null;
 // Upload specific
 var uploadDirectory = null;
 var title = "";
-var overwrite = false;
+var overwrite = true; // If a filename clashes for a versionable file 
 
 // Update specific
 var updateNodeRef = null;
@@ -154,7 +154,7 @@ else
          if (existingFile !== null)
          {
             // File already exists, decide what to do
-            if (overwrite)
+            if (existingFile.hasAspect("cm:versionable") && overwrite)
             {
                // Upload component was configured to overwrite files if name clashes
                existingFile.properties.content.write(content);

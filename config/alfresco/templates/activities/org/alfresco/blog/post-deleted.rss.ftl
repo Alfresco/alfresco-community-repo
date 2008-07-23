@@ -3,9 +3,8 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <item>
-    <title>Blog post deleted: ${title!"unknown"}</title>
-    <link>${(browsePostListURL!'')?replace("&", "&amp;")}</link>
+    <title>Blog post deleted: ${postTitle!"unknown"}</title>
     <guid>${id}</guid>
-    <description>${username} deleted blog post ${title}.</description>
+    <description>${username} deleted blog post ${postTitle}.</description>
 </item>
 

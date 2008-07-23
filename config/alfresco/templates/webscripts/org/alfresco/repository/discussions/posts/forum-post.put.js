@@ -97,20 +97,16 @@ function main()
       model.postData = getReplyPostData(postNode);
       
       // add an activity item
-      if (json.has("site"))
+      if (json.has("site") && json.has("container") && json.has("browseTopicUrl"))
       {
-         // fetch the topic (and with it the root post
-         var topicData = getTopicPostData(model.postData.post.parent);       
-         var site = json.get("site");
-         var container = json.get("container");
-         var path = json.has("path") ? json.get("path") : '';
-         var browseTopicUrl = '/share/page/site/' + site + '/discussions-topicview?container=' + container +
-                          + '&path=' + path + '&postId=' +  topicData.topic.name;
+         var topicData = getTopicPostData(model.postData.post.parent);
+         var browseTopicUrl = "" + json.get("browseTopicUrl");
+         browseTopicUrl = browseTopicUrl.replace("{post.name}", topicData.topic.name);
          var data = {
-            title: topicData.post.properties.title,
+            topicTitle: topicData.post.properties.title,
             browseTopicUrl: browseTopicUrl
          }
-         activities.postActivity("org.alfresco.discussions.reply-updated", site, container, jsonUtils.toJSONString(data));
+         activities.postActivity("org.alfresco.discussions.reply-updated", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
       }
    }
    else
@@ -120,16 +116,17 @@ function main()
       //model.topicpost = getTopicPostData(node);
       model.postData = getTopicPostDataFromTopicAndPosts(topicNode, nodes);
       
-      // post an activitiy item, but only if we got a site
-      if (url.templateArgs.site != null)
+      // add an activity item
+      if (json.has("site") && json.has("container") && json.has("browseTopicUrl"))
       {
-         var browseTopicUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-topicview?container=' + url.templateArgs.container +
-                             + '&path=' + url.templateArgs.path + '&postId=' + model.postData.topic.name;
+         var topicData = getTopicPostData(model.postData.post.parent);
+         var browseTopicUrl = "" + json.get("browseTopicUrl");
+         browseTopicUrl = browseTopicUrl.replace("{post.name}", topicData.topic.name);
          var data = {
-            title: model.postData.post.properties.title,
+            topicTitle: topicData.post.properties.title,
             browseTopicUrl: browseTopicUrl
          }
-         activities.postActivity("org.alfresco.discussions.post-updated", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+         activities.postActivity("org.alfresco.discussions.post-updated", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
       }
    }
 }

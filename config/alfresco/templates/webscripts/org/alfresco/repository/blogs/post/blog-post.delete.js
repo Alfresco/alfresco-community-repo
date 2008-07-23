@@ -1,4 +1,5 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/blogs/blogpost.lib.js">
 
 /**
  * Deletes a blog post node.
@@ -25,20 +26,19 @@ function main()
       return;
    }
 
+   var item = getBlogPostData(node);
+
    var title = node.properties.title;
    var tags = node.properties.tags;
           
    deleteBlogPost(node);
    
-   // post an activitiy item, but only if we got a site
-   if (url.templateArgs.site != null)
+   if (args["site"] != undefined && args["container"] != undefined && ! item.isDraft)
    {
-      var browsePostListUrl = '/share/page/site/' + url.templateArgs.site + '/blog-postlist?container=' + url.templateArgs.container;
       var data = {
-          title: title,
-          browsePostListUrl: browsePostListUrl
+          postTitle: title
       }
-      activities.postActivity("org.alfresco.blog.post-deleted", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
    }
 }
 

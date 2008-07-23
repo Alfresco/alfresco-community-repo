@@ -78,18 +78,17 @@ function main()
    
    model.postData = getTopicPostData(topicPost);
    
-   // post an activitiy item, but only if we got a site
-   if (url.templateArgs.site != null)
+   // create an activity entry
+   if (json.has("site") && json.has("container") && json.has("browseTopicUrl"))
    {
-      var browseTopicUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-postview?container=' + url.templateArgs.container +
-                           + '&path=' + url.templateArgs.path + '&postId=' + topicPost.name;
+      var browseTopicUrl = "" + json.get("browseTopicUrl");
+      browseTopicUrl = browseTopicUrl.replace("{post.name}", model.postData.topic.name);
       var data = {
-          title: model.postData.post.properties.title,
+          topicTitle: model.postData.post.properties.title,
           browseTopicUrl: browseTopicUrl
       }
-      activities.postActivity("org.alfresco.discussions.post-created", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
-   }
-   
+      activities.postActivity("org.alfresco.discussions.post-created", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+   }   
 }
 
 main();

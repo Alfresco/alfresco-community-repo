@@ -3,9 +3,9 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <item>
-    <title>New discussion: ${title!"unknown"}</title>
+    <title>New discussion: ${topicTitle!"unknown"}</title>
     <link>${(browseTopicUrl!'')?replace("&", "&amp;")}</link>
     <guid>${id}</guid>
-    <description>${username} added topic ${title!'unknown'}.</description>
+    <description>${username} added topic ${topicTitle!'unknown'}.</description>
 </item>
 

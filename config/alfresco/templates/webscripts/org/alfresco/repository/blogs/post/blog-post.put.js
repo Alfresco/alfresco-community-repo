@@ -76,15 +76,15 @@ function main()
    
    model.item = getBlogPostData(node);
    
-   // post an activitiy item, but only if we got a site
-   if (url.templateArgs.site != null && ! model.item.isDraft)
+   if (json.has("site") && json.has("container") && json.has("browsePostUrl") && ! model.item.isDraft)
    {
-      var browsePostUrl = '/share/page/site/' + url.templateArgs.site + '/blog-topicview?container=' + url.templateArgs.container + '&postId=' + node.name;      
+      var browsePostUrl = "" + json.get("browsePostUrl");
+      browsePostUrl = browsePostUrl.replace("{post.name}", model.item.node.properties.name);
       var data = {
-          title: node.properties.title,
+          postTitle: model.item.node.properties.title,
           browsePostUrl: browsePostUrl
       }
-      activities.postActivity("org.alfresco.blog.post-updated", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-updated", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
    }
 }
 

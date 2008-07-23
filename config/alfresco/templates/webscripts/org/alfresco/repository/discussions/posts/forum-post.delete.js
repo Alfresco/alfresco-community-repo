@@ -10,7 +10,7 @@ function deleteTopicPost(topicNode)
 {
    // fetch the topic info as we need to get the title for the post for the activity
    var data = getTopicPostData(topicNode);
-   var title = data.post.properties.title;
+   var topicTitle = data.post.properties.title;
     
    // we simply delete the complete topic
    var nodeRef = topicNode.nodeRef;
@@ -23,15 +23,12 @@ function deleteTopicPost(topicNode)
    model.message = "Node " + nodeRef + " deleted";
    
    // post an activitiy item, but only if we got a site
-   if (url.templateArgs.site != null)
+   if (args["site"] != undefined && args["container"] != undefined)
    {
-      var browseTopicListUrl = '/share/page/site/' + url.templateArgs.site + '/discussions-topiclist?container=' + url.templateArgs.container +
-                           + '&path=' + url.templateArgs.path;
       var data = {
-          browseTopicListUrl: browseTopicListUrl,
-          title: title
+         topicTitle: topicTitle
       }
-      activities.postActivity("org.alfresco.discussions.post-deleted", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.discussions.post-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
    }
 }
  

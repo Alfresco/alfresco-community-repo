@@ -74,27 +74,27 @@ function createBlogPost(blogNode)
 
 function main()
 {
-	// get requested node
-	var node = getRequestNode();
-	if (status.getCode() != status.STATUS_OK)
-	{
-		return;
-	}
-	
-	ensureTagScope(node);
-
-	var post = createBlogPost(node);
-	model.item = getBlogPostData(post);
-	
-   // post an activitiy item, but only if we got a site
-   if (url.templateArgs.site != null && ! model.item.isDraft)
+   // get requested node
+   var node = getRequestNode();
+   if (status.getCode() != status.STATUS_OK)
    {
-      var browsePostUrl = '/share/page/site/' + url.templateArgs.site + '/blog-postview?container=' + url.templateArgs.container + '&postId=' + post.name;      
+      return;
+   }
+   
+   ensureTagScope(node);
+
+   var post = createBlogPost(node);
+   model.item = getBlogPostData(post);
+   
+   if (json.has("site") && json.has("container") && json.has("browsePostUrl") && ! model.item.isDraft)
+   {
+      var browsePostUrl = "" + json.get("browsePostUrl");
+      browsePostUrl = browsePostUrl.replace("{post.name}", model.item.node.properties.name);
       var data = {
-          title: post.properties.title,
-          browsePostUrl: browsePostUrl
+         postTitle: model.item.node.properties.title,
+         browsePostUrl: browsePostUrl
       }
-      activities.postActivity("org.alfresco.blog.post-created", url.templateArgs.site, url.templateArgs.container, jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-created", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
    }
 }
 

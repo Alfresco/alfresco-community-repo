@@ -266,7 +266,8 @@ public interface ContentModel
     // Preference Aspect
     static final QName ASPECT_PREFERENCES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "preferences");
     static final QName PROP_PREFERENCE_VALUES = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "preferenceValues");
-
+    static final QName ASSOC_PREFERENCE_IMAGE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "preferenceImage");
+    
     //
     // User Model Definitions
     //

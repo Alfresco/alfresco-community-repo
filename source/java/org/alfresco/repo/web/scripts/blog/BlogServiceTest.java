@@ -62,8 +62,8 @@ public class BlogServiceTest extends BaseWebScriptTest
     private static final String SITE_SHORT_NAME_BLOG = "BlogSiteShortName";
     private static final String COMPONENT_BLOG = "blog";
 
-    private static final String URL_BLOG_POST = "/blog/post/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/";
-    private static final String URL_BLOG_POSTS = "/blog/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/posts";
+    private static final String URL_BLOG_POST = "/api/blog/post/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/";
+    private static final String URL_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/posts";
     
     private List<String> posts = new ArrayList<String>(5);
     private List<String> drafts = new ArrayList<String>(5);
@@ -224,12 +224,12 @@ public class BlogServiceTest extends BaseWebScriptTest
     
     private String getCommentsUrl(String nodeRef)
     {
-    	return "/node/" + nodeRef.replace("://", "/") + "/comments";
+    	return "/api/node/" + nodeRef.replace("://", "/") + "/comments";
     }
     
     private String getCommentUrl(String nodeRef)
     {
-    	return "/comment/node/" + nodeRef.replace("://", "/");
+    	return "/api/comment/node/" + nodeRef.replace("://", "/");
     }
     
     private JSONObject createComment(String nodeRef, String title, String content, int expectedStatus)

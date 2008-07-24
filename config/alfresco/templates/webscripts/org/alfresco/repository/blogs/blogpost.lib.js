@@ -68,8 +68,15 @@ function getBlogPostData(node)
    }
    
    // does the external post require an update?
-   if ((node.properties["blg:lastUpdate"] != undefined))
+   if (node.hasAspect(ASPECT_RELEASED) && (node.properties["blg:lastUpdate"] != undefined))
    {
+      // we either use the release or updated date
+      var modifiedDate = data.releaseDate;
+      if (data.updatedDate != undefined)
+      {
+         modifiedDate = data.updatedDate;
+      }
+       
       if ((modifiedDate - node.properties["blg:lastUpdate"]) > 5000)
       {
          data.outOfDate = true;

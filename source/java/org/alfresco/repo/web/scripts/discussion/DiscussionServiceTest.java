@@ -61,8 +61,8 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortName";
     private static final String COMPONENT_DISCUSSION = "discussion";
 
-    private static final String URL_FORUM_POST = "/forum/post/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/";
-    private static final String URL_FORUM_POSTS = "/forum/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/posts";
+    private static final String URL_FORUM_POST = "/api/forum/post/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/";
+    private static final String URL_FORUM_POSTS = "/api/forum/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/posts";
     
     private List<String> posts = new ArrayList<String>(5);
 
@@ -194,12 +194,12 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     
     private String getRepliesUrl(String nodeRef)
     {
-    	return "/forum/post/node/" + nodeRef.replace("://", "/") + "/replies";
+    	return "/api/forum/post/node/" + nodeRef.replace("://", "/") + "/replies";
     }
     
     private String getPostUrl(String nodeRef)
     {
-    	return "/forum/post/node/" + nodeRef.replace("://", "/");
+    	return "/api/forum/post/node/" + nodeRef.replace("://", "/");
     }
     
     private JSONObject createReply(String nodeRef, String title, String content, int expectedStatus)

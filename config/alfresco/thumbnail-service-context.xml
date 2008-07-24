@@ -98,6 +98,24 @@
 	    			</property>
 	    		</bean>
     		
+				<!-- User avatar image thumbnail options -->
+				<bean class="org.alfresco.repo.thumbnail.ThumbnailDetails">
+					<property name="name" value="avatar" />
+					<property name="mimetype" value="image/png"/>
+					<property name="transformationOptions">
+	    				<bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
+	    					<property name="resizeOptions">
+	    						<bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
+	    							<property name="width" value="64"/>
+	    							<property name="height" value="64"/>
+	    							<property name="maintainAspectRatio" value="true"/>
+	    							<property name="resizeToThumbnail" value="true" />
+	    						</bean>	
+	    					</property>
+	    				</bean>
+					</property>
+					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar.png" />
+				</bean>
     		</list>
     	</property>
     </bean>    

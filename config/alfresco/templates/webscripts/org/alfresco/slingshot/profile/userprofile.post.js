@@ -1,5 +1,5 @@
 /**
- * User Profile Update method
+ * User Profile REST Update method
  * 
  * @method POST
  * @param json {string}
@@ -16,51 +16,66 @@
  *    }
  */
 
-model.success = false;
-var username = json.get("username");
-if (username != null)
+function main()
 {
-   var person = people.getPerson(username);
-   // ensure we found a valid person and that it is the current user or an admin
-   if (person != null && (username == person.properties.userName || people.isAdmin(person)))
+   model.success = false;
+   var username = json.get("username");
+   if (username == null)
    {
-      if (json.has("properties"))
+      status.code = 400;
+      status.message = "Failed to locate valid user to modify.";
+      status.redirect = true;
+      return;
+   }
+   
+   var user = people.getPerson(username);
+   // ensure we found a valid user and that it is the current user or we are an admin
+   if (user == null || (people.isAdmin(person) == false && username != user.properties.userName))
+   {
+      status.code = 500;
+      status.message = "Failed to locate valid user to modify.";
+      status.redirect = true;
+      return;
+   }
+   
+   if (json.has("properties"))
+   {
+      var props = json.get("properties");
+      if (props != null)
       {
-         var props = json.get("properties");
-         if (props != null)
+         var names = props.names();
+         for (var i=0; i<props.length(); i++)
          {
-            var names = props.names();
-            for (var i=0; i<props.length(); i++)
-            {
-               var propname = names.get(i);
-               var propval = props.get(propname);
-               
-               // set simple text properties
-               person.properties[propname] = propval;
-            }
+            var propname = names.get(i);
+            var propval = props.get(propname);
+            
+            // set simple text properties
+            user.properties[propname] = propval;
          }
       }
-      
-      if (json.has("content"))
+   }
+   
+   if (json.has("content"))
+   {
+      var props = json.get("content");
+      if (props != null)
       {
-         var props = json.get("content");
-         if (props != null)
+         var names = props.names();
+         for (var i=0; i<props.length(); i++)
          {
-            var names = props.names();
-            for (var i=0; i<props.length(); i++)
-            {
-               var propname = names.get(i);
-               var propval = props.get(propname);
-               
-               // set content property
-               person.properties[propname].content = propval;
-            }
+            var propname = names.get(i);
+            var propval = props.get(propname);
+            
+            // set content property
+            user.properties[propname].content = propval;
          }
       }
       
       // TODO: AVATAR?
       
-      person.save();
+      user.save();
       model.success = true;
    }
 }
+
+main();

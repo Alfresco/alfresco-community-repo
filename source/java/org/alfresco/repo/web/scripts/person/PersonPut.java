@@ -33,18 +33,19 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Content;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.json.JSONObject;
+
 
 /**
  * Web Script to update a person's details
@@ -75,35 +76,25 @@ public class PersonPut extends DeclarativeWebScript
         {
             // get references to services
             NodeService nodeService = PersonPut.this.serviceRegistry.getNodeService();
-            PermissionService permissionService = PersonPut.this.serviceRegistry.getPermissionService();
             
-            // Can only update the given person node's properties if the
-            // currently logged in user is the system user or,
-            // already has write permissions on the person node or,
-            // matches the user name property of that person node
-            String currentUserName = AuthenticationUtil.getCurrentUserName();
-            String personUserName = (String) nodeService.getProperty(person,
-                    ContentModel.PROP_USERNAME);
-            if (PersonPut.this.authenticationComponent.isSystemUserName(currentUserName) == true
-                    || (permissionService.hasPermission(
-                            this.person, PermissionService.WRITE) == AccessStatus.ALLOWED)
-                    || personUserName.equals(currentUserName) == true)
+            // Update the given person node's properties
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(16);
+            props.put(ContentModel.PROP_USERNAME, (Serializable) personProps.get("userName"));
+            props.put(ContentModel.PROP_TITLE, (Serializable) personProps.get("title"));
+            props.put(ContentModel.PROP_FIRSTNAME, (Serializable) personProps.get("firstName"));
+            props.put(ContentModel.PROP_LASTNAME, (Serializable) personProps.get("lastName"));
+            props.put(ContentModel.PROP_ORGANIZATION, (Serializable) personProps.get("organisation"));
+            props.put(ContentModel.PROP_JOBTITLE, (Serializable) personProps.get("jobtitle"));
+            props.put(ContentModel.PROP_EMAIL, (Serializable) personProps.get("email"));
+            try
             {
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_TITLE, (Serializable) personProps.get("title"));
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_FIRSTNAME, (Serializable) personProps.get("firstName"));
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_LASTNAME, (Serializable) personProps.get("lastName"));
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_ORGANIZATION, (Serializable) personProps.get("organisation"));
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_JOBTITLE, (Serializable) personProps.get("jobtitle"));
-                nodeService.setProperty(
-                        this.person, ContentModel.PROP_EMAIL, (Serializable) personProps.get("email"));
+                nodeService.setProperties(this.person, props);
             }
-            else
+            catch (AccessDeniedException err)
             {
+                // catch security exception if the user does not have permissions
+                String currentUserName = AuthenticationUtil.getCurrentUserName();
+                String personUserName = (String)nodeService.getProperty(person, ContentModel.PROP_USERNAME);
                 throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Current user: "
                         + currentUserName + " does not have the appropriate permissons to update "
                         + " person node with userName: " + personUserName);

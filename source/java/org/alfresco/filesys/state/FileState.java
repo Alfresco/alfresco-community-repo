@@ -95,9 +95,11 @@ public class FileState
     
     private PseudoFileList m_pseudoFiles;
     
-    // Last updated time
+    // File timestamps updated only whilst file is open
     
-    private long m_lastUpdate;
+    private long m_accessDate;
+    private long m_modifyDate;
+    private long m_changeDate;
     
     /**
      * Class constructor
@@ -443,26 +445,6 @@ public class FileState
     }
 
     /**
-     * Return the last updated time
-     * 
-     * @return long
-     */
-    public final long getLastUpdated()
-    {
-    	return m_lastUpdate;
-    }
-
-    /**
-     * Set the last updated time
-     * 
-     * @param updateTime long
-     */
-    public final void setLastUpdated(long updateTime)
-    {
-    	m_lastUpdate = updateTime;
-    }
-    
-    /**
      * Return the count of active locks on this file
      * 
      * @return int
@@ -544,6 +526,91 @@ public class FileState
         }
     }
 
+    /**
+     * Check if the access date/time has been set
+     * 
+     * @return boolean
+     */
+    public final boolean hasAccessDateTime() {
+    	return m_accessDate != 0L ? true : false;
+    }
+    
+    /**
+     * Return the access date/time
+     * 
+     * @return long
+     */
+    public final long getAccessDateTime() {
+    	return m_accessDate;
+    }
+    
+    /**
+     * Update the access date/time
+     */
+    public final void updateAccessDateTime() {
+    	m_accessDate = System.currentTimeMillis();
+    }
+    
+    /**
+     * Check if the change date/time has been set
+     * 
+     * @return boolean
+     */
+    public final boolean hasChangeDateTime() {
+    	return m_changeDate != 0L ? true : false;
+    }
+    
+    /**
+     * Return the change date/time
+     * 
+     * @return long
+     */
+    public final long getChangeDateTime() {
+    	return m_changeDate;
+    }
+    
+    /**
+     * Update the change date/time
+     */
+    public final void updateChangeDateTime() {
+    	m_changeDate = System.currentTimeMillis();
+    }
+    
+    /**
+     * Check if the modification date/time has been set
+     * 
+     * @return boolean
+     */
+    public final boolean hasModifyDateTime() {
+    	return m_modifyDate != 0L ? true : false;
+    }
+    
+    /**
+     * Return the modify date/time
+     * 
+     * @return long
+     */
+    public final long getModifyDateTime() {
+    	return m_modifyDate;
+    }
+    
+    /**
+     * Update the modify date/time
+     */
+    public final void updateModifyDateTime() {
+    	m_modifyDate = System.currentTimeMillis();
+    	m_accessDate = m_modifyDate;
+    }
+    
+    /**
+     * Update the modify date/time
+     * 
+     * @param modTime long
+     */
+    public final void updateModifyDateTime( long modTime) {
+    	m_modifyDate = modTime;
+    }
+    
     /**
      * Check if the file is readable for the specified section of the file and process id
      * 

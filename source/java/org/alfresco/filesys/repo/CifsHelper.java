@@ -636,10 +636,6 @@ public class CifsHelper
     {
         try
         {
-        	// Check if the new file name is a temporary file name            
-            if ( newName.endsWith(".tmp") || newName.endsWith(".temp"))
-                nodeService.addAspect(nodeToRenameRef, ContentModel.ASPECT_TEMPORARY, null);
-            
             fileFolderService.rename(nodeToRenameRef, newName);
         }
         catch (org.alfresco.service.cmr.model.FileExistsException e)

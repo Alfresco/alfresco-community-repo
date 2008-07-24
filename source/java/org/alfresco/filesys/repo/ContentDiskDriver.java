@@ -27,6 +27,7 @@ package org.alfresco.filesys.repo;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -606,8 +607,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 		
                		// Debug
                 		
-              		if ( logger.isInfoEnabled())
-               			logger.info( "Added file state for pseudo files folder (getinfo) - " + paths[0]);
+              		if ( logger.isDebugEnabled())
+               			logger.debug( "Added file state for pseudo files folder (getinfo) - " + paths[0]);
                 }
                 else if ( fstate.hasPseudoFiles() == false)
                 {
@@ -626,8 +627,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
             		// Debug
             		
-            		if ( logger.isInfoEnabled())
-            			logger.info( "Added pseudo files for folder (exists) - " + paths[0]);
+            		if ( logger.isDebugEnabled())
+            			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
                 }
             	
             	
@@ -657,6 +658,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the node ref for the path, chances are there is a file state in the cache
             
             NodeRef nodeRef = getNodeForPath(tree, infoPath);
+            
             if ( nodeRef != null)
             {
                 // Get the file information for the node
@@ -665,7 +667,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                 // DEBUG
                 
-                if ( logger.isInfoEnabled())
+                if ( logger.isDebugEnabled())
                     logger.debug("getInfo using cached noderef for path " + path);
             }
             
@@ -689,7 +691,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isInfoEnabled())
+                        if ( logger.isDebugEnabled())
                             logger.debug("getInfo using cached noderef for parent " + path);
                     }
                 }
@@ -710,8 +712,24 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             // Set the file id for the file using the relative path
             
-            if ( finfo != null)
+            if ( finfo != null) {
+            	
+            	// Set the file id
+            
             	finfo.setFileId( path.hashCode());
+            
+            	// Copy cached timestamps, if available
+            	
+                FileState fstate = getStateForPath(tree, infoPath);
+                if ( fstate != null) {
+                	if ( fstate.hasAccessDateTime())
+                		finfo.setAccessDateTime(fstate.getAccessDateTime());
+                	if ( fstate.hasChangeDateTime())
+                		finfo.setChangeDateTime(fstate.getChangeDateTime());
+                	if ( fstate.hasModifyDateTime())
+                		finfo.setModifyDateTime(fstate.getModifyDateTime());
+                }
+            }
             
             // Return the file information
             
@@ -1019,8 +1037,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                		
     	                		// Debug
     	                		
-    	                		if ( logger.isInfoEnabled())
-    	                			logger.info( "Added file state for pseudo files folder (exists) - " + paths[0]);
+    	                		if ( logger.isDebugEnabled())
+    	                			logger.debug( "Added file state for pseudo files folder (exists) - " + paths[0]);
     	                	}
     	                }
     	                else if ( fstate.hasPseudoFiles() == false)
@@ -1044,8 +1062,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     		
                     		// Debug
                     		
-                    		if ( logger.isInfoEnabled())
-                    			logger.info( "Added pseudo files for folder (exists) - " + paths[0]);
+                    		if ( logger.isDebugEnabled())
+                    			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
     	                }
     	            	
     	                // Check if the path is to a pseudo file
@@ -1061,8 +1079,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                {
     	                	// Failed to find pseudo file
     	                	
-    	                	if ( logger.isInfoEnabled())
-    	                		logger.info( "Failed to find pseudo file (exists) - " + name);
+    	                	if ( logger.isDebugEnabled())
+    	                		logger.debug( "Failed to find pseudo file (exists) - " + name);
     	                }
                 	}
                 }
@@ -1167,8 +1185,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                		
 	                		// Debug
 	                		
-	                		if ( logger.isInfoEnabled())
-	                			logger.info( "Added file state for pseudo files folder (open) - " + paths[0]);
+	                		if ( logger.isDebugEnabled())
+	                			logger.debug( "Added file state for pseudo files folder (open) - " + paths[0]);
 	                	}
 	                }
 	                else if ( fstate.hasPseudoFiles() == false)
@@ -1179,8 +1197,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 		
                 		// Debug
                 		
-                		if ( logger.isInfoEnabled())
-                			logger.info( "Added pseudo files for folder (open) - " + paths[0]);
+                		if ( logger.isDebugEnabled())
+                			logger.debug( "Added pseudo files for folder (open) - " + paths[0]);
 	                }
 	            	
 	                // Check if the path is to a pseudo file
@@ -1196,8 +1214,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                {
 	                	// Failed to find pseudo file
 	                	
-	                	if ( logger.isInfoEnabled())
-	                		logger.info( "Failed to find pseudo file (open) - " + params.getPath());
+	                	if ( logger.isDebugEnabled())
+	                		logger.debug( "Failed to find pseudo file (open) - " + params.getPath());
 	                }
             	}
             }
@@ -1439,7 +1457,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // DEBUG
                         
-                        if ( logger.isInfoEnabled())
+                        if ( logger.isDebugEnabled())
                             logger.debug("Create file using cached noderef for path " + paths[0]);
                     }
                 }
@@ -2019,9 +2037,46 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             	
             	if ( sameFolder == true)
             	{
+                	// Check if the new file name is a temporary file name
+                	
+                	String newNameNorm = newName.toLowerCase();
+                	boolean isTempFile = false;
+                	
+                    if ( newNameNorm.endsWith(".tmp") || newNameNorm.endsWith(".temp")) {
+                    	
+                    	// Add the temporary aspect, also prevents versioning
+                    
+                        nodeService.addAspect(nodeToMoveRef, ContentModel.ASPECT_TEMPORARY, null);
+
+                        // Indicate that the new file is a temporary file
+                        
+                        isTempFile = true;
+                        
+                        // DEBUG
+                		
+                		if ( logger.isDebugEnabled())
+                			logger.debug("Added Temporary aspect to renamed file " + newName);
+                    }
+                    
             		// Rename the file/folder
             		
             		cifsHelper.rename(nodeToMoveRef, name);
+
+            		// Check if the temporary aspect should be removed from the renamed file
+            		
+            		String oldNameNorm = oldName.toLowerCase();
+            		
+            		if ( isTempFile == false && (oldNameNorm.endsWith(".tmp") || oldNameNorm.endsWith(".temp"))) {
+                    	
+                    	// Remove the temporary aspect
+                    
+                        nodeService.removeAspect(nodeToMoveRef, ContentModel.ASPECT_TEMPORARY);
+
+                        // DEBUG
+                		
+                		if ( logger.isDebugEnabled())
+                			logger.debug("Removed Temporary aspect from renamed file " + newName);
+            		}
             		
             		// DEBUG
             		
@@ -2151,6 +2206,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the file/folder node
             
             NodeRef nodeRef = getNodeForPath(tree, name);
+            FileState fstate = getStateForPath(tree, name);
             
             // Check permissions on the file/folder node
             
@@ -2164,6 +2220,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
             {
+            	// Start a transaction
+            	
+            	beginReadTransaction( sess);
+            	
                 // Check if the node is locked
                 
                 if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_LOCKABLE))
@@ -2175,6 +2235,64 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     if ( lockTypeStr != null)
                         throw new AccessDeniedException("Node locked, cannot mark for delete");
                 }
+                
+                // Update the change date/time
+                
+                if ( fstate != null)
+                	fstate.updateChangeDateTime();
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Set deleteOnClose=true file=" + name);
+            }
+            
+            // Set the creation date/time
+            
+            if ( info.hasSetFlag(FileInfo.SetCreationDate)) {
+            	
+                // Create the transaction
+
+            	beginWriteTransaction( sess);
+            	
+            	// Set the creation date on the file/folder node
+            	
+            	Date createDate = new Date( info.getCreationDateTime());
+            	nodeService.setProperty( nodeRef, ContentModel.PROP_CREATED, createDate);
+
+                // Update the change date/time
+                
+                if ( fstate != null)
+                	fstate.updateChangeDateTime();
+                
+            	// DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Set creationDate=" + createDate + " file=" + name);
+            }
+
+            // Set the modification date/time
+            
+            if ( info.hasSetFlag(FileInfo.SetModifyDate)) {
+            	
+                // Create the transaction
+
+            	beginWriteTransaction( sess);
+            	
+            	// Set the creation date on the file/folder node
+
+            	Date modifyDate = new Date( info.getModifyDateTime());
+            	nodeService.setProperty( nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
+
+                // Update the change date/time
+                
+                if ( fstate != null)
+                	fstate.updateChangeDateTime();
+                
+            	// DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Set modifyDate=" + modifyDate + " file=" + name);
             }
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)

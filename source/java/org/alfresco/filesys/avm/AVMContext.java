@@ -346,7 +346,7 @@ public class AVMContext extends AlfrescoContext
 			
 			// Update the file state modify time
 			
-			rootState.setLastUpdated( System.currentTimeMillis());
+			rootState.updateModifyDateTime();
 			
 			// Send a change notification for the deleted folder
 			

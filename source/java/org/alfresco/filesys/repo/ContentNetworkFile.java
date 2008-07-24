@@ -69,6 +69,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
 {
     private static final Log logger = LogFactory.getLog(ContentNetworkFile.class);
     
+    // Services
+    
     private NodeService nodeService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
@@ -107,7 +109,20 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Create the file
         
-        ContentNetworkFile netFile = new ContentNetworkFile(nodeService, contentService, mimetypeService, nodeRef, path);
+        ContentNetworkFile netFile = null;
+        
+        if ( isMSOfficeSpecialFile(path)) {
+        	
+        	// Create a file for special processing
+        	
+        	netFile = new MSOfficeContentNetworkFile( nodeService, contentService, mimetypeService, nodeRef, path);
+        }
+        else {
+        	
+        	// Create a normal content file
+        
+        	netFile = new ContentNetworkFile(nodeService, contentService, mimetypeService, nodeRef, path);
+        }
         
         // Set relevant parameters
         
@@ -182,7 +197,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * @param nodeRef NodeRef
      * @param name String
      */
-    private ContentNetworkFile(
+    protected ContentNetworkFile(
             NodeService nodeService,
             ContentService contentService,
             MimetypeService mimetypeService,
@@ -439,6 +454,11 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         setFileSize( size);
         
+        // Update the modification date/time
+        
+        if ( getFileState() != null)
+        	getFileState().updateModifyDateTime();
+        
         // DEBUG
         
         if (logger.isDebugEnabled())
@@ -475,6 +495,11 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         setFileSize(channel.size());
         
+        // Update the modification date/time
+        
+        if ( getFileState() != null)
+        	getFileState().updateModifyDateTime();
+
         // DEBUG
         
         if (logger.isDebugEnabled())
@@ -507,6 +532,11 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             count = 0;  // doesn't obey the same rules, i.e. just returns the bytes read
         }
         
+        // Update the access date/time
+        
+        if ( getFileState() != null)
+        	getFileState().updateAccessDateTime();
+
         // DEBUG
         
         if (logger.isDebugEnabled())
@@ -574,6 +604,11 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             break;
         }
 
+        // Update the access date/time
+        
+        if ( getFileState() != null)
+        	getFileState().updateAccessDateTime();
+
         // DEBUG
         
         if (logger.isDebugEnabled())
@@ -601,9 +636,31 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         channel.force(false);
         
+        // Update the access date/time
+        
+        if ( getFileState() != null)
+        	getFileState().updateAccessDateTime();
+
         // DEBUG
         
         if (logger.isDebugEnabled())
             logger.debug("Flush file=" + this);
+    }
+    
+    /**
+     * Check if the file is an MS Office document type that needs special processing
+     * 
+     * @param path String
+     * @return boolean
+     */
+    private static final boolean isMSOfficeSpecialFile(String path) {
+    	
+    	// Check if the file extension indicates a problem MS Office format
+
+    	path = path.toLowerCase();
+    	
+    	if ( path.endsWith( ".xls"))
+    		return true;
+    	return false;
     }
 }

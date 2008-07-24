@@ -228,8 +228,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     @SuppressWarnings("unchecked")
 	public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (this.nodeService.exists(nodeRef) == true && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
-        {        	
+        if (this.nodeService.exists(nodeRef) == true && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true
+        		&& this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false)
+        {
         	Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
         	if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)        	
         	{

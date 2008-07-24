@@ -127,7 +127,12 @@ public class FileStateTable
      */
     public final synchronized FileState findFileState(String path)
     {
-        return m_stateTable.get(FileState.normalizePath(path));
+    	FileState fstate = m_stateTable.get(FileState.normalizePath(path));
+    	
+    	if ( fstate != null)
+    		fstate.updateAccessDateTime();
+    	
+    	return fstate;
     }
 
     /**
@@ -168,6 +173,11 @@ public class FileStateTable
             }
         }
 
+        // Update the access date/time if valid
+        
+        if ( state != null)
+        	state.updateAccessDateTime();
+        
         // Return the file state
 
         return state;
@@ -182,7 +192,6 @@ public class FileStateTable
      */
     public final synchronized FileState updateFileState(String oldName, String newName)
     {
-
         // Find the current file state
 
         FileState state = m_stateTable.remove(FileState.normalizePath(oldName));
@@ -193,6 +202,10 @@ public class FileStateTable
         {
             state.setPath(newName);
             addFileState(state);
+            
+            // Update the access date/time
+            
+            state.updateAccessDateTime();
         }
 
         // Return the updated file state
@@ -246,6 +259,10 @@ public class FileStateTable
 
         state.setPath(FileState.normalizePath(newPath));
         m_stateTable.put(state.getPath(), state);
+        
+        // Updaet the access date/time
+        
+        state.updateAccessDateTime();
     }
 
     /**

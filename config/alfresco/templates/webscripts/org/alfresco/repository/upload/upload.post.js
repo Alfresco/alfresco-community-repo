@@ -3,7 +3,7 @@ var content = null;
 var mimetype = null;
 var siteId = null;
 var containerId = null;
-var thumbnailName = null;
+var thumbnailNames = null;
 
 // Upload specific
 var uploadDirectory = null;
@@ -75,8 +75,8 @@ for each (field in formdata.fields)
          overwrite = field.value == "true";
          break;
       
-      case "thumbnail":
-         thumbnailName = field.value;
+      case "thumbnails":
+         thumbnailNames = field.value;
          break;
    }
 }
@@ -168,7 +168,7 @@ else
                var suffix = 1;
                var tmpFilename;
                while(existingFile !== null)
-               {
+               {                               
                   tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
                   existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
                   suffix++;
@@ -193,9 +193,17 @@ else
             // Save new file
             newFile.save();
             // Create thumbnail?
-            if (thumbnailName && thumbnailService.isThumbnailNameRegistered(thumbnailName))
+            if (thumbnailNames != null)
             {
-               newFile.createThumbnail(thumbnailName, true);
+               var thumbnails = thumbnailNames.split(",");
+               for (var i = 0; i < thumbnails.length; i++)
+               {
+                  var thumbnailName = thumbnails[i];
+                  if(thumbnailName != "" && thumbnailService.isThumbnailNameRegistered(thumbnailName))
+                  {
+                     newFile.createThumbnail(thumbnailName, true);
+                  }
+               }
             }
             model.document = newFile;
          }

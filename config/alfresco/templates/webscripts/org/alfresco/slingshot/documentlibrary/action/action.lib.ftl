@@ -1,6 +1,7 @@
 <#macro resultsJSON results>
 {
    "totalResults": ${results?size},
+   "overallSuccess": ${overallSuccess?string},
    "results":
    [
    <#list results as r>

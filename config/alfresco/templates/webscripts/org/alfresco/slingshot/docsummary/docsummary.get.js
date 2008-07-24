@@ -42,7 +42,8 @@ function getDocs(siteId, filter)
       
       var query = "+TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" +PATH:\"" + 
                   path + "\" +@cm\\:modified:[" + fromQuery + "T00\\:00\\:00 TO " + 
-                  toQuery + "T23\\:59\\:59]";
+                  toQuery + "T23\\:59\\:59]" +
+                  "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
       
       if (logger.isLoggingEnabled())
          logger.log("docsummary query = " + query);

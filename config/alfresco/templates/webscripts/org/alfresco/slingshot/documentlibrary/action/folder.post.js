@@ -30,7 +30,7 @@ function runAction(p_params)
       }
       var folderName = json.get("name");
       
-      var parentPath = p_params.filePath;
+      var parentPath = p_params.path;
       var folderPath = parentPath + "/" + folderName;
 
       // Check folder doesn't already exist

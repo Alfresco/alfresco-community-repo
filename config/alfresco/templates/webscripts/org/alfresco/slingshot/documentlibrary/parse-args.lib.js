@@ -10,12 +10,24 @@ function getParsedArgs()
       var storeId = url.templateArgs.store_id;
       var id = url.templateArgs.id;
       var nodeRef = storeType + "://" + storeId + "/" + id;
-      rootNode = search.findNode(nodeRef);
-   	if (rootNode === null)
-   	{
-         status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
-         return null;
-   	}
+      
+      if (nodeRef == "alfresco://company/home")
+      {
+         rootNode = companyhome;
+      }
+      else if (nodeRef == "alfresco://user/home")
+      {
+         rootNode = userhome;
+      }
+      else
+      {
+         rootNode = search.findNode(nodeRef);
+      	if (rootNode === null)
+      	{
+            status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
+            return null;
+      	}
+      }
    }
    else
    {

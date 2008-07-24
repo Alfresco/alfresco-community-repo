@@ -11,7 +11,7 @@
  * Entrypoint required by action.lib.js
  *
  * @method runAction
- * @param p_params {object} standard action parameters: nodeRef, siteId, containerId, filePath
+ * @param p_params {object} standard action parameters: nodeRef, siteId, containerId, path
  * @return {object|null} object representation of action result
  */
 function runAction(p_params)
@@ -20,12 +20,12 @@ function runAction(p_params)
 
    try
    {
-      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.filePath);
+      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.path);
 
       // Must have assetNode by this point
       if (typeof assetNode == "string")
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.filePath);
+         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.path);
          return;
       }
 
@@ -33,7 +33,7 @@ function runAction(p_params)
       var workingCopy = assetNode.checkout();
       if (workingCopy === null)
       {
-         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not checkout: " + p_params.filePath);
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not checkout: " + p_params.path);
          return;
       }
 

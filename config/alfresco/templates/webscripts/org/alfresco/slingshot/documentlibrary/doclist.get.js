@@ -49,27 +49,29 @@ function getDocList(filter)
    }
    
    // Locked/working copy status defines action set
-   var itemStatus, itemOwner, actionSet, thumbnail;
+   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy;
    
    for each(asset in assets)
    {
       itemStatus = [];
-      itemOwner = "";
+      itemOwner = null;
+      createdBy = null;
+      modifiedBy = null;
       
       if ((asset.isContainer && showFolders) || (asset.isDocument && showDocs))
       {
          if (asset.isLocked)
          {
             itemStatus.push("locked");
-            itemOwner = asset.properties["cm:lockOwner"];
+            itemOwner = people.getPerson(asset.properties["cm:lockOwner"]);
          }
          if (asset.hasAspect("cm:workingcopy"))
          {
             itemStatus.push("workingCopy");
-            itemOwner = asset.properties["cm:workingCopyOwner"];
+            itemOwner = people.getPerson(asset.properties["cm:workingCopyOwner"]);
          }
          // Is this user the item owner?
-         if (itemOwner == person.properties.userName)
+         if (itemOwner && (itemOwner.properties.userName == person.properties.userName))
          {
             itemStatus.push("lockedBySelf");
          }
@@ -85,6 +87,10 @@ function getDocList(filter)
             }
          }
          
+         // Get users
+         createdBy = people.getPerson(asset.properties["cm:creator"]);
+         modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
+         
          // Get relevant actions set
          actionSet = getActionSet(asset,
          {
@@ -97,6 +103,8 @@ function getDocList(filter)
             asset: asset,
             status: itemStatus,
             owner: itemOwner,
+            createdBy: createdBy,
+            modifiedBy: modifiedBy,
             actionSet: actionSet
          });
       }

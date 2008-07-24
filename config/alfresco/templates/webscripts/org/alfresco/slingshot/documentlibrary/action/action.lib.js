@@ -1,11 +1,13 @@
 /**
  * Document List Component: action
  *
- * Parameters are either supplied as JSON object literal in content body,
- * or on request URI (e.g. HTTP DELETE methods must use URI)
+ * For a single-asset action, template paramters address the asset.
+ * For multi-asset actions, template parameters address the source or destination node,
+ * and a JSON body addresses the assets involved in the action.
+ * (note: HTTP DELETE methods must use URI)
  *
- * @param uri {string} /{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
- * @param content {json} /{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
+ * @param uri {string} site/{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
+ * @param uri {string} node/{store_type}/{store_id}/{id}/{filepath} : full path to file or folder name involved in the action
  */
 
 /* Bootstrap action script */
@@ -36,17 +38,29 @@ function main()
       return;
    }
 
-   // Try to get the root node if templateArg parameters passed-in
-   if (params.hasRootNode)
+   // Resolve path if available
+   var path = url.templateArgs.path;
+	// Path might be null for the root folder
+	if (!path)
+	{
+	   path = "";
+	}
+   // Remove any leading or trailing "/" from the path
+   // Fix-up parent path to have no leading or trailing slashes
+   if (path.length > 0)
    {
-      rootNode = getRootNode(params);
-      if (typeof node == "string")
+      var aPaths = path.split("/");
+      while (aPaths[0] === "")
       {
-         status.setCode(status.STATUS_NOT_FOUND, node);
-         return;
+         aPaths.shift();
       }
-      params.rootNode = rootNode;
+      while (aPaths[aPaths.length-1] === "")
+      {
+         aPaths.pop();
+      }
+      path = aPaths.join("/");
    }
+   params.path = path;
 
    // Multiple input files in the JSON body?
    files = getMultipleInputFiles();
@@ -81,6 +95,19 @@ function main()
       }
       else
       {
+         /**
+          * NOTE: Webscripts run within one transaction only.
+          * If a single operation fails, the transaction is marked for rollback and all
+          * previous (successful) operations are also therefore rolled back.
+          * We therefore need to scan the results for a failed operation and mark the entire
+          * set of operations as failed.
+          */
+         var overallSuccess = true;
+         for (var i = 0, j = results.length; i < j; i++)
+         {
+            overallSuccess = overallSuccess && results[i].success;
+         }
+         model.overallSuccess = overallSuccess;
          model.results = results;
       }
    }
@@ -103,48 +130,44 @@ function getSiteInputParams()
       // First try to get the parameters from the URI
       var siteId = url.templateArgs.site;
       var containerId = url.templateArgs.container;
-      var filePath = url.templateArgs.path;
 
+      // SiteId
    	if ((siteId === null) || (siteId.length === 0))
    	{
    		return "'site' parameter is missing.";
    	}
 
-      // containerId
+      // Find the site
+      var siteNode = siteService.getSite(siteId);
+      if (siteNode === null)
+      {
+   		return "Site '" + siteId + "' not found.";
+      }
+
+      // ContainerId
    	if ((containerId === null) || (containerId.length === 0))
    	{
    		return "'container' parameter is missing.";
    	}
-   	
-   	// filePath might be null for the root folder
-   	if (filePath === null)
-   	{
-   	   filePath = "";
-   	}
-      // Remove any leading or trailing "/" from the path
-      // Fix-up parent path to have no leading or trailing slashes
-      if (filePath.length > 0)
-      {
-         var aPaths = filePath.split("/");
-         while (aPaths[0] === "")
-         {
-            aPaths.shift();
-         }
-         while (aPaths[aPaths.length-1] === "")
-         {
-            aPaths.pop();
-         }
-         filePath = aPaths.join("/");
-      }
 
+      // Find the component container
+      var rootNode = siteNode.getContainer(containerId);
+      if (rootNode === null)
+      {
+        rootNode = siteNode.createContainer(containerId);
+        if (rootNode === null)
+        {
+   			return "Component container '" + containerId + "' not found in '" + siteId + "'.";
+   		}
+      }
+   	
       // Populate the return object
       params =
       {
-      	containerId: containerId,
-      	siteId: siteId,
-      	filePath: filePath,
       	usingNodeRef: false,
-      	hasRootNode: true
+      	siteId: siteId,
+      	containerId: containerId,
+      	rootNode: rootNode
       }
    }
    catch(e)
@@ -174,39 +197,33 @@ function getNodeRefInputParams()
       var storeId = url.templateArgs.store_id;
       var id = url.templateArgs.id;
 
-      // Was a JSON parameter list supplied?
-      // TODO: Also handle multiple files
-      if (typeof json == "object")
-      {
-         if (!json.isNull("store_type"))
-         {
-            storeType = json.get("store_type");
-         }
-         if (!json.isNull("store_id"))
-         {
-            storeId = json.get("store_id");
-         }
-         if (!json.isNull("id"))
-         {
-            id = json.get("id");
-         }
-      }
-      
       var nodeRef = storeType + "://" + storeId + "/" + id;
-      var node = search.findNode(nodeRef);
+      var rootNode = null;
 
-   	if (node === null)
-   	{
-   		return "'" + nodeRef  + "' is not valid.";
+      if (nodeRef == "alfresco://company/home")
+      {
+         rootNode = companyhome;
+      }
+      else if (nodeRef == "alfresco://user/home")
+      {
+         rootNode = userhome;
+      }
+      else
+      {
+         rootNode = search.findNode(nodeRef);
+
+      	if (rootNode === null)
+      	{
+      		return "'" + nodeRef  + "' is not a valid nodeRef.";
+      	}
    	}
 
       // Populate the return object
       params =
       {
-         nodeRef: nodeRef,
-         node: node,
          usingNodeRef: true,
-      	hasRootNode: true
+         nodeRef: nodeRef,
+         rootNode: rootNode
       }
    }
    catch(e)
@@ -252,53 +269,6 @@ function getMultipleInputFiles()
    
 	// Return the files array, or the error string if it was set
 	return (error !== null ? error : files);
-}
-
-
-/**
- * Obtain the root node for the given site and component
- *
- * @method getRootNode
- * @param p_params {object} Object literal containing mandatory parameters
- * @return {object|string} valid repository node or string error
- */
-function getRootNode(p_params)
-{
-   var rootNode = null;
-   var error = null;
-
-   if (p_params.usingNodeRef)
-   {
-      return p_params.node;
-   }
-
-   try
-   {
-      // Find the site
-      var siteNode = siteService.getSite(p_params.siteId);
-      if (siteNode === null)
-      {
-   		return "Site '" + p_params.siteId + "' not found.";
-      }
-         
-      // Find the component container
-      rootNode = siteNode.getContainer(p_params.containerId);
-      if (rootNode === null)
-      {
-        rootNode = siteNode.createContainer(p_params.containerId);
-        if (rootNode === null)
-        {
-   			return "Component container '" + p_params.containerId + "' not found in '" + p_params.siteId + "'.";
-   		}
-      }
-   }
-   catch(e)
-   {
-		error = e.toString();
-   }
-
-	// Return the node object, or the error string if it was set
-	return (error !== null ? error : rootNode);
 }
 
 

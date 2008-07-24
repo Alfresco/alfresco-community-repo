@@ -1,7 +1,7 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action/action.lib.js">
 
 /**
- * Move multiple files action
+ * Copy multiple files action
  * @method POST
  */
 
@@ -41,7 +41,7 @@ function runAction(p_params)
       result =
       {
          nodeRef: nodeRef,
-         action: "moveFile",
+         action: "copyFile",
          success: false
       }
       
@@ -58,8 +58,9 @@ function runAction(p_params)
          {
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
-            // move the node
-            result.success = fileNode.move(destNode);
+            // copy the node (deep copy)
+            result.nodeRef = fileNode.copy(destNode, true);
+            result.success = (result.nodeRef !== null);
          }
       }
       catch (e)

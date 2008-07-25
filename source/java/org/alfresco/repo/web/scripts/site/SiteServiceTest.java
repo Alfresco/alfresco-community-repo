@@ -332,4 +332,51 @@ public class SiteServiceTest extends BaseWebScriptTest
         getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 404);
         
     }
+    
+    public void testGetPersonSites() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        String shortName2  = GUID.generate();
+        createSite("myPreset", shortName2, "myTitle", "myDescription", true, 200);
+        
+        MockHttpServletResponse response = getRequest("/api/people/" + USER_TWO + "/sites", 200);
+        JSONArray result = new JSONArray(response.getContentAsString());
+        
+        assertNotNull(result);
+        assertEquals(0, result.length());
+        
+        // Add some memeberships
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+        postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+        postRequest(URL_SITES + "/" + shortName2 + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");        
+        
+        response = getRequest("/api/people/" + USER_TWO + "/sites", 200);
+        result = new JSONArray(response.getContentAsString());
+        
+        assertNotNull(result);
+        assertEquals(2, result.length());
+        
+        response = getRequest("/api/people/" + USER_ONE + "/sites", 200);
+        result = new JSONArray(response.getContentAsString());
+        
+        assertNotNull(result);
+        assertEquals(2, result.length());
+        
+        response = getRequest("/api/people/" + USER_THREE + "/sites", 200);
+        result = new JSONArray(response.getContentAsString());
+        
+        assertNotNull(result);
+        assertEquals(0, result.length());
+    }   
 }

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Sites</shortname>
+  <description>Get a colleciton of the sites a person has an explicit member to.</description>
+  <url>/api/people/{userid}/sites</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

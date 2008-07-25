@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>TagNodes</shortname>
+  <description>Get the nodes for a given tag</description>
+  <url>/api/tags/{store_type}/{store_id}/{tag}/nodes</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

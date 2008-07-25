@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Tags</shortname>
+  <description>Get the currently available tags</description>
+  <url>/api/tags/{store_type}/{store_id}?tf={tag_filter?}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

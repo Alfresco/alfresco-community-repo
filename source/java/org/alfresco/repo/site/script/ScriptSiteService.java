@@ -103,7 +103,24 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
         return (Site[])sites.toArray(new Site[sites.size()]);
-    }      
+    }  
+    
+    /**
+     * List all the sites that the specified user has an explicit membership to.
+     * 
+     * @param userName      user name
+     * @return Site[]       a list of sites the user has an explicit membership to
+     */
+    public Site[] listUserSites(String userName)
+    {
+        List<SiteInfo> siteInfos = this.siteService.listSites(userName);
+        List<Site> sites = new ArrayList<Site>(siteInfos.size());
+        for (SiteInfo siteInfo : siteInfos)
+        {
+            sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
+        }
+        return (Site[])sites.toArray(new Site[sites.size()]);
+    }
     
     /**
      * Get a site for a provided site short name.

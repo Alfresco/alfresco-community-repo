@@ -152,6 +152,21 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             }
         }
         
+        sites = this.siteService.listSites(USER_TWO);
+        assertNotNull(sites);
+        assertEquals(0, sites.size());
+        
+        this.siteService.setMembership("mySiteOne", USER_TWO, SiteModel.SITE_CONSUMER);
+        this.siteService.setMembership("mySiteTwo", USER_TWO, SiteModel.SITE_CONSUMER);
+        
+        sites = this.siteService.listSites(USER_TWO);
+        assertNotNull(sites);
+        assertEquals(2, sites.size());
+        
+        sites = this.siteService.listSites(USER_ONE);
+        assertNotNull(sites);
+        assertEquals(4, sites.size());
+        
     }
     
     public void testGetSite()

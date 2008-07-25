@@ -38,6 +38,14 @@ public interface SiteService
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
     
     /**
+     * List all the sites that the specified user has a explicit membership to.
+     *
+     * @param userName          user name
+     * @return List<SiteInfo>   list of site information
+     */
+    List<SiteInfo> listSites(String userName);
+    
+    /**
      * Gets site information based on the short name of a site.
      * <p>
      * Returns null if the site can not be found.

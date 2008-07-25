@@ -222,6 +222,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return getSiteRoot();
     }
     
+    /**
+     * Get the node reference that is the site root
+     * 
+     * @return  NodeRef     node reference
+     */
     private NodeRef getSiteRoot()
     {
         // Get the root 'sites' folder
@@ -240,6 +245,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return resultSet.getNodeRef(0);
     }
     
+    /**
+     * @see org.alfresco.repo.site.SiteService#listSites(java.lang.String, java.lang.String)
+     */
     public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter)
     {
         // TODO 
@@ -258,7 +266,30 @@ public class SiteServiceImpl implements SiteService, SiteModel
         
         return result;
     }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteService#listSites(java.lang.String)
+     */
+    public List<SiteInfo> listSites(String userName)
+    {        
+        List<SiteInfo> sites = listSites(null, null);
+        List<SiteInfo> result = new ArrayList<SiteInfo>(sites.size());
+        for (SiteInfo site : sites)
+        {
+            if (isMember(site.getShortName(), userName) == true)
+            {
+                result.add(site);
+            }
+        }
+        return result;
+    }
   
+    /**
+     * Creates a site informatoin object given a site node reference
+     * 
+     * @param siteNodeRef   site node reference
+     * @return SiteInfo     site information object
+     */
     private SiteInfo createSiteInfo(NodeRef siteNodeRef)
     {
         // Get the properties
@@ -276,6 +307,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return siteInfo;
     }   
     
+    /**
+     * Indicates whether a site is public or not
+     * 
+     * @param siteNodeRef       site node reference
+     * @return boolean          true if the site is public, false otherwise
+     */
     private boolean isSitePublic(NodeRef siteNodeRef)
     {
         boolean isPublic = false;

@@ -71,8 +71,6 @@ function main()
          }
       }
       
-      // TODO: AVATAR?
-      
       user.save();
       model.success = true;
    }

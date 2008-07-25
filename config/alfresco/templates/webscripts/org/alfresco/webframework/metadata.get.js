@@ -11,16 +11,15 @@ if(args["id"] != null)
 	object = search.findNode(id);
 }
 
-// if not by id, then allow for user id - but only if current user is the user!
-else if(args["user"] != null)
+// if not by id, then allow for user id
+else if (args["user"] != null)
 {
 	var userId = args["user"];
-	if (userId == person.properties.userName || people.isAdmin(person))
-	{
-	   object = person;
-	   model.isUser = true;
-	   model.includeChildren = false;
-	}
+	// TODO: only return "unprotected" properties if the user is not current or admin
+	//       if (userId == person.properties.userName || people.isAdmin(person))
+   object = people.getPerson(userId);
+   model.isUser = true;
+   model.includeChildren = false;
 }
 
 // load content by relative path

@@ -65,7 +65,7 @@ public class PDFToSWFContentTransformer extends AbstractContentTransformer2
     private static final String PDF2SWF_CHECK = "pdf2swf -V";
     
     /** Transformation command string */
-    private static final String PDF2SWF_COMMAND = "pdf2swf -t ${flashVersion} \"${source}\" -o \"${target}\"";
+    private static final String PDF2SWF_COMMAND = "pdf2swf -t ${flashVersion} ${source} -o ${target}";
     private static final String VAR_SOURCE = "source";
     private static final String VAR_TARGET = "target";
     private static final String VAR_FLASH_VERSION = "flashVersion";

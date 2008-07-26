@@ -27,6 +27,7 @@
          <#else>
             <#assign modifiedBy="" modifiedByUser="">
          </#if>
+         <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
          {
             "index": ${item_index},
             "nodeRef": "${d.nodeRef}",
@@ -49,7 +50,8 @@
             "size": "${d.size}",
             "version": "${version}",
             "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
-            "actionSet": "${item.actionSet}"
+            "actionSet": "${item.actionSet}",
+            "tags": [${tags}]
          }<#if item_has_next>,</#if>
       </#list>
       ]

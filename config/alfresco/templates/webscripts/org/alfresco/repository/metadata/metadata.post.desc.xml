@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Node Metadata Storage Service</shortname>
+  <description>Node Metadata Storage Service</description>
+  <url>/api/metadata/node/{store_type}/{store_id}/{id}</url>
+  <format default="json" />
+  <authentication>user</authentication>
+</webscript>

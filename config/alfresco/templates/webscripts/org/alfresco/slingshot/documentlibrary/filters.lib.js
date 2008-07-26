@@ -4,6 +4,14 @@ function getFilterQuery(filter, obj)
    
    switch (String(filter))
    {
+      case "node":
+         filterQuery = "node";
+         break;
+      
+      case "tag":
+         filterQuery = "tag";
+         break;
+      
       case "recentlyModified":
          var usingModified = true;
          // fall through...

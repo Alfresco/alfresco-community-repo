@@ -32,6 +32,14 @@ function getDocList(filter)
       // Default to all children of parentNode
       assets = parsedArgs.parentNode.children;
    }
+   else if (filterQuery == "node")
+   {
+      assets = [parsedArgs.rootNode];
+   }
+   else if (filterQuery == "tag")
+   {
+      assets = parsedArgs.rootNode.childrenByTags(args["filterData"]);
+   }
    else
    {
       // Run the query returned from the filter
@@ -105,7 +113,8 @@ function getDocList(filter)
             owner: itemOwner,
             createdBy: createdBy,
             modifiedBy: modifiedBy,
-            actionSet: actionSet
+            actionSet: actionSet,
+            tags: asset.tags
          });
       }
    }

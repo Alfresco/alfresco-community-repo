@@ -25,6 +25,7 @@ function main()
       personDetails.properties["organization"] = person.properties["organization"];
       personDetails.properties["jobtitle"] = person.properties["jobtitle"];
       personDetails.properties["email"] = person.properties["email"];
+      personDetails.assocs = {}; // fake the assocs object
       
       // delete the person
       people.deletePerson(userName);

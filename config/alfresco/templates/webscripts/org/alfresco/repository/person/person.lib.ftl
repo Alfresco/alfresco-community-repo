@@ -2,35 +2,38 @@
 {
    "url" : "${url.serviceContext}/api/person/${person.properties.userName}",
    "userName" : "${person.properties.userName}",
+   <#if person.assocs["cm:avatar"]??>
+   "avatar" : "api/node/${person.assocs["cm:avatar"][0].nodeRef?string?replace('://','/')}/content/thumbnails/avatar",
+   </#if>
    <#if person.properties.title??>
       "title" : "${person.properties.title}",
    <#else>
-      "title" : undefined,
+      "title" : null,
    </#if>
    <#if person.properties.firstName??>
       "firstName" : "${person.properties.firstName}",
    <#else>
-      "firstName" : undefined,
+      "firstName" : null,
    </#if>
    <#if person.properties.lastName??>
       "lastName" : "${person.properties.lastName}",
    <#else>
-      "lastName" : undefined,
+      "lastName" : null,
    </#if>
    <#if person.properties.organization??>
       "organisation" : "${person.properties.organization}",
    <#else>
-      "organisation" : undefined,
+      "organisation" : null,
    </#if>
    <#if person.properties.jobtitle??>
       "jobtitle" : "${person.properties.jobtitle}",
    <#else>
-      "jobtitle" : undefined,
+      "jobtitle" : null,
    </#if>
    <#if person.properties.email??>
       "email" : "${person.properties.email}"
    <#else>
-      "email" : undefined
+      "email" : null
    </#if>
 }
 </#macro>

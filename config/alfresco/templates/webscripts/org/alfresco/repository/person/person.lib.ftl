@@ -1,9 +1,10 @@
 <#macro personJSON person>
-{
-   "url" : "${url.serviceContext}/api/person/${person.properties.userName}",
+<#escape x as jsonUtils.encodeJSONString(x)>
+{	
+   "url" : "${url.serviceContext + "/api/person/" + person.properties.userName}",
    "userName" : "${person.properties.userName}",
    <#if person.assocs["cm:avatar"]??>
-   "avatar" : "api/node/${person.assocs["cm:avatar"][0].nodeRef?string?replace('://','/')}/content/thumbnails/avatar",
+   "avatar" : "${"api/node/" + person.assocs["cm:avatar"][0].nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
    </#if>
    <#if person.properties.title??>
       "title" : "${person.properties.title}",
@@ -36,13 +37,16 @@
       "email" : null
    </#if>
 }
+</#escape>
 </#macro>
 
 <#macro personSummaryJSON person>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "url" : "${url.serviceContext}/api/person/${person.properties.userName}",
+   "url" : "${url.serviceContext + "/api/person/" + person.properties.userName}",
    "userName" : "${person.properties.userName}",
    "firstName" : "${person.properties.firstName}",
    "lastName" : "${person.properties.lastName}"
 }
+</#escape>
 </#macro>

@@ -1,5 +1,5 @@
 <#macro tagJSON item>
 {
-   "name" : "${item.name?j_string}",
+   "name" : "${jsonUtils.encodeJSONString(item.name)}",
    "count" : ${item.count}
 }</#macro>

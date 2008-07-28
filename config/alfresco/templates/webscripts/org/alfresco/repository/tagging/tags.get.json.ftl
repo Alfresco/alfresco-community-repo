@@ -1,5 +1,5 @@
 [
 	<#list tags as tag>
-		${tag}<#if tag_has_next>,</#if>
+		${jsonUtils.encodeJSONString(tag)}<#if tag_has_next>,</#if>
 	</#list>
 ]

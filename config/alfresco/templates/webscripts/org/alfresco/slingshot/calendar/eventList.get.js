@@ -19,7 +19,7 @@ function getEvents(siteId)
       return [];
    }
 
-   var query = "+PATH:\"/app:company_home/st:sites/cm:" + site.shortName + "/cm:calendar/*\" ";
+   var query = "+PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\" ";
    query += "+TYPE:\"{com.infoaxon.alfresco.calendar}calendarEvent\"";
 
    return search.luceneSearch(query, "ia:fromDate", true);

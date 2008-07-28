@@ -36,7 +36,7 @@ function getUserEvents(user, range)
 		var site = availableSites[j];
 		if (site.isMember(user))
 		{
-			paths.push("PATH:\"/app:company_home/st:sites/cm:" + site.shortName + "/cm:calendar/*\"");
+			paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\"");
 		}
 	}
 	

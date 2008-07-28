@@ -29,7 +29,7 @@ function getBlogPostList(node, fromDate, toDate, tag, index, count)
    // is a tag selected?
    if (tag != null)
    {
-      luceneQuery += " +PATH:\"/cm:taggable/cm:" + tag /*ISO9075.encode(tag)*/ + "/member\" ";
+      luceneQuery += " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
 
    var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";

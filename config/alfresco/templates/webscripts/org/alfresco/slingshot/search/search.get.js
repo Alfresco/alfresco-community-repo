@@ -417,14 +417,27 @@ function getSearchResults(term, maxResults, siteId, containerId)
       path += "*/";
    }
 	  
-   var luceneQuery = "+PATH:\"" +path     + "/*\"";
+   var luceneQuery = "+PATH:\"" + path + "/*\"";
    if (term != null && term.length > 0)
    {
-      luceneQuery += " +(" +
-                     "    TEXT:\"" + term + "\"" +          // full text
-                     "    @cm\\:name:\"*" + term + "*\"" +  // name property
-                     "    PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\"" + // tag: PENDING: strip off invalid characters!
+      // TODO: do smarter term pre-processing. For now we simply take all words,
+      // which ignores * and quotes
+      var terms = term.split(/\W/);
+       
+      for (var x=0; x < terms.length; x++)
+      {
+         var t = terms[x];
+         if (t.length < 1)
+         {
+            continue;
+         }
+         
+         luceneQuery += " +(" +
+                     "    TEXT:\"" + t + "\"" +          // full text
+                     "    @cm\\:name:\"*" + t + "*\"" +  // name property
+                     "    PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" +
                      "  )";
+      }
    }
          
    var nodes = search.luceneSearch(luceneQuery);

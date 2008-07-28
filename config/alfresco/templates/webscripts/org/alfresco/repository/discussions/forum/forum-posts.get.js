@@ -15,7 +15,7 @@ function getTopicPostList(node, tag, index, count)
    // is a tag selected?
    if (tag != null)
    {
-      luceneQuery += " +PATH:\"/cm:taggable/cm:" + tag /*ISO9075.encode(tag)*/ + "/member\" ";
+      luceneQuery += " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
    
    // get the data

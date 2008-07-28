@@ -1,6 +1,6 @@
 <webscript>
    <shortname>Invite Response</shortname>
-   <description>Processes invite response from Invitee</description>
+   <description>Processes invite response from Invitee ({response} is either 'accept' or 'reject' )</description>
    <url>/api/inviteresponse/{response}?inviteId={inviteId}&amp;inviteeUserName={inviteeUserName}&amp;siteShortName={siteShortName}</url>
    <format default="json"/>
    <authentication>guest</authentication>

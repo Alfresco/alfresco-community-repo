@@ -30,7 +30,10 @@ import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.Status;
 import org.json.JSONArray;
@@ -44,17 +47,20 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class InviteServiceTest extends BaseWebScriptTest
 {
+    private AuthorityService authorityService;
     private AuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private SiteService siteService;
+    private TransactionService transactionService;
 
     private static final String USER_ADMIN = "admin";
-    private static final String USER_INVITER = "InviteeUser";
+    private static final String USER_INVITER = "InviterUser";
     private static final String INVITEE_FIRSTNAME = "InviteeFirstName";
     private static final String INVITEE_LASTNAME = "InviteeLastName";
-    private static final String INVITEE_EMAIL = "inviter123@email.com";
+    private static final String INVITEE_EMAIL = "inviteeFN.inviteeLN@email123.com";
     private static final String SITE_SHORT_NAME_INVITE = "InviteSiteShortName";
+    private static final String GROUP_EMAIL_CONTRIBUTORS = "EMAIL_CONTRIBUTORS";
 
     private static final String URL_INVITE_SERVICE = "/api/invite";
     private static final String URL_INVITERSP_SERVICE = "/api/inviteresponse";
@@ -71,6 +77,9 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         super.setUp();
 
+        // get references to services
+        this.authorityService = (AuthorityService) getServer()
+                .getApplicationContext().getBean("authorityService");
         this.authenticationService = (AuthenticationService) getServer()
                 .getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent) getServer()
@@ -79,13 +88,15 @@ public class InviteServiceTest extends BaseWebScriptTest
                 .getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService) getServer().getApplicationContext()
                 .getBean("siteService");
-
-        // set current user as admin for person and site creation 
+        this.transactionService = (TransactionService) getServer().getApplicationContext()
+                .getBean("transactionService");
+        
+        // set current user as admin for various setup operations needing admin rights 
         this.authenticationComponent.setCurrentUser(USER_ADMIN);
         
-        // Create inviter person
+        // Create inviter
         createPerson(USER_INVITER);
-
+        
         // Create site for Inviter to invite Invitee to
         // - only create the site if it doesn't already exist
         SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_INVITE);
@@ -105,19 +116,43 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         super.tearDown();
 
-        // admin user required to delete user
+        // admin authority required for various cleanup operations needing admin rights
         this.authenticationComponent.setCurrentUser(USER_ADMIN);
-
-        // delete the inviter user
-        personService.deletePerson(USER_INVITER);
+        
+        // delete the inviter
+        deletePerson(USER_INVITER);
 
         // delete invite site
-        siteService.deleteSite(SITE_SHORT_NAME_INVITE);
-        
-        // return back to inviter user
-        this.authenticationComponent.setCurrentUser(USER_INVITER);
+        siteService.deleteSite(SITE_SHORT_NAME_INVITE);        
     }
 
+    private void addUserToGroup(String groupName, String userName)
+    {
+        // get the full name for the group
+        String fullGroupName = this.authorityService.getName(AuthorityType.GROUP, groupName);
+        
+        // create group if it does not exist
+        if (this.authorityService.authorityExists(fullGroupName) == false)
+        {
+            this.authorityService.createAuthority(AuthorityType.GROUP, null, fullGroupName);
+        }
+
+        // add the user to the group
+        this.authorityService.addAuthority(fullGroupName, userName);
+    }
+    
+    private void removeUserFromGroup(String groupName, String userName)
+    {
+        // get the full name for the group
+        String fullGroupName = this.authorityService.getName(AuthorityType.GROUP, groupName);
+        
+        // remove user from the group
+        this.authorityService.removeAuthority(fullGroupName, userName);
+        
+        // delete the group
+        this.authorityService.deleteAuthority(fullGroupName);
+    }
+    
     private void createPerson(String userName)
     {
         // if user with given user name doesn't already exist then create user
@@ -128,7 +163,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                     "password".toCharArray());
         }
 
-        // if person with given user name doesn't already exist then create
+        // if person node with given user name doesn't already exist then create
         // person
         if (this.personService.personExists(userName) == false)
         {
@@ -145,6 +180,15 @@ public class InviteServiceTest extends BaseWebScriptTest
             // create person node for user
             this.personService.createPerson(personProps);
         }
+    }
+    
+    private void deletePerson(String userName)
+    {
+        // delete person node associated with user
+        this.personService.deletePerson(userName);
+        
+        // delete user
+        this.authenticationService.deleteAuthentication(userName);
     }
 
     private JSONObject startInvite(String inviteeFirstName, String inviteeLastName, String inviteeEmail,

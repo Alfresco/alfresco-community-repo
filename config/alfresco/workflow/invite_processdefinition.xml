@@ -2,59 +2,48 @@
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:invite">
 
-   <swimlane name="initiator">
-      <assignment actor-id="#{wf_inviterUserName}"/>
-   </swimlane>
+   <swimlane name="initiator"/>
    
    <swimlane name="assignee"/>
-      <!-- <assignment actor-id="#{wf_inviteeUserName}"/> -->
 
    <start-state name="start">
       <task name="wf:inviteToSiteTask" swimlane="initiator" />
       <transition name="sendInvite" to="invitePending">
          <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
             <script>
-               // TODO glen johnson at alfresco dot com - get hold of the host 
-               // and port for where the caller web script is located
-               var hostname = "localhost";
-               var port = 8080;
-                           
-               // get workflow instance ID
                var workflowId = executionContext.processInstance.id;
-               
-               // get the invitee person
+               var inviterPerson = people.getPerson(wf_inviterUserName);
                var inviteePerson = people.getPerson(wf_inviteeUserName);
-                
                var mail = actions.create("mail");
                mail.parameters.to = inviteePerson.properties["cm:email"];
-               mail.parameters.subject = "Invitation to Site " + wf_siteShortName;
-               mail.parameters.from = initiator.properties["cm:email"];
-               
-               mail.parameters.text = "Hello,\n"
-                  + "You have been invited to join the site: "
-                  + wf_siteShortName + "\n"
-                  + "Please click here "
-                  + "http://" + hostname + ":" + port
+               mail.parameters.subject = "Invitation to Alfresco Share Site "
+                  + "'" + wf_siteShortName +"'";
+               mail.parameters.from = inviterPerson.properties["cm:email"];
+               mail.parameters.text = "Dear " + wf_inviteeFirstName + ",\n\n"
+                  + "You have been invited to join a site on Alfresco Share: "
+                  + wf_siteShortName + "\n\n"
+                  + "To accept the invitation to join the site "
+                  + "'" + wf_siteShortName + "', "
+                  + "please follow this link:\n"
+                  + wf_serverPath
                   + "/alfresco/service/api/inviteresponse/accept?"
                   + "workflowId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
-                  + "&amp;siteShortName=" + wf_siteShortName
-                  + " to accept the invitation\n\n"
+                  + "&amp;siteShortName=" + wf_siteShortName + "\n\n"
                   + "An account has been created for you with user name: "
-                  + wf_inviteeUserName  + ".\n"
+                  + wf_inviteeUserName  + ".\n\n"
                   + "An initial password has been generated for you: "
                   + wf_inviteeGenPassword + ".\n"
-                  + "Please change it to a password of your choice once you "
-                  + "have logged into the site.\n\n"
-                  + "To reject the invitation to join the site: "
-                  + wf_siteShortName + ", "
-                  + "please click here "
-                  + "http://" + hostname + ":" + port
+                  + "You are strongly advised to change it to a password of your choice once you "
+                  + "have logged into Alfresco Share.\n\n"
+                  + "To reject the invitation to join the site "
+                  + "'" + wf_siteShortName + "', "
+                  + "please follow this link:\n"
+                  + wf_serverPath
                   + "/alfresco/service/api/inviteresponse/reject?"
                   + "workflowId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName;
-                  
                mail.execute(bpm_package);
             </script>
          </action>

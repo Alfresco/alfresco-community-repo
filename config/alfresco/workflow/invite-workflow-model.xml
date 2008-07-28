@@ -15,10 +15,19 @@
       <type name="wf:inviteToSiteTask">
          <parent>bpm:startTask</parent>
          <properties>
+            <property name="wf:serverPath">
+               <type>d:text</type>
+            </property>
             <property name="wf:inviterUserName">
                <type>d:text</type>
             </property>
             <property name="wf:inviteeUserName">
+               <type>d:text</type>
+            </property>
+            <property name="wf:inviteeFirstName">
+               <type>d:text</type>
+            </property>
+            <property name="wf:inviteeLastName">
                <type>d:text</type>
             </property>
             <property name="wf:inviteeGenPassword">

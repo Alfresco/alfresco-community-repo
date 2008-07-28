@@ -91,8 +91,11 @@ public class Invite extends DeclarativeWebScript
     private PasswordGenerator passwordGenerator;
 
     // workflow properties
+    public static final String WF_PROP_SERVER_PATH = "wf:serverPath";
     public static final String WF_PROP_INVITER_USER_NAME = "wf:inviterUserName";
     public static final String WF_PROP_INVITEE_USER_NAME = "wf:inviteeUserName";
+    public static final String WF_PROP_INVITEE_FIRSTNAME = "wf:inviteeFirstName";
+    public static final String WF_PROP_INVITEE_LASTNAME = "wf:inviteeLastName";
     public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
     private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
     
@@ -275,9 +278,12 @@ public class Invite extends DeclarativeWebScript
                                 + "has not been provided in URL for action '"
                                 + ACTION_START + "'");
             }
+            
+            // get externally reachable address of server hosting invite web scripts
+            String serverPath = req.getServerPath();
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName);
+            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, serverPath);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -322,10 +328,11 @@ public class Invite extends DeclarativeWebScript
      * @param siteShortName
      *            short name of site that the invitee is being invited to by the
      *            inviter
-     * 
+     * @param serverPath
+     *            externally accessible server address of server hosting invite web scripts
      */
     private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
-            String inviteeEmail, String siteShortName)
+            String inviteeEmail, String siteShortName, String serverPath)
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
@@ -378,18 +385,24 @@ public class Invite extends DeclarativeWebScript
         // password
         mutableAuthenticationDao.createUser(inviteeUserName, generatedPassword);
         mutableAuthenticationDao.setEnabled(inviteeUserName, false);
-
+        
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
-                4);
+                7);
         workflowProps.put(QName.createQName(WF_PROP_INVITER_USER_NAME, this.namespaceService),
                 inviterUserName);
         workflowProps.put(QName.createQName(WF_PROP_INVITEE_USER_NAME, this.namespaceService),
                 inviteeUserName);
+        workflowProps.put(QName.createQName(WF_PROP_INVITEE_FIRSTNAME, this.namespaceService),
+                inviteeFirstName);
+        workflowProps.put(QName.createQName(WF_PROP_INVITEE_LASTNAME, this.namespaceService),
+                inviteeLastName);
         workflowProps.put(QName.createQName(WF_PROP_INVITEE_GEN_PASSWORD, this.namespaceService),
                 String.valueOf(generatedPassword));
         workflowProps.put(QName.createQName(WF_PROP_SITE_SHORT_NAME, this.namespaceService),
                 siteShortName);
+        workflowProps.put(QName.createQName(WF_PROP_SERVER_PATH, this.namespaceService),
+                serverPath);
 
         // start the workflow
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition

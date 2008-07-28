@@ -5,14 +5,14 @@
       "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
       "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]}",
-      "lastName" : "${person.properties["cm:lastName"]}"
+      "firstName" : "${person.properties["cm:firstName"]?html}",
+      "lastName" : "${person.properties["cm:lastName"]?html}"
    },
 </#macro>
 
 
 <#macro renderTags tags>
-[<#list tags as x>"${x?j_string}"<#if x_has_next>, </#if></#list>]
+[<#list tags as x>"${x?html?j_string}"<#if x_has_next>, </#if></#list>]
 </#macro>
 
 <#macro addContent item>
@@ -43,8 +43,8 @@
    "url" : "blog/post/node/${item.node.nodeRef?replace('://','/')}",
    "commentsUrl" : "/node/${item.node.nodeRef?replace('://','/')}/comments",
    "nodeRef" : "${item.node.nodeRef}",
-   "name" : "${(item.node.properties.name!'')?j_string}",
-    "title" : "${(item.node.properties.title!'')?j_string}",
+   "name" : "${(item.node.properties.name!'')?html?j_string}",
+    "title" : "${(item.node.properties.title!'')?html?j_string}",
    <@addContent item=item />
    <#if item.author??>
    <@renderPerson person=item.author fieldName="author" />
@@ -69,15 +69,15 @@
       "updatedOn" : "${item.updatedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    </#if>
    
-   <#-- external publishing -->
-   "isPublished" : ${(item.node.properties["blg:published"]!'false')?string},
    <#if (item.node.properties["blg:published"]?? && item.node.properties["blg:published"] == true)>
    "publishedOn" : "${item.node.properties["blg:posted"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "updatedOn" : "${item.node.properties["blg:lastUpdate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "postId" : "${item.node.properties["blg:postId"]!''}",
    "postLink" : "${item.node.properties["blg:link"]!''}",
-   "outOfDate" : ${item.outOfDate?string}
+   "outOfDate" : ${item.outOfDate?string},
    </#if>
    
+   <#-- external publishing - last to make sure that we correctly end the response without a comma -->
+   "isPublished" : ${(item.node.properties["blg:published"]!'false')?string}
 }
 </#macro>

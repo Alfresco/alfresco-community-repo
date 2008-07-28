@@ -5,8 +5,8 @@
       "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
       "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]}",
-      "lastName" : "${person.properties["cm:lastName"]}"
+      "firstName" : "${person.properties["cm:firstName"]?html}",
+      "lastName" : "${person.properties["cm:lastName"]?html}"
    },
 </#macro>
 
@@ -50,7 +50,7 @@
 
    <#-- render topic post only data first -->
    <#if postData.isTopicPost>
-      "name" : "${postData.topic.name?js_string}",
+      "name" : "${postData.topic.name?html?js_string}",
       "totalReplyCount" : ${postData.totalReplyCount?c},
       <#if postData.lastReply??>
          "lastReplyOn" : "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
@@ -65,7 +65,7 @@
    "nodeRef" : "${refNode.nodeRef?j_string}",
    
    <#-- normal data, the post node will used to fetch it -->
-   "title" : "${(post.properties.title!"")?j_string}",
+   "title" : "${(post.properties.title!"")?html?j_string}",
    "createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "isUpdated" : ${post.hasAspect("cm:contentupdated")?string},

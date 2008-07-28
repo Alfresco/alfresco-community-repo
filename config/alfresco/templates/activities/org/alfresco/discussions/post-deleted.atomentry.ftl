@@ -3,11 +3,11 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>Discussion topic deleted: ${(topicTitle!'unknown')?xml}</title>
+   <title>Discussion topic deleted: ${(topicTitle!'unknown')?html?xml}</title>
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} deleted topic ${topicTitle!'unknown'}.]]>
+      <![CDATA[${username} deleted topic ${(topicTitle!'unknown')?html}.]]>
    </summary>
    <author>
    <name>${userId!""}</name>

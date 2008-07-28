@@ -3,12 +3,12 @@
    <#assign username = firstName + " " + lastName>
 </#if>
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>Discussion topic updated: ${(topicTitle!'unknown')?xml}</title>
+   <title>Discussion topic updated: ${(topicTitle!'unknown')?html?xml}</title>
    <link rel="alternate" type="text/html" href="${(browseTopicUrl!'')?xml}" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} updated topic <a href="${(browseTopicUrl!'')}">${topicTitle!'unknown'}</a>.]]>
+      <![CDATA[${username} updated topic <a href="${(browseTopicUrl!'')}">${(topicTitle!'unknown')?html}</a>.]]>
    </summary>
    <author>
    <name>${userId!""}</name>

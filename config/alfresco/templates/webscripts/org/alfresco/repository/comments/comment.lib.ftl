@@ -5,8 +5,8 @@
       "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
       "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]}",
-      "lastName" : "${person.properties["cm:lastName"]}"
+      "firstName" : "${(person.properties["cm:firstName"])?html}",
+      "lastName" : "${(person.properties["cm:lastName"])?html}"
    },
 </#macro>
 
@@ -19,8 +19,8 @@
 {
 	"url" : "api/comment/node/${item.node.nodeRef?replace('://','/')}",
 	"nodeRef" : "${item.node.nodeRef}",
-	"name" : "${(item.node.properties.name!'')?j_string}",
-    "title" : "${(item.node.properties.title!'')?j_string}",
+	"name" : "${(item.node.properties.name!'')?html?j_string}",
+    "title" : "${(item.node.properties.title!'')?html?j_string}",
 	"content" : "${item.node.content?j_string}",
    <#if item.author??>
    <@renderPerson person=item.author fieldName="author" />

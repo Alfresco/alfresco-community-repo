@@ -9,9 +9,9 @@
          "qnamePath" : "${item.qnamePath?j_string}",
          "type": "${item.type}",
          "icon32": "${item.icon32}",
-         "name" : "${(item.name!'')?j_string}",
-         "displayName": "${(item.displayName!'')?j_string}",
-         "tags" : [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
+         "name" : "${(item.name!'')?html?j_string}",
+         "displayName": "${(item.displayName!'')?html?j_string}",
+         "tags" : [<#list item.tags as tag>"${tag?html?j_string}"<#if tag_has_next>,</#if></#list>],
          <#if item.downloadUrl??>
          "downloadUrl" : "${item.downloadUrl?j_string}",
          </#if>
@@ -19,16 +19,11 @@
          "browseUrl" : "${item.browseUrl?j_string}",
          </#if>
          "site" : {
-           "shortName" : "${item.site.shortName}",
-           "title" : "${item.site.title}"
+           "shortName" : "${item.site.shortName?html?j_string}",
+           "title" : "${item.site.title?html?j_string}"
          },
-         "container" : "${item.container}"
+         "container" : "${item.container?html?j_string}"
       }<#if item_has_next>,</#if>
       </#list>
    ]
 }
-      <#--
-      we will expand the API for get/create container nodes to accept a number
-      of URL template strings with well known ids, so say for Forums it will have
-      to supply URI template for View, View Details, View Component for an item
-      -->

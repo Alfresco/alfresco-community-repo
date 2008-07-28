@@ -8,7 +8,7 @@
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} updated comment on <a href="${(browseItemUrl!'')}">${itemTitle!'unknown'}</a>]]>
+      <![CDATA[${username} updated comment on <a href="${(browseItemUrl!'')}">${(itemTitle!'unknown')?html}</a>]]>
    </summary>
    <author>
    <name>${userId!""}</name>

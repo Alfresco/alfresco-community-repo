@@ -31,26 +31,34 @@ function main()
    var params = getTemplateParams();
    if (params === null)
    {
-      return status.STATUS_BAD_REQUEST;
+      return {
+         "error": "Invalid parameters"
+      };
    }
 
    // Get the site
    var site = siteService.getSite(params.siteid);
    if (site === null)
    {
-      return status.STATUS_NOT_FOUND;
+      return {
+         "error": "Could find not specified site"
+      };
    }
 
    var eventsFolder = getCalendarContainer(site);
    if (eventsFolder === null)
    {
-      return status.STATUS_NOT_FOUND;
+      return {
+         "error": "Could not find specified calendar"
+      };
    }
 
 	var event = eventsFolder.childByNamePath(params.eventname);
 	if (event === null)
    {
-      return status.STATUS_NOT_FOUND;
+      return {
+         "error": "Could not find specified event to update"
+      };
    }
 
 	var props = [
@@ -101,9 +109,8 @@ function main()
 		}
 	}
 
-    event.save();
-    return status.STATUS_NO_CONTENT;
+   event.save();
+   return {};
 }
 
-var response = main();
-status.code = response;
+model.result = main();

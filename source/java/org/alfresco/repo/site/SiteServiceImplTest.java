@@ -361,6 +361,84 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // TODO .. try and remove the only site manager and should get a failure
     }
+    
+    public void testJoinLeave()
+    {
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, true);
+        this.siteService.createSite(TEST_SITE_PRESET, "testMembershipPrivate", TEST_TITLE, TEST_DESCRIPTION, false);
+        
+        // Become user two
+        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        
+        // As user two try and add self as contributor
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+            fail("This should have failed because you don't have permissions");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Ignore because as expected
+        }
+        
+        // As user two try and add self as consumer to public site
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_CONSUMER);
+        
+        // As user two try and add self as consumer to private site
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_CONSUMER);
+            fail("This should have failed because you can't do this to a private site unless you are site manager");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Ignore because as expected
+        }
+        
+        // As user two try and add user three as a consumer to a public site
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_CONSUMER);
+            fail("This should have failed because you can't add another user as a consumer of a public site");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Ignore because as expected
+        }
+        
+        
+        // add some members use in remove tests
+        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
+        this.siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
+        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        
+        // try and remove user two permissions from private site
+        try
+        {
+            this.siteService.removeMembership("testMembershipPrivate", USER_TWO);
+            fail("Cannot remove a users permissions from a private site");
+        }
+        catch (Exception exception)
+        {
+            // Ignore because as expected
+        }
+        
+        // Try and remove user threes membership from public site
+        try
+        {
+            this.siteService.removeMembership("testMembership", USER_THREE);
+            fail("Cannot remove membership");
+        }
+        catch (Exception exception)
+        {
+            // Ignore because as expected
+        }
+        
+        // Try and remove own membership
+        this.siteService.removeMembership("testMembership", USER_TWO);
+    }
         
     public void testContainer()
     {

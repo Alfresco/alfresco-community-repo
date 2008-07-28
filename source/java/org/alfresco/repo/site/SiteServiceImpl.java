@@ -35,6 +35,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -58,6 +59,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
@@ -476,9 +479,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.repo.site.SiteService#removeMembership(java.lang.String, java.lang.String)
      */
-    public void removeMembership(String shortName, String userName)
+    public void removeMembership(final String shortName, final String userName)
     {
-        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
@@ -487,8 +490,39 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // TODO what do we do about the user if they are in a group that has rights to the site?        
         // TODO do not remove the only site manager
         
-        // Clear the permissions for the user 
-        this.permissionService.clearPermission(siteNodeRef, userName);
+        // Determine whether the site is private or not
+        boolean isPublic = isSitePublic(siteNodeRef);
+        
+        // Get the current user
+        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        
+        // Get the user current role 
+        String role = getMembersRole(shortName, userName);
+        
+        // If ...
+        //  -- the site is public and
+        //  -- the user is ourselves and
+        //  -- the users current role is consumer
+        if (isPublic == true &&
+            currentUserName.equals(userName) == true &&
+            role != null &&
+            role.equals(SiteModel.SITE_CONSUMER) == true)
+        {
+            // Run as system user
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    permissionService.clearPermission(siteNodeRef, userName);
+                    return null;
+                }
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
+        }
+        else
+        {
+            // Clear the permissions for the user 
+            this.permissionService.clearPermission(siteNodeRef, userName);
+        }
 
         if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
         {
@@ -504,14 +538,18 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.repo.site.SiteService#setMembership(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void setMembership(String shortName, String userName, String role)
+    public void setMembership(String shortName, final String userName, final String role)
     {
-        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Site " + shortName + " does not exist.");
         }
         
+        // Determine whether the site is private or not
+        boolean isPublic = isSitePublic(siteNodeRef);
+        
+        // Determine whether the user is already a member of the site
         boolean alreadyMember = false;
         Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
         for (AccessPermission permission : permissions)
@@ -526,11 +564,43 @@ public class SiteServiceImpl implements SiteService, SiteModel
         
         // TODO if this is the only site manager do not downgrade their permissions
         
-        // Clear any existing permissions
-        this.permissionService.clearPermission(siteNodeRef, userName);
-        
-        // Set the permissions
-        this.permissionService.setPermission(siteNodeRef, userName, role, true);
+        // If we are:
+        // -- refering to a public site and
+        // -- the role being set is consumer and
+        // -- the user being added is ourselves and
+        // -- the member does not already have permissions 
+        // ... then we can set the permissions as system user
+        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        if (isPublic == true &&
+            role.equals(SiteModel.SITE_CONSUMER) == true &&
+            userName.equals(currentUserName) == true &&
+            alreadyMember == false)
+        {
+            // Run as system user
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    // Clear any existing permissions
+                    permissionService.clearPermission(siteNodeRef, userName);
+                    
+                    // Set the permissions
+                    permissionService.setPermission(siteNodeRef, userName, role, true);
+                    
+                    return null;
+                }
+                    
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
+            
+        }
+        else
+        {        
+            // Clear any existing permissions
+            this.permissionService.clearPermission(siteNodeRef, userName);
+            
+            // Set the permissions
+            this.permissionService.setPermission(siteNodeRef, userName, role, true);
+        }
         
         if (! alreadyMember)
         {

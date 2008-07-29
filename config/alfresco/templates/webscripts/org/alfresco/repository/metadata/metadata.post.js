@@ -29,6 +29,12 @@ function main()
          node.properties[property] = properties[property];
       }
    }
+
+   // Set passed-in mimetype
+   if (json.has("mimetype"))
+   {
+      node.properties["mimetype"] = json.get("mimetype");
+   }
    
    // Set passed-in tags
    if (json.has("tags"))
@@ -38,6 +44,10 @@ function main()
       {
          var tagsArray = tags.split(" ");
          node.tags = tagsArray;
+      }
+      else
+      {
+         node.clearTags();
       }
    }
    node.save();

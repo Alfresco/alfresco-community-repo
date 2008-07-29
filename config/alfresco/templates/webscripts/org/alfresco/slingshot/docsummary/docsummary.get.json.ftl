@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    <#if docs.error?exists>
       "error": "${docs.error}"
@@ -12,9 +13,9 @@
             "name": "${d.name}",
             "title": "${d.properties.title!""}",
             "description": "${d.properties.description!""}",
-            "createdOn": "${d.properties.created?datetime}",
+            "createdOn": <#noescape>"${d.properties.created?datetime}"</#noescape>,
             "createdBy": "${d.properties.creator}",
-            "modifiedOn": "${d.properties.modified?datetime}",
+            "modifiedOn": <#noescape>"${d.properties.modified?datetime}"</#noescape>,
             "modifiedBy": "${d.properties.modifier}",
             "contentUrl": "/api/node/content/${d.storeType}/${d.storeId}/${d.id}"
          }<#if d_has_next>,</#if>
@@ -22,3 +23,4 @@
       ]
    </#if>
 }
+</#escape>

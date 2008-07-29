@@ -1,4 +1,5 @@
 <#macro resultsJSON results>
+<#escape x as x?j_string>
 {
    "totalResults": ${results?size},
    "overallSuccess": ${overallSuccess?string},
@@ -18,4 +19,5 @@
    </#list>
    ]
 }
+</#escape>
 </#macro>

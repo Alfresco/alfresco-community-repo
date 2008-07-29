@@ -1,21 +1,23 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "treenode":
    {
-      "totalItems": ${treenode.items?size},
+      "totalItems": <#noescape>${treenode.items?size}</#noescape>,
       "items":
       [
-<#list treenode.items as t>
-   <#assign hasChildren = false>
-   <#list t.children as c>
-      <#if c.isContainer><#assign hasChildren = true><#break></#if>
-   </#list>
+   <#list treenode.items as t>
+      <#assign hasChildren = false>
+      <#list t.children as c>
+         <#if c.isContainer><#assign hasChildren = true><#break></#if>
+      </#list>
          {
             "nodeRef": "${t.nodeRef}",
-            "name": "${t.name?html}",
-            "description": "${(t.properties.description!"")?html}",
+            "name": "${t.name}",
+            "description": "${(t.properties.description!"{}")}",
             "hasChildren": ${hasChildren?string}
          }<#if t_has_next>,</#if>
-</#list>
+   </#list>
       ]
    }
 }
+</#escape>

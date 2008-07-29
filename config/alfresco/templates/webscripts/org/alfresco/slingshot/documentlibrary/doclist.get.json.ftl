@@ -1,8 +1,9 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "doclist":
    {
-      "totalItems": ${doclist.items?size},
+      "totalItems": ${doclist.items?size?string},
       "items":
       [
       <#list doclist.items as item>
@@ -29,31 +30,32 @@
          </#if>
          <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
          {
-            "index": ${item_index},
+            "index": <#noescape>${item_index}</#noescape>,
             "nodeRef": "${d.nodeRef}",
             "type": "<#if d.isContainer>folder<#else>document</#if>",
             "mimetype": "${d.mimetype!""}",
             "icon32": "${d.icon32}",
-            "fileName": "${d.name?html}",
-            "displayName": "${d.name?replace(workingCopyLabel, "")?html}",
+            "fileName": "${d.name}",
+            "displayName": "${d.name?replace(workingCopyLabel, "")}",
             "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
             "lockedBy": "${lockedBy}",
             "lockedByUser": "${lockedByUser}",
-            "title": "${(d.properties.title!"")?html}",
-            "description": "${(d.properties.description!"")?html}",
+            "title": "${(d.properties.title!"")}",
+            "description": "${(d.properties.description!"")}",
             "createdOn": "${d.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
             "createdBy": "${createdBy}",
             "createdByUser": "${createdByUser}",
             "modifiedOn": "${d.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
             "modifiedBy": "${modifiedBy}",
             "modifiedByUser": "${modifiedByUser}",
-            "size": "${d.size}",
+            "size": <#noescape>"${d.size}"</#noescape>,
             "version": "${version}",
             "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
             "actionSet": "${item.actionSet}",
-            "tags": [${tags}]
+            "tags": <#noescape>[${tags}]</#noescape>
          }<#if item_has_next>,</#if>
       </#list>
       ]
    }
 }
+</#escape>

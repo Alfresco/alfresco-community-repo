@@ -2,7 +2,7 @@
 {
    "treenode":
    {
-      "totalItems": <#noescape>${treenode.items?size}</#noescape>,
+      "totalItems": ${treenode.items?size},
       "items":
       [
    <#list treenode.items as t>

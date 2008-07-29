@@ -1,5 +1,5 @@
 <#macro resultsJSON results>
-<#escape x as x?j_string>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalResults": ${results?size},
    "overallSuccess": ${overallSuccess?string},

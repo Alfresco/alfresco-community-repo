@@ -30,7 +30,7 @@
          </#if>
          <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
          {
-            "index": <#noescape>${item_index}</#noescape>,
+            "index": ${item_index},
             "nodeRef": "${d.nodeRef}",
             "type": "<#if d.isContainer>folder<#else>document</#if>",
             "mimetype": "${d.mimetype!""}",
@@ -48,7 +48,7 @@
             "modifiedOn": "${d.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
             "modifiedBy": "${modifiedBy}",
             "modifiedByUser": "${modifiedByUser}",
-            "size": <#noescape>"${d.size}"</#noescape>,
+            "size": "${d.size}",
             "version": "${version}",
             "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
             "actionSet": "${item.actionSet}",

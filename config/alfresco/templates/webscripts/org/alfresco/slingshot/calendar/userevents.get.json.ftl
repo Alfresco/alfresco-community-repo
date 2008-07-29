@@ -1,4 +1,5 @@
 <#if !limit?exists><#assign limit = -1></#if>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if events?exists>
 "events": [
@@ -16,3 +17,4 @@
 ]
 </#if>
 }
+</#escape>

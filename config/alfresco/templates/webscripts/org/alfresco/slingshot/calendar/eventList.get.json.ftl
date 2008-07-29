@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if events?exists && events?size &gt; 0>
 <#assign prev = "">
@@ -23,3 +24,4 @@
 </#list>
 </#if>
 }
+</#escape>

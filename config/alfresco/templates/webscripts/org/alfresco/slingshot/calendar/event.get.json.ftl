@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if result.error?exists>
   error : "${result.error}"
@@ -18,5 +19,5 @@
   <#if result.allday?exists>, allday: "true"</#if>
 </#if>
 }
-
+</#escape>
 

@@ -381,6 +381,9 @@ public class TaggingServiceImpl implements TaggingService
             this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
         }
         
+        // Get the current list of tags
+        List<String> oldTags = getTags(nodeRef);
+        
         for (String tag : tags)
         {   
             // Lower the case of the tag
@@ -394,11 +397,28 @@ public class TaggingServiceImpl implements TaggingService
                 newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
             } 
             
-            // Add to the list
-            tagNodeRefs.add(newTagNodeRef);
-            
-            // Trigger scope update
-            updateTagScope(nodeRef, tag, true);
+            if (tagNodeRefs.contains(newTagNodeRef) == false)
+            {            
+                // Add to the list
+                tagNodeRefs.add(newTagNodeRef);
+                
+                // Trigger scope update
+                if (oldTags.contains(tag) == false)
+                {
+                    updateTagScope(nodeRef, tag, true);
+                }
+                else
+                {
+                    // Remove the tag from the old list
+                    oldTags.remove(tag);
+                }
+            }
+        }
+        
+        // Remove the old tags from the tag scope
+        for (String oldTag : oldTags)
+        {
+            updateTagScope(nodeRef, oldTag, false);
         }
         
         // Update category property

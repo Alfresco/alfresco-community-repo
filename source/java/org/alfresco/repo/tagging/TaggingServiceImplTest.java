@@ -387,6 +387,41 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         tx.commit();        
     }
     
+    public void xtestTagScopeSetUpdate()
+        throws Exception
+    {
+        // Set up tag scope 
+        this.taggingService.addTagScope(this.folder);
+        TagScope ts1 = this.taggingService.findTagScope(this.folder);
+        
+        setComplete();
+        endTransaction(); 
+        
+        addTag(this.folder, TAG_1, 1, ts1.getNodeRef());
+        addTag(this.document, TAG_1, 2, ts1.getNodeRef());
+        addTag(this.document, TAG_2, 1, ts1.getNodeRef());
+        addTag(this.subDocument, TAG_1, 3, ts1.getNodeRef());
+        addTag(this.subDocument, TAG_2, 2, ts1.getNodeRef());
+        addTag(this.subDocument, TAG_3, 1, ts1.getNodeRef());
+        addTag(this.subFolder, TAG_1, 4, ts1.getNodeRef());
+        
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
+        ts1 = this.taggingService.findTagScope(this.folder);
+        assertEquals(4, ts1.getTag(TAG_1).getCount());
+        assertEquals(2, ts1.getTag(TAG_2).getCount());
+        //assertEquals(1, ts1.getTag(TAG_3).getCount());
+        
+        tx.commit();
+        
+        List<String> tags = new ArrayList<String>(3);
+        tags.add(TAG_2);
+        tags.add(TAG_3);
+        
+        setTags(this.subDocument, tags, new String[]{TAG_1,TAG_2,TAG_3}, new int[]{3,2,1}, ts1.getNodeRef());
+    }
+    
     private void addTag(NodeRef nodeRef, String tag, int tagCount, NodeRef tagScopeNodeRef)
         throws Exception
     {
@@ -423,7 +458,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 }    
                 assertNotNull(checkTagScope);
                 
-                // Check that tag scopes are in the correct order
+                // Check whether the tag scope has been updated
                 List<TagDetails> tagDetailsList = checkTagScope.getTags();
                 for (TagDetails tagDetails : tagDetailsList)
                 {
@@ -523,6 +558,82 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 if (count == 10)
                 {
                     fail("The background task to update the tag scope failed");
+                }
+                count ++;
+            }
+            finally
+            {            
+                tx2.commit();
+            }
+        } 
+    }
+    
+    private void setTags(NodeRef nodeRef, List<String> tags, String[] expectedTags, int[] expectedTagCount, NodeRef tagScopeNodeRef)
+        throws Exception
+    {
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
+        // Add some tags
+        this.taggingService.setTags(nodeRef, tags);        
+        
+        tx.commit();
+        
+        // Wait a bit cos we want the background threads to kick in and update the tag scope
+        int count = 0;
+        boolean bCreated = true;
+        while (true) 
+        {        
+            UserTransaction  tx2 = this.transactionService.getUserTransaction();
+            tx2.begin();
+            
+            try
+            {
+                // Get the tag scope
+                List<TagScope> tagScopes = this.taggingService.findAllTagScopes(nodeRef);
+                TagScope checkTagScope = null;
+                for (TagScope tagScope : tagScopes)
+                {
+                    if (tagScope.getNodeRef().equals(tagScopeNodeRef) == true)
+                    {
+                        checkTagScope = tagScope;
+                        break;
+                    }
+                }    
+                assertNotNull(checkTagScope);
+                
+                // Check whether the tag scope has been updated
+                List<TagDetails> tagDetailsList = checkTagScope.getTags();
+                if (tagDetailsList.size() == expectedTags.length)
+                {
+                    int index = 0;
+                    for (TagDetails tagDetails : tagDetailsList)
+                    {
+                        if (tagDetails.getName().equals(expectedTags[index]) == false ||
+                            tagDetails.getCount() != expectedTagCount[index])
+                        {
+                            bCreated = false;
+                            break;
+                        }
+                        index ++;
+                    }
+                }
+                else
+                {
+                    bCreated = false;
+                }
+                    
+                if (bCreated == true)
+                {
+                    break;
+                }
+                
+                // Wait to give the threads a chance to execute
+                Thread.sleep(1000);
+                
+                if (count == 10)
+                {
+                    fail("The background task to update the tag scope after set tag failed");
                 }
                 count ++;
             }

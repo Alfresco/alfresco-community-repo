@@ -310,6 +310,7 @@
       <property name="mutableAuthenticationDao" ref="authenticationDao"/>
       <property name="siteService" ref="siteService"/>
       <property name="personService" ref="personService"/>
+      <property name="namespaceService" ref="namespaceService"/>
    </bean>
    
    <!--                                                                                                       -->

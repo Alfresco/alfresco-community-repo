@@ -33,8 +33,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.Status;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,7 +52,6 @@ public class InviteServiceTest extends BaseWebScriptTest
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private SiteService siteService;
-    private TransactionService transactionService;
 
     private static final String USER_ADMIN = "admin";
     private static final String USER_INVITER = "InviterUser";
@@ -60,7 +59,6 @@ public class InviteServiceTest extends BaseWebScriptTest
     private static final String INVITEE_LASTNAME = "InviteeLastName";
     private static final String INVITEE_EMAIL = "inviteeFN.inviteeLN@email123.com";
     private static final String SITE_SHORT_NAME_INVITE = "InviteSiteShortName";
-    private static final String GROUP_EMAIL_CONTRIBUTORS = "EMAIL_CONTRIBUTORS";
 
     private static final String URL_INVITE_SERVICE = "/api/invite";
     private static final String URL_INVITERSP_SERVICE = "/api/inviteresponse";
@@ -88,8 +86,6 @@ public class InviteServiceTest extends BaseWebScriptTest
                 .getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService) getServer().getApplicationContext()
                 .getBean("siteService");
-        this.transactionService = (TransactionService) getServer().getApplicationContext()
-                .getBean("transactionService");
         
         // set current user as admin for various setup operations needing admin rights 
         this.authenticationComponent.setCurrentUser(USER_ADMIN);
@@ -197,7 +193,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         // Inviter sends invitation to Invitee to join a Site
         String startInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_START
                 + "?inviteeFirstName=" + inviteeFirstName + "&inviteeLastName=" + inviteeLastName
-                + "&inviteeEmail=" + inviteeEmail + "&siteShortName=" + siteShortName;
+                + "&inviteeEmail=" + URLEncoder.encode(inviteeEmail) + "&siteShortName=" + siteShortName;
+        
         MockHttpServletResponse response = getRequest(startInviteUrl, expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
@@ -313,6 +310,17 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + SITE_SHORT_NAME_INVITE;
         MockHttpServletResponse response = getRequest(acceptInviteUrl,
                 Status.STATUS_OK);
+        
+        //
+        // test that invitation represented by invite ID (of invitation started above)
+        // is no longer pending (as a result of the invitation having being accepted)
+        //
+        
+        // get pending invite matching inviteId from invite started above
+        JSONArray getInvitesResult = getInvitesByInviteId(inviteId, Status.STATUS_OK);
+        
+        // there should no longer be any invites identified by invite ID pending
+        assertEquals(getInvitesResult.length(), 0);
     }
 
     public void testRejectInvite() throws Exception
@@ -335,6 +343,17 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + SITE_SHORT_NAME_INVITE;
         MockHttpServletResponse response = getRequest(rejectInviteUrl,
                 Status.STATUS_OK);
+        
+        //
+        // test that invite represented by invite ID (of invitation started above)
+        // is no longer pending (as a result of the invitation having being rejected)
+        //
+        
+        // get pending invite matching inviteId from invite started above
+        JSONArray getInvitesResult = getInvitesByInviteId(inviteId, Status.STATUS_OK);
+        
+        // there should no longer be any invites identified by invite ID pending
+        assertEquals(getInvitesResult.length(), 0);
     }
 
     public void testGetInvitesByInviteId() throws Exception

@@ -34,8 +34,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -85,8 +89,13 @@ public class InviteResponse extends DeclarativeWebScript
 
     private static final String RESPONSE_ACCEPT = "accept";
     private static final String RESPONSE_REJECT = "reject";
-    private static final String TRANSITION_ACCEPT = "accept";
-    private static final String TRANSITION_REJECT = "reject";
+    private static final String WF_TASK_ACCEPT_INVITE = "wf:acceptInviteTask";
+    private static final String WF_TASK_REJECT_INVITE = "wf:rejectInviteTask";
+    private static final String WF_TASK_INVITE_PENDING = "wf:invitePendingTask";
+    private static final String WF_TRANSITION_ACCEPT = "accept";
+    private static final String WF_TRANSITION_REJECT = "reject";
+    private static final String WF_TRANSITION_ACCEPT_INVITE_END = "end";
+    private static final String WF_TRANSITION_REJECT_INVITE_END = "end";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
     private static final String USER_ADMIN = "admin";
@@ -96,6 +105,7 @@ public class InviteResponse extends DeclarativeWebScript
     private MutableAuthenticationDao mutableAuthenticationDao;
     private SiteService siteService;
     private PersonService personService;
+    private NamespaceService namespaceService;
 
     /**
      * Sets the workflow service property
@@ -140,6 +150,17 @@ public class InviteResponse extends DeclarativeWebScript
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    /**
+     * Sets the namespaceService property
+     * 
+     * @param namespaceService
+     *            the namespace service to set
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     /*
@@ -230,37 +251,28 @@ public class InviteResponse extends DeclarativeWebScript
     private void acceptInvite(Map<String, Object> model, String inviteId,
             String inviteeUserName, String siteShortName)
     {
-        // get workflow ID from invite ID (of which the value is actually
-        // just the ID of the invite workflow instance)
-        String workflowId = inviteId;
+        // complete the wf:invitePendingTask task because the invitation has been accepted
+        completeInviteTask(QName.createQName(WF_TASK_INVITE_PENDING, this.namespaceService), WF_TRANSITION_ACCEPT);
         
-        // get workflow paths associated with workflow ID
-        List<WorkflowPath> wfPaths = this.workflowService
-                .getWorkflowPaths(workflowId);
-
-        // throw web script exception if there is not at least one workflow path
-        // associated with this workflow ID
-        if ((wfPaths == null) || (wfPaths.size() == 0))
-        {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "There are no workflow paths associated with workflow ID: "
-                            + workflowId);
-        }
-
-        // get workflow path ID for path matching workflow ID
-        WorkflowPath wfPath = wfPaths.get(0);
-        String wfPathID = wfPath.id;
-
-        this.workflowService.signal(wfPathID, TRANSITION_ACCEPT);
+        // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
+        // the model) out into workflow action class that gets run when task wf:acceptInviteTask
+        // is completed by this web script
 
         // enable invitee person's user account because he/she has accepted the
         // site invitation
         this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
-
+        
         // Add Invitee to Site as "Site Collaborator" role
         RunAsWork<Boolean> setSiteMembershipWorker = new InviteResponse.SetSiteMembershipWorker(
                 siteShortName, inviteeUserName, SiteModel.SITE_COLLABORATOR);
         AuthenticationUtil.runAs(setSiteMembershipWorker, USER_ADMIN);
+        
+        // complete the wf:acceptInviteTask because the operations that need to be performed
+        // when the invitee has accepted the invitation have now been performed (code block
+        // above up to where wf:invitePendingTask is completed). This code block will soon 
+        // be farmed out into a workflow action which gets executed when wf:acceptInviteTask 
+        // gets completed
+        completeInviteTask(QName.createQName(WF_TASK_ACCEPT_INVITE, this.namespaceService), WF_TRANSITION_ACCEPT_INVITE_END);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
@@ -284,34 +296,58 @@ public class InviteResponse extends DeclarativeWebScript
     private void rejectInvite(Map<String, Object> model, String inviteId,
             String inviteeUserName, String siteShortName)
     {
-        // get workflow ID from invite ID (of which the value is actually
-        // just the ID of the invite workflow instance)
-        String workflowId = inviteId;
+        // complete the wf:invitePendingTask task because the invitation has been accepted
+        completeInviteTask(QName.createQName(WF_TASK_INVITE_PENDING, this.namespaceService), WF_TRANSITION_REJECT);
         
-        // get workflow paths associated with workflow ID
-        List<WorkflowPath> wfPaths = this.workflowService
-                .getWorkflowPaths(workflowId);
-
-        // throw web script exception if there is not at least one workflow path
-        // associated with this workflow ID
-        if ((wfPaths == null) || (wfPaths.size() == 0))
-        {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "There are no workflow paths associated with workflow ID: "
-                            + workflowId);
-        }
-
-        // get workflow path ID for path matching workflow ID
-        WorkflowPath wfPath = wfPaths.get(0);
-        String wfPathID = wfPath.id;
-
-        this.workflowService.signal(wfPathID, TRANSITION_REJECT);
+        // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
+        // the model) out into workflow action class that gets run when task wf:rejectInviteTask
+        // is completed by this web script
 
         // delete the person created for invitee
         this.personService.deletePerson(inviteeUserName);
 
+        // complete the wf:rejectInviteTask because the operations that need to be performed
+        // when the invitee has rejected the invitation have now been performed (code block
+        // above up to where wf:invitePendingTask is completed). This code block will soon 
+        // be farmed out into a workflow action which gets executed when wf:rejectInviteTask 
+        // gets completed
+        completeInviteTask(QName.createQName(WF_TASK_REJECT_INVITE, this.namespaceService), WF_TRANSITION_REJECT_INVITE_END);
+
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
+    }
+    
+    /**
+     * Complete the specified Invite Workflow Task and follow the given
+     * transition upon completing the task
+     * 
+     * @param fullTaskName qualified name of invite workflow task to complete
+     * @param transitionId the task transition to take on completion of 
+     *          the task (or null, for the default transition)
+     */
+    private void completeInviteTask(QName fullTaskName, String transitionId)
+    {
+        // create workflow task query
+        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+
+        // find incomplete invite workflow tasks with given task name 
+        wfTaskQuery.setActive(Boolean.TRUE);
+        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        wfTaskQuery.setTaskName(fullTaskName);
+
+        // set process name to "wf:invite" so that only
+        // invite workflow instances are considered by this query
+        wfTaskQuery.setProcessName(QName.createQName("wf:invite", this.namespaceService));
+
+        // query for invite workflow tasks with the constructed query
+        List<WorkflowTask> wf_invite_tasks = this.workflowService
+                .queryTasks(wfTaskQuery);
+        
+        // end all tasks found with this name 
+        for (WorkflowTask workflowTask : wf_invite_tasks)
+        {
+            this.workflowService.endTask(workflowTask.id, transitionId);
+        }
     }
 }

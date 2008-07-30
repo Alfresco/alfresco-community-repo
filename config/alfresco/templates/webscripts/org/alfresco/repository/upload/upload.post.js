@@ -135,6 +135,9 @@ function main()
       }
       // Update the working copy
       workingCopy.properties.content.write(content);
+      // Reset working copy mimetype and encoding
+      workingCopy.properties.content.guessMimetype(filename);
+      workingCopy.properties.content.encoding = "UTF-8";
       // check it in again, but with a version history note and as minor or major version increment
       workingCopy = workingCopy.checkin(description, majorVersion);
       model.document = workingCopy;

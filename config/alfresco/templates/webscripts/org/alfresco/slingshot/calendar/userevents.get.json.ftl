@@ -11,7 +11,8 @@
 <#--	"description" : "${event.properties["ia:descriptionEvent"]}", -->
 		"where" : "${event.properties["ia:whereEvent"]}",
 		"start" : "${event.properties["ia:fromDate"]?string("dd MMMM yyyy")}",
-		"end" : "${event.properties["ia:toDate"]?string("dd MMMM yyyy")}"
+		"end" : "${event.properties["ia:toDate"]?string("dd MMMM yyyy")}",
+		"site" : "${event.parent.parent.name}"
 	}<#if event_has_next>,</#if>
 </#list>
 ]

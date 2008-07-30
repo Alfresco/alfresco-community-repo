@@ -53,7 +53,7 @@ function main()
 		link.save();
 **/		
 		var placeholder = createWikiPage(currentName, wiki, {
-			content: "This page has been moved [["  + args.name + "|here]]."
+			content: "This page has been moved [["  + newName + "|here]]."
 		});
 		
 	   var d = {

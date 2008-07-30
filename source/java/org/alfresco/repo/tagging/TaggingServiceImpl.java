@@ -36,6 +36,10 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -52,6 +56,7 @@ import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 
 /**
@@ -59,7 +64,7 @@ import org.alfresco.util.ISO9075;
  * 
  * @author Roy Wetherall
  */
-public class TaggingServiceImpl implements TaggingService
+public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Node service */
     private NodeService nodeService;
@@ -78,6 +83,9 @@ public class TaggingServiceImpl implements TaggingService
     
     /** Namespace Service */
     private NamespaceService namespaceService;
+    
+    /** Policy componenet */
+    private PolicyComponent policyComponent;
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
@@ -140,6 +148,51 @@ public class TaggingServiceImpl implements TaggingService
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Policy component
+     * 
+     * @param policyComponent
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * Initiasation method
+     */
+    public void init()
+    {
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                ContentModel.ASPECT_TAGGABLE, 
+                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+    }
+    
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+       if (this.nodeService.exists(nodeRef) == true &&
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
+       {
+           ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
+           if (assocRef != null)
+           {
+               NodeRef parent = assocRef.getParentRef();
+               if (parent != null)
+               {
+                   List<String> tags = getTags(nodeRef);
+                   for (String tag : tags)
+                   {
+                       updateTagScope(parent, tag, false);
+                   }
+               }
+           }
+       }
     }
     
     /**
@@ -290,18 +343,27 @@ public class TaggingServiceImpl implements TaggingService
     }
     
     /**
+     * @see TaggingServiceImpl#updateTagScope(NodeRef, String, boolean, boolean)
+     */
+    private void updateTagScope(NodeRef nodeRef, String tag, boolean add)
+    {
+        updateTagScope(nodeRef, tag, add, true);
+    }
+    
+    /**
      * Update the relevant tag scopes when a tag is added or removed from a node.
      * 
      * @param nodeRef       node reference
      * @param tag           tag
      * @param add           if true then the tag is added, false if the tag is removed
+     * @param async         indicates whether the action is execute asynchronously
      */
-    private void updateTagScope(NodeRef nodeRef, String tag, boolean add)
+    private void updateTagScope(NodeRef nodeRef, String tag, boolean add, boolean async)
     {
         Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
         action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_NAME, tag);
         action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_ADD_TAG, add);
-        this.actionService.executeAction(action, nodeRef, false, true);
+        this.actionService.executeAction(action, nodeRef, false, async);
     }
 
     /**

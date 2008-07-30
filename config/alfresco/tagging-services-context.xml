@@ -33,13 +33,14 @@
     
     <bean id="TaggingService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
-    <bean id="taggingService" class="org.alfresco.repo.tagging.TaggingServiceImpl">
+    <bean id="taggingService" class="org.alfresco.repo.tagging.TaggingServiceImpl" init-method="init">
     	<property name="nodeService" ref="NodeService"/>
     	<property name="categoryService" ref="CategoryService"/>
     	<property name="searchService" ref="SearchService"/>
     	<property name="actionService" ref="ActionService"/>
     	<property name="contentService" ref="ContentService"/>
     	<property name="namespaceService" ref="NamespaceService"/>
+    	<property name="policyComponent" ref="policyComponent"/>
     </bean>
     
     <bean id="update-tagscope" class="org.alfresco.repo.tagging.UpdateTagScopesActionExecuter" parent="action-executer">

@@ -384,6 +384,14 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(2, ts1.getTags().size());
         assertEquals(2, ts2.getTags().size());
         
+        //this.nodeService.deleteNode(this.subDocument);
+        
+        //ts1 = this.taggingService.findTagScope(this.subFolder);
+        //ts2 = this.taggingService.findTagScope(this.folder);
+        
+        //assertEquals(1, ts1.getTags().size());
+        //assertEquals(1, ts2.getTags().size());
+        
         tx.commit();        
     }
     

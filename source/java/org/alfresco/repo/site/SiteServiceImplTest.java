@@ -85,9 +85,19 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     {
         // Create a public site
         SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
-        
-        // Check the site
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);     
+        
+        String name = "!\"£$%^&*()_+=-[]{}";
+        siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
+        siteInfo = this.siteService.getSite(name);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
+        
+        name = "ÈÌÛ˙¡…Õ”⁄";
+        siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
+        siteInfo = this.siteService.getSite(name);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
     }
     
     private void checkSiteInfo( SiteInfo siteInfo, String expectedSitePreset, String expectedShortName, String expectedTitle, 

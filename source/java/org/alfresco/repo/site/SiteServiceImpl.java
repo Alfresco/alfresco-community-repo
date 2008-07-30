@@ -60,8 +60,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
  * 
@@ -87,6 +85,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private PersonService personService;
     private AuthenticationComponent authenticationComponent;
     private TaggingService taggingService;
+    
+    /** The site root node reference */
+    private NodeRef siteRootNodeRef;
     
     /**
      * Set node service
@@ -175,6 +176,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         /// TODO check for shortname duplicates
         
+        // Remove spaces from shortName
+        shortName = shortName.replaceAll(" ", "");
+        
         // Get the site parent node reference
         NodeRef siteParent = getSiteParent(shortName);
         
@@ -232,20 +236,25 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private NodeRef getSiteRoot()
     {
-        // Get the root 'sites' folder
-        ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
-        if (resultSet.length() == 0)
+        if (this.siteRootNodeRef == null)
         {
-            // No root site folder exists
-            throw new AlfrescoRuntimeException("No root sites folder exists");
+            // Get the root 'sites' folder
+            ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
+            if (resultSet.length() == 0)
+            {
+                // No root site folder exists
+                throw new AlfrescoRuntimeException("No root sites folder exists");
+            }
+            else if (resultSet.length() != 1)
+            {
+                // More than one root site folder exits
+                throw new AlfrescoRuntimeException("More than one root sites folder exists");
+            }        
+         
+            this.siteRootNodeRef = resultSet.getNodeRef(0);
         }
-        else if (resultSet.length() != 1)
-        {
-            // More than one root site folder exits
-            throw new AlfrescoRuntimeException("More than one root sites folder exists");
-        }        
-     
-        return resultSet.getNodeRef(0);
+        
+        return this.siteRootNodeRef;
     }
     
     /**
@@ -359,13 +368,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private NodeRef getSiteNodeRef(String shortName)
     {
-        NodeRef result = null;
-                
-        String query = "+TYPE:\"st:site\" +@cm\\:name:\"" + shortName + "\"";
-        ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, query);
-        if (resultSet.length() == 1)
+        NodeRef result = null;        
+        NodeRef siteRoot = getSiteParent(shortName);        
+        List<ChildAssociationRef> assoc = this.nodeService.getChildAssocs(
+                siteRoot,
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName));
+        if (assoc.size() == 1)
         {
-            result = resultSet.getNodeRef(0);
+            result = assoc.get(0).getChildRef();
         }
         return result;
     }

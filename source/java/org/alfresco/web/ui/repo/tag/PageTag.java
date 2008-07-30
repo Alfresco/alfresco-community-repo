@@ -371,21 +371,28 @@ public class PageTag extends TagSupport
     */
    private String getWindowOnloadCode()
    {
-      CCProperties ccProps = (CCProperties) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "CCProperties");
-
-      StringBuffer onloadCode = new StringBuffer();
-      if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
+      FacesContext fc = FacesContext.getCurrentInstance();
+      if (fc != null)
       {
-         String webdavUrl = (ccProps.getWebdavUrl() != null) ? (ccProps.getWebdavUrl()) : ("");
-         String cifsPath = (ccProps.getCifsPath() != null) ? (ccProps.getCifsPath()) : ("");
-
-         onloadCode.append("window.onload=onloadFunc('").append(webdavUrl).append("','").append(cifsPath).append("');");
-
-         ccProps.setCifsPath(null); // we need reset cifsPath flag
-         ccProps.setWebdavUrl(null); // we need reset webdavUrl flag
+          CCProperties ccProps = (CCProperties) FacesHelper.getManagedBean(fc, "CCProperties");
+          
+          StringBuilder onloadCode = new StringBuilder();
+          if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
+          {
+             String webdavUrl = (ccProps.getWebdavUrl() != null) ? (ccProps.getWebdavUrl()) : ("");
+             String cifsPath = (ccProps.getCifsPath() != null) ? (ccProps.getCifsPath()) : ("");
+             
+             onloadCode.append("window.onload=onloadFunc('").append(webdavUrl).append("','").append(cifsPath).append("');");
+             
+             ccProps.setCifsPath(null); // we need reset cifsPath flag
+             ccProps.setWebdavUrl(null); // we need reset webdavUrl flag
+          }
+          
+          return onloadCode.toString();
       }
-
-      return onloadCode.toString();
+      else
+      {
+          return "";
+      }
    }
-
 }

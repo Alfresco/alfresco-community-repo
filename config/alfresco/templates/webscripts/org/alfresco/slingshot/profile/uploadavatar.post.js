@@ -44,7 +44,8 @@ function main()
    
    var user = people.getPerson(username);
    // ensure we found a valid user and that it is the current user or we are an admin
-   if (user == null || (people.isAdmin(person) == false && username != user.properties.userName))
+   if (user == null ||
+       (people.isAdmin(person) == false && new String(username).toLowerCase != new String(user.properties.userName).toLowerCase))
    {
       status.code = 500;
       status.message = "Failed to locate valid user to modify.";

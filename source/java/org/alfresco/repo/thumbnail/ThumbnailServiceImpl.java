@@ -248,10 +248,14 @@ public class ThumbnailServiceImpl implements ThumbnailService
             {
                 throw new ThumbnailException(ERR_NO_PARENT);
             }
-            else if (parents.size() != 1)
-            {
-                throw new ThumbnailException(ERR_TOO_PARENT);
-            }
+            // TODO
+            // When a node with thumbnails is checked in the assoc's get doubled up.  This means we get more than one parent.
+            // As a work around simply take the first parent retrieved
+            //
+            //else if (parents.size() != 1)
+            //{
+            //    throw new ThumbnailException(ERR_TOO_PARENT);
+            //}
             else
             {
                 node = parents.get(0).getParentRef();

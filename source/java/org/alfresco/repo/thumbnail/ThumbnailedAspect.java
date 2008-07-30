@@ -25,14 +25,10 @@
 package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.ContentServicePolicies;
-import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -57,37 +53,66 @@ import org.alfresco.util.EqualsHelper;
  */
 public class ThumbnailedAspect implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
+    /** Services */
     private PolicyComponent policyComponent;
     private ThumbnailService thumbnailService;
     private ActionService actionService;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent   policy component
+     */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
     
+    /**
+     * Set the action service
+     * 
+     * @param actionService     action service
+     */
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
     }
     
+    /**
+     * Set the node service
+     * 
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
+    /**
+     * Set the thumbnail service
+     * 
+     * @param thumbnailService  thumbnail service
+     */
     public void setThumbnailService(ThumbnailService thumbnailService)
     {
         this.thumbnailService = thumbnailService;
     }
     
+    /**
+     * Set the dictionary service
+     * 
+     * @param dictionaryService     dictionary service
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
     
+    /**
+     * Initialise method
+     */
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
@@ -96,83 +121,94 @@ public class ThumbnailedAspect implements NodeServicePolicies.OnUpdateProperties
                 new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     */
     public void onUpdateProperties(
             NodeRef nodeRef,
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        // check if any of the content properties have changed
-        for (QName propertyQName : after.keySet())
-        {
-            // is this a content property?
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if (propertyDef == null)
+        // Ignore working copies
+        if (this.nodeService.exists(nodeRef) == true &&
+            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+        {        
+            // check if any of the content properties have changed
+            for (QName propertyQName : after.keySet())
             {
-                // the property is not recognised
-                continue;
-            }
-            if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-            {
-                // not a content type
-                continue;
-            }
-            
-            try
-            {
-                ContentData beforeValue = (ContentData) before.get(propertyQName);
-                ContentData afterValue = (ContentData) after.get(propertyQName);
+                // is this a content property?
+                PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                if (propertyDef == null)
+                {
+                    // the property is not recognised
+                    continue;
+                }
+                if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                {
+                    // not a content type
+                    continue;
+                }
                 
-                // Figure out if the content is new or not
-                boolean newContent = false;
-                String beforeContentUrl = null;
-                if (beforeValue != null)
+                try
                 {
-                    beforeContentUrl = beforeValue.getContentUrl();
+                    ContentData beforeValue = (ContentData) before.get(propertyQName);
+                    ContentData afterValue = (ContentData) after.get(propertyQName);
+                    
+                    // Figure out if the content is new or not
+                    boolean newContent = false;
+                    String beforeContentUrl = null;
+                    if (beforeValue != null)
+                    {
+                        beforeContentUrl = beforeValue.getContentUrl();
+                    }
+                    String afterContentUrl = null;
+                    if (afterValue != null)
+                    {
+                        afterContentUrl = afterValue.getContentUrl();
+                    }
+                    if (beforeContentUrl == null && afterContentUrl != null)
+                    {
+                        newContent = true;
+                    }                
+                    
+                    if (afterValue != null && afterValue.getContentUrl() == null)
+                    {
+                        // no URL - ignore
+                    }
+                    else if (newContent == false && EqualsHelper.nullSafeEquals(beforeValue, afterValue) == false)
+                    {                    
+                        // Queue the update
+                        queueUpdate(nodeRef, propertyQName);
+                    }
                 }
-                String afterContentUrl = null;
-                if (afterValue != null)
+                catch (ClassCastException e)
                 {
-                    afterContentUrl = afterValue.getContentUrl();
+                    // properties don't conform to model
+                    continue;
                 }
-                if (beforeContentUrl == null && afterContentUrl != null)
-                {
-                    newContent = true;
-                }                
-                
-                if (afterValue != null && afterValue.getContentUrl() == null)
-                {
-                    // no URL - ignore
-                }
-                else if (newContent == false && EqualsHelper.nullSafeEquals(beforeValue, afterValue) == false)
-                {                    
-                    // Queue the update
-                    queueUpdate(nodeRef, propertyQName);
-                }
-            }
-            catch (ClassCastException e)
-            {
-                // properties don't conform to model
-                continue;
             }
         }
     }
 
+    /**
+     * Queue the update to happen asynchronously
+     * 
+     * @param nodeRef           node reference
+     * @param contentProperty   content property
+     */
     private void queueUpdate(NodeRef nodeRef, QName contentProperty)
-    {
-        if (this.nodeService.exists(nodeRef) == true)
+    {        
+        Boolean automaticUpdate = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTOMATIC_UPDATE);
+        if (automaticUpdate != null && automaticUpdate.booleanValue() == true)
         {
-            Boolean automaticUpdate = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTOMATIC_UPDATE);
-            if (automaticUpdate != null && automaticUpdate.booleanValue() == true)
+            List<NodeRef> thumbnails = this.thumbnailService.getThumbnails(nodeRef, contentProperty, null, null);
+            
+            for (NodeRef thumbnail : thumbnails)
             {
-                List<NodeRef> thumbnails = this.thumbnailService.getThumbnails(nodeRef, contentProperty, null, null);
-                
-                for (NodeRef thumbnail : thumbnails)
-                {
-                    // Execute the update thumbnail action async for each thumbnail
-                    Action action = actionService.createAction(UpdateThumbnailActionExecuter.NAME);
-                    action.setParameterValue(CreateThumbnailActionExecuter.PARAM_CONTENT_PROPERTY, contentProperty);
-                    actionService.executeAction(action, thumbnail, false, true);
-                }
+                // Execute the update thumbnail action async for each thumbnail
+                Action action = actionService.createAction(UpdateThumbnailActionExecuter.NAME);
+                action.setParameterValue(CreateThumbnailActionExecuter.PARAM_CONTENT_PROPERTY, contentProperty);
+                actionService.executeAction(action, thumbnail, false, true);
             }
         }
     }

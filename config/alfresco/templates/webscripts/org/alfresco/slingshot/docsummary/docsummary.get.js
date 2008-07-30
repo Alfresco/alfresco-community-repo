@@ -55,22 +55,28 @@ function getDocs(siteId, filter)
          logger.log("number of results = " + docs.length);
       
       var items = null;
+      var asset = null;
       
       // restrict results to 10 items if necessary
-      if (docs.length > 10)
+      items = new Array();
+      for (var x = 0, y = docs.length; x < 10 && x < y; x++)
       {
-         items = new Array();
-         for (var x = 0; x < 10; x++)
+         asset = docs[x];
+
+         // Get users
+         createdBy = people.getPerson(asset.properties["cm:creator"]);
+         modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
+
+         items.push(
          {
-            items.push(docs[x]);
-         }
-      }
-      else
-      {
-         items = docs;
+            asset: asset,
+            createdBy: createdBy,
+            modifiedBy: modifiedBy
+         });
       }
       
-      return ({
+      return (
+      {
          "items": items
       });
    }

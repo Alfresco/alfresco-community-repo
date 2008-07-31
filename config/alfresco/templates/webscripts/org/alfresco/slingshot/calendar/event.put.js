@@ -82,6 +82,20 @@ function main()
          event.properties[ propsmap[prop] ] = value;
 		}
    }
+   
+   if (!json.isNull("tags"))
+   {
+      var tags = String(json.get("tags")); // space delimited string
+      if (tags !== "") 
+      {
+         var tagsArray = tags.split(" ");
+         event.tags = tagsArray;
+      }
+      else
+      {
+         event.tags = []; // reset
+      }
+   }
 	
 	try 
 	{

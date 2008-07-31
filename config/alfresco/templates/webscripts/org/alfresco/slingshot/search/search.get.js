@@ -189,7 +189,7 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    item.name = child.name;
    item.displayName = "Blog post: " + child.properties["cm:title"];
    item.downloadUrl = null; // browse should be default
-   item.browseUrl = "blog-postview?container=" + containerId + "&postId=" + child.name;
+   item.browseUrl = "blog-postview?container=" + containerId + "&amp;postId=" + child.name;
    
    return item;
 }
@@ -231,7 +231,7 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    item.name = topicNode.name;
    item.displayName = "Forum topic: " + postNode.properties["cm:title"];
    item.downloadUrl = null; // browse should be default
-   item.browseUrl = "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name;
+   item.browseUrl = "discussions-topicview?container=" + containerId + "&amp;topicId=" + topicNode.name;
    
    return item;
 }

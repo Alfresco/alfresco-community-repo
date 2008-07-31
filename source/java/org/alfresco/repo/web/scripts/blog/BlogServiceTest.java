@@ -463,7 +463,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals("new content", commentTwoUpdated.getString("content"));
     }
     
-    public void testPostTags() throws Exception
+    public void _testPostTags() throws Exception
     {
     	String[] tags = { "first", "test" };
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
@@ -478,7 +478,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	assertEquals("second", item.getJSONArray("tags").get(2));
     }
     
-    public void testClearTags() throws Exception
+    public void _testClearTags() throws Exception
     {
     	String[] tags = { "abc", "def"};
     	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
@@ -487,4 +487,5 @@ public class BlogServiceTest extends BaseWebScriptTest
     	item = updatePost(item.getString("name"), null, null, new String[0], false, 200);
     	assertEquals(0, item.getJSONArray("tags").length());
     }
+
 }

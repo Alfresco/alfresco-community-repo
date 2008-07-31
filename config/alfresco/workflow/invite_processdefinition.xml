@@ -26,7 +26,7 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/accept.html?"
+                  + "/alfresco/service/api/inviteresponse/accept?format=html&amp;"
                   + "inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName + "\n\n"
@@ -40,7 +40,7 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/reject.html?"
+                  + "/alfresco/service/api/inviteresponse/reject?format=html&amp;"
                   + "inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName;

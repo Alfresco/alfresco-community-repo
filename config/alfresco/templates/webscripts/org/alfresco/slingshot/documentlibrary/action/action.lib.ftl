@@ -3,6 +3,8 @@
 {
    "totalResults": ${results?size},
    "overallSuccess": ${overallSuccess?string},
+   "successCount": ${successCount},
+   "failureCount": ${failureCount},
    "results":
    [
    <#list results as r>

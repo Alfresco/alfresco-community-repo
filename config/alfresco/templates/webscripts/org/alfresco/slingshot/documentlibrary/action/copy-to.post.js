@@ -58,8 +58,15 @@ function runAction(p_params)
          {
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
-            // copy the node (deep copy)
-            result.nodeRef = fileNode.copy(destNode, true);
+            // copy the node (deep copy for containers)
+            if (fileNode.isContainer)
+            {
+               result.nodeRef = fileNode.copy(destNode, true);
+            }
+            else
+            {
+               result.nodeRef = fileNode.copy(destNode);
+            }
             result.success = (result.nodeRef !== null);
          }
       }

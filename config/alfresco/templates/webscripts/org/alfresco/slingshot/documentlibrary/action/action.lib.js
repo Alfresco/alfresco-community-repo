@@ -103,11 +103,16 @@ function main()
           * set of operations as failed.
           */
          var overallSuccess = true;
+         var successCount = 0;
+         var failureCount = 0;
          for (var i = 0, j = results.length; i < j; i++)
          {
             overallSuccess = overallSuccess && results[i].success;
+            results[i].success ? ++successCount : ++failureCount;
          }
          model.overallSuccess = overallSuccess;
+         model.successCount = successCount;
+         model.failureCount = failureCount;
          model.results = results;
       }
    }

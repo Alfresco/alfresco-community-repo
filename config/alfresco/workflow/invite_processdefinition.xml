@@ -26,8 +26,8 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/accept?"
-                  + "workflowId=" + workflowId
+                  + "/alfresco/service/api/inviteresponse/accept.html?"
+                  + "inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName + "\n\n"
                   + "An account has been created for you with user name: "
@@ -40,8 +40,8 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/reject?"
-                  + "workflowId=" + workflowId
+                  + "/alfresco/service/api/inviteresponse/reject.html?"
+                  + "inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName;
                mail.execute(bpm_package);
@@ -58,11 +58,15 @@
 
    <task-node name="inviteAccepted">
       <task name="wf:acceptInviteTask" swimlane="assignee" />
+      <!-- TODO glen.johnson - code in acceptInvite(...) method of inviteresponse web script -->
+      <!-- needs to be moved into action for transition "end" below.                         -->
       <transition name="end" to="end" />
    </task-node>
 
    <task-node name="inviteRejected">
       <task name="wf:rejectInviteTask" swimlane="assignee" />
+      <!-- TODO glen.johnson - code in rejectInvite(...) method of inviteresponse web script -->
+      <!-- needs to be moved into action for transition "end" below.                         -->
       <transition name="end" to="end" />
    </task-node>
 

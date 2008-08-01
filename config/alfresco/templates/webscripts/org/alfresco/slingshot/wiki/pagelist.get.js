@@ -34,14 +34,22 @@ function getWikiPages(siteId)
       query += getFilterQuery(filter);
    }
    
-   var pages = [];
    var wikiPages = search.luceneSearch(query);
    
-   var page;
-   for (var i=0; i < wikiPages.length; i++)
+   var pages = [];   
+   var page, createdBy, modifiedBy;
+   
+   for each (page in wikiPages)
    {
-      page = wikiPages[i];
-      pages.push(page);
+      createdBy = people.getPerson(page.properties["cm:creator"]);
+      modifiedBy = people.getPerson(page.properties["cm:modifier"]);
+      pages.push(
+      {
+         "page": page,
+         "modified": page.properties.modified,
+         "createdBy": createdBy,
+         "modifiedBy": modifiedBy
+      });
    }
    
    return ( 

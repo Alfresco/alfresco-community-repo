@@ -25,6 +25,7 @@
 package org.alfresco.repo.web.scripts.blog;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
@@ -461,6 +462,77 @@ public class BlogServiceTest extends BaseWebScriptTest
     	JSONObject commentTwoUpdated = updateComment(commentTwo.getString("nodeRef"), "new title", "new content", 200);
     	assertEquals("new title", commentTwoUpdated.getString("title"));
     	assertEquals("new content", commentTwoUpdated.getString("content"));
+    }
+ 
+    /**
+     * Does some stress tests.
+     * 
+     * Currently observed errors:
+     * 1. [repo.action.AsynchronousActionExecutionQueueImpl] Failed to execute asynchronous action: Action[ id=485211db-f117-4976-9530-ab861a19f563, node=null ]
+     * org.alfresco.repo.security.permissions.AccessDeniedException: Access Denied.  You do not have the appropriate permissions to perform this operation. 
+     * 
+     * 2. JSONException, but with root cause being
+     *   get(assocs) failed on instance of org.alfresco.repo.template.TemplateNode
+     *   The problematic instruction:	
+     *   ----------
+	 *   ==> if person.assocs["cm:avatar"]?? [on line 4, column 7 in org/alfresco/repository/blogs/blogpost.lib.ftl]
+	 *   
+     * @throws Exception
+     */
+    public void _testTagsStressTest() throws Exception
+    {
+    	final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
+    	List<Thread> threads = new ArrayList<Thread>();
+    	
+        System.err.println("Creating and starting threads...");
+    	for (int x=0; x < 3; x++)
+    	{
+    		Thread t = new Thread(new Runnable() {
+    			public void run() {
+    				// set the correct user
+    				authenticationComponent.setCurrentUser(USER_ONE);
+    				
+    				// now do some requests
+    				try {
+	    				for (int y=0; y < 3; y++)
+	    				{
+	    					_testPostTags();
+	    					_testClearTags();
+	    					
+	    				}
+	    				System.err.println("------------- SUCCEEDED ---------------");
+    				} catch (Exception e)
+    				{
+    					System.err.println("------------- ERROR ---------------");
+    					exceptions.add(e);
+    					e.printStackTrace();
+    					return;
+    				}
+    			}}
+    		);
+    		threads.add(t);
+    		t.start();
+    	} 
+    	/*for (Thread t : threads)
+    	{
+    		t.start();
+    	}*/
+    	
+    	for (Thread t : threads)
+    	{
+    		t.join();
+    	}
+    	
+    	System.err.println("------------- STACK TRACES ---------------");
+    	for (Exception e : exceptions)
+    	{
+    		e.printStackTrace();
+    	}
+    	System.err.println("------------- STACK TRACES END ---------------");
+    	if (exceptions.size() > 0)
+    	{
+    		throw exceptions.get(0);
+    	}
     }
     
     public void _testPostTags() throws Exception

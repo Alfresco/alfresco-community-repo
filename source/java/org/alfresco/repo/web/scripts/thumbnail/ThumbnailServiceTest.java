@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
-import org.apache.tools.ant.taskdefs.Sleep;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -173,8 +172,15 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     {
         String url = "/api/node/" + node.getStoreRef().getProtocol() + "/" + node.getStoreRef().getIdentifier() + "/" + node.getId() + "/content/thumbnails/" + thumbnailName;
        
+        int retrys = 10;
+        int trys = 0;
         while (true)
         {
+            if (trys >= retrys)
+            {
+                fail("Thumbnail never gets created " + thumbnailName);
+            }
+            
             MockHttpServletResponse response = getRequest(url, 0);
             if (response.getStatus() == 200)
             {
@@ -189,6 +195,8 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             {
                 Thread.sleep(100);
             }
+            
+            trys++;
         }        
     } 
     

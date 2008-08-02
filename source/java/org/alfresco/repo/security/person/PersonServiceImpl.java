@@ -41,6 +41,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -86,6 +87,8 @@ public class PersonServiceImpl implements PersonService,
     private SearchService searchService;
 
     private AuthorityService authorityService;
+    
+    private DictionaryService dictionaryService;
 
     private PermissionServiceSPI permissionServiceSPI;
 
@@ -700,6 +703,54 @@ public class PersonServiceImpl implements PersonService,
         return nodes;
     }
     
+    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue)
+    {
+        // check that given property key is defined for content model type 'cm:person'
+        // and throw exception if it isn't
+        if (this.dictionaryService.getProperty(ContentModel.TYPE_PERSON, propertyKey) == null)
+        {
+            throw new AlfrescoRuntimeException("Property '" + propertyKey + "' is not defined "
+                    + "for content model type cm:person");
+        }
+        
+        LinkedHashSet<NodeRef> people = new LinkedHashSet<NodeRef>();
+        
+        //
+        // Search for people using the given property
+        //
+        
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("@cm\\:" + propertyKey.getLocalName() + ":\"" + propertyValue + "\"");
+        sp.addStore(tenantService.getName(storeRef));
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet rs = null;
+
+        try
+        {
+            rs = searchService.query(sp);
+
+            for (ResultSetRow row : rs)
+            {
+                NodeRef nodeRef = row.getNodeRef();
+                if (nodeService.exists(nodeRef))
+                {
+                    people.add(nodeRef);
+                }
+            }
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+        
+        return people;
+    }
+    
     // Policies
 
     /* (non-Javadoc)
@@ -736,6 +787,11 @@ public class PersonServiceImpl implements PersonService,
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)

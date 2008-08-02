@@ -154,6 +154,16 @@ public interface PersonService
      */
     @Auditable
     public Set<NodeRef> getAllPeople();
+    
+    /**
+     * Get people filtered by the given property name/value pair
+     * 
+     * @param propertyKey property key of property to filter people by 
+     * @param propertyValue property value of property to filter people by
+     * @return people filtered by the given property name/value pair
+     */
+    @Auditable
+    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue);
 
     /**
      * Return the container that stores people.

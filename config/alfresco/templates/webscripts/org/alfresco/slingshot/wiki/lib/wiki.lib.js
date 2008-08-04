@@ -48,6 +48,9 @@ function createWikiPage(name, folder, options)
 			page.content = options.content;
 		}
 	}
+	// Initialise tags to empty array
+	page.tags = [];
+	
 	// TODO: sort out appropriate permission(s)
 	page.save();	
 	return page;

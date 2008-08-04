@@ -74,15 +74,11 @@ function main()
 			logger.log(e);
 		}
     }
-
-/**
-	if (page.type == "{http://www.alfresco.org/model/content/1.0}link")
-	{
-		page = search.findNode(page.properties["cm:destination"].nodeRef);
-	}
-**/
-	return page;
+    
+	return {
+	  "page": page,
+	  "tags": page.tags 
+	};
 }
 
-var page = main();
-model.page = page;
+model.result = main();

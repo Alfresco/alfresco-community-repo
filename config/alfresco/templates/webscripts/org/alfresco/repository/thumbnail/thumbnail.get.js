@@ -22,20 +22,19 @@ function main()
       return;
    }
    
-   // Get the queue create flag
+   // Get the queue/force create setting
    var qc = false;
-   var qcString = args.qc;
-   if (qcString != null)
-   {
-      qc = utils.toBoolean(qcString);
-   }
-   
-   // Get the force create flag
    var fc = false;
-   var fcString = args.fc;
-   if (fcString != null)
+   if (args.c != null)
    {
-      fc = utils.toBoolean(fcString);
+   	if (args.c == "queue")
+   	{
+   		qc = true;
+   	}
+   	else if (args.c == "force")
+   	{
+   		fc = true;
+   	}
    }
    
    // Get the place holder flag

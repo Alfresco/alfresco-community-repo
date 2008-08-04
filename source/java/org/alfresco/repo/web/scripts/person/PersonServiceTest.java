@@ -168,8 +168,12 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("jobtitle", jobTitle);
         person.put("email", email);
         
-        MockHttpServletResponse response = postRequest(URL_PEOPLE, expectedStatus, person.toString(), "application/json"); 
-        this.createdPeople.add(userName);
+        MockHttpServletResponse response = postRequest(URL_PEOPLE, expectedStatus, person.toString(), "application/json");
+        
+        if ((userName != null) && (userName.length() != 0))
+        {
+            this.createdPeople.add(userName);
+        }
         
         // switch back to non-admin user
         this.authenticationComponent.setCurrentUser(currentUser);
@@ -265,9 +269,10 @@ public class PersonServiceTest extends BaseWebScriptTest
     {
         String userName  = RandomStringUtils.randomNumeric(6);
                 
-        // Create a new site
+        // Create a new person
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", Status.STATUS_OK);        
+                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                                Status.STATUS_OK);        
         assertEquals(userName, result.get("userName"));
         assertEquals("myTitle", result.get("title"));
         assertEquals("myFirstName", result.get("firstName"));
@@ -279,5 +284,48 @@ public class PersonServiceTest extends BaseWebScriptTest
         // Check for duplicate names
         createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 500);
+    }
+    
+    public void testCreatePersonMissingUserName() throws Exception
+    {
+        // Create a new person with userName == null (user name missing)
+        createPerson(null, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
+        
+        // Create a new person with userName == "" (user name is blank)
+        createPerson("", "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
+    }
+    
+    public void testCreatePersonMissingFirstName() throws Exception
+    {
+        String userName  = RandomStringUtils.randomNumeric(6);
+                
+        // Create a new person with firstName == null (first name missing)
+        createPerson(userName, "myTitle", null, "myLastName", "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
+        
+        // Create a new person with firstName == "" (first name is blank)
+        createPerson(userName, "myTitle", "", "myLastName", "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
+    }
+    
+    public void testCreatePersonMissingLastName() throws Exception
+    {
+        String userName  = RandomStringUtils.randomNumeric(6);
+                
+        // Create a new person with lastName == null (last name is missing)
+        createPerson(userName, "myTitle", "myFirstName", null, "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
+        
+        // Create a new person with lastName == "" (last name is blank)
+        createPerson(userName, "myTitle", "myFirstName", "", "myOrganisation",
+                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                        Status.STATUS_BAD_REQUEST);        
     }    
 }

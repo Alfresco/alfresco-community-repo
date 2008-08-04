@@ -1,14 +1,29 @@
 function main()
 {
+   //
    // Get the person details
-   var userName = json.get("userName");
-   if ((userName === null) || (userName.length == 0)) 
+   //
+   
+   if ((json.isNull("userName")) || (json.get("userName").length() == 0)) 
    {
-      status.setCode(status.STATUS_BAD_REQUEST, "User name missing when creating person")
+      status.setCode(status.STATUS_BAD_REQUEST, "User name missing when creating person");
+      return;
+   }
+   
+   if ((json.isNull("firstName")) || (json.get("firstName").length() == 0))
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "First name missing when creating person");
+      return;
+   }
+   
+   if ((json.isNull("lastName")) || (json.get("lastName").length() == 0))
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Last name missing when creating person");
       return;
    }
    
    // Create the person with the supplied user name
+   var userName = json.get("userName");
    var person = people.createPerson(userName);
    
    // return error message if a person with that user name could not be created

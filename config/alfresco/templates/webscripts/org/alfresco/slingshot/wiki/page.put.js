@@ -51,6 +51,29 @@ function update()
     }
 	
 	var page = wiki.childByNamePath(params.pageTitle);
+	if (!json.isNull("tags"))
+   {
+      var tags = Array(json.get("tags"));
+      if (tags) 
+      {
+         // This is so unnecessary!
+         // A much cleaner approach would be to just pass in the tags as a space separated
+         // string and call the (native) method split
+         var tags = [];
+         var tmp = json.get("tags");
+         for (var x=0; x < tmp.length(); x++)
+         {
+            tags.push(tmp.get(x));
+         }
+         page.tags = tags;
+      }
+      else
+      {
+         page.tags = []; // reset
+      }
+      page.save();
+   }
+   
 	try 
 	{
 		// Create a new revision of the page
@@ -78,9 +101,10 @@ function update()
 	// of any wiki markup on the client. This is because the edit view needs to display
 	// the raw content (for editing) whereas the page view needs to display the rendered content.
 	return {
-		pagetext: "" + page.content
+		pagetext: "" + page.content,
+		tags: page.tags
 	}
 }
 
-var result = update();
-model.result = jsonUtils.toJSONString(result); 
+model.result = update();
+//model.result = jsonUtils.toJSONString(result); 

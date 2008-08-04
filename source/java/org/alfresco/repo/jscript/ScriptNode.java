@@ -2165,8 +2165,17 @@ public class ScriptNode implements Serializable, Scopeable
      */
     public String[] getTags()
     {
+        String[] result = null;
         List<String> tags = this.services.getTaggingService().getTags(this.nodeRef);
-        return (String[])tags.toArray(new String[tags.size()]);
+        if (tags.isEmpty() == true)
+        {
+            result = new String[0];
+        }
+        else
+        {
+            result = (String[])tags.toArray(new String[tags.size()]);
+        }
+        return result;
     }
     
     /**

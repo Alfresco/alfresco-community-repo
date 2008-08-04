@@ -14,6 +14,7 @@ function testAddRemoveTag()
 {
 	var tags = document.tags;
 	test.assertNotNull(tags);
+	test.assertNotEquals(undefined, tags);
 	test.assertEquals(0, tags.length);
 	
 	document.properties.title = "A change is as good as a rest!";	

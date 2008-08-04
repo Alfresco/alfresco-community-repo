@@ -49,6 +49,23 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
         }
     }
     
+    public void assertNotEquals(Object expected, Object value)
+    {
+        assertNotEquals(expected, value, null);
+    }
+    
+    public void assertNotEquals(Object expected, Object value, String message)
+    {
+        if (expected.equals(value) == true)
+        {
+            if (message == null)
+            {
+                message = "Expected value '" + expected + "' should not match recieved value '" + value + "'";
+            }
+            throw new AlfrescoRuntimeException(message);
+        }
+    }
+    
     public void assertNotNull(Object value)
     {
         assertNotNull(value, null);

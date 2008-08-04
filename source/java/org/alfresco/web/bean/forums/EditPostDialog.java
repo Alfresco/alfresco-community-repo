@@ -73,8 +73,8 @@ public class EditPostDialog extends CreatePostDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // remove link breaks and replace with <br/>
-      this.content = Utils.replaceLineBreaks(this.content);
+      // remove link breaks and replace with <br>
+      this.content = Utils.replaceLineBreaks(this.content, false);
       
       // update the content
       NodeRef postNode = this.browseBean.getDocument().getNodeRef();

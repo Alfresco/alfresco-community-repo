@@ -61,8 +61,8 @@ public class CreateReplyDialog extends CreatePostDialog
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      // remove link breaks and replace with <br/>
-      this.content = Utils.replaceLineBreaks(this.content);
+      // remove link breaks and replace with <br>
+      this.content = Utils.replaceLineBreaks(this.content, false);
       
       super.finishImpl(context, outcome);
       

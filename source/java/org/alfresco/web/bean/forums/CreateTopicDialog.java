@@ -112,7 +112,7 @@ public class CreateTopicDialog extends CreateSpaceDialog
       // set the mimetype and encoding
       writer.setMimetype(Repository.getMimeTypeForFileName(context, fileName));
       writer.setEncoding("UTF-8");
-      writer.putContent(Utils.replaceLineBreaks(this.message));
+      writer.putContent(Utils.replaceLineBreaks(this.message, false));
       
       return outcome;
    }

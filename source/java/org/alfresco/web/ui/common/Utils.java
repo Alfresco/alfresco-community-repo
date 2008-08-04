@@ -24,19 +24,15 @@
  */
 package org.alfresco.web.ui.common;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.NamingContainer;
@@ -81,7 +77,6 @@ import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.myfaces.shared_impl.renderkit.html.HtmlFormRendererBase;
-import org.springframework.util.StringUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
 /**
@@ -89,7 +84,7 @@ import org.springframework.web.jsf.FacesContextUtils;
  * 
  * @author Kevin Roast
  */
-public final class Utils
+public final class Utils extends StringUtils
 {
    private static final String MSG_TIME_PATTERN = "time_pattern";
    private static final String MSG_DATE_PATTERN = "date_pattern";
@@ -97,374 +92,11 @@ public final class Utils
    
    private static final Log logger = LogFactory.getLog(Utils.class);
    
-   private static final Set<String> safeTags = new HashSet<String>();
-   
-   static
-   {
-      safeTags.add("p");
-      safeTags.add("/p");
-      safeTags.add("b");
-      safeTags.add("/b");
-      safeTags.add("i");
-      safeTags.add("/i");
-      safeTags.add("br");
-      safeTags.add("ul");
-      safeTags.add("/ul");
-      safeTags.add("ol");
-      safeTags.add("/ol");
-      safeTags.add("li");
-      safeTags.add("/li");
-      safeTags.add("h1");
-      safeTags.add("/h1");
-      safeTags.add("h2");
-      safeTags.add("/h2");
-      safeTags.add("h3");
-      safeTags.add("/h3");
-      safeTags.add("h4");
-      safeTags.add("/h4");
-      safeTags.add("h5");
-      safeTags.add("/h5");
-      safeTags.add("h6");
-      safeTags.add("/h6");
-      safeTags.add("span");
-      safeTags.add("/span");
-      safeTags.add("a");
-      safeTags.add("/a");
-      safeTags.add("img");
-      safeTags.add("font");
-      safeTags.add("/font");
-   }
-   
    /**
     * Private constructor
     */
    private Utils()
    {
-   }
-   
-   /**
-    * Encodes the given string, so that it can be used within an HTML page.
-    * 
-    * @param string     the String to convert
-    */
-   public static String encode(String string)
-   {
-      if (string == null)
-      {
-         return "";
-      }
-
-      StringBuilder sb = null;      //create on demand
-      String enc;
-      char c;
-      for (int i = 0; i < string.length(); i++)
-      {
-         enc = null;
-         c = string.charAt(i);
-         switch (c)
-         {
-            case '"': enc = "&quot;"; break;    //"
-            case '&': enc = "&amp;"; break;     //&
-            case '<': enc = "&lt;"; break;      //<
-            case '>': enc = "&gt;"; break;      //>
-            
-            //misc
-            //case 0x80: enc = "&euro;"; break;  sometimes euro symbol is ascii 128, should we suport it?
-            case '\u20AC': enc = "&euro;";  break;
-            case '\u00AB': enc = "&laquo;"; break;
-            case '\u00BB': enc = "&raquo;"; break;
-            case '\u00A0': enc = "&nbsp;"; break;
-            
-            default:
-               if (((int)c) >= 0x80)
-               {
-                  //encode all non basic latin characters
-                  enc = "&#" + ((int)c) + ";";
-               }
-               break;
-         }
-         
-         if (enc != null)
-         {
-            if (sb == null)
-            {
-               String soFar = string.substring(0, i);
-               sb = new StringBuilder(i + 8);
-               sb.append(soFar);
-            }
-            sb.append(enc);
-         }
-         else
-         {
-            if (sb != null)
-            {
-               sb.append(c);
-            }
-         }
-      }
-      
-      if (sb == null)
-      {
-         return string;
-      }
-      else
-      {
-         return sb.toString();
-      }
-   }
-   
-   /**
-    * Crop a label within a SPAN element, using ellipses '...' at the end of label and
-    * and encode the result for HTML output. A SPAN will only be generated if the label
-    * is beyond the default setting of 32 characters in length.
-    * 
-    * @param text       to crop and encode
-    * 
-    * @return encoded and cropped resulting label HTML
-    */
-   public static String cropEncode(String text)
-   {
-      return cropEncode(text, 32);
-   }
-   
-   /**
-    * Crop a label within a SPAN element, using ellipses '...' at the end of label and
-    * and encode the result for HTML output. A SPAN will only be generated if the label
-    * is beyond the specified number of characters in length.
-    * 
-    * @param text       to crop and encode
-    * @param length     length of string to crop too
-    * 
-    * @return encoded and cropped resulting label HTML
-    */
-   public static String cropEncode(String text, int length)
-   {
-      if (text.length() > length)
-      {
-         String label = text.substring(0, length - 3) + "...";
-         StringBuilder buf = new StringBuilder(length + 32 + text.length());
-         buf.append("<span title=\"")
-            .append(Utils.encode(text))
-            .append("\">")
-            .append(Utils.encode(label))
-            .append("</span>");
-         return buf.toString();
-      }
-      else
-      {
-         return Utils.encode(text);
-      }
-   }
-   
-   /**
-    * Encode a string to the %AB hex style JavaScript compatible notation.
-    * Used to encode a string to a value that can be safely inserted into an HTML page and
-    * then decoded (and probably eval()ed) using the unescape() JavaScript method.
-    * 
-    * @param s      string to encode
-    * 
-    * @return %AB hex style encoded string
-    */
-   public static String encodeJavascript(String s)
-   {
-       StringBuilder buf = new StringBuilder(s.length() * 3);
-       for (int i=0; i<s.length(); i++)
-       {
-           char c = s.charAt(i);
-           int iChar = (int)c;
-           buf.append('%');
-           buf.append(Integer.toHexString(iChar));
-       }
-       return buf.toString();
-   }
-   
-   /**
-    * Strip unsafe HTML tags from a string - only leaves most basic formatting tags
-    * and encodes or strips the remaining characters.
-    * 
-    * @param s HTML string to strip tags from
-    * 
-    * @return safe string
-    */
-   public static String stripUnsafeHTMLTags(String s)
-   {
-      s = s.replace("onclick", "$");
-      s = s.replace("onmouseover", "$");
-      s = s.replace("onmouseout", "$");
-      s = s.replace("onmousemove", "$");
-      s = s.replace("onfocus", "$");
-      s = s.replace("onblur", "$");
-      StringBuilder buf = new StringBuilder(s.length());
-      char[] chars = s.toCharArray();
-      for (int i=0; i<chars.length; i++)
-      {
-         if (chars[i] == '<')
-         {
-            // found a tag?
-            int endMatchIndex = -1;
-            int endTagIndex = -1;
-            if (i < chars.length - 2)
-            {
-               for (int x=(i + 1); x<chars.length; x++)
-               {
-                  if (chars[x] == ' ' && endMatchIndex == -1)
-                  {
-                     // keep track of the match point for comparing tags in the safeTags set
-                     endMatchIndex = x;
-                  }
-                  else if (chars[x] == '>')
-                  {
-                     endTagIndex = x;
-                     break;
-                  }
-                  else if (chars[x] == '<')
-                  {
-                     // found another angle bracket - not a tag def so we can safely output to here
-                     break;
-                  }
-               }
-            }
-            if (endTagIndex != -1)
-            {
-               // found end of the tag to match
-               String tag = s.substring(i + 1, endTagIndex);
-               String matchTag = tag;
-               if (endMatchIndex != -1)
-               {
-                  matchTag = s.substring(i + 1, endMatchIndex);
-               }
-               if (safeTags.contains(matchTag.toLowerCase()))
-               {
-                  // safe tag - append to buffer
-                  buf.append('<').append(tag).append('>');
-               }
-               // inc counter to skip past whole tag
-               i = endTagIndex;
-               continue;
-            }
-         }
-         String enc = null;
-         switch (chars[i])
-         {
-            case '"': enc = "&quot;"; break;
-            case '&': enc = "&amp;"; break;
-            case '<': enc = "&lt;"; break;
-            case '>': enc = "&gt;"; break;
-            
-            default:
-               if (((int)chars[i]) >= 0x80)
-               {
-                  //encode all non basic latin characters
-                  enc = "&#" + ((int)chars[i]) + ";";
-               }
-            break;
-         }
-         buf.append(enc == null ? chars[i] : enc);
-      }
-      return buf.toString();
-   }
-   
-   /**
-    * Replace one string instance with another within the specified string
-    * 
-    * @param str
-    * @param repl
-    * @param with
-    * 
-    * @return replaced string
-    */
-   public static String replace(String str, String repl, String with)
-   {
-       int lastindex = 0;
-       int pos = str.indexOf(repl);
-
-       // If no replacement needed, return the original string
-       // and save StringBuffer allocation/char copying
-       if (pos < 0)
-       {
-           return str;
-       }
-       
-       int len = repl.length();
-       int lendiff = with.length() - repl.length();
-       StringBuilder out = new StringBuilder((lendiff <= 0) ? str.length() : (str.length() + (lendiff << 3)));
-       for (; pos >= 0; pos = str.indexOf(repl, lastindex = pos + len))
-       {
-           out.append(str.substring(lastindex, pos)).append(with);
-       }
-       
-       return out.append(str.substring(lastindex, str.length())).toString();
-   }
-   
-   /**
-    * Remove all occurances of a String from a String
-    * 
-    * @param str     String to remove occurances from
-    * @param match   The string to remove
-    * 
-    * @return new String with occurances of the match removed
-    */
-   public static String remove(String str, String match)
-   {
-      int lastindex = 0;
-      int pos = str.indexOf(match);
-
-      // If no replacement needed, return the original string
-      // and save StringBuffer allocation/char copying
-      if (pos < 0)
-      {
-          return str;
-      }
-      
-      int len = match.length();
-      StringBuilder out = new StringBuilder(str.length());
-      for (; pos >= 0; pos = str.indexOf(match, lastindex = pos + len))
-      {
-          out.append(str.substring(lastindex, pos));
-      }
-      
-      return out.append(str.substring(lastindex, str.length())).toString();
-   }
-   
-   /**
-    * Replaces carriage returns and line breaks with the &lt;br&gt; tag.
-    * 
-    * @param str The string to be parsed
-    * @return The string with line breaks removed
-    */
-   public static String replaceLineBreaks(String str)
-   {
-      String replaced = null;
-      
-      if (str != null)
-      {
-         try
-         {
-            StringBuilder parsedContent = new StringBuilder(str.length() + 32);
-            BufferedReader reader = new BufferedReader(new StringReader(str));
-            String line = reader.readLine();
-            while (line != null)
-            {
-               parsedContent.append(line);
-               line = reader.readLine();
-               if (line != null)
-               {
-                  parsedContent.append("<br>");
-               }
-            }
-            
-            replaced = parsedContent.toString();
-         }
-         catch (IOException ioe)
-         {
-            if (logger.isWarnEnabled())
-            {
-               logger.warn("Failed to replace line breaks in string: " + str);
-            }
-         }
-      }
-      
-      return replaced;
    }
    
    /**
@@ -632,7 +264,7 @@ public final class Utils
             buf.append("']['");
             buf.append(name);
             buf.append("'].value='");
-            buf.append(StringUtils.replace(params.get(name), "'", "\\'"));
+            buf.append(replace(params.get(name), "'", "\\'"));
             buf.append("';");
             
             // weak, but this seems to be the way Sun RI do it...

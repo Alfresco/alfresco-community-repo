@@ -66,8 +66,8 @@ public class CreatePostDialog extends CreateContentWizard
       this.mimeType = Repository.getMimeTypeForFileName(
                   FacesContext.getCurrentInstance(), this.fileName);
       
-      // remove link breaks and replace with <br/>
-      this.content = Utils.replaceLineBreaks(this.content);
+      // remove link breaks and replace with <br>
+      this.content = Utils.replaceLineBreaks(this.content, false);
       
       return super.finishImpl(context, outcome);
    }

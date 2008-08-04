@@ -47,7 +47,7 @@ function main()
    
    // Get the thumbnail
    var thumbnail = node.getThumbnail(thumbnailName);
-   if (thumbnail == null)
+   if (thumbnail == null || thumbnail.size == 0)
    {
       // Queue the creation of the thumbnail if appropriate
       if (fc)

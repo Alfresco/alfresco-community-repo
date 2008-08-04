@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -400,6 +401,11 @@ public class StreamContent extends AbstractWebScript
             }
         }
         
+        // Create a date in the past
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(1975, 3, 26);
+        
+        
         File file = TempFileProvider.createTempFile("streamContent-", ext);        
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
         OutputStream os = new FileOutputStream(file);        
@@ -409,7 +415,7 @@ public class StreamContent extends AbstractWebScript
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        streamContentImpl(req, res, reader, attach, new Date(file.lastModified()));
+        streamContentImpl(req, res, reader, attach, calendar.getTime());
         
     }
     

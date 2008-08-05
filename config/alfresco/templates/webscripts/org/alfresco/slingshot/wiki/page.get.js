@@ -32,29 +32,29 @@ function getTemplateParams()
 
 function main()
 {
-    var params = getTemplateParams();
-    if (params === null)
-    {
-		return null;
-    }
+   var params = getTemplateParams();
+   if (params === null)
+   {
+	   return null;
+   }
 
-    // Get the site
-    var site = siteService.getSite(params.siteId);
-    if (site === null)
-    {
-		return null;
-    }
+   // Get the site
+   var site = siteService.getSite(params.siteId);
+   if (site === null)
+   {
+	   return null;
+   }
 
-    var wiki = getWikiContainer(site);
-    if (wiki === null)
-    {
-       return null;
-    }
+   var wiki = getWikiContainer(site);
+   if (wiki === null)
+   {
+      return null;
+   }
     
-	 var page = wiki.childByNamePath(params.pageTitle);
-    if (page === null)
-    {
-		page = createWikiPage(params.pageTitle, wiki, {
+	var page = wiki.childByNamePath(params.pageTitle);
+   if (page === null)
+   {
+	   page = createWikiPage(params.pageTitle, wiki, {
 			content: DEFAULT_PAGE_CONTENT,
 			versionable: true
 		});
@@ -73,11 +73,40 @@ function main()
 		{
 			logger.log(e);
 		}
-    }
+   }
+    
+   // Figure out what (internal) pages this page contains links to
+   var content = page.content.toString();
+   var re = /\[\[([^\|\]]+)/g;
+   var links = [];
+    
+   var result, match, matched_p;
+   var matchedsofar = [];
+   while ((result = re.exec(content)) !== null)
+   {
+      match = result[1];
+      matched_p = false;
+      // Check for duplicate links
+      for (var j=0; j < matchedsofar.length; j++)
+      {
+         if (match ===  matchedsofar[j])
+         {
+            matched_p = true;
+            break;
+         }
+      }
+      
+      if (!matched_p)
+      {
+         matchedsofar.push(match);
+         links.push(match);
+      }
+   }
     
 	return {
-	  "page": page,
-	  "tags": page.tags 
+	   "page": page,
+	   "tags": page.tags,
+	   "links": links
 	};
 }
 

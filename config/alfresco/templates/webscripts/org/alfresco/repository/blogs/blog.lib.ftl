@@ -2,16 +2,18 @@
 	This template renders the blog configuration json data.
 -->
 <#macro blogJSON item>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
     "qnamePath" : "${item.qnamePath}",
 	"url" : "blog/node/${item.nodeRef?replace('://', '/')}",
 	"blogPostsUrl" : "blog/node/${item.nodeRef?replace('://', '/')}/posts",
 	"type" : "${item.properties["blg:blogImplementation"]!''}",
 	"id" : "${item.properties["blg:id"]!'0'}",
-	"name" : "${(item.properties["blg:name"]!'')?html?j_string}",
-    "description" : "${(item.properties["blg:description"]!'')?html?j_string}",
+	"name" : "${item.properties["blg:name"]!''}",
+    "description" : "${item.properties["blg:description"]!''}",
 	"url" : "${item.properties["blg:url"]!''}",
 	"username" : "${item.properties["blg:userName"]!''}",
 	"password" : "${item.properties["blg:password"]!''}"
 }
+</#escape>
 </#macro>

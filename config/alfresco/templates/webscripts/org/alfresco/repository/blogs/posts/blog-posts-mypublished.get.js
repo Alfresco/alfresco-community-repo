@@ -38,7 +38,10 @@ function main()
    
    // fetch and assign the data
    model.data = getBlogPostList(node, index, count);
-   model.contentFormat = (args["contentFormat"] != undefined) ? args["contentFormat"] : "full";
+
+   // fetch the contentLength param
+   var contentLength = args["contentLength"] != undefined ? parseInt(args["contentLength"]) : -1;
+   model.contentLength = isNaN(contentLength) ? -1 : contentLength;
 }
 
 main();

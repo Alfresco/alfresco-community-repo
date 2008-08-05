@@ -1,36 +1,35 @@
 <#-- Renders a person object. -->
 <#macro renderPerson person fieldName>
+<#escape x as jsonUtils.encodeJSONString(x)>
    "${fieldName}" : {
       <#if person.assocs["cm:avatar"]??>
       "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
       "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]?html}",
-      "lastName" : "${person.properties["cm:lastName"]?html}"
+      "firstName" : "${person.properties["cm:firstName"]}",
+      "lastName" : "${person.properties["cm:lastName"]}"
    },
+</#escape>
 </#macro>
 
-<#macro renderTags tags>
-[<#list tags as x>"${x?j_string}"<#if x_has_next>, </#if></#list>]
-</#macro>
 
 <#macro addContent post>
-   <#assign maxTextLength=512>
-   <#if (! contentFormat??) || contentFormat == "" || contentFormat == "full">
-      "content" : "${post.content?j_string}",
-   <#elseif contentFormat == "htmlDigest">
-      <#if (post.content?length > maxTextLength)>
-         "content" : "${post.content?substring(0, maxTextLength)?j_string}",
-      <#else>
-         "content" : "${post.content?j_string}",
-      </#if>
-   <#elseif contentFormat == "textDigest">
-      <#assign croppedTextContent=cropContent(post.properties.content, maxTextLength)>
-      "content" : "${croppedTextContent?j_string}",
+<#escape x as jsonUtils.encodeJSONString(x)>
+   <#if (contentLength?? && contentLength > -1)>
+      "content" : "${cropContent(post.properties.content, contentLength)}",
    <#else>
-      <#-- no content returned -->
+      "content" : "${post.content}",
    </#if>
+<#--
+   <#if (contentLength?? && contentLength > -1)>
+      "content" : "${stringUtils.stripUnsafeHTML(cropContent(post.properties.content, contentLength))}",
+   <#else>
+      "content" : "${stringUtils.stripUnsafeHTML(post.content)}",
+   </#if>
+-->
+</#escape>
 </#macro>
+
 
 <#macro postJSON postData>
 {
@@ -39,6 +38,7 @@
 </#macro>
 
 <#macro postDataJSON postData>
+<#escape x as jsonUtils.encodeJSONString(x)>
    <#-- which node should be used for urls? which for the post data? -->
    <#if postData.isTopicPost>
       <#assign refNode=postData.topic />
@@ -50,22 +50,22 @@
 
    <#-- render topic post only data first -->
    <#if postData.isTopicPost>
-      "name" : "${postData.topic.name?html?js_string}",
+      "name" : "${postData.topic.name}",
       "totalReplyCount" : ${postData.totalReplyCount?c},
       <#if postData.lastReply??>
          "lastReplyOn" : "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
          <@renderPerson person=postData.lastReplyBy fieldName="lastReplyBy" />
       </#if>
-      "tags" : <@renderTags tags=postData.tags />,
+      "tags" : [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
    </#if>
 
    <#-- data using refNode which might be the topic or the post node -->
    "url" : "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}",
    "repliesUrl" : "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}/replies",
-   "nodeRef" : "${refNode.nodeRef?j_string}",
+   "nodeRef" : "${refNode.nodeRef}",
    
    <#-- normal data, the post node will used to fetch it -->
-   "title" : "${(post.properties.title!"")?html?j_string}",
+   "title" : "${(post.properties.title!"")}",
    "createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "isUpdated" : ${post.hasAspect("cm:contentupdated")?string},
@@ -82,6 +82,7 @@
    <@addContent post=post />
    "replyCount" : <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
    "permissions" : { "edit": true, "delete" : true, "reply" : true }
+</#escape>
 </#macro>
 
 

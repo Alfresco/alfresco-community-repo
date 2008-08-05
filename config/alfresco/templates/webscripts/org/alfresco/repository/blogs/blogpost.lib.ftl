@@ -1,36 +1,33 @@
 <#-- Renders a person object. -->
 <#macro renderPerson person fieldName>
+<#escape x as jsonUtils.encodeJSONString(x)>
    "${fieldName}" : {
       <#if person.assocs["cm:avatar"]??>
       "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
       "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]?html}",
-      "lastName" : "${person.properties["cm:lastName"]?html}"
+      "firstName" : "${person.properties["cm:firstName"]}",
+      "lastName" : "${person.properties["cm:lastName"]}"
    },
+</#escape>
 </#macro>
 
-
-<#macro renderTags tags>
-[<#list tags as x>"${x?html?j_string}"<#if x_has_next>, </#if></#list>]
-</#macro>
 
 <#macro addContent item>
-   <#assign maxTextLength=512>
-   <#if (! contentFormat??) || contentFormat == "" || contentFormat == "full">
-      "content" : "${item.node.content?j_string}",
-   <#elseif contentFormat == "htmlDigest">
-      <#if (item.node.content?length > maxTextLength)>
-         "content" : "${item.node.content?substring(0, maxTextLength)?j_string}",
-      <#else>
-         "content" : "${item.node.content?j_string}",
-      </#if>
-   <#elseif contentFormat == "textDigest">
-      <#assign croppedTextContent=cropContent(item.node.properties.content, maxTextLength)>
-      "content" : "${croppedTextContent?j_string}",
+<#escape x as jsonUtils.encodeJSONString(x)>
+   <#if (contentLength?? && contentLength > -1)>
+      "content" : "${cropContent(item.node.properties.content, contentLength)}",
    <#else>
-      <#-- no content returned -->
+      "content" : "${item.node.content}",
    </#if>
+<#--
+   <#if (contentLength?? && contentLength > -1)>
+      "content" : "${stringUtils.stripUnsafeHTML(cropContent(item.node.properties.content, contentLength))}",
+   <#else>
+      "content" : "${stringUtils.stripUnsafeHTML(item.node.content)}",
+   </#if>
+-->
+</#escape>
 </#macro>
 
 <#--
@@ -39,23 +36,24 @@
 
 -->
 <#macro blogpostJSON item>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "url" : "blog/post/node/${item.node.nodeRef?replace('://','/')}",
    "commentsUrl" : "/node/${item.node.nodeRef?replace('://','/')}/comments",
    "nodeRef" : "${item.node.nodeRef}",
-   "name" : "${(item.node.properties.name!'')?html?j_string}",
-    "title" : "${(item.node.properties.title!'')?html?j_string}",
+   "name" : "${item.node.properties.name!''}",
+    "title" : "${item.node.properties.title!''}",
    <@addContent item=item />
    <#if item.author??>
    <@renderPerson person=item.author fieldName="author" />
    <#else>
-   "author" : { "username" : "${item.node.properties.creator?j_string}" },
+   "author" : { "username" : "${item.node.properties.creator}" },
    </#if>
    "createdOn" : "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "permissions" : {"edit" : true, "publishExt" : true, "delete" : true},
    "commentCount" : ${item.commentCount?c},
-   "tags" : <@renderTags tags=item.tags />,
+   "tags" : [<#list item.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
    
    <#-- draft vs internal published -->
    "isDraft" : ${item.isDraft?string},
@@ -80,4 +78,5 @@
    <#-- external publishing - last to make sure that we correctly end the response without a comma -->
    "isPublished" : ${(item.node.properties["blg:published"]!'false')?string}
 }
+</#escape>
 </#macro>

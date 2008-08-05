@@ -90,6 +90,10 @@ function main()
    var levels = args["levels"] != undefined ? parseInt(args["levels"]) : 1;
 
    model.data = getReplies(node, levels);
+   
+   // fetch the contentLength param
+   var contentLength = args["contentLength"] != undefined ? parseInt(args["contentFormat"]) : -1;
+   model.contentLength = isNaN(contentLength) ? -1 : contentLength;
 }
 
 main();

@@ -508,62 +508,73 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      */
     public abstract class BaseDescriptor implements Descriptor
     {
+        private VersionNumber versionNumber = null;
+        private String strVersion = null;
+        
         public VersionNumber getVersionNumber()
         {
-            StringBuilder version = new StringBuilder();
-            version.append(getVersionMajor());
-            version.append(".");
-            version.append(getVersionMinor());
-            version.append(".");
-            version.append(getVersionRevision());
-            return new VersionNumber(version.toString());
+            if (this.versionNumber == null)
+            {
+                StringBuilder version = new StringBuilder();
+                version.append(getVersionMajor());
+                version.append(".");
+                version.append(getVersionMinor());
+                version.append(".");
+                version.append(getVersionRevision());
+                this.versionNumber = new VersionNumber(version.toString());
+            }
+            return this.versionNumber;
         }
         
         public String getVersion()
         {
-            StringBuilder version = new StringBuilder(getVersionMajor());
-            version.append(".");
-            version.append(getVersionMinor());
-            version.append(".");
-            version.append(getVersionRevision());
-            
-            String label = getVersionLabel();
-            String build = getVersionBuild();
-            
-            boolean hasLabel = (label != null && label.length() > 0);
-            boolean hasBuild = (build != null && build.length() > 0);
-            
-            // add opening bracket if either a label or build number is present
-            if (hasLabel || hasBuild)
+            if (this.strVersion == null)
             {
-               version.append(" (");
+                StringBuilder version = new StringBuilder(getVersionMajor());
+                version.append(".");
+                version.append(getVersionMinor());
+                version.append(".");
+                version.append(getVersionRevision());
+                
+                String label = getVersionLabel();
+                String build = getVersionBuild();
+                
+                boolean hasLabel = (label != null && label.length() > 0);
+                boolean hasBuild = (build != null && build.length() > 0);
+                
+                // add opening bracket if either a label or build number is present
+                if (hasLabel || hasBuild)
+                {
+                   version.append(" (");
+                }
+                
+                // add label if present
+                if (hasLabel)
+                {
+                   version.append(label);
+                }
+                
+                // add build number is present
+                if (hasBuild)
+                {
+                   // if there is also a label we need a separating space
+                   if (hasLabel)
+                   {
+                      version.append(" ");
+                   }
+                   
+                   version.append(build);
+                }
+                
+                // add closing bracket if either a label or build number is present
+                if (hasLabel || hasBuild)
+                {
+                   version.append(")");
+                }
+                
+                this.strVersion = version.toString();
             }
-            
-            // add label if present
-            if (hasLabel)
-            {
-               version.append(label);
-            }
-            
-            // add build number is present
-            if (hasBuild)
-            {
-               // if there is also a label we need a separating space
-               if (hasLabel)
-               {
-                  version.append(" ");
-               }
-               
-               version.append(build);
-            }
-            
-            // add closing bracket if either a label or build number is present
-            if (hasLabel || hasBuild)
-            {
-               version.append(")");
-            }
-            
-            return version.toString();
+            return this.strVersion;
         }
         
         /**

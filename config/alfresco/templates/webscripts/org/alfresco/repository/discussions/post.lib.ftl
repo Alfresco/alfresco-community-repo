@@ -15,18 +15,11 @@
 
 <#macro addContent post>
 <#escape x as jsonUtils.encodeJSONString(x)>
-   <#if (contentLength?? && contentLength > -1)>
-      "content" : "${cropContent(post.properties.content, contentLength)}",
+   <#if (contentLength?? && contentLength > -1 && (post.content?length > contentLength))>
+      "content" : "${post.content?substring(0, contentLength)}",
    <#else>
       "content" : "${post.content}",
    </#if>
-<#--
-   <#if (contentLength?? && contentLength > -1)>
-      "content" : "${stringUtils.stripUnsafeHTML(cropContent(post.properties.content, contentLength))}",
-   <#else>
-      "content" : "${stringUtils.stripUnsafeHTML(post.content)}",
-   </#if>
--->
 </#escape>
 </#macro>
 

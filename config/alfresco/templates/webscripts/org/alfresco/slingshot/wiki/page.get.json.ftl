@@ -1,5 +1,5 @@
 {
-<#if result?exists>
+<#if result.page??>
 <#assign page = result.page>
    "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
    "pagetext" : '${page.content?js_string}',
@@ -28,6 +28,6 @@
 	   ]
   </#if>  
 <#else>
-  "error" : "Could not find page"
+   "error" : "${result.error!""}"
 </#if>
 }

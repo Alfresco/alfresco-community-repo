@@ -31,26 +31,58 @@ function getTemplateParams()
 
 function update()
 {
-	var params = getTemplateParams();
-    if (params === null)
-    {
-		return jsonError("No parameters supplied");
-    }
+   var params = getTemplateArgs(["siteId", "pageTitle"]);
+   if (params === null)
+   {
+	   return jsonError("No parameters supplied");
+   }
 
-    // Get the site
-    var site = siteService.getSite(params.siteId);
-    if (site === null)
-    {
-		return jsonError("Could not find site: " + siteId);
-    }
+   // Get the site
+   var site = siteService.getSite(params.siteId);
+   if (site === null)
+   {
+	   return jsonError("Could not find site: " + siteId);
+   }
 
-    var wiki = getWikiContainer(site);
-    if (wiki === null)
-    {
-       return jsonError("Could not locate wiki container");
-    }
+   var wiki = getWikiContainer(site);
+   if (wiki === null)
+   {
+      return jsonError("Could not locate wiki container");
+   }
 	
 	var page = wiki.childByNamePath(params.pageTitle);
+	// Create the page if it doesn't exist
+	if (page === null)
+   {
+	   page = createWikiPage(params.pageTitle, wiki, {
+			content: json.get("pagecontent"),
+			versionable: true
+	   });
+	  
+		// Log page create to activity service
+		var d = {
+		   pageName: params.pageTitle.replace(/_/g, " "),
+		   pageContext: (args.context ? args.context : "")
+		}
+
+		activities.postActivity("org.alfresco.wiki.page-created", params.siteId, "wiki", jsonUtils.toJSONString(d));
+   }
+   else 
+   {
+      // Create a new revision of the page
+   	var workingCopy = page.checkout();
+   	workingCopy.content = json.get("pagecontent");
+   	workingCopy.checkin();
+
+      // Log page update to activity service
+   	var d = {
+   	   pageName: params.pageTitle.replace(/_/g, " "),
+   		pageContext: (args.context ? unescape(args.context) : "")
+   	}
+
+   	activities.postActivity("org.alfresco.wiki.page-edited", params.siteId, "wiki", jsonUtils.toJSONString(d));
+   }
+	
 	if (!json.isNull("tags"))
    {
       var tags = Array(json.get("tags"));
@@ -73,29 +105,6 @@ function update()
       }
       page.save();
    }
-   
-	try 
-	{
-		// Create a new revision of the page
-		var workingCopy = page.checkout();
-		workingCopy.content = json.get("pagecontent");
-		workingCopy.checkin();
-
-      // Log page update to activity service
-		var d = {
-		   pageName: params.pageTitle.replace(/_/g, " "),
-		   pageContext: (args.context ? unescape(args.context) : "")
-		}
-
-		activities.postActivity("org.alfresco.wiki.page-edited", params.siteId, "wiki", jsonUtils.toJSONString(d));
-	}
-	catch(e)
-	{
-		if (logger.isLoggingEnabled())
-		{
-			logger.log(e);
-		}
-	}
 	
 	// NOTE: for now we return the raw page content and do the transformation
 	// of any wiki markup on the client. This is because the edit view needs to display
@@ -107,4 +116,3 @@ function update()
 }
 
 model.result = update();
-//model.result = jsonUtils.toJSONString(result); 

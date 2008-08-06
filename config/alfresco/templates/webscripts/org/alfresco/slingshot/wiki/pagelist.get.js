@@ -46,6 +46,7 @@ function getWikiPages(siteId)
       pages.push(
       {
          "page": page,
+         "tags": page.tags,
          "modified": page.properties.modified,
          "createdBy": createdBy,
          "modifiedBy": modifiedBy

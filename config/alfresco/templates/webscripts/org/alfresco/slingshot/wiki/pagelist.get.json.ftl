@@ -10,6 +10,11 @@
          "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
          <#-- Strip out any HTML tags -->
          "text" : "${page.content?replace("</?[^>]+>", " ", "ir")}",
+         "tags" : [
+             <#list p.tags as tag>
+                "${tag}"<#if tag_has_next>,</#if>
+             </#list>  
+           ],
          "createdOn": "${page.properties.created?string("MMM dd yyyy, HH:mm:ss")}",
          <#if p.createdBy??>
             <#assign createdBy = (p.createdBy.properties.firstName + " " + p.createdBy.properties.lastName)?trim>

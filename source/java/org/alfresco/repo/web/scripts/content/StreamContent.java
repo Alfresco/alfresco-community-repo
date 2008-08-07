@@ -80,6 +80,7 @@ public class StreamContent extends AbstractWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(StreamContent.class);
     
+    /** Services */
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -88,6 +89,9 @@ public class StreamContent extends AbstractWebScript
     // Script Context
     private String basePath;
     private ScriptContent executeScript;
+    
+    /** Cached file modified date */
+    private Date resouceFileModifiedDate;
 
     /**
      * @param mimetypeService
@@ -402,9 +406,12 @@ public class StreamContent extends AbstractWebScript
         }
         
         // Create a date in the past
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(1975, 3, 26);
-        
+        if (this.resouceFileModifiedDate == null)
+        {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(1975, 3, 26);
+            this.resouceFileModifiedDate = calendar.getTime();
+        }
         
         File file = TempFileProvider.createTempFile("streamContent-", ext);        
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
@@ -415,7 +422,7 @@ public class StreamContent extends AbstractWebScript
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        streamContentImpl(req, res, reader, attach, calendar.getTime());
+        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate);
         
     }
     

@@ -114,7 +114,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
 
                     // Check if there are any file/directory change notify requests active
 
-                    if ( getContext().hasChangeHandler()) {
+                    if ( getContext().hasFileServerNotifications()) {
                         
                         // Build the relative path to the checked in file
 

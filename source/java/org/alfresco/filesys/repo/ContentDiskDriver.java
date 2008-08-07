@@ -67,6 +67,7 @@ import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -120,6 +121,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
 
+    private PolicyComponent policyComponent;
+    
 	//	Lock manager
 	
 	private static LockManager _lockManager = new FileStateLockManager();
@@ -152,6 +155,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public final AuthenticationService getAuthenticationService()
     {
     	return authService;
+    }
+
+    /**
+     * Return the authentication component
+     * 
+     * @return AuthenticationComponent
+     */
+    public final AuthenticationComponent getAuthComponent() {
+    	return authComponent;
     }
     
     /**
@@ -193,6 +205,33 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	return this.searchService;
     }
 
+    /**
+     * Return the file folder service
+     * 
+     * @return FileFolderService
+     */
+    public final FileFolderService getFileFolderService() {
+    	return this.fileFolderService;
+    }
+    
+    /**
+     * Return the permission service
+     * 
+     * @return PermissionService
+     */
+    public final PermissionService getPermissionService() {
+    	return this.permissionService;
+    }
+
+    /**
+     * Return the policy component
+     * 
+     * @return PolicyComponent
+     */
+    public final PolicyComponent getPolicyComponent() {
+    	return this.policyComponent;
+    }
+    
     /**
      * @param contentService the content service
      */
@@ -273,6 +312,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         this.mimetypeService = mimetypeService;
     }
 
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent PolicyComponent
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent) {
+    	this.policyComponent = policyComponent;
+    }
+    
     /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
@@ -497,6 +545,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         if ( context.hasIOHandler())
         	context.getIOHandler().initialize( this, context);
+        
+        // Install the node service monitor
+        
+        if ( cfg.getChild("disableNodeMonitor") == null) {
+        	
+        	// Create the node monitor
+        	
+        	context.createNodeMonitor( this);
+        }
         
         // Return the context for this shared filesystem
         

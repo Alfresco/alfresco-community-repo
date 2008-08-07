@@ -26,8 +26,11 @@ package org.alfresco.filesys.repo;
 
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
+import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
+import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.smb.server.notify.NotifyChangeHandler;
 import org.alfresco.service.cmr.repository.*;
 
 /**
@@ -47,6 +50,10 @@ public class ContentContext extends AlfrescoContext
     // Root node
     
     private NodeRef m_rootNodeRef;
+    
+    // Node monitor
+    
+    private NodeMonitor m_nodeMonitor;
     
     /**
      * Class constructor
@@ -114,6 +121,11 @@ public class ContentContext extends AlfrescoContext
      * Close the filesystem context
      */
 	public void CloseContext() {
+
+		// Stop the node monitor, if enabled
+		
+		if ( m_nodeMonitor != null)
+			m_nodeMonitor.shutdownRequest();
 		
 		//	Call the base class
 		
@@ -130,4 +142,32 @@ public class ContentContext extends AlfrescoContext
     {
     	return new ContentIOControlHandler();
     }
+    
+    /**
+     * Create the node monitor
+     * 
+     * @param filesysDriver ContentDiskDriver
+     */
+    protected void createNodeMonitor( ContentDiskDriver filesysDriver) {
+    	m_nodeMonitor = new NodeMonitor( filesysDriver, this);
+    }
+
+	/**
+	 * Start the filesystem
+	 * 
+	 * @param share DiskSharedDevice
+	 * @exception DeviceContextException
+	 */
+	public void startFilesystem(DiskSharedDevice share)
+		throws DeviceContextException {
+
+		// Call the base class
+		
+		super.startFilesystem(share);
+		
+		// Start the node monitor, if enabled
+		
+		if ( m_nodeMonitor != null)
+			m_nodeMonitor.startMonitor();
+	}
 }

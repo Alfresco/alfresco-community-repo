@@ -2245,7 +2245,7 @@ public class ScriptNode implements Serializable, Scopeable
         org.alfresco.service.cmr.tagging.TagScope tagScopeImpl = this.services.getTaggingService().findTagScope(this.nodeRef);
         if (tagScopeImpl != null)
         {
-            tagScope = new TagScope(tagScopeImpl);
+            tagScope = new TagScope(this.services.getTaggingService(), tagScopeImpl);
         }        
         return tagScope;
     }

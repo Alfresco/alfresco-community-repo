@@ -27,33 +27,28 @@ package org.alfresco.repo.tagging;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.tagging.TagDetails;
-import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
 
 /**
- * Update tag scopes action executer.
+ * Refresh tag scope action executer
  * 
- * NOTE:  This action is used to facilitate the async update of tag scopes.  It is not intended for genereral useage.
+ * NOTE:  This action is used to facilitate the async refresh of a tag scope.  It is not intended for genereral useage.
  * 
  * @author Roy Wetherall
  */
-public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
+public class RefreshTagScopeActionExecuter extends ActionExecuterAbstractBase
 {
     /** Node Service */
     private NodeService nodeService;
@@ -65,8 +60,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     private TaggingService taggingService;
     
     /** Action name and parameters */
-    public static final String NAME = "update-tagscope";
-    public static final String PARAM_TAG_UPDATES = "tag_updates";
+    public static final String NAME = "refresh-tagscope";
     
     /**
      * Set the node service
@@ -104,94 +98,66 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        try
+        if (this.nodeService.exists(actionedUponNodeRef) == true &&
+            this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
         {
-            
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
-        {
-            // Get the parameter values
-            Map<String, Boolean> tagUpdates = (Map<String, Boolean>)action.getParameterValue(PARAM_TAG_UPDATES);
-            
-            // Get the tag scopes for the actioned upon node
-            List<TagScope> tagScopes = this.taggingService.findAllTagScopes(actionedUponNodeRef);
-            
-            // Update each tag scope
-            for (TagScope tagScope : tagScopes)
-            {
-                NodeRef tagScopeNodeRef = tagScope.getNodeRef();                
-                List<TagDetails> tags = null;
+                // Create a new list of tag details
+                List<TagDetails> tags = new ArrayList<TagDetails>(10);
                 
-                // Get the current tags
-                ContentReader contentReader = this.contentService.getReader(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE);
-                if (contentReader == null)
-                {
-                    tags = new ArrayList<TagDetails>(1);
-                }
-                else
-                {
-                    tags = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
-                }
-                
-                for (String tagName : tagUpdates.keySet())
-                {
-                    boolean isAdd = tagUpdates.get(tagName).booleanValue();
-                                     
-                    TagDetails currentTag = null;
-                    for (TagDetails tag : tags)
-                    {
-                        if (tag.getName().equals(tagName) == true)
-                        {
-                            currentTag = tag;
-                            break;
-                        }
-                    }
-                    
-                    if (isAdd == true)
-                    {
-                        if (currentTag == null)
-                        {
-                            tags.add(new TagDetailsImpl(tagName, 1));
-                        }
-                        else
-                        {
-                            ((TagDetailsImpl)currentTag).incrementCount();
-                        }
-                     
-                    }
-                    else
-                    {
-                        if (currentTag != null)
-                        {
-                            int currentTagCount = currentTag.getCount();                        
-                            if (currentTagCount == 1)
-                            {
-                                tags.remove(currentTag);
-                            }
-                            else
-                            {
-                                ((TagDetailsImpl)currentTag).decrementCount();
-                            }
-                        }
-                    }
-                }
+                // Count the tags found in all the (primary) children of the node
+                countTags(actionedUponNodeRef, tags);
                 
                 // Order the list
                 Collections.sort(tags);
                 
                 // Write new content back to tag scope
                 String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
-                ContentWriter contentWriter = this.contentService.getWriter(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
+                ContentWriter contentWriter = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
                 contentWriter.setEncoding("UTF-8");
                 contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                contentWriter.putContent(tagContent);    
+                contentWriter.putContent(tagContent);                         
+        }
+    }
+
+    private void countTags(NodeRef nodeRef, List<TagDetails> tagDetailsList)
+    {
+        // Add the tags of passed node
+        List<String> tags = this.taggingService.getTags(nodeRef);
+        for (String tag : tags)
+        {
+            addDetails(tag, tagDetailsList);
+        }
+        
+        // Iterate over the children of the node
+        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef);
+        for (ChildAssociationRef assoc : assocs)
+        {
+            if (assoc.isPrimary() == true)
+            {
+                countTags(assoc.getChildRef(), tagDetailsList);
+            }
+        }
+    }
+    
+    private void addDetails(String tag, List<TagDetails> tagDetailsList)
+    {
+        TagDetails currentTag = null;
+        for (TagDetails tagDetails : tagDetailsList)
+        {
+            if (tagDetails.getName().equals(tag) == true)
+            {
+                currentTag = tagDetails;
+                break;
             }
         }
         
-        }
-        catch (RuntimeException exception)
+        if (currentTag == null)
         {
-            exception.printStackTrace();
-            throw exception;
+            tagDetailsList.add(new TagDetailsImpl(tag, 1));
+        }
+        else
+        {
+            ((TagDetailsImpl)currentTag).incrementCount();
         }
     }
 
@@ -200,8 +166,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
      */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_TAG_UPDATES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_TAG_UPDATES)));        
+    {       
     }
 
 }

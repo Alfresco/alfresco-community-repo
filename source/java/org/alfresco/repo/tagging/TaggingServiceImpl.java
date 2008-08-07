@@ -32,7 +32,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -40,6 +42,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -57,6 +62,7 @@ import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO9075;
 
 /**
@@ -64,7 +70,9 @@ import org.alfresco.util.ISO9075;
  * 
  * @author Roy Wetherall
  */
-public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.BeforeDeleteNodePolicy
+public class TaggingServiceImpl implements TaggingService, 
+                                           TransactionListener,
+                                           NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Node service */
     private NodeService nodeService;
@@ -86,6 +94,8 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
     
     /** Policy componenet */
     private PolicyComponent policyComponent;
+    
+    private TransactionService transactionService;
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
@@ -160,11 +170,17 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
         this.policyComponent = policyComponent;
     }
     
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
     /**
-     * Initiasation method
+     * Init method
      */
     public void init()
     {
+        // Register policy behaviours
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.ASPECT_TAGGABLE, 
@@ -186,10 +202,12 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
                if (parent != null)
                {
                    List<String> tags = getTags(nodeRef);
+                   Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
                    for (String tag : tags)
                    {
-                       updateTagScope(parent, tag, false);
+                       tagUpdates.put(tag, Boolean.FALSE);
                    }
+                   updateTagScope(parent, tagUpdates, false);
                }
            }
        }
@@ -271,29 +289,29 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public void addTag(NodeRef nodeRef, String tag)
-    {
+    public void addTag(final NodeRef nodeRef, final String tagName)
+    {        
         // Lower the case of the tag
-        tag = tag.toLowerCase();
+        String tag = tagName.toLowerCase();
         
         // Get the tag node reference
         NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
         if (newTagNodeRef == null)
         {
             // Create the new tag
-            newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
+            newTagNodeRef = categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
         }        
         
         List<NodeRef> tagNodeRefs = new ArrayList(5);
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
         {
             // Add the aspect
-            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
         }
         else
         {
             // Get the current tags
-            List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+            List<NodeRef> currentTagNodes = (List<NodeRef>)nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
             if (currentTagNodes != null)
             {
                 tagNodeRefs = currentTagNodes;
@@ -304,9 +322,9 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
         if (tagNodeRefs.contains(newTagNodeRef) == false)
         {
             tagNodeRefs.add(newTagNodeRef);
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
-            updateTagScope(nodeRef, tag, true);
-        }
+            nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
+            queueTagUpdate(nodeRef, tag, true);
+        }                       
     }
     
     /**
@@ -341,30 +359,6 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
         
         return tagNodeRef;
     }
-    
-    /**
-     * @see TaggingServiceImpl#updateTagScope(NodeRef, String, boolean, boolean)
-     */
-    private void updateTagScope(NodeRef nodeRef, String tag, boolean add)
-    {
-        updateTagScope(nodeRef, tag, add, true);
-    }
-    
-    /**
-     * Update the relevant tag scopes when a tag is added or removed from a node.
-     * 
-     * @param nodeRef       node reference
-     * @param tag           tag
-     * @param add           if true then the tag is added, false if the tag is removed
-     * @param async         indicates whether the action is execute asynchronously
-     */
-    private void updateTagScope(NodeRef nodeRef, String tag, boolean add, boolean async)
-    {
-        Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
-        action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_NAME, tag);
-        action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_ADD_TAG, add);
-        this.actionService.executeAction(action, nodeRef, false, async);
-    }
 
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#removeTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
@@ -389,7 +383,7 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
                 {
                     currentTagNodes.remove(newTagNodeRef);
                     this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)currentTagNodes);
-                    updateTagScope(nodeRef, tag, false);
+                    queueTagUpdate(nodeRef, tag, false);
                 }
             }
         }
@@ -467,7 +461,7 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
                 // Trigger scope update
                 if (oldTags.contains(tag) == false)
                 {
-                    updateTagScope(nodeRef, tag, true);
+                    queueTagUpdate(nodeRef, tag, true);
                 }
                 else
                 {
@@ -480,7 +474,7 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
         // Remove the old tags from the tag scope
         for (String oldTag : oldTags)
         {
-            updateTagScope(nodeRef, oldTag, false);
+            queueTagUpdate(nodeRef, oldTag, false);
         }
         
         // Update category property
@@ -500,6 +494,7 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
      */
     public boolean isTagScope(NodeRef nodeRef)
     {
+        // Determines whether the node has the tag scope aspect
         return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE);
     }
      
@@ -510,9 +505,25 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
     {
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == false)
         {
+            // Add the tag scope aspect
             this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE, null);
+            
+            // Refresh the tag scope
+            refreshTagScope(nodeRef, false);
+        }        
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#refreshTagScopt(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    public void refreshTagScope(NodeRef nodeRef, boolean async)
+    {
+        if (this.nodeService.exists(nodeRef) == true && 
+            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
+        {            
+            Action action = this.actionService.createAction(RefreshTagScopeActionExecuter.NAME);
+            this.actionService.executeAction(action, nodeRef, false, async);
         }
-        
     }
 
     /**
@@ -712,4 +723,116 @@ public class TaggingServiceImpl implements TaggingService, NodeServicePolicies.B
             
         return result.toString();
     }
+
+    // ===== Methods Dealing with TagScope Updates ==== //
+    
+    public static final String TAG_UPDATES = "tagUpdates"; 
+    
+    /**
+     * Update the relevant tag scopes when a tag is added or removed from a node.
+     * 
+     * @param nodeRef       node reference
+     * @param updates
+     * @param async         indicates whether the action is execute asynchronously
+     */
+    private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates, boolean async)
+    {
+        // The map must be serializable
+        if (updates instanceof HashMap)
+        {        
+            Action action = this.actionService.createAction(UpdateTagScopesActionExecuter.NAME);
+            action.setParameterValue(UpdateTagScopesActionExecuter.PARAM_TAG_UPDATES, (HashMap<String, Boolean>)updates);
+            this.actionService.executeAction(action, nodeRef, false, async);
+        }
+    }
+    
+    private void queueTagUpdate(NodeRef nodeRef, String tag, boolean add)
+    {
+        // Get the updates map        
+        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+        if (updates == null)
+        {
+            updates = new HashMap<NodeRef, Map<String,Boolean>>(10);
+            AlfrescoTransactionSupport.bindResource(TAG_UPDATES, updates);
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+        
+        // Add the details of the update to the map
+        Map<String, Boolean> nodeDetails = updates.get(nodeRef);
+        if (nodeDetails == null)
+        {
+            nodeDetails = new HashMap<String, Boolean>(10);
+            nodeDetails.put(tag, Boolean.valueOf(add));
+            updates.put(nodeRef, nodeDetails);
+        }
+        else
+        {
+            Boolean currentValue = nodeDetails.get(tag);
+            if (currentValue == null)
+            {
+                nodeDetails.put(tag, Boolean.valueOf(add));
+                updates.put(nodeRef, nodeDetails);
+            }
+            else if (currentValue.booleanValue() != add)
+            {
+                // If the boolean value is different then the tag had been added and removed or
+                // removed and then added in the same transaction.  In both cases the net change is none.
+                // So remove the entry in the update map
+                updates.remove(tag);
+            }
+            // Otherwise do nothing because we have already noted the update
+        }
+        
+    }
+    
+    // ===== Transaction Listener Callback Methods ===== //
+    
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
+     */
+    public void afterCommit()
+    {
+        
+    }
+
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
+     */
+    public void afterRollback()
+    {
+    }
+
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
+     */
+    public void beforeCommit(boolean readOnly)
+    {
+        Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+        if (updates != null)
+        {
+            for (NodeRef nodeRef : updates.keySet())
+            {
+                Map<String, Boolean> tagUpdates = updates.get(nodeRef);
+                if (tagUpdates != null && tagUpdates.size() != 0)
+                {
+                    updateTagScope(nodeRef, tagUpdates, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
+     */
+    public void beforeCompletion()
+    {
+    }
+
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListener#flush()
+     */
+    @SuppressWarnings("deprecation")
+    public void flush()
+    {
+    }   
 }

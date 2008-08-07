@@ -33,8 +33,13 @@ import java.util.Map;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +55,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
 
 /**
  * Tagging service implementation unit test
@@ -57,10 +63,12 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
  * @author Roy Wetherall
  */
 public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
+                                    implements AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute
 {
     /** Services */
     private TaggingService taggingService;
     private ScriptService scriptService;
+    private PolicyComponent policyComponent;
     
     private static StoreRef storeRef;
     private static NodeRef rootNode;
@@ -72,6 +80,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     private static final String TAG_1 = "tag one";
     private static final String TAG_2 = "tag two";
     private static final String TAG_3 = "Tag Three";
+    private static final String TAG_4 = "tag four";
+    private static final String TAG_5 = "tag five";
     
     private static final String UPPER_TAG = "House";
     private static final String LOWER_TAG = "house";
@@ -85,12 +95,13 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         
         // Get services
         this.taggingService = (TaggingService)this.applicationContext.getBean("TaggingService");
-        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
-        this.contentService = (ContentService) this.applicationContext.getBean("contentService");
+        this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
+        this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.authenticationService = (AuthenticationService) this.applicationContext.getBean("authenticationService");
-        this.actionService = (ActionService)this.applicationContext.getBean("actionService");
+        this.actionService = (ActionService)this.applicationContext.getBean("ActionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.scriptService = (ScriptService)this.applicationContext.getBean("scriptService");
+        this.scriptService = (ScriptService)this.applicationContext.getBean("scriptService");        
+        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");       
 
         if (init == false)
         {
@@ -119,6 +130,12 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                    ContentModel.ASPECT_TAGGABLE, 
                    ContentModel.TYPE_CATEGORY).getChildRef();
             
+            // Register the policy callback
+            this.policyComponent.bindClassBehaviour(
+                    AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME, 
+                    this, 
+                    new JavaBehaviour(this, "onAsyncActionExecute", Behaviour.NotificationFrequency.EVERY_EVENT));
+            
             init = true;
             
             tx.commit();            
@@ -133,48 +150,57 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
                 .getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
         
+        String guid = GUID.generate();
+        
         // Create a folder
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
-        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        folderProps.put(ContentModel.PROP_NAME, "testFolder" + guid);
         folder = this.nodeService.createNode(
                 TaggingServiceImplTest.rootNode, 
                 ContentModel.ASSOC_CHILDREN, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder" + guid),
                 ContentModel.TYPE_FOLDER,
                 folderProps).getChildRef();
         
         // Create a node
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
-        docProps.put(ContentModel.PROP_NAME, "testDocument.txt");
+        docProps.put(ContentModel.PROP_NAME, "testDocument" + guid + ".txt");
         document = this.nodeService.createNode(
                 folder, 
                 ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testDocument.txt"), 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testDocument" + guid + ".txt"), 
                 ContentModel.TYPE_CONTENT,
                 docProps).getChildRef();    
         
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-        props.put(ContentModel.PROP_NAME, "subFolder");
+        props.put(ContentModel.PROP_NAME, "subFolder" + guid);
         subFolder = this.nodeService.createNode(
                 folder, 
                 ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subFolder"), 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subFolder" + guid), 
                 ContentModel.TYPE_FOLDER,
                 props).getChildRef();
         
         props = new HashMap<QName, Serializable>(1);
-        props.put(ContentModel.PROP_NAME, "subDocument.txt");
+        props.put(ContentModel.PROP_NAME, "subDocument" + guid + ".txt");
         subDocument = this.nodeService.createNode(
                 subFolder, 
                 ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subDocument.txt"), 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subDocument" + guid + ".txt"), 
                 ContentModel.TYPE_CONTENT,
                 props).getChildRef();
+        
+        //tx.commit();
+        setComplete();
+        endTransaction();
     }
     
     public void testTagCRUD()
         throws Exception
     {
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
         // Get the tags
         List<String> tags = this.taggingService.getTags(TaggingServiceImplTest.storeRef);
         assertNotNull(tags);
@@ -184,10 +210,11 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         this.taggingService.createTag(TaggingServiceImplTest.storeRef, TAG_1);
         this.taggingService.createTag(TaggingServiceImplTest.storeRef, UPPER_TAG);
         
-        setComplete();
-        endTransaction();
+        //setComplete();
+        //endTransaction();
+        tx.commit();
         
-        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx = this.transactionService.getUserTransaction();
         tx.begin();
         
         // Get all the tags
@@ -229,6 +256,9 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     public void testAddRemoveTag()
         throws Exception
     {
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
         List<String> tags = this.taggingService.getTags(this.document);
         assertNotNull(tags);
         assertTrue(tags.isEmpty());
@@ -273,11 +303,16 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         tags = this.taggingService.getTags(this.document);
         assertNotNull(tags);
         assertTrue(tags.isEmpty());
+        
+        tx.commit();
     }
     
     public void testTagScopeFindAddRemove()
         throws Exception
     {
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
         // Get scopes for node without
         TagScope tagScope = this.taggingService.findTagScope(this.subDocument);
         assertNull(tagScope);
@@ -324,6 +359,8 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         tagScopes = this.taggingService.findAllTagScopes(this.folder);
         assertNotNull(tagScopes);
         assertEquals(0, tagScopes.size());
+        
+        tx.commit();
     }
     
     public void testTagScope()
@@ -334,27 +371,24 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         // Add some tag scopes
         this.taggingService.addTagScope(this.folder);
         this.taggingService.addTagScope(this.subFolder);
-        
-        // Get the tag scope 
-        TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
-        TagScope ts2 = this.taggingService.findTagScope(this.folder);
-   
-        setComplete();
-        endTransaction();   
-        
-        addTag(this.subDocument, TAG_1, 1, ts1.getNodeRef());
-        addTag(this.subDocument, TAG_2, 1, ts1.getNodeRef());   
-        addTag(this.subDocument, TAG_3, 1, ts1.getNodeRef());   
-        addTag(this.subFolder, TAG_1, 2, ts1.getNodeRef());
-        addTag(this.subFolder, TAG_2, 2, ts1.getNodeRef()); 
-        addTag(this.folder, TAG_2, 3, ts2.getNodeRef());
-        
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
+
+        // Add some more tags after the scopes have been added
+        this.taggingService.addTag(this.subDocument, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_3);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.folder, TAG_2);
+        waitForActionExecution();
         
         // re get the tag scopes
-        ts1 = this.taggingService.findTagScope(this.subDocument);
-        ts2 = this.taggingService.findTagScope(this.folder);
+        TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
+        TagScope ts2 = this.taggingService.findTagScope(this.folder);
         
         // check the order and count of the tagscopes
         assertEquals(2, ts1.getTags().get(0).getCount());
@@ -367,295 +401,108 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(1, ts2.getTags().get(2).getCount());
         assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getName());
         
-        tx.commit();
-        
-        removeTag(this.folder, TAG_2, 2, ts2.getNodeRef());
-        removeTag(this.subFolder, TAG_2, 1, ts1.getNodeRef());
-        removeTag(this.subFolder, TAG_1, 1, ts1.getNodeRef());
-        removeTag(this.subDocument, TAG_1, 0, ts1.getNodeRef());
-
-        tx = this.transactionService.getUserTransaction();
-        tx.begin();
+        this.taggingService.removeTag(this.folder, TAG_2);
+        waitForActionExecution();
+        this.taggingService.removeTag(this.subFolder, TAG_2);
+        waitForActionExecution();
+        this.taggingService.removeTag(this.subFolder, TAG_1);
+        waitForActionExecution();
+        this.taggingService.removeTag(this.subDocument, TAG_1);
+        waitForActionExecution();
         
         // re get the tag scopes
         ts1 = this.taggingService.findTagScope(this.subDocument);
         ts2 = this.taggingService.findTagScope(this.folder);
         
+        // Recheck the tag scopes
         assertEquals(2, ts1.getTags().size());
-        assertEquals(2, ts2.getTags().size());
-        
-        //this.nodeService.deleteNode(this.subDocument);
-        
-        //ts1 = this.taggingService.findTagScope(this.subFolder);
-        //ts2 = this.taggingService.findTagScope(this.folder);
-        
-        //assertEquals(1, ts1.getTags().size());
-        //assertEquals(1, ts2.getTags().size());
-        
-        tx.commit();        
+        assertEquals(2, ts2.getTags().size());     
     }
     
-    public void xtestTagScopeSetUpdate()
+    public void testTagScopeRefresh()
+        throws Exception
+    {
+        // Add some tags to the nodes
+        // tag scope on folder should be ....
+        //  tag2 = 3
+        //  tag1 = 2
+        //  tag3 = 1
+        this.taggingService.addTag(this.subDocument, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_2);   
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_3);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.folder, TAG_2);
+        waitForActionExecution();
+        
+        // Add the tag scope 
+        this.taggingService.addTagScope(this.folder);
+        
+        // Get the tag scope and check that all the values have been set correctly
+        TagScope tagScope = this.taggingService.findTagScope(this.folder);
+        assertNotNull(tagScope);
+        assertEquals(3, tagScope.getTags().size());
+        assertEquals(3, tagScope.getTag(TAG_2).getCount());
+        assertEquals(2, tagScope.getTag(TAG_1).getCount());
+        assertEquals(1, tagScope.getTag(TAG_3.toLowerCase()).getCount());
+    }
+    
+    public void testTagScopeSetUpdate()
         throws Exception
     {
         // Set up tag scope 
-        this.taggingService.addTagScope(this.folder);
+        this.taggingService.addTagScope(this.folder);;
+        
+        // Add some tags
+        this.taggingService.addTag(this.folder, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.document, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.document, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_3);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_1);
+        waitForActionExecution();
+
+        // Check that tag scope
         TagScope ts1 = this.taggingService.findTagScope(this.folder);
-        
-        setComplete();
-        endTransaction(); 
-        
-        addTag(this.folder, TAG_1, 1, ts1.getNodeRef());
-        addTag(this.document, TAG_1, 2, ts1.getNodeRef());
-        addTag(this.document, TAG_2, 1, ts1.getNodeRef());
-        addTag(this.subDocument, TAG_1, 3, ts1.getNodeRef());
-        addTag(this.subDocument, TAG_2, 2, ts1.getNodeRef());
-        addTag(this.subDocument, TAG_3, 1, ts1.getNodeRef());
-        addTag(this.subFolder, TAG_1, 4, ts1.getNodeRef());
-        
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
-        
-        ts1 = this.taggingService.findTagScope(this.folder);
         assertEquals(4, ts1.getTag(TAG_1).getCount());
         assertEquals(2, ts1.getTag(TAG_2).getCount());
-        //assertEquals(1, ts1.getTag(TAG_3).getCount());
+        assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
         
-        tx.commit();
-        
+        // Re-set the tag scopes
         List<String> tags = new ArrayList<String>(3);
         tags.add(TAG_2);
         tags.add(TAG_3);
+        tags.add(TAG_4);
+        this.taggingService.setTags(this.subDocument, tags);
+        waitForActionExecution();
         
-        setTags(this.subDocument, tags, new String[]{TAG_1,TAG_2,TAG_3}, new int[]{3,2,1}, ts1.getNodeRef());
-    }
-    
-    private void addTag(NodeRef nodeRef, String tag, int tagCount, NodeRef tagScopeNodeRef)
-        throws Exception
-    {
-        tag = tag.toLowerCase();
-        
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
-        
-        // Add some tags
-        this.taggingService.addTag(nodeRef, tag);        
-        
-        tx.commit();
-        
-        // Wait a bit cos we want the background threads to kick in and update the tag scope
-        int count = 0;
-        boolean bCreated = false;
-        while (true) 
-        {        
-            UserTransaction  tx2 = this.transactionService.getUserTransaction();
-            tx2.begin();
-            
-            try
-            {
-                // Get the tag scope
-                List<TagScope> tagScopes = this.taggingService.findAllTagScopes(nodeRef);
-                TagScope checkTagScope = null;
-                for (TagScope tagScope : tagScopes)
-                {
-                    if (tagScope.getNodeRef().equals(tagScopeNodeRef) == true)
-                    {
-                        checkTagScope = tagScope;
-                        break;
-                    }
-                }    
-                assertNotNull(checkTagScope);
-                
-                // Check whether the tag scope has been updated
-                List<TagDetails> tagDetailsList = checkTagScope.getTags();
-                for (TagDetails tagDetails : tagDetailsList)
-                {
-                    if (tagDetails.getName().equals(tag) == true &&
-                        tagDetails.getCount() == tagCount)
-                    {
-                        bCreated = true;
-                        break;
-                    }
-                }
-                
-                if (bCreated == true)
-                {
-                    break;
-                }
-                
-                // Wait to give the threads a chance to execute
-                Thread.sleep(1000);
-                
-                if (count == 10)
-                {
-                    fail("The background task to update the tag scope failed");
-                }
-                count ++;
-            }
-            finally
-            {            
-                tx2.commit();
-            }
-        } 
-    }
-    
-    private void removeTag(NodeRef nodeRef, String tag, int tagCount, NodeRef tagScopeNodeRef)
-        throws Exception
-    {
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
-        
-        // Add some tags
-        this.taggingService.removeTag(nodeRef, tag);        
-        
-        tx.commit();
-        
-        // Wait a bit cos we want the background threads to kick in and update the tag scope
-        int count = 0;
-        boolean bRemoved = false;
-        boolean bMissing = (tagCount == 0);
-        while (true) 
-        {        
-            UserTransaction  tx2 = this.transactionService.getUserTransaction();
-            tx2.begin();
-            
-            try
-            {
-                // Get the tag scope
-                List<TagScope> tagScopes = this.taggingService.findAllTagScopes(nodeRef);
-                TagScope checkTagScope = null;
-                for (TagScope tagScope : tagScopes)
-                {
-                    if (tagScope.getNodeRef().equals(tagScopeNodeRef) == true)
-                    {
-                        checkTagScope = tagScope;
-                        break;
-                    }
-                }    
-                assertNotNull(checkTagScope);
-                
-                // Check that tag scopes are in the correct order
-                boolean bFound = false;
-                List<TagDetails> tagDetailsList = checkTagScope.getTags();
-                for (TagDetails tagDetails : tagDetailsList)
-                {
-                    if (tagDetails.getName().equals(tag) == true )
-                    {
-                        if (tagDetails.getCount() == tagCount)
-                        {
-                            bRemoved = true;                            
-                        }
-                        
-                        bFound = true;
-                        break;
-                    }
-                }
-                
-                if (bRemoved == true)
-                {
-                    break;
-                }
-                else if (bMissing == true && bFound == false)
-                {
-                    break;
-                }
-                
-                // Wait to give the threads a chance to execute
-                Thread.sleep(1000);
-                
-                if (count == 10)
-                {
-                    fail("The background task to update the tag scope failed");
-                }
-                count ++;
-            }
-            finally
-            {            
-                tx2.commit();
-            }
-        } 
-    }
-    
-    private void setTags(NodeRef nodeRef, List<String> tags, String[] expectedTags, int[] expectedTagCount, NodeRef tagScopeNodeRef)
-        throws Exception
-    {
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
-        
-        // Add some tags
-        this.taggingService.setTags(nodeRef, tags);        
-        
-        tx.commit();
-        
-        // Wait a bit cos we want the background threads to kick in and update the tag scope
-        int count = 0;
-        boolean bCreated = true;
-        while (true) 
-        {        
-            UserTransaction  tx2 = this.transactionService.getUserTransaction();
-            tx2.begin();
-            
-            try
-            {
-                // Get the tag scope
-                List<TagScope> tagScopes = this.taggingService.findAllTagScopes(nodeRef);
-                TagScope checkTagScope = null;
-                for (TagScope tagScope : tagScopes)
-                {
-                    if (tagScope.getNodeRef().equals(tagScopeNodeRef) == true)
-                    {
-                        checkTagScope = tagScope;
-                        break;
-                    }
-                }    
-                assertNotNull(checkTagScope);
-                
-                // Check whether the tag scope has been updated
-                List<TagDetails> tagDetailsList = checkTagScope.getTags();
-                if (tagDetailsList.size() == expectedTags.length)
-                {
-                    int index = 0;
-                    for (TagDetails tagDetails : tagDetailsList)
-                    {
-                        if (tagDetails.getName().equals(expectedTags[index]) == false ||
-                            tagDetails.getCount() != expectedTagCount[index])
-                        {
-                            bCreated = false;
-                            break;
-                        }
-                        index ++;
-                    }
-                }
-                else
-                {
-                    bCreated = false;
-                }
-                    
-                if (bCreated == true)
-                {
-                    break;
-                }
-                
-                // Wait to give the threads a chance to execute
-                Thread.sleep(1000);
-                
-                if (count == 10)
-                {
-                    fail("The background task to update the tag scope after set tag failed");
-                }
-                count ++;
-            }
-            finally
-            {            
-                tx2.commit();
-            }
-        } 
+        // Check that the tagscope has been updated correctly
+        ts1 = this.taggingService.findTagScope(this.folder);
+        assertEquals(3, ts1.getTag(TAG_1).getCount());
+        assertEquals(2, ts1.getTag(TAG_2).getCount());
+        assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
+        assertEquals(1, ts1.getTag(TAG_4).getCount());               
     }
     
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception
     {
+        UserTransaction tx = this.transactionService.getUserTransaction();
+        tx.begin();
+        
         Map model = new HashMap<String, Object>(0);
         model.put("folder", this.folder);
         model.put("subFolder", this.subFolder);
@@ -665,10 +512,12 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
         this.scriptService.executeScript(location, model);
+        
+        tx.commit();
     }
     
     public void testJSTagScope() throws Exception
-    {
+    {        
         // Add a load of tags to test the global tag methods with
         this.taggingService.createTag(storeRef, "alpha");
         this.taggingService.createTag(storeRef, "alpha double");
@@ -680,21 +529,22 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         this.taggingService.addTagScope(this.folder);
         this.taggingService.addTagScope(this.subFolder);
         
-        // Get the tag scope 
-        TagScope ts1 = this.taggingService.findTagScope(this.subDocument);
-        TagScope ts2 = this.taggingService.findTagScope(this.folder);
-   
-        setComplete();
-        endTransaction();   
-        
-        addTag(this.subDocument, TAG_1, 1, ts1.getNodeRef());
-        addTag(this.subDocument, TAG_2, 1, ts1.getNodeRef());   
-        addTag(this.subDocument, TAG_3, 1, ts1.getNodeRef());   
-        addTag(this.subFolder, TAG_1, 2, ts1.getNodeRef());
-        addTag(this.subFolder, TAG_2, 2, ts1.getNodeRef());
-        addTag(this.document, TAG_1, 3, ts2.getNodeRef());
-        addTag(this.document, TAG_2, 3, ts2.getNodeRef());
-        addTag(this.folder, TAG_1, 4, ts2.getNodeRef());
+        this.taggingService.addTag(this.subDocument, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subDocument, TAG_2);
+        waitForActionExecution(); 
+        this.taggingService.addTag(this.subDocument, TAG_3);
+        waitForActionExecution();   
+        this.taggingService.addTag(this.subFolder, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.subFolder, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.document, TAG_1);
+        waitForActionExecution();
+        this.taggingService.addTag(this.document, TAG_2);
+        waitForActionExecution();
+        this.taggingService.addTag(this.folder, TAG_1);
+        waitForActionExecution();
         
         Map model = new HashMap<String, Object>(0);
         model.put("folder", this.folder);
@@ -704,12 +554,28 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         model.put("tagScopeTest", true);
         model.put("store", storeRef.toString());
         
-        UserTransaction tx = this.transactionService.getUserTransaction();
-        tx.begin();
-        
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_taggingService.js");
         this.scriptService.executeScript(location, model);
-        
-        tx.commit();
+    }
+    
+    private static Object mutex = new Object();
+    
+    private void waitForActionExecution()
+        throws Exception
+    {
+        synchronized (mutex)
+        {
+            // Wait for a maximum of 10 seconds
+            mutex.wait(10000);         
+        }
+    }
+
+    public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef)
+    {
+        synchronized (mutex)
+        {
+            // Notify the waiting thread
+            mutex.notifyAll();
+        }
     }
 }

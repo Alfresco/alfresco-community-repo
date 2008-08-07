@@ -41,9 +41,19 @@
     	<property name="contentService" ref="ContentService"/>
     	<property name="namespaceService" ref="NamespaceService"/>
     	<property name="policyComponent" ref="policyComponent"/>
+    	<property name="transactionService" ref="transactionService"/>
     </bean>
     
     <bean id="update-tagscope" class="org.alfresco.repo.tagging.UpdateTagScopesActionExecuter" parent="action-executer">
+        <property name="publicAction">
+           <value>false</value>
+        </property>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="taggingService" ref="TaggingService"/>
+    </bean> 
+    
+    <bean id="refresh-tagscope" class="org.alfresco.repo.tagging.RefreshTagScopeActionExecuter" parent="action-executer">
         <property name="publicAction">
            <value>false</value>
         </property>

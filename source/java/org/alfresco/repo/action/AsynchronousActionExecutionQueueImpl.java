@@ -24,17 +24,26 @@
  */
 package org.alfresco.repo.action;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.error.StackTraceUtil;
+import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,15 +57,30 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
 {
     private static Log logger = LogFactory.getLog(AsynchronousActionExecutionQueueImpl.class);
     
+    /** Services */
     private ThreadPoolExecutor threadPoolExecutor;
     private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
+    private PolicyComponent policyComponent;
+    private NodeService nodeService;
+    
+    // Policy delegates
+    private ClassPolicyDelegate<OnAsyncActionExecute> onAsyncActionExecuteDelegate;
 
     /**
      * Default constructor
      */
     public AsynchronousActionExecutionQueueImpl()
     {
+    }
+    
+    /**
+     * Init method.  Registers the policies.
+     */
+    public void init()
+    {
+        // Register the policies
+        onAsyncActionExecuteDelegate = policyComponent.registerClassPolicy(OnAsyncActionExecute.class);
     }
 
     /**
@@ -90,6 +114,59 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         this.authenticationComponent = authenticationComponent;
     }
 
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent   policy component
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    private void invokeOnAsyncActionExecutePolicy(Action action, NodeRef actionedUponNodeRef)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(actionedUponNodeRef);
+        // execute policy for node type and aspects
+        AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = onAsyncActionExecuteDelegate.get(actionedUponNodeRef, qnames);
+        policy.onAsyncActionExecute(action, actionedUponNodeRef);
+    }
+    
+    /**
+     * Get all aspect and node type qualified names
+     * 
+     * @param nodeRef
+     *            the node we are interested in
+     * @return Returns a set of qualified names containing the node type and all
+     *         the node aspects, or null if the node no longer exists
+     */
+    private Set<QName> getTypeAndAspectQNames(NodeRef nodeRef)
+    {
+        Set<QName> qnames = null;
+        try
+        {
+            Set<QName> aspectQNames = this.nodeService.getAspects(nodeRef);
+            
+            QName typeQName = this.nodeService.getType(nodeRef);
+            
+            qnames = new HashSet<QName>(aspectQNames.size() + 1);
+            qnames.addAll(aspectQNames);
+            qnames.add(typeQName);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            qnames = Collections.emptySet();
+        }
+        // done
+        return qnames;
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -133,6 +210,37 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             StackTraceUtil.buildStackTrace(msg, trace, sb, -1);
             logger.debug(sb);
         }
+    }
+    
+    /**
+     * Tansaction listener used to invoke callback policies
+     */
+    public class CallbackTransactionListener extends TransactionListenerAdapter
+    {
+        private Action action;
+        private NodeRef actionedUponNodeRef;
+        
+        /**
+         * Constructor
+         * 
+         * @param action                    action
+         * @param actionedUponNodeRef       actioned upon node reference
+         */
+        public CallbackTransactionListener(Action action, NodeRef actionedUponNodeRef)
+        {
+            this.action = action;
+            this.actionedUponNodeRef = actionedUponNodeRef;
+        }
+
+        /**
+         * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit()
+         */
+        @Override
+        public void afterCommit()
+        {
+            // Invoke the execute complete policy
+            invokeOnAsyncActionExecutePolicy(action, actionedUponNodeRef);           
+        }        
     }
 
     /**
@@ -250,16 +358,22 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                     {
                         public Object execute()
                         {   
+                            // Bind the callback listener
+                            CallbackTransactionListener tl = new CallbackTransactionListener(action, actionedUponNodeRef);
+                            AlfrescoTransactionSupport.bindListener(tl);
+                            
                             if (ActionExecutionWrapper.this.executedRules != null)
                             {
                                 AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
                             }
                             
-                            ActionExecutionWrapper.this.actionService.executeActionImpl(
-                                    ActionExecutionWrapper.this.action,
-                                    ActionExecutionWrapper.this.actionedUponNodeRef,
-                                    ActionExecutionWrapper.this.checkConditions, true,
-                                    ActionExecutionWrapper.this.actionChain);
+                            // Execute the action
+                            actionService.executeActionImpl(
+                                    action,
+                                    actionedUponNodeRef,
+                                    checkConditions, 
+                                    true,
+                                    actionChain);                            
 
                             return null;
                         }
@@ -275,6 +389,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             {
                 logger.error("Failed to execute asynchronous action: " + action, exception);
             }
-        }
+        }       
     }
 }

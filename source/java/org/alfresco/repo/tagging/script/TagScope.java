@@ -27,6 +27,7 @@ package org.alfresco.repo.tagging.script;
 import java.util.List;
 
 import org.alfresco.service.cmr.tagging.TagDetails;
+import org.alfresco.service.cmr.tagging.TaggingService;
 
 /**
  * Script object representing a tag scope.
@@ -35,6 +36,9 @@ import org.alfresco.service.cmr.tagging.TagDetails;
  */
 public class TagScope
 {
+    /** Tagging service */
+    private TaggingService taggingService;
+    
     /** Repository tag scope object */
     private org.alfresco.service.cmr.tagging.TagScope tagScopeImpl;
     
@@ -43,8 +47,9 @@ public class TagScope
      * 
      * @param tagScopeImpl  repository tag scope object
      */
-    public TagScope(org.alfresco.service.cmr.tagging.TagScope tagScopeImpl)
+    public TagScope(TaggingService taggingService, org.alfresco.service.cmr.tagging.TagScope tagScopeImpl)
     {
+        this.taggingService = taggingService;
         this.tagScopeImpl = tagScopeImpl;
     }
     
@@ -86,5 +91,17 @@ public class TagScope
             result = tagDetails.getCount();
         }
         return result;
+    }
+    
+    /**
+     * Refresh the tag scope
+     */
+    public void refresh()
+    {
+        // Refresh the tag scope
+        this.taggingService.refreshTagScope(tagScopeImpl.getNodeRef(), false);
+        
+        // Update the tag scope implementation
+        this.tagScopeImpl = this.taggingService.findTagScope(tagScopeImpl.getNodeRef());
     }
 }

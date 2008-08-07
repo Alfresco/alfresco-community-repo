@@ -151,6 +151,15 @@ public interface TaggingService
     void addTagScope(NodeRef nodeRef);
     
     /**
+     * Refreshes the tag count of the passed tag scope by recounting all the tags of the children
+     * of the scope.
+     *
+     * @param nodeRef       tag scope node reference
+     * @param async         indicates whether the tag scope refresh should happen asynchronously or not
+     */
+    void refreshTagScope(NodeRef nodeRef, boolean async);
+    
+    /**
      * Removes a tag scope from a specified node.
      * 
      * Note that any tag count information will be lost when the scope if removed.

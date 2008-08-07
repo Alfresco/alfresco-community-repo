@@ -23,7 +23,7 @@
 		</property> 
     </bean>
     
-    <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+    <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
       <property name="threadPoolExecutor">
          <ref bean="threadPoolExecutor"/>
       </property>
@@ -33,6 +33,12 @@
     	<property name="authenticationComponent">
     		<ref bean="AuthenticationComponent"/>
     	</property>
+    	<property name="nodeService">
+    		<ref bean="NodeService"/>
+    	</property>	   
+		<property name="policyComponent">
+		    <ref bean="policyComponent"/>
+		</property>
     </bean>
 
    <!-- Actions Aspect -->

@@ -4188,6 +4188,48 @@
       </managed-property>
    </managed-bean>
 
+   <!-- compare to currrent -->
+   <managed-bean>
+      <description>
+         The bean that AVM Compure to current snapshot
+      </description>
+      <managed-bean-name>CompareToCurrentSnapshot</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CompareToCurrentSnapshotDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   <!-- end compare to currrent -->
+   
+   <!-- compare to previous -->
+   <managed-bean>
+      <description>
+         The bean that AVM Compure to prev snapshot
+      </description>
+      <managed-bean-name>CompareToPreviousSnapshot</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.wcm.CompareToPreviousSnapshotDialog</managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+   </managed-bean>
+   <!-- end compare to previous -->
+   
+   <!-- CompareToAny -->
+	<managed-bean>
+		<managed-bean-name>CompareToAnySnapshot</managed-bean-name>
+		<managed-bean-class>org.alfresco.web.bean.wcm.CompareToAnySnapshotDialog</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+        	<property-name>avmBrowseBean</property-name>
+        	<value>#{AVMBrowseBean}</value>
+      	</managed-property>
+	</managed-bean>
+<!-- End CompareToAny -->
+
    <managed-bean>
       <description>
          The bean that backs up the Change Expiration Date Dialog

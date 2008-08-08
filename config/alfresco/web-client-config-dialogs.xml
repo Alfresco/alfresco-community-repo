@@ -308,6 +308,43 @@
                  title-id="link_validaton_dialog_title" 
                  description-id="link_validaton_dialog_desc" />
                  
+         <!-- AVM Compare -->              
+         <dialog name="compareToCurrentSnapshot" page="/jsp/wcm/compare-to-current-snapshot.jsp"
+                 managed-bean="CompareToCurrentSnapshot" icon="/images/icons/comparetocurrent_large.png"
+                 show-ok-button="false" 
+                 title-id="snapshot_compare_to_current" description-id="snapshot_compare_to_current_description" />
+                 
+                 <!-- AVM Compare -->              
+         <dialog name="compareToPreviousSnapshot" page="/jsp/wcm/compare-to-current-snapshot.jsp"
+                 managed-bean="CompareToPreviousSnapshot" icon="/images/icons/comparetoprevious_large.png"
+                 show-ok-button="false" 
+                 title-id="snapshot_compare_to_previous" description-id="snapshot_compare_to_previous_description" />
+
+          <!-- CompareToAnySnapshot -->
+         <dialog name="compareToAnySnapshot" page="/jsp/wcm/compare-to-any-snapshot.jsp"
+          		  managed-bean="CompareToAnySnapshot" icon="/images/icons/comparetoany_large.png"
+          		  show-ok-button="false"
+          		  title-id="snapshot_compare_to_any" description-id="snapshot_compare_to_any_description" />
+                 
+          <!-- manage permissions -->              
+         <dialog name="setPermissions" page="/jsp/wcm/set-permissions.jsp" 
+                 managed-bean="SetPermissionsDialog" icon="/images/icons/users_large.gif"
+                 title-id="set_permissions_title" description-id="set_permissions_subtitle" />
+                 
+         <dialog name="removePermissions" page="/jsp/wcm/remove-permissions.jsp" 
+                 managed-bean="RemovePermissionsDialog" icon="/images/icons/delete_large.gif"
+                 title-id="remove_permissions_title" />
+                 
+         <dialog name="editPermissions" page="/jsp/wcm/edit-permissions.jsp" 
+                 managed-bean="EditPermissionsDialog" icon="/images/icons/edituser_large.gif"
+                 title-id="edit_permissions_title" description-id="edit_permissions_subtitle" />                
+
+         <dialog name="managePermissions" page="/jsp/wcm/manage-permissions.jsp" 
+                 managed-bean="ManagePermissionsDialog" icon="/images/icons/edituser.gif"
+				 actions-config-id="set_permission_menu"
+				 show-ok-button="false" 
+                 title-id="view_permissions_title" description-id="manage_permissions_subtitle" />
+                 
          <dialog name="editUserDetails" page="/jsp/users/edit-user-details.jsp" managed-bean="EditUserDetailsDialog"
                  icon="/images/icons/edituser_large.gif" title-id="edit_user_details" 
                  description-id="edit_user_details_description" />

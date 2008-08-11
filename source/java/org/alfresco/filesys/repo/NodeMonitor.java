@@ -422,7 +422,7 @@ public class NodeMonitor extends TransactionListenerAdapter
     		
     		StringBuilder pathStr = new StringBuilder();
     		pathStr.append( nodePath.toDisplayPath(m_nodeService, m_permissionService));
-    		if ( pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\')
+    		if ( pathStr.length() == 0 || (pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\'))
     			pathStr.append("\\");
     		pathStr.append( fName);
 

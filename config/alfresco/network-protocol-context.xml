@@ -79,6 +79,7 @@
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>
+      <property name="policyComponent"><ref bean="policyComponent"/></property>
    </bean>
    
    <bean id="cifsHelper" class="org.alfresco.filesys.repo.CifsHelper">

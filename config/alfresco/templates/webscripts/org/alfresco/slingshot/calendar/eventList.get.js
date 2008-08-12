@@ -22,7 +22,19 @@ function getEvents(siteId)
    var query = "+PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\" ";
    query += "+TYPE:\"{com.infoaxon.alfresco.calendar}calendarEvent\"";
 
-   return search.luceneSearch(query, "ia:fromDate", true);
+   var results = search.luceneSearch(query, "ia:fromDate", true);
+   var e, events = [];
+   
+   for (var i=0; i < results.length; i++)
+   {
+      e = results[i];
+      events.push({
+         "event": e,
+         "tags": e.tags
+      });
+   }
+   
+   return events;
 };
 
 

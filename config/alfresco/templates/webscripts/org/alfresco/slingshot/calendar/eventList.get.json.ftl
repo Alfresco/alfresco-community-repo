@@ -2,11 +2,12 @@
 {
 <#if events?exists && events?size &gt; 0>
 <#assign prev = "">
-<#list events as event>
+<#list events as item>
+<#assign event = item.event>
 <#assign date = event.properties["ia:fromDate"]?string("M/d/yyyy")>
 <#if date != prev>
 <#assign counter = 0>
-<#if event_index &gt; 0>],</#if>
+<#if item_index &gt; 0>],</#if>
 "${date}" : [
 </#if>
 <#if counter &gt; 0>,</#if>
@@ -16,10 +17,12 @@
   "start" : "${event.properties["ia:fromDate"]?string("HH:mm")}",
   "to" : "${event.properties["ia:toDate"]?string("M/d/yyyy")}",
   "end" : "${event.properties["ia:toDate"]?string("HH:mm")}",
-  "uri" : "calendar/event/${siteId}/${event.name}"
+  "uri" : "calendar/event/${siteId}/${event.name}",
+   <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
+  "tags": <#noescape>[${tags}]</#noescape>
 }
 <#assign counter = counter + 1>
-<#if !event_has_next>]</#if>
+<#if !item_has_next>]</#if>
 <#assign prev = date>
 </#list>
 </#if>

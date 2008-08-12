@@ -118,9 +118,18 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * @param filesysDriver ContentDiskDriver
 	 * @param filesysCtx ContentContext
 	 */
-	public NodeMonitor( ContentDiskDriver filesysDriver, ContentContext filesysCtx) {
+	protected NodeMonitor( ContentDiskDriver filesysDriver, ContentContext filesysCtx, NodeService nodeService, PolicyComponent policyComponent,
+			FileFolderService fileFolderService, PermissionService permissionService, TransactionService transService) {
 		m_filesysDriver = filesysDriver;
 		m_filesysCtx    = filesysCtx;
+		
+		// Set various services
+
+		m_nodeService       = nodeService;
+		m_policyComponent   = policyComponent;
+		m_fileFolderService = fileFolderService;
+		m_permissionService = permissionService;
+		m_transService      = transService;
 		
 		// Initialize the node monitor
 		
@@ -132,14 +141,6 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 */
 	public final void init() {
 
-		// Get various services via the filesystem driver
-
-		m_nodeService       = m_filesysDriver.getNodeService();
-		m_policyComponent   = m_filesysDriver.getPolicyComponent();
-		m_fileFolderService = m_filesysDriver.getFileFolderService();
-		m_permissionService = m_filesysDriver.getPermissionService();
-		m_transService      = m_filesysDriver.getTransactionService();
-		
 		// Disable change notifications from the file server
 		
 		m_filesysCtx.setFileServerNotifications( false);

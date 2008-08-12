@@ -121,7 +121,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private AuthenticationComponent authComponent;
     private AuthenticationService authService;
 
-    private PolicyComponent policyComponent;
+    // Node monitor factory
+    
+    private NodeMonitorFactory m_nodeMonitorFactory;
     
 	//	Lock manager
 	
@@ -224,15 +226,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
 
     /**
-     * Return the policy component
-     * 
-     * @return PolicyComponent
-     */
-    public final PolicyComponent getPolicyComponent() {
-    	return this.policyComponent;
-    }
-    
-    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -313,12 +306,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
 
     /**
-     * Set the policy component
+     * Set the node monitor factory
      * 
-     * @param policyComponent PolicyComponent
+     * @param nodeMonitorFactory NodeMonitorFactory
      */
-    public void setPolicyComponent(PolicyComponent policyComponent) {
-    	this.policyComponent = policyComponent;
+    public void setNodeMonitorFactory(NodeMonitorFactory nodeMonitorFactory) {
+    	m_nodeMonitorFactory = nodeMonitorFactory;
     }
     
     /**
@@ -548,11 +541,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // Install the node service monitor
         
-        if ( cfg.getChild("disableNodeMonitor") == null) {
+        if ( cfg.getChild("disableNodeMonitor") == null && m_nodeMonitorFactory != null) {
         	
         	// Create the node monitor
-        	
-        	context.createNodeMonitor( this);
+
+        	NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor( this, context);
+        	context.setNodeMonitor( nodeMonitor);
         }
         
         // Return the context for this shared filesystem

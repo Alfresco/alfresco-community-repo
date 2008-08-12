@@ -144,12 +144,12 @@ public class ContentContext extends AlfrescoContext
     }
     
     /**
-     * Create the node monitor
+     * Set the node monitor
      * 
      * @param filesysDriver ContentDiskDriver
      */
-    protected void createNodeMonitor( ContentDiskDriver filesysDriver) {
-    	m_nodeMonitor = new NodeMonitor( filesysDriver, this);
+    protected void setNodeMonitor( NodeMonitor nodeMonitor) {
+    	m_nodeMonitor = nodeMonitor;
     }
 
 	/**

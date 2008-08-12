@@ -79,6 +79,14 @@
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>
+      <property name="nodeMonitorFactory"><ref bean="nodeMonitorFactory"/></property>
+   </bean>
+   
+   <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">
+      <property name="transactionService"><ref bean="transactionService" /></property>
+      <property name="nodeService"><ref bean="nodeService" /></property>
+      <property name="fileFolderService"><ref bean="fileFolderService" /></property>
+      <property name="permissionService"><ref bean="permissionService"/></property>
       <property name="policyComponent"><ref bean="policyComponent"/></property>
    </bean>
    

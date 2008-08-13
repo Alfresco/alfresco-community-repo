@@ -58,14 +58,8 @@ function update()
 			content: json.get("pagecontent"),
 			versionable: true
 	   });
-	  
-		// Log page create to activity service
-		var d = {
-		   pageName: params.pageTitle.replace(/_/g, " "),
-		   pageContext: (args.context ? args.context : "")
-		}
-
-		activities.postActivity("org.alfresco.wiki.page-created", params.siteId, "wiki", jsonUtils.toJSONString(d));
+	
+      var activityType = "org.alfresco.wiki.page-created";
    }
    else 
    {
@@ -73,15 +67,16 @@ function update()
    	var workingCopy = page.checkout();
    	workingCopy.content = json.get("pagecontent");
    	workingCopy.checkin();
-
-      // Log page update to activity service
-   	var d = {
-   	   pageName: params.pageTitle.replace(/_/g, " "),
-   		pageContext: (args.context ? unescape(args.context) : "")
-   	}
-
-   	activities.postActivity("org.alfresco.wiki.page-edited", params.siteId, "wiki", jsonUtils.toJSONString(d));
+   	
+      var activityType = "org.alfresco.wiki.page-edited";
    }
+	
+	var d = {
+      pageName: params.pageTitle.replace(/_/g, " "),
+   	pageContext: (args.context ? unescape(args.context) : "")
+   }
+	// Log activity   
+	activities.postActivity(activityType, params.siteId, "wiki", jsonUtils.toJSONString(d));
 	
 	if (!json.isNull("tags"))
    {

@@ -51,6 +51,9 @@ function createWikiPage(name, folder, options)
 	// Initialise tags to empty array
 	page.tags = [];
 	
+	// Set cm:title
+	page.properties["cm:title"] = name.replace(/_/g, " ");
+	
 	// TODO: sort out appropriate permission(s)
 	page.save();	
 	return page;

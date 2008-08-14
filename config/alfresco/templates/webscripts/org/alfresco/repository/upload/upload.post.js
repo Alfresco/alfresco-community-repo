@@ -117,33 +117,52 @@ function main()
    
    if (updateNodeRef !== null && uploadDirectory === null)
    {
-      // Update mode, since updateNodeRef was used
+      // Update existing file mode
       var workingCopy = search.findNode(updateNodeRef);
       if (workingCopy.isLocked)
       {
-         // It's not a working copy, should have been the working copy, throw error
+         // We cannot update a locked document
          status.code = 404;
-         status.message = "Cannot upload document since updateNodeRef '" + updateNodeRef + "' points to a locked document, supply a nodeRef to its working copy instead.";
+         status.message = "Cannot update locked document '" + updateNodeRef + "', supply a reference to its working copy instead.";
          status.redirect = true;
          return;
       }
       
       if (!workingCopy.hasAspect("cm:workingcopy"))
       {
-         // It's not a working copy, do a check out to get the working copy
+	      // Ensure the original file is versionable - may have been uploaded via different route
+	      if (!workingCopy.hasAspect("cm:versionable"))
+	      {
+		      // Ensure the file is versionable - but do not autoversion or create initial version yet
+		      var props = new Array(2);
+		      props["cm:autoVersion"] = false;
+		      props["cm:initialVersion"] = false;
+		      workingCopy.addAspect("cm:versionable", props);
+	      }
+	      
+	      if (workingCopy.versionHistory == null)
+	      {
+		      // Create the first version manually so we have 1.0 before checkout
+		      workingCopy.createVersion("", true);
+	      }
+      	
+         // It's not a working copy, do a check out to get the actual working copy
          workingCopy = workingCopy.checkout();
       }
-      // Update the working copy
+      
+      // Update the working copy content
       workingCopy.properties.content.write(content);
       // Reset working copy mimetype and encoding
       workingCopy.properties.content.guessMimetype(filename);
       workingCopy.properties.content.encoding = "UTF-8";
-      // check it in again, but with a version history note and as minor or major version increment
+      // check it in again, with supplied version history note
       workingCopy = workingCopy.checkin(description, majorVersion);
+      
       model.document = workingCopy;
    }
    else if (uploadDirectory !== null && updateNodeRef === null)
    {
+   	// Upload file mode
       var destNode = container;
       if (uploadDirectory != "")
       {
@@ -173,7 +192,7 @@ function main()
             // Upload component was configured to find a new unique name for clashing filenames
             var suffix = 1;
             var tmpFilename;
-            while(existingFile !== null)
+            while (existingFile !== null)
             {                               
                tmpFilename = filename.substring(0, filename.lastIndexOf(".")) + "-" + suffix + filename.substring(filename.lastIndexOf("."));
                existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
@@ -187,14 +206,19 @@ function main()
       var newFile = destNode.createFile(filename);
       newFile.properties.contentType = contentType;
       newFile.properties.content.write(content);
+      
       // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
       newFile.properties.content.guessMimetype(filename);
       newFile.properties.content.encoding = "UTF-8";
       newFile.properties.title = title;
       newFile.properties.description = description;
-      // Make file versionable (todo: check that this is ok depending on version store development)
-      newFile.addAspect("cm:versionable");
       newFile.save();
+      
+      // Ensure the file is versionable - but do not autoversion or create initial version
+      var props = new Array(2);
+      props["cm:autoVersion"] = false;
+      props["cm:initialVersion"] = false;
+      newFile.addAspect("cm:versionable", props);
       
       // Create thumbnail?
       if (thumbnailNames != null)
@@ -209,6 +233,7 @@ function main()
             }
          }
       }
+      
       model.document = newFile;
    }
    else

@@ -8,7 +8,7 @@
    <#list doclist.items as item>
       <#assign d = item.asset>
       <#assign version = "1.0">
-      <#if d.hasAspect("cm:versionable")><#assign version = d.versionHistory?sort_by("versionLabel")?reverse[0].versionLabel></#if>
+      <#if d.hasAspect("cm:versionable") && d.versionHistory?size != 0><#assign version = d.versionHistory?sort_by("versionLabel")?reverse[0].versionLabel></#if>
       <#if item.owner?exists>
          <#assign lockedBy = (item.owner.properties.firstName + " " + item.owner.properties.lastName)?trim>
          <#assign lockedByUser = item.owner.properties.userName>

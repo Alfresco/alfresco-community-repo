@@ -29,6 +29,22 @@ function runAction(p_params)
          return;
       }
 
+      // Ensure the file is versionable - but do not autoversion or create initial version
+      if (!assetNode.hasAspect("cm:versionable"))
+      {
+	      // Do not autoversion (we perform explicit checkout)
+	      var props = new Array(2);
+	      props["cm:autoVersion"] = false;
+	      props["cm:initialVersion"] = false;
+	      assetNode.addAspect("cm:versionable", props);
+      }
+ 
+      if (assetNode.versionHistory == null)
+      {
+	      // Create the first version manually so we have 1.0 before checkout
+	      assetNode.createVersion("", true);
+      }
+
       // Checkout the asset
       var workingCopy = assetNode.checkout();
       if (workingCopy === null)

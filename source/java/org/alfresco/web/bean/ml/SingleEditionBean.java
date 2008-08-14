@@ -13,9 +13,9 @@ import org.alfresco.web.bean.repository.MapNode;
  */
 public class SingleEditionBean implements Serializable
 {
-   private static final long serialVersionUID = 9145202732094403340L;
+    private static final long serialVersionUID = 9145202732094403340L;
 
-   /** The edition in a list */
+    /** The edition in a list */
     private List<MapNode> edition = null;
 
     /** The translation list of the edition */
@@ -61,7 +61,7 @@ public class SingleEditionBean implements Serializable
      */
     public void addTranslations(MapNode translation)
     {
-        if(this.translations == null)
+        if (this.translations == null)
         {
             this.translations = new ArrayList<MapNode>();
         }
@@ -69,5 +69,3 @@ public class SingleEditionBean implements Serializable
         this.translations.add(translation);
     }
 }
-
-

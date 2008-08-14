@@ -91,7 +91,6 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    private static final String MSG_DETAILS_OF = "details_of";
    private static final String MSG_LOCATION = "location";
    private final static String MSG_CLOSE = "close";
-   
 
    private static final String ML_VERSION_PANEL_ID = "ml-versions-panel";
 
@@ -103,9 +102,14 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    transient protected EditionService editionService;
 
    private Node translationDocument;
-   
-  
-   
+
+   /** List of client light weight edition histories */
+   private List<SingleEditionBean> editionHistory = null;
+
+   /** For the client side iteration on the edition hitories list, it represents the index of the list */
+   private int currentEditionCursorPosition;
+
+
    // ------------------------------------------------------------------------------
    // Construction
 
@@ -114,8 +118,6 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
     */
    public DocumentDetailsDialog()
    {
-      super();
-
       // initial state of some panels that don't use the default
       panels.put("version-history-panel", false);
       panels.put("ml-info-panel", false);
@@ -145,13 +147,24 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       return (String)getDocument().getProperties().get("url");
    }
 
-   
-   
+   /**
+    * @return the translation document for this node
+    */   
    public Node getTranslationDocument() 
    {
-	  return translationDocument;
+      return translationDocument;
    }
 
+   /**
+    * Before opening the ml container details, remeber the translation
+    * from which the action comes.
+    *
+    * @param node
+    */
+   public void setTranslationDocument(Node node)
+   {
+      this.translationDocument = node;
+   }
 
    /**
     * Returns the URL to the content for the current document
@@ -238,7 +251,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
       if(id.startsWith(ML_VERSION_PANEL_ID))
       {
-          this.currentEditionCursorPosition = Integer.parseInt(id.substring("ml-versions-panel".length())) - 1;
+         this.currentEditionCursorPosition = Integer.parseInt(id.substring("ml-versions-panel".length())) - 1;
       }
    }
 
@@ -269,12 +282,12 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
                if(getDocument().hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
                {
-                   clientVersion.put("url", null);
+                  clientVersion.put("url", null);
                }
                else
                {
-                   clientVersion.put("url", DownloadContentServlet.generateBrowserURL(version.getFrozenStateNodeRef(),
-                           clientVersion.getName()));
+                  clientVersion.put("url", DownloadContentServlet.generateBrowserURL(version.getFrozenStateNodeRef(),
+                        clientVersion.getName()));
                }
 
 
@@ -287,16 +300,6 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       return versions;
    }
 
-   /** List of client light weight edition histories */
-   private List<SingleEditionBean> editionHistory = null;
-
-   /** For the client side iteration on the edition hitories list, it represents the index of the list */
-   private int currentEditionCursorPosition;
-
-
-
-
-
    /**
     * For the client side iteration on the edition hitories list,
     * return the next edition history.
@@ -305,22 +308,21 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
     */
    public SingleEditionBean getNextSingleEditionBean()
    {
-       currentEditionCursorPosition++;
+      currentEditionCursorPosition++;
 
-       return getCurrentSingleEditionBean();
+      return getCurrentSingleEditionBean();
    }
 
-  /**
-   * For the client side iteration on the edition hitories list,
-   * return the current edition history.
-   *
-   * @return a light weight representation of an edition history
-   */
+   /**
+    * For the client side iteration on the edition hitories list,
+    * return the current edition history.
+    *
+    * @return a light weight representation of an edition history
+    */
    public SingleEditionBean getCurrentSingleEditionBean()
    {
-       return editionHistory.get(currentEditionCursorPosition);
+      return editionHistory.get(currentEditionCursorPosition);
    }
-
 
    /**
     * Constructs a list of objects representing the editions of the
@@ -331,103 +333,103 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    @SuppressWarnings("unchecked")
    private List<SingleEditionBean> initEditionHistory()
    {
-       // get the mlContainer
-       NodeRef mlContainer = getDocumentMlContainer().getNodeRef();
+      // get the mlContainer
+      NodeRef mlContainer = getDocumentMlContainer().getNodeRef();
 
-       // get all editions and sort them ascending according their version label
-       List<Version> orderedEditionList = new ArrayList<Version>(getEditionService().getEditions(mlContainer).getAllVersions());
-       Collections.sort(orderedEditionList, new VersionLabelComparator());
+      // get all editions and sort them ascending according their version label
+      List<Version> orderedEditionList = new ArrayList<Version>(getEditionService().getEditions(mlContainer).getAllVersions());
+      Collections.sort(orderedEditionList, new VersionLabelComparator());
 
-       // the list of Single Edition Bean to return
-       editionHistory = new ArrayList<SingleEditionBean>(orderedEditionList.size());
+      // the list of Single Edition Bean to return
+      editionHistory = new ArrayList<SingleEditionBean>(orderedEditionList.size());
 
-       boolean firstEdition = true;
+      boolean firstEdition = true;
 
-       // for each edition, init a SingleEditionBean
-       for (Version edition : orderedEditionList)
-       {
-           SingleEditionBean editionBean = new SingleEditionBean();
+      // for each edition, init a SingleEditionBean
+      for (Version edition : orderedEditionList)
+      {
+         SingleEditionBean editionBean = new SingleEditionBean();
 
-           MapNode clientEdition = new MapNode(edition.getFrozenStateNodeRef());
+         MapNode clientEdition = new MapNode(edition.getFrozenStateNodeRef());
 
-           String editionLabel = edition.getVersionLabel();
-           if (firstEdition)
-           {
-               editionLabel += " (" + Application.getMessage(FacesContext.getCurrentInstance(), MSG_CURRENT) + ")";
-           }
+         String editionLabel = edition.getVersionLabel();
+         if (firstEdition)
+         {
+            editionLabel += " (" + Application.getMessage(FacesContext.getCurrentInstance(), MSG_CURRENT) + ")";
+         }
 
-           clientEdition.put("editionLabel", editionLabel);
-           clientEdition.put("editionNotes", edition.getDescription());
-           clientEdition.put("editionAuthor", edition.getCreator());
-           clientEdition.put("editionDate", edition.getCreatedDate());
+         clientEdition.put("editionLabel", editionLabel);
+         clientEdition.put("editionNotes", edition.getDescription());
+         clientEdition.put("editionAuthor", edition.getCreator());
+         clientEdition.put("editionDate", edition.getCreatedDate());
 
-           // Set the edition of the edition bean
-           editionBean.setEdition(clientEdition);
+         // Set the edition of the edition bean
+         editionBean.setEdition(clientEdition);
 
-           // get translations
-           List<VersionHistory> translationHistories = null;
+         // get translations
+         List<VersionHistory> translationHistories = null;
 
-           if (firstEdition)
-           {
-               // Get the translations because the current edition doesn't content link with its
-               // translation in the version store.
-               Map<Locale, NodeRef> translations = getMultilingualContentService().getTranslations(mlContainer);
-               translationHistories = new ArrayList<VersionHistory>(translations.size());
-               for (NodeRef translation : translations.values())
-               {
-                   translationHistories.add(getVersionService().getVersionHistory(translation));
-               }
-           }
-           else
-           {
+         if (firstEdition)
+         {
+            // Get the translations because the current edition doesn't content link with its
+            // translation in the version store.
+            Map<Locale, NodeRef> translations = getMultilingualContentService().getTranslations(mlContainer);
+            translationHistories = new ArrayList<VersionHistory>(translations.size());
+            for (NodeRef translation : translations.values())
+            {
+               translationHistories.add(getVersionService().getVersionHistory(translation));
+            }
+         }
+         else
+         {
             translationHistories = getEditionService().getVersionedTranslations(edition);
-           }
+         }
 
-           // add each translation in the SingleEditionBean
-           for (VersionHistory versionHistory : translationHistories)
-           {
-               // get the list of versions and sort them ascending according their version label
-               List<Version> orderedVersions = new ArrayList<Version>(versionHistory.getAllVersions());
-               Collections.sort(orderedVersions, new VersionLabelComparator());
+         // add each translation in the SingleEditionBean
+         for (VersionHistory versionHistory : translationHistories)
+         {
+            // get the list of versions and sort them ascending according their version label
+            List<Version> orderedVersions = new ArrayList<Version>(versionHistory.getAllVersions());
+            Collections.sort(orderedVersions, new VersionLabelComparator());
 
-               // the last version is the first version of the list
-               Version lastVersion = orderedVersions.get(0);
+            // the last version is the first version of the list
+            Version lastVersion = orderedVersions.get(0);
 
-               // get the properties of the lastVersion
-               Map<QName, Serializable> lastVersionProperties = getEditionService().getVersionedMetadatas(lastVersion);
-               Locale language  = (Locale) lastVersionProperties.get(ContentModel.PROP_LOCALE);
+            // get the properties of the lastVersion
+            Map<QName, Serializable> lastVersionProperties = getEditionService().getVersionedMetadatas(lastVersion);
+            Locale language  = (Locale) lastVersionProperties.get(ContentModel.PROP_LOCALE);
 
-               // create a map node representation of the last version
-               MapNode clientLastVersion = new MapNode(lastVersion.getFrozenStateNodeRef());
+            // create a map node representation of the last version
+            MapNode clientLastVersion = new MapNode(lastVersion.getFrozenStateNodeRef());
 
-               clientLastVersion.put("versionName", lastVersionProperties.get(ContentModel.PROP_NAME));
-               // use the node service for the description to ensure that the returned value is a text and not a MLText
-               clientLastVersion.put("versionDescription", getNodeService().getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
-               clientLastVersion.put("versionAuthor", lastVersionProperties.get(ContentModel.PROP_AUTHOR));
-               clientLastVersion.put("versionCreatedDate",  lastVersionProperties.get(ContentModel.PROP_CREATED));
-               clientLastVersion.put("versionModifiedDate", lastVersionProperties.get(ContentModel.PROP_MODIFIED));
-               clientLastVersion.put("versionLanguage", this.getContentFilterLanguagesService().convertToNewISOCode(language.getLanguage()).toUpperCase());
+            clientLastVersion.put("versionName", lastVersionProperties.get(ContentModel.PROP_NAME));
+            // use the node service for the description to ensure that the returned value is a text and not a MLText
+            clientLastVersion.put("versionDescription", getNodeService().getProperty(lastVersion.getFrozenStateNodeRef(), ContentModel.PROP_DESCRIPTION));
+            clientLastVersion.put("versionAuthor", lastVersionProperties.get(ContentModel.PROP_AUTHOR));
+            clientLastVersion.put("versionCreatedDate",  lastVersionProperties.get(ContentModel.PROP_CREATED));
+            clientLastVersion.put("versionModifiedDate", lastVersionProperties.get(ContentModel.PROP_MODIFIED));
+            clientLastVersion.put("versionLanguage", this.getContentFilterLanguagesService().convertToNewISOCode(language.getLanguage()).toUpperCase());
 
-               if(getNodeService().hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-               {
-                   clientLastVersion.put("versionUrl", null);
-               }
-               else
-               {
-                   clientLastVersion.put("versionUrl", DownloadContentServlet.generateBrowserURL(lastVersion.getFrozenStateNodeRef(), clientLastVersion.getName()));
-               }
+            if(getNodeService().hasAspect(lastVersion.getFrozenStateNodeRef(), ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+               clientLastVersion.put("versionUrl", null);
+            }
+            else
+            {
+               clientLastVersion.put("versionUrl", DownloadContentServlet.generateBrowserURL(lastVersion.getFrozenStateNodeRef(), clientLastVersion.getName()));
+            }
 
-               // add a translation of the editionBean
-               editionBean.addTranslations(clientLastVersion);
-           }
-           editionHistory.add(editionBean);
-           firstEdition = false;
-       }
+            // add a translation of the editionBean
+            editionBean.addTranslations(clientLastVersion);
+         }
+         editionHistory.add(editionBean);
+         firstEdition = false;
+      }
 
-       return editionHistory;
+      return editionHistory;
    }
 
-   
+
    /**
     * Determines whether the current document has any categories applied
     *
@@ -453,7 +455,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          // we know for now that the general classifiable aspect only will be
          // applied so we can retrive the categories property direclty
          Collection<NodeRef> categories = (Collection<NodeRef>)this.getNodeService().getProperty(
-                 getDocument().getNodeRef(), ContentModel.PROP_CATEGORIES);
+               getDocument().getNodeRef(), ContentModel.PROP_CATEGORIES);
 
          if (categories == null || categories.size() == 0)
          {
@@ -534,7 +536,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
 
          // reset the state of the current document
          getDocument().reset();
-         
+
          // get hold of the main property sheet on the page and remove the children to force a refresh
          UIComponent comp = context.getViewRoot().findComponent("dialog:dialog-body:document-props");
          if (comp != null)
@@ -565,12 +567,12 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
             {
                getLockService().unlock(getNode().getNodeRef());
 
-         String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
-         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-         String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
-         fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
+               String msg = Application.getMessage(fc, MSG_SUCCESS_UNLOCK);
+               FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+               String formId = Utils.getParentForm(fc, event.getComponent()).getClientId(fc);
+               fc.addMessage(formId + ':' + getPropertiesPanelId(), facesMsg);
 
-         getNode().reset();
+               getNode().reset();
                return null;
             }
          };
@@ -595,26 +597,26 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          {
             public Object execute() throws Throwable
             {
-         // add the inlineeditable aspect to the node
-         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         String contentType = null;
-         ContentData contentData = (ContentData)getDocument().getProperties().get(ContentModel.PROP_CONTENT);
-         if (contentData != null)
-         {
-            contentType = contentData.getMimetype();
-         }
-         if (contentType != null)
-         {
-            // set the property to true by default if the filetype is a known content type
-            if (MimetypeMap.MIMETYPE_HTML.equals(contentType) ||
-                MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(contentType) ||
-                MimetypeMap.MIMETYPE_XML.equals(contentType) ||
-                MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
-                MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
-            {
-               props.put(ApplicationModel.PROP_EDITINLINE, true);
-            }
-         }
+               // add the inlineeditable aspect to the node
+               Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+               String contentType = null;
+               ContentData contentData = (ContentData)getDocument().getProperties().get(ContentModel.PROP_CONTENT);
+               if (contentData != null)
+               {
+                  contentType = contentData.getMimetype();
+               }
+               if (contentType != null)
+               {
+                  // set the property to true by default if the filetype is a known content type
+                  if (MimetypeMap.MIMETYPE_HTML.equals(contentType) ||
+                        MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(contentType) ||
+                        MimetypeMap.MIMETYPE_XML.equals(contentType) ||
+                        MimetypeMap.MIMETYPE_TEXT_CSS.equals(contentType) ||
+                        MimetypeMap.MIMETYPE_JAVASCRIPT.equals(contentType))
+                  {
+                     props.put(ApplicationModel.PROP_EDITINLINE, true);
+                  }
+               }
                getNodeService().addAspect(getDocument().getNodeRef(), ApplicationModel.ASPECT_INLINEEDITABLE, props);
 
                return null;
@@ -818,37 +820,24 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    }
 
    /**
-    * Before opening the ml container details, remeber the translation
-    * from which the action comes.
-    *
-    * @param node
-    */
-   public void setTranslationDocument(Node node)
-   {
-       this.translationDocument = node;
-   }
-
- 
-
-   /**
     * Returns the ml container of the document this bean is currently representing
     *
     * @return The document multilingual container NodeRef
     */
    public Node getDocumentMlContainer()
    {
-       Node currentNode = getNode();
+      Node currentNode = getNode();
 
-       if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(currentNode.getType()))
-       {
-           return currentNode;
-       }
-       else
-       {
-           NodeRef nodeRef = getNode().getNodeRef();
+      if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(currentNode.getType()))
+      {
+         return currentNode;
+      }
+      else
+      {
+         NodeRef nodeRef = getNode().getNodeRef();
 
-           return new Node(getMultilingualContentService().getTranslationContainer(nodeRef));
-       }
+         return new Node(getMultilingualContentService().getTranslationContainer(nodeRef));
+      }
    }
    /**
     * Sets the lock service instance the bean should use
@@ -859,7 +848,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.lockService = lockService;
    }
-   
+
    protected LockService getLockService()
    {
       if (lockService == null)
@@ -878,7 +867,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.versionService = versionService;
    }
-   
+
    protected VersionService getVersionService()
    {
       if (versionService == null)
@@ -897,7 +886,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.cociService = cociService;
    }
-   
+
    protected CheckOutCheckInService getCheckOutCheckInService()
    {
       if (cociService == null)
@@ -914,7 +903,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.multilingualContentService = multilingualContentService;
    }
-   
+
    protected MultilingualContentService getMultilingualContentService()
    {
       if (multilingualContentService == null)
@@ -931,7 +920,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.contentFilterLanguagesService = contentFilterLanguagesService;
    }
-   
+
    protected ContentFilterLanguagesService getContentFilterLanguagesService()
    {
       if (contentFilterLanguagesService == null)
@@ -948,7 +937,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       this.editionService = editionService;
    }
-   
+
    protected EditionService getEditionService()
    {
       if (editionService == null)
@@ -966,7 +955,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    public String getContainerSubTitle()
    {
       return Application.getMessage(FacesContext.getCurrentInstance(), MSG_LOCATION) + ": " + 
-             getDocument().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
+      getDocument().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
    }
 
    public String getContainerTitle()
@@ -983,7 +972,6 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    {
       return null;
    }
-
 
    public String getOutcome()
    {

@@ -77,7 +77,7 @@ public class JscriptWorkflowInstance implements Serializable
 	 * @param serviceRegistry Service Registry instance
 	 * @param scope the root scripting scope for this object 
 	 */
-	JscriptWorkflowInstance(final String id, final String description, final Date startDate,
+	public JscriptWorkflowInstance(final String id, final String description, final Date startDate,
 				final ServiceRegistry serviceRegistry, final Scriptable scope)
 	{
 		this.id = id;
@@ -97,7 +97,7 @@ public class JscriptWorkflowInstance implements Serializable
 	 * @param serviceRegistry Service Registry instance 
 	 * @param scope the root scripting scope for this object 
 	 */
-	JscriptWorkflowInstance(final WorkflowInstance
+	public JscriptWorkflowInstance(final WorkflowInstance
 			cmrWorkflowInstance, final ServiceRegistry serviceRegistry, final Scriptable scope)
 	{
 		this.id = cmrWorkflowInstance.id;

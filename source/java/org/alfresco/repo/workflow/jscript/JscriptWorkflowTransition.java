@@ -49,7 +49,7 @@ public class JscriptWorkflowTransition implements Serializable
      * @param title Workflow transition title
      * @param description Workflow transition description
      */
-    JscriptWorkflowTransition(String id, String title, String description)
+    public JscriptWorkflowTransition(String id, String title, String description)
     {
     	this.id = id;
     	this.title = title;
@@ -63,7 +63,7 @@ public class JscriptWorkflowTransition implements Serializable
      * @param transition CMR WorkflowTransition object from which
      * 		to create a new instance of this class
      */
-    JscriptWorkflowTransition(WorkflowTransition transition)
+    public JscriptWorkflowTransition(WorkflowTransition transition)
     {
     	this.id = transition.id;
     	this.title = transition.title;

@@ -78,7 +78,7 @@ public class JscriptWorkflowDefinition implements Serializable
 	 * @param serviceRegistry reference to the Service Registry
 	 * @param scope the root scripting scope for this object 
 	 */
-	JscriptWorkflowDefinition(final WorkflowDefinition cmrWorkflowDefinition,
+	public JscriptWorkflowDefinition(final WorkflowDefinition cmrWorkflowDefinition,
 				final ServiceRegistry serviceRegistry, final Scriptable scope)
 	{
 		this.id = cmrWorkflowDefinition.id;
@@ -101,7 +101,7 @@ public class JscriptWorkflowDefinition implements Serializable
 	 * @param serviceRegistry reference to the Service Registry
 	 * @param scope root scripting scope for this object
 	 */
-	JscriptWorkflowDefinition(final String id, final String name, final String version,
+	public JscriptWorkflowDefinition(final String id, final String name, final String version,
 			final String title, final String description, ServiceRegistry serviceRegistry,
 			final Scriptable scope)
 	{

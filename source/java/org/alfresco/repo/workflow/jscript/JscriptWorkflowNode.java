@@ -73,7 +73,7 @@ public class JscriptWorkflowNode implements Serializable
      * @param scope root scripting scope for this object
      * @param serviceRegistry service registry object
      */
-    JscriptWorkflowNode(String name, String title, String description,
+    public JscriptWorkflowNode(String name, String title, String description,
     	boolean isTaskNode, ArrayList<JscriptWorkflowTransition> transitions,
     	Scriptable scope, ServiceRegistry serviceRegistry)
 	{
@@ -96,7 +96,7 @@ public class JscriptWorkflowNode implements Serializable
      * @param scope root scripting scope for this newly instantiated object
      * @param serviceRegistry service registry object
      */
-    JscriptWorkflowNode(WorkflowNode workflowNode, Scriptable scope, ServiceRegistry serviceRegistry)
+    public JscriptWorkflowNode(WorkflowNode workflowNode, Scriptable scope, ServiceRegistry serviceRegistry)
     {
     	this.name = workflowNode.name;
     	this.title = workflowNode.title;

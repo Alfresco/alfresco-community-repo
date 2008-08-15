@@ -77,7 +77,7 @@ public class JscriptWorkflowTask implements Serializable
 	 * @param description workflow task description
 	 * @param serviceRegistry Service Registry object
 	 */
-	JscriptWorkflowTask(final String id, final String name, final String title,
+	public JscriptWorkflowTask(final String id, final String name, final String title,
 		final String description, final ServiceRegistry serviceRegistry,
 		final ScriptableQNameMap<String, Serializable> properties)
 	{
@@ -96,7 +96,7 @@ public class JscriptWorkflowTask implements Serializable
 	 * @param cmrWorkflowTask an instance of WorkflowTask from CMR workflow object model
 	 * @param serviceRegistry Service Registry object
 	 */
-	JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask,
+	public JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask,
 				final ServiceRegistry serviceRegistry)
 	{
 		this.id = cmrWorkflowTask.id;

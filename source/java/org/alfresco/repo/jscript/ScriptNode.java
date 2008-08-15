@@ -48,6 +48,7 @@ import org.alfresco.repo.thumbnail.ThumbnailDetails;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -74,6 +75,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -133,7 +136,7 @@ public class ScriptNode implements Serializable, Scopeable
     /** The target associations from this node */
     private ScriptableQNameMap<String, Object> targetAssocs = null;
     
-    /** The source assoications to this node */
+    /** The source associations to this node */
     private ScriptableQNameMap<String, Object> sourceAssocs = null;
     
     /** The child associations for this node */
@@ -147,6 +150,9 @@ public class ScriptNode implements Serializable, Scopeable
 
     /** The versions of this node */
     private Scriptable versions = null;
+    
+    /** The active workflows acting on this node */
+    private Scriptable activeWorkflows = null;
 
     protected ServiceRegistry services = null;
     private NodeService nodeService = null;
@@ -2269,6 +2275,35 @@ public class ScriptNode implements Serializable, Scopeable
         }
         return nodes;
     }
+
+    
+    // ------------------------------------------------------------------------------
+    // Workflow methods
+
+	/**
+	 * Get active workflow instances this node belongs to
+	 * 
+	 * @return the active workflow instances this node belongs to
+	 */
+	public Scriptable getActiveWorkflows()
+	{
+		if (this.activeWorkflows == null)
+		{
+			WorkflowService workflowService = this.services.getWorkflowService();
+			
+			List<WorkflowInstance> workflowInstances = workflowService.getWorkflowsForContent(this.nodeRef, true);
+			Object[] jsWorkflowInstances = new Object[workflowInstances.size()];
+			int index = 0;
+			for (WorkflowInstance workflowInstance : workflowInstances)
+			{
+				jsWorkflowInstances[index++] = new JscriptWorkflowInstance(workflowInstance, this.services, this.scope);
+			}
+			this.activeWorkflows = Context.getCurrentContext().newArray(this.scope, jsWorkflowInstances);		
+		}
+
+		return this.activeWorkflows;
+	}
+
     
     // ------------------------------------------------------------------------------
     // Helper methods
@@ -2380,6 +2415,7 @@ public class ScriptNode implements Serializable, Scopeable
         this.isContainer = null;
         this.parent = null;
         this.primaryParentAssoc = null;
+        this.activeWorkflows = null;
     }
     
     /**

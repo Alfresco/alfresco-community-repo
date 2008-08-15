@@ -1470,4 +1470,22 @@
         </property>
     </bean>
     
+    <bean id="patch.sitePermissionRefactorPatch" class="org.alfresco.repo.admin.patch.impl.SitePermissionRefactorPatch" parent="basePatch">
+        <property name="id"><value>patch.sitePermissionRefactorPatch</value></property>
+        <property name="description"><value>patch.sitePermissionRefactorPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>128</value></property>
+        <property name="targetSchema"><value>129</value></property>
+        <!-- helper beans -->
+        <property name="siteService">
+            <ref bean="siteService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+    </bean>
+    
 </beans>

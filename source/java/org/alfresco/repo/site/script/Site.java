@@ -215,10 +215,10 @@ public class Site implements Serializable
      */
     public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter)
     {
-        Map<String, String> sites =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter);
+        Map<String, String> members =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter);
         
         ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
-        result.putAll(sites);
+        result.putAll(members);
         
         return result;
     }

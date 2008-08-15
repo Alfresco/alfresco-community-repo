@@ -37,9 +37,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
-import org.alfresco.util.TestWithUserUtils;
+import org.alfresco.util.PropertyMap;
 
 /**
  * Thumbnail service implementation unit test
@@ -53,15 +54,16 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String TEST_TITLE = "This is my title";
     private static final String TEST_DESCRIPTION = "This is my description";
     
-    private static final String USER_ONE = "UserOne";
-    private static final String USER_TWO = "UserTwo";
-    private static final String USER_THREE = "UserThree";
+    private static final String USER_ONE = "UserOne_SiteServiceImplTest";
+    private static final String USER_TWO = "UserTwo_SiteServiceImplTest";
+    private static final String USER_THREE = "UserThree_SiteServiceImplTest";
     
     private SiteService siteService;    
     private ScriptService scriptService;
     private NodeService nodeService;
     private AuthenticationComponent authenticationComponent;
     private TaggingService taggingService;
+    private PersonService personService;
     
     /**
      * Called during the transaction setup
@@ -71,14 +73,35 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         super.onSetUpInTransaction();
         
         // Get the required services
-        this.siteService = (SiteService)this.applicationContext.getBean("siteService");
+        this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         this.taggingService = (TaggingService)this.applicationContext.getBean("TaggingService");
+        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         
         // Do the test's as userOne
-        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        createUser(USER_ONE);
+        createUser(USER_TWO);
+        createUser(USER_THREE);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+    }
+    
+    private void createUser(String userName)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            this.personService.createPerson(ppOne);
+        }        
     }
 	
     public void testCreateSite() throws Exception
@@ -87,7 +110,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);     
         
-        String name = "!\"£$%^&*()_+=-[]{}";
+        String name = "!£$%^&*()_+=-[]{}";
         siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
         siteInfo = this.siteService.getSite(name);
@@ -98,6 +121,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
         siteInfo = this.siteService.getSite(name);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true); 
+        
+        // Test for duplicate site error
+        try
+        {
+            this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
+            fail("Shouldn't allow duplicate site short names.");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
     }
     
     private void checkSiteInfo( SiteInfo siteInfo, String expectedSitePreset, String expectedShortName, String expectedTitle, 
@@ -257,18 +291,19 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(2, sites.size());
         
         // Now get the sites as user two
-        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_TWO);
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
         assertEquals(1, sites.size());
         checkSiteInfo(sites.get(0), TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, true);
         
         // Make user 2 a member of the site
-        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        //TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
         this.siteService.setMembership("isPublicFalse", USER_TWO, SiteModel.SITE_CONSUMER);
         
         // Now get the sites as user two
-        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_TWO);
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
         assertEquals(2, sites.size());
@@ -328,7 +363,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
         
         // Check that a non-manager and non-member cannot edit the memberships
-        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_TWO);
         try
         {
             this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
@@ -347,7 +382,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // As expected            
         }
-        TestWithUserUtils.authenticateUser(USER_THREE, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_THREE);
         try
         {
             this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
@@ -367,9 +402,34 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             // As expected            
         }
         
-        // TODO .. try and change the permissions of the only site manager
+        this.authenticationComponent.setCurrentUser(USER_ONE);        
+        // Try and change the permissions of the only site manager
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_MANAGER);
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+        try
+        {
+            this.siteService.setMembership("testMembership", USER_ONE, SiteModel.SITE_COLLABORATOR);
+            fail("You can not change the role of the last site memnager");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+            //exception.printStackTrace();
+        }
         
-        // TODO .. try and remove the only site manager and should get a failure
+        // Try and remove the only site manager and should get a failure
+        this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_MANAGER);
+        this.siteService.removeMembership("testMembership", USER_ONE);
+        try
+        {
+            this.siteService.removeMembership("testMembership", USER_TWO);
+            fail("You can not remove the last site memnager from a site");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+            //exception.printStackTrace();
+        }
     }
     
     public void testJoinLeave()
@@ -379,7 +439,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.createSite(TEST_SITE_PRESET, "testMembershipPrivate", TEST_TITLE, TEST_DESCRIPTION, false);
         
         // Become user two
-        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        //TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_TWO);
         
         // As user two try and add self as contributor
         try
@@ -398,7 +459,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // As user two try and add self as consumer to private site
         try
         {
-            this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_CONSUMER);
+            this.siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
             fail("This should have failed because you can't do this to a private site unless you are site manager");
         }
         catch (AlfrescoRuntimeException exception)
@@ -419,10 +480,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         
         // add some members use in remove tests
-        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
         this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
         this.siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
-        TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
+        this.authenticationComponent.setCurrentUser(USER_TWO);
         
         // try and remove user two permissions from private site
         try
@@ -504,7 +565,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(container8);
         assertEquals(ForumModel.TYPE_FORUM, nodeService.getType(container8));
     }
-    
     
     // == Test the JavaScript API ==
     

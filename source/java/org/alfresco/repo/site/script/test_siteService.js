@@ -13,29 +13,29 @@ function checkSite(site, sitePreset, shortName, title, description, isPublic)
 function testCRUD()
 {
 	// Try and get a site that doesn't exist
-	var site = siteService.getSite("siteShortName");
+	var site = siteService.getSite("siteShortNameCRUD");
 	test.assertNull(site, "Site should not have been found.");
 	
 	// Try and create a site
-	site = siteService.createSite("sitePreset", "siteShortName", "siteTitle", "siteDescription", true);
-	checkSite(site, "sitePreset", "siteShortName", "siteTitle", "siteDescription", true);
+	site = siteService.createSite("sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
 	
 	// Try and get the created site
-	site = siteService.getSite("siteShortName");
-	checkSite(site, "sitePreset", "siteShortName", "siteTitle", "siteDescription", true);
+	site = siteService.getSite("siteShortNameCRUD");
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
 	
 	// Try and update the values of the site
 	site.title = "abc123abc";
 	site.description = "abc123abc";
 	site.isPublic = false;
-	checkSite(site, "sitePreset", "siteShortName", "abc123abc", "abc123abc", false);
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", false);
 	site.save();
-	site = siteService.getSite("siteShortName");
-	checkSite(site, "sitePreset", "siteShortName", "abc123abc", "abc123abc", false);
+	site = siteService.getSite("siteShortNameCRUD");
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", false);
 	
 	// Delete the site
 	site.deleteSite();
-	site = siteService.getSite("siteShortName");
+	site = siteService.getSite("siteShortNameCRUD");
 	test.assertNull(site, "");
 }
 
@@ -63,20 +63,20 @@ function testMembership()
 	var members = site.listMembers(null, null);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
-	test.assertEquals("SiteManager", members["UserOne"]);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	
-	site.setMembership("UserTwo", "SiteCollaborator");
+	site.setMembership("UserTwo_SiteServiceImplTest", "SiteCollaborator");
 	members = site.listMembers(null, null);
 	test.assertNotNull(members);
 	test.assertEquals(2, members.length);
-	test.assertEquals("SiteManager", members["UserOne"]);
-	test.assertEquals("SiteCollaborator", members["UserTwo"]);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
+	test.assertEquals("SiteCollaborator", members["UserTwo_SiteServiceImplTest"]);
 	
-	site.removeMembership("UserTwo");
+	site.removeMembership("UserTwo_SiteServiceImplTest");
 	members = site.listMembers(null, null);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
-	test.assertEquals("SiteManager", members["UserOne"]);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	
 }
 

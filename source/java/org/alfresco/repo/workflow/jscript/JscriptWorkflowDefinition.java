@@ -66,7 +66,10 @@ public class JscriptWorkflowDefinition implements Serializable
 	
 	/** Root scripting scope for this object */
 	private final Scriptable scope;
-	
+
+    /** Node Value Converter */
+    private ValueConverter converter = null;
+
 	/**
 	 * Create a new instance of <code>WorkflowDefinition</code> from a
 	 * CMR workflow object model WorkflowDefinition instance
@@ -151,7 +154,21 @@ public class JscriptWorkflowDefinition implements Serializable
 		return title;
 	}
 	
-	/**
+    /**
+     * Gets the value converter
+     * 
+     * @return the value converter
+     */
+    protected ValueConverter getValueConverter()
+    {
+        if (converter == null)
+        {
+            converter = new ValueConverter();
+        }
+        return converter;
+    }
+
+    /**
 	 * Get value of <code>description</code> property
 	 * 
 	 * @return the description
@@ -192,26 +209,32 @@ public class JscriptWorkflowDefinition implements Serializable
 		
 		// if properties object is a scriptable object, then extract property name/value pairs
 		// into property Map<QName, Serializable>, otherwise leave property map as null
-		Map<QName, Serializable> props = null;
+		Map<QName, Serializable> workflowParameters = null;
         if (properties instanceof ScriptableObject)
         {
             ScriptableObject scriptableProps = (ScriptableObject)properties;
-            props = new HashMap<QName, Serializable>(scriptableProps.getIds().length);
-            extractScriptablePropertiesToMap((ScriptableObject)properties, props);
+            workflowParameters = new HashMap<QName, Serializable>(scriptableProps.getIds().length);
+            extractScriptablePropertiesToMap(scriptableProps, workflowParameters);
         }
 		
 		// attach given workflow package node if it is not null
         if (workflowPackage != null)
         {
-            if (props == null)
+            if (workflowParameters == null)
             {
-                new HashMap<QName, Serializable>(1);
+                workflowParameters = new HashMap<QName, Serializable>(1);
             }
-            props.put(WorkflowModel.ASPECT_WORKFLOW_PACKAGE, workflowPackage);
+            workflowParameters.put(WorkflowModel.ASSOC_PACKAGE, getValueConverter().convertValueForRepo(workflowPackage));
         }        
-		
-		WorkflowPath cmrWorkflowPath = 
-			workflowService.startWorkflow(this.id, props);
+
+        // provide a default context, if one is not specified
+        Serializable context = workflowParameters.get(WorkflowModel.PROP_CONTEXT);
+        if (context == null)
+        {
+            workflowParameters.put(WorkflowModel.PROP_CONTEXT, workflowPackage.getNodeRef());
+        }
+
+		WorkflowPath cmrWorkflowPath = workflowService.startWorkflow(this.id, workflowParameters);
 		
 		return new JscriptWorkflowPath(cmrWorkflowPath, this.serviceRegistry, this.scope);
 	}
@@ -233,7 +256,7 @@ public class JscriptWorkflowDefinition implements Serializable
 		}
 		
 		Scriptable activeInstancesScriptable =
-			(Scriptable)new ValueConverter().convertValueForScript(this.serviceRegistry, this.scope, null, activeInstances);
+			(Scriptable)getValueConverter().convertValueForScript(this.serviceRegistry, this.scope, null, activeInstances);
 		
 		return activeInstancesScriptable;
 	}
@@ -283,6 +306,7 @@ public class JscriptWorkflowDefinition implements Serializable
                 Object value = scriptable.get(key, scriptable);
                 if (value instanceof Serializable)
                 {
+                    value = getValueConverter().convertValueForRepo((Serializable)value);
                     map.put(createQName(key), (Serializable)value);
                 }
             }

@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteInfo;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -82,9 +83,11 @@ public class InviteServiceTest extends BaseWebScriptTest
     private static final String USER_INVITER = "InviterUser";
     private static final String INVITEE_FIRSTNAME = "InviteeFirstName";
     private static final String INVITEE_LASTNAME = "InviteeLastName";
+    private static final String INVITER_EMAIL = "FirstName123.LastName123@email.com";
     private static final String INVITEE_EMAIL_DOMAIN = "alfrescotesting.com";
     private static final String INVITEE_EMAIL_PREFIX = "invitee";
-    private static final String SITE_SHORT_NAME_INVITE = "InviteSiteShortName";
+    private static final String SITE_SHORT_NAME_INVITE_1 = "BananaMilkshakeSite";
+    private static final String SITE_SHORT_NAME_INVITE_2 = "DoubleScoopSite";
 
     private static final String URL_INVITE_SERVICE = "/api/invite";
     private static final String URL_INVITERSP_SERVICE = "/api/inviteresponse";
@@ -130,16 +133,23 @@ public class InviteServiceTest extends BaseWebScriptTest
             public Object doWork() throws Exception
             {
                 // Create inviter
-                createPerson(USER_INVITER);
+                createPerson(USER_INVITER, INVITER_EMAIL);
 
-                // Create site for Inviter to invite Invitee to
-                // - only create the site if it doesn't already exist
-                SiteInfo siteInfo = InviteServiceTest.this.siteService
-                        .getSite(SITE_SHORT_NAME_INVITE);
-                if (siteInfo == null)
+                // Create sites for Inviter to invite Invitee to
+                SiteInfo siteInfo1 = InviteServiceTest.this.siteService
+                                        .getSite(SITE_SHORT_NAME_INVITE_1);
+                if (siteInfo1 == null)
                 {
                     InviteServiceTest.this.siteService.createSite(
-                            "InviteSitePreset", SITE_SHORT_NAME_INVITE,
+                            "InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
+                            "InviteSiteTitle", "InviteSiteDescription", true);
+                }
+                SiteInfo siteInfo2 = InviteServiceTest.this.siteService
+                                        .getSite(SITE_SHORT_NAME_INVITE_2);
+                if (siteInfo2 == null)
+                {
+                    InviteServiceTest.this.siteService.createSite(
+                            "InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
                             "InviteSiteTitle", "InviteSiteDescription", true);
                 }
 
@@ -180,7 +190,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                     for (NodeRef person : people)
                     {
                         String userName = DefaultTypeConverter.INSTANCE
-                                .convert(String.class, nodeService.getProperty(
+                                .convert(String.class, InviteServiceTest.this.nodeService.getProperty(
                                         person, ContentModel.PROP_USERNAME));
 
                         // delete person
@@ -188,8 +198,9 @@ public class InviteServiceTest extends BaseWebScriptTest
                     }
                 }
 
-                // delete invite site
-                siteService.deleteSite(SITE_SHORT_NAME_INVITE);
+                // delete invite sites
+                siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
+                siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
 
                 return null;
             }
@@ -237,7 +248,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.authorityService.deleteAuthority(fullGroupName);
     }
 
-    private void createPerson(String userName)
+    private void createPerson(String userName, String emailAddress)
     {
         // if user with given user name doesn't already exist then create user
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -256,8 +267,7 @@ public class InviteServiceTest extends BaseWebScriptTest
             personProps.put(ContentModel.PROP_USERNAME, userName);
             personProps.put(ContentModel.PROP_FIRSTNAME, "FirstName123");
             personProps.put(ContentModel.PROP_LASTNAME, "LastName123");
-            personProps.put(ContentModel.PROP_EMAIL,
-                    "FirstName123.LastName123@email.com");
+            personProps.put(ContentModel.PROP_EMAIL, emailAddress);
             personProps.put(ContentModel.PROP_JOBTITLE, "JobTitle123");
             personProps.put(ContentModel.PROP_JOBTITLE, "Organisation123");
 
@@ -289,12 +299,9 @@ public class InviteServiceTest extends BaseWebScriptTest
     }
 
     private JSONObject startInvite(String inviteeFirstName,
-            String inviteeLastName, String siteShortName, int expectedStatus)
+            String inviteeLastName, String inviteeEmail, String siteShortName, int expectedStatus)
             throws Exception
     {
-        String inviteeEmail = INVITEE_EMAIL_PREFIX +
-                RandomStringUtils.randomAlphanumeric(6)
-                + "@" + INVITEE_EMAIL_DOMAIN;
         this.inviteeEmailAddrs.add(inviteeEmail);
 
         // Inviter sends invitation to Invitee to join a Site
@@ -310,6 +317,19 @@ public class InviteServiceTest extends BaseWebScriptTest
         JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
+    }
+
+    private JSONObject startInvite(String inviteeFirstName,
+            String inviteeLastName, String siteShortName, int expectedStatus)
+            throws Exception
+    {
+        //  String inviteeEmail = INVITEE_EMAIL_PREFIX +
+        //      RandomStringUtils.randomAlphanumeric(6)
+        //      + "@" + INVITEE_EMAIL_DOMAIN;
+        String inviteeEmail = "glen.johnson@alfresco.com";
+        
+        return startInvite(inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName,
+                expectedStatus);
     }
 
     private JSONArray getInvitesByInviteId(String inviteId, int expectedStatus)
@@ -378,7 +398,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testStartInvite() throws Exception
     {
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
-                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         assertEquals(INVITE_ACTION_START, result.get("action"));
         assertEquals(INVITEE_FIRSTNAME, result.get("inviteeFirstName"));
@@ -386,14 +406,71 @@ public class InviteServiceTest extends BaseWebScriptTest
         assertEquals(this.inviteeEmailAddrs
                 .get(this.inviteeEmailAddrs.size() - 1), result
                 .get("inviteeEmail"));
-        assertEquals(SITE_SHORT_NAME_INVITE, result.get("siteShortName"));
+        assertEquals(SITE_SHORT_NAME_INVITE_1, result.get("siteShortName"));
+    }
+    
+    public void testStartInviteWhenInviteeIsAlreadyMemberOfSite()
+        throws Exception
+    {
+        //
+        // add invitee as member of site: SITE_SHORT_NAME_INVITE
+        //
+        
+        String randomStr = RandomStringUtils.randomNumeric(6);
+        final String inviteeUserName = "inviteeUserName" + randomStr;
+        final String inviteeEmailAddr = INVITEE_EMAIL_PREFIX + randomStr
+            + "@" + INVITEE_EMAIL_DOMAIN;
+        
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // create person with invitee user name and invitee email address 
+                createPerson(inviteeUserName, inviteeEmailAddr);
+                
+                // add invitee person to site: SITE_SHORT_NAME_INVITE
+                InviteServiceTest.this.siteService.setMembership(
+                        SITE_SHORT_NAME_INVITE_1, inviteeUserName,
+                        SiteModel.SITE_COLLABORATOR);
+                
+                return null;
+            }
+            
+        }, USER_ADMIN);
+        
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmailAddr,
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_CONFLICT);
+    }
+
+    public void testStartInviteWhenAlreadyInProgress()
+    throws Exception
+    {        
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+        
+        String inviteeEmail = (String) result.get("inviteeEmail");
+        
+        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
+                SITE_SHORT_NAME_INVITE_1,  Status.STATUS_CONFLICT);
+    }
+
+    public void testStartInviteForSameInviteeButTwoDifferentSites()
+        throws Exception
+    {        
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+        
+        String inviteeEmail = (String) result.get("inviteeEmail");
+        
+        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
+                SITE_SHORT_NAME_INVITE_2,  Status.STATUS_OK);
     }
 
     public void testCancelInvite() throws Exception
     {
         // inviter starts invite workflow
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
-                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -409,7 +486,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite (sends out invitation)
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
-                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -422,7 +499,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         String acceptInviteUrl = URL_INVITERSP_SERVICE + "/"
                 + INVITE_RSP_ACCEPT + "?inviteId=" + inviteId
                 + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
-                + SITE_SHORT_NAME_INVITE;
+                + SITE_SHORT_NAME_INVITE_1;
         MockHttpServletResponse response = getRequest(acceptInviteUrl,
                 Status.STATUS_OK);
 
@@ -445,7 +522,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite (sends out invitation)
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
-                SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
@@ -458,7 +535,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         String rejectInviteUrl = URL_INVITERSP_SERVICE + "/"
                 + INVITE_RSP_REJECT + "?inviteId=" + inviteId
                 + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
-                + SITE_SHORT_NAME_INVITE;
+                + SITE_SHORT_NAME_INVITE_1;
         MockHttpServletResponse response = getRequest(rejectInviteUrl,
                 Status.STATUS_OK);
 
@@ -481,7 +558,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of workflow ID of started invite workflow instance
 
@@ -504,7 +581,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get pending invites matching inviter user name used in invite started
         // above
@@ -522,7 +599,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invitee user name property of started invite workflow
         // instance
@@ -547,7 +624,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE, Status.STATUS_OK);
+                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of site short name property of started invite workflow
         // instance

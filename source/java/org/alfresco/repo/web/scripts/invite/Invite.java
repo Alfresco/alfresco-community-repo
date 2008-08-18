@@ -28,20 +28,25 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -84,7 +89,8 @@ public class Invite extends DeclarativeWebScript
     private AuthenticationService authenticationService;
     private MutableAuthenticationDao mutableAuthenticationDao;
     private NamespaceService namespaceService;
-    private AuthenticationComponent authenticationComponent;
+    private SiteService siteService;
+    private NodeService nodeService;
 
     // user name and password generation beans
     private UserNameGenerator usernameGenerator;
@@ -101,6 +107,10 @@ public class Invite extends DeclarativeWebScript
     
     public static final String WF_INVITE_TASK_INVITE_TO_SITE = "wf:inviteToSiteTask";
     public static final String WORKFLOW_DEFINITION_NAME = "jbpm$wf:invite";
+    
+    // maximum number of tries to generate a invitee user name which 
+    // does not already belong to an existing person
+    public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
     
     /**
      * Sets the workflowService property
@@ -160,16 +170,6 @@ public class Invite extends DeclarativeWebScript
     }
     
     /**
-     * Set the authentication component
-     * 
-     * @param authenticationComponent the authentication component to set
-     */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        this.authenticationComponent = authenticationComponent;
-    }
-
-    /**
      * Set the user name generator service
      * 
      * @param userNameGenerator
@@ -189,6 +189,28 @@ public class Invite extends DeclarativeWebScript
     public void setPasswordGenerator(PasswordGenerator passwordGenerator)
     {
         this.passwordGenerator = passwordGenerator;
+    }
+    
+    /**
+     * Set the site service property
+     * 
+     * @param siteService
+     *          the site service to set
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+    
+    /**
+     * Set the node service property
+     * 
+     * @param nodeService
+     *          the node service to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     /*
@@ -314,6 +336,109 @@ public class Invite extends DeclarativeWebScript
     }
 
     /**
+     * Creates a person for the invitee with a generated user name.
+     * 
+     * @param inviteeFirstName first name of invitee
+     * @param inviteeLastName last name of invitee
+     * @param inviteeEmail email address of invitee
+     * @return invitee user name
+     */
+    private String createInviteePerson(String inviteeFirstName, String inviteeLastName, String inviteeEmail)
+    {
+        // Attempt to generate user name for invitee
+        // which does not belong to an existing person
+        // Tries up to MAX_NUM_INVITEE_USER_NAME_GEN_TRIES
+        // at which point a web script exception is thrown
+        String inviteeUserName = null;
+        int i = 0;
+        do
+        {
+            inviteeUserName = usernameGenerator.generateUserName();
+            i++;
+        }
+        while (this.personService.personExists(inviteeUserName) && (i < MAX_NUM_INVITEE_USER_NAME_GEN_TRIES));
+        
+        // if after 10 tries is not able to generate a user name for a 
+        // person who doesn't already exist, then throw a web script exception
+        if (this.personService.personExists(inviteeUserName))
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "Failed to generate a user name for invitee, which doesn't already belong to "
+                        + "an existing person after " + MAX_NUM_INVITEE_USER_NAME_GEN_TRIES
+                        + " tries");
+        }
+
+        // create a person node for the invitee with generated invitee user name
+        // and other provided person property values
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_USERNAME, inviteeUserName);
+        properties.put(ContentModel.PROP_FIRSTNAME, inviteeFirstName);
+        properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
+        properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
+        this.personService.createPerson(properties);
+        
+        return inviteeUserName;
+    }
+    
+    /**
+     * Creates a disabled user account for the given invitee user name
+     * with a generated password
+     * 
+     * @param inviteeUserName
+     * @return password generated for invitee user account
+     */
+    private String createInviteeDisabledAccount(String inviteeUserName)
+    {
+        // generate password using password generator
+        char[] generatedPassword = passwordGenerator.generatePassword().toCharArray();
+
+        // create disabled user account for invitee user name with generated password
+        this.mutableAuthenticationDao.createUser(inviteeUserName, generatedPassword);
+        this.mutableAuthenticationDao.setEnabled(inviteeUserName, false);
+        
+        return String.valueOf(generatedPassword);
+    }
+    
+    /**
+     * Returns whether there is an invite in progress for the given invite user name
+     * and site short name
+     * 
+     * @param inviteeUserName
+     * @param siteShortName
+     * @return whether there is an invite in progress  
+     */
+    private boolean isInviteAlreadyInProgress(String inviteeUserName, String siteShortName)
+    {
+        // create workflow task query
+        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+
+        // set query properties to look up task instances of inviteToSite task
+        // in active invite workflow instances 
+        wfTaskQuery.setActive(Boolean.TRUE);
+        wfTaskQuery.setProcessName(QName.createQName("wf:invite", this.namespaceService));
+        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
+        wfTaskQuery.setTaskName(QName.createQName(Invite.WF_INVITE_TASK_INVITE_TO_SITE,
+                this.namespaceService));
+
+        // set query process custom properties
+        HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(2, 1.0f);
+        wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME, this.namespaceService),
+                inviteeUserName);
+        wfQueryProps.put(QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME, this.namespaceService),
+                siteShortName);
+        wfTaskQuery.setTaskCustomProps(wfQueryProps);
+        
+        // query for invite workflow tasks in progress for person (having given invitee email address)
+        // and given site short name
+        List<WorkflowTask> inviteTasksInProgress = this.workflowService
+                .queryTasks(wfTaskQuery);
+        
+        // throw web script exception if person (having the given invitee email address) already
+        // has an invitation in progress for the given site short name
+        return (inviteTasksInProgress.size() > 0);
+    }
+    
+    /**
      * Starts the Invite workflow
      * 
      * @param model
@@ -336,8 +461,76 @@ public class Invite extends DeclarativeWebScript
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
-        // - in this method set the current user to the system user
+        // - in this method set the current user to the system user for some
+        // - odd reason
         String inviterUserName = this.authenticationService.getCurrentUserName();
+        
+        //
+        // if a person already exists who has the given invitee email address
+        //
+        // 1) obtain invitee user name from first person found having the invitee email address (there
+        //          should only be one)
+        // 2) handle error conditions - (invitee already has an invitation in progress for the given site, 
+        // or he/she is already a member of the given site
+        //
+        Set<NodeRef> peopleWithInviteeEmail = this.personService.getPeopleFilteredByProperty(
+                ContentModel.PROP_EMAIL, inviteeEmail);
+        String inviteeUserName;
+        if (peopleWithInviteeEmail.isEmpty() == false)
+        {
+            // get person already existing who has the given 
+            // invitee email address (there should only be one, so just take
+            // the first from the set of people).
+            NodeRef person = (NodeRef) peopleWithInviteeEmail.toArray()[0];
+
+            // get invitee user name of that person
+            
+            Serializable userNamePropertyVal = this.nodeService.getProperty(
+                    person, ContentModel.PROP_USERNAME);
+            inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);
+            
+            // throw web script exception if person is already a member of the given site
+            if (this.siteService.isMember(siteShortName, inviteeUserName))
+            {
+                throw new WebScriptException(Status.STATUS_CONFLICT,
+                        "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
+                        + "' and invitee email address: '"
+                        + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
+            }
+            
+            // if an there is already an invite being processed for the person
+            // then throw a web script exception
+            // if (isInviteAlreadyInProgress(inviteeUserName, siteShortName))
+            // {
+            //    throw new WebScriptException(Status.STATUS_CONFLICT,
+            //            "Cannot proceed with invitation. There is already an invitation in progress " +
+            //            "for a person with user name: '" + inviteeUserName + "' and invitee email address: '"
+            //            + inviteeEmail + "' who is already a member of the site: '" + siteShortName + "'.");
+            // }
+        }
+        // else there are no existing people who have the given invitee email address
+        // so create invitee person
+        else
+        {
+            inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
+        }
+        
+        //
+        // If a user account does not already exist for invitee user name
+        // then create a disabled user account for the invitee.
+        // Hold a local reference to generated password if disabled invitee account
+        // is created, otherwise if a user account already exists for invitee
+        // user name, then local reference to invitee password will be "null"
+        //
+        String inviteePassword = null;
+        if (this.mutableAuthenticationDao.userExists(inviteeUserName) == false)
+        {
+            inviteePassword = createInviteeDisabledAccount(inviteeUserName);
+        }
+        
+        //
+        // Start the invite workflow with inviter, invitee and site properties 
+        //
         
         WorkflowDefinition wfDefinition = this.workflowService
                 .getDefinitionByName(WORKFLOW_DEFINITION_NAME);
@@ -350,42 +543,6 @@ public class Invite extends DeclarativeWebScript
                             + WORKFLOW_DEFINITION_NAME + " does not exist");
         }
 
-        char[] generatedPassword = null;
-
-        // generate user name
-        String inviteeUserName = usernameGenerator.generateUserName();
-
-        // create person if user name does not already exist
-        if (!this.personService.personExists(inviteeUserName))
-        {
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-
-            properties.put(ContentModel.PROP_USERNAME, inviteeUserName);
-            properties.put(ContentModel.PROP_FIRSTNAME, inviteeFirstName);
-            properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
-            properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
-
-            this.personService.createPerson(properties);
-        } else
-        {
-            throw new WebScriptException(
-                    Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "When trying to create a user account for Invitee with generated user name, "
-                            + inviteeUserName
-                            + ", a person was found who already has that user name");
-        }
-
-        // create invitee person with generated user name and password, and with
-        // a disabled user account (with a generated password)
-
-        // generate password
-        generatedPassword = passwordGenerator.generatePassword().toCharArray();
-
-        // create account for person with generated userName and
-        // password
-        mutableAuthenticationDao.createUser(inviteeUserName, generatedPassword);
-        mutableAuthenticationDao.setEnabled(inviteeUserName, false);
-        
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
                 7);
@@ -398,7 +555,7 @@ public class Invite extends DeclarativeWebScript
         workflowProps.put(QName.createQName(WF_PROP_INVITEE_LASTNAME, this.namespaceService),
                 inviteeLastName);
         workflowProps.put(QName.createQName(WF_PROP_INVITEE_GEN_PASSWORD, this.namespaceService),
-                String.valueOf(generatedPassword));
+                inviteePassword);
         workflowProps.put(QName.createQName(WF_PROP_SITE_SHORT_NAME, this.namespaceService),
                 siteShortName);
         workflowProps.put(QName.createQName(WF_PROP_SERVER_PATH, this.namespaceService),
@@ -408,11 +565,13 @@ public class Invite extends DeclarativeWebScript
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition
                 .getId(), workflowProps);
         
-        // get the workflow instance and path IDs
+        //
+        // complete invite workflow start task to send out the invite email
+        //
+        
+        // get the workflow tasks
         String workflowId = wfPath.instance.id;
         String wfPathId = wfPath.id;
-        
-        // complete the start task
         List<WorkflowTask> wfTasks = this.workflowService.getTasksForWorkflowPath(wfPathId);
         
         // throw an exception if no tasks where found on the workflow path
@@ -432,10 +591,8 @@ public class Invite extends DeclarativeWebScript
                   + " should be " + WF_INVITE_TASK_INVITE_TO_SITE);
         }
         
-        // complete invite workflow start task
+        // get "inviteToSite" task
         WorkflowTask wfStartTask = wfTasks.get(0);
-        
-        // send out the invite
         
         // attach empty package to start task, end it and follow transition
         // thats sends out invite

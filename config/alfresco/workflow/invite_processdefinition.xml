@@ -19,6 +19,20 @@
                mail.parameters.subject = "Invitation to Alfresco Share Site "
                   + "'" + wf_siteShortName +"'";
                mail.parameters.from = inviterPerson.properties["cm:email"];
+               var mail_text_invitee_account_section = "";
+               if (wf_inviteeGenPassword != null)
+               {
+                  mail_text_invitee_account_section = "An account has been "
+                  + "created for you with user name: " + wf_inviteeUserName
+                  + ".\n"
+                  + "This account is initially disabled. However it will be "
+                  + "enabled if you accept the invitation, but only after your "
+                  + "response has been received and processed.\n\n"  
+                  + "An initial password has been generated for you: "
+                  + wf_inviteeGenPassword + ".\n"
+                  + "You are strongly advised to change it to a password of "
+                  + "your choice once you have logged into Alfresco Share.\n\n";
+               }
                mail.parameters.text = "Dear " + wf_inviteeFirstName + ",\n\n"
                   + "You have been invited to join a site on Alfresco Share: "
                   + wf_siteShortName + "\n\n"
@@ -26,22 +40,17 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/accept?format=html&amp;"
-                  + "inviteId=" + workflowId
+                  + "/alfresco/service/api/inviteresponse/accept?format=html"
+                  + "&amp;inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName + "\n\n"
-                  + "An account has been created for you with user name: "
-                  + wf_inviteeUserName  + ".\n\n"
-                  + "An initial password has been generated for you: "
-                  + wf_inviteeGenPassword + ".\n"
-                  + "You are strongly advised to change it to a password of your choice once you "
-                  + "have logged into Alfresco Share.\n\n"
+                  + mail_text_invitee_account_section
                   + "To reject the invitation to join the site "
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath
-                  + "/alfresco/service/api/inviteresponse/reject?format=html&amp;"
-                  + "inviteId=" + workflowId
+                  + "/alfresco/service/api/inviteresponse/reject?format=html"
+                  + "&amp;inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName;
                mail.execute(bpm_package);

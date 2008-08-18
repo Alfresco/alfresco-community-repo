@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>docsummary</shortname>
-  <description>Document Summary Component Data Webscript</description>
-  <url>/slingshot/docsummary?site={site}&amp;filter={filter?}</url>
-  <format default="json"></format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

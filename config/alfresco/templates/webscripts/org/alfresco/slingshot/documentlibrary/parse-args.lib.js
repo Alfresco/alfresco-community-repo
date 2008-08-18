@@ -19,6 +19,10 @@ function getParsedArgs()
       {
          rootNode = userhome;
       }
+      else if (nodeRef == "alfresco://sites/home")
+      {
+         rootNode = companyhome.childByNamePath("Sites");
+      }
       else
       {
          rootNode = search.findNode(nodeRef);

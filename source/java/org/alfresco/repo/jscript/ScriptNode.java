@@ -1309,7 +1309,7 @@ public class ScriptNode implements Serializable, Scopeable
     public void addNode(ScriptNode node)
     {
         ParameterCheck.mandatory("node", node);
-        ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(this.nodeRef);
+        ChildAssociationRef childAssocRef = this.nodeService.getPrimaryParent(node.nodeRef);
         nodeService.addChild(this.nodeRef, node.nodeRef, ContentModel.ASSOC_CONTAINS, childAssocRef.getQName());
         reset();
     }

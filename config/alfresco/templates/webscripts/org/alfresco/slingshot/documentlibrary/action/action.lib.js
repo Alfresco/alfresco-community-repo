@@ -63,7 +63,7 @@ function main()
    params.path = path;
 
    // Multiple input files in the JSON body?
-   files = getMultipleInputFiles();
+   files = getMultipleInputValues("nodeRefs");
    if (typeof files != "string")
    {
       params.files = files;
@@ -241,14 +241,14 @@ function getNodeRefInputParams()
 }
 
 /**
- * Get multiple input files (nodeRef-based)
+ * Get multiple input values
  *
- * @method getMultipleInputFiles
- * @return {array|string} Array containing multiple files, or string error
+ * @method getMultipleInputValues
+ * @return {array|string} Array containing multiple values, or string error
  */
-function getMultipleInputFiles()
+function getMultipleInputValues(param)
 {
-   var files = [];
+   var values = [];
    var error = null;
    
    try
@@ -258,11 +258,11 @@ function getMultipleInputFiles()
       {
          if (!json.isNull("nodeRefs"))
          {
-            var jsonFiles = json.get("nodeRefs");
+            var jsonValues = json.get(param);
             // Convert from JSONArray to JavaScript array
-            for (var i = 0, j = jsonFiles.length(); i < j; i++)
+            for (var i = 0, j = jsonValues.length(); i < j; i++)
             {
-               files.push(jsonFiles.get(i));
+               values.push(jsonValues.get(i));
             }
          }
       }
@@ -272,8 +272,8 @@ function getMultipleInputFiles()
       error = e.toString();
    }
    
-	// Return the files array, or the error string if it was set
-	return (error !== null ? error : files);
+	// Return the values array, or the error string if it was set
+	return (error !== null ? error : values);
 }
 
 

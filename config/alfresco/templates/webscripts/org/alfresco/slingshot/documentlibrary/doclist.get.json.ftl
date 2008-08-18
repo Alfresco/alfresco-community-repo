@@ -47,11 +47,18 @@
          "modifiedOn": "${d.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
          "modifiedBy": "${modifiedBy}",
          "modifiedByUser": "${modifiedByUser}",
-         "size": "${d.size}",
+         "size": "${d.size?c}",
          "version": "${version}",
          "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
          "actionSet": "${item.actionSet}",
-         "tags": <#noescape>[${tags}]</#noescape>
+         "tags": <#noescape>[${tags}]</#noescape>,
+         "activeWorkflows": "<#list item.activeWorkflows as aw>${aw}<#if aw_has_next>,</#if></#list>",
+         "location":
+         {
+            "site": "${item.location.site!""}",
+            "container": "${item.location.container!""}",
+            "path": "${item.location.path!""}"
+         }
       }<#if item_has_next>,</#if>
    </#list>
    ]

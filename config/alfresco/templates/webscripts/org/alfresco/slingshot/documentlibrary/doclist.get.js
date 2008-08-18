@@ -26,25 +26,33 @@ function getDocList(filter)
    }
 
    // Try to find a filter query based on the passed-in arguments
-   var allAssets;
-   var filterQuery = getFilterQuery(filter, parsedArgs);
-   if (filterQuery === null)
+   var allAssets, filterQuery;
+   var filterParams = getFilterParams(filter, parsedArgs);
+   if (filterParams === null)
    {
       // Default to all children of parentNode
       allAssets = parsedArgs.parentNode.children;
    }
-   else if (filterQuery == "node")
+   else if (filterParams == "node")
    {
       allAssets = [parsedArgs.rootNode];
    }
-   else if (filterQuery == "tag")
+   else if (filterParams == "tag")
    {
       allAssets = parsedArgs.rootNode.childrenByTags(args["filterData"]);
    }
    else
    {
       // Run the query returned from the filter
-      allAssets = search.luceneSearch(filterQuery);
+      allAssets = search.luceneSearch(filterParams.query, "@cm:name", true);
+      if (filterParams.limitResults)
+      {
+         /**
+          * This isn't a true results trim (page-trimming is done below), as we haven't yet filtered by type.
+          * However, it's useful for a quick slimming-down of the "recently..." queries.
+          */
+         allAssets = allAssets.slice(0, filterParams.limitResults);
+      }
    }
    
    // Documents and/or folders?
@@ -57,36 +65,41 @@ function getDocList(filter)
       showFolders = ((type == "all") || (type == "folders"));
    }
 
-   // Only interesting in folders and/or documents depending on passed-in type
+   // Only interested in folders and/or documents depending on passed-in type
+   folderAssets = new Array();
+   documentAssets = new Array();
    for each(asset in allAssets)
    {
-      if ((asset.isContainer && showFolders) || (asset.isDocument && showDocs))
+      if (showFolders && asset.isContainer)
       {
-         assets.push(asset);
+         folderAssets.push(asset);
+      }
+      else if (showDocs && asset.isDocument)
+      {
+         documentAssets.push(asset);
       }
    }
+   assets = folderAssets.concat(documentAssets);
    
    // Make a note of totalRecords before trimming the assets array
    var totalRecords = assets.length;
 
-   // Sort the list before trimming to page chunks
-   assets.sort(sortByType);
-   
    // Pagination
    var pageSize = args["size"] || assets.length;
    var pagePos = args["pos"] || "1";
    var startIndex = (pagePos - 1) * pageSize;
    assets = assets.slice(startIndex, pagePos * pageSize);
    
-   // Locked/working copy status defines action set
-   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy;
+   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows;
    
+   // Locked/working copy status defines action set
    for each(asset in assets)
    {
       itemStatus = [];
       itemOwner = null;
       createdBy = null;
       modifiedBy = null;
+      activeWorkflows = [];
       
       if (asset.isLocked)
       {
@@ -126,6 +139,31 @@ function getDocList(filter)
          itemOwner: itemOwner
       });
       
+      // Resolve site, container and path
+      var location =
+      {
+         site: null,
+         container: null,
+         path: null
+      }
+      var qnamePaths = asset.qnamePath.split("/");
+      var displayPaths = asset.displayPath.split("/");
+      if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
+      {
+         location = 
+         {
+            site: qnamePaths[3].substr(3),
+            container: qnamePaths[4].substr(3),
+            path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+         }
+      }
+      
+      // Part of an active workflow?
+      for each (activeWorkflow in asset.activeWorkflows)
+      {
+         activeWorkflows.push(activeWorkflow.id);
+      }
+      
       items.push(
       {
          asset: asset,
@@ -134,13 +172,15 @@ function getDocList(filter)
          createdBy: createdBy,
          modifiedBy: modifiedBy,
          actionSet: actionSet,
-         tags: asset.tags
+         tags: asset.tags,
+         activeWorkflows: activeWorkflows,
+         location: location
       });
    }
 
    return (
    {
-      luceneQuery: filterQuery,
+      luceneQuery: filterParams.query,
       paging:
       {
          startIndex: startIndex,
@@ -148,14 +188,4 @@ function getDocList(filter)
       },
       items: items
    });
-}
-
-
-function sortByType(a, b)
-{
-   if (a.isContainer == b.isContainer)
-   {
-      return (b.name.toLowerCase() > a.name.toLowerCase() ? -1 : 1);
-   }
-   return (a.isContainer ? -1 : 1);
 }

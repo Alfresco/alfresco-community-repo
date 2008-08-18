@@ -50,7 +50,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class BlogServiceTest extends BaseWebScriptTest
 {
-	private static Log logger = LogFactory.getLog(BlogServiceTest.class);
+	@SuppressWarnings("unused")
+    private static Log logger = LogFactory.getLog(BlogServiceTest.class);
 	
     private AuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
@@ -58,9 +59,9 @@ public class BlogServiceTest extends BaseWebScriptTest
     private SiteService siteService;
     
     private static final String USER_ADMIN = "admin";
-    private static final String USER_ONE = "UserOneSecond";
-    private static final String USER_TWO = "UserTwoSecond";
-    private static final String SITE_SHORT_NAME_BLOG = "BlogSiteShortName";
+    private static final String USER_ONE = "UserOneSecondToo";
+    private static final String USER_TWO = "UserTwoSecondToo";
+    private static final String SITE_SHORT_NAME_BLOG = "BlogSiteShortNameTest";
     private static final String COMPONENT_BLOG = "blog";
 
     private static final String URL_BLOG_POST = "/api/blog/post/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/";
@@ -80,21 +81,23 @@ public class BlogServiceTest extends BaseWebScriptTest
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        this.siteService = (SiteService)getServer().getApplicationContext().getBean("siteService");
+        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
+        
+        // Authenticate as user
+        this.authenticationComponent.setCurrentUser(USER_ADMIN);
         
         // Create test site
         // - only create the site if it doesn't already exist
         SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_BLOG);
         if (siteInfo == null)
         {
-            this.siteService.createSite("BlogSitePreset", SITE_SHORT_NAME_BLOG, "BlogSiteTitle",
-                "BlogSiteDescription", true);
+            this.siteService.createSite("BlogSitePreset", SITE_SHORT_NAME_BLOG, "BlogSiteTitle", "BlogSiteDescription", true);
         }
         
         // Create users
         createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
         createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
-        
+
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
@@ -107,9 +110,12 @@ public class BlogServiceTest extends BaseWebScriptTest
         // admin user required to delete user
         this.authenticationComponent.setCurrentUser(USER_ADMIN);
         
+        // TODO don't delete them as it seems they don't get cleaned up correctly
         // delete the inviter user
-        personService.deletePerson(USER_ONE);
-        personService.deletePerson(USER_TWO);
+      //  personService.deletePerson(USER_ONE);
+      //  this.authenticationService.deleteAuthentication(USER_ONE);
+      //  personService.deletePerson(USER_TWO);
+      //  this.authenticationService.deleteAuthentication(USER_TWO);
         
         // delete invite site
         siteService.deleteSite(SITE_SHORT_NAME_BLOG);
@@ -137,7 +143,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         }
         
         // add the user as a member with the given role
-        this.siteService.setMembership(SITE_SHORT_NAME_BLOG, USER_ONE, role);
+        this.siteService.setMembership(SITE_SHORT_NAME_BLOG, userName, role);
     }
     
     

@@ -1,5 +1,5 @@
 <#--
-	This template renders the blog configuration json data.
+	This template renders the blog data object.
 -->
 <#macro blogJSON item>
 <#escape x as jsonUtils.encodeJSONString(x)>
@@ -13,7 +13,12 @@
     "description" : "${item.properties["blg:description"]!''}",
 	"url" : "${item.properties["blg:url"]!''}",
 	"username" : "${item.properties["blg:userName"]!''}",
-	"password" : "${item.properties["blg:password"]!''}"
+	"password" : "${item.properties["blg:password"]!''}",
+	"permissions" : {
+	   "create" : ${item.hasPermission("CreateChildren")?string},
+	   "edit" : ${item.hasPermission("Write")?string},
+	   "delete" : ${item.hasPermission("Delete")?string}
+	}
 }
 </#escape>
 </#macro>

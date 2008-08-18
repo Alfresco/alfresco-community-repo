@@ -41,6 +41,9 @@ function main()
    // fetch the contentLength param
    var contentLength = args["contentLength"] != undefined ? parseInt(args["contentLength"]) : -1;
    model.contentLength = isNaN(contentLength) ? -1 : contentLength;
+   
+   // assign the blog node
+   model.blog = node;
 }
 
 main();

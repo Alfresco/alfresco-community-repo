@@ -56,9 +56,9 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     private SiteService siteService;
     
     private static final String USER_ADMIN = "admin";
-    private static final String USER_ONE = "UserOneSecond";
-    private static final String USER_TWO = "UserTwoSecond";
-    private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortName";
+    private static final String USER_ONE = "UserOneThird";
+    private static final String USER_TWO = "UserTwoThird";
+    private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortNameTwo";
     private static final String COMPONENT_DISCUSSION = "discussion";
 
     private static final String URL_FORUM_POST = "/api/forum/post/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/";
@@ -78,6 +78,9 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("siteService");
+        
+        // Authenticate as user
+        this.authenticationComponent.setCurrentUser(USER_ADMIN);
         
         // Create test site
         // - only create the site if it doesn't already exist
@@ -105,8 +108,10 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         this.authenticationComponent.setCurrentUser(USER_ADMIN);
         
         // delete the inviter user
-        personService.deletePerson(USER_ONE);
-        personService.deletePerson(USER_TWO);
+        //personService.deletePerson(USER_ONE);
+        //this.authenticationService.deleteAuthentication(USER_ONE);
+        //personService.deletePerson(USER_TWO);
+        //this.authenticationService.deleteAuthentication(USER_TWO);
         
         // delete invite site
         siteService.deleteSite(SITE_SHORT_NAME_DISCUSSION);
@@ -134,7 +139,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         }
         
         // add the user as a member with the given role
-        this.siteService.setMembership(SITE_SHORT_NAME_DISCUSSION, USER_ONE, role);
+        this.siteService.setMembership(SITE_SHORT_NAME_DISCUSSION, userName, role);
     }
     
     

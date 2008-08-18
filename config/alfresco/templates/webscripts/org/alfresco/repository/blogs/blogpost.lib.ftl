@@ -44,7 +44,10 @@
    </#if>
    "createdOn" : "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "permissions" : {"edit" : true, "publishExt" : true, "delete" : true},
+   "permissions" : {
+      "edit" : ${item.node.hasPermission("Write")?string},
+      "delete" : ${item.node.hasPermission("Delete")?string}
+   },
    "commentCount" : ${item.commentCount?c},
    "tags" : [<#list item.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
    

@@ -57,7 +57,7 @@
    "repliesUrl" : "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}/replies",
    "nodeRef" : "${refNode.nodeRef}",
    
-   <#-- normal data, the post node will used to fetch it -->
+   <#-- data coming from the post node -->
    "title" : "${(post.properties.title!"")}",
    "createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
@@ -74,7 +74,12 @@
    </#if>
    <@addContent post=post />
    "replyCount" : <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
-   "permissions" : { "edit": true, "delete" : true, "reply" : true }
+   "permissions" :
+   {
+      "edit": ${post.hasPermission("Write")?string},
+      "reply" : ${post.parent.hasPermission("CreateChildren")?string},
+      "delete" : ${post.hasPermission("Delete")?string}
+   }
 </#escape>
 </#macro>
 

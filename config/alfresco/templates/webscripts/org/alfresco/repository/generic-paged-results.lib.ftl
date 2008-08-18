@@ -10,14 +10,15 @@
 	
 Usage:
 	<#import "generic-paged-results.lib.ftl" as gen/>
+	{
 	<@gen.pagedResults data=data ; item>
 		output of the individual item, for example by calling another macro:
 		<@yourLib.itemJSON item=item />
 	</@gen.pagedResults>
+	}
 	
 -->
 <#macro pagedResults data>
-{
 	"total" : ${data.total?c},
 	"pageSize" : ${data.pageSize?c},
 	"startIndex" : ${data.startIndex?c},
@@ -29,5 +30,4 @@ Usage:
 		<#if item_has_next>,</#if>
 	</#list>
 	]
-}
 </#macro>

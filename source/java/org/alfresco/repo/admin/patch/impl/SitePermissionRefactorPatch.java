@@ -97,7 +97,7 @@ public class SitePermissionRefactorPatch extends AbstractPatch
             String siteGroup = authorityService.createAuthority(
                     AuthorityType.GROUP, 
                     null, 
-                    ((SiteServiceImpl)this.siteService).getSiteGroupName(siteInfo.getShortName(), 
+                    ((SiteServiceImpl)this.siteService).getSiteGroup(siteInfo.getShortName(), 
                     false));
             Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
             for (String permission : permissions)
@@ -106,7 +106,7 @@ public class SitePermissionRefactorPatch extends AbstractPatch
                 String permissionGroup = authorityService.createAuthority(
                                             AuthorityType.GROUP, 
                                             siteGroup, 
-                                            ((SiteServiceImpl)this.siteService).getSitePermissionGroupName(
+                                            ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
                                                     siteInfo.getShortName(), 
                                                     permission, 
                                                     false));
@@ -123,7 +123,7 @@ public class SitePermissionRefactorPatch extends AbstractPatch
                 if (permission.getAuthorityType() == AuthorityType.USER)
                 {
                     // Add this authority to the appropriate group
-                    String group = ((SiteServiceImpl)this.siteService).getSitePermissionGroupName(
+                    String group = ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
                             siteInfo.getShortName(), 
                             permission.getPermission(), 
                             true);

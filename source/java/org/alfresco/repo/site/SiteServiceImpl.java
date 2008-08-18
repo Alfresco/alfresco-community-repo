@@ -229,12 +229,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 public String doWork() throws Exception
                 {
                     // Create the site's groups
-                    String siteGroup = authorityService.createAuthority(AuthorityType.GROUP, null, getSiteGroupName(shortName, false));
+                    String siteGroup = authorityService.createAuthority(AuthorityType.GROUP, null, getSiteGroup(shortName, false));
                     Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                     for (String permission : permissions)
                     {
                         // Create a group for the permission
-                        String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, siteGroup, getSitePermissionGroupName(shortName, permission, false));
+                        String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, siteGroup, getSiteRoleGroup(shortName, permission, false));
                         
                         // Assign the group the relevant permission on the site
                         permissionService.setPermission(siteNodeRef, permissionGroup, permission, true);
@@ -249,7 +249,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                         permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
                     }
                     permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PERMISSIONS, true);
-                    authorityService.addAuthority(getSitePermissionGroupName(shortName, SiteModel.SITE_MANAGER, true), currentUser);                  
+                    authorityService.addAuthority(getSiteRoleGroup(shortName, SiteModel.SITE_MANAGER, true), currentUser);                  
                     
                     // Return nothing
                     return null;
@@ -263,12 +263,28 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
     
     /**
+     * @see org.alfresco.repo.site.SiteService#getSiteGroup(java.lang.String)
+     */
+    public String getSiteGroup(String shortName)
+    {
+        return getSiteGroup(shortName, true);
+    }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteService#getSiteRoleGroup(java.lang.String, java.lang.String)
+     */
+    public String getSiteRoleGroup(String shortName, String role)
+    {
+        return getSiteRoleGroup(shortName, role, true);
+    }
+    
+    /**
      * Helper method to get the name of the site group 
      * 
      * @param shortName     site short name
      * @return String       site group name
      */
-    public String getSiteGroupName(String shortName, boolean withGroupPrefix)
+    public String getSiteGroup(String shortName, boolean withGroupPrefix)
     {
         StringBuffer sb = new StringBuffer(64);
         if (withGroupPrefix == true)
@@ -287,9 +303,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * @param permission    permission name
      * @return String       site permission group name
      */
-    public String getSitePermissionGroupName(String shortName, String permission, boolean withGroupPrefix)
+    public String getSiteRoleGroup(String shortName, String permission, boolean withGroupPrefix)
     {
-        return getSiteGroupName(shortName, withGroupPrefix) + "_" + permission;
+        return getSiteGroup(shortName, withGroupPrefix) + "_" + permission;
     }
     
     /**
@@ -514,7 +530,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 public Object doWork() throws Exception
                 {
-                    authorityService.deleteAuthority(getSiteGroupName(shortName, true));
+                    authorityService.deleteAuthority(getSiteGroup(shortName, true));
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
@@ -536,7 +552,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
-            String groupName = getSitePermissionGroupName(shortName, permission, true);
+            String groupName = getSiteRoleGroup(shortName, permission, true);
             Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
             for (String user : users)
             {
@@ -626,7 +642,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 Set<String> siteMangers = this.authorityService.getContainedAuthorities(
                         AuthorityType.USER, 
-                        getSitePermissionGroupName(shortName, SITE_MANAGER, true), 
+                        getSiteRoleGroup(shortName, SITE_MANAGER, true), 
                         true);
                 if (siteMangers.size() == 1)
                 {
@@ -653,7 +669,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     public Object doWork() throws Exception
                     {
                         // Remove the user from the current permission group
-                        String currentGroup = getSitePermissionGroupName(shortName, role, true);
+                        String currentGroup = getSiteRoleGroup(shortName, role, true);
                         authorityService.removeAuthority(currentGroup, userName);
                         
                         return null;
@@ -723,7 +739,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 {
                     Set<String> siteMangers = this.authorityService.getContainedAuthorities(
                             AuthorityType.USER, 
-                            getSitePermissionGroupName(shortName, SITE_MANAGER, true), 
+                            getSiteRoleGroup(shortName, SITE_MANAGER, true), 
                             true);
                     if (siteMangers.size() == 1)
                     {
@@ -739,12 +755,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
                         if (currentRole != null)
                         {
                             // Remove the user from the current permission group
-                            String currentGroup = getSitePermissionGroupName(shortName, currentRole, true);
+                            String currentGroup = getSiteRoleGroup(shortName, currentRole, true);
                             authorityService.removeAuthority(currentGroup, userName);
                         }
                         
                         // Add the user to the new permission group
-                        String newGroup = getSitePermissionGroupName(shortName, role, true);
+                        String newGroup = getSiteRoleGroup(shortName, role, true);
                         authorityService.addAuthority(newGroup, userName);
                         
                         return null;

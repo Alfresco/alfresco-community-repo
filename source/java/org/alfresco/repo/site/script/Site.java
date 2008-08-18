@@ -33,9 +33,12 @@ import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteInfo;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -408,4 +411,127 @@ public class Site implements Serializable
     	return hasContainer;
     }
     
+    /**
+     * Reset any permissions that have been set on the node.  
+     * <p>
+     * All permissions will be deleted and the node set to inherit permissions.
+     * 
+     * @param nodeRef   node reference
+     */
+    public void resetAllPermissions(ScriptNode node)
+    {
+        final NodeRef nodeRef = node.getNodeRef();
+        
+        // TODO Check that the node is indeed a child of the site
+        
+        // Check that the user has permissions to change permissions on the node
+        if (AccessStatus.ALLOWED.equals(this.serviceRegistry.getPermissionService().hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
+        {       
+            // Do the work as system as we are messing about with permissions
+            AuthenticationUtil.runAs(
+                new AuthenticationUtil.RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        // Reset all the permissions on the node
+                        serviceRegistry.getPermissionService().setInheritParentPermissions(nodeRef, true);
+                        serviceRegistry.getPermissionService().deletePermissions(nodeRef);
+                        return null;
+                    }
+                    
+                }, AuthenticationUtil.getSystemUserName());
+            
+            
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("You do not have permissions to reset permissions on this node.");
+        }
+    }
+    
+    /**
+     * Allows all members of the site collaboration rights on the node.
+     * 
+     * @param nodeRef   node reference
+     */
+    public void allowAllMembersCollaborate(ScriptNode node)
+    {
+        final NodeRef nodeRef = node.getNodeRef();
+        
+        // TODO Check that the node is indeed a child of the site
+        
+        // Get the permission service
+        final PermissionService permissionService = this.serviceRegistry.getPermissionService();
+        
+        // Check that the user has permissions to change permissions on the node
+        if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
+        {       
+            // Do the work as system as we are messing about with permissions
+            AuthenticationUtil.runAs(
+                new AuthenticationUtil.RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {        
+                        // Get the site groups
+                        String siteGroup = siteService.getSiteGroup(siteInfo.getShortName());
+                        String managerGroup = siteService.getSiteRoleGroup(siteInfo.getShortName(), SiteModel.SITE_MANAGER);
+                        
+                        // Assign the correct permissions
+                        permissionService.setInheritParentPermissions(nodeRef, false);
+                        permissionService.deletePermissions(nodeRef);
+                        permissionService.setPermission(nodeRef, siteGroup, SiteModel.SITE_COLLABORATOR, true);
+                        permissionService.setPermission(nodeRef, managerGroup, SiteModel.SITE_MANAGER, true);
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("You do not have permissions to all memebers contribute permissions on this node.");
+        }
+    }
+    
+    /**
+     * Deny access to all members of the site to the node.
+     * <p>
+     * Note, site managers will stil have appropriate permissions on the node. 
+     * 
+     * @param nodeRef   node reference
+     */
+    public void denyAllAccess(ScriptNode node)
+    {
+        final NodeRef nodeRef = node.getNodeRef();
+        
+        // TODO Check that the node is indeed a child of the site
+        
+        // Get the permission service
+        final PermissionService permissionService = this.serviceRegistry.getPermissionService();
+        
+        // Check that the user has permissions to change permissions on the node
+        if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
+        {       
+            // Do the work as system as we are messing about with permissions
+            AuthenticationUtil.runAs(
+                new AuthenticationUtil.RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {        
+                        // Get the site groups
+                        String managerGroup = siteService.getSiteRoleGroup(siteInfo.getShortName(), SiteModel.SITE_MANAGER);
+                        
+                        // Assign the correct permissions
+                        permissionService.setInheritParentPermissions(nodeRef, false);
+                        permissionService.deletePermissions(nodeRef);
+                        permissionService.setPermission(nodeRef, managerGroup, SiteModel.SITE_MANAGER, true);
+                        
+                        return null;
+                     }
+                }, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("You do not have permissions to all memebers contribute permissions on this node.");
+        }
+    }    
 }

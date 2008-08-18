@@ -154,4 +154,22 @@ public interface SiteService
      */
     boolean hasContainer(String shortName, String componentId);
     
+    /**
+     * Gets the sites group.  All members of the site are contained within this group.
+     * 
+     * @param shortName     site short name
+     * @return String       group name
+     */
+    String getSiteGroup(String shortName);
+    
+    /**
+     * Gets the sites role group.  All members assigned the given role will be memebers of 
+     * the returned group.
+     * 
+     * @param shortName     site short name
+     * @param role          membership role
+     * @return String       group name
+     */
+    String getSiteRoleGroup(String shortName, String role);
+    
 }

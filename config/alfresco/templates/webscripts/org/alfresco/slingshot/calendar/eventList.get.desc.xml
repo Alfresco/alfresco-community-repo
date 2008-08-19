@@ -2,6 +2,6 @@
 <shortname>Event Listing</shortname>
 <description>List of all upcoming events</description>
 <url>/calendar/eventList</url>
-<format default="json">extension</format>
+<format default="json">argument</format>
 <authentication>guest</authentication>
 </webscript>

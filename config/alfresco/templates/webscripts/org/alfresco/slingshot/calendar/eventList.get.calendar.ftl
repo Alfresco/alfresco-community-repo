@@ -4,7 +4,9 @@
 BEGIN:VCALENDAR
 PRODID:-//Alfresco Software//Calendar 1.0//EN
 VERSION:2.0
-<#list events as event>
+<#list events as item>
+<#assign event = item.event>
+
 <#assign from = event.properties["ia:fromDate"]>
 <#assign to = event.properties["ia:toDate"]>
 BEGIN:VEVENT

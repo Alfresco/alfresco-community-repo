@@ -33,10 +33,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -51,6 +59,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -72,6 +81,9 @@ public class WorkflowServiceImpl implements WorkflowService
     private WorkflowPackageComponent workflowPackageComponent;
     private NodeService nodeService;
     private ContentService contentService;
+    private AVMSyncService avmSyncService;
+    private DictionaryService dictionaryService;
+    private NodeService protectedNodeService;
 
     
     /**
@@ -97,7 +109,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Sets the Workflow Package Component
      * 
-     * @param workflowPackage  workflow package component
+     * @param workflowPackageComponent  workflow package component
      */
     public void setWorkflowPackageComponent(WorkflowPackageComponent workflowPackageComponent)
     {
@@ -124,7 +136,35 @@ public class WorkflowServiceImpl implements WorkflowService
         this.contentService = contentService;
     }
     
+    /**
+     * Set the avm sync service 
+     * @param avmSyncService
+     */
+    public void setAvmSyncService(AVMSyncService avmSyncService)
+    {
+        this.avmSyncService = avmSyncService;
+    }
+
+    /**
+     * Set the dictionary service 
+     * 
+     * @param dictionaryService
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     
+    /**
+     * Set the node service which applies permissions
+     * @param protectedNodeService
+     */
+    public void setProtectedNodeService(NodeService protectedNodeService)
+    {
+        this.protectedNodeService = protectedNodeService;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java.lang.String, java.io.InputStream, java.lang.String)
      */
@@ -573,4 +613,83 @@ public class WorkflowServiceImpl implements WorkflowService
         return component;
     }
 
+    public List<NodeRef> getPackageContents(String taskId)
+    {
+        WorkflowTask workflowTask = getTaskById(taskId);
+        List<NodeRef> contents = new ArrayList<NodeRef>();
+        
+        if(workflowTask != null)
+        {
+            NodeRef workflowPackage = (NodeRef)workflowTask.properties.get(WorkflowModel.ASSOC_PACKAGE);
+            if (workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            {
+               if (protectedNodeService.exists(workflowPackage))
+               {
+                  final NodeRef stagingNodeRef = (NodeRef)
+                     protectedNodeService.getProperty(workflowPackage,
+                                                 WCMModel.PROP_AVM_DIR_INDIRECTION);
+                  final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
+                  final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
+                  if (logger.isDebugEnabled())
+                      logger.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
+                  for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath,
+                                                                     -1, stagingAvmPath,
+                                                                     null))
+                  {
+                     if (logger.isDebugEnabled())
+                         logger.debug("got difference " + d);
+                     if (d.getDifferenceCode() == AVMDifference.NEWER ||
+                         d.getDifferenceCode() == AVMDifference.CONFLICT)
+                     {
+                         contents.add(AVMNodeConverter.ToNodeRef(d.getSourceVersion(), d.getSourcePath()));
+                     }
+                  }
+               }
+            }
+            else
+            {
+               // get existing workflow package items
+               List<ChildAssociationRef> childRefs = protectedNodeService.getChildAssocs(
+                       workflowPackage, ContentModel.ASSOC_CONTAINS, 
+                  RegexQNamePattern.MATCH_ALL);   
+            
+               for (ChildAssociationRef ref: childRefs)
+               {
+                  // create our Node representation from the NodeRef
+                  NodeRef nodeRef = ref.getChildRef();
+               
+                  if (!protectedNodeService.exists(nodeRef))
+                  {
+                     if (logger.isDebugEnabled())
+                         logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
+                  }
+                  else
+                  {
+                     // find it's type so we can see if it's a node we are interested in
+                     QName type = protectedNodeService.getType(nodeRef);
+                  
+                     // make sure the type is defined in the data dictionary
+                     TypeDefinition typeDef = dictionaryService.getType(type);
+                  
+                     if (typeDef == null)
+                     {
+                        if (logger.isWarnEnabled())
+                            logger.warn("Found invalid object in database: id = " + nodeRef + 
+                                       ", type = " + type);
+                     }
+                     else
+                     {
+                         contents.add(nodeRef);
+                     }
+                  }
+               }
+            }
+        }
+        
+        return contents;
+        
+    }
+
+    
+    
 }

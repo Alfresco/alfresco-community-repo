@@ -384,4 +384,11 @@ public interface WorkflowService
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"packageItem", "active"})
     public List<WorkflowInstance> getWorkflowsForContent(NodeRef packageItem, boolean active);
     
+    /**
+     * Get a list of node refs to all the package contents for the given task id.
+     * @param taskId - the task id
+     * @return - A list of NodeRefs
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"packageItem", "active"})
+    public List<NodeRef> getPackageContents(String taskId);
 }

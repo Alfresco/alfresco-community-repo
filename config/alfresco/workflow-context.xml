@@ -26,6 +26,9 @@
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="contentService" ref="contentService"/>
+	  <property name="avmSyncService" ref="AVMSyncService"/>
+	  <property name="dictionaryService" ref="dictionaryService"/>
+	  <property name="protectedNodeService" ref="NodeService"/>
    </bean>
 
    <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">

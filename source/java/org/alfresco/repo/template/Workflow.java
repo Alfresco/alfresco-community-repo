@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 
 /**
  * Workflow and task support in FreeMarker templates.
@@ -246,52 +248,33 @@ public class Workflow extends BaseTemplateProcessorExtension
         public List<TemplateContent> getPackageResources()
         {
             List<TemplateContent> resources = new ArrayList<TemplateContent>();
-            if (this.task.properties.get(PROP_FROM_PATH) != null)
+            List<NodeRef> contents = this.services.getWorkflowService().getPackageContents(this.task.id);
+            
+            NodeService nodeService = this.services.getNodeService();
+            DictionaryService ddService = this.services.getDictionaryService();
+            
+            for(NodeRef nodeRef : contents)
             {
-                AVMService avmService = this.services.getAVMService();
-                NodeRef workflowPackage = getPackage();
-                NodeRef stagingNodeRef = (NodeRef)this.services.getNodeService().getProperty(
-                        workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
-                String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
-                String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
-                for (AVMDifference d : this.services.getAVMSyncService().compare(
-                        -1, packageAvmPath, -1, stagingAvmPath, null))
+                if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
                 {
-                    if (d.getDifferenceCode() == AVMDifference.NEWER ||
-                            d.getDifferenceCode() == AVMDifference.CONFLICT)
-                    {
-                        resources.add(new AVMTemplateNode(
-                                d.getSourcePath(), d.getSourceVersion(), this.services, this.resolver));
-                    }
+                    Pair<Integer, String> vp = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+                    resources.add(new AVMTemplateNode(
+                            vp.getSecond(), vp.getFirst(), this.services, this.resolver));
+               
                 }
-            }
-            else
-            {
-                // get existing workflow package items
-                NodeService nodeService = this.services.getNodeService();
-                DictionaryService ddService = this.services.getDictionaryService();
-                List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
-                        getPackage(), ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);   
-
-                for (ChildAssociationRef ref: childRefs)
+                else
                 {
-                    // create our Node representation from the NodeRef
-                    NodeRef nodeRef = ref.getChildRef();
-                    if (nodeService.exists(nodeRef))
-                    {
-                        // find it's type so we can see if it's a node we are interested in
-                        QName type = nodeService.getType(nodeRef);
+                    QName type = nodeService.getType(nodeRef);
 
-                        // make sure the type is defined in the data dictionary
-                        if (ddService.getType(type) != null)
+                    // make sure the type is defined in the data dictionary
+                    if (ddService.getType(type) != null)
+                    {
+                        // look for content nodes or links to content
+                        // NOTE: folders within workflow packages are ignored for now
+                        if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                                ApplicationModel.TYPE_FILELINK.equals(type))
                         {
-                            // look for content nodes or links to content
-                            // NOTE: folders within workflow packages are ignored for now
-                            if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-                                    ApplicationModel.TYPE_FILELINK.equals(type))
-                            {
-                                resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
-                            }
+                            resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
                         }
                     }
                 }

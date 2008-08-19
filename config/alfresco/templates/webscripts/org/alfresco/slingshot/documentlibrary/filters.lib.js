@@ -98,7 +98,7 @@ const TYPE_MAP = {
       
    "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
       
-   "images": "+@cm\\:content.mimetype:image/*",
+   "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*",
 };
 
 function getTypeFilterQuery(type)

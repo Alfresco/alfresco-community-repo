@@ -48,12 +48,36 @@ function getDocList(filter)
    }
    
    var typeQuery = getTypeFilterQuery(url.templateArgs.type);
+   query += " " + typeQuery;
 
-   query += " ";
-   query += typeQuery;
+   // Sort the list before trimming to page chunks 
+   allAssets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending);
 
-   // Sort the list before trimming to page chunks   
-   assets = search.luceneSearch(query, "cm:name", true);
+   // Limit the resultset?
+   if (filterParams.limitResults)
+   {
+      /**
+       * This isn't a true results trim (page-trimming is done below), as we haven't yet filtered by type.
+       * However, it's useful for a quick slimming-down of the "recently..." queries.
+       */
+      allAssets = allAssets.slice(0, filterParams.limitResults);
+   }
+      
+   // Ensure folders appear at the top of the list
+   folderAssets = new Array();
+   documentAssets = new Array();
+   for each(asset in allAssets)
+   {
+      if (asset.isContainer)
+      {
+         folderAssets.push(asset);
+      }
+      else
+      {
+         documentAssets.push(asset);
+      }
+   }
+   assets = folderAssets.concat(documentAssets);
    
    // Make a note of totalRecords before trimming the assets array
    var totalRecords = assets.length;

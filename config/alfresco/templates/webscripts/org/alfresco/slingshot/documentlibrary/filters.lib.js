@@ -3,7 +3,9 @@ function getFilterParams(filter, obj)
    var filterParams =
    {
       query: null,
-      limitResults: null
+      limitResults: null,
+      sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
+      sortByAscending: true
    }
 
    // Max returned results specified?
@@ -61,6 +63,8 @@ function getFilterParams(filter, obj)
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
 
+         filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
+         filterParams.sortByAscending = false;
          filterParams.query = filterQuery;
          break;
          

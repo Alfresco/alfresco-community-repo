@@ -24,6 +24,10 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
+import java.util.Date;
+
+import org.alfresco.repo.jscript.ScriptNode;
+
 /**
  * Holds properties pertaining to an invitation that has been sent out by a Site Manager (Inviter)
  * to another person (Invitee) to join his/her Site
@@ -33,19 +37,31 @@ package org.alfresco.repo.web.scripts.invite;
 public class InviteInfo
 {
     // private instances to hold property values
+	private String invitationStatus;
     private String inviterUserName;
+    private ScriptNode inviterPerson;
     private String inviteeUserName;
+    private ScriptNode inviteePerson;
+    private String role;
     private String siteShortName;
+    private Date sentInviteDate;
     private String inviteId;
     
-    public InviteInfo(String inviterUserName, String inviteeUserName, String siteShortName, String inviteId)
+    public InviteInfo(String invitationStatus, String inviterUserName, ScriptNode inviterPerson,
+    		String inviteeUserName, ScriptNode inviteePerson, String role,
+    		String siteShortName, Date sentInviteDate, String inviteId)
     {
+    	this.invitationStatus = invitationStatus;
         this.inviterUserName = inviterUserName;
+        this.inviterPerson = inviterPerson;
         this.inviteeUserName = inviteeUserName;
+        this.inviteePerson = inviteePerson;
+        this.role = role;
         this.siteShortName = siteShortName;
+        this.sentInviteDate = sentInviteDate;
         this.inviteId = inviteId;
     }
-
+    
     /**
      * Gets the inviter user name
      * 
@@ -85,4 +101,26 @@ public class InviteInfo
     {
         return inviteId;
     }
+
+	public ScriptNode getInviteePerson() {
+		return inviteePerson;
+	}
+
+	public ScriptNode getInviterPerson() {
+		return inviterPerson;
+	}
+
+	public Date getSentInviteDate() {
+		return sentInviteDate;
+	}
+
+	public String getInvitationStatus() {
+		return invitationStatus;
+	}
+
+	public String getRole() {
+		return role;
+	}
+    
+    
 }

@@ -25,10 +25,16 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.site.SiteService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
@@ -75,6 +81,9 @@ public class Invites extends DeclarativeWebScript
     // service instances
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
+    private PersonService personService;
+    private SiteService siteService;
+    private ServiceRegistry serviceRegistry;
 
     /**
      * Set the workflow service property
@@ -98,7 +107,19 @@ public class Invites extends DeclarativeWebScript
         this.namespaceService = namespaceService;
     }
 
-    /*
+    public void setPersonService(PersonService personService) {
+		this.personService = personService;
+	}
+
+	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
+	}
+
+	public void setSiteService(SiteService siteService) {
+		this.siteService = siteService;
+	}
+
+	/*
      * (non-Javadoc)
      * 
      * @see
@@ -240,9 +261,33 @@ public class Invites extends DeclarativeWebScript
             // as "inviteId" onto model
             String workflowId = workflowTask.path.instance.id;
 
+            // TODO: fetch correct workflow start date
+            Date sentInviteDate = new Date();
+            
+            // TODO: fetchh correct role
+            String role = "SiteManager";
+            
+            // TODO: assign correct state
+            String invitationStatus = "pending"; // "accepted", "declined"
+            
+            // check whether we can find a person node for inviter/invitee
+            NodeRef inviterRef = personService.getPerson(inviterUserNameProp);
+            ScriptNode inviterPerson = null;
+            if (inviterRef != null)
+            {
+            	inviterPerson = new ScriptNode(inviterRef, serviceRegistry); 
+            }
+            
+            NodeRef inviteeRef = personService.getPerson(inviteeUserNameProp);
+            ScriptNode inviteePerson = null;
+            if (inviteeRef != null)
+            {
+            	inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
+            }
+            
             // create and add InviteInfo to inviteInfoList
-            InviteInfo inviteInfo = new InviteInfo(inviterUserNameProp,
-                    inviteeUserNameProp, siteShortNameProp, workflowId);
+            InviteInfo inviteInfo = new InviteInfo(invitationStatus, inviterUserNameProp, inviterPerson,
+                    inviteeUserNameProp, inviteePerson, role, siteShortNameProp, sentInviteDate, workflowId);
             inviteInfoList.add(inviteInfo);
         }
 

@@ -323,8 +323,11 @@
    <bean id="webscript.org.alfresco.repository.invite.invites.get"
          class="org.alfresco.repo.web.scripts.invite.Invites"
          parent="webscript">
-      <property name="workflowService" ref="workflowServiceImpl"/>
-      <property name="namespaceService" ref="namespaceService"/>
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="siteService" ref="SiteService"/>
+      <property name="personService" ref="PersonService"/>
+      <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
    
    <!--                                                     -->

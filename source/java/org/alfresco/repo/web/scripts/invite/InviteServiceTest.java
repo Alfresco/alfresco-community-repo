@@ -332,7 +332,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 expectedStatus);
     }
 
-    private JSONArray getInvitesByInviteId(String inviteId, int expectedStatus)
+    private JSONObject getInvitesByInviteId(String inviteId, int expectedStatus)
             throws Exception
     {
         // construct get invites URL
@@ -342,12 +342,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         MockHttpServletResponse response = getRequest(getInvitesUrl,
                 expectedStatus);
 
-        JSONArray result = new JSONArray(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
     }
 
-    private JSONArray getInvitesByInviterUserName(String inviterUserName,
+    private JSONObject getInvitesByInviterUserName(String inviterUserName,
             int expectedStatus) throws Exception
     {
         // construct get invites URL
@@ -358,12 +358,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         MockHttpServletResponse response = getRequest(getInvitesUrl,
                 expectedStatus);
 
-        JSONArray result = new JSONArray(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
     }
 
-    private JSONArray getInvitesByInviteeUserName(String inviteeUserName,
+    private JSONObject getInvitesByInviteeUserName(String inviteeUserName,
             int expectedStatus) throws Exception
     {
         // construct get invites URL
@@ -374,12 +374,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         MockHttpServletResponse response = getRequest(getInvitesUrl,
                 expectedStatus);
 
-        JSONArray result = new JSONArray(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
     }
 
-    private JSONArray getInvitesBySiteShortName(String siteShortName,
+    private JSONObject getInvitesBySiteShortName(String siteShortName,
             int expectedStatus) throws Exception
     {
         // construct get invites URL
@@ -390,7 +390,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         MockHttpServletResponse response = getRequest(getInvitesUrl,
                 expectedStatus);
 
-        JSONArray result = new JSONArray(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;
     }
@@ -511,11 +511,11 @@ public class InviteServiceTest extends BaseWebScriptTest
         //
 
         // get pending invite matching inviteId from invite started above
-        JSONArray getInvitesResult = getInvitesByInviteId(inviteId,
+        JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
                 Status.STATUS_OK);
 
         // there should no longer be any invites identified by invite ID pending
-        assertEquals(getInvitesResult.length(), 0);
+        assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
     }
 
     public void testRejectInvite() throws Exception
@@ -547,11 +547,11 @@ public class InviteServiceTest extends BaseWebScriptTest
         //
 
         // get pending invite matching inviteId from invite started above
-        JSONArray getInvitesResult = getInvitesByInviteId(inviteId,
+        JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
                 Status.STATUS_OK);
 
         // there should no longer be any invites identified by invite ID pending
-        assertEquals(getInvitesResult.length(), 0);
+        assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
     }
 
     public void testGetInvitesByInviteId() throws Exception
@@ -567,12 +567,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         assertEquals(true, ((inviteId != null) && (inviteId.length() != 0)));
 
         // get pending invite matching inviteId from invite started above
-        JSONArray getInvitesResult = getInvitesByInviteId(inviteId,
+        JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
                 Status.STATUS_OK);
+        
+        assertEquals(getInvitesResult.getJSONArray("invites").length(), 1);
 
-        assertEquals(getInvitesResult.length(), 1);
-
-        JSONObject inviteJSONObj = getInvitesResult.getJSONObject(0);
+        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
         assertEquals(inviteId, inviteJSONObj.get("inviteId"));
     }
@@ -585,14 +585,14 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get pending invites matching inviter user name used in invite started
         // above
-        JSONArray getInvitesResult = getInvitesByInviterUserName(USER_INVITER,
+        JSONObject getInvitesResult = getInvitesByInviterUserName(USER_INVITER,
                 Status.STATUS_OK);
 
         assertEquals(true, getInvitesResult.length() > 0);
 
-        JSONObject inviteJSONObj = getInvitesResult.getJSONObject(0);
+        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
-        assertEquals(USER_INVITER, inviteJSONObj.get("inviterUserName"));
+        assertEquals(USER_INVITER, inviteJSONObj.getJSONObject("inviter").get("userName"));
     }
 
     public void testGetInvitesByInviteeUserName() throws Exception
@@ -610,14 +610,14 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get pending invites matching invitee user name from invite started
         // above
-        JSONArray getInvitesResult = getInvitesByInviteeUserName(
+        JSONObject getInvitesResult = getInvitesByInviteeUserName(
                 inviteeUserName, Status.STATUS_OK);
 
         assertEquals(true, getInvitesResult.length() > 0);
 
-        JSONObject inviteJSONObj = getInvitesResult.getJSONObject(0);
+        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
-        assertEquals(inviteeUserName, inviteJSONObj.get("inviteeUserName"));
+        assertEquals(inviteeUserName, inviteJSONObj.getJSONObject("invitee").get("userName"));
     }
 
     public void testGetInvitesBySiteShortName() throws Exception
@@ -635,12 +635,12 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get pending invites matching site short name from invite started
         // above
-        JSONArray getInvitesResult = getInvitesBySiteShortName(siteShortName,
+        JSONObject getInvitesResult = getInvitesBySiteShortName(siteShortName,
                 Status.STATUS_OK);
 
-        assertEquals(true, getInvitesResult.length() > 0);
+        assertEquals(true, getInvitesResult.getJSONArray("invites").length() > 0);
 
-        JSONObject inviteJSONObj = getInvitesResult.getJSONObject(0);
+        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
         assertEquals(siteShortName, inviteJSONObj.get("siteShortName"));
     }

@@ -90,3 +90,17 @@ function getFilterParams(filter, obj)
    
    return filterParams;
 }
+
+const TYPE_MAP = {
+   "documents": '+TYPE:"{http://www.alfresco.org/model/content/1.0}content"',
+      
+   "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
+      
+   "images": "+@cm\\:content.mimetype:image/*",
+};
+
+function getTypeFilterQuery(type)
+{
+   return TYPE_MAP[type] || "";
+}
+

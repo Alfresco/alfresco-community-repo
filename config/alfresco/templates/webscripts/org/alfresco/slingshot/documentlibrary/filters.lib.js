@@ -1,10 +1,10 @@
-function getFilterParams(filter, obj)
+function getFilterParams(filter, parsedArgs)
 {
    var filterParams =
    {
-      query: null,
+      query: "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"",
       limitResults: null,
-      sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
+      sortBy: "QNAME",
       sortByAscending: true
    }
 
@@ -19,13 +19,11 @@ function getFilterParams(filter, obj)
    switch (String(filter))
    {
       case "node":
-         // Special case
-         filterParams = "node";
+         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          break;
       
       case "tag":
-         // Special case
-         filterParams = "tag";
+         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
          break;
       
       case "recentlyModified":
@@ -58,7 +56,7 @@ function getFilterParams(filter, obj)
          date.setDate(date.getDate() - dayCount);
          var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
 
-         var filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
          filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
@@ -69,7 +67,7 @@ function getFilterParams(filter, obj)
          break;
          
       case "editingMe":
-         var filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "+@cm\\:workingCopyOwner:" + person.properties.userName;
 
@@ -77,7 +75,7 @@ function getFilterParams(filter, obj)
          break;
       
       case "editingOthers":
-         var filterQuery = "+PATH:\"" + obj.rootNode.qnamePath + "//*\" ";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "-@cm\\:workingCopyOwner:" + person.properties.userName;
 
@@ -85,7 +83,7 @@ function getFilterParams(filter, obj)
          break;
       
       default:
-         var filterQuery = "+PATH:\"" + obj.parentNode.qnamePath + "/*\" ";
+         var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\" ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          
          filterParams.query = filterQuery;

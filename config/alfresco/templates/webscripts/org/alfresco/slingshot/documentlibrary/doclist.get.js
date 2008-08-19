@@ -28,25 +28,9 @@ function getDocList(filter)
    // Try to find a filter query based on the passed-in arguments
    var allAssets, filterQuery, query;
    var filterParams = getFilterParams(filter, parsedArgs);
-   if (filterParams === null)
-   {
-      // Default to all children of parentNode
-      query = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
-   }
-   else if (filterParams == "node")
-   {
-      query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-   }
-   else if (filterParams == "tag")
-   {
-      query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
-   }
-   else
-   {
-      // Run the query returned from the filter
-      query = filterParams.query;
-   }
-   
+   query = filterParams.query;
+
+   // Specialise by passed-in type
    var typeQuery = getTypeFilterQuery(url.templateArgs.type);
    query += " " + typeQuery;
 

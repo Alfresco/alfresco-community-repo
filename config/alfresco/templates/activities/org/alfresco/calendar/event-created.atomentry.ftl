@@ -7,7 +7,6 @@
          href="${repoEndPoint}"
         </#if>
     />
-    <icon></icon>
     <id>${id}</id>
     <updated>${xmldate(date)}</updated>
     <summary>

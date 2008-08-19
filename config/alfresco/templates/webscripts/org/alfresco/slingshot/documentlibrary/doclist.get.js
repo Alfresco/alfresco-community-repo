@@ -13,7 +13,7 @@ model.doclist = getDocList(args["filter"]);
 function getDocList(filter)
 {
    var items = new Array();
-   var assets = new Array()
+   var assets;
    
    // Is our thumbnail tpe registered?
    var haveThumbnails = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME);
@@ -26,60 +26,34 @@ function getDocList(filter)
    }
 
    // Try to find a filter query based on the passed-in arguments
-   var allAssets, filterQuery;
+   var allAssets, filterQuery, query;
    var filterParams = getFilterParams(filter, parsedArgs);
    if (filterParams === null)
    {
       // Default to all children of parentNode
-      allAssets = parsedArgs.parentNode.children;
+      query = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
    }
    else if (filterParams == "node")
    {
-      allAssets = [parsedArgs.rootNode];
+      query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
    }
    else if (filterParams == "tag")
    {
-      allAssets = parsedArgs.rootNode.childrenByTags(args["filterData"]);
+      query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
    }
    else
    {
       // Run the query returned from the filter
-      allAssets = search.luceneSearch(filterParams.query, "@cm:name", true);
-      if (filterParams.limitResults)
-      {
-         /**
-          * This isn't a true results trim (page-trimming is done below), as we haven't yet filtered by type.
-          * However, it's useful for a quick slimming-down of the "recently..." queries.
-          */
-         allAssets = allAssets.slice(0, filterParams.limitResults);
-      }
+      query = filterParams.query;
    }
    
-   // Documents and/or folders?
-   var showDocs = true;
-   var showFolders = true;
-   var type = url.templateArgs.type;
-   if ((type !== null) && (type != ""))
-   {
-      showDocs = ((type == "all") || (type == "documents"));
-      showFolders = ((type == "all") || (type == "folders"));
-   }
+   var typeQuery = getTypeFilterQuery(url.templateArgs.type);
 
-   // Only interested in folders and/or documents depending on passed-in type
-   folderAssets = new Array();
-   documentAssets = new Array();
-   for each(asset in allAssets)
-   {
-      if (showFolders && asset.isContainer)
-      {
-         folderAssets.push(asset);
-      }
-      else if (showDocs && asset.isDocument)
-      {
-         documentAssets.push(asset);
-      }
-   }
-   assets = folderAssets.concat(documentAssets);
+   query += " ";
+   query += typeQuery;
+
+   // Sort the list before trimming to page chunks   
+   assets = search.luceneSearch(query, "cm:name", true);
    
    // Make a note of totalRecords before trimming the assets array
    var totalRecords = assets.length;

@@ -40,6 +40,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.template.AVMTemplateNode;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -658,83 +660,46 @@ public class ManageTaskDialog extends BaseDialogBean
             tx = Repository.getUserTransaction(context, true);
             tx.begin();
 
-            if (this.workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-            {
-               if (this.getNodeService().exists(this.workflowPackage))
-               {
-                  final NodeRef stagingNodeRef = (NodeRef)
-                     this.getNodeService().getProperty(this.workflowPackage,
-                                                 WCMModel.PROP_AVM_DIR_INDIRECTION);
-                  final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
-                  final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(this.workflowPackage).getSecond();
-                  if (LOGGER.isDebugEnabled())
-                     LOGGER.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-                  for (AVMDifference d : this.getAvmSyncService().compare(-1, packageAvmPath,
-                                                                     -1, stagingAvmPath,
-                                                                     null))
-                  {
-                     if (LOGGER.isDebugEnabled())
-                        LOGGER.debug("got difference " + d);
-                     if (d.getDifferenceCode() == AVMDifference.NEWER ||
-                         d.getDifferenceCode() == AVMDifference.CONFLICT)
-                     {
-                        this.addAVMNode(new AVMNode(this.getAvmService().lookup(d.getSourceVersion(),
-                                                                           d.getSourcePath(),
-                                                                           true)));
-                     }
-                  }
-               }
-            }
-            else
-            {
-               // get existing workflow package items
-               List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(
-                  this.workflowPackage, ContentModel.ASSOC_CONTAINS, 
-                  RegexQNamePattern.MATCH_ALL);   
+            List<NodeRef> contents = this.workflowService.getPackageContents(getWorkflowTask().id);
             
-               for (ChildAssociationRef ref: childRefs)
-               {
-                  // create our Node representation from the NodeRef
-                  NodeRef nodeRef = ref.getChildRef();
-               
-                  if (!this.getNodeService().exists(nodeRef))
-                  {
-                     if (LOGGER.isDebugEnabled())
-                        LOGGER.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
-                  }
-                  else
-                  {
-                     // find it's type so we can see if it's a node we are interested in
-                     QName type = this.getNodeService().getType(nodeRef);
-                  
-                     // make sure the type is defined in the data dictionary
-                     TypeDefinition typeDef = this.getDictionaryService().getType(type);
-                  
-                     if (typeDef == null)
-                     {
-                        if (LOGGER.isWarnEnabled())
-                           LOGGER.warn("Found invalid object in database: id = " + nodeRef + 
-                                       ", type = " + type);
-                     }
-                     else
-                     {
-                        // look for content nodes or links to content
-                        // NOTE: folders within workflow packages are ignored for now
-                        if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || 
-                            ApplicationModel.TYPE_FILELINK.equals(type))
+            
+            for (NodeRef nodeRef : contents)
+            {
+                if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                {
+                    Pair<Integer, String> vp = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+                    this.addAVMNode(new AVMNode(this.getAvmService().lookup(vp.getFirst(),
+                            vp.getSecond(),
+                            true)));
+                }
+                else
+                {
+                    if (this.getNodeService().exists(nodeRef))
+                    {
+                        // find it's type so we can see if it's a node we are interested in
+                        QName type = this.getNodeService().getType(nodeRef);
+
+                        // make sure the type is defined in the data dictionary
+                        if (this.getDictionaryService().getType(type) != null)
                         {
-                           // if the node is not in the removed list then add create the 
-                           // client side representation and add to the list
-                           if (this.packageItemsToRemove == null || 
-                               this.packageItemsToRemove.contains(nodeRef.toString()) == false)
-                           {
-                              createAndAddNode(nodeRef);
-                           }
+                            // look for content nodes or links to content
+                            // NOTE: folders within workflow packages are ignored for now
+                            if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || ApplicationModel.TYPE_FILELINK.equals(type))
+                            {
+                             // if the node is not in the removed list then add create the 
+                                // client side representation and add to the list
+                                if (this.packageItemsToRemove == null || 
+                                    this.packageItemsToRemove.contains(nodeRef.toString()) == false)
+                                {
+                                   createAndAddNode(nodeRef);
+                                }
+                            }
                         }
-                     }
-                  }
-               }
+                    }
+                }
             }
+            
+            
             // now iterate through the items to add list and add them to the list of resources
             if (this.packageItemsToAdd != null)
             {

@@ -35,6 +35,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -3835,4 +3836,60 @@ public class AVMServicePermissionsTest extends TestCase
         }
         return builder.toString();
     }
+    
+    
+    private static final String FILE_NAME = "fileForExport";
+    private static final String STORE_NAME = "TestStore1";
+    private static final String ROOT = "ROOT";
+
+    private void createStaggingWithSnapshots(String storeName)
+    {
+        if (avmService.getStore(storeName) != null)
+        {
+            avmService.purgeStore(storeName);
+        }
+
+        avmService.createStore(storeName);
+        assertNotNull(avmService.getStore(storeName));
+
+        avmService.createDirectory(storeName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
+        avmService.createSnapshot(storeName, "first", "first");
+        assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW));
+        avmService.createDirectory(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW, JNDIConstants.DIR_DEFAULT_APPBASE);
+        avmService.createSnapshot(storeName, "second", "second");
+        assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE));
+        avmService.createDirectory(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE, ROOT);
+        avmService.createSnapshot(storeName, "third", "third");
+        assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT));
+        avmService.createFile(storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT, FILE_NAME);
+        avmService.createSnapshot(storeName, "fourth", "fourth");
+        assertNotNull(avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/" + FILE_NAME));
+
+    }
+    
+    private void removeStore(String storeName)
+    {
+        avmService.purgeStore(storeName);
+        assertNull(avmService.getStore(storeName));
+    }
+
+    public void testSetInheritParentPermissions()
+    {
+        createStaggingWithSnapshots(STORE_NAME);
+
+        AVMNodeDescriptor nodeDescriptor = avmService.lookup(-1, STORE_NAME + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/"
+                + FILE_NAME);
+        assertNotNull(nodeDescriptor);
+        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDescriptor.getPath());
+        assertNotNull(nodeRef);
+
+        permissionService.setInheritParentPermissions(nodeRef, false);
+        assertFalse(permissionService.getInheritParentPermissions(nodeRef));
+        permissionService.setInheritParentPermissions(nodeRef, true);
+        assertTrue(permissionService.getInheritParentPermissions(nodeRef));
+        
+        removeStore(STORE_NAME);
+    }
+    
+    
 }

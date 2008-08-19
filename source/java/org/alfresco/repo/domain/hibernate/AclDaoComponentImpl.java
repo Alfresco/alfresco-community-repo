@@ -1489,7 +1489,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
                 getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
             }
 
-            return mergeInheritedAccessControlList(parent, changes.get(0).getAfter());
+            List<AclChange> merged = mergeInheritedAccessControlList(parent, changes.get(0).getAfter());
+            changes.addAll(merged);
+            return changes;
         }
     }
 

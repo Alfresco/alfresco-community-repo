@@ -1,11 +1,11 @@
 <html>
 <head>
-   <title>Upload success</title>
+   <title>Upload failure</title>
 </head>
 <body>
-<#if (args.success?exists)>
+<#if (args.failure?exists)>
    <script type="text/javascript">
-      ${args.success}
+      ${args.failure}
    </script>
 </#if>
 </body>

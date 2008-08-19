@@ -115,7 +115,7 @@ function main()
       status.redirect = true;
    }
    
-   if (updateNodeRef !== null && uploadDirectory === null)
+   if (updateNodeRef !== null && updateNodeRef != "" && (uploadDirectory === null || uploadDirectory == ""))
    {
       // Update existing file mode
       var workingCopy = search.findNode(updateNodeRef);
@@ -160,7 +160,7 @@ function main()
       
       model.document = workingCopy;
    }
-   else if (uploadDirectory !== null && updateNodeRef === null)
+   else if (uploadDirectory !== null && (updateNodeRef === null || updateNodeRef == ""))
    {
    	// Upload file mode
       var destNode = container;

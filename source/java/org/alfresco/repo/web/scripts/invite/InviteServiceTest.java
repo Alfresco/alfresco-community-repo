@@ -442,18 +442,18 @@ public class InviteServiceTest extends BaseWebScriptTest
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_CONFLICT);
     }
 
-    public void testStartInviteWhenAlreadyInProgress()
-    throws Exception
-    {        
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
-                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
-        
-        String inviteeEmail = (String) result.get("inviteeEmail");
-        
-        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
-                SITE_SHORT_NAME_INVITE_1,  Status.STATUS_CONFLICT);
-    }
-
+//    public void testStartInviteWhenAlreadyInProgress()
+//    throws Exception
+//    {        
+//        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+//                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+//        
+//        String inviteeEmail = (String) result.get("inviteeEmail");
+//        
+//        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
+//                SITE_SHORT_NAME_INVITE_1,  Status.STATUS_CONFLICT);
+//    }
+//
     public void testStartInviteForSameInviteeButTwoDifferentSites()
         throws Exception
     {        

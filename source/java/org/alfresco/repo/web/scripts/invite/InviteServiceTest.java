@@ -51,7 +51,6 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.Status;
 import org.apache.commons.lang.RandomStringUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -86,6 +85,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     private static final String INVITER_EMAIL = "FirstName123.LastName123@email.com";
     private static final String INVITEE_EMAIL_DOMAIN = "alfrescotesting.com";
     private static final String INVITEE_EMAIL_PREFIX = "invitee";
+    private static final String INVITEE_SITE_ROLE = SiteModel.SITE_COLLABORATOR;
     private static final String SITE_SHORT_NAME_INVITE_1 = "BananaMilkshakeSite";
     private static final String SITE_SHORT_NAME_INVITE_2 = "DoubleScoopSite";
 
@@ -144,6 +144,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                             "InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
                             "InviteSiteTitle", "InviteSiteDescription", true);
                 }
+                
                 SiteInfo siteInfo2 = InviteServiceTest.this.siteService
                                         .getSite(SITE_SHORT_NAME_INVITE_2);
                 if (siteInfo2 == null)
@@ -298,8 +299,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         }
     }
 
-    private JSONObject startInvite(String inviteeFirstName,
-            String inviteeLastName, String inviteeEmail, String siteShortName, int expectedStatus)
+    private JSONObject startInvite(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeSiteRole,
+            String siteShortName, int expectedStatus)
             throws Exception
     {
         this.inviteeEmailAddrs.add(inviteeEmail);
@@ -309,7 +310,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + "?inviteeFirstName=" + inviteeFirstName + "&inviteeLastName="
                 + inviteeLastName + "&inviteeEmail="
                 + URLEncoder.encode(inviteeEmail) + "&siteShortName="
-                + siteShortName;
+                + siteShortName + "&inviteeSiteRole=" + inviteeSiteRole;
 
         MockHttpServletResponse response = getRequest(startInviteUrl,
                 expectedStatus);
@@ -320,7 +321,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     }
 
     private JSONObject startInvite(String inviteeFirstName,
-            String inviteeLastName, String siteShortName, int expectedStatus)
+            String inviteeLastName, String inviteeSiteRole, String siteShortName, int expectedStatus)
             throws Exception
     {
         //  String inviteeEmail = INVITEE_EMAIL_PREFIX +
@@ -328,7 +329,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         //      + "@" + INVITEE_EMAIL_DOMAIN;
         String inviteeEmail = "glen.johnson@alfresco.com";
         
-        return startInvite(inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName,
+        return startInvite(inviteeFirstName, inviteeLastName, inviteeEmail, inviteeSiteRole, siteShortName,
                 expectedStatus);
     }
 
@@ -397,7 +398,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     public void testStartInvite() throws Exception
     {
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         assertEquals(INVITE_ACTION_START, result.get("action"));
@@ -431,45 +432,45 @@ public class InviteServiceTest extends BaseWebScriptTest
                 // add invitee person to site: SITE_SHORT_NAME_INVITE
                 InviteServiceTest.this.siteService.setMembership(
                         SITE_SHORT_NAME_INVITE_1, inviteeUserName,
-                        SiteModel.SITE_COLLABORATOR);
+                        INVITEE_SITE_ROLE);
                 
                 return null;
             }
             
         }, USER_ADMIN);
         
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmailAddr,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmailAddr, INVITEE_SITE_ROLE, 
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_CONFLICT);
     }
 
 //    public void testStartInviteWhenAlreadyInProgress()
 //    throws Exception
 //    {        
-//        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+//        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
 //                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 //        
 //        String inviteeEmail = (String) result.get("inviteeEmail");
 //        
-//        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
+//        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE,
 //                SITE_SHORT_NAME_INVITE_1,  Status.STATUS_CONFLICT);
 //    }
 //
     public void testStartInviteForSameInviteeButTwoDifferentSites()
         throws Exception
     {        
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
         
         String inviteeEmail = (String) result.get("inviteeEmail");
         
-        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail,
+        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_2,  Status.STATUS_OK);
     }
 
     public void testCancelInvite() throws Exception
     {
         // inviter starts invite workflow
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
@@ -485,7 +486,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testAcceptInvite() throws Exception
     {
         // inviter starts invite (sends out invitation)
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
@@ -521,7 +522,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testRejectInvite() throws Exception
     {
         // inviter starts invite (sends out invitation)
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME,
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invite ID of started invite
@@ -558,7 +559,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of workflow ID of started invite workflow instance
 
@@ -581,7 +582,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get pending invites matching inviter user name used in invite started
         // above
@@ -599,7 +600,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of invitee user name property of started invite workflow
         // instance
@@ -624,7 +625,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         // inviter starts invite workflow
         JSONObject startInviteResult = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
         // get hold of site short name property of started invite workflow
         // instance

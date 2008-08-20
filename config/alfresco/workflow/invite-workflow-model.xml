@@ -36,6 +36,9 @@
             <property name="wf:siteShortName">
                <type>d:text</type>
             </property>
+            <property name="wf:inviteeSiteRole">
+               <type>d:text</type>
+            </property>
          </properties>
       </type>
 

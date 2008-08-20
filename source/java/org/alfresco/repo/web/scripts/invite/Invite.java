@@ -82,6 +82,7 @@ public class Invite extends DeclarativeWebScript
     private static final String PARAM_INVITEE_EMAIL = "inviteeEmail";
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName"; 
     private static final String PARAM_INVITE_ID = "inviteId";
+    private static final String PARAM_INVITEE_SITE_ROLE = "inviteeSiteRole";
     
     // services
     private WorkflowService workflowService;
@@ -103,6 +104,7 @@ public class Invite extends DeclarativeWebScript
     public static final String WF_PROP_INVITEE_FIRSTNAME = "wf:inviteeFirstName";
     public static final String WF_PROP_INVITEE_LASTNAME = "wf:inviteeLastName";
     public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
+    public static final String WF_PROP_INVITEE_SITE_ROLE = "wf:inviteeSiteRole";
     private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
     
     public static final String WF_INVITE_TASK_INVITE_TO_SITE = "wf:inviteToSiteTask";
@@ -301,11 +303,21 @@ public class Invite extends DeclarativeWebScript
                                 + ACTION_START + "'");
             }
             
+            // check for 'inviteeSiteRole' parameter not provided
+            String inviteeSiteRole = req.getParameter(PARAM_INVITEE_SITE_ROLE);
+            if ((inviteeSiteRole == null) || (inviteeSiteRole.length() == 0))
+            {
+                // handle inviteeSiteRole URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'inviteeSiteRole' parameter has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
+            
             // get externally reachable address of server hosting invite web scripts
             String serverPath = req.getServerPath();
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, serverPath);
+            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, inviteeSiteRole, serverPath);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -453,11 +465,13 @@ public class Invite extends DeclarativeWebScript
      * @param siteShortName
      *            short name of site that the invitee is being invited to by the
      *            inviter
+     * @param inviteeSiteRole
+     *            role under which invitee is being invited to the site by the inviter
      * @param serverPath
      *            externally accessible server address of server hosting invite web scripts
      */
     private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
-            String inviteeEmail, String siteShortName, String serverPath)
+            String inviteeEmail, String siteShortName, String inviteeSiteRole, String serverPath)
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
@@ -558,6 +572,8 @@ public class Invite extends DeclarativeWebScript
                 inviteePassword);
         workflowProps.put(QName.createQName(WF_PROP_SITE_SHORT_NAME, this.namespaceService),
                 siteShortName);
+        workflowProps.put(QName.createQName(WF_PROP_INVITEE_SITE_ROLE, this.namespaceService),
+                inviteeSiteRole);
         workflowProps.put(QName.createQName(WF_PROP_SERVER_PATH, this.namespaceService),
                 serverPath);
 

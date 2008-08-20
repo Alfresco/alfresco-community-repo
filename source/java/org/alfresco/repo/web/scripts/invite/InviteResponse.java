@@ -31,7 +31,6 @@ import java.util.Map;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -258,20 +257,28 @@ public class InviteResponse extends DeclarativeWebScript
         // the model) out into workflow action class that gets run when task wf:acceptInviteTask
         // is completed by this web script
 
-        // enable invitee person's user account because he/she has accepted the
+        // if there is already a user account for the invitee and that account
+        // is disabled, then enable the account because he/she has accepted the
         // site invitation
-        this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
+        if ((this.mutableAuthenticationDao.userExists(inviteeUserName))
+            && (this.mutableAuthenticationDao.getEnabled(inviteeUserName) == false))
+        {
+            this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
+        }
         
-        // Add Invitee to Site as "Site Collaborator" role
+        // retrieve the site role with which the invitee was invited to the site
+        String inviteeSiteRole = getInviteeSiteRoleFromInvite(inviteId);
+        
+        // add Invitee to Site with the site role that the inviter "started" the invite process with
         RunAsWork<Boolean> setSiteMembershipWorker = new InviteResponse.SetSiteMembershipWorker(
-                siteShortName, inviteeUserName, SiteModel.SITE_COLLABORATOR);
+                siteShortName, inviteeUserName, inviteeSiteRole);
         AuthenticationUtil.runAs(setSiteMembershipWorker, USER_ADMIN);
         
         // complete the wf:acceptInviteTask because the operations that need to be performed
         // when the invitee has accepted the invitation have now been performed (code block
-        // above up to where wf:invitePendingTask is completed). This code block will soon 
-        // be farmed out into a workflow action which gets executed when wf:acceptInviteTask 
-        // gets completed
+        // starting from above where wf:invitePendingTask is completed, up to here). This code 
+        // block will soon be farmed out into a workflow action which gets executed when 
+        // wf:acceptInviteTask gets completed
         completeInviteTask(QName.createQName(WF_TASK_ACCEPT_INVITE, this.namespaceService), WF_TRANSITION_ACCEPT_INVITE_END);
 
         // add model properties for template to render
@@ -303,14 +310,26 @@ public class InviteResponse extends DeclarativeWebScript
         // the model) out into workflow action class that gets run when task wf:rejectInviteTask
         // is completed by this web script
 
-        // delete the person created for invitee
-        this.personService.deletePerson(inviteeUserName);
+        // if invitee's user account is still disabled then remove the account and 
+        // delete the invitee's person node
+        if ((this.mutableAuthenticationDao.userExists(inviteeUserName))
+                && (this.mutableAuthenticationDao.getEnabled(inviteeUserName) == false))
+        {
+            // delete the invitee's user account
+            this.mutableAuthenticationDao.deleteUser(inviteeUserName);
+            
+            // delete the invitee's person node if one exists
+            if (this.personService.personExists(inviteeUserName))
+            {
+                this.personService.deletePerson(inviteeUserName);
+            }
+        }
 
         // complete the wf:rejectInviteTask because the operations that need to be performed
         // when the invitee has rejected the invitation have now been performed (code block
-        // above up to where wf:invitePendingTask is completed). This code block will soon 
-        // be farmed out into a workflow action which gets executed when wf:rejectInviteTask 
-        // gets completed
+        // starting from above where wf:invitePendingTask is completed, up to here). This code 
+        // block will soon be farmed out into a workflow action which gets executed when 
+        // wf:rejectInviteTask gets completed
         completeInviteTask(QName.createQName(WF_TASK_REJECT_INVITE, this.namespaceService), WF_TRANSITION_REJECT_INVITE_END);
 
         // add model properties for template to render
@@ -348,6 +367,59 @@ public class InviteResponse extends DeclarativeWebScript
         for (WorkflowTask workflowTask : wf_invite_tasks)
         {
             this.workflowService.endTask(workflowTask.id, transitionId);
+        }
+    }
+    
+    /**
+     * Gets the invitee site role from the invite
+     * workflow instance associated with the given invite ID.
+     * i.e. if the inviter 'starts' an invite (which is allocated some invite ID
+     * '12345' when it is processed), and that invite is requesting an invitee to
+     * to join some site under a given site role, then that site role is returned 
+     * by this method when invite ID '12345' is passed in.
+     * 
+     * @param inviteId the ID of the invitation (invite workflow instance)
+     *          from which to retrieve the invitee site role
+     * @return the site role under which the invitee was invited to 
+     *          join the site. Returns <pre>null</pre> if no invite
+     *          workflow instance was found matching the given invite ID
+     */
+    private String getInviteeSiteRoleFromInvite(String inviteId)
+    {
+        // create workflow task query
+        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+
+        wfTaskQuery.setProcessId(inviteId);
+        
+        // set process name to "wf:invite" so that only tasks associated with
+        // invite workflow instances are returned by query
+        wfTaskQuery.setProcessName(QName.createQName("wf:invite", this.namespaceService));
+
+        // pick up the start task because it has the "wf:inviteeSiteRole" property set with the
+        // site role value that we want to retrieve 
+        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
+        wfTaskQuery.setTaskName(QName.createQName(Invite.WF_INVITE_TASK_INVITE_TO_SITE, this.namespaceService));
+
+        // query for invite workflow task associate
+        List<WorkflowTask> inviteStartTasks = this.workflowService
+                .queryTasks(wfTaskQuery);
+
+        // if no results were returned for given inviteID, then return
+        // site role as null
+        if (inviteStartTasks.size() == 0)
+        {
+            return null;
+        }
+        else
+        {
+            // there should be only one start task returned for the given invite ID
+            // so just take the first one in the list
+            WorkflowTask inviteStartTask = inviteStartTasks.get(0);
+            
+            String inviteeSiteRole = (String) inviteStartTask.properties.get(
+                    QName.createQName(Invite.WF_PROP_INVITEE_SITE_ROLE, this.namespaceService));
+            
+            return inviteeSiteRole;
         }
     }
 }

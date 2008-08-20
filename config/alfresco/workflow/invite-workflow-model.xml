@@ -18,6 +18,15 @@
             <property name="wf:serverPath">
                <type>d:text</type>
             </property>
+            <property name="wf:acceptUrl">
+               <type>d:text</type>
+            </property>
+            <property name="wf:rejectUrl">
+               <type>d:text</type>
+            </property>
+            <property name="wf:inviteTicket">
+               <type>d:text</type>
+            </property>
             <property name="wf:inviterUserName">
                <type>d:text</type>
             </property>

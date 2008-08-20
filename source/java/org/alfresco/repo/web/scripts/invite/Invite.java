@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -83,6 +84,9 @@ public class Invite extends DeclarativeWebScript
     private static final String PARAM_SITE_SHORT_NAME = "siteShortName"; 
     private static final String PARAM_INVITE_ID = "inviteId";
     private static final String PARAM_INVITEE_SITE_ROLE = "inviteeSiteRole";
+    private static final String PARAM_SERVER_PATH = "serverPath";
+    private static final String PARAM_ACCEPT_URL = "acceptUrl";
+    private static final String PARAM_REJECT_URL = "rejectUrl";
     
     // services
     private WorkflowService workflowService;
@@ -99,6 +103,9 @@ public class Invite extends DeclarativeWebScript
 
     // workflow properties
     public static final String WF_PROP_SERVER_PATH = "wf:serverPath";
+    public static final String WF_PROP_ACCEPT_URL = "wf:acceptUrl";
+    public static final String WF_PROP_REJECT_URL = "wf:rejectUrl";
+    public static final String WF_PROP_INVITE_TICKET = "wf:inviteTicket";
     public static final String WF_PROP_INVITER_USER_NAME = "wf:inviterUserName";
     public static final String WF_PROP_INVITEE_USER_NAME = "wf:inviteeUserName";
     public static final String WF_PROP_INVITEE_FIRSTNAME = "wf:inviteeFirstName";
@@ -313,11 +320,38 @@ public class Invite extends DeclarativeWebScript
                                 + ACTION_START + "'");
             }
             
-            // get externally reachable address of server hosting invite web scripts
-            String serverPath = req.getServerPath();
+            // check for 'serverPath' parameter not provided
+            String serverPath = req.getParameter(PARAM_SERVER_PATH);
+            if ((serverPath == null) || (serverPath.length() == 0))
+            {
+                // handle serverPath URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'serverPath' parameter has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
+            
+            // check for 'acceptUrl' parameter not provided
+            String acceptUrl = req.getParameter(PARAM_ACCEPT_URL);
+            if ((acceptUrl == null) || (acceptUrl.length() == 0))
+            {
+                // handle acceptUrl URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'acceptUrl' parameter has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
+            
+            // check for 'rejectUrl' parameter not provided
+            String rejectUrl = req.getParameter(PARAM_REJECT_URL);
+            if ((rejectUrl == null) || (rejectUrl.length() == 0))
+            {
+                // handle rejectUrl URL parameter not provided
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "'rejectUrl' parameter has not been provided in URL for action '"
+                                + ACTION_START + "'");
+            }
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, inviteeSiteRole, serverPath);
+            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -346,7 +380,7 @@ public class Invite extends DeclarativeWebScript
 
         return model;
     }
-
+    
     /**
      * Creates a person for the invitee with a generated user name.
      * 
@@ -471,7 +505,7 @@ public class Invite extends DeclarativeWebScript
      *            externally accessible server address of server hosting invite web scripts
      */
     private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
-            String inviteeEmail, String siteShortName, String inviteeSiteRole, String serverPath)
+            String inviteeEmail, String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
@@ -542,6 +576,9 @@ public class Invite extends DeclarativeWebScript
             inviteePassword = createInviteeDisabledAccount(inviteeUserName);
         }
         
+        // create a ticket for the invite - this is used
+        String inviteTicket = GUID.generate();
+        
         //
         // Start the invite workflow with inviter, invitee and site properties 
         //
@@ -576,6 +613,12 @@ public class Invite extends DeclarativeWebScript
                 inviteeSiteRole);
         workflowProps.put(QName.createQName(WF_PROP_SERVER_PATH, this.namespaceService),
                 serverPath);
+        workflowProps.put(QName.createQName(WF_PROP_ACCEPT_URL, this.namespaceService),
+                acceptUrl);
+        workflowProps.put(QName.createQName(WF_PROP_REJECT_URL, this.namespaceService),
+                rejectUrl);
+        workflowProps.put(QName.createQName(WF_PROP_INVITE_TICKET, this.namespaceService),
+                inviteTicket);
 
         // start the workflow
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition

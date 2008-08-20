@@ -310,7 +310,10 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + "?inviteeFirstName=" + inviteeFirstName + "&inviteeLastName="
                 + inviteeLastName + "&inviteeEmail="
                 + URLEncoder.encode(inviteeEmail) + "&siteShortName="
-                + siteShortName + "&inviteeSiteRole=" + inviteeSiteRole;
+                + siteShortName + "&inviteeSiteRole=" + inviteeSiteRole
+                + "&serverPath=" + "http://localhost:8081/share/"
+                + "&acceptUrl=" + "page/accept-invite"
+                + "&rejectUrl=" + "page/reject-invite";
 
         MockHttpServletResponse response = getRequest(startInviteUrl,
                 expectedStatus);

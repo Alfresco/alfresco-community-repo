@@ -142,6 +142,57 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         
     }
     
+    public void testThumbnailDefinitions() throws Exception
+    {
+        // Check for pdfToSWF transformation before doing test
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
+        {
+            String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnaildefinitions";
+            MockHttpServletResponse response = this.getRequest(url, 200);
+            
+            JSONArray array = new JSONArray(response.getContentAsString());
+            assertNotNull(array);
+            assertFalse(array.length() == 0);
+            boolean hasMedium = false;
+            boolean hasWebPreview = false;
+            for (int i = 0; i < array.length(); i++)
+            {
+                if (array.getString(i).equals("medium") == true)
+                {
+                    hasMedium = true;
+                }
+                else if (array.getString(i).equals("webpreview") == true)
+                {
+                    hasWebPreview = true;
+                }
+            }
+            assertTrue(hasMedium);
+            assertTrue(hasWebPreview);
+        }
+        
+        String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnaildefinitions";
+        MockHttpServletResponse response = this.getRequest(url, 200);
+        
+        JSONArray array = new JSONArray(response.getContentAsString());
+        assertNotNull(array);
+        assertFalse(array.length() == 0);
+        boolean hasMedium = false;
+        boolean hasWebPreview = false;
+        for (int i = 0; i < array.length(); i++)
+        {
+            if (array.getString(i).equals("medium") == true)
+            {
+                hasMedium = true;
+            }
+            else if (array.getString(i).equals("webpreview") == true)
+            {
+                hasWebPreview = true;
+            }
+        }
+        assertTrue(hasMedium);
+        assertFalse(hasWebPreview);
+    }
+    
     public void testCreateAsyncThumbnail() throws Exception
     {
         // Check for pdfToSWF transformation before doing test
@@ -221,6 +272,4 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     {
         return "/api/node/" + nodeRef.getStoreRef().getProtocol() + "/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/content/thumbnails";
     }
-    
-   
 }

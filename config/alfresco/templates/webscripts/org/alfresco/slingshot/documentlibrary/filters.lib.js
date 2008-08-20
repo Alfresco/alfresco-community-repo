@@ -4,7 +4,7 @@ function getFilterParams(filter, parsedArgs)
    {
       query: "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"",
       limitResults: null,
-      sortBy: "QNAME",
+      sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
       sortByAscending: true
    }
 
@@ -19,7 +19,7 @@ function getFilterParams(filter, parsedArgs)
    switch (String(filter))
    {
       case "node":
-         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         filterParams.query = "+ID:\"" + parsedArgs.rootNode.nodeRef + "\"";
          break;
       
       case "tag":

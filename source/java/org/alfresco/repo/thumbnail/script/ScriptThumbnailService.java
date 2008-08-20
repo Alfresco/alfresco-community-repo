@@ -25,7 +25,7 @@
 package org.alfresco.repo.thumbnail.script;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.thumbnail.ThumbnailDetails;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.ServiceRegistry;
 
 
@@ -57,7 +57,7 @@ public class ScriptThumbnailService extends BaseScopableProcessorExtension
      */
     public boolean isThumbnailNameRegistered(String thumbnailName)
     {
-        return (this.serviceRegistry.getThumbnailService().getThumbnailRegistry().getThumbnailDetails(thumbnailName) != null);
+        return (this.serviceRegistry.getThumbnailService().getThumbnailRegistry().getThumbnailDefinition(thumbnailName) != null);
     }
     
     /**
@@ -71,7 +71,7 @@ public class ScriptThumbnailService extends BaseScopableProcessorExtension
     public String getPlaceHolderResourcePath(String thumbnailName)
     {
         String result = null;
-        ThumbnailDetails details = this.serviceRegistry.getThumbnailService().getThumbnailRegistry().getThumbnailDetails(thumbnailName);
+        ThumbnailDefinition details = this.serviceRegistry.getThumbnailService().getThumbnailRegistry().getThumbnailDefinition(thumbnailName);
         if (details != null)
         {
             result = details.getPlaceHolderResourcePath();

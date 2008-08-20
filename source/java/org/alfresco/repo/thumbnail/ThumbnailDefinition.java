@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Roy Wetherall
  */
-public class ThumbnailDetails
+public class ThumbnailDefinition
 {
     /** Name of the thumbnail */
     private String name;
@@ -48,7 +48,7 @@ public class ThumbnailDetails
     /**
      * Default constructor
      */
-    public ThumbnailDetails()
+    public ThumbnailDefinition()
     {
     }
     
@@ -58,7 +58,7 @@ public class ThumbnailDetails
      * @param destinationMimetype
      * @param options
      */
-    public ThumbnailDetails(String destinationMimetype, TransformationOptions options)
+    public ThumbnailDefinition(String destinationMimetype, TransformationOptions options)
     {       
         this.mimetype = destinationMimetype;
         this.options = options;
@@ -69,7 +69,7 @@ public class ThumbnailDetails
      * 
      * @param thumbnailName the name of the thumbnail, can be null
      */
-    public ThumbnailDetails(String mimetype, TransformationOptions options, String thumbnailName)
+    public ThumbnailDefinition(String mimetype, TransformationOptions options, String thumbnailName)
     {
         this(mimetype, options);
         this.name= thumbnailName;
@@ -83,7 +83,7 @@ public class ThumbnailDetails
      * @param thumbnailName
      * @param placeHolderResourcePath
      */
-    public ThumbnailDetails(String mimetype, TransformationOptions options, String thumbnailName, String placeHolderResourcePath)
+    public ThumbnailDefinition(String mimetype, TransformationOptions options, String thumbnailName, String placeHolderResourcePath)
     {
         this(mimetype, options, thumbnailName);
         this.placeHolderResourcePath = placeHolderResourcePath;

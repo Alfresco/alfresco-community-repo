@@ -44,7 +44,7 @@ import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
-import org.alfresco.repo.thumbnail.ThumbnailDetails;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.version.VersionModel;
@@ -72,6 +72,7 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
@@ -2036,7 +2037,7 @@ public class ScriptNode implements Serializable, Scopeable
         
         // Use the thumbnail registy to get the details of the thumbail
         ThumbnailRegistry registry = this.services.getThumbnailService().getThumbnailRegistry();
-        ThumbnailDetails details = registry.getThumbnailDetails(thumbnailName);
+        ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
         if (details == null)
         {
             // Throw exception 
@@ -2108,6 +2109,38 @@ public class ScriptNode implements Serializable, Scopeable
         }
         return (ScriptThumbnail[])result.toArray(new ScriptThumbnail[result.size()]);
     }
+    
+    /**
+     * Returns the names of the thumbnail defintions that can be applied to the content property of
+     * this node.
+     * <p>
+     * Thumbanil defintions only appear in this list if they can produce a thumbnail for the content
+     * found in the content property.  This will be determined by looking at the mimetype of the content
+     * and the destinatino mimetype of the thumbnail.
+     * 
+     * @return  String[]    array of thumbnail names that are valid for the current content type
+     */
+    public String[] getThumbnailDefintions()
+    {
+        ContentService contentService = this.services.getContentService();
+        ThumbnailService thumbnailService = this.services.getThumbnailService();
+        
+        List<String> result = new ArrayList<String>(7);
+        
+        ContentReader contentReader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
+        if (contentReader != null)
+        {
+            String mimetype = contentReader.getMimetype();
+            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumnailDefintions(mimetype);
+            for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
+            {
+                result.add(thumbnailDefinition.getName());
+            }
+        }
+        
+        return (String[])result.toArray(new String[result.size()]);
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Tag methods

@@ -96,7 +96,7 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             
             // Get the details of the thumbnail
             ThumbnailRegistry registry = this.thumbnailService.getThumbnailRegistry();
-            ThumbnailDetails details = registry.getThumbnailDetails(thumbnailName);
+            ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
             if (details == null)
             {
                 // Throw exception 

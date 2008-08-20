@@ -23,6 +23,18 @@ function testThumbnailService()
 	test.assertNotNull(thumbnailService.getPlaceHolderResourcePath("medium"));
 }
 
+function testGetThumbnailDefintions()
+{
+	var defs = jpgOrig.getThumbnailDefintions();
+	//test.assertTrue(Array.contains(defs, "Medium"));	
+	//test.assertFalse(Array.contains(defs, "WebPreview"));
+	
+	defs = pdfOrig.getThumbnailDefintions();	
+	//test.assertFalse(Array.contains(defs, "Medium"));	
+	//test.assertTrue(Array.contains(defs, "WebPreview"));	
+}
+
 // Execute the tests
 testCreateThumbnail();
 testThumbnailService();
+testGetThumbnailDefintions();

@@ -322,7 +322,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         {
             final NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
             
-            ThumbnailDetails details = this.thumbnailService.getThumbnailRegistry().getThumbnailDetails("medium");
+            ThumbnailDefinition details = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("medium");
             final NodeRef thumbnail = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, details.getMimetype(), details.getTransformationOptions(), details.getName());
             
             setComplete();
@@ -342,8 +342,10 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 }
             });
             
-            Thread.sleep(100000);
+            // TODO 
+            // this test should wait for the async action to run .. will need to commit transaction for that thou!
             
+            //Thread.sleep(1000);            
         }
     }
     
@@ -353,10 +355,14 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
         NodeRef jpgOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_JPEG);
         NodeRef gifOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_IMAGE_GIF);
+        NodeRef pdfOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
+        NodeRef docOrig = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_WORD);
         
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("jpgOrig", jpgOrig);
         model.put("gifOrig", gifOrig);
+        model.put("pdfOrig", pdfOrig);
+        model.put("docOrig", docOrig);
         
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/thumbnail/script/test_thumbnailAPI.js");
         this.scriptService.executeScript(location, model);

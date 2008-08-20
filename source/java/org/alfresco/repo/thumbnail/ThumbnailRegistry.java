@@ -24,31 +24,92 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 
 /**
+ * Registry of all the thumbnail details available
+ * 
  * @author Roy Wetherall
  */
 public class ThumbnailRegistry
 {   
-    /** Map of thumbnail details */
-    private Map<String, ThumbnailDetails> thumbnailDetails = new HashMap<String, ThumbnailDetails>(10);
-       
+    /** Content service */
+    private ContentService contentService;
+    
+    /** Map of thumbnail defintion */
+    private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>(7);
+    
+    /** Cache to store mimetype to thumbnailDefinition mapping */
+    private Map<String, List<ThumbnailDefinition>> mimetypeMap = new HashMap<String, List<ThumbnailDefinition>>(17);
+     
     /**
-     * Add a number of thumbnail details
+     * Content service
      * 
-     * @param thumbnailDetails  list of thumbnail details
+     * @param contentService    content service
      */
-    public void setThumbnailDetails(List<ThumbnailDetails> thumbnailDetails)
+    public void setContentService(ContentService contentService)
     {
-        for (ThumbnailDetails value : thumbnailDetails)
+        this.contentService = contentService;
+    }
+    
+    /**
+     * Add a number of thumbnail defintions
+     * 
+     * @param thumbnailDefinitions  list of thumbnail details
+     */
+    public void setThumbnailDefinitions(List<ThumbnailDefinition> thumbnailDefinitions)
+    {
+        for (ThumbnailDefinition value : thumbnailDefinitions)
         {
-            addThumbnailDetails(value);
+            addThumbnailDefinition(value);
         }
+    }
+    
+    /**
+     * Get a list of all the thumbnail defintions
+     * 
+     * @return Collection<ThumbnailDefinition>  colleciton of thumbnail defintions
+     */
+    public List<ThumbnailDefinition> getThumbnailDefinitions()
+    {
+        return new ArrayList<ThumbnailDefinition>(this.thumbnailDefinitions.values());
+    }
+    
+    /**
+     * 
+     * @param mimetype
+     * @return
+     */
+    public List<ThumbnailDefinition> getThumnailDefintions(String mimetype)
+    {
+        List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);;
+        
+        if (result == null)
+        {
+            result = new ArrayList<ThumbnailDefinition>(7);
+            
+            for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
+            {
+                if (this.contentService.getTransformer(
+                        mimetype, 
+                        thumbnailDefinition.getMimetype(), 
+                        thumbnailDefinition.getTransformationOptions()) != null)
+                {
+                    result.add(thumbnailDefinition);
+                }
+            }
+            
+            this.mimetypeMap.put(mimetype, result);
+        }
+        
+        return result;
     }
     
     /**
@@ -56,7 +117,7 @@ public class ThumbnailRegistry
      * 
      * @param thumbnailDetails  thumbnail details
      */
-    public void addThumbnailDetails(ThumbnailDetails thumbnailDetails)
+    public void addThumbnailDefinition(ThumbnailDefinition thumbnailDetails)
     {
         String thumbnailName = thumbnailDetails.getName();
         if (thumbnailName == null)
@@ -64,17 +125,17 @@ public class ThumbnailRegistry
             throw new ThumbnailException("When adding a thumbnail details object make sure the name is set.");
         }
         
-        this.thumbnailDetails.put(thumbnailName, thumbnailDetails);
+        this.thumbnailDefinitions.put(thumbnailName, thumbnailDetails);
     }
     
     /**
-     * Get the details of a named thumbnail
+     * Get the definition of a named thumbnail
      * 
      * @param  thumbnailNam         the thumbnail name
      * @return ThumbnailDetails     the details of the thumbnail
      */
-    public ThumbnailDetails getThumbnailDetails(String thumbnailName)
+    public ThumbnailDefinition getThumbnailDefinition(String thumbnailName)
     {
-        return this.thumbnailDetails.get(thumbnailName);
+        return this.thumbnailDefinitions.get(thumbnailName);
     }
 }

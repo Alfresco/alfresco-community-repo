@@ -46,11 +46,12 @@
     
     <!-- Thumbnail Register -->
     <bean id="thumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry">
-    	<property name="thumbnailDetails">
+    	<property name="contentService" ref="ContentService"/>
+    	<property name="thumbnailDefinitions">
     		<list>
     		
     		    <!-- Small image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDetails">
+				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="medium" />
 					<property name="mimetype" value="image/jpeg"/>
 					<property name="transformationOptions">
@@ -69,7 +70,7 @@
 				</bean>
 
     		   <!-- Slingshot Document Library image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDetails">
+				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="doclib" />
 					<property name="mimetype" value="image/png"/>
 					<property name="transformationOptions">
@@ -88,7 +89,7 @@
 				</bean>
     			
     			<!-- Web Preview thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDetails">
+				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 				    <property name="name" value="webpreview" />
 					<property name="mimetype" value="application/x-shockwave-flash"/>    					
 					<property name="transformationOptions">
@@ -99,7 +100,7 @@
 	    		</bean>
     		
 				<!-- User avatar image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDetails">
+				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="avatar" />
 					<property name="mimetype" value="image/png"/>
 					<property name="transformationOptions">

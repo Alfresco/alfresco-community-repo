@@ -11,7 +11,7 @@
       <transition name="sendInvite" to="invitePending">
          <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
             <script>
-               var workflowId = executionContext.processInstance.id;
+               var workflowId = workflowinstanceid;
                var inviterPerson = people.getPerson(wf_inviterUserName);
                var inviteePerson = people.getPerson(wf_inviteeUserName);
                var mail = actions.create("mail");

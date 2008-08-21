@@ -1,7 +1,7 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action-sets.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
-
+// This line #: 27 (action-sets) + 111 (filters) + 111 (parse-args) = 249
 var THUMBNAIL_NAME = "doclib";
 
 /**
@@ -23,6 +23,12 @@ function getDocList(filter)
    if (parsedArgs === null)
    {
       return;
+   }
+
+   // Type missing implies single nodeRef requested
+   if (url.templateArgs.type === null)
+   {
+      filter = "node";
    }
 
    // Try to find a filter query based on the passed-in arguments
@@ -73,6 +79,30 @@ function getDocList(filter)
    assets = assets.slice(startIndex, pagePos * pageSize);
    
    var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows;
+   var location, qnamePaths, displayPaths;
+
+   // Location if we're in a site
+   var location =
+   {
+      site: parsedArgs.location.site,
+      container: parsedArgs.location.container,
+      path: parsedArgs.location.path
+   }
+   
+   // User permissions and role
+   var user =
+   {
+      permissions:
+      {
+   	   create: parsedArgs.parentNode.hasPermission("CreateChildren"),
+   	   edit: parsedArgs.parentNode.hasPermission("Write"),
+   	   "delete": parsedArgs.parentNode.hasPermission("Delete")
+      }
+   };
+   if (location.site !== null)
+   {
+      user.role = parsedArgs.location.siteNode.getMembersRole(person.properties["userName"]);
+   }
    
    // Locked/working copy status defines action set
    for each(asset in assets)
@@ -121,22 +151,29 @@ function getDocList(filter)
          itemOwner: itemOwner
       });
       
-      // Resolve site, container and path
-      var location =
+      // Does this collection of assets have potentially differering paths?
+      if (filterParams.variablePath)
       {
-         site: null,
-         container: null,
-         path: null
-      }
-      var qnamePaths = asset.qnamePath.split("/");
-      var displayPaths = asset.displayPath.split("/");
-      if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
-      {
-         location = 
+         qnamePaths = asset.qnamePath.split("/");
+         displayPaths = asset.displayPath.split("/");
+         if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
          {
-            site: qnamePaths[3].substr(3),
-            container: qnamePaths[4].substr(3),
-            path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+            // This asset belongs to a site
+            location =
+            {
+               site: qnamePaths[3].substr(3),
+               container: qnamePaths[4].substr(3),
+               path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
+            }
+         }
+         else
+         {
+            location =
+            {
+               site: null,
+               container: null,
+               path: null
+            }
          }
       }
       
@@ -168,6 +205,7 @@ function getDocList(filter)
          startIndex: startIndex,
          totalRecords: totalRecords
       },
+      user: user,
       items: items
    });
 }

@@ -5,7 +5,8 @@ function getFilterParams(filter, parsedArgs)
       query: "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"",
       limitResults: null,
       sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
-      sortByAscending: true
+      sortByAscending: true,
+      variablePath: false
    }
 
    // Max returned results specified?
@@ -19,10 +20,11 @@ function getFilterParams(filter, parsedArgs)
    switch (String(filter))
    {
       case "node":
-         filterParams.query = "+ID:\"" + parsedArgs.rootNode.nodeRef + "\"";
+         filterParams.query = "+ID:\"" + parsedArgs.parentNode.nodeRef + "\"";
          break;
       
       case "tag":
+         filterParams.variablePath = true;
          filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(args["filterData"]) + "/member\"";
          break;
       
@@ -63,6 +65,7 @@ function getFilterParams(filter, parsedArgs)
 
          filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
          filterParams.sortByAscending = false;
+         filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
          
@@ -71,6 +74,7 @@ function getFilterParams(filter, parsedArgs)
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "+@cm\\:workingCopyOwner:" + person.properties.userName;
 
+         filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
       
@@ -79,6 +83,7 @@ function getFilterParams(filter, parsedArgs)
          filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
          filterQuery += "-@cm\\:workingCopyOwner:" + person.properties.userName;
 
+         filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
       
@@ -93,16 +98,14 @@ function getFilterParams(filter, parsedArgs)
    return filterParams;
 }
 
-const TYPE_MAP = {
+const TYPE_MAP =
+{
    "documents": '+TYPE:"{http://www.alfresco.org/model/content/1.0}content"',
-      
    "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
-      
-   "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*",
+   "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
 };
 
 function getTypeFilterQuery(type)
 {
    return TYPE_MAP[type] || "";
 }
-

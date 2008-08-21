@@ -1,5 +1,5 @@
 <#macro resultsJSON results>
-<#escape x as jsonUtils.encodeJSONString(x)>
+   <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalResults": ${results?size},
    "overallSuccess": ${overallSuccess?string},
@@ -7,19 +7,19 @@
    "failureCount": ${failureCount},
    "results":
    [
-   <#list results as r>
+      <#list results as r>
       {
-      <#list r?keys as key>
-         <#assign value = r[key]>
-         <#if value?is_number || value?is_boolean>
+         <#list r?keys as key>
+            <#assign value = r[key]>
+            <#if value?is_number || value?is_boolean>
          "${key}": ${value?string}<#if key_has_next>,</#if>
-         <#else>
+            <#else>
          "${key}": "${value}"<#if key_has_next>,</#if>
-         </#if>
-      </#list>
+            </#if>
+            </#list>
       }<#if r_has_next>,</#if>
-   </#list>
+      </#list>
    ]
 }
-</#escape>
+   </#escape>
 </#macro>

@@ -172,6 +172,7 @@ function getSiteInputParams()
       	usingNodeRef: false,
       	siteId: siteId,
       	containerId: containerId,
+      	siteNode: siteNode,
       	rootNode: rootNode
       }
    }
@@ -256,7 +257,7 @@ function getMultipleInputValues(param)
       // Was a JSON parameter list supplied?
       if (typeof json == "object")
       {
-         if (!json.isNull("nodeRefs"))
+         if (!json.isNull(param))
          {
             var jsonValues = json.get(param);
             // Convert from JSONArray to JavaScript array

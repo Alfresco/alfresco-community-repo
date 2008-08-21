@@ -1,8 +1,20 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
+<#assign paging = doclist.paging>
+<#assign user = doclist.user>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "totalRecords": ${doclist.paging.totalRecords?c},
-   "startIndex": ${doclist.paging.startIndex?c},
+   "totalRecords": ${paging.totalRecords?c},
+   "startIndex": ${paging.startIndex?c},
+   "permissions":
+	{
+      "userRole": "${user.role!""}",
+   	"userAccess":
+   	{
+   	   "create" : ${user.permissions.create?string},
+   	   "edit" : ${user.permissions.edit?string},
+   	   "delete" : ${user.permissions.delete?string}
+   	}
+	},
    "items":
    [
    <#list doclist.items as item>
@@ -58,7 +70,23 @@
             "site": "${item.location.site!""}",
             "container": "${item.location.container!""}",
             "path": "${item.location.path!""}"
-         }
+         },
+      	"permissions":
+      	{
+      	   "inherited": ${d.inheritsPermissions?string},
+      	   "roles":
+      	   [
+            <#list d.permissions as permission>
+               "${permission?string}"<#if permission_has_next>,</#if>
+            </#list>
+            ],
+      	   "userAccess":
+      	   {
+         	   "create": ${d.hasPermission("CreateChildren")?string},
+         	   "edit": ${d.hasPermission("Write")?string},
+         	   "delete": ${d.hasPermission("Delete")?string}
+      	   }
+      	}
       }<#if item_has_next>,</#if>
    </#list>
    ]

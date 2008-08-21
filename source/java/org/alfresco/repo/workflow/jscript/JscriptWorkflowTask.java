@@ -33,6 +33,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.jscript.ScriptableQNameMap;
@@ -61,7 +62,7 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author glenj
  */
-public class JscriptWorkflowTask implements Serializable
+public class JscriptWorkflowTask extends BaseScopableProcessorExtension implements Serializable
 {
     private static final String WCM_WF_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
 
@@ -117,7 +118,8 @@ public class JscriptWorkflowTask implements Serializable
      * @param packageResources
      */
     public JscriptWorkflowTask(final String id, final String name, final String title, final String description, final ServiceRegistry serviceRegistry,
-            final ScriptableQNameMap<String, Serializable> properties, final ScriptableHashMap<String, String> transitions, Scriptable packageResources)
+            final ScriptableQNameMap<String, Serializable> properties, final ScriptableHashMap<String, String> transitions, Scriptable packageResources,
+            Scriptable scope)
     {
         this.id = id;
         this.name = name;
@@ -127,6 +129,7 @@ public class JscriptWorkflowTask implements Serializable
         this.properties = properties;
         this.transitions = transitions;
         this.packageResources = packageResources;
+        this.setScope(scope);
     }
 
     /**
@@ -137,13 +140,14 @@ public class JscriptWorkflowTask implements Serializable
      * @param serviceRegistry
      *            Service Registry object
      */
-    public JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask, final ServiceRegistry serviceRegistry)
+    public JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask, final ServiceRegistry serviceRegistry, Scriptable scope)
     {
         this.id = cmrWorkflowTask.id;
         this.name = cmrWorkflowTask.name;
         this.title = cmrWorkflowTask.title;
         this.description = cmrWorkflowTask.description;
         this.serviceRegistry = serviceRegistry;
+        this.setScope(scope);
 
         // instantiate ScriptableQNameMap<String, Serializable> properties
         // from WorkflowTasks's Map<QName, Serializable> properties
@@ -204,9 +208,9 @@ public class JscriptWorkflowTask implements Serializable
         for (int i = 0; i < resources.size(); i++)
         {
             // create our Node representation from the NodeRef
-            answer[i] = new ScriptNode(resources.get(i), serviceRegistry, null);
+            answer[i] = new ScriptNode(resources.get(i), serviceRegistry, getScope());
         }
-        packageResources = Context.getCurrentContext().newArray(null, answer);
+        packageResources = Context.getCurrentContext().newArray(getScope(), answer);
 
     }
 

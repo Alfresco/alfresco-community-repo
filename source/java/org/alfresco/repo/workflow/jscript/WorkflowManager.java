@@ -135,7 +135,7 @@ public class WorkflowManager extends BaseScopableProcessorExtension
 		ArrayList<Serializable> pooledTasks = new ArrayList<Serializable>();
 		for (WorkflowTask cmrPooledTask : cmrPooledTasks)
 		{
-			pooledTasks.add(new JscriptWorkflowTask(cmrPooledTask, this.services));
+			pooledTasks.add(new JscriptWorkflowTask(cmrPooledTask, this.services, this.getScope()));
 		}
 		
 		Scriptable pooledTasksScriptable = (Scriptable)new ValueConverter().convertValueForScript(
@@ -152,7 +152,7 @@ public class WorkflowManager extends BaseScopableProcessorExtension
 	public JscriptWorkflowTask getTask(String id)
 	{
 		WorkflowTask cmrWorkflowTask = this.services.getWorkflowService().getTaskById(id);
-		return new JscriptWorkflowTask(cmrWorkflowTask, this.services);
+		return new JscriptWorkflowTask(cmrWorkflowTask, this.services, this.getScope());
 	}
 	
 	/**
@@ -230,7 +230,7 @@ public class WorkflowManager extends BaseScopableProcessorExtension
 		ArrayList<Serializable> assignedTasks = new ArrayList<Serializable>();
 		for (WorkflowTask cmrTask : cmrAssignedTasks)
 		{
-			assignedTasks.add(new JscriptWorkflowTask(cmrTask, this.services));
+			assignedTasks.add(new JscriptWorkflowTask(cmrTask, this.services, this.getScope()));
 		}
 				
 		Scriptable assignedTasksScriptable =

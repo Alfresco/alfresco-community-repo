@@ -165,7 +165,7 @@ public class JscriptWorkflowPath implements Serializable
 		ArrayList<Serializable> tasks = new ArrayList<Serializable>();
 		for (WorkflowTask cmrTask : cmrTasks)
 		{
-			tasks.add(new JscriptWorkflowTask(cmrTask, this.serviceRegistry));
+			tasks.add(new JscriptWorkflowTask(cmrTask, this.serviceRegistry, this.scope));
 		}
 		
 		Scriptable tasksScriptable =

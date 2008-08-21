@@ -77,8 +77,6 @@
    <!--  Web Script Repository (Server-Tier) Container -->
    <!--                                                -->
 
-   
-
    <bean id="webscripts.repo.imageresolver" class="org.alfresco.repo.web.scripts.RepositoryImageResolver" />
    
    <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
@@ -115,12 +113,11 @@
    <bean id="webscripts.registry.prototype" parent="webscripts.registry" singleton="false"/>
 
 
+
    <!--                            -->
    <!--  Web Script Authenticators -->
    <!--                            -->
 
-   
-   
    <!--  HTTP Basic Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
@@ -134,6 +131,7 @@
 
    <!--  Facebook Authenticator -->
    <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
+
 
 
    <!--            -->
@@ -223,6 +221,8 @@
       <property name="store"><value>sitestore</value></property>
    </bean>
 
+
+
    <!--                            -->
    <!-- Activity Feed Web Scripts  -->
    <!--                            -->
@@ -276,7 +276,9 @@
           </list>
       </property>
    </bean>
-   
+
+
+
    <!--                         -->
    <!-- Invite Service REST API -->
    <!--                         -->
@@ -329,10 +331,12 @@
       <property name="personService" ref="PersonService"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
-   
-   <!--                                                     -->
-   <!-- Java-backed Web Scripts for Person Service REST API -->
-   <!--                                                     -->
+
+
+
+   <!--                         -->
+   <!-- Person Service REST API -->
+   <!--                         -->
    
    <!--                                                                                                       -->
    <!-- person.put Web Script - updates a person with the given person properties                             -->
@@ -345,6 +349,18 @@
       <property name="authenticationComponent" ref="AuthenticationComponent"/>
    </bean>
    
+   <!--                                                                                                       -->
+   <!-- changepassword.post Web Script - updates a user password                                              -->
+   <!--                                                                                                       -->
+   
+   <bean id="webscript.org.alfresco.repository.person.changepassword.post"
+         class="org.alfresco.repo.web.scripts.person.ChangePasswordPost"
+         parent="webscript">
+      <property name="authenticationService" ref="AuthenticationService"/>
+   </bean>
+
+
+
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
    

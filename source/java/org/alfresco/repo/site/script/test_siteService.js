@@ -196,9 +196,29 @@ function testPermissions()
     site.resetAllPermissions(container);    
 }
 
+function testRolesAndGroups()
+{
+   var roles = siteService.listSiteRoles();
+   test.assertNotNull(roles);
+   test.assertFalse(roles.length == 0);
+   
+   var site = siteService.createSite("sitePreset", "sn", "siteTitle", "siteDescription", false);
+   var siteGroup = site.siteGroup;
+   test.assertNotNull(siteGroup);
+   test.assertEquals("GROUP_site_sn", siteGroup);
+   
+   var groups = site.sitePermissionGroups;
+   test.assertNotNull(groups);
+   test.assertEquals("GROUP_site_sn_SiteManager", groups.SiteManager);
+   test.assertEquals("GROUP_site_sn_SiteConsumer", groups.SiteConsumer);
+   test.assertEquals("GROUP_site_sn_SiteCollaborator", groups.SiteCollaborator);
+   
+}
+
 // Execute test's
 testCRUD();
 testListSites();
 testMembership();
 testContainer();
 testPermissions();
+testRolesAndGroups();

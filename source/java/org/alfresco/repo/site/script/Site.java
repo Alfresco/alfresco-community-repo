@@ -25,6 +25,7 @@
 package org.alfresco.repo.site.script;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -55,6 +56,10 @@ public class Site implements Serializable
  
     /** Site information */
     private SiteInfo siteInfo;
+    
+    /** Site group information */
+    private String siteGroup;
+    private ScriptableHashMap<String, String> siteRoleGroups;
     
     /** Services Registry */
     private ServiceRegistry serviceRegistry;
@@ -178,6 +183,41 @@ public class Site implements Serializable
         }
         
         return node;
+    }
+    
+    /**
+     * Get the site group name
+     * 
+     * @return  String  site group name
+     */
+    public String getSiteGroup()
+    {
+        if (this.siteGroup == null)
+        {
+            this.siteGroup = this.siteService.getSiteGroup(this.siteInfo.getShortName());
+        }
+        return this.siteGroup;
+    }
+    
+    /**
+     * Gets a map of role name mapping to associated group name.
+     * 
+     * @return  ScriptableMap<String, String>   map of role to group name
+     */
+    public ScriptableHashMap<String, String> getSitePermissionGroups()
+    {
+        if (this.siteRoleGroups == null)
+        {
+            List<String> roles = this.siteService.getSiteRoles();
+            this.siteRoleGroups = new ScriptableHashMap<String, String>();
+            for (String role : roles)
+            {
+                this.siteRoleGroups.put(
+                        role, 
+                        this.siteService.getSiteRoleGroup(this.siteInfo.getShortName(), role));
+            }
+        }
+        return this.siteRoleGroups;
     }
     
     /**

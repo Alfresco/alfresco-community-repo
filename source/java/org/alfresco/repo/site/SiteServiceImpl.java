@@ -604,6 +604,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
         return result;
     }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteService#getSiteRoles()
+     */
+    public List<String> getSiteRoles()
+    {
+        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        return new ArrayList<String>(permissions);
+    }
 
     /**
      * @see org.alfresco.repo.site.SiteService#isMember(java.lang.String, java.lang.String)

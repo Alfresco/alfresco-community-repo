@@ -566,6 +566,18 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(ForumModel.TYPE_FORUM, nodeService.getType(container8));
     }
     
+    public void testSiteGetRoles()
+    {
+        List<String> roles = this.siteService.getSiteRoles();
+        assertNotNull(roles);
+        assertFalse(roles.isEmpty());
+        
+//        for (String role : roles)
+//        {
+//            System.out.println("Role: " + role);
+//        }
+    }
+    
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception

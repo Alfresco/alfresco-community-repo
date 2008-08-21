@@ -140,4 +140,15 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         }
         return site;
     }
+    
+    /**
+     * Returns an array of all the roles that can be assigned to a memeber of a site.
+     * 
+     * @return  String[]    roles available to assign to a member of a site
+     */
+    public String[] listSiteRoles()
+    {
+        List<String> roles = this.siteService.getSiteRoles();
+        return (String[])roles.toArray(new String[roles.size()]);
+    }
 }

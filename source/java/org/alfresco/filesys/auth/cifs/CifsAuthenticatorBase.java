@@ -228,6 +228,19 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
             tx.begin();
             personName = m_alfrescoConfig.getPersonService().getUserIdentifier( userName);
             tx.commit();
+
+            // Check if the person exists
+            
+            if (personName == null) {
+            	
+            	tx = m_alfrescoConfig.getTransactionService().getNonPropagatingUserTransaction( false);
+            	tx.begin();
+            	
+            	m_alfrescoConfig.getPersonService().getPerson( userName);
+                personName = m_alfrescoConfig.getPersonService().getUserIdentifier( userName);
+                
+                tx.commit();
+            }
         }
         catch (Throwable ex)
         {

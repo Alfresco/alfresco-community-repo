@@ -50,7 +50,7 @@
     	<property name="thumbnailDefinitions">
     		<list>
     		
-    		    <!-- Small image thumbnail options -->
+    		   <!-- Small image thumbnail options -->
 				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="medium" />
 					<property name="mimetype" value="image/jpeg"/>
@@ -69,7 +69,7 @@
 					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
 				</bean>
 
-    		   <!-- Slingshot Document Library image thumbnail options -->
+            <!-- Slingshot Document Library image thumbnail options -->
 				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="doclib" />
 					<property name="mimetype" value="image/png"/>
@@ -90,7 +90,7 @@
     			
     			<!-- Web Preview thumbnail options -->
 				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-				    <property name="name" value="webpreview" />
+				   <property name="name" value="webpreview" />
 					<property name="mimetype" value="application/x-shockwave-flash"/>    					
 					<property name="transformationOptions">
 	    				<bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
@@ -99,6 +99,25 @@
 	    			</property>
 	    		</bean>
     		
+             <!-- Image preview thumbnail options -->
+             <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+                <property name="name" value="imgpreview" />
+                <property name="mimetype" value="image/png"/>
+                <property name="transformationOptions">
+                   <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
+                      <property name="resizeOptions">
+                         <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
+                            <property name="width" value="400"/>
+                            <property name="height" value="400"/>
+                            <property name="maintainAspectRatio" value="true"/>
+                            <property name="resizeToThumbnail" value="true" />
+                         </bean>
+                      </property>
+                   </bean>
+                </property>
+                <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
+             </bean>
+
 				<!-- User avatar image thumbnail options -->
 				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
 					<property name="name" value="avatar" />

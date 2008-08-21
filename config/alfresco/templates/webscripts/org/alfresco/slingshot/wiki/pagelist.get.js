@@ -1,6 +1,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/wiki/lib/wiki.lib.js">
 
 var siteId = url.templateArgs.siteId;
+model.siteId = siteId;
+
 var filter = args.filter;
 
 model.pageList = getWikiPages(siteId, filter);

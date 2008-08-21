@@ -693,7 +693,8 @@ public class JBPMEngine extends BPMEngine
                             processContext.setVariable("initiatorhome", new JBPMNode(initiatorHome, serviceRegistry));
                         }
                     }
-
+                    processContext.setVariable("workflowinstanceid", createGlobalId(new Long(processInstance.getId()).toString()));
+                    
                     // create the start task if one exists
                     Token token = processInstance.getRootToken();
                     Task startTask = processInstance.getTaskMgmtInstance().getTaskMgmtDefinition().getStartTask();

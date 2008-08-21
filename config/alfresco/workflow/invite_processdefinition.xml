@@ -40,20 +40,20 @@
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath + wf_acceptUrl
-                  + "&amp;inviteId=" + workflowId
+                  + "?inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName
-                  + "&amp;ticket=" + wf_inviteTicket
+                  + "&amp;inviteTicket=" + wf_inviteTicket
                   + "\n\n"
                   + mail_text_invitee_account_section
                   + "To reject the invitation to join the site "
                   + "'" + wf_siteShortName + "', "
                   + "please follow this link:\n"
                   + wf_serverPath + wf_rejectUrl
-                  + "&amp;inviteId=" + workflowId
+                  + "?inviteId=" + workflowId
                   + "&amp;inviteeUserName=" + wf_inviteeUserName
                   + "&amp;siteShortName=" + wf_siteShortName
-                  + "&amp;ticket=" + wf_inviteTicket;                  
+                  + "&amp;inviteTicket=" + wf_inviteTicket;                  
                mail.execute(bpm_package);
             </script>
          </action>

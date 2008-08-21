@@ -2,7 +2,7 @@ function main()
 {
    // Task ID
    var taskId = url.templateArgs.taskId;
-   if ((taskId === undefined) || (taskId.length == 0))
+   if (taskId === undefined)
    {
 		status.setCode(status.STATUS_BAD_REQUEST, "TaskID missing when ending task.");
 		return;
@@ -20,7 +20,7 @@ function main()
    
    // Optional Transition ID
    var transitionId = url.templateArgs.transitionId;
-   if ((transitionId === undefined) || (transitionId.length == 0))
+   if (transitionId === undefined)
    {
       transitionId = null;
    }

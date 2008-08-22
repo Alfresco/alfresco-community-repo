@@ -474,8 +474,13 @@ public class Site implements Serializable
                     public Object doWork() throws Exception
                     {
                         // Reset all the permissions on the node
-                        serviceRegistry.getPermissionService().setInheritParentPermissions(nodeRef, true);
-                        serviceRegistry.getPermissionService().deletePermissions(nodeRef);
+                    	PermissionService permissionService = serviceRegistry.getPermissionService();
+                    	// Ensure node isn't inheriting permissions from an ancestor
+                    	if (!permissionService.getInheritParentPermissions(nodeRef))
+                    	{
+                            permissionService.deletePermissions(nodeRef);
+                            permissionService.setInheritParentPermissions(nodeRef, true);
+                    	}
                         return null;
                     }
                     

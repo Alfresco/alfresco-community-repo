@@ -102,25 +102,53 @@ public class InviteInfo
         return inviteId;
     }
 
-	public ScriptNode getInviteePerson() {
+	/**
+	 * Gets the invitee person
+	 * 
+	 * @return the invitee person
+	 */
+    public ScriptNode getInviteePerson()
+	{
 		return inviteePerson;
 	}
 
-	public ScriptNode getInviterPerson() {
+	/**
+	 * Gets the inviter person
+	 * 
+	 * @return the inviter person
+	 */
+    public ScriptNode getInviterPerson()
+	{
 		return inviterPerson;
 	}
 
-	public Date getSentInviteDate() {
+	/**
+	 * Gets the sent invite date
+	 * 
+	 * @return the sent invite date
+	 */
+    public Date getSentInviteDate()
+	{
 		return sentInviteDate;
 	}
 
-	public String getInvitationStatus() {
+	/**
+	 * Gets the invitation status
+	 * 
+	 * @return the invitation status
+	 */
+    public String getInvitationStatus()
+	{
 		return invitationStatus;
 	}
 
-	public String getRole() {
+	/**
+	 * Gets the role that invitee has been invited to the site as
+	 * 
+	 * @return the role that the invitee has been invited to the site as
+	 */
+    public String getRole()
+	{
 		return role;
 	}
-    
-    
 }

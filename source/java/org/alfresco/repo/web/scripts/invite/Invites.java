@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
@@ -77,12 +76,16 @@ public class Invites extends DeclarativeWebScript
 
     // model key names
     private static final String MODEL_KEY_NAME_INVITES = "invites";
+    
+    // invitation statuses
+    private static final String INVITATION_STATUS_PENDING = "pending";
+    private static final String INVITATION_STATUS_ACCEPTED = "accepted";
+    private static final String INVITATION_STATUS_REJECTED = "rejected";
 
     // service instances
     private WorkflowService workflowService;
     private NamespaceService namespaceService;
     private PersonService personService;
-    private SiteService siteService;
     private ServiceRegistry serviceRegistry;
 
     /**
@@ -113,10 +116,6 @@ public class Invites extends DeclarativeWebScript
 
 	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
-	}
-
-	public void setSiteService(SiteService siteService) {
-		this.siteService = siteService;
 	}
 
 	/*
@@ -261,14 +260,16 @@ public class Invites extends DeclarativeWebScript
             // as "inviteId" onto model
             String workflowId = workflowTask.path.instance.id;
 
-            // TODO: fetch correct workflow start date
-            Date sentInviteDate = new Date();
+            // set the invite start date to the time the workflow instance
+            // (associated with the task) was started
+            Date sentInviteDate = workflowTask.path.instance.startDate;
             
-            // TODO: fetchh correct role
-            String role = "SiteManager";
+            // get role that invitee was invited to the site as
+            String role = InviteHelper.getInviteeSiteRoleFromInvite(inviteId, workflowService, namespaceService);
             
-            // TODO: assign correct state
-            String invitationStatus = "pending"; // "accepted", "declined"
+            // TODO: glen johnson at alfresco com - as this web script only returns
+            // pending invites, this is hard coded to "pending" for now
+            String invitationStatus = INVITATION_STATUS_PENDING;
             
             // check whether we can find a person node for inviter/invitee
             NodeRef inviterRef = personService.getPerson(inviterUserNameProp);

@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
-import java.util.Date;
 import java.util.List;
 
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -91,55 +90,6 @@ public class InviteHelper
                     QName.createQName(Invite.WF_PROP_INVITEE_SITE_ROLE, namespaceService));
             
             return inviteeSiteRole;
-        }
-    }
-
-    /**
-     * Gets the date that the invite, with the given invite ID, was sent to the invitee
-     * 
-     * @param inviteId the ID of the invitation
-     *          from which to retrieve the sent date
-     * @return the date that the invite was sent to the invitee 
-     *          Returns <pre>null</pre> if no invitation
-     *          found matching the given invite ID
-     */
-    static Date getSentDateFromInvite(String inviteId, WorkflowService workflowService,
-                        NamespaceService namespaceService)
-    {
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-        wfTaskQuery.setProcessId(inviteId);
-        
-        // set process name to "wf:invite" so that only tasks associated with
-        // invite workflow instances are returned by query
-        wfTaskQuery.setProcessName(QName.createQName("wf:invite", namespaceService));
-
-        // pick up the start task because it has the "wf:inviteeSiteRole" property set with the
-        // site role value that we want to retrieve 
-        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(QName.createQName(Invite.WF_INVITE_TASK_INVITE_TO_SITE, namespaceService));
-
-        // query for invite workflow task associate
-        List<WorkflowTask> inviteStartTasks = workflowService
-                .queryTasks(wfTaskQuery);
-
-        // if no results were returned for given inviteID, then return
-        // site role as null
-        if (inviteStartTasks.size() == 0)
-        {
-            return null;
-        }
-        else
-        {
-            // there should be only one start task returned for the given invite ID
-            // so just take the first one in the list
-            WorkflowTask inviteStartTask = inviteStartTasks.get(0);
-            
-            Date sentInviteDate = (Date) inviteStartTask.properties.get(
-                    QName.createQName(Invite.WF_PROP_SENT_INVITE_DATE, namespaceService));
-            
-            return sentInviteDate;
         }
     }
 }

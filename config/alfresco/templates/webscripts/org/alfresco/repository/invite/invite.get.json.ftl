@@ -3,6 +3,9 @@
    <#if inviteId??>
    "inviteId" : "${inviteId}",
    </#if>
+   <#if inviteTicket??>
+      "inviteTicket" : "${inviteTicket}",
+   </#if>
    <#if inviteeUserName??>
       "inviteeUserName" : "${inviteeUserName}",
    </#if>

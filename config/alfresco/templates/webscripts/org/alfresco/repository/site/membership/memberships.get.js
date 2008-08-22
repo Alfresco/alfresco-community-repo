@@ -16,11 +16,13 @@ for (userName in memberships)
 }
 
 // also copy over the memberships.
-var mems = [];
+var mems = {};
+var pos = 0; // memberships[userName] won't return the correct value if userName is a digit-only value
 for (userName in memberships)
 {
-   var membershipType = memberships[userName];
+   var membershipType = memberships[pos];
    mems["_" + userName] = membershipType; // make sure the keys are strings
+   pos++;
 }
 
 // Pass the information to the template

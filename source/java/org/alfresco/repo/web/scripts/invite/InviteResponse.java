@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -88,13 +87,6 @@ public class InviteResponse extends DeclarativeWebScript
 
     private static final String RESPONSE_ACCEPT = "accept";
     private static final String RESPONSE_REJECT = "reject";
-    private static final String WF_TASK_ACCEPT_INVITE = "wf:acceptInviteTask";
-    private static final String WF_TASK_REJECT_INVITE = "wf:rejectInviteTask";
-    private static final String WF_TASK_INVITE_PENDING = "wf:invitePendingTask";
-    private static final String WF_TRANSITION_ACCEPT = "accept";
-    private static final String WF_TRANSITION_REJECT = "reject";
-    private static final String WF_TRANSITION_ACCEPT_INVITE_END = "end";
-    private static final String WF_TRANSITION_REJECT_INVITE_END = "end";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
     private static final String USER_ADMIN = "admin";
@@ -104,7 +96,6 @@ public class InviteResponse extends DeclarativeWebScript
     private MutableAuthenticationDao mutableAuthenticationDao;
     private SiteService siteService;
     private PersonService personService;
-    private NamespaceService namespaceService;
 
     /**
      * Sets the workflow service property
@@ -150,17 +141,6 @@ public class InviteResponse extends DeclarativeWebScript
     {
         this.personService = personService;
     }
-    
-    /**
-     * Sets the namespaceService property
-     * 
-     * @param namespaceService
-     *            the namespace service to set
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
 
     /*
      * (non-Javadoc)
@@ -177,57 +157,52 @@ public class InviteResponse extends DeclarativeWebScript
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
 
-        // get the URL parameter values
-        String inviteId = req.getParameter("inviteId");
-        String inviteeUserName = req.getParameter("inviteeUserName");
-        String siteShortName = req.getParameter("siteShortName");
-
-        // get the invite response value
-        String response = req.getExtensionPath();
-
-        // check that response has been provided
-        if ((response == null) || (response.length() == 0))
+        // Extract inviteId and inviteTicket
+        /*String extPath = req.getExtensionPath();
+        int separatorIndex = extPath.indexOf('/'); 
+        if (separatorIndex < 0)
         {
-            // handle response not provided
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "response has not been provided as part of URL.");
+            // should not happen as descriptor would not match
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+            "Parameters missing");
         }
-        // check that invite id URL parameter has been provided
-        else if ((inviteId == null) || (inviteId.length() == 0))
+        String inviteId = extPath.substring(0, separatorIndex);
+        String inviteTicket = extPath.substring(separatorIndex + 1);*/
+        
+        String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
+        String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
+        
+        // fetch the start task - it might not exist if the workflow has been finished/canceled already
+        WorkflowTask inviteStartTask = InviteHelper.findInviteStartTask(inviteId, workflowService);
+        if (inviteStartTask == null)
         {
-            // handle invite id not provided
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "invite id parameter has not been provided in the URL.");
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                    "No invite workflow for given id found"); 
         }
-        // check that inviteeUserName URL parameter has been provided
-        else if ((inviteeUserName == null) || (inviteeUserName.length() == 0))
+        
+        // check the ticket for a match
+        String ticket = (String) inviteStartTask.properties.get(InviteWorkflowModel.WF_PROP_INVITE_TICKET);
+        if (ticket == null || (! ticket.equals(inviteTicket)))
         {
-            // handle inviteeUserName not provided
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "inviteeUserName parameter has not been provided in the URL.");
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+            "Invalid ticket"); 
         }
-        // check that siteShortName URL parameter has been provided
-        else if ((siteShortName == null) || (siteShortName.length() == 0))
+        
+        // process response
+        String method = req.getServiceMatch().getWebScript().getDescription().getMethod();
+        if (method.equals("PUT"))
         {
-            // handle siteShortName not provided
+            acceptInvite(model, inviteId, inviteStartTask);
+        }
+        else if (method.equals("DELETE"))
+        {
+            rejectInvite(model, inviteId, inviteStartTask);
+        }
+        else
+        {
+            /* handle unrecognised method */
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "siteShortName parameter has not been provided in the URL.");
-        } else
-        {
-            // process response
-            if (response.equals(RESPONSE_ACCEPT))
-            {
-                acceptInvite(model, inviteId, inviteeUserName, siteShortName);
-            } else if (response.equals(RESPONSE_REJECT))
-            {
-                rejectInvite(model, inviteId, inviteeUserName, siteShortName);
-            } else
-            {
-                /* handle unrecognised response */
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "response, " + response
-                                + ", provided in URL has not been recognised.");
-            }
+                    "method " + method + " is not supported by this webscript.");
         }
 
         return model;
@@ -241,17 +216,19 @@ public class InviteResponse extends DeclarativeWebScript
      *            for rendering
      * @param inviteId
      *            ID of invite
-     * @param inviteeUserName
-     *            user name of invitee
-     * @param siteShortName
-     *            short name of site for which invitee is accepting
-     *            invitation to join
+     * @param inviteStartTask
      */
-    private void acceptInvite(Map<String, Object> model, String inviteId,
-            String inviteeUserName, String siteShortName)
+    private void acceptInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
+        String inviteeUserName = (String) inviteStartTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
+        String siteShortName = (String) inviteStartTask.properties.get(
+                InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
+        String inviteeSiteRole = (String) inviteStartTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE);
+        
         // complete the wf:invitePendingTask task because the invitation has been accepted
-        completeInviteTask(inviteId, QName.createQName(WF_TASK_INVITE_PENDING, this.namespaceService), WF_TRANSITION_ACCEPT);
+        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_ACCEPT);
         
         // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
         // the model) out into workflow action class that gets run when task wf:acceptInviteTask
@@ -265,11 +242,7 @@ public class InviteResponse extends DeclarativeWebScript
         {
             this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
         }
-        
-        // retrieve the site role with which the invitee was invited to the site
-        String inviteeSiteRole = InviteHelper.getInviteeSiteRoleFromInvite(inviteId, this.workflowService,
-                this.namespaceService);
-        
+
         // add Invitee to Site with the site role that the inviter "started" the invite process with
         RunAsWork<Boolean> setSiteMembershipWorker = new InviteResponse.SetSiteMembershipWorker(
                 siteShortName, inviteeUserName, inviteeSiteRole);
@@ -280,7 +253,7 @@ public class InviteResponse extends DeclarativeWebScript
         // starting from above where wf:invitePendingTask is completed, up to here). This code 
         // block will soon be farmed out into a workflow action which gets executed when 
         // wf:acceptInviteTask gets completed
-        completeInviteTask(inviteId, QName.createQName(WF_TASK_ACCEPT_INVITE, this.namespaceService), WF_TRANSITION_ACCEPT_INVITE_END);
+        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_ACCEPT_INVITE, InviteWorkflowModel.WF_TRANSITION_ACCEPT_INVITE_END);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
@@ -301,11 +274,15 @@ public class InviteResponse extends DeclarativeWebScript
      *            short name of site for which invitee is rejecting
      *            invitation to join
      */
-    private void rejectInvite(Map<String, Object> model, String inviteId,
-            String inviteeUserName, String siteShortName)
+    private void rejectInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
+        String inviteeUserName = (String) inviteStartTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
+        String siteShortName = (String) inviteStartTask.properties.get(
+                InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
+        
         // complete the wf:invitePendingTask task because the invitation has been accepted
-        completeInviteTask(inviteId, QName.createQName(WF_TASK_INVITE_PENDING, this.namespaceService), WF_TRANSITION_REJECT);
+        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_REJECT);
         
         // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
         // the model) out into workflow action class that gets run when task wf:rejectInviteTask
@@ -331,7 +308,7 @@ public class InviteResponse extends DeclarativeWebScript
         // starting from above where wf:invitePendingTask is completed, up to here). This code 
         // block will soon be farmed out into a workflow action which gets executed when 
         // wf:rejectInviteTask gets completed
-        completeInviteTask(inviteId, QName.createQName(WF_TASK_REJECT_INVITE, this.namespaceService), WF_TRANSITION_REJECT_INVITE_END);
+        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_REJECT_INVITE, InviteWorkflowModel.WF_TRANSITION_REJECT_INVITE_END);
 
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
@@ -364,7 +341,7 @@ public class InviteResponse extends DeclarativeWebScript
 
         // set process name to "wf:invite" so that only
         // invite workflow instances are considered by this query
-        wfTaskQuery.setProcessName(QName.createQName("wf:invite", this.namespaceService));
+        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
 
         // query for invite workflow tasks with the constructed query
         List<WorkflowTask> wf_invite_tasks = this.workflowService

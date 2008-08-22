@@ -32,7 +32,12 @@
    },
    </#if>
    "role" : "${invite.role}",
-   "siteShortName" : "${invite.siteShortName!''}",
+   "site" : {
+      "shortName" : "${invite.siteShortName!''}"
+      <#if invite.siteInfo??>
+      , "title" : "${invite.siteInfo.title}"
+      </#if>
+   },
    "invitationStatus" : "${invite.invitationStatus}",
    "sentInviteDate" : "${invite.sentInviteDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}"
 }

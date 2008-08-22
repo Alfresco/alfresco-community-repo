@@ -494,18 +494,16 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
+        String inviteTicket = result.getString("inviteTicket");
 
         // get hold of invitee user name that was generated as part of starting
         // the invite
         String inviteeUserName = result.getString("inviteeUserName");
 
         // Invitee accepts invitation to a Site from Inviter
-        String acceptInviteUrl = URL_INVITERSP_SERVICE + "/"
-                + INVITE_RSP_ACCEPT + "?inviteId=" + inviteId
-                + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
-                + SITE_SHORT_NAME_INVITE_1;
-        MockHttpServletResponse response = getRequest(acceptInviteUrl,
-                Status.STATUS_OK);
+        String acceptInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket;
+        MockHttpServletResponse response = putRequest(acceptInviteUrl,
+                Status.STATUS_OK, null, null);
 
         //
         // test that invitation represented by invite ID (of invitation started
@@ -530,17 +528,15 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // get hold of invite ID of started invite
         String inviteId = result.getString("inviteId");
+        String inviteTicket = result.getString("inviteTicket");
 
         // get hold of invitee user name that was generated as part of starting
         // the invite
         String inviteeUserName = result.getString("inviteeUserName");
 
         // Invitee rejects invitation to a Site from Inviter
-        String rejectInviteUrl = URL_INVITERSP_SERVICE + "/"
-                + INVITE_RSP_REJECT + "?inviteId=" + inviteId
-                + "&inviteeUserName=" + inviteeUserName + "&siteShortName="
-                + SITE_SHORT_NAME_INVITE_1;
-        MockHttpServletResponse response = getRequest(rejectInviteUrl,
+        String rejectInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket;
+        MockHttpServletResponse response = deleteRequest(rejectInviteUrl,
                 Status.STATUS_OK);
 
         //
@@ -646,6 +642,6 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
-        assertEquals(siteShortName, inviteJSONObj.get("siteShortName"));
+        assertEquals(siteShortName, inviteJSONObj.getJSONObject("site").get("shortName"));
     }
 }

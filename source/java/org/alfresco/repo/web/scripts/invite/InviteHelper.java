@@ -24,8 +24,15 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
+import java.util.Date;
 import java.util.List;
 
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.site.SiteInfo;
+import org.alfresco.repo.site.SiteService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
@@ -38,58 +45,98 @@ import org.alfresco.service.namespace.QName;
  * more than one Invite Service Web Script 
  */
 public class InviteHelper
-{
+{   
     /**
-     * Gets the invitee site role from the invite
-     * workflow instance associated with the given invite ID.
-     * i.e. if the inviter 'starts' an invite (which is allocated some invite ID
-     * '12345' when it is processed), and that invite is requesting an invitee to
-     * to join some site under a given site role, then that site role is returned 
-     * by this method when invite ID '12345' is passed in.
+     * Find an invite start task given the task id.
      * 
-     * @param inviteId the ID of the invitation (invite workflow instance)
-     *          from which to retrieve the invitee site role
-     * @return the site role under which the invitee was invited to 
-     *          join the site. Returns <pre>null</pre> if no invite
-     *          workflow instance was found matching the given invite ID
+     * @return a WorkflowTask or null if not found.
      */
-    static String getInviteeSiteRoleFromInvite(String inviteId, WorkflowService workflowService,
-                        NamespaceService namespaceService)
+    public static WorkflowTask findInviteStartTask(String inviteId, WorkflowService workflowService)
     {
         // create workflow task query
         WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
+        
         wfTaskQuery.setProcessId(inviteId);
         
         // set process name to "wf:invite" so that only tasks associated with
         // invite workflow instances are returned by query
-        wfTaskQuery.setProcessName(QName.createQName("wf:invite", namespaceService));
+        wfTaskQuery.setProcessName(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invite"));
 
         // pick up the start task because it has the "wf:inviteeSiteRole" property set with the
         // site role value that we want to retrieve 
         wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(QName.createQName(Invite.WF_INVITE_TASK_INVITE_TO_SITE, namespaceService));
+        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE);
 
         // query for invite workflow task associate
         List<WorkflowTask> inviteStartTasks = workflowService
                 .queryTasks(wfTaskQuery);
 
-        // if no results were returned for given inviteID, then return
-        // site role as null
-        if (inviteStartTasks.size() == 0)
+        // should also be 0 or 1
+        if (inviteStartTasks.size() < 1)
         {
             return null;
         }
         else
         {
-            // there should be only one start task returned for the given invite ID
-            // so just take the first one in the list
-            WorkflowTask inviteStartTask = inviteStartTasks.get(0);
-            
-            String inviteeSiteRole = (String) inviteStartTask.properties.get(
-                    QName.createQName(Invite.WF_PROP_INVITEE_SITE_ROLE, namespaceService));
-            
-            return inviteeSiteRole;
+            return inviteStartTasks.get(0);
         }
+    }
+    
+    /**
+     * Returns an InviteInfo object usable for rendering the response.
+     * 
+     * @return object containing invite information
+     */
+    public static InviteInfo getPendingInviteInfo(WorkflowTask workflowTask,
+            ServiceRegistry serviceRegistry, SiteService siteService)
+    {
+        PersonService personService = serviceRegistry.getPersonService();
+        
+        // get the inviter, invitee, role and site short name
+        String inviterUserNameProp = (String) workflowTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITER_USER_NAME);
+        String inviteeUserNameProp = (String) workflowTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
+        String role = (String) workflowTask.properties.get(
+                InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE);
+        String siteShortNameProp = (String) workflowTask.properties.get(
+                InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
+
+        // fetch the site object
+        SiteInfo siteInfo = siteService.getSite(siteShortNameProp);
+        
+        // get workflow instance id (associated with workflow task) to place
+        // as "inviteId" onto model
+        String workflowId = workflowTask.path.instance.id;
+
+        // set the invite start date to the time the workflow instance
+        // (associated with the task) was started
+        Date sentInviteDate = workflowTask.path.instance.startDate;
+        
+        // TODO: glen johnson at alfresco com - as this web script only returns
+        // pending invites, this is hard coded to "pending" for now
+        String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
+        
+        // fetch the person node for the inviter
+        NodeRef inviterRef = personService.getPerson(inviterUserNameProp);
+        ScriptNode inviterPerson = null;
+        if (inviterRef != null)
+        {
+            inviterPerson = new ScriptNode(inviterRef, serviceRegistry); 
+        }
+        
+        // fetch the person node for the invitee
+        NodeRef inviteeRef = personService.getPerson(inviteeUserNameProp);
+        ScriptNode inviteePerson = null;
+        if (inviteeRef != null)
+        {
+            inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
+        }
+        
+        // create and add InviteInfo to inviteInfoList
+        InviteInfo inviteInfo = new InviteInfo(invitationStatus, inviterUserNameProp, inviterPerson,
+                inviteeUserNameProp, inviteePerson, role, siteShortNameProp, siteInfo, sentInviteDate, workflowId);
+
+        return inviteInfo;
     }
 }

@@ -25,20 +25,16 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -76,17 +72,11 @@ public class Invites extends DeclarativeWebScript
 
     // model key names
     private static final String MODEL_KEY_NAME_INVITES = "invites";
-    
-    // invitation statuses
-    private static final String INVITATION_STATUS_PENDING = "pending";
-    private static final String INVITATION_STATUS_ACCEPTED = "accepted";
-    private static final String INVITATION_STATUS_REJECTED = "rejected";
 
     // service instances
     private WorkflowService workflowService;
-    private NamespaceService namespaceService;
-    private PersonService personService;
     private ServiceRegistry serviceRegistry;
+    private SiteService siteService;
 
     /**
      * Set the workflow service property
@@ -99,25 +89,14 @@ public class Invites extends DeclarativeWebScript
         this.workflowService = workflowService;
     }
 
-    /**
-     * Set the namespace service
-     * 
-     * @param namespaceService the namespace service to set
-     */
-    public void setNamespaceService(
-            NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    public void setPersonService(PersonService personService) {
-		this.personService = personService;
-	}
-
 	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
 	}
 
+    public void setSiteService(SiteService siteService) {
+        this.siteService = siteService;
+    }
+    
 	/*
      * (non-Javadoc)
      * 
@@ -204,17 +183,17 @@ public class Invites extends DeclarativeWebScript
                     1.0f);
             if (inviterUserName != null)
             {
-                wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITER_USER_NAME, this.namespaceService),
+                wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME,
                         inviterUserName);
             }
             if (inviteeUserName != null)
             {
-                wfQueryProps.put(QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME, this.namespaceService),
+                wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
                         inviteeUserName);
             }
             if (siteShortName != null)
             {
-                wfQueryProps.put(QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME, this.namespaceService),
+                wfQueryProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME,
                         siteShortName);
             }
 
@@ -227,12 +206,12 @@ public class Invites extends DeclarativeWebScript
 
         // pick up the start task
         wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(QName.createQName(Invite.WF_INVITE_TASK_INVITE_TO_SITE, this.namespaceService));
+        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE);
 
         // set process name to "wf:invite" so that only tasks associated with
         // invite workflow instances
         // are returned by query
-        wfTaskQuery.setProcessName(QName.createQName("wf:invite", this.namespaceService));
+        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
 
         // query for invite workflow tasks
         List<WorkflowTask> wf_invite_tasks = this.workflowService
@@ -247,48 +226,7 @@ public class Invites extends DeclarativeWebScript
         // onto model for each invite workflow task returned by the query
         for (WorkflowTask workflowTask : wf_invite_tasks)
         {
-            // get wf:inviterUserName, wf:inviteeUserName, wf:siteShortName
-            // properties from workflow path associated with workflow task
-            String inviterUserNameProp = (String) workflowTask.properties.get(
-                    QName.createQName(Invite.WF_PROP_INVITER_USER_NAME, this.namespaceService));
-            String inviteeUserNameProp = (String) workflowTask.properties.get(
-                    QName.createQName(Invite.WF_PROP_INVITEE_USER_NAME, this.namespaceService));
-            String siteShortNameProp = (String) workflowTask.properties.get(
-                    QName.createQName(Invite.WF_PROP_SITE_SHORT_NAME, this.namespaceService));
-
-            // get workflow instance id (associated with workflow task) to place
-            // as "inviteId" onto model
-            String workflowId = workflowTask.path.instance.id;
-
-            // set the invite start date to the time the workflow instance
-            // (associated with the task) was started
-            Date sentInviteDate = workflowTask.path.instance.startDate;
-            
-            // get role that invitee was invited to the site as
-            String role = InviteHelper.getInviteeSiteRoleFromInvite(inviteId, workflowService, namespaceService);
-            
-            // TODO: glen johnson at alfresco com - as this web script only returns
-            // pending invites, this is hard coded to "pending" for now
-            String invitationStatus = INVITATION_STATUS_PENDING;
-            
-            // check whether we can find a person node for inviter/invitee
-            NodeRef inviterRef = personService.getPerson(inviterUserNameProp);
-            ScriptNode inviterPerson = null;
-            if (inviterRef != null)
-            {
-            	inviterPerson = new ScriptNode(inviterRef, serviceRegistry); 
-            }
-            
-            NodeRef inviteeRef = personService.getPerson(inviteeUserNameProp);
-            ScriptNode inviteePerson = null;
-            if (inviteeRef != null)
-            {
-            	inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
-            }
-            
-            // create and add InviteInfo to inviteInfoList
-            InviteInfo inviteInfo = new InviteInfo(invitationStatus, inviterUserNameProp, inviterPerson,
-                    inviteeUserNameProp, inviteePerson, role, siteShortNameProp, sentInviteDate, workflowId);
+            InviteInfo inviteInfo = InviteHelper.getPendingInviteInfo(workflowTask, serviceRegistry, siteService);
             inviteInfoList.add(inviteInfo);
         }
 
@@ -298,4 +236,5 @@ public class Invites extends DeclarativeWebScript
 
         return model;
     }
+
 }

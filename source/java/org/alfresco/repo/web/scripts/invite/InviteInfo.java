@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.Date;
 
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.site.SiteInfo;
 
 /**
  * Holds properties pertaining to an invitation that has been sent out by a Site Manager (Inviter)
@@ -36,6 +37,11 @@ import org.alfresco.repo.jscript.ScriptNode;
  */
 public class InviteInfo
 {
+    // invitation statuses
+    public static final String INVITATION_STATUS_PENDING = "pending";
+    public static final String INVITATION_STATUS_ACCEPTED = "accepted";
+    public static final String INVITATION_STATUS_REJECTED = "rejected";
+    
     // private instances to hold property values
 	private String invitationStatus;
     private String inviterUserName;
@@ -44,12 +50,13 @@ public class InviteInfo
     private ScriptNode inviteePerson;
     private String role;
     private String siteShortName;
+    private SiteInfo siteInfo;
     private Date sentInviteDate;
     private String inviteId;
     
     public InviteInfo(String invitationStatus, String inviterUserName, ScriptNode inviterPerson,
     		String inviteeUserName, ScriptNode inviteePerson, String role,
-    		String siteShortName, Date sentInviteDate, String inviteId)
+    		String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
     {
     	this.invitationStatus = invitationStatus;
         this.inviterUserName = inviterUserName;
@@ -58,6 +65,7 @@ public class InviteInfo
         this.inviteePerson = inviteePerson;
         this.role = role;
         this.siteShortName = siteShortName;
+        this.siteInfo = siteInfo;
         this.sentInviteDate = sentInviteDate;
         this.inviteId = inviteId;
     }
@@ -151,4 +159,9 @@ public class InviteInfo
 	{
 		return role;
 	}
+
+    public SiteInfo getSiteInfo() {
+        return siteInfo;
+    }
+    
 }

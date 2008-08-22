@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Invite reject</shortname>
+   <description>Rejects an invite</description>
+   <url>/api/invite/{inviteId}/{inviteTicket}</url>
+   <format default="json"/>
+   <authentication>none</authentication>
+   <transaction>required</transaction>
+</webscript>

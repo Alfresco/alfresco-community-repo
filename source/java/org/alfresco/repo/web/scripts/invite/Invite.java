@@ -112,6 +112,7 @@ public class Invite extends DeclarativeWebScript
     public static final String WF_PROP_INVITEE_LASTNAME = "wf:inviteeLastName";
     public static final String WF_PROP_SITE_SHORT_NAME = "wf:siteShortName";
     public static final String WF_PROP_INVITEE_SITE_ROLE = "wf:inviteeSiteRole";
+    public static final String WF_PROP_SENT_INVITE_DATE = "wf:sentInviteDate";
     private static final String WF_PROP_INVITEE_GEN_PASSWORD = "wf:inviteeGenPassword";
     
     public static final String WF_INVITE_TASK_INVITE_TO_SITE = "wf:inviteToSiteTask";

@@ -25,8 +25,6 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +42,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.URLDecoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -283,7 +282,7 @@ public abstract class BaseServlet extends HttpServlet
          // create a list of path elements (decode the URL as we go)
          for (int x = 1; x < args.length; x++)
          {
-            paths.add(decode ? URLDecoder.decode(args[x], "UTF-8") : args[x]);
+            paths.add(decode ? URLDecoder.decode(args[x]) : args[x]);
          }
          
          if (logger.isDebugEnabled())
@@ -301,13 +300,6 @@ public abstract class BaseServlet extends HttpServlet
          
          if (logger.isDebugEnabled())
             logger.debug("Resolved webdav path to NodeRef: " + nodeRef);
-      }
-      catch (UnsupportedEncodingException uee)
-      {
-         if (logger.isWarnEnabled())
-            logger.warn("Failed to resolve webdav path", uee);
-         
-         nodeRef = null;
       }
       catch (FileNotFoundException fne)
       {

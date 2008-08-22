@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.URLDecoder;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.repository.Repository;
@@ -111,7 +111,7 @@ public class FileUploadBean implements Serializable
          }
          else if (item.isFormField() && item.getFieldName().equals("currentPath"))
          {
-            currentPath = URLDecoder.decode(item.getString(), "UTF-8");
+            currentPath = URLDecoder.decode(item.getString());
          }
          else
          {

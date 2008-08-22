@@ -27,7 +27,6 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
-import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +53,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.URLDecoder;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.apache.commons.logging.Log;
@@ -156,7 +156,8 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          
          // assume 'workspace' or other NodeRef based protocol for remaining URL elements
          StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
-         String id = URLDecoder.decode(t.nextToken(), "UTF-8");
+         String id = URLDecoder.decode(t.nextToken());
+         
          // build noderef from the appropriate URL elements
          nodeRef = new NodeRef(storeRef, id);
          

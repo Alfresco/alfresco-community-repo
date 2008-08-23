@@ -64,3 +64,6 @@ function runAction(p_params)
 
    return results;
 }
+
+/* Bootstrap action script */
+main();

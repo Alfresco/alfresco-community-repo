@@ -10,10 +10,6 @@
  * @param uri {string} node/{store_type}/{store_id}/{id}/{filepath} : full path to file or folder name involved in the action
  */
 
-/* Bootstrap action script */
-main();
-
-
 /**
  * Main script entry point
  * @method main
@@ -129,51 +125,60 @@ function getSiteInputParams()
 {
    var params = {};
    var error = null;
+   var template = url.template;
    
    try
    {
-      // First try to get the parameters from the URI
-      var siteId = url.templateArgs.site;
-      var containerId = url.templateArgs.container;
+      var siteId, containerId, sideNode, rootNode;
+
+      // Try to get the parameters from the URI
+      siteId = url.templateArgs.site;
+      containerId = url.templateArgs.container;
 
       // SiteId
-   	if ((siteId === null) || (siteId.length === 0))
-   	{
-   		return "'site' parameter is missing.";
-   	}
-
-      // Find the site
-      var siteNode = siteService.getSite(siteId);
-      if (siteNode === null)
+      if (template.indexOf("{site}") != -1)
       {
-   		return "Site '" + siteId + "' not found.";
-      }
+      	if ((siteId === null) || (siteId.length === 0))
+      	{
+      		return "'site' parameter is missing.";
+      	}
 
-      // ContainerId
-   	if ((containerId === null) || (containerId.length === 0))
-   	{
-   		return "'container' parameter is missing.";
-   	}
+         // Find the site
+         siteNode = siteService.getSite(siteId);
+         if (siteNode === null)
+         {
+      		return "Site '" + siteId + "' not found.";
+         }
 
-      // Find the component container
-      var rootNode = siteNode.getContainer(containerId);
-      if (rootNode === null)
-      {
-        rootNode = siteNode.createContainer(containerId);
-        if (rootNode === null)
-        {
-   			return "Component container '" + containerId + "' not found in '" + siteId + "'.";
-   		}
-      }
-   	
-      // Populate the return object
-      params =
-      {
-      	usingNodeRef: false,
-      	siteId: siteId,
-      	containerId: containerId,
-      	siteNode: siteNode,
-      	rootNode: rootNode
+         // ContainerId
+         if (template.indexOf("{container}") != -1)
+         {
+         	if ((containerId === null) || (containerId.length === 0))
+         	{
+         		return "'container' parameter is missing.";
+         	}
+
+            // Find the component container
+            var rootNode = siteNode.getContainer(containerId);
+            if (rootNode === null)
+            {
+              rootNode = siteNode.createContainer(containerId);
+              if (rootNode === null)
+              {
+         			return "Component container '" + containerId + "' not found in '" + siteId + "'.";
+         		}
+            }
+         }
+
+         // Populate the return object
+         params =
+         {
+         	usingNodeRef: false,
+         	siteId: siteId,
+         	containerId: containerId,
+         	siteNode: siteNode,
+         	rootNode: rootNode
+         }
       }
    }
    catch(e)

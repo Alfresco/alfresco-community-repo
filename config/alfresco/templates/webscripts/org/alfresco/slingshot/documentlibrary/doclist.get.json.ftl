@@ -5,16 +5,19 @@
 {
    "totalRecords": ${paging.totalRecords?c},
    "startIndex": ${paging.startIndex?c},
-   "permissions":
-	{
-      "userRole": "${user.role!""}",
-   	"userAccess":
-   	{
-   	   "create" : ${user.permissions.create?string},
-   	   "edit" : ${user.permissions.edit?string},
-   	   "delete" : ${user.permissions.delete?string}
-   	}
-	},
+   "metadata":
+   {
+      "permissions":
+      {
+         "userRole": "${user.role!""}",
+         "userAccess":
+         {
+            "create" : ${user.permissions.create?string},
+            "edit" : ${user.permissions.edit?string},
+            "delete" : ${user.permissions.delete?string}
+         }
+      }
+   },
    "items":
    [
    <#list doclist.items as item>
@@ -82,9 +85,10 @@
             ],
       	   "userAccess":
       	   {
-         	   "create": ${d.hasPermission("CreateChildren")?string},
-         	   "edit": ${d.hasPermission("Write")?string},
-         	   "delete": ${d.hasPermission("Delete")?string}
+               "create": ${d.hasPermission("CreateChildren")?string},
+               "edit": ${d.hasPermission("Write")?string},
+               "delete": ${d.hasPermission("Delete")?string},
+               "permissions": ${d.hasPermission("ChangePermissions")?string}
       	   }
       	}
       }<#if item_has_next>,</#if>

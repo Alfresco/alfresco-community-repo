@@ -14,11 +14,11 @@
          "description": "${(t.properties.description!"{}")}",
          "hasChildren": ${hasChildren?string},
          "userAccess":
-      	{
-      	   "create": ${t.hasPermission("CreateChildren")?string},
-      	   "edit": ${t.hasPermission("Write")?string},
-      	   "delete": ${t.hasPermission("Delete")?string}
-      	}
+         {
+            "create": ${t.hasPermission("CreateChildren")?string},
+            "edit": ${t.hasPermission("Write")?string},
+            "delete": ${t.hasPermission("Delete")?string}
+         }
       }<#if t_has_next>,</#if>
    </#list>
    ]

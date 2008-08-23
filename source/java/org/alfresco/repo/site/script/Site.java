@@ -579,4 +579,70 @@ public class Site implements Serializable
             throw new AlfrescoRuntimeException("You do not have permissions to all memebers contribute permissions on this node.");
         }
     }    
+
+    /**
+     * Apply a set of permissions to the node.
+     * 
+     * @param nodeRef   node reference
+     */
+    public void setPermissions(final ScriptNode node, final Object permissions)
+    {
+        final NodeRef nodeRef = node.getNodeRef();
+        
+        // TODO Check that the node is indeed a child of the site
+        
+        if (permissions != null && permissions instanceof ScriptableObject)
+        {
+            // Get the permission service
+            final PermissionService permissionService = this.serviceRegistry.getPermissionService();
+            
+            // Check that the user has permissions to change permissions on the node
+            if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
+            {       
+                // Do the work as system as we are messing about with permissions
+                AuthenticationUtil.runAs(
+                    new AuthenticationUtil.RunAsWork<Object>()
+                    {
+                        public Object doWork() throws Exception
+                        {
+                            // Assign the correct permissions
+                            Site.this.serviceRegistry.getPermissionService().setInheritParentPermissions(nodeRef, false);
+                            permissionService.deletePermissions(nodeRef);
+
+                            ScriptableObject scriptable = (ScriptableObject)permissions;
+                            Object[] propIds = scriptable.getIds();
+                            for (int i = 0; i < propIds.length; i++)
+                            {
+                                // Work on each key in turn
+                                Object propId = propIds[i];
+                                
+                                // Only interested in keys that are formed of Strings
+                                if (propId instanceof String)
+                                {
+                                    // Get the value out for the specified key - it must be String
+                                    final String key = (String)propId;
+                                    final Object value = scriptable.get(key, scriptable);
+                                    if (value instanceof String)
+                                    {                                   
+                                        // Set the permission on the node
+                                        permissionService.setPermission(nodeRef, key, (String)value, true);
+                                    }
+                                }
+                            }
+                            
+                            return null;
+                         }
+                    }, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.");
+            }
+        }
+        else
+        {
+        	// No permissions passed-in
+        	this.resetAllPermissions(node);
+        }
+    }    
 }

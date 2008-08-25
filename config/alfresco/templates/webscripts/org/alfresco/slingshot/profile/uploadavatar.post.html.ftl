@@ -5,7 +5,7 @@
 <body>
 <#if (args.successCallback?exists)>
    <script type="text/javascript">
-      ${args.successCallback}.call(${args.successScope}, {nodeRef: "${document.nodeRef}"});
+      ${args.successCallback}.call(${args.successScope}, {nodeRef: "${image.nodeRef}"});
    </script>
 </#if>
 </body>

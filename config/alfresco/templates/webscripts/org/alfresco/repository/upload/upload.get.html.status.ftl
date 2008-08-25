@@ -3,9 +3,9 @@
    <title>Upload failure</title>
 </head>
 <body>
-<#if (args.failure?exists)>
+<#if (args.failureCallback?exists)>
    <script type="text/javascript">
-      ${args.failure}
+      ${args.failureCallback}.call(${args.failureScope}, {});
    </script>
 </#if>
 </body>

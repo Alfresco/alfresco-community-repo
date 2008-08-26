@@ -501,7 +501,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteeUserName = result.getString("inviteeUserName");
 
         // Invitee accepts invitation to a Site from Inviter
-        String acceptInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket;
+        String acceptInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/accept";
         MockHttpServletResponse response = putRequest(acceptInviteUrl,
                 Status.STATUS_OK, null, null);
 
@@ -535,9 +535,9 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteeUserName = result.getString("inviteeUserName");
 
         // Invitee rejects invitation to a Site from Inviter
-        String rejectInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket;
-        MockHttpServletResponse response = deleteRequest(rejectInviteUrl,
-                Status.STATUS_OK);
+        String rejectInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/reject";
+        MockHttpServletResponse response = putRequest(rejectInviteUrl,
+                Status.STATUS_OK, null, null);
 
         //
         // test that invite represented by invite ID (of invitation started

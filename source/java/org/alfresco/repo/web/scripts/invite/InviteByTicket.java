@@ -86,17 +86,9 @@ public class InviteByTicket extends DeclarativeWebScript
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
 
-        // Extract inviteId and inviteTicket
-        String extPath = req.getExtensionPath();
-        int separatorIndex = extPath.indexOf('/'); 
-        if (separatorIndex < 0)
-        {
-            // should not happen as descriptor would not match
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-            "Parameters missing");
-        }
-        String inviteId = extPath.substring(0, separatorIndex);
-        String inviteTicket = extPath.substring(separatorIndex + 1);
+        // get inviteId and inviteTicket
+        String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
+        String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
         
         // authenticate as system for the rest of the webscript
         AuthenticationUtil.setSystemUserAsCurrentUser();

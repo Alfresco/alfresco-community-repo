@@ -301,23 +301,10 @@
    </bean>
    
    <!--                                                                                                       -->
-   <!-- Invite Accept Web Script - accepts a pending invite                                                   -->
+   <!-- Invite Accept/Reject Web Script - accepts or rejects a pending invite                                                   -->
    <!--                                                                                                       -->
    
    <bean id="webscript.org.alfresco.repository.invite.inviteresponse.put"
-         class="org.alfresco.repo.web.scripts.invite.InviteResponse"
-         parent="webscript">
-      <property name="workflowService" ref="workflowServiceImpl"/>
-      <property name="mutableAuthenticationDao" ref="authenticationDao"/>
-      <property name="siteService" ref="siteService"/>
-      <property name="personService" ref="personService"/>
-   </bean>
-   
-   <!--                                                                                                       -->
-   <!-- Invite Reject Web Script - rejects a pending invite                                                   -->
-   <!--                                                                                                       -->
-   
-   <bean id="webscript.org.alfresco.repository.invite.inviteresponse.delete"
          class="org.alfresco.repo.web.scripts.invite.InviteResponse"
          parent="webscript">
       <property name="workflowService" ref="workflowServiceImpl"/>

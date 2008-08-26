@@ -156,18 +156,6 @@ public class InviteResponse extends DeclarativeWebScript
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
-
-        // Extract inviteId and inviteTicket
-        /*String extPath = req.getExtensionPath();
-        int separatorIndex = extPath.indexOf('/'); 
-        if (separatorIndex < 0)
-        {
-            // should not happen as descriptor would not match
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-            "Parameters missing");
-        }
-        String inviteId = extPath.substring(0, separatorIndex);
-        String inviteTicket = extPath.substring(separatorIndex + 1);*/
         
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
@@ -189,12 +177,12 @@ public class InviteResponse extends DeclarativeWebScript
         }
         
         // process response
-        String method = req.getServiceMatch().getWebScript().getDescription().getMethod();
-        if (method.equals("PUT"))
+        String action = req.getServiceMatch().getTemplateVars().get("action");
+        if (action.equals("accept"))
         {
             acceptInvite(model, inviteId, inviteStartTask);
         }
-        else if (method.equals("DELETE"))
+        else if (action.equals("reject"))
         {
             rejectInvite(model, inviteId, inviteStartTask);
         }
@@ -202,7 +190,7 @@ public class InviteResponse extends DeclarativeWebScript
         {
             /* handle unrecognised method */
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "method " + method + " is not supported by this webscript.");
+                    "action " + action + " is not supported by this webscript.");
         }
 
         return model;

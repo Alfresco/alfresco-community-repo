@@ -1,4 +1,0 @@
-{
-   "response" : "${response}",
-   "siteShortName" : "${siteShortName}"
-}

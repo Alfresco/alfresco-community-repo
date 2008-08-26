@@ -36,7 +36,7 @@ function main()
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
 
    // selected tag
-   var tag = args["tag"] != undefined && args["tag"].length > 0 ? args["tag"] : null;
+   var tag = (args["tag"] != undefined && args["tag"].length > 0) ? args["tag"] : null;
 
    model.data = getTopicPostList(node, tag, index, count);
     

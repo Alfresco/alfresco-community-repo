@@ -72,7 +72,7 @@ function main()
    }
    
    // selected tag
-   var tag = args["tag"] != undefined && args["tag"].length > 0 ? args["tag"] : null;
+   var tag = (args["tag"] != undefined && args["tag"].length > 0) ? args["tag"] : null;
    
    // fetch and assign the data
    model.data = getBlogPostList(node, fromDate, toDate, tag, index, count);

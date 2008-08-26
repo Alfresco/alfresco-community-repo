@@ -24,7 +24,7 @@
 	"nodeRef" : "${item.node.nodeRef}",
 	"name" : "${item.node.properties.name!''}",
     "title" : "${item.node.properties.title!''}",
-	"content" : "${item.node.content}",
+	"content" : "${stringUtils.stripUnsafeHTML(item.node.content)}",
    <#if item.author??>
    <@renderPerson person=item.author fieldName="author" />
    <#else>

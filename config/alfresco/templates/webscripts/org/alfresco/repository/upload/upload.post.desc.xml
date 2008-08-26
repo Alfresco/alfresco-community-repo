@@ -1,7 +1,8 @@
 <webscript>
-  <shortname>File Upload Sample</shortname>
+  <shortname>File Upload</shortname>
   <description>Upload file content and meta-data into Repository</description>
   <url>/api/upload</url>
   <format default="json"/>
   <authentication>user</authentication>
+  <transaction>required</transaction>
 </webscript>

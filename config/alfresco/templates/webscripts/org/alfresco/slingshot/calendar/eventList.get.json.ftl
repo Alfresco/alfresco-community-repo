@@ -2,7 +2,8 @@
 {
 <#if events?exists && events?size &gt; 0>
 <#assign prev = "">
-<#list events as item>
+<#-- We do the sort here as the sort in the JavaScript doesn't seem to work as expected! -->
+<#list events?sort_by(["fromDate"]) as item>
 <#assign event = item.event>
 <#assign date = event.properties["ia:fromDate"]?string("M/d/yyyy")>
 <#if date != prev>

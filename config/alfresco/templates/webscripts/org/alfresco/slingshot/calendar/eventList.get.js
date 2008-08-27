@@ -30,6 +30,7 @@ function getEvents(siteId)
       e = results[i];
       events.push({
          "event": e,
+         "fromDate": e.properties["ia:fromDate"],
          "tags": e.tags
       });
    }

@@ -107,8 +107,8 @@
                    <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
                       <property name="resizeOptions">
                          <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                            <property name="width" value="400"/>
-                            <property name="height" value="400"/>
+                            <property name="width" value="480"/>
+                            <property name="height" value="480"/>
                             <property name="maintainAspectRatio" value="true"/>
                             <property name="resizeToThumbnail" value="true" />
                          </bean>

@@ -26,6 +26,7 @@ function main()
    var count = args["pageSize"] != undefined ? parseInt(args["pageSize"]) : 10;
 
    model.data = getCommentsList(node, index, count);
+   model.node = node;
 }
 
 main();

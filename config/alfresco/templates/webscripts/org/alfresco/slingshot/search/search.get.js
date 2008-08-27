@@ -118,8 +118,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
       item.qnamePath = node.qnamePath;
       item.tags = (node.tags != null) ? node.tags : [];
       item.name = node.name;
-      item.displayName = "Folder: " + node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",
-      item.downloadUrl = null;      
+      item.displayName = "Folder: " + node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",  
       item.browseUrl = containerId + "#path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
       return item;
       // PENDING - return a folder result
@@ -137,8 +136,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
       item.tags = (node.tags != null) ? node.tags : [];
       item.name = node.name;
       item.displayName = "Document: " + node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",
-      item.downloadUrl = "api/node/content/" + node.nodeRef.toString().replace('://', '/') + "/" + node.name;
-      item.browseUrl = containerId; // PENDING: add path and file to be highlighted
+      item.browseUrl = "document-details?nodeRef=" + node.nodeRef.toString();
       return item;
    }
    else
@@ -188,7 +186,6 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    item.tags = (child.tags != null) ? child.tags : [];
    item.name = child.name;
    item.displayName = "Blog post: " + child.properties["cm:title"];
-   item.downloadUrl = null; // browse should be default
    item.browseUrl = "blog-postview?container=" + containerId + "&amp;postId=" + child.name;
    
    return item;
@@ -230,7 +227,6 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    item.tags = (topicNode.tags != null) ? topicNode.tags : [];
    item.name = topicNode.name;
    item.displayName = "Forum topic: " + postNode.properties["cm:title"];
-   item.downloadUrl = null; // browse should be default
    item.browseUrl = "discussions-topicview?container=" + containerId + "&amp;topicId=" + topicNode.name;
    
    return item;
@@ -261,7 +257,6 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
    item.displayName = "Calendar event: " + node.properties["ia:whatEvent"];
-   item.downloadUrl = null; // browse should be default
    item.browseUrl = containerId; // this is "calendar"
    
    return item;
@@ -292,7 +287,6 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
    item.displayName = "Wiki page: " + node.properties["cm:name"]; // cm:title at some point?
-   item.downloadUrl = null; // browse should be default
    item.browseUrl = "wiki-page?title=" + node.properties["cm:name"];
    
    return item;

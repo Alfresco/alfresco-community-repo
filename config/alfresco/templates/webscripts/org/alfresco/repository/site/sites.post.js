@@ -7,8 +7,16 @@ function main()
 		status.setCode(status.STATUS_BAD_REQUEST, "Short name missing when creating site");
 		return;
 	}
-	
-	var sitePreset = json.get("sitePreset");
+
+   // See if the shortName is available
+   var site = siteService.getSite(shortName);
+   if (site != null)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "error.shortName");
+      return;
+   }
+
+   var sitePreset = json.get("sitePreset");
 	if (shortName == null || shortName.length == 0)
 	{
 		status.setCode(status.STATUS_BAD_REQUEST, "Site preset missing when creating site");

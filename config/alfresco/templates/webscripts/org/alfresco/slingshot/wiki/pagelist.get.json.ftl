@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalPages" : ${pageList.pages?size},
    "pages":
@@ -33,3 +34,4 @@
    </#list>
    ]
 }
+</#escape>

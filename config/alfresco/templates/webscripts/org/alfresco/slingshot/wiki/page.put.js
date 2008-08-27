@@ -105,7 +105,7 @@ function update()
 	// of any wiki markup on the client. This is because the edit view needs to display
 	// the raw content (for editing) whereas the page view needs to display the rendered content.
 	return {
-		pagetext: "" + page.content,
+	   page: page,
 		tags: page.tags
 	}
 }

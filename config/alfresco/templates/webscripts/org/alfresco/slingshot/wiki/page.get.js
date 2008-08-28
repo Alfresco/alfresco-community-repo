@@ -26,11 +26,11 @@ function main()
    {
       return jsonError("Could not locate wiki");
    }
-   
+ 
    var page = wiki.childByNamePath(params.pageTitle);
 	if (!page)
 	{
-		return jsonError(DEFAULT_PAGE_CONTENT);
+		return jsonError("The page \"" + params.pageTitle.replace(/_/g, " ") + "\" does not exist.");
 	}
 
    // Figure out what (internal) pages this page contains links to

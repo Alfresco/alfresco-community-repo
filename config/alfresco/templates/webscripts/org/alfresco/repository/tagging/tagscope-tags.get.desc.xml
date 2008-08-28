@@ -1,10 +1,9 @@
 <webscript>
   <shortname>Tagscope tags</shortname>
   <description>Get all tags of the nearest available tagscope</description>
-  <url>/api/node/{store_type}/{store_id}/{id}/tagscopetags</url>
-  <url>/api/site/{site}/tagscopetags</url>
-  <url>/api/site/{site}/{container}/tagscopetags</url>
-  <url>/api/site/{site}/{container}/{path}/tagscopetags</url>
+  <url>/api/tagscopes/node/{store_type}/{store_id}/{id}/tags</url>
+  <url>/api/tagscopes/site/{site}/tags</url>
+  <url>/api/tagscopes/site/{site}/{container}/tags</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

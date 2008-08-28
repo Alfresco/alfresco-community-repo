@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if result.page??>
 <#assign page = result.page>
@@ -31,3 +32,4 @@
    "error" : "${result.error!""}"
 </#if>
 }
+</#escape>

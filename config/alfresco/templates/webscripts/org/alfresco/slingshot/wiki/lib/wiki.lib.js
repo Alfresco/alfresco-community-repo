@@ -52,10 +52,9 @@ function createWikiPage(name, folder, options)
 	page.tags = [];
 	
 	// Set cm:title
-	page.properties["cm:title"] = name.replace(/_/g, " ");
-	
-	// TODO: sort out appropriate permission(s)
-	page.save();	
+	page.properties["cm:title"] = new String(name).replace(/_/g, " ");
+	page.save();
+		
 	return page;
 }
 

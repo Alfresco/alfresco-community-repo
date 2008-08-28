@@ -17,8 +17,9 @@ function main()
 		return jsonError("No new name property specified");
 	}
 	// Remove any whitespace and replace with "_"
-	var newName = String(json.get("name")).replace(/\\s+/g, "_");
-
+	var newName = new String(json.get("name"));
+   newName = newName.replace(/\s+/g, "_");
+   
 	var params = getTemplateArgs(["siteId", "pageTitle"]);
 	
 	// Get the site
@@ -43,19 +44,16 @@ function main()
 	// Finally, now we can do what we are supposed to do
 	try 
 	{
-		var currentName = page.name;
-		page.name = newName;
-		page.save();
-
-/**		
-		var link = wiki.createNode(currentName, "cm:link");
-		link.properties["cm:destination"] = page.nodeRef;
-		link.save();
-**/		
-		var placeholder = createWikiPage(currentName, wiki, {
-			content: "This page has been moved [["  + newName + "|here]]."
-		});
+      var currentName = page.name;	
 		
+		page.name = newName;
+		page.properties["cm:title"] = new String(newName).replace(/_/g, " ");
+		page.save();
+		
+		var placeholder = createWikiPage(currentName, wiki, {
+   	   content: "This page has been moved [["  + newName + "|here]]."
+   	});
+   		
 	   var d = {
 		   currentName: newName,
 		   previousName: currentName,

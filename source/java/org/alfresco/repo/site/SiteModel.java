@@ -48,6 +48,6 @@ public interface SiteModel
     /** Site Permission */
     public static final String SITE_MANAGER = "SiteManager";
     public static final String SITE_COLLABORATOR = "SiteCollaborator";
+    public static final String SITE_CONTRIBUTOR = "SiteContributor";
     public static final String SITE_CONSUMER = "SiteConsumer";
 }
-

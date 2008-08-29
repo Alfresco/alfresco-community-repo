@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * Base class for Template API objects that support permissions.
@@ -54,16 +55,19 @@ public abstract class BasePermissionsNode extends BaseContentNode implements Tem
         {
             String userName = this.services.getAuthenticationService().getCurrentUserName();
             this.permissions = new ArrayList<String>(4);
-            Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
-            for (AccessPermission permission : acls)
+            if (hasPermission(PermissionService.READ_PERMISSIONS))
             {
-                StringBuilder buf = new StringBuilder(64);
-                buf.append(permission.getAccessStatus())
-                .append(';')
-                .append(permission.getAuthority())
-                .append(';')
-                .append(permission.getPermission());
-                this.permissions.add(buf.toString());
+                Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
+                for (AccessPermission permission : acls)
+                {
+                    StringBuilder buf = new StringBuilder(64);
+                    buf.append(permission.getAccessStatus())
+                    .append(';')
+                    .append(permission.getAuthority())
+                    .append(';')
+                    .append(permission.getPermission());
+                    this.permissions.add(buf.toString());
+                }
             }
         }
         return this.permissions;

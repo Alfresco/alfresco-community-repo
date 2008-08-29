@@ -16,11 +16,15 @@
    <!-- ============================================ -->
    
    <permissionSet type="st:site" expose="selected">
-
+   
       <permissionGroup name="SiteManager" allowFullControl="true" expose="true" />
       
       <permissionGroup name="SiteCollaborator" allowFullControl="false" expose="true">
          <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="SiteContributor" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
       </permissionGroup>
       
       <permissionGroup name="SiteConsumer" allowFullControl="false" expose="true">

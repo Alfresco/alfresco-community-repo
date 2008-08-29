@@ -33,12 +33,12 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Scriptable;
@@ -452,6 +452,62 @@ public class Site implements Serializable
     }
     
     /**
+     * Apply a set of permissions to the node.
+     * 
+     * @param nodeRef   node reference
+     */
+    public void setPermissions(final ScriptNode node, final Object permissions)
+    {
+        final NodeRef nodeRef = node.getNodeRef();
+        
+        if (permissions != null && permissions instanceof ScriptableObject)
+        {
+            // Get the permission service
+            final PermissionService permissionService = this.serviceRegistry.getPermissionService();
+            
+            if (!permissionService.getInheritParentPermissions(nodeRef))
+            {
+                // remove existing permissions
+                permissionService.deletePermissions(nodeRef);
+            }
+            
+            // Assign the correct permissions
+            ScriptableObject scriptable = (ScriptableObject)permissions;
+            Object[] propIds = scriptable.getIds();
+            for (int i = 0; i < propIds.length; i++)
+            {
+                // Work on each key in turn
+                Object propId = propIds[i];
+                
+                // Only interested in keys that are formed of Strings
+                if (propId instanceof String)
+                {
+                    // Get the value out for the specified key - it must be String
+                    final String key = (String)propId;
+                    final Object value = scriptable.get(key, scriptable);
+                    if (value instanceof String)
+                    {                                   
+                        // Set the permission on the node
+                        permissionService.setPermission(nodeRef, key, (String)value, true);
+                    }
+                }
+            }
+            
+            // always add the site managers group with SiteManager permission
+            String managers = this.siteService.getSiteRoleGroup(getShortName(), SiteModel.SITE_MANAGER);
+            permissionService.setPermission(nodeRef, managers, SiteModel.SITE_MANAGER, true);
+            
+            // now turn off inherit to finalize our permission changes
+            permissionService.setInheritParentPermissions(nodeRef, false);
+        }
+        else
+        {
+        	// No permissions passed-in
+        	this.resetAllPermissions(node);
+        }
+    }
+    
+    /**
      * Reset any permissions that have been set on the node.  
      * <p>
      * All permissions will be deleted and the node set to inherit permissions.
@@ -462,187 +518,19 @@ public class Site implements Serializable
     {
         final NodeRef nodeRef = node.getNodeRef();
         
-        // TODO Check that the node is indeed a child of the site
-        
-        // Check that the user has permissions to change permissions on the node
-        if (AccessStatus.ALLOWED.equals(this.serviceRegistry.getPermissionService().hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
-        {       
-            // Do the work as system as we are messing about with permissions
-            AuthenticationUtil.runAs(
-                new AuthenticationUtil.RunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        // Reset all the permissions on the node
-                    	PermissionService permissionService = serviceRegistry.getPermissionService();
-                    	// Ensure node isn't inheriting permissions from an ancestor
-                    	if (!permissionService.getInheritParentPermissions(nodeRef))
-                    	{
-                            permissionService.deletePermissions(nodeRef);
-                            permissionService.setInheritParentPermissions(nodeRef, true);
-                    	}
-                        return null;
-                    }
-                    
-                }, AuthenticationUtil.getSystemUserName());
-            
-            
-        }
-        else
+        PermissionService permissionService = serviceRegistry.getPermissionService();
+        try
         {
-            throw new AlfrescoRuntimeException("You do not have permissions to reset permissions on this node.");
-        }
-    }
-    
-    /**
-     * Allows all members of the site collaboration rights on the node.
-     * 
-     * @param nodeRef   node reference
-     */
-    public void allowAllMembersCollaborate(ScriptNode node)
-    {
-        final NodeRef nodeRef = node.getNodeRef();
-        
-        // TODO Check that the node is indeed a child of the site
-        
-        // Get the permission service
-        final PermissionService permissionService = this.serviceRegistry.getPermissionService();
-        
-        // Check that the user has permissions to change permissions on the node
-        if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
-        {       
-            // Do the work as system as we are messing about with permissions
-            AuthenticationUtil.runAs(
-                new AuthenticationUtil.RunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {        
-                        // Get the site groups
-                        String siteGroup = siteService.getSiteGroup(siteInfo.getShortName());
-                        String managerGroup = siteService.getSiteRoleGroup(siteInfo.getShortName(), SiteModel.SITE_MANAGER);
-                        
-                        // Assign the correct permissions
-                        permissionService.setInheritParentPermissions(nodeRef, false);
-                        permissionService.deletePermissions(nodeRef);
-                        permissionService.setPermission(nodeRef, siteGroup, SiteModel.SITE_COLLABORATOR, true);
-                        permissionService.setPermission(nodeRef, managerGroup, SiteModel.SITE_MANAGER, true);
-                        
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("You do not have permissions to all memebers contribute permissions on this node.");
-        }
-    }
-    
-    /**
-     * Deny access to all members of the site to the node.
-     * <p>
-     * Note, site managers will stil have appropriate permissions on the node. 
-     * 
-     * @param nodeRef   node reference
-     */
-    public void denyAllAccess(ScriptNode node)
-    {
-        final NodeRef nodeRef = node.getNodeRef();
-        
-        // TODO Check that the node is indeed a child of the site
-        
-        // Get the permission service
-        final PermissionService permissionService = this.serviceRegistry.getPermissionService();
-        
-        // Check that the user has permissions to change permissions on the node
-        if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
-        {       
-            // Do the work as system as we are messing about with permissions
-            AuthenticationUtil.runAs(
-                new AuthenticationUtil.RunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {        
-                        // Get the site groups
-                        String managerGroup = siteService.getSiteRoleGroup(siteInfo.getShortName(), SiteModel.SITE_MANAGER);
-                        
-                        // Assign the correct permissions
-                        permissionService.setInheritParentPermissions(nodeRef, false);
-                        permissionService.deletePermissions(nodeRef);
-                        permissionService.setPermission(nodeRef, managerGroup, SiteModel.SITE_MANAGER, true);
-                        
-                        return null;
-                     }
-                }, AuthenticationUtil.getSystemUserName());
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("You do not have permissions to all memebers contribute permissions on this node.");
-        }
-    }    
-
-    /**
-     * Apply a set of permissions to the node.
-     * 
-     * @param nodeRef   node reference
-     */
-    public void setPermissions(final ScriptNode node, final Object permissions)
-    {
-        final NodeRef nodeRef = node.getNodeRef();
-        
-        // TODO Check that the node is indeed a child of the site
-        
-        if (permissions != null && permissions instanceof ScriptableObject)
-        {
-            // Get the permission service
-            final PermissionService permissionService = this.serviceRegistry.getPermissionService();
-            
-            // Check that the user has permissions to change permissions on the node
-            if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS)) == true)
-            {       
-                // Do the work as system as we are messing about with permissions
-                AuthenticationUtil.runAs(
-                    new AuthenticationUtil.RunAsWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-                            // Assign the correct permissions
-                            Site.this.serviceRegistry.getPermissionService().setInheritParentPermissions(nodeRef, false);
-                            permissionService.deletePermissions(nodeRef);
-
-                            ScriptableObject scriptable = (ScriptableObject)permissions;
-                            Object[] propIds = scriptable.getIds();
-                            for (int i = 0; i < propIds.length; i++)
-                            {
-                                // Work on each key in turn
-                                Object propId = propIds[i];
-                                
-                                // Only interested in keys that are formed of Strings
-                                if (propId instanceof String)
-                                {
-                                    // Get the value out for the specified key - it must be String
-                                    final String key = (String)propId;
-                                    final Object value = scriptable.get(key, scriptable);
-                                    if (value instanceof String)
-                                    {                                   
-                                        // Set the permission on the node
-                                        permissionService.setPermission(nodeRef, key, (String)value, true);
-                                    }
-                                }
-                            }
-                            
-                            return null;
-                         }
-                    }, AuthenticationUtil.getSystemUserName());
-            }
-            else
+            // Ensure node isn't inheriting permissions from an ancestor before deleting
+            if (!permissionService.getInheritParentPermissions(nodeRef))
             {
-                throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.");
+                permissionService.deletePermissions(nodeRef);
+                permissionService.setInheritParentPermissions(nodeRef, true);
             }
         }
-        else
+        catch (AccessDeniedException e)
         {
-        	// No permissions passed-in
-        	this.resetAllPermissions(node);
+            throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.", e);
         }
-    }    
+    }
 }

@@ -19,6 +19,10 @@ function getFilterParams(filter, parsedArgs)
    // Create query based on passed-in arguments
    switch (String(filter))
    {
+      case "all":
+         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         break;
+         
       case "node":
          filterParams.query = "+ID:\"" + parsedArgs.parentNode.nodeRef + "\"";
          break;

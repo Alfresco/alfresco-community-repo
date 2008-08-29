@@ -3,9 +3,7 @@
 const VALID_OPERATIONS =
 {
    "set": true,
-   "reset-all": true,
-   "allow-members-collaborate": true,
-   "deny-all": true
+   "reset-all": true
 };
 
 /**
@@ -41,7 +39,7 @@ function runAction(p_params)
       return;
    }
    
-   // Permissions set
+   // Permissions to set
    var jsonPermissions = getMultipleInputValues("permissions");
 
    // We need the site node to perform some of the operations
@@ -71,7 +69,8 @@ function runAction(p_params)
          {
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
-            // Set the permissions
+            
+            // Execute the operation
             switch (operation)
             {
                case "set":
@@ -91,14 +90,6 @@ function runAction(p_params)
                   
                case "reset-all":
                   site.resetAllPermissions(fileNode);   
-                  break;
-                   
-               case "allow-members-collaborate":
-                  site.allowAllMembersCollaborate(fileNode);
-                  break;
-                  
-               case "deny-all":
-                  site.denyAllAccess(fileNode);
                   break;
             }
             result.success = true;

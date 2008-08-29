@@ -6,35 +6,35 @@
    <#if person.assocs["cm:avatar"]??>
    "avatar" : "${"api/node/" + person.assocs["cm:avatar"][0].nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
    </#if>
-   <#if person.properties.title??>
-      "title" : "${person.properties.title}",
-   <#else>
-      "title" : null,
-   </#if>
    <#if person.properties.firstName??>
-      "firstName" : "${person.properties.firstName}",
+   "firstName" : "${person.properties.firstName}",
    <#else>
-      "firstName" : null,
+   "firstName" : null,
    </#if>
    <#if person.properties.lastName??>
-      "lastName" : "${person.properties.lastName}",
+   "lastName" : "${person.properties.lastName}",
    <#else>
-      "lastName" : null,
+   "lastName" : null,
+   </#if>
+   <#if person.properties.title??>
+   "title" : "${person.properties.title}",
+   <#else>
+   "title" : null,
    </#if>
    <#if person.properties.organization??>
-      "organisation" : "${person.properties.organization}",
+   "organisation" : "${person.properties.organization}",
    <#else>
-      "organisation" : null,
+   "organisation" : null,
    </#if>
    <#if person.properties.jobtitle??>
-      "jobtitle" : "${person.properties.jobtitle}",
+   "jobtitle" : "${person.properties.jobtitle}",
    <#else>
-      "jobtitle" : null,
+   "jobtitle" : null,
    </#if>
    <#if person.properties.email??>
-      "email" : "${person.properties.email}"
+   "email" : "${person.properties.email}"
    <#else>
-      "email" : null
+   "email" : null
    </#if>
 }
 </#escape>

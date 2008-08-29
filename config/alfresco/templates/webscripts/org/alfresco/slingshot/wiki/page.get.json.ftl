@@ -3,8 +3,8 @@
 <#if result.page??>
 <#assign page = result.page>
    "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
-   "pagetext" : '${page.content?js_string}',
-   "editable" : '<#if page.hasPermission("Write")>true<#else>false</#if>',
+   "pagetext" : "${page.content}",
+   "editable" : "<#if page.hasPermission("Write")>true<#else>false</#if>",
    "tags" : [
       <#list result.tags as tag>
          "${tag}"<#if tag_has_next>,</#if>

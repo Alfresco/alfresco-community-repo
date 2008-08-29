@@ -1,0 +1,210 @@
+/*
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.version;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.version.common.VersionUtil;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+
+
+/**
+ * The version2 store node service implementation
+ */
+public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Version2Model
+{
+    /**
+     * The name of the spoofed root association
+     */
+    private static final QName rootAssocName = QName.createQName(Version2Model.NAMESPACE_URI, "versionedState");
+
+
+    /**
+     * Type translation for version store
+     */
+    public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getType(nodeRef);
+        }
+        
+    	// frozen node type -> replaced by actual node type of the version node
+    	return (QName)this.dbNodeService.getType(VersionUtil.convertNodeRef(nodeRef));
+    }
+
+    /**
+     * Translation for version store
+     */
+    public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getAspects(nodeRef);
+        }
+        
+        Set<QName> aspects = this.dbNodeService.getAspects(VersionUtil.convertNodeRef(nodeRef));
+        aspects.remove(Version2Model.ASPECT_VERSION);
+        return aspects;
+    }
+
+    /**
+     * Property translation for version store
+     */
+    public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getProperties(nodeRef);
+        }
+        
+    	Map<QName, Serializable> props = dbNodeService.getProperties(VersionUtil.convertNodeRef(nodeRef));
+    	VersionUtil.convertFrozenToOriginalProps(props);
+
+    	return props;
+    }
+
+    /**
+     * Property translation for version store
+     */
+    public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getProperty(nodeRef, qname);
+        }
+        
+        // TODO optimise - get property directly and convert if needed
+        Map<QName, Serializable> properties = getProperties(VersionUtil.convertNodeRef(nodeRef));
+        return properties.get(qname);
+    }
+
+    /**
+     * The node will apprear to be attached to the root of the version store
+     *
+     * @see NodeService#getParentAssocs(NodeRef, QNamePattern, QNamePattern)
+     */
+    public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getParentAssocs(nodeRef, typeQNamePattern, qnamePattern);
+        }
+        
+        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
+        if (qnamePattern.isMatch(rootAssocName) == true)
+        {
+            result.add(new ChildAssociationRef(
+                    ContentModel.ASSOC_CHILDREN,
+                    dbNodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID)),
+                    rootAssocName,
+                    nodeRef));
+        }
+        return result;
+    }
+
+    /**
+     * Performs conversion from version store properties to <i>real</i> associations
+     */
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getChildAssocs(nodeRef, typeQNamePattern, qnamePattern);
+        }
+    	
+        // Get the child assocs from the version store
+        List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
+                VersionUtil.convertNodeRef(nodeRef),
+                typeQNamePattern, qnamePattern);
+        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(childAssocRefs.size());
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            // Get the child reference
+            NodeRef childRef = childAssocRef.getChildRef();
+            NodeRef referencedNode = (NodeRef)this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
+            // Build a child assoc ref to add to the returned list
+            ChildAssociationRef newChildAssocRef = new ChildAssociationRef(
+            		childAssocRef.getTypeQName(),
+            		childAssocRef.getParentRef(),
+                    childAssocRef.getQName(),
+                    referencedNode,
+                    childAssocRef.isPrimary(),
+                    childAssocRef.getNthSibling());
+            result.add(newChildAssocRef);
+        }
+
+        // sort the results so that the order appears to be exactly as it was originally
+        Collections.sort(result);
+ 
+        return result;
+    }
+
+    /**
+     * Simulates the node begin attached to the root node of the version store.
+     */
+    public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getPrimaryParent(nodeRef);
+        }
+        
+        return new ChildAssociationRef(
+                ContentModel.ASSOC_CHILDREN,
+                dbNodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID)),
+                rootAssocName,
+                nodeRef);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
+    {
+        if (sourceRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getTargetAssocs(sourceRef, qnamePattern);
+        }
+        
+        // This operation is not supported for a version2 store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.common.VersionUtil;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -54,6 +55,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -63,10 +66,12 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class NodeServiceImpl implements NodeService, VersionModel
 {
+    private static Log logger = LogFactory.getLog(NodeServiceImpl.class);
+    
     /**
      * Error messages
      */
-    private final static String MSG_UNSUPPORTED =
+    protected final static String MSG_UNSUPPORTED =
         "This operation is not supported by a version store implementation of the node service.";
 
     /**
@@ -331,7 +336,23 @@ public class NodeServiceImpl implements NodeService, VersionModel
             if (isMultiValue.booleanValue() == false)
             {
                 value = this.dbNodeService.getProperty(versionedAttribute, PROP_QNAME_VALUE);
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
+                
+                if (propDef != null)
+                {
+                    DataTypeDefinition dataTypeDef = propDef.getDataType();
+                    if (dataTypeDef != null)
+                    {
+                        value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dataTypeDef, value);
+                    }
+                    else
+                    {
+                        logger.warn("Null dataTypeDefinition for: " + propDef);
+                    }
+                }
+                else
+                {
+                    logger.warn("Null propertyDefinition for: " + qName);
+                }
             }
             else
             {

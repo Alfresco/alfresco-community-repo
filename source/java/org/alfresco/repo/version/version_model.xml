@@ -1,5 +1,7 @@
 <model name="ver:versionmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
+   <!-- deprecated -->
+	
    <description>Alfresco Version Store Model</description>
    <author>Alfresco</author>
    <published>2005-05-30</published>

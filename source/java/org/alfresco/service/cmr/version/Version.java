@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 
@@ -44,7 +45,7 @@ public interface Version extends Serializable
     /**
      * Names of the system version properties
      */
-    public static final String PROP_DESCRIPTION = "description";
+    public static final String PROP_DESCRIPTION = VersionBaseModel.PROP_DESCRIPTION;
     
     /**
      * Helper method to get the created date from the version property data.
@@ -103,7 +104,7 @@ public interface Version extends Serializable
      * Note that this reference will be to the current state of the versioned
      * node which may now correspond to a later version.
      * 
-     * @return  a node reference
+     * @return  a node reference (to the versioned node in the 'live' store)
      */
     public NodeRef getVersionedNodeRef();
     
@@ -111,7 +112,7 @@ public interface Version extends Serializable
      * Gets the reference to the node that contains the frozen state of the
      * version.
      * 
-     * @return  a node reference
+     * @return  a node reference (to the version node in the 'version' store)
      */
     public NodeRef getFrozenStateNodeRef();
 }

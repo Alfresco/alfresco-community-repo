@@ -165,7 +165,7 @@
                     <prop key="packageName">spaces_archive</prop>
                 </props>
                 <props>
-                    <prop key="storeRef">workspace://lightWeightVersionStore</prop>
+                    <prop key="storeRef">${version.store.version2Store}</prop>
                     <prop key="packageName">versions</prop>
                 </props>
             </list>
@@ -331,7 +331,13 @@
 
     <bean id="versionStoreImporter" parent="storeImporter" abstract="true">
         <property name="storeUrl">
-            <value>workspace://lightWeightVersionStore</value>
+            <value>${version.store.deprecated.lightWeightVersionStore}</value>
+        </property>
+    </bean>
+    
+    <bean id="version2StoreImporter" parent="storeImporter" abstract="true">
+        <property name="storeUrl">
+            <value>${version.store.version2Store}</value>
         </property>
     </bean>
 

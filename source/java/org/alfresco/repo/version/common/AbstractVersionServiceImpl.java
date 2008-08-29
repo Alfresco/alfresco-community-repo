@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,11 +26,9 @@ package org.alfresco.repo.version.common;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
@@ -39,18 +37,13 @@ import org.alfresco.repo.version.VersionServicePolicies.AfterCreateVersionPolicy
 import org.alfresco.repo.version.VersionServicePolicies.BeforeCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Abstract version service implementation.
@@ -223,58 +216,11 @@ public abstract class AbstractVersionServiceImpl
 	 * @param versionProperties
 	 * @param nodeDetails
 	 */
-	protected void defaultOnCreateVersion(
+	abstract protected void defaultOnCreateVersion(
 			QName classRef,
 			NodeRef nodeRef, 
 			Map<String, Serializable> versionProperties, 
-			PolicyScope nodeDetails)
-	{
-		ClassDefinition classDefinition = this.dictionaryService.getClass(classRef);	
-		if (classDefinition != null)
-		{			
-			boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
-			try
-			{
-				// Copy the properties
-				Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
-				for (QName propertyName : propertyDefinitions.keySet()) 
-				{
-					Serializable propValue = this.nodeService.getProperty(nodeRef, propertyName);
-					nodeDetails.addProperty(classRef, propertyName, propValue);
-				}
-			}
-			finally
-			{
-				MLPropertyInterceptor.setMLAware(wasMLAware);
-			}
-            
-            // Version the associations (child and target)
-            Map<QName, AssociationDefinition> assocDefs = classDefinition.getAssociations();
-
-            // TODO: Need way of getting child assocs of a given type
-            if (classDefinition.isContainer())
-            {
-                List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(nodeRef);
-                for (ChildAssociationRef childAssocRef : childAssocRefs) 
-                {
-                    if (assocDefs.containsKey(childAssocRef.getTypeQName()))
-                    {
-                        nodeDetails.addChildAssociation(classDefinition.getName(), childAssocRef);
-                    }
-                }
-            }
-            
-            // TODO: Need way of getting assocs of a given type
-            List<AssociationRef> nodeAssocRefs = this.nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
-            for (AssociationRef nodeAssocRef : nodeAssocRefs) 
-            {
-                if (assocDefs.containsKey(nodeAssocRef.getTypeQName()))
-                {
-                    nodeDetails.addAssociation(classDefinition.getName(), nodeAssocRef);
-                }
-            }
-		}
-	}
+			PolicyScope nodeDetails);
 	
 	/**
 	 * Invoke the calculate version label policy behaviour
@@ -313,5 +259,6 @@ public abstract class AbstractVersionServiceImpl
 		
 		return versionLabel;
 	}
-	 
+	
+    abstract public StoreRef getVersionStoreReference();
 }

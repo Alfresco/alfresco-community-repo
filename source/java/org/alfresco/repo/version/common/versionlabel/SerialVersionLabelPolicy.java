@@ -62,7 +62,12 @@ public class SerialVersionLabelPolicy
         {
             serialVersionNumber = new SerialVersionLabel(preceedingVersion.getVersionLabel());
             
-            VersionType versionType = (VersionType)versionProperties.get(VersionModel.PROP_VERSION_TYPE);
+            VersionType versionType = null;
+            if (versionProperties != null)
+            {
+                versionType = (VersionType)versionProperties.get(VersionModel.PROP_VERSION_TYPE);
+            }
+            
             if (VersionType.MAJOR.equals(versionType) == true)
             {
                 serialVersionNumber.majorIncrement();

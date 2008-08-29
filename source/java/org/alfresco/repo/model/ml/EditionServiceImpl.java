@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,9 +31,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.ml.EditionService;
@@ -257,9 +259,29 @@ public class EditionServiceImpl implements EditionService
 
         Map<QName, Serializable> properties = versionNodeService.getProperties(mlContainerEdition.getFrozenStateNodeRef());
 
-        // get the serialisation of the version histories in the version properties
-        List<VersionHistory> versionHistories = (List<VersionHistory>)
-                    properties.get(VersionModel.PROP_QNAME_TRANSLATION_VERIONS);
+        List<VersionHistory> versionHistories = null;
+        
+        // Switch VersionStore depending on configured impl
+        if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+        	// V2 version store (eg. workspace://version2Store)
+        	
+            // get the serialisation of the version histories in the version properties
+            versionHistories = (List<VersionHistory>)
+                    properties.get(Version2Model.PROP_QNAME_TRANSLATION_VERSIONS);
+        }
+        else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            
+            // get the serialisation of the version histories in the version properties
+            versionHistories = (List<VersionHistory>)
+                        properties.get(VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Unexpected versionstore: " + versionService.getVersionStoreReference().getIdentifier());
+        }
 
         if (versionHistories == null)
         {
@@ -296,18 +318,37 @@ public class EditionServiceImpl implements EditionService
         // properties in which the version histories will be stored
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
 
-        // add the version history of the translation as property of the Edition
-        properties.put(VersionModel.PROP_QNAME_QNAME, VersionModel.PROP_QNAME_TRANSLATION_VERIONS);
-        properties.put(VersionModel.PROP_QNAME_IS_MULTI_VALUE, true);
-        properties.put(VersionModel.PROP_QNAME_MULTI_VALUE, (Serializable) translationVersionHistories);
+        // Switch VersionStore depending on configured impl
+        if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+            // V2 version store (eg. workspace://version2Store)
 
-        // create the versioned property node
-        this.nodeService.createNode(
-                    VersionUtil.convertNodeRef(edition.getFrozenStateNodeRef()),
-                    VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
-                    VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
-                    VersionModel.TYPE_QNAME_VERSIONED_PROPERTY,
-                    properties);
+            // add the version history of the translation as property of the Edition
+            NodeRef versionNodeRef = VersionUtil.convertNodeRef(edition.getFrozenStateNodeRef());
+            this.nodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_TRANSLATION_VERSIONS, (Serializable) translationVersionHistories);
+        }
+        else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            
+            // add the version history of the translation as property of the Edition
+            properties.put(VersionModel.PROP_QNAME_QNAME, VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
+            properties.put(VersionModel.PROP_QNAME_IS_MULTI_VALUE, true);
+            properties.put(VersionModel.PROP_QNAME_MULTI_VALUE, (Serializable) translationVersionHistories);
+
+            // create the versioned property node
+            this.nodeService.createNode(
+                        VersionUtil.convertNodeRef(edition.getFrozenStateNodeRef()),
+                        VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
+                        VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
+                        VersionModel.TYPE_QNAME_VERSIONED_PROPERTY,
+                        properties);
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Unexpected versionstore: " + versionService.getVersionStoreReference().getIdentifier());
+        }
+
     }
 
     /**

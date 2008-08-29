@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -119,12 +119,24 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         
         // Get the properties of the versioned state 
         Map<QName, Serializable> versionedProperties = this.lightWeightVersionStoreNodeService.getProperties(version.getFrozenStateNodeRef());
-        //assertEquals(origProps.size(), versionedProperties.size());
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("original ("+origProps.size()+"):  " + origProps.keySet());
+            logger.debug("versioned ("+versionedProperties.size()+"): " + versionedProperties.keySet());
+        }
+        
         for (QName key : origProps.keySet())
         {
             assertTrue(versionedProperties.containsKey(key));
-            assertEquals(origProps.get(key), versionedProperties.get(key));
+            assertEquals(""+key, origProps.get(key), versionedProperties.get(key));
         }
+        
+        // NOTE: cm:versionLabel is an expected additional property
+        //assertEquals(origProps.size(), versionedProperties.size());
+        
+        // check version label
+        assertEquals("1.0", versionedProperties.get(ContentModel.PROP_VERSION_LABEL));
         
         // TODO do futher versioning and check by changing values
     }
@@ -163,46 +175,47 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
      */
     public void testGetChildAssocs()
     {
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
             // Let's have a look at the version store ..
-            System.out.println(NodeStoreInspector.dumpNodeStore(
+            logger.trace(NodeStoreInspector.dumpNodeStore(
                     this.dbNodeService, 
                     this.versionService.getVersionStoreReference()) + "\n\n");
-            logger.debug("");
+            logger.trace("");
         }
         
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        Collection<ChildAssociationRef> origionalChildren = this.dbNodeService.getChildAssocs(versionableNode);
-        assertNotNull(origionalChildren);
+        Collection<ChildAssociationRef> originalChildren = this.dbNodeService.getChildAssocs(versionableNode);
+        assertNotNull(originalChildren);
         
-        // Store the origional children in a map for easy navigation later
-        HashMap<String, ChildAssociationRef> origionalChildAssocRefs = new HashMap<String, ChildAssociationRef>();
-        for (ChildAssociationRef ref : origionalChildren)
+        // Store the original children in a map for easy navigation later
+        HashMap<String, ChildAssociationRef> originalChildAssocRefs = new HashMap<String, ChildAssociationRef>();
+        for (ChildAssociationRef ref : originalChildren)
         {
-            origionalChildAssocRefs.put(ref.getChildRef().getId(), ref);
+            originalChildAssocRefs.put(ref.getChildRef().getId(), ref);
         }
         
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
             // Let's have a look at the version store ..
-            System.out.println(NodeStoreInspector.dumpNodeStore(
-                    this.dbNodeService, 
+            logger.trace(NodeStoreInspector.dumpNodeStore(
+                    this.dbNodeService,
                     this.versionService.getVersionStoreReference()));
+            logger.trace("");
         }
         
         // Get the children of the versioned node
         Collection<ChildAssociationRef> versionedChildren = this.lightWeightVersionStoreNodeService.getChildAssocs(version.getFrozenStateNodeRef());
         assertNotNull(versionedChildren);
-        assertEquals(origionalChildren.size(), versionedChildren.size());
+        assertEquals(originalChildren.size(), versionedChildren.size());
         
         for (ChildAssociationRef versionedChildRef : versionedChildren)
         {
-            ChildAssociationRef origChildAssocRef = origionalChildAssocRefs.get(versionedChildRef.getChildRef().getId());
+            ChildAssociationRef origChildAssocRef = originalChildAssocRefs.get(versionedChildRef.getChildRef().getId());
             assertNotNull(origChildAssocRef);
                         
             assertEquals(
@@ -219,25 +232,51 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     
     /**
      * Test getAssociationTargets
+     * 
+     * @deprecated
      */
     public void testGetAssociationTargets()
     {
-        // Create a new versionable node
-        NodeRef versionableNode = createNewVersionableNode();
-        
-        // Store the current details of the target associations
-        List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocs(
-                versionableNode,
-                RegexQNamePattern.MATCH_ALL);
-        
-        // Create a new version
-        Version version = createVersion(versionableNode, this.versionProperties);
-
-        List<AssociationRef> assocs = this.lightWeightVersionStoreNodeService.getTargetAssocs(
-                version.getFrozenStateNodeRef(), 
-                RegexQNamePattern.MATCH_ALL);
-        assertNotNull(assocs);
-        assertEquals(origAssocs.size(), assocs.size());
+        // Switch VersionStore depending on configured impl
+        if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+        	// V2 version store (eg. workspace://version2Store)
+            try
+            {
+                this.lightWeightVersionStoreNodeService.getTargetAssocs(
+                        dummyNodeRef,
+                        RegexQNamePattern.MATCH_ALL);
+                fail("This operation is not supported.");
+            }
+            catch (UnsupportedOperationException exception)
+            {
+                if (exception.getMessage() != MSG_ERR)
+                {
+                    fail("Unexpected exception raised during method excution: " + exception.getMessage());
+                }
+            }
+        }
+        else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+        	// Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+        	
+            // Create a new versionable node
+            NodeRef versionableNode = createNewVersionableNode();
+            
+            // Store the current details of the target associations
+            List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocs(
+                    versionableNode,
+                    RegexQNamePattern.MATCH_ALL);
+            
+            // Create a new version
+            Version version = createVersion(versionableNode, this.versionProperties);
+    
+            List<AssociationRef> assocs = this.lightWeightVersionStoreNodeService.getTargetAssocs(
+                    version.getFrozenStateNodeRef(), 
+                    RegexQNamePattern.MATCH_ALL);
+            assertNotNull(assocs);
+            assertEquals(origAssocs.size(), assocs.size());
+        }
     }
     
     /**
@@ -277,7 +316,10 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Set<QName> aspects = this.lightWeightVersionStoreNodeService.getAspects(version.getFrozenStateNodeRef());
         assertEquals(origAspects.size(), aspects.size());
         
-        // TODO check that the set's contain the same items
+        for (QName origAspect : origAspects)
+        { 
+            assertTrue(origAspect+"",aspects.contains(origAspect));
+        }
     }
 	
     /**

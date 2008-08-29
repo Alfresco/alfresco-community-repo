@@ -107,6 +107,7 @@ public class IntegrityChecker
     private boolean failOnViolation;
     private int maxErrorsPerTransaction;
     private boolean traceOn;
+    private List<String> storesToIgnore = new ArrayList<String>(0);
     
     /**
      * Downgrade violations to warnings within the current transaction.  This is temporary and
@@ -205,6 +206,15 @@ public class IntegrityChecker
     public void setMaxErrorsPerTransaction(int maxLogNumberPerTransaction)
     {
         this.maxErrorsPerTransaction = maxLogNumberPerTransaction;
+    }
+    
+    /**
+     * @param storesToIgnore stores (eg. workspace://version2Store) which will be 
+     *      ignored by integrity checker. Note: assumes associations are within a store.
+     */
+    public void setStoresToIgnore(List<String> storesToIgnore)
+    {
+        this.storesToIgnore = storesToIgnore;
     }
 
     /**
@@ -319,43 +329,46 @@ public class IntegrityChecker
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        NodeRef childRef = childAssocRef.getChildRef();
-        IntegrityEvent event = null;
-        // check properties on child node
-        event = new PropertiesIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childRef);
-        save(event);
-        
-        // check that the multiplicity and other properties of the new association are allowed
-        onCreateChildAssociation(childAssocRef, false);
-        
-        // check mandatory aspects
-        event = new AspectsIntegrityEvent(nodeService, dictionaryService, childRef);
-        save(event);
-        
-        // check for associations defined on the new node (child)
-        QName childNodeTypeQName = nodeService.getType(childRef);
-        ClassDefinition nodeTypeDef = dictionaryService.getClass(childNodeTypeQName);
-        if (nodeTypeDef == null)
+        NodeRef childRef = childAssocRef.getChildRef(); 
+        if (! storesToIgnore.contains(childRef.getStoreRef().toString()))
         {
-            throw new DictionaryException("The node type is not recognized: " + childNodeTypeQName);
-        }
-        Map<QName, AssociationDefinition> childAssocDefs = nodeTypeDef.getAssociations();
-        
-        // check the multiplicity of each association with the node acting as a source
-        for (AssociationDefinition assocDef : childAssocDefs.values())
-        {
-            QName assocTypeQName = assocDef.getName();
-            // check target multiplicity
-            event = new AssocTargetMultiplicityIntegrityEvent(
+            IntegrityEvent event = null;
+            // check properties on child node
+            event = new PropertiesIntegrityEvent(
                     nodeService,
                     dictionaryService,
-                    childRef,
-                    assocTypeQName,
-                    false);
+                    childRef);
             save(event);
+            
+            // check that the multiplicity and other properties of the new association are allowed
+            onCreateChildAssociation(childAssocRef, false);
+            
+            // check mandatory aspects
+            event = new AspectsIntegrityEvent(nodeService, dictionaryService, childRef);
+            save(event);
+            
+            // check for associations defined on the new node (child)
+            QName childNodeTypeQName = nodeService.getType(childRef);
+            ClassDefinition nodeTypeDef = dictionaryService.getClass(childNodeTypeQName);
+            if (nodeTypeDef == null)
+            {
+                throw new DictionaryException("The node type is not recognized: " + childNodeTypeQName);
+            }
+            Map<QName, AssociationDefinition> childAssocDefs = nodeTypeDef.getAssociations();
+            
+            // check the multiplicity of each association with the node acting as a source
+            for (AssociationDefinition assocDef : childAssocDefs.values())
+            {
+                QName assocTypeQName = assocDef.getName();
+                // check target multiplicity
+                event = new AssocTargetMultiplicityIntegrityEvent(
+                        nodeService,
+                        dictionaryService,
+                        childRef,
+                        assocTypeQName,
+                        false);
+                save(event);
+            }
         }
     }
 
@@ -367,10 +380,13 @@ public class IntegrityChecker
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        IntegrityEvent event = null;
-        // check properties on node
-        event = new PropertiesIntegrityEvent(nodeService, dictionaryService, nodeRef);
-        save(event);
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check properties on node
+            event = new PropertiesIntegrityEvent(nodeService, dictionaryService, nodeRef);
+            save(event);
+        }
     }
 
     /**
@@ -386,31 +402,34 @@ public class IntegrityChecker
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        IntegrityEvent event = null;
-        // check properties on node
-        event = new PropertiesIntegrityEvent(nodeService, dictionaryService, nodeRef);
-        save(event);
-        
-        // check for associations defined on the aspect
-        AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
-        if (aspectDef == null)
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
-            throw new DictionaryException("The aspect type is not recognized: " + aspectTypeQName);
-        }
-        Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
-        
-        // check the multiplicity of each association with the node acting as a source
-        for (AssociationDefinition assocDef : assocDefs.values())
-        {
-            QName assocTypeQName = assocDef.getName();
-            // check target multiplicity
-            event = new AssocTargetMultiplicityIntegrityEvent(
-                    nodeService,
-                    dictionaryService,
-                    nodeRef,
-                    assocTypeQName,
-                    false);
+            IntegrityEvent event = null;
+            // check properties on node
+            event = new PropertiesIntegrityEvent(nodeService, dictionaryService, nodeRef);
             save(event);
+            
+            // check for associations defined on the aspect
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
+            if (aspectDef == null)
+            {
+                throw new DictionaryException("The aspect type is not recognized: " + aspectTypeQName);
+            }
+            Map<QName, AssociationDefinition> assocDefs = aspectDef.getAssociations();
+            
+            // check the multiplicity of each association with the node acting as a source
+            for (AssociationDefinition assocDef : assocDefs.values())
+            {
+                QName assocTypeQName = assocDef.getName();
+                // check target multiplicity
+                event = new AssocTargetMultiplicityIntegrityEvent(
+                        nodeService,
+                        dictionaryService,
+                        nodeRef,
+                        assocTypeQName,
+                        false);
+                save(event);
+            }
         }
     }
 
@@ -419,11 +438,13 @@ public class IntegrityChecker
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        IntegrityEvent event = null;
-        // check mandatory aspects
-        event = new AspectsIntegrityEvent(nodeService, dictionaryService, nodeRef);
-        save(event);
-        
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check mandatory aspects
+            event = new AspectsIntegrityEvent(nodeService, dictionaryService, nodeRef);
+            save(event);
+        }  
     }
 
     /**
@@ -442,45 +463,48 @@ public class IntegrityChecker
             return;
         }
         
-        IntegrityEvent event = null;
-        // check source type
-        event = new AssocSourceTypeIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getParentRef(),
-                childAssocRef.getTypeQName());
-        save(event);
-        // check target type
-        event = new AssocTargetTypeIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getChildRef(),
-                childAssocRef.getTypeQName());
-        save(event);
-        // check source multiplicity
-        event = new AssocSourceMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getChildRef(),
-                childAssocRef.getTypeQName(),
-                false);
-        save(event);
-        // check target multiplicity
-        event = new AssocTargetMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getParentRef(),
-                childAssocRef.getTypeQName(),
-                false);
-        save(event);
-        // check target role
-        event = new AssocTargetRoleIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getParentRef(),
-                childAssocRef.getTypeQName(),
-                childAssocRef.getQName());
-        save(event);
+        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check source type
+            event = new AssocSourceTypeIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getParentRef(),
+                    childAssocRef.getTypeQName());
+            save(event);
+            // check target type
+            event = new AssocTargetTypeIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getChildRef(),
+                    childAssocRef.getTypeQName());
+            save(event);
+            // check source multiplicity
+            event = new AssocSourceMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getChildRef(),
+                    childAssocRef.getTypeQName(),
+                    false);
+            save(event);
+            // check target multiplicity
+            event = new AssocTargetMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getParentRef(),
+                    childAssocRef.getTypeQName(),
+                    false);
+            save(event);
+            // check target role
+            event = new AssocTargetRoleIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getParentRef(),
+                    childAssocRef.getTypeQName(),
+                    childAssocRef.getQName());
+            save(event);
+        }
     }
 
     /**
@@ -489,23 +513,26 @@ public class IntegrityChecker
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        IntegrityEvent event = null;
-        // check source multiplicity
-        event = new AssocSourceMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getChildRef(),
-                childAssocRef.getTypeQName(),
-                true);
-        save(event);
-        // check target multiplicity
-        event = new AssocTargetMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                childAssocRef.getParentRef(),
-                childAssocRef.getTypeQName(),
-                true);
-        save(event);
+        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check source multiplicity
+            event = new AssocSourceMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getChildRef(),
+                    childAssocRef.getTypeQName(),
+                    true);
+            save(event);
+            // check target multiplicity
+            event = new AssocTargetMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    childAssocRef.getParentRef(),
+                    childAssocRef.getTypeQName(),
+                    true);
+            save(event);
+        }
     }
 
     /**
@@ -516,37 +543,40 @@ public class IntegrityChecker
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
-        IntegrityEvent event = null;
-        // check source type
-        event = new AssocSourceTypeIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getSourceRef(),
-                nodeAssocRef.getTypeQName());
-        save(event);
-        // check target type
-        event = new AssocTargetTypeIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getTargetRef(),
-                nodeAssocRef.getTypeQName());
-        save(event);
-        // check source multiplicity
-        event = new AssocSourceMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getTargetRef(),
-                nodeAssocRef.getTypeQName(),
-                false);
-        save(event);
-        // check target multiplicity
-        event = new AssocTargetMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getSourceRef(),
-                nodeAssocRef.getTypeQName(),
-                false);
-        save(event);
+        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check source type
+            event = new AssocSourceTypeIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getSourceRef(),
+                    nodeAssocRef.getTypeQName());
+            save(event);
+            // check target type
+            event = new AssocTargetTypeIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getTargetRef(),
+                    nodeAssocRef.getTypeQName());
+            save(event);
+            // check source multiplicity
+            event = new AssocSourceMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getTargetRef(),
+                    nodeAssocRef.getTypeQName(),
+                    false);
+            save(event);
+            // check target multiplicity
+            event = new AssocTargetMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getSourceRef(),
+                    nodeAssocRef.getTypeQName(),
+                    false);
+            save(event);
+        }
     }
 
     /**
@@ -555,23 +585,26 @@ public class IntegrityChecker
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
-        IntegrityEvent event = null;
-        // check source multiplicity
-        event = new AssocSourceMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getTargetRef(),
-                nodeAssocRef.getTypeQName(),
-                true);
-        save(event);
-        // check target multiplicity
-        event = new AssocTargetMultiplicityIntegrityEvent(
-                nodeService,
-                dictionaryService,
-                nodeAssocRef.getSourceRef(),
-                nodeAssocRef.getTypeQName(),
-                true);
-        save(event);
+        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        {
+            IntegrityEvent event = null;
+            // check source multiplicity
+            event = new AssocSourceMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getTargetRef(),
+                    nodeAssocRef.getTypeQName(),
+                    true);
+            save(event);
+            // check target multiplicity
+            event = new AssocTargetMultiplicityIntegrityEvent(
+                    nodeService,
+                    dictionaryService,
+                    nodeAssocRef.getSourceRef(),
+                    nodeAssocRef.getTypeQName(),
+                    true);
+            save(event);
+        }
     }
     
     /**

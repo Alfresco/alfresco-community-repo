@@ -470,4 +470,36 @@
         </property>
     </bean>
    
+    <!-- enable scheduler property to activate -->
+    <bean id="versionStoreMigrationCleanupJob" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="versionStoreMigrationCleanupDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.version.MigrationCleanupJob</value>
+                </property>
+               <property name="jobDataAsMap">
+                   <map>
+                        <entry key="versionMigrator">
+                            <ref bean="versionMigrator" />
+                        </entry>
+                   </map>
+               </property>
+            </bean>
+        </property>
+        
+        <!-- enable this to activate bean -->
+        
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+                
+        <!-- start after bootstrap (1 minute) and run once -->
+        <property name="startDelayMinutes">
+            <value>1</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value>
+        </property>
+          
+    </bean>
 </beans>

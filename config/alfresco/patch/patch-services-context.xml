@@ -1488,4 +1488,16 @@
         </property>
     </bean>
     
+    <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch" parent="basePatch" >
+        <property name="id"><value>patch.migrateVersionStore</value></property>
+        <property name="description"><value>patch.migrateVersionStore.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>129</value></property>
+        <property name="targetSchema"><value>130</value></property>
+        <!-- helper beans/properties -->
+        <property name="versionMigrator">
+            <ref bean="versionMigrator" />
+        </property>
+    </bean>
+    
 </beans>

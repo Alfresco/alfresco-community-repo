@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,7 +55,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
 
-public abstract class BaseVersionStoreTest extends BaseSpringTest 
+public abstract class BaseVersionStoreTest extends BaseSpringTest
 {
 	/*
      * Services used by the tests
@@ -133,6 +133,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
 		this.dictionaryDAO = dictionaryDAO;
 	}
 	
+	public void setVersionService(VersionService versionService) 
+	{
+	    this.versionService = versionService;
+	}
+	
     /**
      * Called during the transaction setup
      */
@@ -148,7 +153,6 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         
         // Get the services by name from the application context
         this.dbNodeService = (NodeService)applicationContext.getBean("dbNodeService");
-        this.versionService = (VersionService)applicationContext.getBean("versionService");
         this.versionCounterDaoService = (VersionCounterService)applicationContext.getBean("versionCounterService");
         this.contentService = (ContentService)applicationContext.getBean("contentService");
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
@@ -157,6 +161,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
+        
+        setVersionService((VersionService)applicationContext.getBean("versionService"));
         
         authenticationService.clearCurrentSecurityContext();
         
@@ -215,6 +221,16 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      */
     protected NodeRef createNewVersionableNode()
     {
+    	return createNode(true);
+    }
+    
+    protected NodeRef createNewNode()
+    {
+    	return createNode(false);
+    }
+    
+    protected NodeRef createNode(boolean versionable)
+    {
         // Use this map to retrive the versionable nodes in later tests
         this.versionableNodes = new HashMap<String, NodeRef>();
         
@@ -224,8 +240,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN, 
                 QName.createQName("{test}MyVersionableNode"),
                 TEST_TYPE_QNAME,
-                this.nodeProperties).getChildRef();
-        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+                this.nodeProperties).getChildRef();        
+        if (versionable)
+        {
+        	this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        }
         
         assertNotNull(nodeRef);
         this.versionableNodes.put(nodeRef.getId(), nodeRef);
@@ -241,7 +260,12 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 TEST_CHILD_ASSOC_1,
 				TEST_TYPE_QNAME,
                 this.nodeProperties).getChildRef();
-        this.dbNodeService.addAspect(child1, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        
+        if (versionable)
+        {
+        	this.dbNodeService.addAspect(child1, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        }
+        
         assertNotNull(child1);
         this.versionableNodes.put(child1.getId(), child1);
         NodeRef child2 = this.dbNodeService.createNode(
@@ -250,7 +274,12 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 TEST_CHILD_ASSOC_2,
 				TEST_TYPE_QNAME,
                 this.nodeProperties).getChildRef();
-        this.dbNodeService.addAspect(child2, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        
+        if (versionable)
+        {
+        	this.dbNodeService.addAspect(child2, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        }
+        
         assertNotNull(child2);
         this.versionableNodes.put(child2.getId(), child2);
         
@@ -303,6 +332,25 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         // Return the new version
         return newVersion;
     }
+    
+    protected Collection<Version> createVersion(NodeRef versionableNode, Map<String, Serializable> versionProperties, boolean versionChildren)
+    {
+        // Get the next version number
+        int nextVersion = peekNextVersionNumber(); 
+        String nextVersionLabel = peekNextVersionLabel(versionableNode, nextVersion, versionProperties);
+        
+        // Snap-shot the date-time
+        long beforeVersionTime = System.currentTimeMillis();
+        
+        // Now lets create new version for this node (optionally with children)
+        Collection<Version> versions = versionService.createVersion(versionableNode, this.versionProperties, versionChildren);
+        
+        // Check the returned versions are correct
+        checkVersionCollection(nextVersion, nextVersionLabel, beforeVersionTime, versions);
+        
+        // Return the new versions
+        return versions;
+    }
 	
 	/**
 	 * Gets the next version label
@@ -322,15 +370,17 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      * @param newVersion            the new version
      * @param versionableNode       the versioned node
      */
-    protected void checkNewVersion(long beforeVersionTime, int expectedVersionNumber, String expectedVersionLabel, Version newVersion, NodeRef versionableNode)
+    protected void checkVersion(long beforeVersionTime, int expectedVersionNumber, String expectedVersionLabel, Version newVersion, NodeRef versionableNode)
     {
         assertNotNull(newVersion);
         
         // Check the version label and version number
+        
         assertEquals(
                 "The expected version number was not used.",
                 Integer.toString(expectedVersionNumber), 
-                newVersion.getVersionProperty(VersionModel.PROP_VERSION_NUMBER).toString());
+                newVersion.getVersionProperty(VersionBaseModel.PROP_VERSION_NUMBER).toString());
+        
 		assertEquals(
 				"The expected version label was not used.",
 				expectedVersionLabel,
@@ -347,28 +397,53 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         // Check the creator 
         assertEquals(USER_NAME, newVersion.getCreator());
         
-        // Check the properties of the verison
+        // Check the metadata properties of the version
         Map<String, Serializable> props = newVersion.getVersionProperties();
         assertNotNull("The version properties collection should not be null.", props);
-        // TODO sort this out - need to check for the reserved properties too
-        //assertEquals(versionProperties.size(), props.size());
-        for (String key : versionProperties.keySet())
+        if (versionProperties != null)
         {
-            assertEquals(
-                    versionProperties.get(key), 
-                    newVersion.getVersionProperty(key));
+            // TODO sort this out - need to check for the reserved properties too
+            //assertEquals(versionProperties.size(), props.size());
+            for (String key : versionProperties.keySet())
+            {
+                assertEquals(
+                        versionProperties.get(key),
+                        newVersion.getVersionProperty(key));
+            }
         }
         
         // Check that the node reference is correct
         NodeRef nodeRef = newVersion.getFrozenStateNodeRef();
         assertNotNull(nodeRef);
-        assertEquals(
-                VersionModel.STORE_ID, 
-                nodeRef.getStoreRef().getIdentifier());
-        assertEquals(
-                VersionModel.STORE_PROTOCOL, 
-                nodeRef.getStoreRef().getProtocol());
-        assertNotNull(nodeRef.getId());        
+        
+        // Switch VersionStore depending on configured impl
+        if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+        	// V2 version store (eg. workspace://version2Store)
+            assertEquals(
+                    Version2Model.STORE_ID,
+                    nodeRef.getStoreRef().getIdentifier());
+            assertEquals(
+                    Version2Model.STORE_PROTOCOL,
+                    nodeRef.getStoreRef().getProtocol());
+            assertNotNull(nodeRef.getId());
+        } 
+        else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+			// Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            assertEquals(
+                    VersionModel.STORE_ID,
+                    nodeRef.getStoreRef().getIdentifier());
+            assertEquals(
+                    VersionModel.STORE_PROTOCOL,
+                    nodeRef.getStoreRef().getProtocol());
+            assertNotNull(nodeRef.getId());
+        }
+    }
+    
+    protected void checkNewVersion(long beforeVersionTime, int expectedVersionNumber, String expectedVersionLabel, Version newVersion, NodeRef versionableNode)
+    {
+        checkVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, newVersion, versionableNode);
         
         // TODO: How do we check the frozen attributes ??
         
@@ -377,6 +452,43 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 versionableNode,
                 ContentModel.PROP_VERSION_LABEL);
         assertEquals(newVersion.getVersionLabel(), currentVersionLabel);
+    }
+    
+    /**
+     * Helper method to check the validity of the list of newly created versions.
+     * 
+     * @param expectedVersionNumber  the expected version number that all the versions should have
+     * @param beforeVersionTime      the time before the versions where created
+     * @param versions               the collection of version objects
+     */
+    private void checkVersionCollection(int expectedVersionNumber, String expectedVersionLabel, long beforeVersionTime, Collection<Version> versions)
+    {
+        for (Version version : versions)
+        {
+            // Get the frozen id from the version
+            String frozenNodeId = null;
+            
+            // Switch VersionStore depending on configured impl
+            if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+            {
+            	// V2 version store (eg. workspace://version2Store)
+                frozenNodeId = ((NodeRef)version.getVersionProperty(Version2Model.PROP_FROZEN_NODE_REF)).getId();
+            } 
+            else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+            {
+                // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+                frozenNodeId = (String)version.getVersionProperty(VersionModel.PROP_FROZEN_NODE_ID);
+            }
+            
+            assertNotNull("Unable to retrieve the frozen node id from the created version.", frozenNodeId);
+            
+            // Get the original node ref (based on the forzen node)
+            NodeRef origionaNodeRef = this.versionableNodes.get(frozenNodeId);
+            assertNotNull("The versionable node ref that relates to the frozen node id can not be found.", origionaNodeRef);
+            
+            // Check the new version
+            checkNewVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, version, origionaNodeRef);
+        }
     }
     
     /**

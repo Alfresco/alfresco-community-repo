@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,60 +24,38 @@
  */
 package org.alfresco.repo.version;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * interface conating the constants used by the light weight
- * version store implementation
+ * Version1 Model Constants used by lightWeightVersionStore implementation
  *
  * @author Roy Wetherall
  */
-public interface VersionModel
+public interface VersionModel extends VersionBaseModel
 {
     /**
      * Namespace
      */
     public static final String NAMESPACE_URI = "http://www.alfresco.org/model/versionstore/1.0";
 
-     /**
-     * The store protocol
-     */
-    public static final String STORE_PROTOCOL = VersionService.VERSION_STORE_PROTOCOL;
-
     /**
      * The store id
      */
     public static final String STORE_ID = "lightWeightVersionStore";
 
-
-    public static final String PROP_VERSION_LABEL = "versionLabel";
-    public static final String PROP_CREATED_DATE = ContentModel.PROP_CREATED.getLocalName();
-    public static final String PROP_CREATOR = ContentModel.PROP_CREATOR.getLocalName();
-    public static final String PROP_VERSION_TYPE = "versionType";
-    public static final String PROP_VERSION_NUMBER = "versionNumber";
-    public static final String PROP_FROZEN_NODE_ID = "frozenNodeId";
-    public static final String PROP_FROZEN_NODE_TYPE = "frozenNodeType";
-    public static final String PROP_FROZEN_NODE_STORE_PROTOCOL = "frozenNodeStoreProtocol";
-    public static final String PROP_FROZEN_NODE_STORE_ID = "frozenNodeStoreId";
-    public static final String PROP_FROZEN_ASPECTS = "frozenAspects";
-
     /** The version store root aspect */
-    public static final QName ASPECT_VERSION_STORE_ROOT = QName.createQName(NAMESPACE_URI, "versionStoreRoot");
+    public static final QName ASPECT_VERSION_STORE_ROOT = QName.createQName(NAMESPACE_URI, ASPECT_LOCALNAME_VERSION_STORE_ROOT);
 
     /**
      * Version history type
      */
-    public static final String TYPE_VERSION_HISTORY = "versionHistory";
     public static final QName TYPE_QNAME_VERSION_HISTORY = QName.createQName(NAMESPACE_URI, TYPE_VERSION_HISTORY);
 
     /**
      * Version history properties and associations
      */
-    public static final String PROP_VERSIONED_NODE_ID = "versionedNodeId";
     public static final QName PROP_QNAME_VERSIONED_NODE_ID = QName.createQName(NAMESPACE_URI, PROP_VERSIONED_NODE_ID);
-    public static final QName ASSOC_ROOT_VERSION = QName.createQName(NAMESPACE_URI, "rootVersion");
+    public static final QName ASSOC_ROOT_VERSION = QName.createQName(NAMESPACE_URI, ASSOC_LOCALNAME_ROOT_VERSION);
 
     /**
      * Verison type
@@ -88,6 +66,12 @@ public interface VersionModel
     /**
      * Version type properties and associations
      */
+    public static final String PROP_FROZEN_NODE_ID = "frozenNodeId";
+    public static final String PROP_FROZEN_NODE_STORE_PROTOCOL = "frozenNodeStoreProtocol";
+    public static final String PROP_FROZEN_NODE_STORE_ID = "frozenNodeStoreId";
+    public static final String PROP_FROZEN_NODE_TYPE = "frozenNodeType";
+    public static final String PROP_FROZEN_ASPECTS = "frozenAspects";
+    
     public static final QName PROP_QNAME_VERSION_LABEL = QName.createQName(NAMESPACE_URI, PROP_VERSION_LABEL);
     public static final QName PROP_QNAME_VERSION_NUMBER = QName.createQName(NAMESPACE_URI, PROP_VERSION_NUMBER);
     public static final QName PROP_QNAME_FROZEN_NODE_ID = QName.createQName(NAMESPACE_URI, PROP_FROZEN_NODE_ID);
@@ -156,8 +140,6 @@ public interface VersionModel
     /**
      * Child relationship names
      */
-    public static final String CHILD_VERSION_HISTORIES = "versionHistory";
-    public static final String CHILD_VERSIONS = "version";
     public static final String CHILD_VERSIONED_ATTRIBUTES = "versionedAttributes";
     public static final String CHILD_VERSIONED_CHILD_ASSOCS = "versionedChildAssocs";
     public static final String CHILD_VERSIONED_ASSOCS = "versionedAssocs";
@@ -173,7 +155,5 @@ public interface VersionModel
     /**
      * Created version associated to the deleted translations of an mlContainer
      */
-    public static final String PROP_TRANSLATION_VERIONS = "translationVersions";
-    public static final QName  PROP_QNAME_TRANSLATION_VERIONS = QName.createQName(VersionModel.NAMESPACE_URI, PROP_TRANSLATION_VERIONS);
-
+    public static final QName  PROP_QNAME_TRANSLATION_VERSIONS = QName.createQName(VersionModel.NAMESPACE_URI, PROP_TRANSLATION_VERSIONS);    
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -45,6 +47,7 @@ import org.alfresco.service.cmr.version.VersionType;
  * 
  * @author Roy Wetherall
  */
+
 public class VersionImpl implements Version
 {
     /**
@@ -98,16 +101,21 @@ public class VersionImpl implements Version
     /**
      * Helper method to get the created date from the version property data.
      * 
-     * @return the date the version was created
+     * @return the date the version was created (note: not the date of the original node)
      */
     public Date getCreatedDate()
     {
-        return (Date)this.versionProperties.get(VersionModel.PROP_CREATED_DATE);
+        return (Date)this.versionProperties.get(VersionBaseModel.PROP_CREATED_DATE);
     }
     
+    /**
+     * Helper method to get the creator from the version property data.
+     * 
+     * @return the creator of the version (note: not the creator of the original node)
+     */
     public String getCreator()
     {
-        return (String)this.versionProperties.get(VersionModel.PROP_CREATOR);
+        return (String)this.versionProperties.get(VersionBaseModel.PROP_CREATOR);
     }
 
     /**
@@ -117,7 +125,7 @@ public class VersionImpl implements Version
      */
     public String getVersionLabel()
     {
-        return (String)this.versionProperties.get(VersionModel.PROP_VERSION_LABEL);
+        return (String)this.versionProperties.get(VersionBaseModel.PROP_VERSION_LABEL);
     }    
     
     /**
@@ -127,7 +135,7 @@ public class VersionImpl implements Version
      */
     public VersionType getVersionType()
     {
-        return (VersionType)this.versionProperties.get(VersionModel.PROP_VERSION_TYPE);
+        return (VersionType)this.versionProperties.get(VersionBaseModel.PROP_VERSION_TYPE);
     }
     
     /**
@@ -137,7 +145,7 @@ public class VersionImpl implements Version
      */
     public String getDescription()
     {
-        return (String)this.versionProperties.get(PROP_DESCRIPTION);
+        return (String)this.versionProperties.get(Version.PROP_DESCRIPTION);
     }
     
     /**
@@ -166,10 +174,24 @@ public class VersionImpl implements Version
      */
     public NodeRef getVersionedNodeRef()
     {
-        String storeProtocol = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL);
-        String storeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_ID);
-        String nodeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_ID);
-        return new NodeRef(new StoreRef(storeProtocol, storeId), nodeId);
+        NodeRef versionedNodeRef = null;
+        
+        // Switch VersionStore depending on configured impl
+        if (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+            // V2 version store (eg. workspace://version2Store)
+            versionedNodeRef = (NodeRef)this.versionProperties.get(Version2Model.PROP_FROZEN_NODE_REF);
+        } 
+        else if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            String storeProtocol = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL);
+            String storeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_ID);
+            String nodeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_ID);
+            versionedNodeRef = new NodeRef(new StoreRef(storeProtocol, storeId), nodeId);
+        }
+        
+        return versionedNodeRef;
     }
 
     /**

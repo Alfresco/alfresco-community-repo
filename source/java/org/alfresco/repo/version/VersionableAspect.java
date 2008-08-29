@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -205,6 +205,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     // Queue create version action
                     Map<String, Serializable> versionDetails = new HashMap<String, Serializable>(1);
                     versionDetails.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
+                    
                     this.versionService.createVersion(nodeRef, versionDetails);
                 }
             }

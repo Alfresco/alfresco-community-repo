@@ -129,6 +129,11 @@
       <property name="maxErrorsPerTransaction" >
          <value>5</value>  <!-- limit output (exception and log) to the first N violation messages -->
       </property>
+      <property name="storesToIgnore">
+         <list>
+            <value>${version.store.version2Store}</value>
+         </list>
+      </property>
    </bean>
 
    <!-- tags nodes that are incomplete w.r.t. properties-->
@@ -141,6 +146,11 @@
       </property>
       <property name="nodeService">
          <ref bean="nodeService" />
+      </property>
+      <property name="storesToIgnore">
+         <list>
+            <value>${version.store.version2Store}</value>
+         </list>
       </property>
    </bean>
 

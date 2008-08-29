@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -70,14 +70,19 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
 	private static final String UPDATED_CONTENT_1 = "updatedContent1";
 	private static final String UPDATED_CONTENT_2 = "updatedContent2";
 
+	public void testSetup()
+    {
+	    // NOOP
+    }
+	
 	/**
      * Tests the creation of the initial version of a versionable node
      */
     public void testCreateIntialVersion()
     {
         NodeRef versionableNode = createNewVersionableNode();
-        createVersion(versionableNode);               
-    }     
+        createVersion(versionableNode);
+    }
     
     /**
      * Test creating a version history with many versions from the same workspace
@@ -90,9 +95,39 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(versionableNode);
         // TODO mess with some of the properties and stuff as you version
         createVersion(versionableNode);
+        
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode);
+        assertNotNull(vh);
+        assertEquals(3, vh.getAllVersions().size());
+        
+        // TODO check list of versions ... !
     }
     
-    // TODO test versioning a non versionable node ie: no version apsect
+    /**
+     * Tests the creation of multiple versions of a versionable node with null version properties
+     */
+    public void testCreateManyVersionsWithNullVersionProperties()
+    {
+        this.versionProperties = null;
+        
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+        
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode);
+        assertNotNull(vh);
+        assertEquals(3, vh.getAllVersions().size());
+    }
+    
+    /**
+     * Test versioning a non versionable node ie: no version apsect
+     */
+    public void testCreateInitialVersionWhenNotVersionable()
+    {
+        NodeRef node = createNewNode(); // not marked as versionable
+        createVersion(node);
+    }
     
     // TODO test versioning numberious times with branchs implies by different workspaces
     
@@ -155,15 +190,28 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         for (Version version : versions)
         {
             // Get the frozen id from the version
-            String frozenNodeId = (String)version.getVersionProperty(VersionModel.PROP_FROZEN_NODE_ID);
+            String frozenNodeId = null;
+            
+            // Switch VersionStore depending on configured impl
+            if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
+            {
+                // V2 version store (eg. workspace://version2Store)
+                frozenNodeId = ((NodeRef)version.getVersionProperty(Version2Model.PROP_FROZEN_NODE_REF)).getId();
+            } 
+            else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
+            {
+                // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+                frozenNodeId = (String)version.getVersionProperty(VersionModel.PROP_FROZEN_NODE_ID);
+            }
+            
             assertNotNull("Unable to retrieve the frozen node id from the created version.", frozenNodeId);
             
             // Get the origional node ref (based on the forzen node)
-            NodeRef origionaNodeRef = this.versionableNodes.get(frozenNodeId);
-            assertNotNull("The versionable node ref that relates to the frozen node id can not be found.", origionaNodeRef);
+            NodeRef originalNodeRef = this.versionableNodes.get(frozenNodeId);
+            assertNotNull("The versionable node ref that relates to the frozen node id can not be found.", originalNodeRef);
             
             // Check the new version
-            checkNewVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, version, origionaNodeRef);
+            checkNewVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, version, originalNodeRef);
         }
     }
     
@@ -476,12 +524,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
                 // Check that the initial version has not been created
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());                
                 
                 // Add some content 
-                ContentWriter contentWriter = VersionServiceImplTest.this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+                ContentWriter contentWriter = contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
                 assertNotNull(contentWriter);
                 contentWriter.putContent(UPDATED_CONTENT_1);
                 
@@ -494,7 +542,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         {
             public Object execute() throws Exception
             {
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
                 assertEquals(2, versionHistory.getAllVersions().size());
                 
@@ -520,7 +568,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
                 // Add some content 
-                ContentWriter contentWriter = VersionServiceImplTest.this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+                ContentWriter contentWriter = contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
                 assertNotNull(contentWriter);
                 contentWriter.putContent(UPDATED_CONTENT_1);
                 
@@ -533,7 +581,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         {
             public Object execute() throws Exception
             {
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(versionableNode);
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
                 
@@ -567,7 +615,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         {
             public Object execute() throws Exception
             {
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 assertNull(versionHistory);
                 
                 return null;
@@ -596,12 +644,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
             	// Check that the version history has been created
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
                 
                 // Remove the versionable aspect 
-                VersionServiceImplTest.this.dbNodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                dbNodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                 
                 return null;
             }
@@ -612,11 +660,11 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
             	// Check that the version history has been removed
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 assertNull(versionHistory);
                 
                 // Re-add the versionable aspect
-                VersionServiceImplTest.this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
                 
                 return null;
             }
@@ -627,7 +675,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
             	// Check that the version history has been created 
-                VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());                
                 
@@ -658,12 +706,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         {
             public Object execute() throws Exception
             {
-            	VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+            	VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
                 
             	// Delete the node
-                VersionServiceImplTest.this.dbNodeService.deleteNode(nodeRef);
+                dbNodeService.deleteNode(nodeRef);
                 
                 return null;
             }
@@ -674,15 +722,15 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
             	// Get the archived noderef
-            	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);
+            	NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
             	
             	// The archived noderef should still have a link to the version history
-            	VersionHistory versionHistory = VersionServiceImplTest.this.versionService.getVersionHistory(archivedNodeRef);
+            	VersionHistory versionHistory = versionService.getVersionHistory(archivedNodeRef);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size()); 
                 
                 // Delete the node for good
-                VersionServiceImplTest.this.dbNodeService.deleteNode(archivedNodeRef);
+                dbNodeService.deleteNode(archivedNodeRef);
                 
                 return null;
             }
@@ -693,12 +741,12 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
             	// Get the archived noderef
-            	NodeRef archivedNodeRef = VersionServiceImplTest.this.nodeArchiveService.getArchivedNode(nodeRef);
+            	NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
             	
             	// Check that the version histories have been deleted
-            	VersionHistory versionHistory12 = VersionServiceImplTest.this.versionService.getVersionHistory(nodeRef);
+            	VersionHistory versionHistory12 = versionService.getVersionHistory(nodeRef);
                 assertNull(versionHistory12);
-            	VersionHistory versionHistory23 = VersionServiceImplTest.this.versionService.getVersionHistory(archivedNodeRef);
+            	VersionHistory versionHistory23 = versionService.getVersionHistory(archivedNodeRef);
                 assertNull(versionHistory23);
                 
                 return null;
@@ -761,8 +809,15 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         final AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
         authenticationComponent.setSystemUserAsCurrentUser();
+        
+        // TEMP - for migration testing - force V1 store (override repository property)  
+        final Version2ServiceImpl version2ServiceImpl = (Version2ServiceImpl)ctx.getBean("versionService");
+        version2ServiceImpl.setOnlyUseDeprecatedV1(true);
+        
+        System.out.println("Using: " + versionService.getVersionStoreReference());
+        
         // Create a new store
-        StoreRef storeRef = new StoreRef("test", "VersionServiceImplTest.main");
+        StoreRef storeRef = new StoreRef("test", "VersionServiceImplTest-main-"+System.currentTimeMillis());
         if (!nodeService.exists(storeRef))
         {
             nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
@@ -819,5 +874,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 lastReport = now;
             }
         }
+        
+        System.out.println("Finished: " + fileCount);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -225,11 +225,11 @@ public class VersionHistoryImplTest extends TestCase
             }
         }
         
-        Collection versions2 = vh.getSuccessors(this.childVersion1);
+        Collection<Version> versions2 = vh.getSuccessors(this.childVersion1);
         assertNotNull(versions2);
         assertTrue(versions2.isEmpty());
         
-        Collection versions3 = vh.getSuccessors(this.childVersion2);
+        Collection<Version> versions3 = vh.getSuccessors(this.childVersion2);
         assertNotNull(versions3);
         assertTrue(versions3.isEmpty());
     }

@@ -649,7 +649,7 @@
     <!--                               -->
 
 
-    <bean id="versionService" class="org.alfresco.repo.version.VersionServiceImpl" init-method="initialise">
+	<bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>
@@ -671,14 +671,41 @@
         <property name="policyBehaviourFilter">
             <ref bean="policyBehaviourFilter" />
         </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="onlyUseDeprecatedV1">
+            <value>${version.store.onlyUseDeprecatedV1}</value>
+        </property>
     </bean>
 
-    <bean id="versionNodeService" class="org.alfresco.repo.version.NodeServiceImpl">
+    <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
         <property name="dbNodeService">
             <ref bean="dbNodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
+        </property>
+    </bean>
+    
+    <bean id="versionMigrator" class="org.alfresco.repo.version.VersionMigrator" init-method="init">
+        <property name="dbNodeService">
+            <ref bean="dbNodeService" />
+        </property>
+        <property name="versionNodeService">
+            <ref bean="versionNodeService" />
+        </property>
+        <property name="version2ServiceImpl">
+            <ref bean="versionService" />
+        </property>
+        <property name="policyBehaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
         </property>
     </bean>
 
@@ -798,7 +825,10 @@
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/action/actionModel.xml</value>
                 <value>org/alfresco/repo/rule/ruleModel.xml</value>
-                <value>org/alfresco/repo/version/version_model.xml</value>
+                
+                <!--  Version models -->
+                <value>org/alfresco/repo/version/version_model.xml</value> <!-- deprecated -->
+                <value>org/alfresco/repo/version/version2_model.xml</value>				
 
                 <!-- Email model -->
                 <value>alfresco/model/emailServerModel.xml</value>

@@ -25,6 +25,7 @@
 package org.alfresco.repo.node.integrity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,6 +80,7 @@ public class IncompleteNodeTagger
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private List<String> storesToIgnore = new ArrayList<String>(0);
     
     public IncompleteNodeTagger()
     {
@@ -106,6 +108,15 @@ public class IncompleteNodeTagger
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param storesToIgnore stores (eg. workspace://version2Store) which will be 
+     *      ignored by IncompleteNodeTagger. Note: assumes associations are within a store.
+     */
+    public void setStoresToIgnore(List<String> storesToIgnore)
+    {
+        this.storesToIgnore = storesToIgnore;
     }
 
     /**
@@ -236,9 +247,12 @@ public class IncompleteNodeTagger
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        save(nodeRef);
-        saveAssoc(nodeRef, null);
+        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        {
+            NodeRef nodeRef = childAssocRef.getChildRef();
+            save(nodeRef);
+            saveAssoc(nodeRef, null);
+        }
     }
 
     /**
@@ -249,7 +263,10 @@ public class IncompleteNodeTagger
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        save(nodeRef);
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        {
+            save(nodeRef);
+        }
     }
 
     /**
@@ -261,14 +278,17 @@ public class IncompleteNodeTagger
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
-            if (logger.isDebugEnabled())
+            if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
             {
-                logger.debug("Ignoring aspect addition: " + ContentModel.ASPECT_INCOMPLETE);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Ignoring aspect addition: " + ContentModel.ASPECT_INCOMPLETE);
+                }
             }
+            save(nodeRef);
         }
-        save(nodeRef);
     }
 
     /**
@@ -276,14 +296,17 @@ public class IncompleteNodeTagger
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
+        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
-            if (logger.isDebugEnabled())
+            if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
             {
-                logger.debug("Ignoring aspect removal: " + ContentModel.ASPECT_INCOMPLETE);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Ignoring aspect removal: " + ContentModel.ASPECT_INCOMPLETE);
+                }
             }
+            save(nodeRef);
         }
-        save(nodeRef);
     }
     
     /**
@@ -294,9 +317,12 @@ public class IncompleteNodeTagger
      */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
-        if (!isNew)
+        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
         {
-            saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+            if (!isNew)
+            {
+                saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+            }
         }
     }
 
@@ -305,7 +331,10 @@ public class IncompleteNodeTagger
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        {
+            saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
+        }
     }
 
     /**
@@ -313,7 +342,10 @@ public class IncompleteNodeTagger
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
-        saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        {
+            saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+        }
     }
 
     /**
@@ -321,7 +353,10 @@ public class IncompleteNodeTagger
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
-        saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        {
+            saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
+        }
     }
         
     /**

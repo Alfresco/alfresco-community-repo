@@ -194,6 +194,12 @@ public class AuthenticationFilter implements Filter
             	
             	if ( ticket != null &&  ticket.length() > 0)
             	{
+            		// PowerPoint bug fix
+            		if (ticket.endsWith(".ppt"))
+            		{
+            			ticket = ticket.substring(0, ticket.length() - 4);
+            		}
+            		
                 	// Debug
                     
                     if ( logger.isDebugEnabled())

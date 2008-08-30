@@ -25,8 +25,10 @@
 package org.alfresco.repo.usage;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -34,6 +36,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -58,6 +61,15 @@ public class ContentUsageImpl implements ContentUsageService,
 {
     // Logger
     private static Log logger = LogFactory.getLog(ContentUsageImpl.class);
+    
+    /** Key to the deleted nodes */
+    private static final String KEY_DELETED_NODES = "contentUsage.deletedNodes";
+    
+    /** Key to the updated nodes */
+    private static final String KEY_UPDATED_NODES = "contentUsage.updatedNodes";
+    
+    /** Key to the deleted folder */
+    private static final String KEY_DELETED_FOLDER = "contentUsage.deletedFolder";
     
     private NodeService nodeService;
     private PersonService personService;
@@ -122,26 +134,97 @@ public class ContentUsageImpl implements ContentUsageService,
     {    
         if (enabled)
         {
-            // Register interest in the onCreateNode policy
+            // Register interest in the onCreateNode policy - for content
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), 
                     ContentModel.TYPE_CONTENT, 
                     new JavaBehaviour(this, "onCreateNode"));
             
-            // Register interest in the onUpdateProperties policy
+            // Register interest in the onUpdateProperties policy - for content
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                     ContentModel.TYPE_CONTENT, 
                     new JavaBehaviour(this, "onUpdateProperties"));
             
-            // Register interest in the beforeDeleteNode policy
+            // Register interest in the beforeDeleteNode policy - for content
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
                     ContentModel.TYPE_CONTENT,
                     new JavaBehaviour(this, "beforeDeleteNode"));
+            
+            // Register interest in the onUpdateNode policy - for content
+            policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
+                    ContentModel.TYPE_CONTENT,
+                    new JavaBehaviour(this, "onUpdateNode"));
+            
+            // Register interest in the beforeDeleteNode policy - for folder
+            policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                    ContentModel.TYPE_FOLDER,
+                    new JavaBehaviour(this, "beforeDeleteNode"));
         }
     }
     
+    @SuppressWarnings("unchecked")
+    private void recordDelete(NodeRef nodeRef)
+    {
+        Set<NodeRef> deletedNodes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_DELETED_NODES);
+        if (deletedNodes == null)
+        {
+            deletedNodes = new HashSet<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_DELETED_NODES, deletedNodes);
+        }
+        deletedNodes.add(tenantService.getName(nodeRef));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private boolean alreadyDeleted(NodeRef nodeRef)
+    {
+        Set<NodeRef> deletedNodes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_DELETED_NODES);
+        if (deletedNodes != null)
+        {
+            for (NodeRef deletedNodeRef : deletedNodes)
+            {
+                if (deletedNodeRef.equals(nodeRef))
+                {
+                    if (logger.isDebugEnabled()) logger.debug("alreadyDeleted: nodeRef="+nodeRef);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void recordUpdate(NodeRef nodeRef)
+    {
+        Set<NodeRef> updatedNodes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_UPDATED_NODES);
+        if (updatedNodes == null)
+        {
+            updatedNodes = new HashSet<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_UPDATED_NODES, updatedNodes);
+        }
+        updatedNodes.add(tenantService.getName(nodeRef));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private boolean alreadyUpdated(NodeRef nodeRef)
+    {
+        Set<NodeRef> updatedNodes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_UPDATED_NODES);
+        if (updatedNodes != null)
+        {
+            for (NodeRef updatedNodeRef : updatedNodes)
+            {
+                if (updatedNodeRef.equals(nodeRef))
+                {
+                    if (logger.isDebugEnabled()) logger.debug("alreadyUpdated: nodeRef="+nodeRef);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     /**
      * Called when a new node has been created.
@@ -151,7 +234,7 @@ public class ContentUsageImpl implements ContentUsageService,
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()) && (! alreadyUpdated(nodeRef)))
         {
             // Get content size
             
@@ -171,6 +254,39 @@ public class ContentUsageImpl implements ContentUsageService,
                 // new node with non-empty content size
                 if (logger.isDebugEnabled()) logger.debug("onCreateNode: contentSize="+contentSize+", nodeRef="+nodeRef+", ownerAfter="+owner);
                 incrementUserUsage(owner, contentSize, nodeRef);
+            }
+        }
+    }
+    
+    public void onUpdateNode(NodeRef nodeRef)
+    {
+        NodeRef folderNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_DELETED_FOLDER);
+        if (folderNodeRef != null)
+        {
+            // TODO partial fix for ETWONINE-43
+            // there must be a better way, eg. refine move policies ... currently assumes updated node exists in deleted folder hierarchy and has been moved from workspace to the archive
+            if (nodeRef.toString().contains("archive://") && (! alreadyDeleted(nodeRef)))
+            {
+                ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                if (contentData != null)
+                {
+                    long contentSize = contentData.getSize();
+
+                    // Get owner/creator
+                    String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+                    if (owner == null)
+                    {
+                        owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+                    }                   
+                    
+                    if (contentSize != 0 && owner != null)
+                    {
+                       // decrement usage if node is being deleted
+                       if (logger.isDebugEnabled()) logger.debug("onUpdateNode: folderRef="+folderNodeRef+", archivedContentNodeRef="+nodeRef+", owner="+owner+", contentSize="+contentSize);
+                       decrementUserUsage(owner, contentSize, nodeRef);
+                       recordDelete(nodeRef);
+                    }
+                }
             }
         }
     }
@@ -215,13 +331,14 @@ public class ContentUsageImpl implements ContentUsageService,
                 // new size has been added - note: ownerBefore does not matter since the contentSizeBefore is null
                 if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateSize (null -> "+contentSizeAfter+"): nodeRef="+nodeRef+", ownerAfter="+ownerAfter);
                 incrementUserUsage(ownerAfter, contentSizeAfter, nodeRef);
-                
+                recordUpdate(nodeRef);
             }
             else if (contentSizeAfter == null && contentSizeBefore != null && contentSizeBefore != 0 && ownerBefore != null)
             {
                 // old size has been removed - note: ownerAfter does not matter since contentSizeAfter is null
                 if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateSize ("+contentSizeBefore+" -> null): nodeRef="+nodeRef+", ownerBefore="+ownerBefore);
                 decrementUserUsage(ownerBefore, contentSizeBefore, nodeRef);
+                recordUpdate(nodeRef);
             }
             else if (contentSizeBefore != null && contentSizeAfter != null)
             {
@@ -233,10 +350,12 @@ public class ContentUsageImpl implements ContentUsageService,
                     if (contentSizeBefore != 0 && ownerBefore != null)
                     {
                         decrementUserUsage(ownerBefore, contentSizeBefore, nodeRef);
+                        recordUpdate(nodeRef);
                     }
                     if (contentSizeAfter != 0 && ownerAfter != null)
                     {
                         incrementUserUsage(ownerAfter, contentSizeAfter, nodeRef);
+                        recordUpdate(nodeRef);
                     }          
                 } 
                 else 
@@ -247,12 +366,14 @@ public class ContentUsageImpl implements ContentUsageService,
                         // new owner has been added
                         if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateOwner (null -> "+ownerAfter+"): nodeRef="+nodeRef+", contentSize="+contentSizeAfter);
                         incrementUserUsage(ownerAfter, contentSizeAfter, nodeRef);
+                        recordUpdate(nodeRef);
                     }
                     else if (ownerAfter == null && ownerBefore != null && contentSizeBefore != 0)
                     {
                         // old owner has been removed
                         if (logger.isDebugEnabled()) logger.debug("onUpdateProperties: updateOwner ("+ownerBefore+" -> null): nodeRef="+nodeRef+", contentSize="+contentSizeBefore);
                         decrementUserUsage(ownerBefore, contentSizeBefore, nodeRef);
+                        recordUpdate(nodeRef);
                     }
                     else if (ownerBefore != null && ownerAfter != null && ownerBefore.equals(ownerAfter) == false)
                     {
@@ -262,10 +383,12 @@ public class ContentUsageImpl implements ContentUsageService,
                         if (contentSizeBefore != 0)
                         {
                             decrementUserUsage(ownerBefore, contentSizeBefore, nodeRef);
+                            recordUpdate(nodeRef);
                         }
                         if (contentSizeAfter != 0)
                         {
                             incrementUserUsage(ownerAfter, contentSizeAfter, nodeRef);
+                            recordUpdate(nodeRef);
                         }
                     }
                 }
@@ -280,22 +403,38 @@ public class ContentUsageImpl implements ContentUsageService,
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {   
-        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()) && (! alreadyDeleted(nodeRef)))
         {
-            // TODO use data dictionary to get content property
-            ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-            
-            if (contentData != null)
+            QName type = nodeService.getType(nodeRef);
+            if (type.equals(ContentModel.TYPE_CONTENT))
             {
-                long contentSize = contentData.getSize();
-                String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+                // TODO use data dictionary to get content property
+                ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
                 
-                if (contentSize != 0 && owner != null)
-                {  
-                   // decrement usage if node is being deleted
-                   if (logger.isDebugEnabled()) logger.debug("beforeDeleteNode: nodeRef="+nodeRef+", owner="+owner+", contentSize="+contentSize);
-                   decrementUserUsage(owner, contentSize, nodeRef);
-                }
+                if (contentData != null)
+                {
+                    long contentSize = contentData.getSize();
+                    
+                    // Get owner/creator
+                    String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+                    if (owner == null)
+                    {
+                        owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+                    }
+                    
+                    if (contentSize != 0 && owner != null)
+                    {
+                       // decrement usage if node is being deleted
+                       if (logger.isDebugEnabled()) logger.debug("beforeDeleteNode: nodeRef="+nodeRef+", owner="+owner+", contentSize="+contentSize);
+                       decrementUserUsage(owner, contentSize, nodeRef);
+                       recordDelete(nodeRef);
+                    }
+                }          
+            }
+            else if (type.equals(ContentModel.TYPE_FOLDER))
+            {
+                if (logger.isDebugEnabled()) logger.debug("beforeDeleteNode: folderNodeRef="+nodeRef);
+                AlfrescoTransactionSupport.bindResource(KEY_DELETED_FOLDER, nodeRef);
             }
         }
     }

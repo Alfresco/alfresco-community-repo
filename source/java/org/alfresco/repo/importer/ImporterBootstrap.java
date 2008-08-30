@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -294,7 +294,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * Boostrap the Repository
+     * Bootstrap the Repository
      */
     public void bootstrap()
     {
@@ -302,7 +302,15 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "importerService", importerService);
-        PropertyCheck.mandatory(this, "storeRef", storeRef);
+       
+        if (storeRef == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No Store URL - bootstrap import ignored");
+            }
+            return;
+        }
 
         // note: in MT case, this will run in System context of tenant domain
         Authentication authentication = authenticationComponent.getCurrentAuthentication();

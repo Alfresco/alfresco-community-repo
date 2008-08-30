@@ -408,22 +408,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        unregister();
-        
-        // run as System on shutdown
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {            
-                destroy();
-                return null;
-            }                               
-        }, AuthenticationUtil.getSystemUserName());
-        
-        if (tenantDeployerService.isEnabled())
-        {
-            tenantDeployerService.undeployTenants(this, logger);
-        }
+        // NOOP
     }
     
     public void onEnableTenant()

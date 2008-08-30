@@ -260,6 +260,9 @@
         <property name="nodeDaoService">
         	<ref bean="nodeDaoService"/>
         </property>
+        <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+        </property>
         <property name="transactionService">
         	<ref bean="transactionService"/>
         </property>

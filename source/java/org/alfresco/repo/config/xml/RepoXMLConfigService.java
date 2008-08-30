@@ -202,21 +202,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        // run as System on shutdown
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {            
-                destroy();
-                return null;
-            }                               
-        }, AuthenticationUtil.getSystemUserName());
-        
-        if ((tenantDeployerService != null) && (tenantDeployerService.isEnabled()))
-        {
-            tenantDeployerService.undeployTenants(this, logger);           
-            tenantDeployerService.unregister(this);
-        } 
+        // NOOP
     }
   
     public void onEnableTenant()

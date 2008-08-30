@@ -318,23 +318,34 @@ public interface NodeDaoService
      * for any given millisecond, a list of optional exclusions may be provided.
      * 
      * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
+     * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
      */
     public List<Transaction> getTxnsByCommitTimeAscending(
             long fromTimeInclusive,
             long toTimeExclusive,
             int count,
-            List<Long> excludeTxnIds);
+            List<Long> excludeTxnIds,
+            boolean remoteOnly);
     /**
      * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
      * for any given millisecond, a list of optional exclusions may be provided.
      * 
      * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
+     * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
      */
     public List<Transaction> getTxnsByCommitTimeDescending(
             long fromTimeInclusive,
             long toTimeExclusive,
             int count,
-            List<Long> excludeTxnIds);
+            List<Long> excludeTxnIds,
+            boolean remoteOnly);
+    /**
+     * Get the lowest commit time for a set of transactions
+     * 
+     * @param includeTxnIds     a list of transaction IDs to search for
+     * @return      Returns the transactions by commit time for the given IDs
+     */
+    public List<Transaction> getTxnsByMinCommitTime(List<Long> includeTxnIds);
     public int getTxnUpdateCount(final long txnId);
     public int getTxnDeleteCount(final long txnId);
     public int getTransactionCount();

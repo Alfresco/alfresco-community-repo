@@ -216,6 +216,40 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
 
     /**
+     * @return          Returns the ID of this instance's <b>server</b> instance or <tt>null</tt>
+     */
+    private Long getServerIdOrNull()
+    {
+        Long serverId = serverIdSingleton.get();
+        if (serverId != null)
+        {
+            return serverId;
+        }
+        // Query for it
+        // The server already exists, so get it
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                        .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_SERVER_BY_IPADDRESS)
+                        .setString("ipAddress", ipAddress);
+                return query.uniqueResult();
+            }
+        };
+        Server server = (Server) getHibernateTemplate().execute(callback);
+        if (server != null)
+        {
+            // It exists, so just return the ID
+            return server.getId();
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
      * Gets/creates the <b>server</b> instance to use for the life of this instance
      */
     private Server getServer()
@@ -1522,6 +1556,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_TXN_BY_ID = "txn.GetTxnById";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_ASC = "txn.GetTxnsByCommitTimeAsc";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_DESC = "txn.GetTxnsByCommitTimeDesc";
+    private static final String QUERY_GET_SELECTED_TXNS_BY_COMMIT_TIME_ASC = "txn.GetSelectedTxnsByCommitAsc";
     private static final String QUERY_GET_TXN_UPDATE_COUNT_FOR_STORE = "txn.GetTxnUpdateCountForStore";
     private static final String QUERY_GET_TXN_DELETE_COUNT_FOR_STORE = "txn.GetTxnDeleteCountForStore";
     private static final String QUERY_COUNT_TRANSACTIONS = "txn.CountTransactions";
@@ -1545,6 +1580,28 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return txn;
     }
     
+    @SuppressWarnings("unchecked")
+    public List<Transaction> getTxnsByMinCommitTime(final List<Long> includeTxnIds)
+    {
+        if (includeTxnIds.size() == 0)
+        {
+            return null;
+        }
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_SELECTED_TXNS_BY_COMMIT_TIME_ASC);
+                query.setParameterList("includeTxnIds", includeTxnIds)
+                     .setReadOnly(true);
+                return query.list();
+            }
+        };
+        List<Transaction> txns = (List<Transaction>) getHibernateTemplate().execute(callback);
+        // done
+        return txns;
+    }
+
     @SuppressWarnings("unchecked")
     public int getTxnUpdateCount(final long txnId)
     {
@@ -1600,12 +1657,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     private static final Long TXN_ID_DUD = Long.valueOf(-1L);
+    private static final Long SERVER_ID_DUD = Long.valueOf(-1L);
     @SuppressWarnings("unchecked")
     public List<Transaction> getTxnsByCommitTimeAscending(
             final long fromTimeInclusive,
             final long toTimeExclusive,
             final int count,
-            List<Long> excludeTxnIds)
+            List<Long> excludeTxnIds,
+            boolean remoteOnly)
     {
         // Make sure that we have at least one entry in the exclude list
         final List<Long> excludeTxnIdsInner = new ArrayList<Long>(excludeTxnIds == null ? 1 : excludeTxnIds.size());
@@ -1617,6 +1676,25 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             excludeTxnIdsInner.addAll(excludeTxnIds);
         }
+        final List<Long> excludeServerIds = new ArrayList<Long>(1);
+        if (remoteOnly)
+        {
+            // Get the current server ID.  This can be null if no transactions have been written by
+            // a server with this IP address.
+            Long serverId = getServerIdOrNull();
+            if (serverId == null)
+            {
+                excludeServerIds.add(SERVER_ID_DUD);
+            }
+            else
+            {
+                excludeServerIds.add(serverId);
+            }
+        }
+        else
+        {
+            excludeServerIds.add(SERVER_ID_DUD);
+        }
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -1625,6 +1703,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 query.setLong("fromTimeInclusive", fromTimeInclusive)
                      .setLong("toTimeExclusive", toTimeExclusive)
                      .setParameterList("excludeTxnIds", excludeTxnIdsInner)
+                     .setParameterList("excludeServerIds", excludeServerIds)
                      .setMaxResults(count)
                      .setReadOnly(true);
                 return query.list();
@@ -1640,7 +1719,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             final long fromTimeInclusive,
             final long toTimeExclusive,
             final int count,
-            List<Long> excludeTxnIds)
+            List<Long> excludeTxnIds,
+            boolean remoteOnly)
     {
         // Make sure that we have at least one entry in the exclude list
         final List<Long> excludeTxnIdsInner = new ArrayList<Long>(excludeTxnIds == null ? 1 : excludeTxnIds.size());
@@ -1652,6 +1732,25 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             excludeTxnIdsInner.addAll(excludeTxnIds);
         }
+        final List<Long> excludeServerIds = new ArrayList<Long>(1);
+        if (remoteOnly)
+        {
+            // Get the current server ID.  This can be null if no transactions have been written by
+            // a server with this IP address.
+            Long serverId = getServerIdOrNull();
+            if (serverId == null)
+            {
+                excludeServerIds.add(SERVER_ID_DUD);
+            }
+            else
+            {
+                excludeServerIds.add(serverId);
+            }
+        }
+        else
+        {
+            excludeServerIds.add(SERVER_ID_DUD);
+        }
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -1660,6 +1759,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 query.setLong("fromTimeInclusive", fromTimeInclusive)
                      .setLong("toTimeExclusive", toTimeExclusive)
                      .setParameterList("excludeTxnIds", excludeTxnIdsInner)
+                     .setParameterList("excludeServerIds", excludeServerIds)
                      .setMaxResults(count)
                      .setReadOnly(true);
                 return query.list();

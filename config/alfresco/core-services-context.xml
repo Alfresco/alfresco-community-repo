@@ -267,6 +267,18 @@
         <property name="allowWrite">
             <value>${server.transaction.allow-writes}</value>
         </property>
+        <property name="maxRetries">
+            <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
+        </property>
     </bean>
 
     <bean id="retryingTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
@@ -275,6 +287,15 @@
         </property>
         <property name="maxRetries">
             <value>${server.transaction.max-retries}</value>
+        </property>
+        <property name="minRetryWaitMs">
+            <value>${server.transaction.min-retry-wait-ms}</value>
+        </property>
+        <property name="maxRetryWaitMs">
+            <value>${server.transaction.max-retry-wait-ms}</value>
+        </property>
+        <property name="retryWaitIncrementMs">
+            <value>${server.transaction.wait-increment-ms}</value>
         </property>
     </bean>
 
@@ -459,13 +480,16 @@
         </property>
     </bean>
 
-	<bean id="indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true">
+    <bean id="indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
         <property name="corePoolSize">
             <value>10</value>
         </property>
-		<property name="threadPriority">
-			<value>5</value>
-		</property>
+        <property name="maximumPoolSize">
+            <value>20</value>
+        </property>
+        <property name="threadPriority">
+            <value>7</value>
+        </property>
     </bean>
 
 
@@ -999,9 +1023,12 @@
     <!-- Thread Pool    -->
     <!--                -->
 
-    <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean" singleton="true">
+    <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
         <property name="corePoolSize">
             <value>2</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>10</value>
         </property>
     </bean>
 

@@ -72,7 +72,7 @@
             batch-size="128"  
             sort="unsorted"
             inverse="false" 
-            optimistic-lock="true"
+            optimistic-lock="false"
             cascade="delete" >
          <key column="node_id" foreign-key="fk_alf_n_prop" not-null="true" />
          <map-key column="qname_id" type="long" />
@@ -98,7 +98,7 @@
             batch-size="128"
             inverse="false" 
             sort="unsorted"
-            optimistic-lock="true"
+            optimistic-lock="false"
             cascade="delete" >
          <key column="node_id" foreign-key="fk_alf_n_asp" not-null="true" />
          <element column="qname_id" type="long" not-null="true" />

@@ -41,6 +41,10 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,12 +61,15 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PersonServiceImpl implements PersonService,
-    NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
+public class PersonServiceImpl
+    extends TransactionListenerAdapter
+    implements PersonService, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static Log s_logger = LogFactory.getLog(PersonServiceImpl.class);
 
@@ -80,6 +87,8 @@ public class PersonServiceImpl implements PersonService,
 
     private StoreRef storeRef;
 
+    private TransactionService transactionService;
+    
     private NodeService nodeService;
     
     private TenantService tenantService;
@@ -126,12 +135,33 @@ public class PersonServiceImpl implements PersonService,
         props.add(ContentModel.PROP_ORGID);
         mutableProperties = Collections.unmodifiableSet(props);
     }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this == obj;
+    }
+    @Override
+    public int hashCode()
+    {
+        return 1;
+    }
 
     /**
      * Spring bean init method
      */
     public void init()
     {
+        PropertyCheck.mandatory(this, "storeUrl", storeRef);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "permissionServiceSPI", permissionServiceSPI);
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "namespacePrefixResolver", namespacePrefixResolver);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "personCache", personCache);
+        
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 ContentModel.TYPE_PERSON,
@@ -202,8 +232,10 @@ public class PersonServiceImpl implements PersonService,
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {
-            if (createMissingPeople())
+            TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
+            if (createMissingPeople() &&  txnReadState == TxnReadState.TXN_READ_WRITE)
             {
+                // We create missing people AND are in a read-write txn
                 return createMissingPerson(userName);
             }
             else
@@ -289,11 +321,7 @@ public class PersonServiceImpl implements PersonService,
                     rs.close();
                 }
             }
-            if (singleton)
-            {
-                returnRef = returnRef;
-            }
-            else
+            if (!singleton)
             {
                 returnRef = handleDuplicates(searchUserName);
             }
@@ -303,29 +331,12 @@ public class PersonServiceImpl implements PersonService,
         }
         return returnRef;
     }
-
     private NodeRef handleDuplicates(String searchUserName)
     {
         if (processDuplicates)
         {
             NodeRef best = findBest(searchUserName);
-            if (duplicateMode.equalsIgnoreCase(SPLIT))
-            {
-                split(searchUserName, best);
-                s_logger.info("Split duplicate person objects for uid " + searchUserName);
-            }
-            else if (duplicateMode.equalsIgnoreCase(DELETE))
-            {
-                delete(searchUserName, best);
-                s_logger.info("Deleted duplicate person objects for uid " + searchUserName);
-            }
-            else
-            {
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("Duplicate person objects exist for uid " + searchUserName);
-                }
-            }
+            addDuplicateUserNameToHandle(searchUserName, best);
             return best;
         }
         else
@@ -341,6 +352,74 @@ public class PersonServiceImpl implements PersonService,
                         + searchUserName + " (case insensitive)");
             }
         }
+    }
+
+    private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
+    /**
+     * Get the txn-bound usernames that need cleaning up
+     */
+    private Map<String, NodeRef> getPostTxnDuplicates()
+    {
+        @SuppressWarnings("unchecked")
+        Map<String, NodeRef> postTxnDuplicates = (Map<String, NodeRef>) AlfrescoTransactionSupport.getResource(KEY_POST_TXN_DUPLICATES);
+        if (postTxnDuplicates == null)
+        {
+            postTxnDuplicates = new HashMap<String, NodeRef>(7);
+            AlfrescoTransactionSupport.bindResource(KEY_POST_TXN_DUPLICATES, postTxnDuplicates);
+        }
+        return postTxnDuplicates;
+    }
+    /**
+     * Flag a username for cleanup after the transaction.
+     */
+    private void addDuplicateUserNameToHandle(String searchUserName, NodeRef best)
+    {
+        // Firstly, bind this service to the transaction
+        AlfrescoTransactionSupport.bindListener(this);
+        // Now get the post txn duplicate list
+        Map<String, NodeRef> postTxnDuplicates = getPostTxnDuplicates();
+        postTxnDuplicates.put(searchUserName, best);
+    }
+    /**
+     * Process clean up any duplicates that were flagged during the transaction.
+     */
+    @Override
+    public void afterCommit()
+    {
+        // Get the duplicates in a form that can be read by the transaction work anonymous instance
+        final Map<String, NodeRef> postTxnDuplicates = getPostTxnDuplicates();
+
+        RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                for (Map.Entry<String, NodeRef> entry : postTxnDuplicates.entrySet())
+                {
+                    String username = entry.getKey();
+                    NodeRef best = entry.getValue();
+                    if (duplicateMode.equalsIgnoreCase(SPLIT))
+                    {
+                        split(username, best);
+                        s_logger.info("Split duplicate person objects for uid " + username);
+                    }
+                    else if (duplicateMode.equalsIgnoreCase(DELETE))
+                    {
+                        delete(username, best);
+                        s_logger.info("Deleted duplicate person objects for uid " + username);
+                    }
+                    else
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Duplicate person objects exist for uid " + username);
+                        }
+                    }
+                }
+                // Done
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(processDuplicateWork, false, true);
     }
 
     private void delete(String searchUserName, NodeRef best)
@@ -797,6 +876,11 @@ public class PersonServiceImpl implements PersonService,
     public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
     {
         this.permissionServiceSPI = permissionServiceSPI;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     public void setNodeService(NodeService nodeService)

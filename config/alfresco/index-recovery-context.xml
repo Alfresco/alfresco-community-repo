@@ -3,7 +3,25 @@
 
 <beans>
    
+   <!--
+      The thread pool to use for index rebuilding and recovery
+   -->
+   <bean id="indexTrackerThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+      <property name="corePoolSize">
+         <value>${index.recovery.maximumPoolSize}</value>
+      </property>
+      <property name="maximumPoolSize">
+         <value>${index.recovery.maximumPoolSize}</value>
+      </property>
+      <property name="workQueueSize">
+         <value>100</value>
+      </property>
+   </bean>
+
    <bean id="indexRecoveryComponentBase" abstract="true" >
+      <property name="threadPoolExecutor">
+         <ref bean="indexTrackerThreadPoolExecutor" />
+      </property>
       <property name="authenticationComponent">
          <ref bean="authenticationComponent" />
       </property>
@@ -38,6 +56,9 @@
       <property name="stopOnError">
          <value>${index.recovery.stopOnError}</value>
       </property>
+      <property name="maxTransactionsPerLuceneCommit">
+         <value>${index.tracking.maxTransactionsPerLuceneCommit}</value>
+      </property>
       <property name="indexTracker">
          <ref bean="admIndexTrackerComponent" />
       </property>
@@ -68,6 +89,9 @@
          id="admIndexTrackerComponent"
          class="org.alfresco.repo.node.index.IndexTransactionTracker"
          parent="indexRecoveryComponentBase">
+      <property name="nodeIndexer">
+         <ref bean="nodeIndexer"/>
+      </property>
       <property name="maxTxnDurationMinutes">
          <value>${index.tracking.maxTxnDurationMinutes}</value>
       </property>
@@ -76,6 +100,12 @@
       </property>
       <property name="maxRecordSetSize">
          <value>${index.tracking.maxRecordSetSize}</value>
+      </property>
+      <property name="maxTransactionsPerLuceneCommit">
+         <value>${index.tracking.maxTransactionsPerLuceneCommit}</value>
+      </property>
+      <property name="disableInTransactionIndexing">
+         <value>${index.tracking.disableInTransactionIndexing}</value>
       </property>
    </bean>
 

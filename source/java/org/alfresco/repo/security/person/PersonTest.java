@@ -27,20 +27,27 @@ package org.alfresco.repo.security.person;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 
 public class PersonTest extends BaseSpringTest
 {
-
+    private TransactionService transactionService;
+    
     private PersonService personService;
 
     private NodeService nodeService;
@@ -55,6 +62,7 @@ public class PersonTest extends BaseSpringTest
 
     protected void onSetUpInTransaction() throws Exception
     {
+        transactionService = (TransactionService) applicationContext.getBean("transactionService");
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
 
@@ -66,6 +74,7 @@ public class PersonTest extends BaseSpringTest
             nodeService.deleteNode(nodeRef);
         }
 
+        personService.setCreateMissingPeople(true);
     }
 
     protected void onTearDownInTransaction() throws Exception
@@ -409,5 +418,143 @@ public class PersonTest extends BaseSpringTest
         }
         personService.getPerson("Derek");
     }
+    
+    public void testReadOnlyTransactionHandling() throws Exception
+    {
+        // Kill the annoying Spring-managed txn
+        super.setComplete();
+        super.endTransaction();
+        
+        boolean createMissingPeople = personService.createMissingPeople();
+        assertTrue("Default should be to create missing people", createMissingPeople);
+        
+        final String username = "Derek";
+        // Make sure that the person is missing
+        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                personService.deletePerson(username);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
+        // Make a read-only transaction and check that we get NoSuchPersonException
+        RetryingTransactionCallback<NodeRef> getMissingPersonWork = new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                return personService.getPerson(username);
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(getMissingPersonWork, true, true);
+            fail("Expected auto-creation of person to fail gracefully");
+        }
+        catch (NoSuchPersonException e)
+        {
+            // Expected
+        }
+        // It should work in a write transaction, though
+        transactionService.getRetryingTransactionHelper().doInTransaction(getMissingPersonWork, false, true);
+    }
 
+    public void testSplitPersonCleanup() throws Exception
+    {
+        // Kill the annoying Spring-managed txn
+        super.setComplete();
+        super.endTransaction();
+        
+        boolean createMissingPeople = personService.createMissingPeople();
+        assertTrue("Default should be to create missing people", createMissingPeople);
+        
+        PersonServiceImpl personServiceImpl = (PersonServiceImpl) personService;
+        personServiceImpl.setDuplicateMode("LEAVE");
+        
+        // The user to duplicate
+        final String duplicateUsername = GUID.generate();
+        // Make sure that the person is missing
+        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                personService.deletePerson(duplicateUsername);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
+        // Fire off 10 threads to create the same person
+        int threadCount = 10;
+        final CountDownLatch startLatch = new CountDownLatch(threadCount);
+        final CountDownLatch endLatch = new CountDownLatch(threadCount);
+        final Map<String, NodeRef> cleanableNodeRefs = new HashMap<String, NodeRef>(17);
+        Runnable createPersonRunnable = new Runnable()
+        {
+            public void run()
+            {
+                final RetryingTransactionCallback<NodeRef> createPersonWork = new RetryingTransactionCallback<NodeRef>()
+                {
+                    public NodeRef execute() throws Throwable
+                    {
+                        // Wait for the trigger to start
+                        try { startLatch.await(); } catch (InterruptedException e) {}
+                        
+                        // Trigger
+                        NodeRef personNodeRef = personService.getPerson(duplicateUsername);
+                        return personNodeRef;
+                    }
+                };
+                startLatch.countDown();
+                try
+                {
+                    NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(createPersonWork, false, true);
+                    // Store the noderef for later checking
+                    String threadName = Thread.currentThread().getName();
+                    cleanableNodeRefs.put(threadName, nodeRef);
+                }
+                catch (Throwable e)
+                {
+                    // Errrm
+                    e.printStackTrace();
+                }
+                endLatch.countDown();
+            }
+        };
+        // Fire the threads
+        for (int i = 0; i < threadCount; i++)
+        {
+            Thread thread = new Thread(createPersonRunnable);
+            thread.setName(getName() + "-" + i);
+            thread.setDaemon(true);
+            thread.start();
+        }
+        // Wait for the threads to have finished
+        try { endLatch.await(60, TimeUnit.SECONDS); } catch (InterruptedException e) {}
+        
+        // Now, get the user with full split person handling
+        personServiceImpl.setDuplicateMode("DELETE");
+        
+        RetryingTransactionCallback<NodeRef> getPersonWork = new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                return personService.getPerson(duplicateUsername);
+            }
+        };
+        NodeRef remainingNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(getPersonWork, false, true);
+        // Should all be cleaned up now, but no way to check
+        for (NodeRef nodeRef : cleanableNodeRefs.values())
+        {
+            if (nodeRef.equals(remainingNodeRef))
+            {
+                // This one should still be around
+                continue;
+            }
+            if (nodeService.exists(nodeRef))
+            {
+                fail("Expected unused person noderef to have been cleaned up: " + nodeRef);
+            }
+        }
+    }
 }

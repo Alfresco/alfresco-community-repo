@@ -16,9 +16,10 @@
 #db.pool.max=100
 
 #
-# Sample index tracking frequency
+# Activate index tracking and recovery
 #
 #index.tracking.cronExpression=0/5 * * * * ?
+#index.recovery.mode=AUTO
 
 #
 # Property to control whether schema updates are performed automatically.

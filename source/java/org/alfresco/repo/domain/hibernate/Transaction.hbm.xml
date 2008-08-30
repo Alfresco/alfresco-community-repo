@@ -72,8 +72,6 @@
          org.alfresco.repo.domain.hibernate.TransactionImpl as txn
       where
          txn.id = :txnId
-      order by
-         txn.commitTimeMs
    </query>
 
    <query name="txn.GetTxnsByCommitTimeAsc">
@@ -85,9 +83,11 @@
       where
          txn.commitTimeMs >= :fromTimeInclusive and
          txn.commitTimeMs < :toTimeExclusive and
-         txn.id not in (:excludeTxnIds)
+         txn.id not in (:excludeTxnIds) and
+         txn.server.id not in (:excludeServerIds)
       order by
-         txn.commitTimeMs
+         txn.commitTimeMs asc,
+         txn.id asc
       ]]>
    </query>
 
@@ -100,9 +100,25 @@
       where
          txn.commitTimeMs >= :fromTimeInclusive and
          txn.commitTimeMs < :toTimeExclusive and
-         txn.id not in (:excludeTxnIds)
+         txn.id not in (:excludeTxnIds) and
+         txn.server.id not in (:excludeServerIds)
       order by
-         txn.commitTimeMs desc
+         txn.commitTimeMs desc,
+         txn.id desc
+      ]]>
+   </query>
+   
+   <query name="txn.GetSelectedTxnsByCommitAsc">
+      <![CDATA[
+      select
+         txn
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+      where
+         txn.id in (:includeTxnIds)
+      order by
+         txn.commitTimeMs asc,
+         txn.id asc
       ]]>
    </query>
    

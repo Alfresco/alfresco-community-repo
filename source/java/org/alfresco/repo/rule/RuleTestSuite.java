@@ -24,10 +24,10 @@
  */
 package org.alfresco.repo.rule;
 
-import org.alfresco.repo.rule.ruletrigger.RuleTriggerTest;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
+import org.alfresco.repo.rule.ruletrigger.RuleTriggerTest;
 
 
 /**

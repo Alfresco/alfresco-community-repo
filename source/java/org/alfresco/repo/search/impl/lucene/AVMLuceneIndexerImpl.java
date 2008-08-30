@@ -254,11 +254,9 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
         catch (AVMSyncException e)
         {
-            s_logger.warn("\n" +
-                    "Unable to generate change list for synchronous indexing: \n" +
-                    "   Store:         " + store + "\n" +
-                    "   Start version: " + srcVersion + "\n" +
-                    "   End version:   " + endVersion);
+            s_logger.warn("\n"
+                    + "Unable to generate change list for synchronous indexing: \n" + "   Store:         " + store + "\n" + "   Start version: " + srcVersion + "\n"
+                    + "   End version:   " + endVersion);
             return;
         }
         for (AVMDifference difference : changeList)
@@ -1420,11 +1418,9 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             TermEnum terms = null;
             try
             {
-                terms = reader.terms();
-
-                if (terms.skipTo(new Term("ID", prefix)))
+                terms = reader.terms(new Term("ID", prefix));
+                if (terms.term() != null)
                 {
-
                     do
                     {
                         Term term = terms.term();
@@ -1459,7 +1455,6 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     }
                     while (terms.next());
                 }
-
             }
             finally
             {
@@ -1531,9 +1526,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             TermEnum terms = null;
             try
             {
-                terms = reader.terms();
-
-                if (terms.skipTo(new Term("ID", prefix)))
+                terms = reader.terms(new Term("ID", prefix));
+                if (terms.term() != null)
                 {
                     do
                     {

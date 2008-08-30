@@ -381,6 +381,21 @@
 
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
 
+    <!-- Perform index recovery before applying any patches -->
+    <!-- rebuild the index if required - before we check that it is there -->
+    
+    <bean id="indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+           <ref bean="indexRecoveryComponent"/>
+       </property>
+    </bean>
+    
+    <bean id="avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+          <ref bean="avmIndexRecoveryComponent"/>
+       </property>
+    </bean>
+
     <!-- Descriptor Service -->
 
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
@@ -401,21 +416,6 @@
        </property>
        <property name="searchService">
            <ref bean="searchService"/>
-       </property>
-    </bean>
-
-    <!-- Perform index recovery before applying any patches -->
-    <!-- rebuild the index if required - before we check that it is there -->
-
-    <bean id="indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
-       <property name="indexRecoveryComponent">
-           <ref bean="indexRecoveryComponent"/>
-       </property>
-    </bean>
-
-    <bean id="avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
-       <property name="indexRecoveryComponent">
-          <ref bean="avmIndexRecoveryComponent"/>
        </property>
     </bean>
 

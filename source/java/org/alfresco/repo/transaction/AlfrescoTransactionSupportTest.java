@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
@@ -235,5 +236,26 @@ public class AlfrescoTransactionSupportTest extends TestCase
         
         // make sure that the binding all worked
         assertTrue("Expected callbacks not all processed: " + testList, testList.size() == 0);
+    }
+    
+    public void testReadWriteStateRetrieval() throws Exception
+    {
+        RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>()
+        {
+            public TxnReadState execute() throws Exception
+            {
+                return AlfrescoTransactionSupport.getTransactionReadState();
+            }
+        };
+
+        // Check TXN_NONE
+        TxnReadState checkTxnReadState = AlfrescoTransactionSupport.getTransactionReadState();
+        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, checkTxnReadState);
+        // Check TXN_READ_ONLY
+        checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, true);
+        assertEquals("Expected 'read-only transaction'", TxnReadState.TXN_READ_ONLY, checkTxnReadState);
+        // check TXN_READ_WRITE
+        checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, false);
+        assertEquals("Expected 'read-write transaction'", TxnReadState.TXN_READ_WRITE, checkTxnReadState);
     }
 }

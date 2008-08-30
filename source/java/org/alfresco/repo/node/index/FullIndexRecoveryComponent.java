@@ -27,6 +27,7 @@ package org.alfresco.repo.node.index;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.i18n.I18NUtil;
@@ -94,6 +95,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     private boolean lockServer;
     private IndexTransactionTracker indexTracker;
     private boolean stopOnError;
+    private int maxTransactionsPerLuceneCommit;
     
     /**
      * <ul>
@@ -105,6 +107,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     public FullIndexRecoveryComponent()
     {
         recoveryMode = RecoveryMode.VALIDATE;
+        maxTransactionsPerLuceneCommit = 100;
     }
 
     /**
@@ -116,6 +119,15 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     public void setRecoveryMode(String recoveryMode)
     {
         this.recoveryMode = RecoveryMode.valueOf(recoveryMode);
+    }
+
+    /**
+     * Set the number of transactions to process per Lucene write.
+     * Larger values generate less contention on the Lucene IndexInfo files.
+     */
+    public void setMaxTransactionsPerLuceneCommit(int maxTransactionsPerLuceneCommit)
+    {
+        this.maxTransactionsPerLuceneCommit = maxTransactionsPerLuceneCommit;
     }
 
     /**
@@ -178,10 +190,10 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             
             // Check that the first and last meaningful transactions are indexed 
             List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null);
+                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null, false);
             boolean startAllPresent = areTxnsInIndex(startTxns);
             List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null);
+                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null, false);
             boolean endAllPresent = areTxnsInIndex(endTxns);
             
             // check the level of cover required
@@ -275,12 +287,16 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                     fromTimeInclusive,
                     toTimeExclusive,
                     MAX_TRANSACTIONS_PER_ITERATION,
-                    lastTxnIds);
+                    lastTxnIds,
+                    false);
 
             lastTxnIds = new ArrayList<Long>(nextTxns.size());
             // reindex each transaction
-            for (Transaction txn : nextTxns)
+            List<Long> txnIdBuffer = new ArrayList<Long>(maxTransactionsPerLuceneCommit);
+            Iterator<Transaction> txnIterator = nextTxns.iterator();
+            while (txnIterator.hasNext())
             {
+                Transaction txn = txnIterator.next();
                 Long txnId = txn.getId();
                 // Keep it to ensure we exclude it from the next iteration
                 lastTxnIds.add(txnId);
@@ -298,14 +314,22 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 }
                 else
                 {
-                    try
+                    // Add the transaction ID to the buffer
+                    txnIdBuffer.add(txnId);
+                    // Reindex if the buffer is full or if there are no more transactions
+                    if (!txnIterator.hasNext() || txnIdBuffer.size() >= maxTransactionsPerLuceneCommit)
                     {
-                        reindexTransaction(txnId);
-                    }
-                    catch (Throwable e)
-                    {
-                        String msgError = I18NUtil.getMessage(MSG_RECOVERY_ERROR, txnId, e.getMessage());
-                        logger.info(msgError, e);
+                        try
+                        {
+                            reindexTransactionAsynchronously(txnIdBuffer);
+                        }
+                        catch (Throwable e)
+                        {
+                            String msgError = I18NUtil.getMessage(MSG_RECOVERY_ERROR, txnId, e.getMessage());
+                            logger.info(msgError, e);
+                        }
+                        // Clear the buffer
+                        txnIdBuffer = new ArrayList<Long>(maxTransactionsPerLuceneCommit);
                     }
                 }
                 // Although we use the same time as this transaction for the next iteration, we also
@@ -324,6 +348,9 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 }
             }
             
+            // Wait for the asynchronous process to catch up
+            waitForAsynchronousReindexing();
+            
             // have we finished?
             if (nextTxns.size() == 0)
             {
@@ -337,8 +364,8 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     }
     
     /**
-     * Perform a full reindexing of the given transaction in the context of a completely
-     * new transaction.
+     * Perform full reindexing of the given transaction.  A read-only transaction is created
+     * <b>if one doesn't already exist</b>.
      * 
      * @param txnId the transaction identifier
      */
@@ -384,7 +411,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, false);
         // done
     }
 }

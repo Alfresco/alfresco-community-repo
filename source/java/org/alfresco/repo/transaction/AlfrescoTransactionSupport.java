@@ -135,6 +135,42 @@ public abstract class AlfrescoTransactionSupport
     }
     
     /**
+     * 
+     * @author Derek Hulley
+     * @since 2.1.4
+     */
+    public static enum TxnReadState
+    {
+        /** No transaction is active */
+        TXN_NONE,
+        /** The current transaction is read-only */
+        TXN_READ_ONLY,
+        /** The current transaction supports writes */
+        TXN_READ_WRITE
+    }
+    
+    /**
+     * @return      Returns the read-write state of the current transaction
+     * @since 2.1.4
+     */
+    public static TxnReadState getTransactionReadState()
+    {
+        if (!TransactionSynchronizationManager.isSynchronizationActive())
+        {
+            return TxnReadState.TXN_NONE;
+        }
+        // Find the read-write state of the txn
+        if (TransactionSynchronizationManager.isCurrentTransactionReadOnly())
+        {
+            return TxnReadState.TXN_READ_ONLY;
+        }
+        else
+        {
+            return TxnReadState.TXN_READ_WRITE;
+        }
+    }
+    
+    /**
      * Are there any pending changes which must be synchronized with the store?
      * 
      * @return true => changes are pending
@@ -710,26 +746,6 @@ public abstract class AlfrescoTransactionSupport
                 logger.debug("After completion (" + statusStr + "): " + this);
             }
             
-            // commit/rollback Lucene
-            for (LuceneIndexerAndSearcher lucene : lucenes)
-            {
-                try
-                {
-                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
-                    {
-                        lucene.commit();
-                    }
-                    else
-                    {
-                        lucene.rollback();
-                    }
-                }
-                catch (RuntimeException e)
-                {
-                    logger.error("After completion (" + statusStr + ") Lucene exception", e);
-                }
-            }
-            
             List<TransactionListener> iterableListeners = getListenersIterable();
             // notify listeners
             if (status  == TransactionSynchronization.STATUS_COMMITTED)
@@ -762,6 +778,46 @@ public abstract class AlfrescoTransactionSupport
                                 "   listener: " + listener,
                                 e);
                     }
+                }
+            }
+            
+            // commit/rollback Lucene
+            for (LuceneIndexerAndSearcher lucene : lucenes)
+            {
+                try
+                {
+                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
+                    {
+                        lucene.commit();
+                    }
+                    else
+                    {
+                        lucene.rollback();
+                    }
+                }
+                catch (RuntimeException e)
+                {
+                    logger.error("After completion (" + statusStr + ") Lucene exception", e);
+                }
+            }
+            
+            // Clean up the transactional caches
+            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
+            {
+                try
+                {
+                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
+                    {
+                        cache.afterCommit();
+                    }
+                    else
+                    {
+                        cache.afterRollback();
+                    }
+                }
+                catch (RuntimeException e)
+                {
+                    logger.error("After completion (" + statusStr + ") TransactionalCache exception", e);
                 }
             }
             

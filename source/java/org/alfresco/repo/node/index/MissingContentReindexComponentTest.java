@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
@@ -64,6 +66,7 @@ public class MissingContentReindexComponentTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private SearchService searchService;
     private NodeService nodeService;
+    private ThreadPoolExecutor threadPoolExecutor;
     private FileFolderService fileFolderService;
     private ContentStore contentStore;
     private FullTextSearchIndexer ftsIndexer;
@@ -76,6 +79,7 @@ public class MissingContentReindexComponentTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
+        threadPoolExecutor = (ThreadPoolExecutor) ctx.getBean("indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");
@@ -90,6 +94,7 @@ public class MissingContentReindexComponentTest extends TestCase
         reindexer.setIndexer(indexer);
         reindexer.setNodeDaoService(nodeDaoService);
         reindexer.setNodeService(nodeService);
+        reindexer.setThreadPoolExecutor(threadPoolExecutor);
         reindexer.setSearcher(searchService);
         reindexer.setTransactionService((TransactionServiceImpl)transactionService);
         

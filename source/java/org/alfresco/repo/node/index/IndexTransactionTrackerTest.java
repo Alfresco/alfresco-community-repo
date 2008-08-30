@@ -16,6 +16,8 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
@@ -52,6 +54,7 @@ public class IndexTransactionTrackerTest extends TestCase
     private AuthenticationComponent authenticationComponent;
     private SearchService searchService;
     private NodeService nodeService;
+    private ThreadPoolExecutor threadPoolExecutor;
     private FileFolderService fileFolderService;
     private ContentStore contentStore;
     private FullTextSearchIndexer ftsIndexer;
@@ -65,6 +68,7 @@ public class IndexTransactionTrackerTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
+        threadPoolExecutor = (ThreadPoolExecutor) ctx.getBean("indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");
@@ -79,6 +83,7 @@ public class IndexTransactionTrackerTest extends TestCase
         indexTracker.setIndexer(indexer);
         indexTracker.setNodeDaoService(nodeDaoService);
         indexTracker.setNodeService(nodeService);
+        indexTracker.setThreadPoolExecutor(threadPoolExecutor);
         indexTracker.setSearcher(searchService);
         indexTracker.setTransactionService((TransactionServiceImpl)transactionService);
         
@@ -118,7 +123,19 @@ public class IndexTransactionTrackerTest extends TestCase
     
     public synchronized void testStartup() throws Exception
     {
-        indexTracker.reindex();
-        indexTracker.reindex();
+        Thread reindexThread = new Thread()
+        {
+            public void run()
+            {
+                indexTracker.reindex();
+                indexTracker.reindex();
+            }
+        };
+        reindexThread.setDaemon(true);
+        reindexThread.start();
+        // wait a bit and then terminate
+        wait(20000);
+        indexTracker.setShutdown(true);
+        wait(20000);
     }
 }

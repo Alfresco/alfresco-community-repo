@@ -213,6 +213,9 @@
     <!-- The person service.                                                -->
 
     <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl" init-method="init">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

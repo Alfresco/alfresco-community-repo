@@ -54,8 +54,21 @@ import org.springframework.jdbc.UncategorizedSQLException;
  * A helper that runs a unit of work inside a UserTransaction,
  * transparently retrying the unit of work if the cause of
  * failure is an optimistic locking or deadlock condition.
+ * <p>
+ * Defaults:
+ * <ul>
+ *   <li><b>maxRetries: 20</b></li>
+ *   <li><b>minRetryWaitMs: 100</b></li>
+ *   <li><b>maxRetryWaitMs: 2000</b></li>
+ *   <li><b>retryWaitIncrementMs: 100</b></li>
+ * </ul>
+ * <p>
+ * To get details of 'why' transactions are retried use the following log level:<br>
+ * <b>Summary: log4j.logger.org.alfresco.repo.transaction.RetryingTransactionHelper=INFO</b><br>
+ * <b>Details: log4j.logger.org.alfresco.repo.transaction.RetryingTransactionHelper=DEBUG</b><br>
+ * 
  *
- * @author britt
+ * @author Derek Hulley
  */
 public class RetryingTransactionHelper
 {
@@ -90,16 +103,20 @@ public class RetryingTransactionHelper
      */
     private TransactionService txnService;
 
-    /**
-     * The maximum number of retries. -1 for infinity.
-     */
+    /** The maximum number of retries. -1 for infinity. */
     private int maxRetries;
-
+    /** The minimum time to wait between retries. */
+    private int minRetryWaitMs;
+    /** The maximum time to wait between retries. */
+    private int maxRetryWaitMs;
+    /** How much to increase the wait time with each retry. */
+    private int retryWaitIncrementMs;
+    
     /**
      * Whether the the transactions may only be reads
      */
     private boolean readOnly;
-
+    
     /**
      * Random number generator for retry delays.
      */
@@ -126,6 +143,10 @@ public class RetryingTransactionHelper
     public RetryingTransactionHelper()
     {
         this.random = new Random(System.currentTimeMillis());
+        this.maxRetries = 20;
+        this.minRetryWaitMs = 100;
+        this.maxRetryWaitMs = 2000;
+        this.retryWaitIncrementMs = 100;
     }
 
     // Setters.
@@ -143,6 +164,21 @@ public class RetryingTransactionHelper
     public void setMaxRetries(int maxRetries)
     {
         this.maxRetries = maxRetries;
+    }
+
+    public void setMinRetryWaitMs(int minRetryWaitMs)
+    {
+        this.minRetryWaitMs = minRetryWaitMs;
+    }
+
+    public void setMaxRetryWaitMs(int maxRetryWaitMs)
+    {
+        this.maxRetryWaitMs = maxRetryWaitMs;
+    }
+
+    public void setRetryWaitIncrementMs(int retryWaitIncrementMs)
+    {
+        this.retryWaitIncrementMs = retryWaitIncrementMs;
     }
 
     /**
@@ -332,9 +368,22 @@ public class RetryingTransactionHelper
                 {
                     // Sleep a random amount of time before retrying.
                     // The sleep interval increases with the number of retries.
+                    int sleepIntervalRandom = count > 0 ? random.nextInt(count * retryWaitIncrementMs) : minRetryWaitMs;
+                    int sleepInterval = Math.min(maxRetryWaitMs, sleepIntervalRandom);
+                    sleepInterval = Math.max(sleepInterval, minRetryWaitMs);
+                    if (logger.isInfoEnabled() && !logger.isDebugEnabled())
+                    {
+                        String msg = String.format(
+                                "Retrying %s: count %2d; wait: %1.1fs; msg: \"%s\"; exception: (%s)",
+                                Thread.currentThread().getName(),
+                                count, (double)sleepInterval/1000D,
+                                retryCause.getMessage(),
+                                retryCause.getClass().getName());
+                        logger.info(msg);
+                    }
                     try
                     {
-                        Thread.sleep(random.nextInt(500 * count + 500));
+                        Thread.sleep(sleepInterval);
                     }
                     catch (InterruptedException ie)
                     {

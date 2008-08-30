@@ -51,11 +51,11 @@ import org.springframework.beans.factory.InitializingBean;
  *   <li><b>{@link #setKeepAliveTime(int) keepAliveTime}: </b>
  *          90 seconds</li>
  *   <li><b>{@link #setThreadPriority(int) threadPriority}: </b>
- *          1 (LOWEST)</li>
+ *          5 (NORM)</li>
  *   <li><b>{@link #setThreadDaemon(boolean) threadDaemon}: </b>
  *          true</li>
- *   <li><b>{@link #setWorkQueue(BlockingQueue) workQueue}: </b>
- *          An unbounded <code>LinkedBlockingQueue</code></li>
+ *   <li><b>{@link #setWorkQueueSize(int) workQueueSize}: </b>
+ *          -1 or less (No upper bound)</li>
  *   <li><b>{@link #setRejectedExecutionHandler(RejectedExecutionHandler) rejectedExecutionHandler: </b>
  *          <code>ThreadPoolExecutor.CallerRunsPolicy</code></li>
  * </ul>
@@ -67,9 +67,9 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     private static final int DEFAULT_CORE_POOL_SIZE = 20;
     private static final int DEFAULT_MAXIMUM_POOL_SIZE = -1;        // -1 is a sign that it must match the core pool size
     private static final int DEFAULT_KEEP_ALIVE_TIME = 90;          // seconds
-    private static final int DEFAULT_THREAD_PRIORITY = Thread.MIN_PRIORITY;
+    private static final int DEFAULT_THREAD_PRIORITY = Thread.NORM_PRIORITY;
     private static final boolean DEFAULT_THREAD_DAEMON = Boolean.TRUE;
-    private static final BlockingQueue<Runnable> DEFAULT_WORK_QUEUE = new LinkedBlockingQueue<Runnable>();
+    private static final int DEFAULT_WORK_QUEUE_SIZE = -1;
     private static final RejectedExecutionHandler DEFAULT_REJECTED_EXECUTION_HANDLER = new ThreadPoolExecutor.CallerRunsPolicy();
     
     private int corePoolSize;
@@ -77,7 +77,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     private int keepAliveTime;
     private int threadPriority;
     private boolean threadDaemon;
-    private BlockingQueue<Runnable> workQueue;
+    private int workQueueSize;
     private RejectedExecutionHandler rejectedExecutionHandler;
     /** the instance that will be given out by the factory */
     private ThreadPoolExecutor instance;
@@ -92,7 +92,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         keepAliveTime = DEFAULT_KEEP_ALIVE_TIME;
         threadPriority = DEFAULT_THREAD_PRIORITY;
         threadDaemon = DEFAULT_THREAD_DAEMON;
-        workQueue = DEFAULT_WORK_QUEUE;
+        workQueueSize = DEFAULT_WORK_QUEUE_SIZE;
         rejectedExecutionHandler = DEFAULT_REJECTED_EXECUTION_HANDLER;
     }
     
@@ -148,13 +148,15 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     }
 
     /**
-     * The optional queue instance to use
+     * The maximum number of queued work instances to keep before blocking
+     * against further adds.
      * 
-     * @param workQueue optional queue implementation
+     * @param size      the queue size before blocks, or <b>-1</b> default
+     *                  to indicate no upper bound
      */
-    public void setWorkQueue(BlockingQueue<Runnable> workQueue)
+    public void setWorkQueueSize(int workQueueSize)
     {
-        this.workQueue = workQueue;
+        this.workQueueSize = workQueueSize;
     }
     
     /**
@@ -181,6 +183,12 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         threadFactory.setThreadDaemon(threadDaemon);
         threadFactory.setThreadPriority(threadPriority);
         
+        if (workQueueSize < 0)
+        {
+            workQueueSize = Integer.MAX_VALUE;
+        }
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(workQueueSize);
+        
         // construct the instance
         instance = new ThreadPoolExecutor(
                 corePoolSize,
@@ -197,7 +205,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
      */
     public boolean isSingleton()
     {
-        return true;
+        return false;
     }
 
     /**

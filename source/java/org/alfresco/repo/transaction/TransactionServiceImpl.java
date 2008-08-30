@@ -33,14 +33,19 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 /**
- * Default implementation of Transaction Service
+ * Default implementation of Transaction Service.
+ * <p>
+ * Default retry behaviour: see {@link RetryingTransactionHelper#RetryingTransactionHelper()}
  * 
  * @author David Caruana
  */
 public class TransactionServiceImpl implements TransactionService
 {
     private PlatformTransactionManager transactionManager;
-    private int maxRetries = 20;
+    private int maxRetries = -1;
+    private int minRetryWaitMs = -1;
+    private int maxRetryWaitMs = -1;
+    private int retryWaitIncrementMs = -1;
     
     // SysAdmin cache - used to cluster certain JMX operations
     private SimpleCache<String, Object> sysAdminCache;
@@ -79,14 +84,35 @@ public class TransactionServiceImpl implements TransactionService
     }
     
     /**
-     * Set the maximum number of retries that will be done by the
-     * {@link RetryingTransactionHelper transaction helper}.
-     * 
-     * @param maxRetries    the maximum transaction retries
+     * @see RetryingTransactionHelper#setMaxRetries(int)
      */
     public void setMaxRetries(int maxRetries)
     {
         this.maxRetries = maxRetries;
+    }
+
+    /**
+     * @see RetryingTransactionHelper#setMinRetryWaitMs(int)
+     */
+    public void setMinRetryWaitMs(int minRetryWaitMs)
+    {
+        this.minRetryWaitMs = minRetryWaitMs;
+    }
+
+    /**
+     * @see RetryingTransactionHelper#setMaxRetryWaitMs(int)
+     */
+    public void setMaxRetryWaitMs(int maxRetryWaitMs)
+    {
+        this.maxRetryWaitMs = maxRetryWaitMs;
+    }
+
+    /**
+     * @see RetryingTransactionHelper#setRetryWaitIncrementMs(int)
+     */
+    public void setRetryWaitIncrementMs(int retryWaitIncrementMs)
+    {
+        this.retryWaitIncrementMs = retryWaitIncrementMs;
     }
 
     /**
@@ -146,14 +172,30 @@ public class TransactionServiceImpl implements TransactionService
     }
 
     /**
-     * Creates a new helper instance.  It can be reused.
+     * Creates a new helper instance.  It can be reused or customized by the client code:
+     * each instance is new and initialized afresh.
      */
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {
         RetryingTransactionHelper helper = new RetryingTransactionHelper();
-        helper.setMaxRetries(maxRetries);
         helper.setTransactionService(this);
         helper.setReadOnly(isReadOnly());
+        if (maxRetries >= 0)
+        {
+            helper.setMaxRetries(maxRetries);
+        }
+        if (minRetryWaitMs > 0)
+        {
+            helper.setMinRetryWaitMs(minRetryWaitMs);
+        }
+        if (maxRetryWaitMs > 0)
+        {
+            helper.setMaxRetryWaitMs(maxRetryWaitMs);
+        }
+        if (retryWaitIncrementMs > 0)
+        {
+            helper.setRetryWaitIncrementMs(retryWaitIncrementMs);
+        }
         return helper;
     }
 }

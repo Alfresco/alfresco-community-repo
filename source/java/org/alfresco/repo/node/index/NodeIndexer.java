@@ -52,6 +52,13 @@ public class NodeIndexer
     /** the component to index the node hierarchy */
     private Indexer indexer;
     private TenantService tenantService;
+    /** enabled or disabled */
+    private boolean enabled;
+    
+    public NodeIndexer()
+    {
+        enabled = true;
+    }
     
     /**
      * @param policyComponent used for registrations
@@ -72,6 +79,11 @@ public class NodeIndexer
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    /* package */ void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
     /**
@@ -103,22 +115,31 @@ public class NodeIndexer
 
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        indexer.createNode(tenantService.getName(childAssocRef));
+        if (enabled)
+        {
+            indexer.createNode(tenantService.getName(childAssocRef));
+        }
     }
 
     public void onUpdateNode(NodeRef nodeRef)
     {
-        indexer.updateNode(tenantService.getName(nodeRef));
+        if (enabled)
+        {
+            indexer.updateNode(tenantService.getName(nodeRef));
+        }
     }
 
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
     {
-        indexer.deleteNode(tenantService.getName(childAssocRef));
+        if (enabled)
+        {
+            indexer.deleteNode(tenantService.getName(childAssocRef));
+        }
     }
 
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
-        if (!isNew)
+        if (!isNew && enabled)
         {
             indexer.createChildRelationship(tenantService.getName(childAssocRef));
         }
@@ -126,6 +147,9 @@ public class NodeIndexer
 
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        indexer.deleteChildRelationship(tenantService.getName(childAssocRef));
+        if (enabled)
+        {
+            indexer.deleteChildRelationship(tenantService.getName(childAssocRef));
+        } 
     }
 }

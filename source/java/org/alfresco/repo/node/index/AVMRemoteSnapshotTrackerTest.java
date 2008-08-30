@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -68,6 +70,8 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
     private Indexer indexer;
 
     private NodeDaoService nodeDaoService;
+    
+    private ThreadPoolExecutor threadPoolExecutor;
 
     public AVMRemoteSnapshotTrackerTest()
     {
@@ -89,6 +93,7 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
         ftsIndexer = (FullTextSearchIndexer) applicationContext.getBean("LuceneFullTextSearchIndexer");
         indexer = (Indexer) applicationContext.getBean("indexerComponent");
         nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
+        threadPoolExecutor = (ThreadPoolExecutor) applicationContext.getBean("indexTrackerThreadPoolExecutor");
         
 
         testTX = transactionService.getUserTransaction();
@@ -190,6 +195,7 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
         tracker.setNodeDaoService(nodeDaoService);
         tracker.setNodeService(nodeService);
         tracker.setSearcher(searchService);
+        tracker.setThreadPoolExecutor(threadPoolExecutor);
         
         tracker.reindex();
 

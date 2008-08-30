@@ -43,7 +43,7 @@ import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -388,7 +388,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     /**
      * Dictionary model type transaction listener class.
      */
-    public class DictionaryModelTypeTransactionListener implements TransactionListener
+    public class DictionaryModelTypeTransactionListener extends TransactionListenerAdapter
     {
         /**
          * Id used in equals and hash
@@ -405,16 +405,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
         
         /**
-         * @see org.alfresco.repo.transaction.TransactionListener#flush()
-         */
-        public void flush()
-        {
-        }
-        
-        /**
          * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
          */
         @SuppressWarnings("unchecked")
+        @Override
         public void beforeCommit(boolean readOnly)
         { 
             Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
@@ -515,27 +509,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             }
         }
 
-        /**
-         * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
-         */
-        public void beforeCompletion()
-        {
-        }
-
-        /**
-         * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-         */
-        public void afterCommit()
-        {
-        }
-        
-        /**
-         * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
-         */
-        public void afterRollback()
-        {
-        }
-        
         /**
          * @see java.lang.Object#equals(java.lang.Object)
          */

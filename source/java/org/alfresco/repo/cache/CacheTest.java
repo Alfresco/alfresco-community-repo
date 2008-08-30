@@ -25,6 +25,7 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Collection;
 
 import javax.transaction.Status;
@@ -36,12 +37,14 @@ import net.sf.ehcache.CacheManager;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.dao.DataAccessException;
 
 /**
  * @see org.alfresco.repo.cache.EhCacheAdapter
@@ -134,6 +137,32 @@ public class CacheTest extends TestCase
         transactionalCache.remove(key);
         // check that it is gone from the backing cache
         assertNull("Non-transactional remove didn't go to backing cache", backingCache.get(key));
+    }
+    
+    public void testRollbackCleanup() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            private int throwCount = 0;
+            public Object execute() throws Throwable
+            {
+                String key = "B";
+                String value = "BBB";
+                // no transaction - do a put
+                transactionalCache.put(key, value);
+                // Blow up
+                if (throwCount < 5)
+                {
+                    throwCount++;
+                    throw new SQLException("Dummy");
+                }
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(callback);
     }
     
     public void testTransactionalCacheWithSingleTxn() throws Throwable

@@ -14,46 +14,36 @@
                var workflowId = workflowinstanceid;
                var inviterPerson = people.getPerson(wf_inviterUserName);
                var inviteePerson = people.getPerson(wf_inviteeUserName);
-               var mail = actions.create("mail");
-               mail.parameters.to = inviteePerson.properties["cm:email"];
-               mail.parameters.subject = "Invitation to Alfresco Share Site "
-                  + "'" + wf_siteShortName +"'";
-               mail.parameters.from = inviterPerson.properties["cm:email"];
-               var mail_text_invitee_account_section = "";
-               if (wf_inviteeGenPassword != null)
+               var site = siteService.getSite(wf_siteShortName);
+               var siteName = site.shortName;
+               if (site.title.length() > 0)
                {
-                  mail_text_invitee_account_section = "An account has been "
-                  + "created for you with user name: " + wf_inviteeUserName
-                  + ".\n"
-                  + "This account is initially disabled. However it will be "
-                  + "enabled if you accept the invitation, but only after your "
-                  + "response has been received and processed.\n\n"  
-                  + "An initial password has been generated for you: "
-                  + wf_inviteeGenPassword + ".\n"
-                  + "You are strongly advised to change it to a password of "
-                  + "your choice once you have logged into Alfresco Share.\n\n";
+                  siteName = site.title;
                }
-               mail.parameters.text = "Dear " + wf_inviteeFirstName + ",\n\n"
-                  + "You have been invited to join a site on Alfresco Share: "
-                  + wf_siteShortName + "\n\n"
-                  + "To accept the invitation to join the site "
-                  + "'" + wf_siteShortName + "', "
-                  + "please follow this link:\n"
-                  + wf_serverPath + wf_acceptUrl
-                  + "?inviteId=" + workflowId
-                  + "&amp;inviteeUserName=" + wf_inviteeUserName
-                  + "&amp;siteShortName=" + wf_siteShortName
-                  + "&amp;inviteTicket=" + wf_inviteTicket
-                  + "\n\n"
-                  + mail_text_invitee_account_section
-                  + "To reject the invitation to join the site "
-                  + "'" + wf_siteShortName + "', "
-                  + "please follow this link:\n"
-                  + wf_serverPath + wf_rejectUrl
-                  + "?inviteId=" + workflowId
-                  + "&amp;inviteeUserName=" + wf_inviteeUserName
-                  + "&amp;siteShortName=" + wf_siteShortName
-                  + "&amp;inviteTicket=" + wf_inviteTicket;                  
+               var params = "?inviteId=" + workflowId +
+                            "&amp;inviteeUserName=" + wf_inviteeUserName +
+                            "&amp;siteShortName=" + wf_siteShortName +
+                            "&amp;inviteTicket=" + wf_inviteTicket;
+               var acceptLink = wf_serverPath + wf_acceptUrl + params;
+               var rejectLink = wf_serverPath + wf_rejectUrl + params;
+               var mail = actions.create("mail");
+               mail.parameters.from = inviterPerson.properties["cm:email"];
+               mail.parameters.to = inviteePerson.properties["cm:email"];
+               mail.parameters.subject = "Invitation to join '" + siteName + "' site";
+
+               var template = companyhome.childByNamePath("Data Dictionary/Email Templates/invite/invite-email.ftl");
+               var args = [];
+               args["inviteePersonRef"] = inviteePerson.nodeRef.toString();
+               args["inviterPersonRef"] = inviterPerson.nodeRef.toString();
+               args["siteName"] = siteName;
+               args["inviteeSiteRole"] = wf_inviteeSiteRole;
+               args["inviteeUserName"] = wf_inviteeUserName;
+               args["inviteeGenPassword"] = wf_inviteeGenPassword;
+               args["acceptLink"] = acceptLink;
+               args["rejectLink"] = rejectLink;
+               var mail_text = inviteePerson.processTemplate(template, args);
+                             
+               mail.parameters.text = mail_text;
                mail.execute(bpm_package);
             </script>
          </action>

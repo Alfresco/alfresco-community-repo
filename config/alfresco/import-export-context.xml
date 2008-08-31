@@ -325,6 +325,7 @@
                 <prop key="spaces.content_forms.childname">${spaces.content_forms.childname}</prop>
                 <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
                 <prop key="spaces.sites.childname">${spaces.sites.childname}</prop>
+                <prop key="spaces.templates.email.invite.childname">${spaces.templates.email.invite.childname}</prop>
             </props>
         </property>
     </bean>

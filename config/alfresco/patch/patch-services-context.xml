@@ -1499,5 +1499,30 @@
             <ref bean="versionMigrator" />
         </property>
     </bean>
-    
+            
+    <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.inviteEmailTemplate</value></property>
+        <property name="description"><value>patch.inviteEmailTemplate.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>130</value></property>
+        <property name="targetSchema"><value>131</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                <prop key="location">alfresco/bootstrap/invite/invite-email.xml</prop>
+            </props>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.emailTemplatesFolder" />
+            </list>
+        </property>
+    </bean>        
 </beans>

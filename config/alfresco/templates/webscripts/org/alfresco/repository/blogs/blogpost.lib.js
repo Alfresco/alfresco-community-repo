@@ -103,3 +103,27 @@ function getBlogPostData(node)
    
    return data;
 }
+
+/**
+ * Checks whether a blog configuration is available
+ * This should at some point also check whether the configuration is enabled.
+ * 
+ * @param node the node that should be checked. Will check all parents if
+ *        the node itself doesn't contain a configuration.
+ * @return {boolean} whether a configuration could be found.
+ */
+function hasExternalBlogConfiguration(node)
+{
+   if (node == null)
+   {
+      return false;
+   }
+   else if (node.hasAspect("blg:blogDetails"))
+   {
+      return true;
+   }
+   else
+   {
+      return hasExternalBlogConfiguration(node.parent)
+   }
+}

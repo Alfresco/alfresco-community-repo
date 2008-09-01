@@ -47,6 +47,7 @@ function main()
    
    // assign the blog node
    model.blog = node;
+   model.externalBlogConfig = hasExternalBlogConfiguration(node);
 }
 
 main();

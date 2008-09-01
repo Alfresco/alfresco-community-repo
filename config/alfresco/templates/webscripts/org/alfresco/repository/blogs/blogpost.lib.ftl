@@ -1,3 +1,5 @@
+<#import "../generic-paged-results.lib.ftl" as gen/>
+
 <#-- Renders a person object. -->
 <#macro renderPerson person fieldName>
 <#escape x as jsonUtils.encodeJSONString(x)>
@@ -75,4 +77,29 @@
    "isPublished" : ${(item.node.properties["blg:published"]!'false')?string}
 }
 </#escape>
+</#macro>
+
+<#macro renderPostList>
+{
+   "metadata" : {
+      "blogPermissions" : {
+         "create" : ${blog.hasPermission("CreateChildren")?string},
+         "edit" : ${blog.hasPermission("Write")?string},
+         "delete" : ${blog.hasPermission("Delete")?string}
+      },
+      "externalBlogConfig" : ${externalBlogConfig?string}
+   },
+<@gen.pagedResults data=data ; item>
+	<@blogpostJSON item=item />
+</@gen.pagedResults>
+}
+</#macro>
+
+<#macro renderPost>
+{
+   "metadata" : {
+      "externalBlogConfig" : ${externalBlogConfig?string}
+   },
+   "item" : <@blogpostJSON item=item />
+}
 </#macro>

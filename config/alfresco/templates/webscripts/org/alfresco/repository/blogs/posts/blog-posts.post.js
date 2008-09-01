@@ -85,6 +85,7 @@ function main()
 
    var post = createBlogPost(node);
    model.item = getBlogPostData(post);
+   model.externalBlogConfig = hasExternalBlogConfiguration(node);
    
    if (json.has("site") && json.has("container") && json.has("browsePostUrl") && ! model.item.isDraft)
    {

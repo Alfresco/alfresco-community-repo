@@ -12,6 +12,7 @@ function main()
 
    // assign data
    model.item = getBlogPostData(node);
+   model.externalBlogConfig = hasExternalBlogConfiguration(node);
    
    // fetch the contentLength param
    var contentLength = args["contentLength"] != undefined ? parseInt(args["contentLength"]) : -1;

@@ -82,6 +82,7 @@ function main()
 
    // get the updated data for the blog post
    model.item = getBlogPostData(node);
+   model.externalBlogConfig = hasExternalBlogConfiguration(node);
 }
 
 main();

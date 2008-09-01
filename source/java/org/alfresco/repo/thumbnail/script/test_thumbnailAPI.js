@@ -34,7 +34,14 @@ function testGetThumbnailDefintions()
 	//test.assertTrue(Array.contains(defs, "WebPreview"));	
 }
 
+function testUpdateNode()
+{
+	var thumbnail = jpgOrig.getThumbnail("medium");
+	thumbnail.update();
+}
+
 // Execute the tests
 testCreateThumbnail();
 testThumbnailService();
 testGetThumbnailDefintions();
+testUpdateNode();

@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.thumbnail.script;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.mozilla.javascript.Scriptable;
@@ -34,6 +36,8 @@ import org.mozilla.javascript.Scriptable;
  */
 public class ScriptThumbnail extends ScriptNode
 {
+    private static final long serialVersionUID = 7854749986083635678L;
+
     /**
      * Constructor
      * 
@@ -46,4 +50,14 @@ public class ScriptThumbnail extends ScriptNode
         super(nodeRef, services, scope);
     }
 
+    /**
+     * Updates the thumbnails content
+     */
+    public void update()
+    {
+        String name = (String)services.getNodeService().getProperty(nodeRef, ContentModel.PROP_THUMBNAIL_NAME);
+        ThumbnailDefinition def = services.getThumbnailService().getThumbnailRegistry().getThumbnailDefinition(name);
+        services.getThumbnailService().updateThumbnail(this.nodeRef, def.getTransformationOptions());
+    }
+    
 }

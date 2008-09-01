@@ -484,11 +484,23 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
 			m_eventQueue.addEvent( nodeEvent);
 			
+			// Unbind the resource from the transaction
+			
+			AlfrescoTransactionSupport.unbindResource(FileSysNodeEvent);
+			
 			// Check for a secondary event
 			
 			nodeEvent = (NodeEvent) AlfrescoTransactionSupport.getResource(FileSysNodeEvent2);
-			if ( nodeEvent != null)
+			if ( nodeEvent != null) {
+				
+				// Queue the secondary event
+			
 				m_eventQueue.addEvent( nodeEvent);
+				
+				// Unbind the resource from the transaction
+				
+				AlfrescoTransactionSupport.unbindResource(FileSysNodeEvent2);
+			}
 		}
 	}
 
@@ -515,13 +527,16 @@ public class NodeMonitor extends TransactionListenerAdapter
 			try
 			{
 	            // Wait for an event to process
+				
 			    final NodeEvent nodeEvent = m_eventQueue.removeEvent();
 
 			    // DEBUG
+			    
                 if ( logger.isDebugEnabled())
                     logger.debug("Processing event " + nodeEvent);
                 
                 // Check for a shutdown
+                
                 if ( m_shutdown == true)
                     continue;
                 
@@ -530,6 +545,7 @@ public class NodeMonitor extends TransactionListenerAdapter
                     public Object execute() throws Throwable
                     {
                         // Process the event
+                    	
                         if (nodeEvent == null)
                         {
                             return null;
@@ -558,12 +574,15 @@ public class NodeMonitor extends TransactionListenerAdapter
                             
                             processLockNode(( LockNodeEvent) nodeEvent);
                         }
+                        
                         // Done
+                        
                         return null;
                     }
                 };
                 
                 // Execute in a read-only transaction
+                
                 m_transService.getRetryingTransactionHelper().doInTransaction(processEventCallback, true, true);
 			}
 			catch ( InterruptedException ex)

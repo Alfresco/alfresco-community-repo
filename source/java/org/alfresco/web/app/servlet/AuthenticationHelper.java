@@ -184,6 +184,7 @@ public final class AuthenticationHelper
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                   
                   // Set the current locale
+                  FacesHelper.getFacesContext(req, res, sc);
                   I18NUtil.setLocale(Application.getLanguage(req.getSession()));
                   
                   // remove the session invalidated flag
@@ -331,6 +332,7 @@ public final class AuthenticationHelper
       }
       
       // Set the current locale
+      FacesHelper.getFacesContext(httpRequest, httpResponse, context);
       I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
       
       return AuthenticationStatus.Success;

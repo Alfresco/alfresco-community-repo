@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -49,10 +49,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLUtil
 {   
-
    private static final Log LOGGER = LogFactory.getLog(XMLUtil.class);
-
-   private static DocumentBuilder documentBuilder;
 
    /** utility function for creating a document */
    public static Document newDocument()
@@ -174,11 +171,7 @@ public class XMLUtil
    /** provides a document builder that is namespace aware but not validating by default */
    public static DocumentBuilder getDocumentBuilder()
    {
-      if (XMLUtil.documentBuilder == null)
-      {
-         XMLUtil.documentBuilder = XMLUtil.getDocumentBuilder(true, false);
-      }
-      return XMLUtil.documentBuilder;
+      return XMLUtil.getDocumentBuilder(true, false);
    }
 
    /**

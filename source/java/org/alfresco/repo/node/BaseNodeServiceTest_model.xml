@@ -274,6 +274,17 @@
             </property>
          </properties>
       </type>
+      
+      <type name="test:rendition-page">
+         <title>Rendition Page</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:rendition-page-content">
+               <type>d:content</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+   	</type>
    </types>
    
    <aspects>
@@ -351,7 +362,24 @@
             </association>
          </associations>
       </aspect>
-      
+
+      <aspect name="test:rendered">
+         <title>Aspect for Hanging Renditions Off</title>
+         <associations>
+            <child-association name="test:rendition-page">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:rendition-page</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>
+            
    </aspects>
 
 </model>

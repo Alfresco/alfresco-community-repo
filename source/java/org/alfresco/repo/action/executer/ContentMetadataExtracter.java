@@ -56,25 +56,24 @@ import org.alfresco.service.namespace.QName;
  */
 public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {
-    /**
-     * The node service
-     */
     private NodeService nodeService;
+    private ContentService contentService;
+    private DictionaryService dictionaryService;
+    private MetadataExtracterRegistry metadataExtracterRegistry;
+    private boolean carryAspectProperties;
+    
+    public ContentMetadataExtracter()
+    {
+        carryAspectProperties = true;
+    }
 
     /**
-     * Set the node service
-     * 
      * @param nodeService the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-
-    /**
-     * Our content service
-     */
-    private ContentService contentService;
 
     /**
      * @param contentService The contentService to set.
@@ -85,11 +84,6 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     }
     
     /**
-     * The dictionary service
-     */
-    private DictionaryService dictionaryService;
-    
-    /**
      * @param dictService  The DictionaryService to set.
      */
     public void setDictionaryService(DictionaryService dictService)
@@ -98,16 +92,23 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     }
 
     /**
-     * Our Extracter
-     */
-    private MetadataExtracterRegistry metadataExtracterRegistry;
-
-    /**
      * @param metadataExtracterRegistry The metadataExtracterRegistry to set.
      */
     public void setMetadataExtracterRegistry(MetadataExtracterRegistry metadataExtracterRegistry)
     {
         this.metadataExtracterRegistry = metadataExtracterRegistry;
+    }
+
+    /**
+     * Whether or not aspect-related properties must be carried to the new version of the node
+     * 
+     * @param carryAspectProperties     <tt>true</tt> (default) to carry all aspect-linked
+     *                                  properties forward.  <tt>false</tt> will clean the
+     *                                  aspect of any unextracted values.
+     */
+    public void setCarryAspectProperties(boolean carryAspectProperties)
+    {
+        this.carryAspectProperties = carryAspectProperties;
     }
 
     /**
@@ -155,6 +156,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         
         // Check that all properties have the appropriate aspect applied
         Set<QName> requiredAspectQNames = new HashSet<QName>(3);
+        Set<QName> aspectPropertyQNames = new HashSet<QName>(17);
         
         for (QName propertyQName : modifiedProperties.keySet())
         {
@@ -169,6 +171,21 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             {
                 QName aspectQName = propertyContainerDef.getName();
                 requiredAspectQNames.add(aspectQName);
+                // Get all properties associated with the aspect
+                Set<QName> aspectProperties = propertyContainerDef.getProperties().keySet();
+                aspectPropertyQNames.addAll(aspectProperties);
+            }
+        }
+        
+        if (!carryAspectProperties)
+        {
+            // Remove any node properties that are defined on the aspects but were not extracted
+            for (QName aspectPropertyQName : aspectPropertyQNames)
+            {
+                if (!modifiedProperties.containsKey(aspectPropertyQName))
+                {
+                    nodeProperties.remove(aspectPropertyQName);
+                }
             }
         }
         

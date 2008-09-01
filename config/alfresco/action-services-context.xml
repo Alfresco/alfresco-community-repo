@@ -338,6 +338,9 @@
         		<value>{http://www.alfresco.org/model/content/1.0}content</value>
         	</list>
         </property>
+        <property name="carryAspectProperties">
+            <value>true</value>
+        </property>
     </bean>
 
     <bean id="import" class="org.alfresco.repo.action.executer.ImporterActionExecuter" parent="action-executer">

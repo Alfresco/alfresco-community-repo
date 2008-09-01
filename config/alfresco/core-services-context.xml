@@ -488,7 +488,7 @@
             <value>20</value>
         </property>
         <property name="threadPriority">
-            <value>7</value>
+            <value>5</value>
         </property>
     </bean>
 

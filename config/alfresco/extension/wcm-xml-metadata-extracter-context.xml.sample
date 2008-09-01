@@ -53,6 +53,9 @@
             <property name="metadataExtracterRegistry">
                <ref bean="avmMetadataExtracterRegistry" />
             </property>
+            <property name="carryAspectProperties">
+               <value>true</value>
+            </property>
          </bean>
       </property>
    </bean>

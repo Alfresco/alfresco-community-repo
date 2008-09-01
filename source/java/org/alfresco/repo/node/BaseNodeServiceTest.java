@@ -78,6 +78,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.collections.map.SingletonMap;
 import org.hibernate.Session;
 import org.springframework.context.ApplicationContext;
 
@@ -677,6 +678,95 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 0, nodeService.getChildAssocs(sourceNodeRef).size());
         assertEquals("Expected exactly one target",
                 0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
+    }
+    
+    private static final QName ASPECT_QNAME_TEST_RENDERED = QName.createQName(NAMESPACE, "rendered");
+    private static final QName ASSOC_TYPE_QNAME_TEST_RENDITION = QName.createQName(NAMESPACE, "rendition-page");
+    private static final QName TYPE_QNAME_TEST_RENDITION_PAGE = QName.createQName(NAMESPACE, "rendition-page");
+    private static final QName PROP_QNAME_TEST_RENDITION_PAGE_CONTENT = QName.createQName(NAMESPACE, "rendition-page-content");
+    public void testAspectWithChildAssociationsCreationAndRetrieval() throws Exception
+    {
+        // Create a folder.  This is like the user's home folder, say.
+        NodeRef folderNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "UserX-" + GUID.generate()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        // Create a document.  This is the actual document uploaded by the user.
+        NodeRef fileNodeRef = nodeService.createNode(
+                folderNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "Uploaded.pdf"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        // So, thus far, this is exactly what you have.  Now for the bit to add some renditions.
+        // First, we can make some content data pages - spoofed, of course
+        List<ContentData> renditionContentPages = new ArrayList<ContentData>(20);
+        // This loop is where you will, outside of the transaction, push the page content into the repo
+        for(int i = 0; i < 100; i++)
+        {
+            ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_PDF, 10245, "UTF-8");
+            renditionContentPages.add(contentData);
+        }
+        
+        nodeService.addAspect(fileNodeRef, ASPECT_QNAME_TEST_RENDERED, null);
+        int pageNumber = 0;
+        for (ContentData renditionContentPage : renditionContentPages)
+        {
+            pageNumber++;
+            QName renditionQName = makePageAssocName(pageNumber);
+            Map<QName, Serializable> properties = Collections.singletonMap(
+                    PROP_QNAME_TEST_RENDITION_PAGE_CONTENT,
+                    (Serializable) renditionContentPage);
+            nodeService.createNode(
+                    fileNodeRef,
+                    ASSOC_TYPE_QNAME_TEST_RENDITION,
+                    renditionQName,
+                    TYPE_QNAME_TEST_RENDITION_PAGE,
+                    properties);
+        }
+        
+        // That's it for uploading.  Now we retrieve them.
+        if (!nodeService.hasAspect(fileNodeRef, ASPECT_QNAME_TEST_RENDERED))
+        {
+            // Jump to the original rendition retrieval code
+            return;
+        }
+        // It has the aspect, so it's the new model
+        List<ChildAssociationRef> fetchedRenditionChildAssocs = nodeService.getChildAssocs(
+                fileNodeRef,
+                ASSOC_TYPE_QNAME_TEST_RENDITION,
+                RegexQNamePattern.MATCH_ALL);
+        assertEquals(
+                "We didn't get the correct number of pages back",
+                renditionContentPages.size(),
+                fetchedRenditionChildAssocs.size());
+        // Get page ... 5.  This is to prove that they are ordered.
+        ChildAssociationRef fetchedRenditionChildAssoc5 = fetchedRenditionChildAssocs.get(4);
+        QName page5QName = makePageAssocName(5);
+        assertEquals(
+                "Local name of page 5 assoc is not correct",
+                page5QName,
+                fetchedRenditionChildAssoc5.getQName());
+        // Now retrieve page 5 using the NodeService
+        List<ChildAssociationRef> fetchedRenditionChildAssocsPage5 = nodeService.getChildAssocs(
+                fileNodeRef,
+                ASSOC_TYPE_QNAME_TEST_RENDITION,
+                page5QName);
+        assertEquals("Expected exactly one result", 1, fetchedRenditionChildAssocsPage5.size());
+        assertEquals("Targeted page retrieval was not correct",
+                page5QName,
+                fetchedRenditionChildAssocsPage5.get(0).getQName());
+    }
+    private static final int MAX_RENDITION_PAGES = 100;
+    private static QName makePageAssocName(int pageNumber)
+    {
+        if (pageNumber > MAX_RENDITION_PAGES)
+        {
+            throw new IllegalArgumentException("Rendition page number may not exceed " + MAX_RENDITION_PAGES);
+        }
+        String pageLocalName = String.format("renditionpage%05d", pageNumber);
+        QName renditionQName = QName.createQName(NAMESPACE, pageLocalName);
+        return renditionQName;
     }
     
     public void testCreateNodeNoProperties() throws Exception

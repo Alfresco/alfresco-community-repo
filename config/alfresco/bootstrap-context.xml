@@ -66,7 +66,6 @@
              <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
              <ref bean="patch.db-V2.2-2-MoveQNames" />
              <ref bean="patch.db-V2.2-3-PropTypes" />
-             <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
@@ -79,6 +78,7 @@
              <ref bean="patch.db-V2.1-VersionColumns2" />
              <ref bean="patch.db-V2.1-JBPMProcessKey" />
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
+             <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
           </list>
        </property>
     </bean>

@@ -28,8 +28,6 @@ package org.alfresco.filesys.repo;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.filesys.state.FileState;
 import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.FileStatus;
@@ -42,6 +40,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -510,91 +509,70 @@ public class NodeMonitor extends TransactionListenerAdapter
 
 		// Loop until shutdown
 		
-		NodeEvent nodeEvent = null;
-		UserTransaction tx = null;
-		
-		while ( m_shutdown == false) {
+		while ( m_shutdown == false)
+		{
 			
-			// Wait for an event to process
-			
-			try {
-				nodeEvent = m_eventQueue.removeEvent();
+			try
+			{
+	            // Wait for an event to process
+			    final NodeEvent nodeEvent = m_eventQueue.removeEvent();
+
+			    // DEBUG
+                if ( logger.isDebugEnabled())
+                    logger.debug("Processing event " + nodeEvent);
+                
+                // Check for a shutdown
+                if ( m_shutdown == true)
+                    continue;
+                
+                RetryingTransactionCallback<Object> processEventCallback = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        // Process the event
+                        if (nodeEvent == null)
+                        {
+                            return null;
+                        }
+                        else if ( nodeEvent instanceof CreateNodeEvent) {
+                            
+                            // Node created
+                            
+                            processCreateNode((CreateNodeEvent) nodeEvent);
+                        }
+                        else if ( nodeEvent instanceof DeleteNodeEvent) {
+
+                            // Node deleted
+                            
+                            processDeleteNode((DeleteNodeEvent) nodeEvent);
+                        }
+                        else if ( nodeEvent instanceof MoveNodeEvent) {
+                            
+                            // Node moved
+                                
+                            processMoveNode((MoveNodeEvent) nodeEvent);
+                        }
+                        else if ( nodeEvent instanceof LockNodeEvent) {
+                            
+                            // Node locked/unlocked
+                            
+                            processLockNode(( LockNodeEvent) nodeEvent);
+                        }
+                        // Done
+                        return null;
+                    }
+                };
+                
+                // Execute in a read-only transaction
+                m_transService.getRetryingTransactionHelper().doInTransaction(processEventCallback, true, true);
 			}
-			catch ( InterruptedException ex) {
+			catch ( InterruptedException ex)
+			{
 			}
-			
-			// Check for a shutdown
-			
-			if ( m_shutdown == true)
-				continue;
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug("Processing event " + nodeEvent);
-			
-			// Create a transaction
-			
-			tx = m_transService.getUserTransaction( true);
-			
-			try {
-
-				// Start the transaction
-				
-				tx.begin();
-				
-				// Process the event
-				
-				if ( nodeEvent instanceof CreateNodeEvent) {
-					
-					// Node created
-					
-					processCreateNode((CreateNodeEvent) nodeEvent);
-				}
-
-				else if ( nodeEvent instanceof DeleteNodeEvent) {
-
-					// Node deleted
-					
-					processDeleteNode((DeleteNodeEvent) nodeEvent);
-				}
-				else if ( nodeEvent instanceof MoveNodeEvent) {
-					
-					// Node moved
-						
-					processMoveNode((MoveNodeEvent) nodeEvent);
-				}
-				else if ( nodeEvent instanceof LockNodeEvent) {
-					
-					// Node locked/unlocked
-					
-					processLockNode(( LockNodeEvent) nodeEvent);
-				}
-
-				// Commit the transaction
-            
-				tx.commit();
-				tx = null;
-	        }
-			catch ( Exception ex) {
-				logger.error( ex);
+			catch (Throwable e)
+			{
+			    logger.error(e);
 			}
-	        finally
-	        {
-	            // If there is an active transaction then roll it back
-	            
-	            if ( tx != null)
-	            {
-	                try
-	                {
-	                    tx.rollback();
-	                }
-	                catch (Exception ex)
-	                {
-	                    logger.warn("Failed to rollback transaction", ex);
-	                }
-	            }
-	        }
 		}
 	}
 	

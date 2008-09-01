@@ -44,6 +44,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
@@ -421,7 +422,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   out.write("</nobr></td><td><nobr>");
                   
                   // Preview Website
-                  String websiteUrl = AVMUtil.buildWebappUrl(mainStore, getWebapp());
+                  String websiteUrl = AVMUtil.getPreviewURI(mainStore, '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + '/' + getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
                   Utils.encodeRecursive(context, aquireAction(
@@ -843,8 +844,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = AVMUtil.buildAssetUrl(
-                     assetPath, config.getWCMDomain(), config.getWCMPort(), dns);
+               String previewUrl = AVMUtil.getPreviewURI(userStore, assetPath);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
                // size of files

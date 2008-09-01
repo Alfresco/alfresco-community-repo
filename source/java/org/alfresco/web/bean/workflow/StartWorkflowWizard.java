@@ -61,6 +61,8 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
@@ -601,6 +603,13 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
          initializeWorkflows();
       }
+      
+      // Alphabetical list sorting
+      // Fix bug reported in https://issues.alfresco.com/browse/ETWOTWO-302
+      
+      QuickSort sorter = new QuickSort(availableWorkflows, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      
       return availableWorkflows;
    }
 

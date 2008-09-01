@@ -44,6 +44,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.linkvalidation.HrefValidationProgress;
 import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.model.ContentModel;
@@ -539,7 +540,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingPreviewUrl()
    {
-      return AVMUtil.buildWebappUrl(getStagingStore(), getWebapp());
+       return(AVMUtil.getPreviewURI(getStagingStore(), '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + '/' + getWebapp()));
    }
    
    /**
@@ -547,7 +548,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getSandboxPreviewUrl()
    {
-      return AVMUtil.buildWebappUrl(getSandbox(), getWebapp());
+       return(AVMUtil.getPreviewURI(getSandbox(), '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + '/' + getWebapp()));
    }
    
    /**

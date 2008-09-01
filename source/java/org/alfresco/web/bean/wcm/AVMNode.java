@@ -70,14 +70,9 @@ public class AVMNode extends Node implements Map<String, Object>
             {
                return null;
             }
-            final ClientConfigElement config = 
-               Application.getClientConfig(FacesContext.getCurrentInstance());
-            final String dns = 
-               AVMUtil.lookupStoreDNS(AVMUtil.getStoreName(node.getPath()));
-            return AVMUtil.buildAssetUrl(AVMUtil.getSandboxRelativePath(node.getPath()),
-                                              config.getWCMDomain(),
-                                              config.getWCMPort(),
-                                              dns);
+            final String storeId   = AVMUtil.getStoreName(node.getPath());
+            final String assetPath = AVMUtil.getStoreRelativePath(node.getPath());
+            return AVMUtil.getPreviewURI(storeId, assetPath);
          }
       };
 

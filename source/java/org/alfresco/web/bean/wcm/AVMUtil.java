@@ -36,7 +36,6 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
@@ -52,7 +51,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.preview.PreviewURIService;
+import org.alfresco.web.bean.wcm.preview.VirtualisationServerPreviewURIService;
 import org.alfresco.web.config.ClientConfigElement;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.jsf.FacesContextUtils;
 
 
 /**
@@ -603,6 +607,30 @@ public final class AVMUtil
       return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL, dns, domain, port, assetPath);
    }
    
+   public static String getPreviewURI(final String storeId, final String assetPath)
+   {
+      if (previewURIGenerator == null)
+      {
+         WebApplicationContext wac = FacesContextUtils.getRequiredWebApplicationContext(
+                     FacesContext.getCurrentInstance());
+            
+         if (wac.containsBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE))
+         {
+            // if the bean is present retrieve it
+            previewURIGenerator = (PreviewURIService)wac.getBean(SPRING_BEAN_NAME_PREVIEW_URI_SERVICE, 
+                     PreviewURIService.class);
+         }
+         else
+         {
+            // Backwards compatibility - if the new Spring bean doesn't exist, default to the 
+            // existing behaviour (create a URL to the virtualisation server).
+            previewURIGenerator = new VirtualisationServerPreviewURIService();
+         }
+      }
+       
+      return previewURIGenerator.getPreviewURI(storeId, assetPath);
+   }
+   
    public static String lookupStoreDNS(String store)
    {
       if (store == null || store.length() == 0)
@@ -987,4 +1015,7 @@ public final class AVMUtil
    
    private static ConfigElement deploymentConfig = null;
    private static ConfigElement linksManagementConfig = null;
+   
+   private final static String      SPRING_BEAN_NAME_PREVIEW_URI_SERVICE = "PreviewURIService";
+   private static PreviewURIService previewURIGenerator                  = null;
 }

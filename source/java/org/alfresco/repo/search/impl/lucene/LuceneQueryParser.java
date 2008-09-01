@@ -69,12 +69,11 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreRangeQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.WildcardTermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.saxpath.SAXPathException;
@@ -1154,7 +1153,29 @@ public class LuceneQueryParser extends QueryParser
                         }
                         catch (java.text.ParseException e)
                         {
-                            return new TermQuery(new Term("NO_TOKENS", "__"));
+                            SimpleDateFormat oldDf = CachingDateFormat.getDateFormat();
+                            try
+                            {
+                                Date date = oldDf.parse(part1);
+                                start.setTime(date);
+                                start.set(Calendar.MILLISECOND, 0);
+                            }
+                            catch (java.text.ParseException ee)
+                            {
+                                if (part1.equalsIgnoreCase("min"))
+                                {
+                                    start.set(Calendar.YEAR, start.getMinimum(Calendar.YEAR));
+                                    start.set(Calendar.DAY_OF_YEAR, start.getMinimum(Calendar.DAY_OF_YEAR));
+                                    start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
+                                    start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
+                                    start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
+                                    start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
+                                }
+                                else
+                                {
+                                    return new TermQuery(new Term("NO_TOKENS", "__"));
+                                }
+                            }
                         }
                         try
                         {
@@ -1163,25 +1184,66 @@ public class LuceneQueryParser extends QueryParser
                         }
                         catch (java.text.ParseException e)
                         {
-                            return new TermQuery(new Term("NO_TOKENS", "__"));
+                            SimpleDateFormat oldDf = CachingDateFormat.getDateFormat();
+                            try
+                            {
+                                Date date = oldDf.parse(part2);
+                                end.setTime(date);
+                                end.set(Calendar.MILLISECOND, 0);
+                            }
+                            catch (java.text.ParseException ee)
+                            {
+                                if (part1.equalsIgnoreCase("max"))
+                                {
+                                    end.set(Calendar.YEAR, start.getMaximum(Calendar.YEAR));
+                                    end.set(Calendar.DAY_OF_YEAR, start.getMaximum(Calendar.DAY_OF_YEAR));
+                                    end.set(Calendar.HOUR_OF_DAY, start.getMaximum(Calendar.HOUR_OF_DAY));
+                                    end.set(Calendar.MINUTE, start.getMaximum(Calendar.MINUTE));
+                                    end.set(Calendar.SECOND, start.getMaximum(Calendar.SECOND));
+                                    end.set(Calendar.MILLISECOND, start.getMaximum(Calendar.MILLISECOND));
+                                }
+                                else
+                                {
+                                    return new TermQuery(new Term("NO_TOKENS", "__"));
+                                }
+                            }
                         }
 
                         // Build a composite query for all the bits
-                        return buildDateTimeRange(field, start, end, inclusive);
+                        Query rq = buildDateTimeRange(field, start, end, inclusive);
+                        return rq;
                     }
                     else
                     {
-                        return new RangeQuery(new Term(fieldName, getToken(fieldName, part1)), new Term(fieldName, getToken(fieldName, part2)), inclusive);
+                        String first = getToken(fieldName, part1);
+                        String last = getToken(fieldName, part2);
+                        return new ConstantScoreRangeQuery(field, first, last, inclusive, inclusive);
                     }
+                }
+                else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
+                        || propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) || propertyDef.getDataType().getName().equals(DataTypeDefinition.ANY))
+                {
+                    if (lowercaseExpandedTerms)
+                    {
+                        part1 = part1.toLowerCase();
+                        part2 = part2.toLowerCase();
+                    }
+                    return new ConstantScoreRangeQuery(field, part1.equals("\u0000") ? null : part1, part2.equals("\uFFFF") ? null : part2, inclusive, inclusive);
                 }
             }
 
-            return new RangeQuery(new Term(fieldName, getToken(fieldName, part1)), new Term(fieldName, getToken(fieldName, part2)), inclusive);
-
+            String first = getToken(fieldName, part1);
+            String last = getToken(fieldName, part2);
+            return new ConstantScoreRangeQuery(field, first, last, inclusive, inclusive);
         }
         else
         {
-            return super.getRangeQuery(field, part1, part2, inclusive);
+            if (lowercaseExpandedTerms)
+            {
+                part1 = part1.toLowerCase();
+                part2 = part2.toLowerCase();
+            }
+            return new ConstantScoreRangeQuery(field, part1, part2, inclusive, inclusive);
         }
     }
 
@@ -1228,8 +1290,8 @@ public class LuceneQueryParser extends QueryParser
                                 else
                                 {
                                     // only ms
-                                    part = new RangeQuery(new Term(field, build3SF("MS", start.get(Calendar.MILLISECOND))), new Term(field, build3SF("MS", end
-                                            .get(Calendar.MILLISECOND))), inclusive);
+                                    part = new ConstantScoreRangeQuery(field, build3SF("MS", start.get(Calendar.MILLISECOND)), build3SF("MS", end.get(Calendar.MILLISECOND)),
+                                            inclusive, inclusive);
                                     query.add(part, Occur.MUST);
                                 }
                             }
@@ -1248,8 +1310,7 @@ public class LuceneQueryParser extends QueryParser
 
                                 if ((end.get(Calendar.SECOND) - start.get(Calendar.SECOND)) > 1)
                                 {
-                                    subPart = new RangeQuery(new Term(field, build2SF("SE", start.get(Calendar.SECOND))),
-                                            new Term(field, build2SF("SE", end.get(Calendar.SECOND))), false);
+                                    subPart = new ConstantScoreRangeQuery(field, build2SF("SE", start.get(Calendar.SECOND)), build2SF("SE", end.get(Calendar.SECOND)), false, false);
                                     subQuery.add(subPart, Occur.SHOULD);
                                 }
 
@@ -1284,8 +1345,7 @@ public class LuceneQueryParser extends QueryParser
 
                             if ((end.get(Calendar.MINUTE) - start.get(Calendar.MINUTE)) > 1)
                             {
-                                subPart = new RangeQuery(new Term(field, build2SF("MI", start.get(Calendar.MINUTE))), new Term(field, build2SF("MI", end.get(Calendar.MINUTE))),
-                                        false);
+                                subPart = new ConstantScoreRangeQuery(field, build2SF("MI", start.get(Calendar.MINUTE)), build2SF("MI", end.get(Calendar.MINUTE)), false, false);
                                 subQuery.add(subPart, Occur.SHOULD);
                             }
 
@@ -1322,8 +1382,8 @@ public class LuceneQueryParser extends QueryParser
 
                         if ((end.get(Calendar.HOUR_OF_DAY) - start.get(Calendar.HOUR_OF_DAY)) > 1)
                         {
-                            subPart = new RangeQuery(new Term(field, build2SF("HO", start.get(Calendar.HOUR_OF_DAY))), new Term(field,
-                                    build2SF("HO", end.get(Calendar.HOUR_OF_DAY))), false);
+                            subPart = new ConstantScoreRangeQuery(field, build2SF("HO", start.get(Calendar.HOUR_OF_DAY)), build2SF("HO", end.get(Calendar.HOUR_OF_DAY)), false,
+                                    false);
                             subQuery.add(subPart, Occur.SHOULD);
                         }
 
@@ -1360,8 +1420,7 @@ public class LuceneQueryParser extends QueryParser
 
                     if ((end.get(Calendar.DAY_OF_MONTH) - start.get(Calendar.DAY_OF_MONTH)) > 1)
                     {
-                        subPart = new RangeQuery(new Term(field, build2SF("DA", start.get(Calendar.DAY_OF_MONTH))),
-                                new Term(field, build2SF("DA", end.get(Calendar.DAY_OF_MONTH))), false);
+                        subPart = new ConstantScoreRangeQuery(field, build2SF("DA", start.get(Calendar.DAY_OF_MONTH)), build2SF("DA", end.get(Calendar.DAY_OF_MONTH)), false, false);
                         subQuery.add(subPart, Occur.SHOULD);
                     }
 
@@ -1399,7 +1458,7 @@ public class LuceneQueryParser extends QueryParser
 
                 if ((end.get(Calendar.MONTH) - start.get(Calendar.MONTH)) > 1)
                 {
-                    subPart = new RangeQuery(new Term(field, build2SF("MO", start.get(Calendar.MONTH))), new Term(field, build2SF("MO", end.get(Calendar.MONTH))), false);
+                    subPart = new ConstantScoreRangeQuery(field, build2SF("MO", start.get(Calendar.MONTH)), build2SF("MO", end.get(Calendar.MONTH)), false, false);
                     subQuery.add(subPart, Occur.SHOULD);
                 }
 
@@ -1436,7 +1495,7 @@ public class LuceneQueryParser extends QueryParser
 
             if ((end.get(Calendar.YEAR) - start.get(Calendar.YEAR)) > 1)
             {
-                subPart = new RangeQuery(new Term(field, "YE" + start.get(Calendar.YEAR)), new Term(field, "YE" + end.get(Calendar.YEAR)), false);
+                subPart = new ConstantScoreRangeQuery(field, "YE" + start.get(Calendar.YEAR), "YE" + end.get(Calendar.YEAR), false, false);
                 subQuery.add(subPart, Occur.SHOULD);
             }
 
@@ -1486,9 +1545,16 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (padField == Calendar.MONTH)
             {
-                part = new RangeQuery(new Term(field, build2SF("MO", (cal.get(Calendar.MONTH) + 1))), new Term(field, "MO11"), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.MONTH) < cal.getMaximum(Calendar.MONTH))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("MO", (cal.get(Calendar.MONTH) + 1)), "MO" + cal.getMaximum(Calendar.MONTH), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1509,9 +1575,16 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (padField == Calendar.DAY_OF_MONTH)
             {
-                part = new RangeQuery(new Term(field, build2SF("DA", (cal.get(Calendar.DAY_OF_MONTH) + 1))), new Term(field, "DA31"), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.DAY_OF_MONTH) < cal.getMaximum(Calendar.DAY_OF_MONTH))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("DA", (cal.get(Calendar.DAY_OF_MONTH) + 1)), "DA" + cal.getMaximum(Calendar.DAY_OF_MONTH), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1532,9 +1605,16 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (padField == Calendar.HOUR_OF_DAY)
             {
-                part = new RangeQuery(new Term(field, build2SF("HO", (cal.get(Calendar.HOUR_OF_DAY) + 1))), new Term(field, "HO23"), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.HOUR_OF_DAY) < cal.getMaximum(Calendar.HOUR_OF_DAY))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("HO", (cal.get(Calendar.HOUR_OF_DAY) + 1)), "HO" + cal.getMaximum(Calendar.HOUR_OF_DAY), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1555,9 +1635,16 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (padField == Calendar.MINUTE)
             {
-                part = new RangeQuery(new Term(field, build2SF("MI", (cal.get(Calendar.MINUTE) + 1))), new Term(field, "MI59"), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.MINUTE) < cal.getMaximum(Calendar.MINUTE))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("MI", (cal.get(Calendar.MINUTE) + 1)), "MI" + cal.getMaximum(Calendar.MINUTE), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1578,9 +1665,17 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (padField == Calendar.SECOND)
             {
-                part = new RangeQuery(new Term(field, build2SF("SE", (cal.get(Calendar.SECOND) + 1))), new Term(field, "SE59"), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.SECOND) < cal.getMaximum(Calendar.SECOND))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("SE", (cal.get(Calendar.SECOND) + 1)), "SE" + cal.getMaximum(Calendar.SECOND), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
+
             }
             else
             {
@@ -1588,15 +1683,14 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         default:
-            if ((ms > 0) && (ms < 999))
+            if ((ms > 0) && (ms <= cal.getMaximum(Calendar.MILLISECOND)))
             {
-                part = new RangeQuery(new Term(field, build3SF("MS", ms)), new Term(field, "MS999"), true);
+                part = new ConstantScoreRangeQuery(field, build3SF("MS", ms), "MS" + cal.getMaximum(Calendar.MILLISECOND), true, true);
                 range.add(part, Occur.MUST);
             }
-            else if (ms == 1000)
+            else
             {
-                // exclude
-                range.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.MUST);
+                return null;
             }
         }
 
@@ -1633,12 +1727,19 @@ public class LuceneQueryParser extends QueryParser
                     return null;
                 }
             }
-            
+
             if (padField == Calendar.MONTH)
             {
-                part = new RangeQuery(new Term(field, "MO00"), new Term(field, build2SF("MO", (cal.get(Calendar.MONTH) - 1))), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.MONTH) > cal.getMinimum(Calendar.MONTH))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("MO", cal.getMinimum(Calendar.MONTH)), build2SF("MO", (cal.get(Calendar.MONTH) - 1)), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1646,20 +1747,27 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         case Calendar.DAY_OF_MONTH:
-            if ((cal.get(Calendar.DAY_OF_MONTH) == 1) && (cal.get(Calendar.HOUR_OF_DAY) == 0) && (cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0)
-                    && (ms == 0))
+            if ((cal.get(Calendar.DAY_OF_MONTH) == 1) && (cal.get(Calendar.HOUR_OF_DAY) == 0) && (cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0) && (ms == 0))
             {
                 if (padField == Calendar.DAY_OF_MONTH)
                 {
                     return null;
                 }
             }
-            
+
             if (padField == Calendar.DAY_OF_MONTH)
             {
-                part = new RangeQuery(new Term(field, "DA00"), new Term(field, build2SF("DA", (cal.get(Calendar.DAY_OF_MONTH) - 1))), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.DAY_OF_MONTH) > cal.getMinimum(Calendar.DAY_OF_MONTH))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("DA", cal.getMinimum(Calendar.DAY_OF_MONTH)), build2SF("DA", (cal.get(Calendar.DAY_OF_MONTH) - 1)), true,
+                            true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1667,20 +1775,26 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         case Calendar.HOUR_OF_DAY:
-            if ((cal.get(Calendar.HOUR_OF_DAY) == 0) && (cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0)
-                    && (ms == 0))
+            if ((cal.get(Calendar.HOUR_OF_DAY) == 0) && (cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0) && (ms == 0))
             {
                 if (padField == Calendar.HOUR_OF_DAY)
                 {
                     return null;
                 }
             }
-            
+
             if (padField == Calendar.HOUR_OF_DAY)
             {
-                part = new RangeQuery(new Term(field, "HO00"), new Term(field, build2SF("HO", (cal.get(Calendar.HOUR_OF_DAY) - 1))), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.HOUR_OF_DAY) > cal.getMinimum(Calendar.HOUR_OF_DAY))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("HO", cal.getMinimum(Calendar.HOUR_OF_DAY)), build2SF("HO", (cal.get(Calendar.HOUR_OF_DAY) - 1)), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1688,20 +1802,26 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         case Calendar.MINUTE:
-            if ((cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0)
-                    && (ms == 0))
+            if ((cal.get(Calendar.MINUTE) == 0) && (cal.get(Calendar.SECOND) == 0) && (ms == 0))
             {
                 if (padField == Calendar.MINUTE)
                 {
                     return null;
                 }
             }
-            
+
             if (padField == Calendar.MINUTE)
             {
-                part = new RangeQuery(new Term(field, "MI00"), new Term(field, build2SF("MI", (cal.get(Calendar.MINUTE) - 1))), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.MINUTE) > cal.getMinimum(Calendar.MINUTE))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("MI", cal.getMinimum(Calendar.MINUTE)), build2SF("MI", (cal.get(Calendar.MINUTE) - 1)), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1709,20 +1829,26 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         case Calendar.SECOND:
-            if ((cal.get(Calendar.SECOND) == 0)
-                    && (ms == 0))
+            if ((cal.get(Calendar.SECOND) == 0) && (ms == 0))
             {
                 if (padField == Calendar.SECOND)
                 {
                     return null;
                 }
             }
-            
+
             if (padField == Calendar.SECOND)
             {
-                part = new RangeQuery(new Term(field, "SE00"), new Term(field, build2SF("SE", (cal.get(Calendar.SECOND) - 1))), true);
-                range.add(part, Occur.MUST);
-                break;
+                if (cal.get(Calendar.SECOND) > cal.getMinimum(Calendar.SECOND))
+                {
+                    part = new ConstantScoreRangeQuery(field, build2SF("SE", cal.getMinimum(Calendar.SECOND)), build2SF("SE", (cal.get(Calendar.SECOND) - 1)), true, true);
+                    range.add(part, Occur.MUST);
+                    break;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -1730,15 +1856,14 @@ public class LuceneQueryParser extends QueryParser
                 range.add(part, Occur.MUST);
             }
         default:
-            if ((ms >= 0) && (ms < 999))
+            if ((ms >= cal.getMinimum(Calendar.MILLISECOND)) && (ms < cal.getMaximum(Calendar.MILLISECOND)))
             {
-                part = new RangeQuery(new Term(field, "MS000"), new Term(field, build3SF("MS", ms)), true);
+                part = new ConstantScoreRangeQuery(field, build3SF("MS", cal.getMinimum(Calendar.MILLISECOND)), build3SF("MS", ms), true, true);
                 range.add(part, Occur.MUST);
             }
-            else if (ms == -1)
+            else
             {
-                // exclude
-                range.add(new TermQuery(new Term("NO_TOKENS", "__")), Occur.MUST);
+                return null;
             }
         }
 
@@ -1822,7 +1947,7 @@ public class LuceneQueryParser extends QueryParser
         return fieldName;
     }
 
-    private String getToken(String field, String value)
+    private String getToken(String field, String value) throws ParseException
     {
         TokenStream source = analyzer.tokenStream(field, new StringReader(value));
         org.apache.lucene.analysis.Token t;
@@ -1850,8 +1975,8 @@ public class LuceneQueryParser extends QueryParser
         {
 
         }
-        return tokenised;
 
+        return tokenised;
     }
 
     @Override
@@ -2208,33 +2333,32 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    public static void main(String[] args) throws ParseException
+    public static void main(String[] args) throws ParseException, java.text.ParseException
     {
         Query query;
 
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", false);
-        try
-        {
-            Date date = df.parse("2007-10-15T11:21:03.312");
-            start.setTime(date);
-        }
-        catch (java.text.ParseException e)
-        {
-            query = new TermQuery(new Term("NO_TOKENS", "__"));
-        }
-        try
-        {
-            Date date = df.parse("2007-10-15T11:21:03.645");
-            end.setTime(date);
-        }
-        catch (java.text.ParseException e)
-        {
-            query = new TermQuery(new Term("NO_TOKENS", "__"));
-        }
+
+        Date date = df.parse("2007-11-30T22:58:58.998");
+        System.out.println(date);
+        start.setTime(date);
+        System.out.println(start);
+
+        date = df.parse("2008-01-01T03:00:01.002");
+        System.out.println(date);
+        end.setTime(date);
+        System.out.println(end);
+
+        // start.set(Calendar.YEAR, start.getMinimum(Calendar.YEAR));
+        // start.set(Calendar.DAY_OF_YEAR, start.getMinimum(Calendar.DAY_OF_YEAR));
+        // start.set(Calendar.HOUR_OF_DAY, start.getMinimum(Calendar.HOUR_OF_DAY));
+        // start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
+        // start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
+        // start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
         LuceneQueryParser lqp = new LuceneQueryParser(null, null);
-        query = lqp.buildDateTimeRange("TEST", start, end, true);
+        query = lqp.buildDateTimeRange("TEST", start, end, false);
         System.out.println("Query is " + query);
     }
 }

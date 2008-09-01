@@ -971,10 +971,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
+        Connection connection = null;
         try
         {
             // make sure that we AUTO-COMMIT
-            Connection connection = session.connection();
+            connection = session.connection();
             connection.setAutoCommit(true);
             
             Configuration cfg = localSessionFactory.getConfiguration();
@@ -1080,6 +1081,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         finally
         {
+            try
+            {
+                if (connection != null)
+                {
+                    connection.close();
+                }
+            }
+            catch (Throwable e)
+            {
+                logger.warn("Error closing DB connection: " + e.getMessage());
+            }
             // Remove the connection reference from the threadlocal boostrap
             SchemaBootstrapConnectionProvider.setBootstrapConnection(null);
             

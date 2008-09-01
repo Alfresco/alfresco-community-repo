@@ -329,7 +329,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         };
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback);
+            transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
         }
         catch(Throwable e)
         {

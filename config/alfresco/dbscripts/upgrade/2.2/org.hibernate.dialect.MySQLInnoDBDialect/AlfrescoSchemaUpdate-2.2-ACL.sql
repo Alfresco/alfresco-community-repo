@@ -139,7 +139,7 @@ UPDATE alf_acl_member mem
 -- Remove duplicate aces the mysql way (as you can not use the deleted table in the where clause ...)
 
 CREATE TABLE tmp_to_delete SELECT ace.id FROM alf_acl_member mem RIGHT OUTER JOIN alf_access_control_entry ace ON mem.ace_id = ace.id WHERE mem.ace_id IS NULL;
-DELETE FROM alf_access_control_entry USING alf_access_control_entry JOIN tmp_to_delete t ON alf_access_control_entry.id = t.id;
+DELETE FROM ace USING alf_access_control_entry ace JOIN tmp_to_delete t ON ace.id = t.id;
 DROP TABLE tmp_to_delete;
 
 -- Add constraint for duplicate acls

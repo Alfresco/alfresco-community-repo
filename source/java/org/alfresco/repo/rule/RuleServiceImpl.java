@@ -355,7 +355,12 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     {
         List<Rule> rules = new ArrayList<Rule>();
         
-        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
+        // Extra check of CONSUMER permission was added to rule selection,
+        // to prevent Access Denied Exception due to the bug:
+        // https://issues.alfresco.com/browse/ETWOTWO-438
+
+        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true && 
+            permissionService.hasPermission(nodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED)
         {
             if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
             {

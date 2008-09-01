@@ -198,9 +198,9 @@ INSERT INTO t_dup_aspects (node_id, qname_id)
    HAVING
       count(*) > 1
 );
-DELETE FROM alf_node_aspects na
-   USING alf_node_aspects na 
-   JOIN t_dup_aspects t ON (t.node_id = na.node_id AND t.qname_id = na.qname_id);
+DELETE FROM na
+   USING alf_node_aspects na
+   JOIN t_dup_aspects t ON (t.node_id = na.node_id AND t.qname_id = na.qname_id); 
 INSERT INTO alf_node_aspects (node_id, qname_id)
 (
    SELECT

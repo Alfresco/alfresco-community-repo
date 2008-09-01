@@ -558,9 +558,9 @@ public class AVMInterpreter
                 for (AVMNodeDescriptor node : history)
                 {
                     out.println(node);
-                    out.println("Version: " + desc.getVersionID());
-                    out.println("Owner: " + desc.getOwner());
-                    out.println("Mod Time: " + new Date(desc.getModDate()));
+                    out.println("Version: " + node.getVersionID());
+                    out.println("Owner: " + node.getOwner());
+                    out.println("Mod Time: " + new Date(node.getModDate()));
                 }
             }
             /*

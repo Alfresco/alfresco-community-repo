@@ -288,7 +288,7 @@ public class RuleServiceCoverageTest extends TestCase
         ActionServiceImplTest.postAsyncActionTest(
                 this.transactionService,
                 1000, 
-                10, 
+                100, 
                 new AsyncTest()
                 {
                     public boolean executeTest() 

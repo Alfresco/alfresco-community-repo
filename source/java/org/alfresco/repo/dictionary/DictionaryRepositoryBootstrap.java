@@ -209,7 +209,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 
                 return (Object)null;
             }
-        });
+        }, transactionService.isReadOnly(), false);
     }
     
     public void destroy()

@@ -28,6 +28,7 @@ import org.alfresco.service.transaction.TransactionService;
 
 /**
  * This is a helper class that knows how to issue identifiers.
+ * 
  * @author britt
  */
 public class Issuer
@@ -81,41 +82,45 @@ public class Issuer
 
     public void init()
     {
-        fTxnService.getRetryingTransactionHelper().doInTransaction(
-        new RetryingTransactionCallback<Object>()
+        if (!fTxnService.isReadOnly())
         {
-            public Object execute()
+            fTxnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
             {
-                IssuerID issuerID = fIDDAO.get(fName);
-                Long id = fIssuerDAO.getIssuerValue(fName);
-                if (issuerID == null || id == null || id >= issuerID.getNext())
+                public Object execute()
                 {
-                    if (id == null)
+                    IssuerID issuerID = fIDDAO.get(fName);
+                    Long id = fIssuerDAO.getIssuerValue(fName);
+                    if (issuerID == null || id == null || id >= issuerID.getNext())
                     {
-                        id = 0L;
+                        if (id == null)
+                        {
+                            id = 0L;
+                        }
+                        else
+                        {
+                            id = id + 1L;
+                        }
+                        if (issuerID == null)
+                        {
+                            issuerID = new IssuerIDImpl(fName, id);
+                            fIDDAO.save(issuerID);
+                        }
+                        else
+                        {
+                            issuerID.setNext(id);
+                        }
                     }
-                    else
-                    {
-                        id = id + 1L;
-                    }
-                    if (issuerID == null)
-                    {
-                        issuerID = new IssuerIDImpl(fName, id);
-                        fIDDAO.save(issuerID);
-                    }
-                    else
-                    {
-                        issuerID.setNext(id);
-                    }
+                    return null;
                 }
-                return null;
-            }
-        });
+            });
+        }
     }
 
     /**
      * Set the name of this issuer. For Spring.
-     * @param name The name to set.
+     * 
+     * @param name
+     *            The name to set.
      */
     public void setName(String name)
     {
@@ -124,6 +129,7 @@ public class Issuer
 
     /**
      * Issue the next number.
+     * 
      * @return A serial number.
      */
     public synchronized long issue()
@@ -153,13 +159,14 @@ public class Issuer
 
         public long fLast;
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see java.lang.Runnable#run()
          */
         public void run()
         {
-            fTxnService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
+            fTxnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
             {
                 public Object execute()
                 {

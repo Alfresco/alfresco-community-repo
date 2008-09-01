@@ -35,8 +35,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
- * This is the background thread for reaping no longer referenced nodes
- * in the AVM repository.  These orphans arise from purge operations.
+ * This is the background thread for reaping no longer referenced nodes in the AVM repository. These orphans arise from
+ * purge operations.
+ * 
  * @author britt
  */
 public class OrphanReaper
@@ -68,7 +69,8 @@ public class OrphanReaper
                 {
                     // Do nothing.
                 }
-            } while (fActive);
+            }
+            while (fActive);
         }
         finally
         {
@@ -79,48 +81,47 @@ public class OrphanReaper
         }
     }
 
-    private Log    fgLogger = LogFactory.getLog(OrphanReaper.class);
+    private Log fgLogger = LogFactory.getLog(OrphanReaper.class);
 
     /**
      * The Transaction Service
      */
     private TransactionService fTransactionService;
-    
+
     /**
      * The Session Factory
      */
     private SessionFactory fSessionFactory;
-    
+
     /**
      * Active base sleep interval.
      */
     private long fActiveBaseSleep;
-    
+
     /**
      * Batch size.
      */
     private int fBatchSize;
-    
+
     /**
-     * Whether we are currently active, ie have 
-     * work queued up.
+     * Whether we are currently active, ie have work queued up.
      */
     private boolean fActive;
-    
+
     /**
      * The maximum length of the queue.
      */
     private int fQueueLength;
-    
+
     /**
      * The linked list containing ids of nodes that are purgable.
      */
     private LinkedList<Long> fPurgeQueue;
-    
+
     private boolean fDone = false;
-    
+
     private boolean fRunning = false;
-    
+
     /**
      * Create one with default parameters.
      */
@@ -131,21 +132,25 @@ public class OrphanReaper
         fQueueLength = 1000;
         fActive = false;
     }
-    
+
     // Setters for configuration.
-    
+
     /**
      * Set the active base sleep interval.
-     * @param interval The interval to set in ms.
+     * 
+     * @param interval
+     *            The interval to set in ms.
      */
     public void setActiveBaseSleep(long interval)
     {
         fActiveBaseSleep = interval;
     }
-    
+
     /**
      * Set the batch size.
-     * @param size The batch size to set.
+     * 
+     * @param size
+     *            The batch size to set.
      */
     public void setBatchSize(int size)
     {
@@ -154,90 +159,92 @@ public class OrphanReaper
 
     /**
      * Set the transaction service.
-     * @param transactionService The service.
+     * 
+     * @param transactionService
+     *            The service.
      */
     public void setTransactionService(TransactionService transactionService)
     {
         fTransactionService = transactionService;
     }
-    
+
     /**
      * Set the hibernate session factory. (For Spring.)
+     * 
      * @param sessionFactory
      */
     public void setSessionFactory(SessionFactory sessionFactory)
     {
         fSessionFactory = sessionFactory;
     }
-    
+
     /**
      * Set the maximum size of the queue of purgeable nodes.
-     * @param queueLength The max length.
+     * 
+     * @param queueLength
+     *            The max length.
      */
     public void setMaxQueueLength(int queueLength)
     {
         fQueueLength = queueLength;
     }
-    
+
     /**
      * Start things up after configuration is complete.
      */
-//    public void init()
-//    {
-//        fThread = new Thread(this);
-//        fThread.start();
-//    }
-
+    // public void init()
+    // {
+    // fThread = new Thread(this);
+    // fThread.start();
+    // }
     /**
-     * Shutdown the reaper. This needs to be called when 
-     * the application shuts down.
+     * Shutdown the reaper. This needs to be called when the application shuts down.
      */
     public void shutDown()
     {
         fDone = true;
     }
-    
+
     /**
-     * Sit in a loop, periodically querying for orphans.  When orphans
-     * are found, unhook them in bite sized batches.
+     * Sit in a loop, periodically querying for orphans. When orphans are found, unhook them in bite sized batches.
      */
-//    public void run()
-//    {
-//        while (!fDone)
-//        {
-//            synchronized (this)
-//            {
-//                try
-//                {
-//                    wait(fActive? fActiveBaseSleep : fInactiveBaseSleep);
-//                }
-//                catch (InterruptedException ie)
-//                {
-//                    // Do nothing.
-//                }
-//                doBatch();
-//            }
-//        }
-//    }
-    
+    // public void run()
+    // {
+    // while (!fDone)
+    // {
+    // synchronized (this)
+    // {
+    // try
+    // {
+    // wait(fActive? fActiveBaseSleep : fInactiveBaseSleep);
+    // }
+    // catch (InterruptedException ie)
+    // {
+    // // Do nothing.
+    // }
+    // doBatch();
+    // }
+    // }
+    // }
     /**
-     * This is really for debugging and testing. Allows another thread to 
-     * mark the orphan reaper busy so that it can monitor for it's being done.
+     * This is really for debugging and testing. Allows another thread to mark the orphan reaper busy so that it can
+     * monitor for it's being done.
      */
     public void activate()
     {
         fActive = true;
     }
-    
+
     /**
      * See if the reaper is actively reaping.
+     * 
      * @return Whether this is actively reaping.
      */
     public boolean isActive()
     {
         return fActive;
     }
-        
+
     /**
      * Do a batch of cleanup work.
      */
@@ -245,8 +252,7 @@ public class OrphanReaper
     {
         class TxnWork implements RetryingTransactionCallback<Object>
         {
-            public Object execute()
-                throws Exception
+            public Object execute() throws Exception
             {
                 if (fPurgeQueue == null)
                 {
@@ -309,29 +315,28 @@ public class OrphanReaper
                     // Get rid of all properties belonging to this node.
                     // AVMDAOs.Instance().fAVMNodePropertyDAO.deleteAll(node);
                     // Get rid of all aspects belonging to this node.
-//                    AVMDAOs.Instance().fAVMAspectNameDAO.delete(node);
+                    // AVMDAOs.Instance().fAVMAspectNameDAO.delete(node);
                     // Get rid of ACL.
                     DbAccessControlList acl = node.getAcl();
                     node.setAcl(null);
                     // Unused acls will be garbage collected
                     // Many acls will be shared
                     // Extra work for directories.
-                    if (node.getType() == AVMNodeType.PLAIN_DIRECTORY ||
-                        node.getType() == AVMNodeType.LAYERED_DIRECTORY)
+                    if (node.getType() == AVMNodeType.PLAIN_DIRECTORY || node.getType() == AVMNodeType.LAYERED_DIRECTORY)
                     {
                         // First get rid of all child entries for the node.
                         AVMDAOs.Instance().fChildEntryDAO.deleteByParent(node);
                     }
                     // This is not on, since content urls can be shared.
-//                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
-//                    {
-//                        PlainFileNode file = (PlainFileNode)node;
-//                        String url = file.getContentData(null).getContentUrl();
-//                        if (url != null)
-//                        {
-//                            RawServices.Instance().getContentStore().delete(url);
-//                        }
-//                    }
+                    // else if (node.getType() == AVMNodeType.PLAIN_FILE)
+                    // {
+                    // PlainFileNode file = (PlainFileNode)node;
+                    // String url = file.getContentData(null).getContentUrl();
+                    // if (url != null)
+                    // {
+                    // RawServices.Instance().getContentStore().delete(url);
+                    // }
+                    // }
                     AVMDAOs.Instance().fAVMNodeDAO.delete(node);
                 }
                 return null;
@@ -339,7 +344,10 @@ public class OrphanReaper
         }
         try
         {
-            fTransactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            if (!fTransactionService.isReadOnly())
+            {
+                fTransactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
+            }
         }
         catch (Exception e)
         {

@@ -24,80 +24,43 @@
  */
 package org.alfresco.repo.usage;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.usage.hibernate.UsageDeltaImpl;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.usage.UsageService;
-import org.alfresco.util.ParameterCheck;
 
 /**
  * The implementation of the UsageService for tracking usages.
  * 
+ * @author Jan Vonka
+ * @since 2.9
  */
 public class UsageServiceImpl implements UsageService
 {
     private UsageDeltaDAO usageDeltaDao;
-    private NodeDaoService nodeDaoService;
 
     public void setUsageDeltaDao(UsageDeltaDAO usageDeltaDao)
     {
         this.usageDeltaDao = usageDeltaDao;
     }
 
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
-    }
-    
-    
     public void insertDelta(NodeRef usageNodeRef, long deltaSize)
     {
-        UsageDelta delta = new UsageDeltaImpl();
-        
-        // delta properties
-        delta.setNode(getNodeNotNull(usageNodeRef));
-        delta.setDeltaSize(deltaSize);
-        
-        usageDeltaDao.insertDelta(delta);
+        usageDeltaDao.insertDelta(usageNodeRef, deltaSize);
     }
 
     public long getTotalDeltaSize(NodeRef usageNodeRef)
     {
-        return usageDeltaDao.getTotalDeltaSize(getNodeNotNull(usageNodeRef));
+        return usageDeltaDao.getTotalDeltaSize(usageNodeRef);
     }
     
     public Set<NodeRef> getUsageDeltaNodes()
     {
-        Set<Node> nodes = usageDeltaDao.getUsageDeltaNodes();
-        
-        // convert nodes to nodeRefs (tenant-specific)
-        Set<NodeRef> results = new HashSet<NodeRef>(nodes.size());
-        for (Node node : nodes)
-        {
-            results.add(node.getNodeRef());
-        }
-        return results;
+        return usageDeltaDao.getUsageDeltaNodes();
     }
     
     public int deleteDeltas(NodeRef usageNodeRef)
     {
-        return usageDeltaDao.deleteDeltas(getNodeNotNull(usageNodeRef));
-    }
-    
-    private Node getNodeNotNull(NodeRef nodeRef) throws InvalidNodeRefException
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        Node unchecked = nodeDaoService.getNode(nodeRef);
-        if (unchecked == null)
-        {
-            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
-        }
-        return unchecked;
+        return usageDeltaDao.deleteDeltas(usageNodeRef);
     }
 }

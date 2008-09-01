@@ -877,7 +877,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             report.add(event);
             String storeName = srcPath.substring(0, srcPath.indexOf(':'));
-            System.out.println(storeName);
+
             if (version < 0)
             {
                 version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
@@ -908,15 +908,28 @@ public class DeploymentServiceImpl implements DeploymentService
                 callback.eventOccurred(event);
             }
             
-            if (service != null)
+            if (service != null && ticket != null)
             {
+            	// TODO MER - Consider what happens if abort throws an exception itself, then we loose e?
                 service.abort(ticket);
             }
             
             throw new AVMException("Deployment to: " + target + " failed.", e);
         }
     }
-
+    /**
+     * deployDirectoryPush
+     * Compares the source and destination listings and updates report with update events required to make 
+     * dest similar to src. 
+     * @param service
+     * @param ticket
+     * @param report 
+     * @param callbacks
+     * @param version
+     * @param srcPath
+     * @param dstPath
+     * @param matcher
+     */
     private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
                                      DeploymentReport report, List<DeploymentCallback> callbacks,
                                      int version,
@@ -926,9 +939,12 @@ public class DeploymentServiceImpl implements DeploymentService
         List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
         Iterator<AVMNodeDescriptor> srcIter = srcListing.values().iterator();
         Iterator<FileDescriptor> dstIter = dstListing.iterator();
+        // Here with two sorted directory listings
         AVMNodeDescriptor src = null;
         FileDescriptor dst = null;
-        while (srcIter.hasNext() || dstIter.hasNext())
+        
+        // Step through both directory listings
+        while (srcIter.hasNext() || dstIter.hasNext() || src != null || dst != null)
         {
             if (src == null)
             {
@@ -944,7 +960,11 @@ public class DeploymentServiceImpl implements DeploymentService
                     dst = dstIter.next();
                 }
             }
-            // This means no entry on src so delete.
+            if (fgLogger.isDebugEnabled())
+            {
+                fgLogger.debug("comparing src:" + src + " dst:"+ dst);
+            }
+            // This means no entry on src so delete what is on dst.
             if (src == null)
             {
                 String newDstPath = extendPath(dstPath, dst.getName());
@@ -980,9 +1000,12 @@ public class DeploymentServiceImpl implements DeploymentService
                 src = null;
                 continue;
             }
+            
+            // Here with src and dst containing something
             int diff = src.getName().compareToIgnoreCase(dst.getName());
             if (diff < 0)
             {
+            	// src is less than dst - must be new content in src
                 if (!excluded(matcher, src.getPath(), null))
                 {
                     copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
@@ -992,6 +1015,7 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             if (diff == 0)
             {
+            	// src and dst have same file name
                 if (src.getGuid().equals(dst.getGUID()))
                 {
                     src = null;

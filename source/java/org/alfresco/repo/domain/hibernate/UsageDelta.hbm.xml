@@ -16,8 +16,8 @@
 
    <!-- The Usage Delta -->
     
-   <class name="org.alfresco.repo.usage.hibernate.UsageDeltaImpl" 
-          proxy="org.alfresco.repo.usage.UsageDelta" 
+   <class name="org.alfresco.repo.domain.hibernate.UsageDeltaImpl" 
+          proxy="org.alfresco.repo.domain.UsageDelta" 
           table="alf_usage_delta"
           dynamic-update="false" 
           dynamic-insert="false"
@@ -52,7 +52,7 @@
         select
             sum(deltaSize)
         from
-            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+            org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
         where
             usage_delta.node = :node
     </query>
@@ -63,7 +63,7 @@
         select 
             distinct usage_delta.node
         from
-            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+            org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
     </query>
     
     <!--  Get usage deltas for a node -->
@@ -71,9 +71,17 @@
         select
             usage_delta
         from
-            org.alfresco.repo.usage.hibernate.UsageDeltaImpl as usage_delta
+            org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
         where
             usage_delta.node = :node
     </query>
     
+    <query name="usage.DeleteUsageDeltasForNode">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage
+      where
+         usage.node.id = :nodeId
+   </query>
+
 </hibernate-mapping>

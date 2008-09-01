@@ -322,10 +322,13 @@
         </property>
     </bean>
 
-    <bean id="usageDeltaDao" class="org.alfresco.repo.usage.hibernate.HibernateUsageDeltaDAO">
-         <property name="sessionFactory">
-             <ref bean="sessionFactory"/>
-         </property>
+    <bean id="usageDeltaDao" class="org.alfresco.repo.domain.hibernate.HibernateUsageDeltaDAO">
+       <property name="sessionFactory">
+           <ref bean="sessionFactory"/>
+       </property>
+       <property name="nodeDaoService">
+           <ref bean="nodeDaoServiceImpl" />
+       </property>
    </bean>
     
    <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">

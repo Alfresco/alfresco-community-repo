@@ -26,7 +26,7 @@ package org.alfresco.repo.usage;
 
 import java.util.Set;
 
-import org.alfresco.repo.domain.Node;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * The interface to persist usage delta information.
@@ -37,20 +37,21 @@ public interface UsageDeltaDAO
     /**
      * Create a usage delta entry.
      * 
-     * @param deltaInfo
+     * @param deltaSize     the size change
      */
-    public void insertDelta(UsageDelta deltaInfo);
+    public void insertDelta(NodeRef usageNodeRef, long deltaSize);
     
     /**
      * Get the total delta size for a node.
      * 
-     * @param node
-     * @return sum of delta sizes (in bytes) - can be +ve or -ve
+     * @param nodeRef       the node reference
+     * @return              sum of delta sizes (in bytes) - can be +ve or -ve
      */
-    public long getTotalDeltaSize(Node node);
+    public long getTotalDeltaSize(NodeRef usageNodeRef);
     
+    public Set<NodeRef> getUsageDeltaNodes();
     
-    public Set<Node> getUsageDeltaNodes();
+    public int deleteDeltas(NodeRef nodeRef);
     
-    public int deleteDeltas(Node node);
+    public int deleteDeltas(Long nodeId);
 }

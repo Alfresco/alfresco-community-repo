@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -50,7 +49,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.MD5;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -642,18 +641,38 @@ public class AVMLockingServiceImpl implements AVMLockingService
         }
 
         // check for content manager role - we allow access to all managers within the same store
-        List<ChildAssociationRef> children = fNodeService.getChildAssocs(
-                webProjectRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef child : children)
+        // TODO as part of WCM refactor, consolidate with WebProject.getWebProjectUserRole
+        StringBuilder query = new StringBuilder(128);
+        query.append("+PARENT:\"").append(webProjectRef).append("\" ");
+        query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
+        query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
+        query.append(user);
+        query.append("\"");
+        ResultSet resultSet = fSearchService.query(
+        		new StoreRef(this.webProjectStore),
+                SearchService.LANGUAGE_LUCENE,
+                query.toString());            
+        List<NodeRef> nodes = resultSet.getNodeRefs();    
+
+        if (nodes.size() == 1)
         {
-            NodeRef childRef = child.getChildRef();
-            if (fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERNAME).equals(user) &&
-                fNodeService.getProperty(childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
+            String userrole = (String)fNodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+            if (ROLE_CONTENT_MANAGER.equals(userrole))
             {
-                if (logger.isDebugEnabled())
-                    logger.debug(" GRANTED: Store match and user is ContentManager role in webproject.");
-                return true;
+	            if (logger.isDebugEnabled())
+	            {
+	                logger.debug("GRANTED: Store match and user is ContentManager role in webproject.");
+	            }
+	            return true;
             }
+        }
+        else if (nodes.size() == 0)
+        {
+        	logger.warn("hasAccess: user role not found for " + user);
+        }
+        else
+        {
+        	logger.warn("hasAccess: more than one user role found for " + user);
         }
 
         // finally check the owners of the lock against the specified authority

@@ -6,7 +6,6 @@
 
    <bean id="usageService" class="org.alfresco.repo.usage.UsageServiceImpl">
       <property name="usageDeltaDao" ref="usageDeltaDao"/>
-      <property name="nodeDaoService" ref="nodeDaoService"/> 
    </bean>
    
    <bean id="contentUsageImpl" class="org.alfresco.repo.usage.ContentUsageImpl" init-method="init">

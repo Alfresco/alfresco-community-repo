@@ -83,6 +83,7 @@ public interface WCMAppModel
     static final QName PROP_DEPLOYSERVERNAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservername");
     static final QName PROP_DEPLOYSERVERUSERNAME = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverusername");
     static final QName PROP_DEPLOYSERVERPASSWORD = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverpassword");
+    static final QName PROP_DEPLOYSERVERGROUP = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservergroup");
     static final QName PROP_DEPLOYSERVERURL = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployserverurl");
     static final QName PROP_DEPLOYSERVERTARGET = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployservertarget");
     static final QName PROP_DEPLOYSOURCEPATH = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deploysourcepath");

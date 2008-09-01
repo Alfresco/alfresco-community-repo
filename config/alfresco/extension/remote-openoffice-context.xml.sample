@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+
+<bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection">
+	<constructor-arg type="java.lang.String" value="156.124.13.102"/>
+	<constructor-arg type="int" value="8100"/>
+</bean>
+
+<bean id="transformer.OpenOffice" class="org.alfresco.repo.content.transform.RemoteOpenOfficeContentTransformer" parent="baseContentTransformer" >	<property name="connection">		<ref bean="openOfficeConnection" />	</property>	<property name="documentFormatsConfiguration">		<value>classpath:alfresco/mimetype/openoffice-document-formats.xml</value>	</property></bean>
+
+</beans>
+

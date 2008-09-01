@@ -47,30 +47,69 @@ public interface TenantService extends TenantBaseService
     
     public static final String ADMIN_BASENAME = "admin";
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public NodeRef getName(NodeRef nodeRef);
 
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public NodeRef getName(NodeRef inNodeRef, NodeRef nodeRef);
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public StoreRef getName(StoreRef storeRef);
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public ChildAssociationRef getName(ChildAssociationRef childAssocRef);
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public StoreRef getName(String username, StoreRef storeRef);
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public QName getName(NodeRef inNodeRef, QName name);
     
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
     public String getName(String name);
 
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public QName getBaseName(QName name, boolean forceIfNonTenant);
     
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public NodeRef getBaseName(NodeRef nodeRef);
     
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public StoreRef getBaseName(StoreRef storeRef);
     
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef);
     
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public String getBaseName(String name);
     
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public String getBaseName(String name, boolean forceIfNonTenant);
     
     public String getBaseNameUser(String name);

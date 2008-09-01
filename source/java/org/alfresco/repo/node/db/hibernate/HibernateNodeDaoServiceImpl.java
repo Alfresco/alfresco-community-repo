@@ -684,7 +684,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             logger.debug("Deleting usage deltas of node (if any)" + node.getId());
         }
-        usageDeltaDao.deleteDeltas(node);
+        usageDeltaDao.deleteDeltas(node.getId());
         
         // update the node status
         NodeRef nodeRef = node.getNodeRef();

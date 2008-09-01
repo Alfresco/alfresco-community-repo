@@ -22,10 +22,10 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.usage.hibernate;
+package org.alfresco.repo.domain.hibernate;
 
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.usage.UsageDelta;
+import org.alfresco.repo.domain.UsageDelta;
 
 /**
  * Usage Delta Implementation

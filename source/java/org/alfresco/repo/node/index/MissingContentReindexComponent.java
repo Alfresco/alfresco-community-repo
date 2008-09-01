@@ -123,7 +123,7 @@ public class MissingContentReindexComponent extends AbstractReindexComponent
                         return null;
                     }
                 };
-                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
                 count++;
                 // check if we have to break out
                 if (isShuttingDown())

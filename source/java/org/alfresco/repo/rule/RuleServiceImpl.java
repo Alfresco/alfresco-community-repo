@@ -354,13 +354,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInherited, String ruleTypeName)
     {
         List<Rule> rules = new ArrayList<Rule>();
-        
-        // Extra check of CONSUMER permission was added to rule selection,
-        // to prevent Access Denied Exception due to the bug:
-        // https://issues.alfresco.com/browse/ETWOTWO-438
 
-        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true && 
-            permissionService.hasPermission(nodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED)
+        if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
         {
             if (includeInherited == true && this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
             {
@@ -375,7 +370,12 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
                 }
             }
             
-            if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+            // Extra check of CONSUMER permission was added to rule selection,
+            // to prevent Access Denied Exception due to the bug:
+            // https://issues.alfresco.com/browse/ETWOTWO-438
+            
+            if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true &&
+                permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED)
             {
                 NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
                 if (ruleFolder != null)

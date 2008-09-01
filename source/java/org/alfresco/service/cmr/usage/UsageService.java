@@ -33,6 +33,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * The public API by which applications can create usage delta entries.
  * 
+ * @author Jan Vonka
+ * @since 2.9
  */
 @PublicService
 public interface UsageService

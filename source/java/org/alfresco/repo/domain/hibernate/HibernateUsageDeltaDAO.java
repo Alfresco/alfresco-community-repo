@@ -22,17 +22,21 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.usage.hibernate;
+package org.alfresco.repo.domain.hibernate;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.domain.Node;
+import org.alfresco.repo.domain.UsageDelta;
+import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.TransactionalDao;
-import org.alfresco.repo.usage.UsageDelta;
 import org.alfresco.repo.usage.UsageDeltaDAO;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
@@ -44,13 +48,19 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements UsageDeltaDAO, TransactionalDao
 {
-    private static final String QUERY_GET_DELTAS = "usage.GetDeltas";
+//    private static final String QUERY_GET_DELTAS = "usage.GetDeltas";
     private static final String QUERY_GET_TOTAL_DELTA_SIZE = "usage.GetTotalDeltaSize";
     private static final String QUERY_GET_USAGE_DELTA_NODES = "usage.GetUsageDeltaNodes";
+    private static final String QUERY_DELETE_DELTAS_FOR_NODE = "usage.DeleteUsageDeltasForNode";
         
     /** a uuid identifying this unique instance */
     private final String uuid;
+    private NodeDaoService nodeDaoService;
     
+    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    {
+        this.nodeDaoService = nodeDaoService;
+    }
 
     /**
      * 
@@ -119,34 +129,48 @@ public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements Usage
     {
         getSession().flush();
     }
+    
+    private Node getNodeNotNull(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        Node unchecked = nodeDaoService.getNode(nodeRef);
+        if (unchecked == null)
+        {
+            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+        }
+        return unchecked;
+    }
 
+    public int deleteDeltas(NodeRef nodeRef)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        return deleteDeltas(node.getId());
+    }
+    
     @SuppressWarnings("unchecked")
-    public int deleteDeltas(final Node node)
+    public int deleteDeltas(final Long nodeId)
     {
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                Query query = session.getNamedQuery(QUERY_GET_DELTAS);
-                query.setParameter("node", node);
-                return query.list();
+                Query query = session.getNamedQuery(QUERY_DELETE_DELTAS_FOR_NODE);
+                query.setParameter("nodeId", nodeId);
+                return query.executeUpdate();
             }
         };
         
         // execute
-        List<UsageDelta> queryResults = (List<UsageDelta>)getHibernateTemplate().execute(callback);
+        Integer delCount = (Integer) getHibernateTemplate().execute(callback);
         
-        for (UsageDelta usageDelta : queryResults)
-        {
-            getHibernateTemplate().delete(usageDelta);
-        }
-        
-        return queryResults.size();
+        return delCount.intValue();
     }
     
     @SuppressWarnings("unchecked")
-    public long getTotalDeltaSize(final Node node)
+    public long getTotalDeltaSize(NodeRef nodeRef)
     {
+        final Node node = getNodeNotNull(nodeRef);
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -163,14 +187,21 @@ public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements Usage
         return (queryResult == null ? 0 : queryResult);
     }
     
-    public void insertDelta(UsageDelta deltaInfo)
+    public void insertDelta(NodeRef usageNodeRef, long deltaSize)
     {
+        Node node = getNodeNotNull(usageNodeRef);
+        
+        UsageDelta delta = new UsageDeltaImpl();
+        // delta properties
+        delta.setNode(node);
+        delta.setDeltaSize(deltaSize);
+
         // Save
-        getSession().save(deltaInfo);
+        getSession().save(delta);
     }
     
     @SuppressWarnings("unchecked")
-    public Set<Node> getUsageDeltaNodes()
+    public Set<NodeRef> getUsageDeltaNodes()
     {
         HibernateCallback callback = new HibernateCallback()
         {
@@ -183,10 +214,10 @@ public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements Usage
         };
         // execute read-only tx
         List<Node> queryResults = (List<Node>)getHibernateTemplate().execute(callback);
-        Set<Node> results = new HashSet<Node>(queryResults.size());
+        Set<NodeRef> results = new HashSet<NodeRef>(queryResults.size(), 1.0F);
         for (Node node : queryResults)
         {
-            results.add(node);
+            results.add(node.getNodeRef());
         }
         return results;
     }

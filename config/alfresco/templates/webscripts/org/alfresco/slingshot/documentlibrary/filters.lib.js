@@ -66,6 +66,7 @@ function getFilterParams(filter, parsedArgs)
          filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
          filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+         filterQuery += "-TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
 
          filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
          filterParams.sortByAscending = false;

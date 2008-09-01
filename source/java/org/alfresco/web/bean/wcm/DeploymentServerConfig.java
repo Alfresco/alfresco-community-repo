@@ -52,6 +52,7 @@ public final class DeploymentServerConfig implements Serializable
    public static final String PROP_EXCLUDES = "excludes";
    public static final String PROP_ALLOCATED_TO = "allocatedTo";
    public static final String PROP_ON_APPROVAL = "onApproval";
+   public static final String PROP_GROUP = "group";
    
    protected String id;
    protected NodeRef serverRef;
@@ -192,6 +193,13 @@ public final class DeploymentServerConfig implements Serializable
          }
       }
       
+      if (this.props.get(PROP_GROUP) != null && ((String)this.props.get(PROP_GROUP)).length() > 0)
+      {
+         repoProps.put(WCMAppModel.PROP_DEPLOYSERVERGROUP, (Serializable)this.props.get(PROP_GROUP));
+      } 
+
+
+      
       return repoProps;
    }
    
@@ -264,6 +272,16 @@ public final class DeploymentServerConfig implements Serializable
          }
          
          this.props.put(PROP_ON_APPROVAL, onApproval);
+      }
+            
+      if (repoProps.get(WCMAppModel.PROP_DEPLOYSERVERGROUP) != null)
+      {
+          this.props.put(PROP_GROUP, (String)repoProps.get(WCMAppModel.PROP_DEPLOYSERVERGROUP));
+      } 
+      else 
+      {
+    	  // Default the group to blank
+    	  this.props.put(PROP_GROUP, "");
       }
    }
 }

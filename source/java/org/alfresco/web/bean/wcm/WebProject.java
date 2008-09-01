@@ -48,7 +48,6 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -343,25 +342,63 @@ public class WebProject implements Serializable
          return true;
       }
 
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
-      final String currentUser = user.getUserName();
-      final List<ChildAssociationRef> userInfoRefs = 
-         nodeService.getChildAssocs(this.nodeRef, 
-                                    WCMAppModel.ASSOC_WEBUSER, 
-                                    RegexQNamePattern.MATCH_ALL);
-      for (ChildAssociationRef ref : userInfoRefs)
-      {
-         final NodeRef userInfoRef = ref.getChildRef();
-         final String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-         final String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-         if (currentUser.equals(username) && AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole))
-         {
-            return true;
-         }
-      }
-      return false;
+      String userrole = WebProject.getWebProjectUserRole(nodeRef, user);
+      return AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole);
    }
+   
+   /**
+    * @return the role of this user in the given Web Project, or null for no assigned role
+    */
+   public static String getWebProjectUserRole(NodeRef webProjectRef, User currentUser)
+   {
+		  long start = System.currentTimeMillis();
+	      String userrole = null;
+	      
+	      if (currentUser.isAdmin())
+	      {
+	         // fake the Content Manager role for an admin user
+	         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
+	      }
+	      else
+	      {
+              final ServiceRegistry serviceRegistry = WebProject.getServiceRegistry();
+              final SearchService searchService = serviceRegistry.getSearchService();
+              final NodeService nodeService = serviceRegistry.getNodeService();
+	          
+	          StringBuilder query = new StringBuilder(128);
+	          query.append("+PARENT:\"").append(webProjectRef).append("\" ");
+	          query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
+	          query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
+	          query.append(currentUser.getUserName());
+	          query.append("\"");
+	          
+	          ResultSet resultSet = searchService.query(
+	                  Repository.getStoreRef(),
+	                  SearchService.LANGUAGE_LUCENE,
+	                  query.toString());            
+	          List<NodeRef> nodes = resultSet.getNodeRefs();    
+
+	          if (nodes.size() == 1)
+	          {
+	    	     userrole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+	          }
+	          else if (nodes.size() == 0)
+	          {
+	        	  LOGGER.warn("getWebProjectUserRole: user role not found for " + currentUser);
+	          }
+	          else
+	          {
+	        	  LOGGER.warn("getWebProjectUserRole: more than one user role found for " + currentUser);
+	          }
+	      }
+	      
+		  if (LOGGER.isInfoEnabled())
+		  {
+			  LOGGER.info("getWebProjectUserRole: "+currentUser.getUserName()+" "+userrole+" in "+(System.currentTimeMillis()-start)+" ms");
+		  }
+		  
+	      return userrole;
+	   }
 
    /**
     * Returns the default webapp for this web project.

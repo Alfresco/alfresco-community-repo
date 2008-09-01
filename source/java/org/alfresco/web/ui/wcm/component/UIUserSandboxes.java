@@ -321,7 +321,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          User currentUser = Application.getCurrentUser(context);
          String currentUserName = currentUser.getUserName();
-         String currentUserRole = getWebProjectUserRole(nodeService, websiteRef, currentUser, userInfoRefs);
+         
+         String currentUserRole = WebProject.getWebProjectUserRole(websiteRef, currentUser);
          
          // sort the user list alphabetically and insert the current user at the top of the list 
          List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
@@ -644,37 +645,6 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       return wrappers;
    }
 
-   /**
-    * @return the role of this user in the current Web Project, or null for no assigned role
-    */
-   private static String getWebProjectUserRole(
-         NodeService nodeService, NodeRef websiteRef, User currentUser, List<ChildAssociationRef> userInfoRefs)
-   {
-      String userrole = null;
-      
-      if (currentUser.isAdmin())
-      {
-         // fake the Content Manager role for an admin user
-         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
-      }
-      else
-      {
-         for (ChildAssociationRef ref : userInfoRefs)
-         {
-            NodeRef userInfoRef = ref.getChildRef();
-            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            String role = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-            if (currentUser.getUserName().equals(username))
-            {
-               userrole = role;
-               break;
-            }
-         }
-      }
-      
-      return userrole;
-   }
-   
    /**
     * Render the list of user modified files/folders in the layered sandbox area.
     * 

@@ -26,6 +26,7 @@ package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -56,6 +57,7 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.repo.component.UIActions;
+import org.springframework.util.comparator.CompoundComparator;
 
 /**
  * JSF component that allows deployment servers to be added, edited and removed.
@@ -68,6 +70,7 @@ public class UIDeploymentServers extends UIInput
    private static final String MSG_TEST_SERVER = "deploy_server_type_test";
    private static final String MSG_TYPE = "deploy_server_type";
    private static final String MSG_NAME = "deploy_server_name";
+   private static final String MSG_GROUP = "deploy_server_group";
    private static final String MSG_HOST = "deploy_server_host";
    private static final String MSG_PORT = "deploy_server_port";
    private static final String MSG_USER = "deploy_server_username";
@@ -160,6 +163,12 @@ public class UIDeploymentServers extends UIInput
          
          List<DeploymentServerConfig> servers = getValue();
          
+         // Sort the deployment servers by display group then display name      
+         CompoundComparator comp = new CompoundComparator();
+         comp.addComparator(new DeploymentServerConfigComparator(DeploymentServerConfig.PROP_GROUP));
+         comp.addComparator(new DeploymentServerConfigComparator(DeploymentServerConfig.PROP_NAME));
+         Collections.sort(servers, comp);
+                           
          if (getInAddMode())
          {
             renderServerForm(context, out, null, false);
@@ -177,10 +186,24 @@ public class UIDeploymentServers extends UIInput
          }
          
          DeploymentServerConfig currentServer = getCurrentServer();
+         String currentDisplayGroup = "";
+         
          for (DeploymentServerConfig server: servers)
          {
+            // Write the display group title if it is a new title
+            String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
+            if(!currentDisplayGroup.equalsIgnoreCase(displayGroup)) 
+            {
+              // yes title has changed - write out the new displayGroup	
+              out.write("<p class='mainSubTitle'>");
+              out.write(displayGroup);
+              out.write("</p>");
+              currentDisplayGroup = displayGroup;
+        	}
+        	 
             if (currentServer != null && currentServer.getId().equals(server.getId()))
             {
+               // This is the server in edit mode
                renderServerForm(context, out, server, true);
             }
             else
@@ -638,7 +661,7 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, port);
       out.write("</td></tr>");
       
-      // create the server name field
+      // create the server display name field
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_NAME));
       out.write(":</td><td>");
@@ -652,6 +675,22 @@ public class UIDeploymentServers extends UIInput
       name.setValueBinding("value", vbName);
       this.getChildren().add(name);
       Utils.encodeRecursive(context, name);
+      out.write("</td></tr>");
+      
+      // create the display group name field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_GROUP));
+      out.write(":</td><td>");
+      UIComponent group = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, group, null);
+      group.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbGroup = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_GROUP + "}");
+      group.setValueBinding("value", vbGroup);
+      this.getChildren().add(group);
+      Utils.encodeRecursive(context, group);
       out.write("</td></tr>");
       
       // create the server username field
@@ -922,4 +961,5 @@ public class UIDeploymentServers extends UIInput
       
       return items;
    }
+   
 }

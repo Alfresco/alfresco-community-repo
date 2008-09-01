@@ -33,7 +33,6 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -48,6 +47,7 @@ import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.GUID;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -254,11 +254,9 @@ public final class SandboxFactory
    
    public static boolean isContentManager(String storeId)
    {
-       ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+	   FacesContext context = FacesContext.getCurrentInstance();
+       ServiceRegistry services = Repository.getServiceRegistry(context);
        AVMService avmService = services.getAVMService();
-       NodeService nodeService = services.getNodeService();
-       
-       String userName = AuthenticationUtil.getCurrentUserName();
        
        String storeName =  extractStagingAreaName(storeId);
        PropertyValue pValue = avmService.getStoreProperty(storeName, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
@@ -267,20 +265,9 @@ public final class SandboxFactory
        {
            NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
-           // Apply sepcific user permissions as set on the web project
-           List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-           for (ChildAssociationRef ref : userInfoRefs)
-           {
-               NodeRef userInfoRef = ref.getChildRef();
-               String user = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-               String role = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-
-               if(userName.equals(user) && role.equals(AVMUtil.ROLE_CONTENT_MANAGER))
-               {
-                   return true;
-               }
-           }
-           return false;
+           User currentUser = Application.getCurrentUser(context);
+           String currentUserRole = WebProject.getWebProjectUserRole(webProjectNodeRef, currentUser);
+           return AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole);
        }
        else
        {

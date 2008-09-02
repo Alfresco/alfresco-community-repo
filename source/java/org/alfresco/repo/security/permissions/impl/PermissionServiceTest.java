@@ -96,6 +96,50 @@ public class PermissionServiceTest extends AbstractPermissionTest
         allowAndyReadChildren = new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED);
     }
 
+    public void testDelete()
+    {
+        runAs("admin");
+
+        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+        
+        permissionService.deletePermissions(n1);
+        permissionService.deletePermissions(n2);
+        
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        
+        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+        
+        permissionService.deletePermissions(n2);
+        
+        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+        
+        permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+        
+        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(2, permissionService.getAllSetPermissions(n2).size());
+
+        permissionService.deletePermissions(n2);
+        
+        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+        
+        permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+        
+        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(2, permissionService.getAllSetPermissions(n2).size());
+        
+        permissionService.deletePermissions(n1);
+        
+        assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+    }
+    
     public void test_AR_2055()
     {
         runAs("admin");

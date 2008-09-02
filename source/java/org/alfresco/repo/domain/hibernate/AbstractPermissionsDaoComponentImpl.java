@@ -375,8 +375,10 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         {
         case FIXED:
         case GLOBAL:
-        case SHARED:
             throw new IllegalStateException("Can not delete from this acl in a node context " + acl.getAclType());
+        case SHARED:
+            // Nothing to do
+            break;
         case DEFINING:
         case LAYERED:
         case OLD:

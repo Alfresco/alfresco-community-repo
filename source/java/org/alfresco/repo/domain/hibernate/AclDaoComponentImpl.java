@@ -119,9 +119,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     private enum WriteMode
     {
         /**
-         * Remove inherited ACEs after that set 
+         * Remove inherited ACEs after that set
          */
-        TRUNCATE_INHERITED, 
+        TRUNCATE_INHERITED,
         /**
          * Add inherited ACEs
          */
@@ -129,19 +129,19 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         /**
          * The source of inherited ACEs is changing
          */
-        CHANGE_INHERITED, 
+        CHANGE_INHERITED,
         /**
          * Remove all inherited ACEs
          */
-        REMOVE_INHERITED, 
+        REMOVE_INHERITED,
         /**
          * Insert inherited ACEs
          */
-        INSERT_INHERITED, 
+        INSERT_INHERITED,
         /**
-         * Copy ACLs and update ACEs and inheritance 
+         * Copy ACLs and update ACEs and inheritance
          */
-        COPY_UPDATE_AND_INHERIT, 
+        COPY_UPDATE_AND_INHERIT,
         /**
          * Simlpe copy
          */
@@ -160,7 +160,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Set the DAO for accessing QName entities
-     * @param qnameDAO 
+     * 
+     * @param qnameDAO
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -169,6 +170,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Set the ACL cache
+     * 
      * @param aclCache
      */
     public void setAclCache(SimpleCache<Long, AccessControlList> aclCache)
@@ -903,23 +905,26 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     @SuppressWarnings("unchecked")
     public List<AclChange> deleteAccessControlList(final Long id)
     {
-        HibernateCallback check = new HibernateCallback()
+        if (logger.isDebugEnabled())
         {
-            public Object doInHibernate(Session session)
+            HibernateCallback check = new HibernateCallback()
             {
-                Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
-                criteria.createAlias("node.accessControlList", "acl");
-                criteria.add(Restrictions.eq("acl.id", id));
-                criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-                return criteria.list();
+                public Object doInHibernate(Session session)
+                {
+                    Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
+                    criteria.createAlias("node.accessControlList", "acl");
+                    criteria.add(Restrictions.eq("acl.id", id));
+                    criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                    return criteria.list();
+                }
+            };
+            List<Node> nodes = (List<Node>) getHibernateTemplate().execute(check);
+            for (Node node : nodes)
+            {
+                logger.debug("Found " + node.getId() + " " + node.getUuid() + " " + node.getAccessControlList());
             }
-        };
-        List<Node> nodes = (List<Node>) getHibernateTemplate().execute(check);
-        for(Node node : nodes)
-        {
-            logger.error("Found "+node.getId() +" "+node.getUuid() + " "+node.getAccessControlList() );
         }
-        
+
         List<AclChange> acls = new ArrayList<AclChange>();
 
         final DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
@@ -929,7 +934,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         }
         if (acl.getAclType() == ACLType.SHARED)
         {
-            throw new UnsupportedOperationException("Delete is not supported for shared acls - they are deleted with teh defining acl");
+            throw new UnsupportedOperationException("Delete is not supported for shared acls - they are deleted with the defining acl");
         }
 
         if ((acl.getAclType() == ACLType.DEFINING) || (acl.getAclType() == ACLType.LAYERED))
@@ -1074,6 +1079,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Search for access control lists
+     * 
      * @param pattern
      * @return the ids of the ACLs found
      */
@@ -1130,12 +1136,12 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         for (Object[] result : results)
         // for (DbAccessControlListMember member : members)
         {
-            Boolean aceIsAllowed = (Boolean)result[0];
-            Integer aceType = (Integer)result[1];
-            String authority = (String)result[2];
-            Long permissionId = (Long)result[3];
-            Integer position = (Integer)result[4];
-            
+            Boolean aceIsAllowed = (Boolean) result[0];
+            Integer aceType = (Integer) result[1];
+            String authority = (String) result[2];
+            Long permissionId = (Long) result[3];
+            Integer position = (Integer) result[4];
+
             SimpleAccessControlEntry sacEntry = new SimpleAccessControlEntry();
             sacEntry.setAccessStatus(aceIsAllowed ? AccessStatus.ALLOWED : AccessStatus.DENIED);
             sacEntry.setAceType(ACEType.getACETypeFromId(aceType));
@@ -1146,9 +1152,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             // context.setClassContext(entry.getContext().getClassContext());
             // context.setKVPContext(entry.getContext().getKvpContext());
             // context.setPropertyContext(entry.getContext().getPropertyContext());
-            //                sacEntry.setContext(context);
-            //            }
-            DbPermission perm = (DbPermission)getSession().get(DbPermissionImpl.class, permissionId);
+            // sacEntry.setContext(context);
+            // }
+            DbPermission perm = (DbPermission) getSession().get(DbPermissionImpl.class, permissionId);
             SimplePermissionReference permissionRefernce = SimplePermissionReference.getPermissionReference(perm.getTypeQName().getQName(), perm.getName());
             sacEntry.setPermission(permissionRefernce);
             sacEntry.setPosition(position);
@@ -1325,7 +1331,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     @SuppressWarnings("unchecked")
     public List<AclChange> setAccessControlEntry(final Long id, final AccessControlEntry ace)
-    {   
+    {
         DbAccessControlList target = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
         if (target.getAclType() == ACLType.SHARED)
         {
@@ -1785,7 +1791,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
             DbAccessControlListMember member = (DbAccessControlListMember) result.get("member");
             DbAccessControlEntry entry = (DbAccessControlEntry) result.get("ace");
-            
+
             if (pattern.getAccessStatus() != null)
             {
                 if (pattern.getAccessStatus() != (entry.isAllowed() ? AccessStatus.ALLOWED : AccessStatus.DENIED))
@@ -1993,6 +1999,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Get the max acl id
+     * 
      * @return - max acl id
      */
     public Long getMaxAclId()
@@ -2040,6 +2047,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Get the acl count canges so far for progress tracking
+     * 
      * @param above
      * @return - the count
      */
@@ -2070,6 +2078,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * How many nodes are noew in store (approximate)
+     * 
      * @return - the number fo new nodes - approximate
      */
     public Long getNewInStore()
@@ -2086,10 +2095,9 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return count;
     }
 
-    
     /**
-     * Find layered directories 
-     * Used to imporove performance during patching and cascading the effect fo permission changes between layers
+     * Find layered directories Used to imporove performance during patching and cascading the effect fo permission
+     * changes between layers
      * 
      * @return - layered directories
      */
@@ -2117,9 +2125,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     }
 
     /**
-     * Find layered files
-     * 
-     * Used to imporove performance during patching and cascading the effect fo permission changes between layers
+     * Find layered files Used to imporove performance during patching and cascading the effect fo permission changes
+     * between layers
      * 
      * @return - layerd files
      */
@@ -2163,8 +2170,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * Support to describe AVM indirections for permission performance improvements when permissions are set.
+     * 
      * @author andyh
-     *
      */
     public static class Indirection
     {
@@ -2239,6 +2246,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     /**
      * How many DM nodes are three with new ACls (to track patch progress)
+     * 
      * @param above
      * @return - the count
      */

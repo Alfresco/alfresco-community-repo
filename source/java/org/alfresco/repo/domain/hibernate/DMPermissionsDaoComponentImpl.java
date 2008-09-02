@@ -116,34 +116,52 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
         System.out.println("Deleting "+acl+" on "+nodeRef);
         if (acl != null)
         {
-            if (acl.getInheritsFrom() != null)
+            switch (acl.getAclType())
             {
-                @SuppressWarnings("unused")
-                Long deleted = acl.getId();
-                Long inheritsFrom = acl.getInheritsFrom();
-                getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(inheritsFrom));
-                List<AclChange> changes = new ArrayList<AclChange>();
-                changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, inheritsFrom));
-                getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-                aclDaoComponent.deleteAccessControlList(acl.getId());
-            }
-            else
-            {
-                // TODO: could just cear out existing
-                @SuppressWarnings("unused")
-                Long deleted = acl.getId();
-                SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
-                properties = new SimpleAccessControlListProperties();
-                properties.setAclType(ACLType.DEFINING);
-                properties.setInherits(Boolean.FALSE);
-                properties.setVersioned(false);
+            case OLD:
+                throw new IllegalStateException("Can not mix old and new style permissions");
+            case DEFINING:
+                if (acl.getInheritsFrom() != null)
+                {
+                    @SuppressWarnings("unused")
+                    Long deleted = acl.getId();
+                    Long inheritsFrom = acl.getInheritsFrom();
+                    getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(inheritsFrom));
+                    List<AclChange> changes = new ArrayList<AclChange>();
+                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, inheritsFrom));
+                    getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
+                    aclDaoComponent.deleteAccessControlList(acl.getId());
+                }
+                else
+                {
+                    // TODO: could just cear out existing
+                    @SuppressWarnings("unused")
+                    Long deleted = acl.getId();
+                    SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+                    properties = new SimpleAccessControlListProperties();
+                    properties.setAclType(ACLType.DEFINING);
+                    properties.setInherits(Boolean.FALSE);
+                    properties.setVersioned(false);
 
-                Long id = aclDaoComponent.createAccessControlList(properties);
-                getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(id));
-                List<AclChange> changes = new ArrayList<AclChange>();
-                changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
-                getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-                aclDaoComponent.deleteAccessControlList(acl.getId());
+                    Long id = aclDaoComponent.createAccessControlList(properties);
+                    getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(id));
+                    List<AclChange> changes = new ArrayList<AclChange>();
+                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, aclDaoComponent.getInheritedAccessControlList(id)));
+                    getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
+                    aclDaoComponent.deleteAccessControlList(acl.getId());
+                }
+                break;
+            case FIXED:
+                throw new IllegalStateException("Delete not supported for fixed permissions");
+            case GLOBAL:
+                throw new IllegalStateException("Delete not supported for global permissions");
+            case SHARED:
+                // nothing to do
+                return;
+            case LAYERED:
+                throw new IllegalStateException("Layering is not supported for DM permissions");
+            default:
+                throw new IllegalStateException("Unknown type " + acl.getAclType());
             }
         }
 

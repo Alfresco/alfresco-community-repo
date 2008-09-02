@@ -83,7 +83,7 @@ public class WebDAVServlet extends HttpServlet
     private TenantService m_tenantService;
 
     // WebDAV method handlers
-    private Hashtable<String,Class> m_davMethods;
+    protected Hashtable<String,Class> m_davMethods;
     
     // Root node
     private NodeRef m_rootNodeRef;

@@ -1,7 +1,8 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 <#assign filter = args["filter"]!"all">
-
-<#-- Resolve site, container and path -->
+<#--
+   Resolve site, container and path
+-->
 <#macro location doc>
    <#assign qnamePaths = doc.qnamePath?split("/")>
    <#assign displayPaths = doc.displayPath?split("/") + [""]>
@@ -11,12 +12,13 @@
                "path": "<#list displayPaths[5..] as path><#if path_has_next>/</#if>${path}</#list>"
    </#if>
 </#macro>
-
-<#-- Render a task -->
+<#--
+   Render a task
+-->
 <#macro taskDetail task>
    {
       "id": "${task.id}",
-      "description": "${task.description!""}",
+      "description": "${(task.description!"")?j_string}",
       "dueDate": "<#if task.properties["bpm:dueDate"]?exists>${task.properties["bpm:dueDate"]?date!""}<#else>${future?date}</#if>",
       "status": "${task.properties["bpm:status"]}",
       "priority": "${task.properties["bpm:priority"]}",
@@ -49,10 +51,10 @@
       ]
    }
 </#macro>
-
-<#-- Filter task list -->
+<#--
+   Filter task list
+-->
 <#assign filteredTasks = []>
-
 <#list workflow.assignedTasks as task>
    <#assign hasDate = task.properties["bpm:dueDate"]?exists>
    <#assign dueDate><#if task.properties["bpm:dueDate"]?exists>${task.properties["bpm:dueDate"]?date!""}<#else>${future?date}</#if></#assign>
@@ -98,7 +100,6 @@
          <#break>
    </#switch>
 </#list>
-
 
 <#escape x as jsonUtils.encodeJSONString(x)>
 {

@@ -65,6 +65,7 @@ function runAction(p_params)
    if (!json.isNull("description"))
    {
       description = json.get("description");
+      description = description.substr(0, 255);
    }
    else
    {

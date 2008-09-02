@@ -106,14 +106,14 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
         // NB This has gone from 10 to 14 because of the new WCM roles, I believe.
-        // 14-17 -> 3 site base roles added
-        assertEquals(17, granters.size());
+        // 14-18 -> 4 site base roles added
+        assertEquals(18, granters.size());
         
         granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "_ReadProperties"));
         // NB 11 to 15 as above.
-        // 5-18 site based roles added
-        assertEquals(18, granters.size());
+        // 5-19 site based roles added
+        assertEquals(19, granters.size());
     }
     
     public void testGlobalPermissions()

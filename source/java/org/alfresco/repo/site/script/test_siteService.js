@@ -153,45 +153,6 @@ function testPermissions()
        test.fail("Managers where not assigned to the site group successfully");
     }
     
-    // allow all members collaborate
-    site.allowAllMembersCollaborate(container);
-    setPerms = container.getPermissions();
-    test.assertNotNull(setPerms);
-    bManagers = false;
-    bContributor = false;
-    for (index in setPerms)
-    {
-    	if (setPerms[index] == "ALLOWED;GROUP_site_siteShortNameToo_SiteManager;SiteManager")
-    	{
-    		bManagers = true;
-    	}
-    	if (setPerms[index] == "ALLOWED;GROUP_site_siteShortNameToo;SiteCollaborator")
-    	{
-    		bContributor = true;
-    	}
-    }
-    if (bManagers == false || bContributor == false)
-    {
-       test.fail("Allow all members contribute failed");
-    }    
-    
-    // deny all
-    site.denyAllAccess(container);
-    setPerms = container.getPermissions();
-    test.assertNotNull(setPerms);
-    bManagers = false;
-    for (index in setPerms)
-    {
-    	if (setPerms[index] == "ALLOWED;GROUP_site_siteShortNameToo_SiteManager;SiteManager")
-    	{
-    		bManagers = true;
-    	}
-    }
-    if (bManagers == false)
-    {
-       test.fail("Deny all access failed.");
-    } 
-    
     // reset permissions    
     site.resetAllPermissions(container);    
 }

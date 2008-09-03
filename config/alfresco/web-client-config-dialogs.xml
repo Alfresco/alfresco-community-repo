@@ -340,11 +340,16 @@
                  title-id="edit_permissions_title" description-id="edit_permissions_subtitle" />                
 
          <dialog name="managePermissions" page="/jsp/wcm/manage-permissions.jsp" 
-                 managed-bean="ManagePermissionsDialog" icon="/images/icons/edituser.gif"
+                 managed-bean="ManagePermissionsDialog" icon="/images/icons/edituser_large.gif"
 				 actions-config-id="set_permission_menu"
 				 show-ok-button="false" 
                  title-id="view_permissions_title" description-id="manage_permissions_subtitle" />
                  
+         <dialog name="viewPermissions" page="/jsp/wcm/manage-permissions.jsp" 
+                 managed-bean="ManagePermissionsDialog" icon="/images/icons/user_large.gif"
+				 show-ok-button="false" 
+                 title-id="view_permissions_title" description-id="view_permissions_subtitle" />
+              
          <dialog name="editUserDetails" page="/jsp/users/edit-user-details.jsp" managed-bean="EditUserDetailsDialog"
                  icon="/images/icons/edituser_large.gif" title-id="edit_user_details" 
                  description-id="edit_user_details_description" />

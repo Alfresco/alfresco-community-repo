@@ -43,6 +43,26 @@
          <value>#{DocumentDetailsDialog.translationDocument}</value>
       </managed-property>
    </managed-bean>
+   <managed-bean>
+      <description>
+         The bean for the Manage Permissions.
+      </description>
+      <managed-bean-name>ManagePermissionsDialog</managed-bean-name>
+      <managed-bean-class>
+         org.alfresco.web.bean.wcm.ManagePermissionsDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      
+   </managed-bean>
   
    <managed-bean>
       <description>
@@ -5827,5 +5847,77 @@
          <value>#{NodeService}</value>
       </managed-property>
    </managed-bean>
+   
+   
+  
+    
+   
+   
+   <managed-bean>
+      <description>
+        The bean that backs up the view of the Set Permissions
+      </description>
+      <managed-bean-name>SetPermissionsDialog</managed-bean-name>
+      <managed-bean-class>
+            org.alfresco.web.bean.wcm.SetPermissionsDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>personService</property-name>
+         <value>#{PersonService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
+    </managed-bean>
+    
+    <managed-bean>
+      <description>
+        The bean that backs up the view of the Remove Permissions
+      </description>
+      <managed-bean-name>RemovePermissionsDialog</managed-bean-name>
+      <managed-bean-class>
+            org.alfresco.web.bean.wcm.RemovePermissionsDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+    </managed-bean>
+    
+    <managed-bean>
+      <description>
+        The bean that backs up the view of the Edit Permissions
+      </description>
+      <managed-bean-name>EditPermissionsDialog</managed-bean-name>
+      <managed-bean-class>
+            org.alfresco.web.bean.wcm.EditPermissionsDialog
+      </managed-bean-class>
+      <managed-bean-scope>session</managed-bean-scope>
+      <managed-property>
+         <property-name>avmBrowseBean</property-name>
+         <value>#{AVMBrowseBean}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>avmLockingService</property-name>
+         <value>#{AVMLockingService}</value>
+      </managed-property>
+    </managed-bean>
+   
    
 </faces-config>

@@ -237,6 +237,44 @@
             </params>
          </action>
          
+         <!-- Manage file/folder permissions -->
+         <action id="manage_permissions">
+         	<permissions>
+            	   <permission allow="true">ChangePermissions</permission>
+         	</permissions>
+         	 <evaluator>org.alfresco.web.action.evaluator.ManagePermissionIsMainStoreEvaluator</evaluator>
+         	<label-id>manage_permissions</label-id>
+         	<image>/images/icons/edit_group.gif</image>
+         	<action>dialog:managePermissions</action>
+         	<action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>     
+         </action>
+         
+         <!-- Set Permission action-->
+         <action id="set_permissions">
+            <label-id>set_permissions</label-id>
+          <evaluator>org.alfresco.web.action.evaluator.ManagePermissionIsMainStoreEvaluator</evaluator>
+            <image>/images/icons/manage_permissions.gif</image>
+            <action>dialog:setPermissions</action>
+         </action> 
+         
+         <!-- View file/folder permissions -->         
+         <action id="view_permissions">
+         	<permissions>
+            	   <permission allow="true">Read</permission>
+         	</permissions>
+            <evaluator>org.alfresco.web.action.evaluator.ViewPermissionEvaluator</evaluator>
+         	<label-id>view_permissions</label-id>
+         	<image>/images/icons/person.gif</image>
+         	<action>dialog:viewPermissions</action>
+         	<action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
+            <params>
+               <param name="id">#{actionContext.id}</param>
+            </params>     
+         </action>
+         
          <!-- Invite Website Users -->
          <action id="invite_website_users">
             <permissions>
@@ -346,6 +384,8 @@
             <action idref="copy_avm_node" />
             <action idref="file_details" />
             <action idref="unlock_file" />
+            <action idref="manage_permissions" />  
+            <action idref="view_permissions" />
             <action idref="delete_file_browse" />
          </action-group>
          
@@ -357,6 +397,8 @@
             <action idref="copy_avm_node" />
             <action idref="folder_details" />
             <action idref="delete_folder_browse" />
+            <action idref="manage_permissions" />  
+            <action idref="view_permissions" />
             <action idref="delete_layered_folder" />
          </action-group>
          
@@ -414,6 +456,8 @@
             <action idref="edit_file" />
             <action idref="update_file" />
             <action idref="delete_file_browse" />
+            <action idref="manage_permissions" />
+            <action idref="view_permissions" />
          </action-group>
          
          <!-- Actions for the Folder Details action menu -->
@@ -423,6 +467,8 @@
             <action idref="copy_avm_node" />
             <action idref="delete_folder_browse" />
             <action idref="delete_layered_folder" />
+            <action idref="manage_permissions" />
+            <action idref="view_permissions" />
          </action-group>
          
          <!-- Actions for the Web Project Details action menu -->
@@ -460,6 +506,11 @@
          <action-group id="broken_form_actions">
             <action idref="edit_file" />
          </action-group>
+         
+         <!-- Action menu for set permissions in manage permission screen-->
+         <action-group id="set_permission_menu">
+            <action idref="set_permissions"/>
+         </action-group> 
          
       </actions>
    </config>

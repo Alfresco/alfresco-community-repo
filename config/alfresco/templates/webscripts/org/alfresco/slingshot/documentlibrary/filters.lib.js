@@ -62,11 +62,11 @@ function getFilterParams(filter, parsedArgs)
          date.setDate(date.getDate() - dayCount);
          var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
 
-         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
-         filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
-         filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
-         filterQuery += "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
-         filterQuery += "-TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         filterQuery += " +@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00.000 TO " + toQuery + "T23\\:59\\:59.999]";
+         filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
 
          filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
          filterParams.sortByAscending = false;
@@ -75,26 +75,26 @@ function getFilterParams(filter, parsedArgs)
          break;
          
       case "editingMe":
-         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
-         filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
-         filterQuery += "+@cm\\:workingCopyOwner:" + person.properties.userName;
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         filterQuery += " +@cm\\:workingCopyOwner:" + person.properties.userName;
 
          filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
       
       case "editingOthers":
-         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
-         filterQuery += "+ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\" ";
-         filterQuery += "-@cm\\:workingCopyOwner:" + person.properties.userName;
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         filterQuery += " -@cm\\:workingCopyOwner:" + person.properties.userName;
 
          filterParams.variablePath = true;
          filterParams.query = filterQuery;
          break;
       
       default:
-         var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\" ";
-         filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+         var filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
+         filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          
          filterParams.query = filterQuery;
          break;

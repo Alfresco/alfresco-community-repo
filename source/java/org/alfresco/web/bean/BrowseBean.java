@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.faces.application.NavigationHandler;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
@@ -2055,6 +2056,64 @@ public class BrowseBean implements IContextListener, Serializable
       fc.getApplication().getNavigationHandler().handleNavigation(fc, null, outcome);
    }
 
+   /**
+    * Event handler used when a file is being deleted, checks that the node
+    * does not have an associated working copy.
+    * 
+    * @param event The event
+    */
+   
+   public void deleteFile(ActionEvent event)
+   {
+      setupContentAction(event);
+      
+      UIActionLink link = (UIActionLink)event.getComponent();
+      Map<String, String> params = link.getParameterMap();
+
+      String ref = params.get("ref");
+      if (ref != null && ref.length() > 0)
+      {
+         NodeRef nodeRef = new NodeRef(ref);
+         
+         boolean hasWorkingCopy = false;
+         ResultSet resultSet = null;
+
+         try
+         {
+            // query for a working copy
+            resultSet = getSearchService().query(nodeRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, 
+                     "ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY.toString() +
+                     "\" AND +@\\{http\\://www.alfresco.org/model/content/1.0\\}" +
+                     ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
+ 
+            if (resultSet.getNodeRefs().size() != 0)
+            {               
+               hasWorkingCopy = true;
+            }
+         }
+         finally
+         {
+            if (resultSet != null)
+            {
+               resultSet.close();
+            }
+         }
+         
+         if (hasWorkingCopy)
+         {
+            // if node has a working copy setup error message and return
+            Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                     FacesContext.getCurrentInstance(), MSG_CANNOT_DELETE_NODE_HAS_WORKING_COPY),
+                     new Object[] {getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME)}));
+            return;
+         }
+         
+         // if there isn't a working copy go to normal delete dialog
+         FacesContext fc = FacesContext.getCurrentInstance();
+         NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
+         navigationHandler.handleNavigation(fc, null, "dialog:deleteFile");
+      }
+   }
 
    // ------------------------------------------------------------------------------
    // Inner classes
@@ -2135,6 +2194,7 @@ public class BrowseBean implements IContextListener, Serializable
    /** I18N messages */
    private static final String MSG_DELETE_COMPANYROOT = "delete_companyroot_confirm";
    public static final String MSG_SEARCH_MINIMUM      = "search_minimum";
+   private static final String MSG_CANNOT_DELETE_NODE_HAS_WORKING_COPY = "cannot_delete_node_has_working_copy";
 
    /** The NodeService to be used by the bean */
    private transient NodeService nodeService;

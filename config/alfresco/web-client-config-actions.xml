@@ -258,10 +258,10 @@
             <evaluator>org.alfresco.web.action.evaluator.DeleteDocEvaluator</evaluator>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
-            <action-listener>#{BrowseBean.setupContentAction}</action-listener>
-            <action>dialog:deleteFile</action>
+            <action-listener>#{BrowseBean.deleteFile}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
+               <param name="ref">#{actionContext.nodeRef}</param>
             </params>
          </action>
 

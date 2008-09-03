@@ -37,6 +37,26 @@
 
 
 <f:verbatim>
+<script type="text/javascript">
+   window.onload = pageLoaded;
+   
+   function finishButton_click()
+   {
+      var disable = function()
+      {
+         document.getElementById('dialog:ok-button').setProperty('disabled', 'disabled');
+         document.getElementById('dialog:cancel-button').setProperty('disabled', 'disabled');
+      }
+      disable.delay(50, this);
+      document.getElementById('progress').style.display='inline';
+   }
+   
+   function pageLoaded()
+   {
+      document.getElementById('dialog:ok-button').onclick = finishButton_click;
+   }
+</script>
+
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
 </f:verbatim>
    <%

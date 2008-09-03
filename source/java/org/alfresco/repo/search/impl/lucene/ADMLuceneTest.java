@@ -107,7 +107,7 @@ public class ADMLuceneTest extends TestCase
 {
 
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";
-
+ 
     private static final QName ASSOC_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "assoc");
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -385,6 +385,7 @@ public class ADMLuceneTest extends TestCase
 
         properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties.put(ContentModel.PROP_DESCRIPTION, desc1);
+        properties.put(ContentModel.PROP_CREATED, new Date());
 
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"), ContentModel.TYPE_CONTENT, properties).getChildRef();
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,
@@ -2731,6 +2732,21 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
 
+        // short and long field ranges
+        
+        sDate = df.format(date);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]",
+                null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        sDate = df.format(date);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]",
+                null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        
         // Date ranges
         // Test date collapses but date time does not
 

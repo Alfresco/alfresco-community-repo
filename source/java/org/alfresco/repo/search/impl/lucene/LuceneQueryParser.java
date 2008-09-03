@@ -1210,14 +1210,14 @@ public class LuceneQueryParser extends QueryParser
                         }
 
                         // Build a composite query for all the bits
-                        Query rq = buildDateTimeRange(field, start, end, inclusive);
+                        Query rq = buildDateTimeRange(fieldName, start, end, inclusive);
                         return rq;
                     }
                     else
                     {
                         String first = getToken(fieldName, part1);
                         String last = getToken(fieldName, part2);
-                        return new ConstantScoreRangeQuery(field, first, last, inclusive, inclusive);
+                        return new ConstantScoreRangeQuery(fieldName, first, last, inclusive, inclusive);
                     }
                 }
                 else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
@@ -1228,13 +1228,13 @@ public class LuceneQueryParser extends QueryParser
                         part1 = part1.toLowerCase();
                         part2 = part2.toLowerCase();
                     }
-                    return new ConstantScoreRangeQuery(field, part1.equals("\u0000") ? null : part1, part2.equals("\uFFFF") ? null : part2, inclusive, inclusive);
+                    return new ConstantScoreRangeQuery(fieldName, part1.equals("\u0000") ? null : part1, part2.equals("\uFFFF") ? null : part2, inclusive, inclusive);
                 }
             }
 
             String first = getToken(fieldName, part1);
             String last = getToken(fieldName, part2);
-            return new ConstantScoreRangeQuery(field, first, last, inclusive, inclusive);
+            return new ConstantScoreRangeQuery(fieldName, first, last, inclusive, inclusive);
         }
         else
         {

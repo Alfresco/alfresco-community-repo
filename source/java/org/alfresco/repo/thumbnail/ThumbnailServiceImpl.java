@@ -25,6 +25,7 @@
 package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ import org.alfresco.util.ParameterCheck;
 public class ThumbnailServiceImpl implements ThumbnailService
 {
     /** Error messages */
-    private static final String ERR_NO_CREATE = "Thumbnail could not be created as required transformation is not supported.";
+    private static final String ERR_NO_CREATE = "Thumbnail could not be created as required transformation is not supported from {0} to {1}";
     private static final String ERR_DUPLICATE_NAME = "Thumbnail could not be created because of a duplicate name";
     private static final String ERR_NO_PARENT = "Thumbnail has no parent so update cannot take place.";
     private static final String ERR_TOO_PARENT = "Thumbnail has more than one source content node.  This is invalid so update cannot take place.";
@@ -209,7 +210,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
         {
             // Throw exception indicating that the thumbnail could not be created
-            throw new ThumbnailException(ERR_NO_CREATE);
+            throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
         }
         else
         {
@@ -278,7 +279,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
             if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
             {
                 // Throw exception indicating that the thumbnail could not be created
-                throw new ThumbnailException(ERR_NO_CREATE);
+                throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
             }
             else
             {

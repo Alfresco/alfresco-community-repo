@@ -37,6 +37,7 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -347,6 +348,57 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             //Thread.sleep(1000);            
         }
     }
+    
+    public void testHTMLToImageAndSWF() throws Exception
+    {
+        NodeRef nodeRef = createOrigionalContent(this.folder, MimetypeMap.MIMETYPE_HTML);
+        ThumbnailDefinition def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("medium");
+        
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_HTML, def.getMimetype(), def.getTransformationOptions()) != null)
+        {        
+            NodeRef thumb = this.thumbnailService.createThumbnail(
+                    nodeRef, 
+                    ContentModel.PROP_CONTENT, 
+                    def.getMimetype(), 
+                    def.getTransformationOptions(), 
+                    def.getName());
+            assertNotNull(thumb);
+            ContentReader reader = this.contentService.getReader(thumb, ContentModel.PROP_CONTENT);
+            assertNotNull(reader);
+            assertEquals(def.getMimetype(), reader.getMimetype());
+            assertTrue(reader.getSize() != 0);
+        }
+        
+
+        def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("webpreview");
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_HTML, def.getMimetype(), def.getTransformationOptions()) != null)
+        {        
+            NodeRef thumb = this.thumbnailService.createThumbnail(
+                    nodeRef, 
+                    ContentModel.PROP_CONTENT, 
+                    def.getMimetype(), 
+                    def.getTransformationOptions(), 
+                    def.getName());
+            assertNotNull(thumb);
+            ContentReader reader = this.contentService.getReader(thumb, ContentModel.PROP_CONTENT);
+            assertNotNull(reader);
+            assertEquals(def.getMimetype(), reader.getMimetype());
+            assertTrue(reader.getSize() != 0);
+        }
+    }
+    
+    public void testRegistry()
+    {
+        ThumbnailRegistry thumbnailRegistry = this.thumbnailService.getThumbnailRegistry();
+        List<ThumbnailDefinition> defs = thumbnailRegistry.getThumnailDefintions(MimetypeMap.MIMETYPE_HTML);
+        System.out.println("Definitions ...");
+        for (ThumbnailDefinition def : defs)
+        {
+            System.out.println("Thumbnail Available: " + def.getName());
+        }
+    }
+    
+    
     
     // == Test the JavaScript API ==
     

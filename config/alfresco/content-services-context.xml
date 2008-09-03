@@ -271,6 +271,22 @@
       </property>
    </bean>
 
+	<bean id="transformer.complex.Text.Image"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.PdfBox.TextToPdf" />
+            <ref bean="transformer.complex.PDF.Image" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+   </bean>
+
    <bean id="transformer.Poi"
          class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
          parent="baseContentTransformer" />

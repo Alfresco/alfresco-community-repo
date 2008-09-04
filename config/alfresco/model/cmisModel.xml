@@ -1,7 +1,7 @@
 <model name="cmis:cmismodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>CMIS Model Definitions</description>
-   <version>1.0</version>
+   <version>0.5</version>
 
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
@@ -9,7 +9,7 @@
    </imports>
 
    <namespaces>
-      <namespace uri="http://www.alfresco.org/model/cmis/0.44" prefix="cmis" />
+      <namespace uri="http://www.alfresco.org/model/cmis/0.5" prefix="cmis" />
    </namespaces>
     
    <constraints>
@@ -17,7 +17,7 @@
         <constraint name="cmis:allowedValuesForContentStreamAllowed" type="LIST">
             <parameter name="allowedValues">
                 <list>
-                    <value>notallowed</value>   <!--  spec issue 37 -->
+                    <value>notallowed</value>
                     <value>allowed</value>
                     <value>required</value>
                 </list>
@@ -28,11 +28,11 @@
    
    <types>
     
-      <type name="cmis:DOCUMENT_OBJECT_TYPE">
+      <type name="cmis:Document">
          <title>Document</title>
          <description>Document Type</description>
          <properties>
-            <property name="cmis:IS_IMMUTABLE">
+            <property name="cmis:IsImmutable">
                <title>Is Immutable</title>
                <description>Is the document immutable?</description>
                <type>d:boolean</type>
@@ -41,7 +41,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:IS_LATEST_VERSION">
+            <property name="cmis:IsLatestVersion">
                <title>Is Latest Version</title>
                <description>Is this the latest version of the document?</description>
                <type>d:boolean</type>
@@ -50,7 +50,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:IS_MAJOR_VERSION">
+            <property name="cmis:IsMajorVersion">
                <title>Is Major Version</title>
                <description>Is this a major version of the document?</description>
                <type>d:boolean</type>
@@ -59,7 +59,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:IS_LATEST_MAJOR_VERSION">
+            <property name="cmis:IsLatestMajorVersion">
                <title>Is Latest Major Version</title>
                <description>Is this the latest major version of the document?</description>
                <type>d:boolean</type>
@@ -68,7 +68,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:VERSION_LABEL">
+            <property name="cmis:VersionLabel">
                <title>Version Label</title>
                <description>The version label</description>
                <type>d:text</type>
@@ -79,7 +79,7 @@
                   <tokenised>true</tokenised>
                </index>
             </property>
-            <property name="cmis:VERSION_SERIES_ID">
+            <property name="cmis:VersionSeriesId">
                <title>Version series id</title>
                <description>The version series id</description>
                <type>d:noderef</type>
@@ -90,8 +90,8 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:VERSION_SERIES_IS_CHECKED_OUT">
-               <title>Version Series Is Checked Out</title>
+            <property name="cmis:IsVersionSeriesCheckedOut">
+               <title>Is Version Series Checked Out</title>
                <description>Is the version series checked out?</description>
                <type>d:boolean</type>
                <protected>true</protected>
@@ -99,7 +99,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:VERSION_SERIES_CHECKED_OUT_BY">
+            <property name="cmis:VersionSeriesCheckedOutBy">
                <title>Version Series Checked Out By</title>
                <description>The authority who checked out this document version series</description>
                <type>d:text</type>
@@ -108,7 +108,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:VERSION_SERIES_CHECKED_OUT_ID">
+            <property name="cmis:VersionSeriesCheckedOutId">
                <title>Version Series Checked Out Id</title>
                <description>The checked out version series id</description>
                <type>d:noderef</type>
@@ -117,7 +117,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:CHECKIN_COMMENT">
+            <property name="cmis:CheckinComment">
                <title>Checkin Comment</title>
                <description>The checkin comment</description>
                <type>d:text</type>
@@ -126,7 +126,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:CONTENT_STREAM_ALLOWED">
+            <property name="cmis:ContentStreamAllowed">
                <title>Content Stream Allowed</title>
                <description>Is a content stream allowed?</description>
                <type>d:text</type>
@@ -138,7 +138,7 @@
                    <constraint ref="cmis:allowedValuesForContentStreamAllowed" />
                </constraints>
             </property>
-            <property name="cmis:CONTENT_STREAM_LENGTH">
+            <property name="cmis:ContentStreamLength">
                <title>Content Stream Length</title>
                <description>The length of the content stream</description>
                <type>d:int</type>
@@ -149,7 +149,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CONTENT_STREAM_MIME_TYPE">
+            <property name="cmis:ContentStreamMimeType">
                <title>Content Stream MIME Type</title>
                <description>The content stream MIME type</description>
                <type>d:text</type>
@@ -160,7 +160,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CONTENT_STREAM_FILENAME">
+            <property name="cmis:ContentStreamFilename">
                <title>Content Stream Filename</title>
                <description>The content stream filename</description>
                <type>d:text</type>
@@ -171,7 +171,7 @@
                   <tokenised>true</tokenised>
                </index>
             </property>
-            <property name="cmis:CONTENT_STREAM_URI">
+            <property name="cmis:ContentStreamUri">
                <title>Content Stream URI</title>
                <description>The content stream URI</description>
                <type>d:text</type>
@@ -182,18 +182,17 @@
             </property>
          </properties>
          <mandatory-aspects>
-            <aspect>cmis:NAMED</aspect>
+            <aspect>cmis:Named</aspect>
          </mandatory-aspects>
       </type>
       
-      
-      <type name="cmis:FOLDER_OBJECT_TYPE">
+      <type name="cmis:Folder">
          <title>Folder</title>
          <description>Folder Type</description>
          <properties>
-            <property name="cmis:PARENT">
-               <title>Parent</title>
-               <description>The parent of the folder</description>
+            <property name="cmis:ParentId">
+               <title>Parent Id</title>
+               <description>The parent id of the folder</description>
                <type>d:noderef</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
@@ -202,9 +201,9 @@
                   <tokenised>false</tokenised>
                </index>
             </property> 
-            <property name="cmis:ALLOWED_CHILD_OBJECT_TYPES">
-               <title>Allowed Child Object Types</title>
-               <description>The allowed child object types</description>
+            <property name="cmis:AllowedChildObjectTypeIds">
+               <title>Allowed Child Object Types Ids</title>
+               <description>The allowed child object type ids</description>
                <type>d:qname</type>
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
@@ -213,15 +212,15 @@
             </property>
          </properties>
          <mandatory-aspects>
-            <aspect>cmis:NAMED</aspect>
+            <aspect>cmis:Named</aspect>
          </mandatory-aspects>
       </type>
       
-      <type name="cmis:RELATIONSHIP_OBJECT_TYPE">
+      <type name="cmis:Relationship">
          <title>Relationship</title>
          <description>Relationship Type</description>
          <properties>
-            <property name="cmis:SOURCE_ID">
+            <property name="cmis:SourceId">
                <title>Source Id</title>
                <description>The source id for the relationship</description>
                <type>d:noderef</type>
@@ -230,7 +229,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property> 
-            <property name="cmis:TARGET_ID">
+            <property name="cmis:TargetId">
                <title>Target Id</title>
                <description>The target id for the relationship</description>
                <type>d:noderef</type>
@@ -241,16 +240,16 @@
             </property> 
          </properties>
          <mandatory-aspects>
-            <aspect>cmis:CORE</aspect>
+            <aspect>cmis:Core</aspect>
          </mandatory-aspects>
       </type>
       
    </types>
    
    <aspects>
-      <aspect name="cmis:CORE">
+      <aspect name="cmis:Core">
          <properties>
-            <property name="cmis:OBJECT_ID">
+            <property name="cmis:ObjectId">
                <title>Object Id</title>
                <description>The unique object id (a node ref)</description>
                <type>d:noderef</type>
@@ -261,7 +260,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:URI">
+            <property name="cmis:Uri">
                <title>URI</title>
                <description>URI</description>
                <type>d:text</type>
@@ -270,7 +269,7 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
-            <property name="cmis:OBJECT_TYPE_ID">
+            <property name="cmis:ObjectTypeId">
                <title>Object Type Id</title>
                <description>The object type id</description>
                <type>d:qname</type>
@@ -281,7 +280,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CREATED_BY">
+            <property name="cmis:CreatedBy">
                <title>Created by</title>
                <description>The authority who created this object</description>
                <type>d:text</type>
@@ -292,7 +291,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CREATION_DATE">
+            <property name="cmis:CreationDate">
                <title>Creation Date</title>
                <description>The object creation date</description>
                <type>d:datetime</type>
@@ -303,7 +302,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:LAST_MODIFIED_BY">
+            <property name="cmis:LastModifiedBy">
                <title>Last Modified By</title>
                <description>The authority who last modified this object</description>
                <type>d:text</type>
@@ -314,7 +313,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:LAST_MODIFICATION_DATE">
+            <property name="cmis:LastModificationDate">
                <title>Last Modified Date</title>
                <description>The date this object was last modified</description>
                <type>d:datetime</type>
@@ -325,7 +324,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CHANGE_TOKEN">
+            <property name="cmis:ChangeToken">
                <title>Change token</title>
                <description>Change Token</description>
                <type>d:text</type>
@@ -337,10 +336,10 @@
          </properties>
       </aspect>
       
-      <aspect name="cmis:NAMED">
-         <parent>cmis:CORE</parent>
+      <aspect name="cmis:Named">
+         <parent>cmis:Core</parent>
          <properties>
-            <property name="cmis:NAME">
+            <property name="cmis:Name">
                <title>Name</title>
                <description>Name</description>
                <type>d:text</type>

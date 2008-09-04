@@ -86,7 +86,7 @@ public class ParentPropertyAccessor extends AbstractNamedPropertyAccessor
     @Override
     public String getPropertyName()
     {
-        return CMISMapping.PROP_PARENT;
+        return CMISMapping.PROP_PARENT_ID;
     }
 
     

@@ -42,7 +42,7 @@ import org.apache.lucene.search.Query;
  * 
  * @author andyh
  */
-public class VersionSeriesIsCheckedOutPropertyAccessor extends AbstractNamedPropertyAccessor
+public class IsVersionSeriesCheckedOutPropertyAccessor extends AbstractNamedPropertyAccessor
 {
 
     public Serializable getProperty(NodeRef nodeRef)
@@ -69,7 +69,7 @@ public class VersionSeriesIsCheckedOutPropertyAccessor extends AbstractNamedProp
     @Override
     public String getPropertyName()
     {
-        return CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT;
+        return CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT;
     }
 
     @Override

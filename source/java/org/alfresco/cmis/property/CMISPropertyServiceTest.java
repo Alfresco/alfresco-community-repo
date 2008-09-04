@@ -29,9 +29,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.dictionary.BaseCMISTest;
 import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.dictionary.ContentStreamAllowed;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.lock.LockType;
@@ -64,7 +64,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION));
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertNull(properties.get(CMISMapping.PROP_VERSION_SERIES_ID));
-        assertNull(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertNull(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         assertNull(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY));
         assertNull(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID));
         assertNull(properties.get(CMISMapping.PROP_CHECKIN_COMMENT));
@@ -74,8 +74,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI));
 
-        assertEquals(properties.get(CMISMapping.PROP_PARENT), rootNodeRef.toString());
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertEquals(properties.get(CMISMapping.PROP_PARENT_ID), rootNodeRef.toString());
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
     }
 
@@ -101,18 +101,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
     }
 
@@ -138,18 +138,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         ContentData contentData = new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK);
 
@@ -163,7 +163,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         long size = writer.getSize();
 
         properties = cmisPropertyService.getProperties(content);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), size);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "text/plain");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
@@ -192,18 +192,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         serviceRegistry.getLockService().lock(content, LockType.READ_ONLY_LOCK);
 
@@ -214,7 +214,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
@@ -239,18 +239,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
     }
 
@@ -276,18 +276,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         NodeRef pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
@@ -298,7 +298,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
@@ -322,18 +322,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         serviceRegistry.getCheckOutCheckInService().cancelCheckout(pwc);
 
@@ -355,18 +355,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
@@ -377,7 +377,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
@@ -401,18 +401,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, null);
 
@@ -434,18 +434,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
     }
 
@@ -471,18 +471,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         nodeService.addAspect(content, ContentModel.ASPECT_VERSIONABLE, null);
 
@@ -504,18 +504,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         NodeRef pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
@@ -526,7 +526,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
@@ -550,18 +550,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         serviceRegistry.getCheckOutCheckInService().cancelCheckout(pwc);
 
@@ -583,18 +583,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
@@ -605,7 +605,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
@@ -629,18 +629,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(Version.PROP_DESCRIPTION, "Meep");
@@ -665,18 +665,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_LABEL), "1.0");
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), "Meep");
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
@@ -687,7 +687,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_LABEL), "1.0");
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), "Meep");
@@ -711,18 +711,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNull(properties.get(CMISMapping.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(Version.PROP_DESCRIPTION, "Woof");
@@ -747,18 +747,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_LABEL), "1.1");
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), "Woof");
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
-        assertNull(properties.get(CMISMapping.PROP_PARENT));
-        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
+        assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
     
     public void testSinglePropertyFolderAccess()
@@ -781,7 +781,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_IS_LATEST_MAJOR_VERSION));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_VERSION_LABEL));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_VERSION_SERIES_ID));
-        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CHECKIN_COMMENT));
@@ -791,8 +791,8 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_FILENAME));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_URI));
        
-        assertEquals(cmisPropertyService.getProperty(folder, CMISMapping.PROP_PARENT), rootNodeRef.toString());
-        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES));
+        assertEquals(cmisPropertyService.getProperty(folder, CMISMapping.PROP_PARENT_ID), rootNodeRef.toString());
+        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
         assertEquals(cmisPropertyService.getProperty(folder, "CM_NAME"), "BaseFolder");
         assertEquals(cmisPropertyService.getProperty(folder, "cm_name"), "BaseFolder");

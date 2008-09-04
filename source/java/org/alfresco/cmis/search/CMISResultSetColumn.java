@@ -24,8 +24,8 @@
  */
 package org.alfresco.cmis.search;
 
+import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISPropertyType;
 
 /**
  * The column meta data for a result set
@@ -51,5 +51,5 @@ public interface CMISResultSetColumn
      * The type of the column
      * @return - the CMIS type for the column
      */
-    public CMISPropertyType getPropertyType();
+    public CMISPropertyTypeEnum getPropertyType();
 }

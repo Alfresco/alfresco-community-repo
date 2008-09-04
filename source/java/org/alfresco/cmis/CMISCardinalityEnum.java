@@ -22,22 +22,38 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.dictionary;
+package org.alfresco.cmis;
 
 /**
- * CMIS Property Types
+ * CMIS Property Cardinality Enum
+ * 
  * @author andyh
- *
  */
-public enum CMISPropertyType
+public enum CMISCardinalityEnum implements EnumLabel
 {
-    String, 
-    Decimal, 
-    Integer, 
-    Boolean, 
-    DateTime, 
-    URI, 
-    ID,
-    XML, 
-    HTML; 
+    SINGLE_VALUED("single"), 
+    MULTI_VALUED("multi");
+
+    
+    private String label;
+    
+    /**
+     * Construct
+     * 
+     * @param label
+     */
+    CMISCardinalityEnum(String label)
+    {
+        this.label = label;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.EnumLabel#label()
+     */
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public static EnumFactory<CMISCardinalityEnum> FACTORY = new EnumFactory<CMISCardinalityEnum>(CMISCardinalityEnum.class, null, true); 
 }

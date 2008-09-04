@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -73,8 +74,10 @@ public class CMISTypeDefinition implements Serializable
     private boolean controllable;
 
     private boolean versionable;
+    
+    private boolean includedInSupertypeQuery;
 
-    private ContentStreamAllowed contentStreamAllowed;
+    private CMISContentStreamAllowedEnum contentStreamAllowed;
 
     private boolean isAssociation;
 
@@ -112,7 +115,8 @@ public class CMISTypeDefinition implements Serializable
                 queryable = false;
                 controllable = false;
                 versionable = false;
-                contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
+                includedInSupertypeQuery = true;
+                contentStreamAllowed = CMISContentStreamAllowedEnum.NOT_ALLOWED;
                 isAssociation = true;
 
                 QName sourceType = cmisMapping.getCmisType(associationDefinition.getSourceClass().getName());
@@ -150,7 +154,8 @@ public class CMISTypeDefinition implements Serializable
                 queryable = false;
                 controllable = false;
                 versionable = false;
-                contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
+                includedInSupertypeQuery = true;
+                contentStreamAllowed = CMISContentStreamAllowedEnum.NOT_ALLOWED;
                 isAssociation = true;
             }
             break;
@@ -197,6 +202,8 @@ public class CMISTypeDefinition implements Serializable
 
                 versionable = false;
 
+                includedInSupertypeQuery = true;
+
                 if (typeId.getScope() == CMISScope.DOCUMENT)
                 {
                     List<AspectDefinition> defaultAspects = typeDefinition.getDefaultAspects();
@@ -212,11 +219,11 @@ public class CMISTypeDefinition implements Serializable
 
                 if (typeId.getScope() == CMISScope.DOCUMENT)
                 {
-                    contentStreamAllowed = ContentStreamAllowed.ALLOWED;
+                    contentStreamAllowed = CMISContentStreamAllowedEnum.ALLOWED;
                 }
                 else
                 {
-                    contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
+                    contentStreamAllowed = CMISContentStreamAllowedEnum.NOT_ALLOWED;
                 }
             }
 
@@ -270,6 +277,15 @@ public class CMISTypeDefinition implements Serializable
         return parentTypeId;
     }
 
+    /**
+     * Get the root type id
+     * @return - the root type id
+     */
+    public CMISTypeId getRootTypeId()
+    {
+        return objectTypeId.getRootTypeId();
+    }
+    
     /**
      * Get the sql table name for the root type of this type This will be getObjectTypeQueryName() for the base folder,
      * document or association
@@ -331,6 +347,16 @@ public class CMISTypeDefinition implements Serializable
     {
         return controllable;
     }
+    
+    /**
+     * Are objects of this type included in super type queries
+     * 
+     * @return
+     */
+    public boolean isIncludedInSupertypeQuery()
+    {
+        return includedInSupertypeQuery;
+    }
 
     /**
      * Is this type versionable? If true this implies all instances of the type are versionable.
@@ -347,7 +373,7 @@ public class CMISTypeDefinition implements Serializable
      * 
      * @return
      */
-    public ContentStreamAllowed getContentStreamAllowed()
+    public CMISContentStreamAllowedEnum getContentStreamAllowed()
     {
         return contentStreamAllowed;
     }

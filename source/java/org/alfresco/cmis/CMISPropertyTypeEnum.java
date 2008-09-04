@@ -22,13 +22,45 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
 /**
+ * CMIS Property Types Enum
+ * 
  * @author andyh
- *
  */
-public enum FullTextSearchSupport
+public enum CMISPropertyTypeEnum implements EnumLabel
 {
-    NO_FULL_TEXT, FULL_TEXT_ONLY, FULL_TEXT_AND_STRUCTURED;
+    STRING("string"), 
+    DECIMAL("decimal"), 
+    INTEGER("integer"), 
+    BOOLEAN("boolean"), 
+    DATETIME("datetime"), 
+    URI("uri"), 
+    ID("id"),
+    XML("xml"), 
+    HTML("html"); 
+    
+    
+    private String label;
+    
+    /**
+     * Construct
+     * 
+     * @param label
+     */
+    CMISPropertyTypeEnum(String label)
+    {
+        this.label = label;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.EnumLabel#label()
+     */
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public static EnumFactory<CMISPropertyTypeEnum> FACTORY = new EnumFactory<CMISPropertyTypeEnum>(CMISPropertyTypeEnum.class, null, true);     
 }

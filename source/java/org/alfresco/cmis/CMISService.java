@@ -64,19 +64,6 @@ import org.springframework.context.ApplicationListener;
  */
 public class CMISService implements ApplicationContextAware, ApplicationListener, TenantDeployer
 {
-    /**
-     * Types Filter
-     *  
-     * @author davidc
-     */
-    public enum TypesFilter
-    {
-        Documents,
-        Folders,
-        Policies,
-        Any,
-    };
-        
     /** Query Parameters */
     private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
     private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
@@ -341,25 +328,25 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      * @param typesFilter  types filter
      * @return  children of node
      */
-    public NodeRef[] getChildren(NodeRef parent, TypesFilter typesFilter)
+    public NodeRef[] getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter)
     {
-        if (typesFilter == TypesFilter.Any)
+        if (typesFilter == CMISTypesFilterEnum.ANY)
         {
-            NodeRef[] folders = queryChildren(parent, TypesFilter.Folders);
-            NodeRef[] docs = queryChildren(parent, TypesFilter.Documents);
+            NodeRef[] folders = queryChildren(parent, CMISTypesFilterEnum.FOLDERS);
+            NodeRef[] docs = queryChildren(parent, CMISTypesFilterEnum.DOCUMENTS);
             NodeRef[] foldersAndDocs = new NodeRef[folders.length + docs.length];
             System.arraycopy(folders, 0, foldersAndDocs, 0, folders.length);
             System.arraycopy(docs, 0, foldersAndDocs, folders.length, docs.length);
             return foldersAndDocs;
         }
-        else if (typesFilter == TypesFilter.Folders)
+        else if (typesFilter == CMISTypesFilterEnum.FOLDERS)
         {
-            NodeRef[] folders = queryChildren(parent, TypesFilter.Folders);
+            NodeRef[] folders = queryChildren(parent, CMISTypesFilterEnum.FOLDERS);
             return folders;
         }
-        else if (typesFilter == TypesFilter.Documents)
+        else if (typesFilter == CMISTypesFilterEnum.DOCUMENTS)
         {
-            NodeRef[] docs = queryChildren(parent, TypesFilter.Documents);
+            NodeRef[] docs = queryChildren(parent, CMISTypesFilterEnum.DOCUMENTS);
             return docs;
         }
         
@@ -430,7 +417,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      * @param typesFilter  folders or documents
      * @return  node children
      */
-    private NodeRef[] queryChildren(NodeRef parent, TypesFilter typesFilter)
+    private NodeRef[] queryChildren(NodeRef parent, CMISTypesFilterEnum typesFilter)
     {
         SearchParameters params = new SearchParameters();
         params.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -438,11 +425,11 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
         QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, nodeRefDataType, true, parent.toString());
         params.addQueryParameterDefinition(parentDef);
         
-        if (typesFilter == TypesFilter.Folders)
+        if (typesFilter == CMISTypesFilterEnum.FOLDERS)
         {
             params.setQuery(LUCENE_QUERY_SHALLOW_FOLDERS);
         }
-        else if (typesFilter == TypesFilter.Documents)
+        else if (typesFilter == CMISTypesFilterEnum.DOCUMENTS)
         {
             params.setQuery(LUCENE_QUERY_SHALLOW_FILES);
         }

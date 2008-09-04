@@ -45,7 +45,7 @@
     </bean>
    
     <bean id="CMISService" class="org.alfresco.cmis.CMISService">
-        <property name="CMISSpecVersion"><value>0.44</value></property>
+        <property name="CMISSpecVersion"><value>0.5</value></property>
         <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="searchService" ref="SearchService" />

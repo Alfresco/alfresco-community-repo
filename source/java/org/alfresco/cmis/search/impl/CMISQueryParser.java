@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.alfresco.cmis.dictionary.CMISCardinality;
+import org.alfresco.cmis.CMISCardinalityEnum;
+import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
@@ -40,7 +41,6 @@ import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.cmis.search.CMISQueryException;
 import org.alfresco.cmis.search.CMISQueryOptions;
-import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSLexer;
@@ -95,9 +95,9 @@ public class CMISQueryParser
 
     private CMISMapping cmisMapping;
 
-    private JoinSupport joinSupport;
+    private CMISJoinEnum joinSupport;
 
-    public CMISQueryParser(CMISQueryOptions options, CMISDictionaryService cmisDictionaryService, CMISMapping cmisMapping, JoinSupport joinSupport)
+    public CMISQueryParser(CMISQueryOptions options, CMISDictionaryService cmisDictionaryService, CMISMapping cmisMapping, CMISJoinEnum joinSupport)
     {
         this.options = options;
         this.cmisDictionaryService = cmisDictionaryService;
@@ -685,7 +685,7 @@ public class CMISQueryParser
                 Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
                 for (CMISPropertyDefinition definition : propDefs.values())
                 {
-                    if (definition.getCardinality() == CMISCardinality.SINGLE_VALUED)
+                    if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)
                     {
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
@@ -730,7 +730,7 @@ public class CMISQueryParser
                     Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
                     for (CMISPropertyDefinition definition : propDefs.values())
                     {
-                        if (definition.getCardinality() == CMISCardinality.SINGLE_VALUED)
+                        if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)
                         {
                             Function function = factory.getFunction(PropertyAccessor.NAME);
                             QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
@@ -1007,7 +1007,7 @@ public class CMISQueryParser
     }
 
     @SuppressWarnings("unchecked")
-    private Source buildSource(CommonTree source, JoinSupport joinSupport, QueryModelFactory factory)
+    private Source buildSource(CommonTree source, CMISJoinEnum joinSupport, QueryModelFactory factory)
     {
         if (source.getChildCount() == 1)
         {
@@ -1015,7 +1015,7 @@ public class CMISQueryParser
             CommonTree singleTableNode = (CommonTree) source.getChild(0);
             if (singleTableNode.getType() == CMISParser.TABLE)
             {
-                if (joinSupport == JoinSupport.NO_JOIN_SUPPORT)
+                if (joinSupport == CMISJoinEnum.NO_JOIN_SUPPORT)
                 {
                     throw new UnsupportedOperationException("Joins are not supported");
                 }
@@ -1042,7 +1042,7 @@ public class CMISQueryParser
         }
         else
         {
-            if (joinSupport == JoinSupport.NO_JOIN_SUPPORT)
+            if (joinSupport == CMISJoinEnum.NO_JOIN_SUPPORT)
             {
                 throw new UnsupportedOperationException("Joins are not supported");
             }
@@ -1075,7 +1075,7 @@ public class CMISQueryParser
                         joinType = JoinType.LEFT;
                     }
 
-                    if ((joinType == JoinType.LEFT) && (joinSupport == JoinSupport.INNER_JOIN_SUPPORT))
+                    if ((joinType == JoinType.LEFT) && (joinSupport == CMISJoinEnum.INNER_JOIN_SUPPORT))
                     {
                         throw new UnsupportedOperationException("Outer joins are not supported");
                     }

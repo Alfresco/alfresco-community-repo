@@ -144,7 +144,7 @@ public class LuceneQueryEngine implements QueryEngine
 
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorName, luceneContext, functionContext);
-                    System.out.println(luceneQuery);
+                    //System.out.println(luceneQuery);
 
                     Sort sort = builder.buildSort(selectorName, luceneContext, functionContext);
 

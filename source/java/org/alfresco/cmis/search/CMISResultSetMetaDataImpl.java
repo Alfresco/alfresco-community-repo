@@ -28,9 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISPropertyType;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
@@ -75,7 +75,7 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
         for (Column column : query.getColumns())
         {
             CMISPropertyDefinition propertyDefinition = null;
-            CMISPropertyType type = null;
+            CMISPropertyTypeEnum type = null;
             if (column.getFunction().getName().equals(PropertyAccessor.NAME))
             {
                 PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);

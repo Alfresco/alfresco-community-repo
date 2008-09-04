@@ -24,6 +24,10 @@
  */
 package org.alfresco.cmis.search;
 
+import org.alfresco.cmis.CMISFullTextSearchEnum;
+import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISQueryEnum;
+
 /**
  * Support to execute CMIS queries
  * 
@@ -48,21 +52,34 @@ public interface CMISQueryService
      */
     public CMISResultSet query(String query);
     
+
     /**
-     * Can you query non-latest versions of a document. 
-     * The current latest version is always searchable according to  the type definition.
-     * @return
+     * Get the query support level
      */
-    public boolean getAllVersionsSearchable();
+    public CMISQueryEnum getQuerySupport();
     
     /**
      * Get the join support level in queries.
-     * @return
      */
-    public JoinSupport getJoinSupport();
+    public CMISJoinEnum getJoinSupport();
     
     /**
      * Get the full text search support level in queries.
      */
-    public FullTextSearchSupport getFullTextSearchSupport();
+    public CMISFullTextSearchEnum getFullTextSearchSupport();
+
+    /**
+     * Can you query Private Working Copies of a document.
+     * 
+     * @return
+     */
+    public boolean getPwcSearchable();
+    
+    /**
+     * Can you query non-latest versions of a document. 
+     * The current latest version is always searchable according to the type definition.
+     * 
+     * @return
+     */
+    public boolean getAllVersionsSearchable();
 }

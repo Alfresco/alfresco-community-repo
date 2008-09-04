@@ -27,7 +27,10 @@ package org.alfresco.cmis.search.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISFullTextSearchEnum;
+import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.property.CMISPropertyService;
@@ -36,8 +39,6 @@ import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.cmis.search.CMISResultSetImpl;
 import org.alfresco.cmis.search.CmisFunctionEvaluationContext;
-import org.alfresco.cmis.search.FullTextSearchSupport;
-import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -123,7 +124,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
     {
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, getJoinSupport());
         Query query = parser.parse(queryEngine.getQueryModelFactory());
-        System.out.println(query);
         
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
@@ -151,6 +151,16 @@ public class CMISQueryServiceImpl implements CMISQueryService
     /*
      * (non-Javadoc)
      * 
+     * @see org.alfresco.cmis.search.CMISQueryService#getPwcSearchable()
+     */
+    public boolean getPwcSearchable()
+    {
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISQueryService#getAllVersionsSearchable()
      */
     public boolean getAllVersionsSearchable()
@@ -161,11 +171,21 @@ public class CMISQueryServiceImpl implements CMISQueryService
     /*
      * (non-Javadoc)
      * 
+     * @see org.alfresco.cmis.search.CMISQueryService#getQuerySupport()
+     */
+    public CMISQueryEnum getQuerySupport()
+    {
+        return CMISQueryEnum.BOTH;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISQueryService#getFullTextSearchSupport()
      */
-    public FullTextSearchSupport getFullTextSearchSupport()
+    public CMISFullTextSearchEnum getFullTextSearchSupport()
     {
-        return FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED;
+        return CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED;
     }
 
     /*
@@ -173,9 +193,8 @@ public class CMISQueryServiceImpl implements CMISQueryService
      * 
      * @see org.alfresco.cmis.search.CMISQueryService#getJoinSupport()
      */
-    public JoinSupport getJoinSupport()
+    public CMISJoinEnum getJoinSupport()
     {
-        return JoinSupport.NO_JOIN_SUPPORT;
+        return CMISJoinEnum.NO_JOIN_SUPPORT;
     }
-
 }

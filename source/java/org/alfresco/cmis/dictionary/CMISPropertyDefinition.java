@@ -28,7 +28,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.alfresco.cmis.property.CMISPropertyNameMapping;
+import org.alfresco.cmis.CMISCardinalityEnum;
+import org.alfresco.cmis.CMISPropertyTypeEnum;
+import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -66,9 +68,9 @@ public class CMISPropertyDefinition implements Serializable
     
     private boolean isInherited;
 
-    private CMISPropertyType propertyType;
+    private CMISPropertyTypeEnum propertyType;
 
-    private CMISCardinality cardinality;
+    private CMISCardinalityEnum cardinality;
 
     private int maximumLength = -1;
 
@@ -84,7 +86,7 @@ public class CMISPropertyDefinition implements Serializable
 
     private String defaultValue;
 
-    private CMISUpdatability updatability;
+    private CMISUpdatabilityEnum updatability;
 
     private boolean queryable;
 
@@ -103,10 +105,10 @@ public class CMISPropertyDefinition implements Serializable
             description = propDef.getDescription();
             isInherited = false;
             propertyType = cmisMapping.getPropertyType(propertyQName);
-            cardinality = propDef.isMultiValued() ? CMISCardinality.MULTI_VALUED : CMISCardinality.SINGLE_VALUED;
+            cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
             required = propDef.isMandatory();
             defaultValue = propDef.getDefaultValue();
-            updatability = propDef.isProtected() ? CMISUpdatability.READ_ONLY : CMISUpdatability.READ_AND_WRITE;
+            updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
             queryable = false;
             orderable = false;
         }
@@ -126,7 +128,7 @@ public class CMISPropertyDefinition implements Serializable
                 isInherited = !propDef.getContainerClass().equals(typeQName);
             }
             propertyType = cmisMapping.getPropertyType(propertyQName);
-            cardinality = propDef.isMultiValued() ? CMISCardinality.MULTI_VALUED : CMISCardinality.SINGLE_VALUED;
+            cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
             for (ConstraintDefinition constraintDef : propDef.getConstraints())
             {
                 Constraint constraint = constraintDef.getConstraint();
@@ -148,7 +150,7 @@ public class CMISPropertyDefinition implements Serializable
             }
             required = propDef.isMandatory();
             defaultValue = propDef.getDefaultValue();
-            updatability = propDef.isProtected() ? CMISUpdatability.READ_ONLY : CMISUpdatability.READ_AND_WRITE;
+            updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
             queryable = propDef.isIndexed();
             if (queryable)
             {
@@ -198,18 +200,6 @@ public class CMISPropertyDefinition implements Serializable
     }
 
     /**
-     * TODO: Remove this when spec ambiguity is removed
-     * 
-     * Get the property name for REST binding
-     * 
-     * @return
-     */
-    public String getPropertyNameREST()
-    {
-        return CMISPropertyNameMapping.getRESTName(propertyName);
-    }
-
-    /**
      * Get the property id
      * 
      * @return
@@ -254,7 +244,7 @@ public class CMISPropertyDefinition implements Serializable
      * 
      * @return
      */
-    public CMISPropertyType getPropertyType()
+    public CMISPropertyTypeEnum getPropertyType()
     {
         return propertyType;
     }
@@ -264,7 +254,7 @@ public class CMISPropertyDefinition implements Serializable
      * 
      * @return
      */
-    public CMISCardinality getCardinality()
+    public CMISCardinalityEnum getCardinality()
     {
         return cardinality;
     }
@@ -344,7 +334,7 @@ public class CMISPropertyDefinition implements Serializable
      * 
      * @return
      */
-    public CMISUpdatability getUpdatability()
+    public CMISUpdatabilityEnum getUpdatability()
     {
         return updatability;
     }

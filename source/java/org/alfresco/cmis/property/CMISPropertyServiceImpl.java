@@ -31,9 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
-import org.alfresco.cmis.dictionary.ContentStreamAllowed;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
@@ -241,7 +241,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         addNamedPropertyAccessor(getVersionSeriesCheckedOutByPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesCheckedOutIdPropertyAccessor());
         addNamedPropertyAccessor(getCheckinCommentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, ContentStreamAllowed.ALLOWED.toString(), CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString(), CMISScope.DOCUMENT));
         addNamedPropertyAccessor(getContentStreamLengthPropertyAccessor());
         addNamedPropertyAccessor(getContentStreamMimetypePropertyAccessor());
         addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME, CMISScope.DOCUMENT));
@@ -249,7 +249,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
         // CMIS Folder
         addNamedPropertyAccessor(getParentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES, null, CMISScope.FOLDER));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null, CMISScope.FOLDER));
     }
 
     public void addNamedPropertyAccessor(NamedPropertyAccessor namedPropertyAccessor)
@@ -347,7 +347,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     public NamedPropertyAccessor getVersionSeriesIsCheckedOutPropertyAccessor()
     {
-        VersionSeriesIsCheckedOutPropertyAccessor accessor = new VersionSeriesIsCheckedOutPropertyAccessor();
+        IsVersionSeriesCheckedOutPropertyAccessor accessor = new IsVersionSeriesCheckedOutPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
         accessor.setCMISMapping(cmisMapping);
         return accessor;

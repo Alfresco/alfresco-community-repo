@@ -22,9 +22,39 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.dictionary;
+package org.alfresco.cmis;
 
-public enum CMISUpdatability
+/**
+ * CMIS Content Stream Allowed Enum
+ * 
+ * @author andyh
+ */
+public enum CMISContentStreamAllowedEnum implements EnumLabel
 {
-    READ_ONLY, READ_AND_WRITE, READ_AND_WRITE_WHEN_CHECKED_OUT;
+    NOT_ALLOWED("notallowed"),
+    ALLOWED("allowed"),
+    REQUIRED("required");
+    
+
+    private String label;
+    
+    /**
+     * Construct
+     * 
+     * @param label
+     */
+    CMISContentStreamAllowedEnum(String label)
+    {
+        this.label = label;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.EnumLabel#label()
+     */
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public static EnumFactory<CMISContentStreamAllowedEnum> FACTORY = new EnumFactory<CMISContentStreamAllowedEnum>(CMISContentStreamAllowedEnum.class, null, true); 
 }

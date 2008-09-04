@@ -27,6 +27,7 @@ package org.alfresco.cmis.dictionary;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -47,7 +48,7 @@ public class CMISMapping
     /**
      * The Alfresco CMIS model URI.
      */
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.44";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.5";
 
     /**
      * The Alfresco CMIS Model name.
@@ -62,17 +63,17 @@ public class CMISMapping
     /**
      * Type id for CMIS documents, from the spec.
      */
-    public static String DOCUMENT_OBJECT_TYPE = "DOCUMENT_OBJECT_TYPE";
+    public static String DOCUMENT_OBJECT_TYPE = "Document";
 
     /**
      * Type is for CMIS folders, from the spec.
      */
-    public static String FOLDER_OBJECT_TYPE = "FOLDER_OBJECT_TYPE";
+    public static String FOLDER_OBJECT_TYPE = "Folder";
 
     /**
      * Type Id for CMIS Relationships, from the spec.
      */
-    public static String RELATIONSHIP_OBJECT_TYPE = "RELATIONSHIP_OBJECT_TYPE";
+    public static String RELATIONSHIP_OBJECT_TYPE = "Relationship";
 
     /**
      * QName for CMIS documents in the Alfresco CMIS model.
@@ -89,69 +90,71 @@ public class CMISMapping
      */
     public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, RELATIONSHIP_OBJECT_TYPE);
 
-    public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_QNAME, DOCUMENT_OBJECT_TYPE);
+    // TODO: spec issue - objectTypeEnum is lower cased - object type ids are repository specific in spec
+    
+    public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_QNAME, DOCUMENT_OBJECT_TYPE.toLowerCase());
 
-    public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, FOLDER_QNAME, FOLDER_OBJECT_TYPE);
+    public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, FOLDER_QNAME, FOLDER_OBJECT_TYPE.toLowerCase());
 
-    public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, RELATIONSHIP_QNAME, RELATIONSHIP_OBJECT_TYPE);
+    public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, RELATIONSHIP_QNAME, RELATIONSHIP_OBJECT_TYPE.toLowerCase());
 
     // CMIS properties
 
-    public static String PROP_OBJECT_ID = "OBJECT_ID";
+    public static String PROP_OBJECT_ID = "ObjectId";
 
-    public static String PROP_URI = "URI";
+    public static String PROP_URI = "Uri";
 
-    public static String PROP_OBJECT_TYPE_ID = "OBJECT_TYPE_ID";
+    public static String PROP_OBJECT_TYPE_ID = "ObjectTypeId";
 
-    public static String PROP_CREATED_BY = "CREATED_BY";
+    public static String PROP_CREATED_BY = "CreatedBy";
 
-    public static String PROP_CREATION_DATE = "CREATION_DATE";
+    public static String PROP_CREATION_DATE = "CreationDate";
 
-    public static String PROP_LAST_MODIFIED_BY = "LAST_MODIFIED_BY";
+    public static String PROP_LAST_MODIFIED_BY = "LastModifiedBy";
 
-    public static String PROP_LAST_MODIFICATION_DATE = "LAST_MODIFICATION_DATE";
+    public static String PROP_LAST_MODIFICATION_DATE = "LastModificationDate";
 
-    public static String PROP_CHANGE_TOKEN = "CHANGE_TOKEN";
+    public static String PROP_CHANGE_TOKEN = "ChangeToken";
 
-    public static String PROP_NAME = "NAME";
+    public static String PROP_NAME = "Name";
 
-    public static String PROP_IS_IMMUTABLE = "IS_IMMUTABLE";
+    public static String PROP_IS_IMMUTABLE = "IsImmutable";
 
-    public static String PROP_IS_LATEST_VERSION = "IS_LATEST_VERSION";
+    public static String PROP_IS_LATEST_VERSION = "IsLatestVersion";
 
-    public static String PROP_IS_MAJOR_VERSION = "IS_MAJOR_VERSION";
+    public static String PROP_IS_MAJOR_VERSION = "IsMajorVersion";
 
-    public static String PROP_IS_LATEST_MAJOR_VERSION = "IS_LATEST_MAJOR_VERSION";
+    public static String PROP_IS_LATEST_MAJOR_VERSION = "IsLatestMajorVersion";
 
-    public static String PROP_VERSION_LABEL = "VERSION_LABEL";
+    public static String PROP_VERSION_LABEL = "VersionLabel";
 
-    public static String PROP_VERSION_SERIES_ID = "VERSION_SERIES_ID";
+    public static String PROP_VERSION_SERIES_ID = "VersionSeriesId";
 
-    public static String PROP_VERSION_SERIES_IS_CHECKED_OUT = "VERSION_SERIES_IS_CHECKED_OUT";
+    public static String PROP_IS_VERSION_SERIES_CHECKED_OUT = "IsVersionSeriesCheckedOut";
 
-    public static String PROP_VERSION_SERIES_CHECKED_OUT_BY = "VERSION_SERIES_CHECKED_OUT_BY";
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_BY = "VersionSeriesCheckedOutBy";
 
-    public static String PROP_VERSION_SERIES_CHECKED_OUT_ID = "VERSION_SERIES_CHECKED_OUT_ID";
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_ID = "VersionSeriesCheckedOutId";
 
-    public static String PROP_CHECKIN_COMMENT = "CHECKIN_COMMENT";
+    public static String PROP_CHECKIN_COMMENT = "CheckinComment";
 
-    public static String PROP_CONTENT_STREAM_ALLOWED = "CONTENT_STREAM_ALLOWED";
+    public static String PROP_CONTENT_STREAM_ALLOWED = "ContentStreamAllowed";
 
-    public static String PROP_CONTENT_STREAM_LENGTH = "CONTENT_STREAM_LENGTH";
+    public static String PROP_CONTENT_STREAM_LENGTH = "ContentStreamLength";
 
-    public static String PROP_CONTENT_STREAM_MIME_TYPE = "CONTENT_STREAM_MIME_TYPE";
+    public static String PROP_CONTENT_STREAM_MIME_TYPE = "ContentStreamMimeType";
 
-    public static String PROP_CONTENT_STREAM_FILENAME = "CONTENT_STREAM_FILENAME";
+    public static String PROP_CONTENT_STREAM_FILENAME = "ContentStreamFilename";
 
-    public static String PROP_CONTENT_STREAM_URI = "CONTENT_STREAM_URI";
+    public static String PROP_CONTENT_STREAM_URI = "ContentStreamUri";
 
-    public static String PROP_PARENT = "PARENT";
+    public static String PROP_PARENT_ID = "ParentId";
 
-    public static String PROP_ALLOWED_CHILD_OBJECT_TYPES = "ALLOWED_CHILD_OBJECT_TYPES";
+    public static String PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS = "AllowedChildObjectTypeIds";
 
-    public static String PROP_SOURCE_ID = "SOURCE_ID";
+    public static String PROP_SOURCE_ID = "SourceId";
 
-    public static String PROP_TARGET_ID = "TARGET_ID";
+    public static String PROP_TARGET_ID = "TargetId";
 
     // Mappings
     // - no entry means no mapping and pass through as is
@@ -162,7 +165,7 @@ public class CMISMapping
 
     private static HashMap<QName, QName> alfrescoToCmisTypes = new HashMap<QName, QName>();
 
-    private static HashMap<QName, CMISPropertyType> alfrescoPropertyTypesToCimsPropertyTypes = new HashMap<QName, CMISPropertyType>();
+    private static HashMap<QName, CMISPropertyTypeEnum> alfrescoPropertyTypesToCimsPropertyTypes = new HashMap<QName, CMISPropertyTypeEnum>();
 
     /**
      * Set up mappings
@@ -182,22 +185,22 @@ public class CMISMapping
 
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ANY, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyType.Boolean);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISPropertyType.ID);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyTypeEnum.BOOLEAN);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISPropertyTypeEnum.ID);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CONTENT, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyType.DateTime);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyType.DateTime);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyType.Decimal);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyType.Decimal);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyType.Integer);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyTypeEnum.DATETIME);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyTypeEnum.DATETIME);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyTypeEnum.DECIMAL);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyTypeEnum.DECIMAL);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyTypeEnum.INTEGER);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LOCALE, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyType.Integer);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyType.String);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISPropertyType.ID);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyTypeEnum.INTEGER);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyTypeEnum.STRING);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISPropertyTypeEnum.ID);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.PATH, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.QNAME, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyType.String);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyTypeEnum.STRING);
     }
 
     private DictionaryService dictionaryService;
@@ -265,15 +268,15 @@ public class CMISMapping
     public CMISTypeId getCmisTypeId(String typeId)
     {
         // Is it a CMIS root object type id?
-        if (typeId.equals(DOCUMENT_TYPE_ID.getTypeId()))
+        if (typeId.equalsIgnoreCase(DOCUMENT_TYPE_ID.getTypeId()))
         {
             return DOCUMENT_TYPE_ID;
         }
-        else if (typeId.equals(FOLDER_TYPE_ID.getTypeId()))
+        else if (typeId.equalsIgnoreCase(FOLDER_TYPE_ID.getTypeId()))
         {
             return FOLDER_TYPE_ID;
         }
-        else if (typeId.equals(RELATIONSHIP_TYPE_ID.getTypeId()))
+        else if (typeId.equalsIgnoreCase(RELATIONSHIP_TYPE_ID.getTypeId()))
         {
             return RELATIONSHIP_TYPE_ID;
         }
@@ -358,7 +361,7 @@ public class CMISMapping
      */
     public String getQueryName(QName typeQName)
     {
-        return buildPrefixEncodedString(typeQName, true);
+        return buildPrefixEncodedString(typeQName, false);
     }
 
     private String buildPrefixEncodedString(QName qname, boolean upperCase)
@@ -553,7 +556,7 @@ public class CMISMapping
      */
     public String getCmisPropertyName(QName propertyQName)
     {
-        return buildPrefixEncodedString(propertyQName, true);
+        return buildPrefixEncodedString(propertyQName, false);
     }
 
     /**
@@ -563,7 +566,7 @@ public class CMISMapping
      * @param propertyQName
      * @return
      */
-    public CMISPropertyType getPropertyType(QName propertyQName)
+    public CMISPropertyTypeEnum getPropertyType(QName propertyQName)
     {
         PropertyDefinition propertyDefinition = dictionaryService.getProperty(propertyQName);
         DataTypeDefinition dataTypeDefinition;
@@ -581,7 +584,7 @@ public class CMISMapping
         {
             if (dQName.equals(DataTypeDefinition.QNAME) || dQName.equals(DataTypeDefinition.NODE_REF))
             {
-                return CMISPropertyType.ID;
+                return CMISPropertyTypeEnum.ID;
             }
             else
             {
@@ -656,15 +659,15 @@ public class CMISMapping
      */
     public QName getAlfrescoClassQNameFromCmisTableName(String tableName)
     {
-        if (tableName.equals(DOCUMENT_TYPE_ID.getTypeId()))
+        if (tableName.equalsIgnoreCase(DOCUMENT_TYPE_ID.getTypeId()))
         {
             return ContentModel.TYPE_CONTENT;
         }
-        else if (tableName.equals(FOLDER_TYPE_ID.getTypeId()))
+        else if (tableName.equalsIgnoreCase(FOLDER_TYPE_ID.getTypeId()))
         {
             return ContentModel.TYPE_FOLDER;
         }
-        else if (tableName.equals(RELATIONSHIP_TYPE_ID.getTypeId()))
+        else if (tableName.equalsIgnoreCase(RELATIONSHIP_TYPE_ID.getTypeId()))
         {
             return null;
         }

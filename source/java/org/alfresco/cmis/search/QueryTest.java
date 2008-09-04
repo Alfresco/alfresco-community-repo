@@ -65,7 +65,7 @@ public class QueryTest extends BaseCMISTest
                 if (dump)
                 {
                     System.out.println("ID ="
-                            + row.getValue("OBJECT_ID") + " " + ((returnPropertyName != null) ? (returnPropertyName + "=" + row.getValue(returnPropertyName)) : "") + " Score="
+                            + row.getValue("ObjectId") + " " + ((returnPropertyName != null) ? (returnPropertyName + "=" + row.getValue(returnPropertyName)) : "") + " Score="
                             + row.getScore() + " " + row.getScores());
                 }
             }
@@ -120,590 +120,590 @@ public class QueryTest extends BaseCMISTest
     
     public void test_ALLOWED_CHILD_OBJECT_TYPES()
     {
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES =  'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES <> 'test'", 33, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES <  'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES <= 'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES >  'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES >= 'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds =  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <> 'test'", 33, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <= 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds >  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds >= 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES IN     ('test')", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES NOT IN ('test')", 33, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IN     ('test')", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds NOT IN ('test')", 33, false, "AllowedChildObjectTypeIds", new String(), false);
 
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES     LIKE 'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES NOT LIKE 'test'", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds     LIKE 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds NOT LIKE 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES IS NOT NULL", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES IS     NULL", 33, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IS NOT NULL", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IS     NULL", 33, false, "AllowedChildObjectTypeIds", new String(), false);
 
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' =  ANY ALLOWED_CHILD_OBJECT_TYPES", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' <> ANY ALLOWED_CHILD_OBJECT_TYPES", 33, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' <  ANY ALLOWED_CHILD_OBJECT_TYPES", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' <= ANY ALLOWED_CHILD_OBJECT_TYPES", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' >  ANY ALLOWED_CHILD_OBJECT_TYPES", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE 'test' >= ANY ALLOWED_CHILD_OBJECT_TYPES", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' =  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <> ANY AllowedChildObjectTypeIds", 33, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <= ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' >  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' >= ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ANY ALLOWED_CHILD_OBJECT_TYPES IN     ('test')", 0, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
-        testQuery("SELECT ALLOWED_CHILD_OBJECT_TYPES FROM FOLDER_OBJECT_TYPE WHERE ANY ALLOWED_CHILD_OBJECT_TYPES NOT IN ('test')", 33, false, "ALLOWED_CHILD_OBJECT_TYPES", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE ANY AllowedChildObjectTypeIds IN     ('test')", 0, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE ANY AllowedChildObjectTypeIds NOT IN ('test')", 33, false, "AllowedChildObjectTypeIds", new String(), false);
     }
     
     public void test_PARENT()
     {
         NodeRef rootNode = cmisService.getDefaultRootNodeRef();
         
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT =  '" + rootNode.toString() + "'", 4, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT <> '" + rootNode.toString() + "'", 29, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT <  '" + rootNode.toString() + "'", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT <= '" + rootNode.toString() + "'", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT >  '" + rootNode.toString() + "'", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT >= '" + rootNode.toString() + "'", 0, false, "PARENT", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId =  '" + rootNode.toString() + "'", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId <> '" + rootNode.toString() + "'", 29, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId <  '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId <= '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId >  '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId >= '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
 
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT IN     ('" + rootNode.toString() + "')", 4, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT NOT IN ('" + rootNode.toString() + "')", 29, false, "PARENT", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId IN     ('" + rootNode.toString() + "')", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT IN ('" + rootNode.toString() + "')", 29, false, "ParentId", new String(), false);
 
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT     LIKE '" + rootNode.toString() + "'", 4, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT NOT LIKE '" + rootNode.toString() + "'", 29, false, "PARENT", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId     LIKE '" + rootNode.toString() + "'", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT LIKE '" + rootNode.toString() + "'", 29, false, "ParentId", new String(), false);
 
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT IS NOT NULL", 33, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE PARENT IS     NULL", 0, false, "PARENT", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId IS NOT NULL", 33, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId IS     NULL", 0, false, "ParentId", new String(), false);
 
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' =  ANY PARENT", 4, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' <> ANY PARENT", 29, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' <  ANY PARENT", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' <= ANY PARENT", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' >  ANY PARENT", 0, false, "PARENT", new String(), true);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE '" + rootNode.toString() + "' >= ANY PARENT", 0, false, "PARENT", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' =  ANY ParentId", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <> ANY ParentId", 29, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <  ANY ParentId", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <= ANY ParentId", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' >  ANY ParentId", 0, false, "ParentId", new String(), true);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' >= ANY ParentId", 0, false, "ParentId", new String(), true);
 
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE ANY PARENT IN     ('" + rootNode.toString() + "')", 4, false, "PARENT", new String(), false);
-        testQuery("SELECT PARENT FROM FOLDER_OBJECT_TYPE WHERE ANY PARENT NOT IN ('" + rootNode.toString() + "')", 29, false, "PARENT", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId IN     ('" + rootNode.toString() + "')", 4, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId NOT IN ('" + rootNode.toString() + "')", 29, false, "ParentId", new String(), false);
     }
 
     
     public void test_CONTENT_STREAM_URI()
     {
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI =  'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI <> 'test'", 45, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI <  'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI <= 'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI >  'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI >= 'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri =  'test'", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <> 'test'", 45, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <  'test'", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <= 'test'", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >  'test'", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >= 'test'", 0, false, "ContentStreamUri", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI IN     ('test')", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI NOT IN ('test')", 45, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT IN ('test')", 45, false, "ContentStreamUri", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI     LIKE 'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI NOT LIKE 'test'", 0, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri     LIKE 'test'", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT LIKE 'test'", 0, false, "ContentStreamUri", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI IS NOT NULL", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_URI IS     NULL", 45, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS NOT NULL", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS     NULL", 45, false, "ContentStreamUri", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' =  ANY CONTENT_STREAM_URI", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' <> ANY CONTENT_STREAM_URI", 45, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' <  ANY CONTENT_STREAM_URI", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' <= ANY CONTENT_STREAM_URI", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' >  ANY CONTENT_STREAM_URI", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE 'test' >= ANY CONTENT_STREAM_URI", 0, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' =  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <> ANY ContentStreamUri", 45, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_URI IN     ('test')", 0, false, "CONTENT_STREAM_URI", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_URI FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_URI NOT IN ('test')", 45, false, "CONTENT_STREAM_URI", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri NOT IN ('test')", 45, false, "ContentStreamUri", new String(), false);
     }
 
     
     public void test_CONTENT_STREAM_FILENAME()
     {
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME =  'tutorial'", 1, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME <> 'tutorial'", 44, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME <  'tutorial'", 45, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME <= 'tutorial'", 45, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME >  'tutorial'", 8, true, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME >= 'tutorial'", 9, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <> 'tutorial'", 44, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <  'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <= 'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >  'tutorial'", 8, true, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >= 'tutorial'", 9, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME IN     ('tutorial')", 1, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME NOT IN ('tutorial')", 44, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT IN ('tutorial')", 44, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME     LIKE 'tutorial'", 1, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME NOT LIKE 'tutorial'", 44, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename     LIKE 'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT LIKE 'tutorial'", 44, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME IS NOT NULL", 45, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_FILENAME IS     NULL", 0, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS NOT NULL", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS     NULL", 0, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' =  ANY CONTENT_STREAM_FILENAME", 1, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <> ANY CONTENT_STREAM_FILENAME", 44, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <  ANY CONTENT_STREAM_FILENAME", 45, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <= ANY CONTENT_STREAM_FILENAME", 45, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' >  ANY CONTENT_STREAM_FILENAME", 8, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' >= ANY CONTENT_STREAM_FILENAME", 9, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' =  ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <> ANY ContentStreamFilename", 44, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <  ANY ContentStreamFilename", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <= ANY ContentStreamFilename", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >  ANY ContentStreamFilename", 8, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >= ANY ContentStreamFilename", 9, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_FILENAME IN     ('tutorial')", 1, false, "CONTENT_STREAM_FILENAME", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_FILENAME FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_FILENAME NOT IN ('tutorial')", 44, false, "CONTENT_STREAM_FILENAME", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename NOT IN ('tutorial')", 44, false, "ContentStreamFilename", new String(), false);
     }
     
     public void test_CONTENT_STREAM_MIME_TYPE()
     {
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE =  'text/plain'", 26, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE <> 'text/plain'", 19, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE <  'text/plain'", 14, true, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE <= 'text/plain'", 40, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE >  'text/plain'", 5, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE >= 'text/plain'", 31, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType =  'text/plain'", 26, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <> 'text/plain'", 19, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <  'text/plain'", 14, true, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <= 'text/plain'", 40, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType >  'text/plain'", 5, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType >= 'text/plain'", 31, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE IN     ('text/plain')", 26, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE NOT IN ('text/plain')", 19, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IN     ('text/plain')", 26, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT IN ('text/plain')", 19, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE     LIKE 'text/plain'", 26, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE NOT LIKE 'text/plain'", 19, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType     LIKE 'text/plain'", 26, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT LIKE 'text/plain'", 19, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE IS NOT NULL", 45, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_MIME_TYPE IS     NULL", 0, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IS NOT NULL", 45, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IS     NULL", 0, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' =  ANY CONTENT_STREAM_MIME_TYPE", 26, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' <> ANY CONTENT_STREAM_MIME_TYPE", 19, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' <  ANY CONTENT_STREAM_MIME_TYPE", 14, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' <= ANY CONTENT_STREAM_MIME_TYPE", 40, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' >  ANY CONTENT_STREAM_MIME_TYPE", 5, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE 'text/plain' >= ANY CONTENT_STREAM_MIME_TYPE", 31, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' =  ANY ContentStreamMimeType", 26, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <> ANY ContentStreamMimeType", 19, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <  ANY ContentStreamMimeType", 14, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <= ANY ContentStreamMimeType", 40, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' >  ANY ContentStreamMimeType", 5, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' >= ANY ContentStreamMimeType", 31, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_MIME_TYPE IN     ('text/plain')", 26, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_MIME_TYPE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_MIME_TYPE NOT IN ('text/plain')", 19, false, "CONTENT_STREAM_MIME_TYPE", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ANY ContentStreamMimeType IN     ('text/plain')", 26, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ANY ContentStreamMimeType NOT IN ('text/plain')", 19, false, "ContentStreamMimeType", new String(), false);
     }
 
     public void test_CONTENT_STREAM_LENGTH()
     {
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH =  750", 1, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH <> 750", 44, true, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH <  750", 28, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH <= 750", 29, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH >  750", 16, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH >= 750", 17, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength =  750", 1, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <> 750", 44, true, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <  750", 28, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <= 750", 29, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >  750", 16, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >= 750", 17, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH IN     (750)", 1, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH NOT IN (750)", 44, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IN     (750)", 1, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT IN (750)", 44, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH     LIKE '750'", 1, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH NOT LIKE '750'", 44, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength     LIKE '750'", 1, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT LIKE '750'", 44, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH IS NOT NULL", 45, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_LENGTH IS     NULL", 0, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IS NOT NULL", 45, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IS     NULL", 0, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 =  ANY CONTENT_STREAM_LENGTH", 1, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 <> ANY CONTENT_STREAM_LENGTH", 44, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 <  ANY CONTENT_STREAM_LENGTH", 28, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 <= ANY CONTENT_STREAM_LENGTH", 29, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 >  ANY CONTENT_STREAM_LENGTH", 16, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE 750 >= ANY CONTENT_STREAM_LENGTH", 17, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 =  ANY ContentStreamLength", 1, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <> ANY ContentStreamLength", 44, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <  ANY ContentStreamLength", 28, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <= ANY ContentStreamLength", 29, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >  ANY ContentStreamLength", 16, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >= ANY ContentStreamLength", 17, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_LENGTH IN     (750)", 1, false, "CONTENT_STREAM_LENGTH", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_LENGTH FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_LENGTH NOT IN (750)", 44, false, "CONTENT_STREAM_LENGTH", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ANY ContentStreamLength IN     (750)", 1, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ANY ContentStreamLength NOT IN (750)", 44, false, "ContentStreamLength", new String(), false);
     }
     
     
     public void test_CONTENT_STREAM_ALLOWED()
     {
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED =  'ALLOWED'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED <> 'ALLOWED'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED <  'ALLOWED'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED <= 'ALLOWED'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED >  'ALLOWED'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED >= 'ALLOWED'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed =  'ALLOWED'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <> 'ALLOWED'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <  'ALLOWED'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <= 'ALLOWED'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed >  'ALLOWED'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed >= 'ALLOWED'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED IN     ('ALLOWED')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED NOT IN ('ALLOWED')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IN     ('ALLOWED')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed NOT IN ('ALLOWED')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED     LIKE 'ALLOWED'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED NOT LIKE 'ALLOWED'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed     LIKE 'ALLOWED'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed NOT LIKE 'ALLOWED'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE CONTENT_STREAM_ALLOWED IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' =  ANY CONTENT_STREAM_ALLOWED", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' <> ANY CONTENT_STREAM_ALLOWED", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' <  ANY CONTENT_STREAM_ALLOWED", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' <= ANY CONTENT_STREAM_ALLOWED", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' >  ANY CONTENT_STREAM_ALLOWED", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE 'ALLOWED' >= ANY CONTENT_STREAM_ALLOWED", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' =  ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <> ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <  ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <= ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' >  ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' >= ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_ALLOWED IN     ('ALLOWED')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CONTENT_STREAM_ALLOWED FROM DOCUMENT_OBJECT_TYPE WHERE ANY CONTENT_STREAM_ALLOWED NOT IN ('ALLOWED')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ANY ContentStreamAllowed IN     ('ALLOWED')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ANY ContentStreamAllowed NOT IN ('ALLOWED')", 0, false, "ObjectId", new String(), false);
     }
 
     
     public void test_CHECKIN_COMMENT()
     {
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT =  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT <> 'admin'", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT <  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT <= 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT >  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT >= 'admin'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment =  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment <> 'admin'", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment <  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment <= 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment >  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment >= 'admin'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT     LIKE 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT NOT LIKE 'admin'", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment     LIKE 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment NOT LIKE 'admin'", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT IS NOT NULL", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE CHECKIN_COMMENT IS     NULL", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE CheckinComment IS     NULL", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' =  ANY CHECKIN_COMMENT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <> ANY CHECKIN_COMMENT", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <  ANY CHECKIN_COMMENT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <= ANY CHECKIN_COMMENT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >  ANY CHECKIN_COMMENT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >= ANY CHECKIN_COMMENT", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' =  ANY CheckinComment", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' <> ANY CheckinComment", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' <  ANY CheckinComment", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' <= ANY CheckinComment", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' >  ANY CheckinComment", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE 'admin' >= ANY CheckinComment", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE ANY CHECKIN_COMMENT IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT CHECKIN_COMMENT FROM DOCUMENT_OBJECT_TYPE WHERE ANY CHECKIN_COMMENT NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE ANY CheckinComment IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT CheckinComment FROM Document WHERE ANY CheckinComment NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
     }
     
     public void test_VERSION_SERIES_CHECKED_OUT_ID()
     {
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID =  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID <> 'admin'", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID <  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID <= 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID >  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID >= 'admin'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId =  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId <> 'admin'", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId <  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId <= 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId >  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId >= 'admin'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID     LIKE 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID NOT LIKE 'admin'", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId     LIKE 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId NOT LIKE 'admin'", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID IS NOT NULL", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_ID IS     NULL", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE VersionSeriesCheckedOutId IS     NULL", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' =  ANY VERSION_SERIES_CHECKED_OUT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <> ANY VERSION_SERIES_CHECKED_OUT_ID", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <  ANY VERSION_SERIES_CHECKED_OUT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <= ANY VERSION_SERIES_CHECKED_OUT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >  ANY VERSION_SERIES_CHECKED_OUT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >= ANY VERSION_SERIES_CHECKED_OUT_ID", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' =  ANY VersionSeriesCheckedOutId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' <> ANY VersionSeriesCheckedOutId", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' <  ANY VersionSeriesCheckedOutId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' <= ANY VersionSeriesCheckedOutId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' >  ANY VersionSeriesCheckedOutId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE 'admin' >= ANY VersionSeriesCheckedOutId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_CHECKED_OUT_ID IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_CHECKED_OUT_ID NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE ANY VersionSeriesCheckedOutId IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutId FROM Document WHERE ANY VersionSeriesCheckedOutId NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
     }
     
     public void test_VERSION_SERIES_CHECKED_OUT_BY()
     {
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY =  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY <> 'admin'", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY <  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY <= 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY >  'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY >= 'admin'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy =  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy <> 'admin'", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy <  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy <= 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy >  'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy >= 'admin'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY     LIKE 'admin'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY NOT LIKE 'admin'", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy     LIKE 'admin'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy NOT LIKE 'admin'", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY IS NOT NULL", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_CHECKED_OUT_BY IS     NULL", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE VersionSeriesCheckedOutBy IS     NULL", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' =  ANY VERSION_SERIES_CHECKED_OUT_BY", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <> ANY VERSION_SERIES_CHECKED_OUT_BY", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <  ANY VERSION_SERIES_CHECKED_OUT_BY", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' <= ANY VERSION_SERIES_CHECKED_OUT_BY", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >  ANY VERSION_SERIES_CHECKED_OUT_BY", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'admin' >= ANY VERSION_SERIES_CHECKED_OUT_BY", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' =  ANY VersionSeriesCheckedOutBy", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' <> ANY VersionSeriesCheckedOutBy", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' <  ANY VersionSeriesCheckedOutBy", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' <= ANY VersionSeriesCheckedOutBy", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' >  ANY VersionSeriesCheckedOutBy", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE 'admin' >= ANY VersionSeriesCheckedOutBy", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_CHECKED_OUT_BY IN     ('admin')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_CHECKED_OUT_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_CHECKED_OUT_BY NOT IN ('admin')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE ANY VersionSeriesCheckedOutBy IN     ('admin')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesCheckedOutBy FROM Document WHERE ANY VersionSeriesCheckedOutBy NOT IN ('admin')", 45, false, "ObjectId", new String(), true);
     }
 
     
     public void test_VERSION_SERIES_IS_CHECKED_OUT()
     {
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT =  'TRUE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT <> 'TRUE'", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT <  'TRUE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT <= 'TRUE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT >  'TRUE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT >= 'TRUE'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut =  'TRUE'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut <> 'TRUE'", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut <  'TRUE'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut <= 'TRUE'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut >  'TRUE'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut >= 'TRUE'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT IN     ('TRUE')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT NOT IN ('TRUE')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut NOT IN ('TRUE')", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT     LIKE 'TRUE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT NOT LIKE 'TRUE'", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut     LIKE 'TRUE'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut NOT LIKE 'TRUE'", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT IS NOT NULL", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_IS_CHECKED_OUT IS     NULL", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE IsVeriesSeriesCheckedOut IS     NULL", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' =  ANY VERSION_SERIES_IS_CHECKED_OUT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <> ANY VERSION_SERIES_IS_CHECKED_OUT", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <  ANY VERSION_SERIES_IS_CHECKED_OUT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <= ANY VERSION_SERIES_IS_CHECKED_OUT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >  ANY VERSION_SERIES_IS_CHECKED_OUT", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >= ANY VERSION_SERIES_IS_CHECKED_OUT", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' =  ANY IsVeriesSeriesCheckedOut", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' <> ANY IsVeriesSeriesCheckedOut", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' <  ANY IsVeriesSeriesCheckedOut", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' <= ANY IsVeriesSeriesCheckedOut", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' >  ANY IsVeriesSeriesCheckedOut", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE 'TRUE' >= ANY IsVeriesSeriesCheckedOut", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_IS_CHECKED_OUT IN     ('TRUE')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_IS_CHECKED_OUT FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_IS_CHECKED_OUT NOT IN ('TRUE')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE ANY IsVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsVeriesSeriesCheckedOut FROM Document WHERE ANY IsVeriesSeriesCheckedOut NOT IN ('TRUE')", 45, false, "ObjectId", new String(), true);
     }
     
     
     public void test_VERSION_SERIES_ID()
     {
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID =  'company'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID <> 'company'", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID <  'company'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID <= 'company'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID >  'company'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID >= 'company'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId =  'company'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId <> 'company'", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId <  'company'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId <= 'company'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId >  'company'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId >= 'company'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID IN     ('company')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID NOT IN ('company')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId IN     ('company')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId NOT IN ('company')", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID     LIKE 'company'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID NOT LIKE 'company'", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId     LIKE 'company'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId NOT LIKE 'company'", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID IS NOT NULL", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_SERIES_ID IS     NULL", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE VersionSeriesId IS     NULL", 45, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' =  ANY VERSION_SERIES_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <> ANY VERSION_SERIES_ID", 45, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <  ANY VERSION_SERIES_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <= ANY VERSION_SERIES_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' >  ANY VERSION_SERIES_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'company' >= ANY VERSION_SERIES_ID", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' =  ANY VersionSeriesId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' <> ANY VersionSeriesId", 45, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' <  ANY VersionSeriesId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' <= ANY VersionSeriesId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' >  ANY VersionSeriesId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE 'company' >= ANY VersionSeriesId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_ID IN     ('company')", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT VERSION_SERIES_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_SERIES_ID NOT IN ('company')", 45, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE ANY VersionSeriesId IN     ('company')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT VersionSeriesId FROM Document WHERE ANY VersionSeriesId NOT IN ('company')", 45, false, "ObjectId", new String(), true);
     }
 
     public void test_VERSION_LABEL()
     {
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL =  'company'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL <> 'company'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL <  'company'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL <= 'company'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL >  'company'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL >= 'company'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel =  'company'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <> 'company'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <  'company'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <= 'company'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel >  'company'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel >= 'company'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL IN     ('company')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL NOT IN ('company')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IN     ('company')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT IN ('company')", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL     LIKE 'company'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL NOT LIKE 'company'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel     LIKE 'company'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT LIKE 'company'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL IS NOT NULL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE VERSION_LABEL IS     NULL", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IS NOT NULL", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IS     NULL", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' =  ANY VERSION_LABEL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <> ANY VERSION_LABEL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <  ANY VERSION_LABEL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' <= ANY VERSION_LABEL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' >  ANY VERSION_LABEL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE 'company' >= ANY VERSION_LABEL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' =  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' <> ANY VersionLabel", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' <  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' <= ANY VersionLabel", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' >  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' >= ANY VersionLabel", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_LABEL IN     ('company')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT VERSION_LABEL FROM DOCUMENT_OBJECT_TYPE WHERE ANY VERSION_LABEL NOT IN ('company')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE ANY VersionLabel IN     ('company')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE ANY VersionLabel NOT IN ('company')", 45, false, "ObjectId", new String(), false);
     }
 
     public void test_IS_LATEST_MAJOR_VERSION()
     {
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION =  'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION <> 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION <  'TRUE'", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION <= 'TRUE'", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION >  'TRUE'", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION >= 'TRUE'", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion =  'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion <> 'TRUE'", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion <  'TRUE'", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion <= 'TRUE'", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion >  'TRUE'", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion >= 'TRUE'", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION     LIKE 'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION NOT LIKE 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion     LIKE 'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion NOT LIKE 'TRUE'", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION IS NOT NULL", 33, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_MAJOR_VERSION IS     NULL", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion IS NOT NULL", 33, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE IsLatestMajorVersion IS     NULL", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' =  ANY IS_LATEST_MAJOR_VERSION", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <> ANY IS_LATEST_MAJOR_VERSION", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <  ANY IS_LATEST_MAJOR_VERSION", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <= ANY IS_LATEST_MAJOR_VERSION", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >  ANY IS_LATEST_MAJOR_VERSION", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >= ANY IS_LATEST_MAJOR_VERSION", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' =  ANY IsLatestMajorVersion", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' <> ANY IsLatestMajorVersion", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' <  ANY IsLatestMajorVersion", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' <= ANY IsLatestMajorVersion", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' >  ANY IsLatestMajorVersion", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE 'TRUE' >= ANY IsLatestMajorVersion", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_LATEST_MAJOR_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_LATEST_MAJOR_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE ANY IsLatestMajorVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestMajorVersion FROM Document WHERE ANY IsLatestMajorVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
     }
 
     public void test_IS_MAJOR_VERSION()
     {
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION =  'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION <> 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION <  'TRUE'", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION <= 'TRUE'", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION >  'TRUE'", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION >= 'TRUE'", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion =  'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion <> 'TRUE'", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion <  'TRUE'", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion <= 'TRUE'", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion >  'TRUE'", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion >= 'TRUE'", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION     LIKE 'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION NOT LIKE 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion     LIKE 'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion NOT LIKE 'TRUE'", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION IS NOT NULL", 33, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_MAJOR_VERSION IS     NULL", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion IS NOT NULL", 33, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE IsMajorVersion IS     NULL", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' =  ANY IS_MAJOR_VERSION", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <> ANY IS_MAJOR_VERSION", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <  ANY IS_MAJOR_VERSION", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <= ANY IS_MAJOR_VERSION", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >  ANY IS_MAJOR_VERSION", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >= ANY IS_MAJOR_VERSION", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' =  ANY IsMajorVersion", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' <> ANY IsMajorVersion", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' <  ANY IsMajorVersion", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' <= ANY IsMajorVersion", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' >  ANY IsMajorVersion", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE 'TRUE' >= ANY IsMajorVersion", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_MAJOR_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_MAJOR_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_MAJOR_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE ANY IsMajorVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsMajorVersion FROM Document WHERE ANY IsMajorVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
     }
 
     public void test_IS_LATEST_VERSION()
     {
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION =  'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION <> 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION <  'TRUE'", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION <= 'TRUE'", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION >  'TRUE'", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION >= 'TRUE'", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion =  'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion <> 'TRUE'", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion <  'TRUE'", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion <= 'TRUE'", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion >  'TRUE'", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion >= 'TRUE'", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION     LIKE 'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION NOT LIKE 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion     LIKE 'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion NOT LIKE 'TRUE'", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION IS NOT NULL", 33, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE IS_LATEST_VERSION IS     NULL", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion IS NOT NULL", 33, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE IsLatestVersion IS     NULL", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' =  ANY IS_LATEST_VERSION", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <> ANY IS_LATEST_VERSION", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <  ANY IS_LATEST_VERSION", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <= ANY IS_LATEST_VERSION", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >  ANY IS_LATEST_VERSION", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >= ANY IS_LATEST_VERSION", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' =  ANY IsLatestVersion", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' <> ANY IsLatestVersion", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' <  ANY IsLatestVersion", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' <= ANY IsLatestVersion", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' >  ANY IsLatestVersion", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE 'TRUE' >= ANY IsLatestVersion", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_LATEST_VERSION IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_LATEST_VERSION FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_LATEST_VERSION NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE ANY IsLatestVersion IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsLatestVersion FROM Document WHERE ANY IsLatestVersion NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
     }
 
     public void test_IS_IMMUTABLE()
     {
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE =  'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE <> 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE <  'TRUE'", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE <= 'TRUE'", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE >  'TRUE'", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE >= 'TRUE'", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable =  'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable <> 'TRUE'", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable <  'TRUE'", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable <= 'TRUE'", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable >  'TRUE'", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable >= 'TRUE'", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE     LIKE 'TRUE'", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE NOT LIKE 'TRUE'", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable     LIKE 'TRUE'", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable NOT LIKE 'TRUE'", 32, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE IS NOT NULL", 33, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE IS_IMMUTABLE IS     NULL", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable IS NOT NULL", 33, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE IsImmutable IS     NULL", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' =  ANY IS_IMMUTABLE", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <> ANY IS_IMMUTABLE", 32, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <  ANY IS_IMMUTABLE", 6, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' <= ANY IS_IMMUTABLE", 7, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >  ANY IS_IMMUTABLE", 30, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE 'TRUE' >= ANY IS_IMMUTABLE", 30, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' =  ANY IsImmutable", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' <> ANY IsImmutable", 32, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' <  ANY IsImmutable", 6, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' <= ANY IsImmutable", 7, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' >  ANY IsImmutable", 30, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE 'TRUE' >= ANY IsImmutable", 30, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_IMMUTABLE IN     ('TRUE')", 1, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT IS_IMMUTABLE FROM DOCUMENT_OBJECT_TYPE WHERE ANY IS_IMMUTABLE NOT IN ('TRUE')", 32, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE ANY IsImmutable IN     ('TRUE')", 1, false, "ObjectId", new String(), true);
+        testQuery("SELECT IsImmutable FROM Document WHERE ANY IsImmutable NOT IN ('TRUE')", 32, false, "ObjectId", new String(), true);
     }
 
     public void test_folder_NAME()
     {
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME =  'company'", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME <> 'company'", 32, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME <  'company'", 6, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME <= 'company'", 7, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME >  'company'", 30, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME >= 'company'", 30, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name =  'company'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <> 'company'", 32, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <  'company'", 6, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <= 'company'", 7, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >  'company'", 30, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >= 'company'", 30, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME IN     ('company')", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME NOT IN ('company')", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name IN     ('company')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name NOT IN ('company')", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME     LIKE 'company'", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME NOT LIKE 'company'", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name     LIKE 'company'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name NOT LIKE 'company'", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE NAME IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name IS NOT NULL", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' =  ANY NAME", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' <> ANY NAME", 32, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' <  ANY NAME", 6, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' <= ANY NAME", 7, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' >  ANY NAME", 30, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE 'company' >= ANY NAME", 30, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' =  ANY Name", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' <> ANY Name", 32, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' <  ANY Name", 6, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' <= ANY Name", 7, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' >  ANY Name", 30, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' >= ANY Name", 30, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE ANY NAME IN     ('company')", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT NAME FROM FOLDER_OBJECT_TYPE WHERE ANY NAME NOT IN ('company')", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE ANY Name IN     ('company')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE ANY Name NOT IN ('company')", 32, false, "ObjectId", new String(), false);
     }
 
-    public void test_document_NAME()
+    public void test_document_Name()
     {
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME =  'tutorial'", 1, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME <> 'tutorial'", 44, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME <  'tutorial'", 45, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME <= 'tutorial'", 45, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME >  'tutorial'", 8, true, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME >= 'tutorial'", 9, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name =  'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <> 'tutorial'", 44, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <  'tutorial'", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <= 'tutorial'", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name >  'tutorial'", 8, true, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name >= 'tutorial'", 9, false, "Name", new String(), false);
 
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME IN     ('tutorial')", 1, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME NOT IN ('tutorial')", 44, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name NOT IN ('tutorial')", 44, false, "Name", new String(), false);
 
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME     LIKE 'tutorial'", 1, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME NOT LIKE 'tutorial'", 44, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name     LIKE 'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name NOT LIKE 'tutorial'", 44, false, "Name", new String(), false);
 
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME IS NOT NULL", 45, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE NAME IS     NULL", 0, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IS NOT NULL", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IS     NULL", 0, false, "Name", new String(), false);
 
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' =  ANY NAME", 1, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <> ANY NAME", 44, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <  ANY NAME", 45, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' <= ANY NAME", 45, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' >  ANY NAME", 8, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE 'tutorial' >= ANY NAME", 9, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' =  ANY Name", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <> ANY Name", 44, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <  ANY Name", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <= ANY Name", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' >  ANY Name", 8, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' >= ANY Name", 9, false, "Name", new String(), false);
 
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE ANY NAME IN     ('tutorial')", 1, false, "NAME", new String(), false);
-        testQuery("SELECT NAME FROM DOCUMENT_OBJECT_TYPE WHERE ANY NAME NOT IN ('tutorial')", 44, false, "NAME", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE ANY Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE ANY Name NOT IN ('tutorial')", 44, false, "Name", new String(), false);
     }
 
     public void test_CHANGE_TOKEN()
     {
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN =  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN <> 'test'", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN <  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN <= 'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN >  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN >= 'test'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken =  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <> 'test'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <= 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >= 'test'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN IN     ('test')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN NOT IN ('test')", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT IN ('test')", 33, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN     LIKE 'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN NOT LIKE 'test'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken     LIKE 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN IS NOT NULL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE CHANGE_TOKEN IS     NULL", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS NOT NULL", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS     NULL", 33, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' =  ANY CHANGE_TOKEN", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' <> ANY CHANGE_TOKEN", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' <  ANY CHANGE_TOKEN", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' <= ANY CHANGE_TOKEN", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' >  ANY CHANGE_TOKEN", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE 'test' >= ANY CHANGE_TOKEN", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' =  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <> ANY ChangeToken", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE ANY CHANGE_TOKEN IN     ('test')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CHANGE_TOKEN FROM FOLDER_OBJECT_TYPE WHERE ANY CHANGE_TOKEN NOT IN ('test')", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken NOT IN ('test')", 33, false, "ObjectId", new String(), false);
     }
 
     public void test_LAST_MODIFICATION_DATE()
@@ -713,7 +713,7 @@ public class QueryTest extends BaseCMISTest
         Calendar today = Calendar.getInstance();
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", true);
 
-        Date date = testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE", -1, false, "LAST_MODIFICATION_DATE", new Date(), false);
+        Date date = testQuery("SELECT LastModificationDate FROM Document", -1, false, "LastModificationDate", new Date(), false);
         today.setTime(date);
 
         // start.set(Calendar.YEAR, start.getMinimum(Calendar.YEAR));
@@ -727,31 +727,31 @@ public class QueryTest extends BaseCMISTest
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE =  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <> '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE     LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
         // using yesterday
 
@@ -761,31 +761,31 @@ public class QueryTest extends BaseCMISTest
         yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
         sDate = df.format(yesterday.getTime());
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE =  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <> '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <= '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE     LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         // using tomorrow
 
@@ -795,61 +795,61 @@ public class QueryTest extends BaseCMISTest
         tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
         sDate = df.format(tomorrow.getTime());
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE =  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <> '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE <= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE >= '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE     LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE NOT LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFICATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY LAST_MODIFICATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY LAST_MODIFICATION_DATE", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFICATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFICATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
     }
 
     public void test_LAST_MODIFIED_BY()
     {
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY =  'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY <> 'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY <  'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY <= 'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY >  'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY >= 'System'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy =  'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <> 'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <  'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <= 'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy >  'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy >= 'System'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY IN     ('System')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY NOT IN ('System')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY     LIKE 'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY NOT LIKE 'System'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy     LIKE 'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy NOT LIKE 'System'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE LAST_MODIFIED_BY IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' =  ANY LAST_MODIFIED_BY", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <> ANY LAST_MODIFIED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <  ANY LAST_MODIFIED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <= ANY LAST_MODIFIED_BY", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' >  ANY LAST_MODIFIED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' >= ANY LAST_MODIFIED_BY", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' =  ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <> ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <  ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <= ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' >  ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' >= ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFIED_BY IN     ('System')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT LAST_MODIFIED_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY LAST_MODIFIED_BY NOT IN ('System')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE ANY LastModifiedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE ANY LastModifiedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
     }
 
@@ -860,7 +860,7 @@ public class QueryTest extends BaseCMISTest
         Calendar today = Calendar.getInstance();
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", true);
 
-        Date date = testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE", -1, false, "CREATION_DATE", new Date(), false);
+        Date date = testQuery("SELECT CreationDate FROM Document", -1, false, "CreationDate", new Date(), false);
         today.setTime(date);
 
         // start.set(Calendar.YEAR, start.getMinimum(Calendar.YEAR));
@@ -874,31 +874,31 @@ public class QueryTest extends BaseCMISTest
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE =  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <> '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IN     ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT IN ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE     LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE IN     ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE NOT IN ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
         // using yesterday
 
@@ -908,31 +908,31 @@ public class QueryTest extends BaseCMISTest
         yesterday.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
         sDate = df.format(yesterday.getTime());
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE =  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <> '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <= '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE     LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         // using tomorrow
 
@@ -942,61 +942,61 @@ public class QueryTest extends BaseCMISTest
         tomorrow.set(Calendar.MILLISECOND, today.getMinimum(Calendar.MILLISECOND));
         sDate = df.format(tomorrow.getTime());
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE =  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <> '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <  '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE <= '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >  '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE >= '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE     LIKE '" + sDate + "'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE NOT LIKE '" + sDate + "'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE CREATION_DATE IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' =  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <> ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <  ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' <= ANY CREATION_DATE", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >  ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE '" + sDate + "' >= ANY CREATION_DATE", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE IN     ('" + sDate + "')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATION_DATE FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATION_DATE NOT IN ('" + sDate + "')", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
     }
 
     public void test_CREATED_BY()
     {
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY =  'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY <> 'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY <  'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY <= 'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY >  'System'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY >= 'System'", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy =  'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <> 'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <  'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <= 'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy >  'System'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy >= 'System'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY IN     ('System')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY NOT IN ('System')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY     LIKE 'System'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY NOT LIKE 'System'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy     LIKE 'System'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy NOT LIKE 'System'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE CREATED_BY IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' =  ANY CREATED_BY", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <> ANY CREATED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <  ANY CREATED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' <= ANY CREATED_BY", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' >  ANY CREATED_BY", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE 'System' >= ANY CREATED_BY", 45, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' =  ANY CreatedBy", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' <> ANY CreatedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' <  ANY CreatedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' <= ANY CreatedBy", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' >  ANY CreatedBy", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' >= ANY CreatedBy", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATED_BY IN     ('System')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT CREATED_BY FROM DOCUMENT_OBJECT_TYPE WHERE ANY CREATED_BY NOT IN ('System')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE ANY CreatedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE ANY CreatedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
     }
 
@@ -1004,178 +1004,178 @@ public class QueryTest extends BaseCMISTest
     {
         // DOC
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID =  'DOCUMENT_OBJECT_TYPE'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID <> 'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID <  'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID <= 'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID >  'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID >= 'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId =  'Document'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <> 'Document'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <  'Document'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <= 'Document'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId >  'Document'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId >= 'Document'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID IN     ('DOCUMENT_OBJECT_TYPE')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID NOT IN ('DOCUMENT_OBJECT_TYPE')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IN     ('Document')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId NOT IN ('Document')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID     LIKE 'DOCUMENT_OBJECT_TYPE'", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID NOT LIKE 'DOCUMENT_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId     LIKE 'Document'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId NOT LIKE 'Document'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID IS NOT NULL", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE OBJECT_TYPE_ID IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IS NOT NULL", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' =  ANY OBJECT_TYPE_ID", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' <> ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' <  ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' <= ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' >  ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE 'DOCUMENT_OBJECT_TYPE' >= ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' =  ANY ObjectTypeId", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <> ANY ObjectTypeId", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' >  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' >= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY OBJECT_TYPE_ID IN     ('DOCUMENT_OBJECT_TYPE')", 45, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM DOCUMENT_OBJECT_TYPE WHERE ANY OBJECT_TYPE_ID NOT IN ('DOCUMENT_OBJECT_TYPE')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ANY ObjectTypeId IN     ('Document')", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ANY ObjectTypeId NOT IN ('Document')", 0, false, "ObjectId", new String(), false);
 
         // FOLDER
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID =  'FOLDER_OBJECT_TYPE'", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID <> 'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID <  'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID <= 'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID >  'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID >= 'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId =  'Folder'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <> 'Folder'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <  'Folder'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <= 'Folder'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId >  'Folder'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId >= 'Folder'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID IN     ('FOLDER_OBJECT_TYPE')", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID NOT IN ('FOLDER_OBJECT_TYPE')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IN     ('Folder')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId NOT IN ('Folder')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID     LIKE 'FOLDER_OBJECT_TYPE'", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID NOT LIKE 'FOLDER_OBJECT_TYPE'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId     LIKE 'Folder'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId NOT LIKE 'Folder'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID IS NOT NULL", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_TYPE_ID IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IS NOT NULL", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' =  ANY OBJECT_TYPE_ID", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' <> ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' <  ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' <= ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' >  ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE 'FOLDER_OBJECT_TYPE' >= ANY OBJECT_TYPE_ID", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' =  ANY ObjectTypeId", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <> ANY ObjectTypeId", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' >  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' >= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE ANY OBJECT_TYPE_ID IN     ('FOLDER_OBJECT_TYPE')", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_TYPE_ID FROM FOLDER_OBJECT_TYPE WHERE ANY OBJECT_TYPE_ID NOT IN ('FOLDER_OBJECT_TYPE')", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ANY ObjectTypeId IN     ('Folder')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ANY ObjectTypeId NOT IN ('Folder')", 0, false, "ObjectId", new String(), false);
 
         // RELATIONSHIP
 
-        testQuery("SELECT OBJECT_TYPE_ID FROM RELATIONSHIP_OBJECT_TYPE WHERE OBJECT_TYPE_ID =  ''", 1, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectTypeId FROM Relationship WHERE ObjectTypeId =  ''", 1, false, "ObjectId", new String(), true);
 
     }
 
     public void test_URI()
     {
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI =  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI <> 'test'", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI <  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI <= 'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI >  'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI >= 'test'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri =  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <> 'test'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <= 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri >  'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri >= 'test'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI IN     ('test')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI NOT IN ('test')", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri NOT IN ('test')", 33, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI     LIKE 'test'", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI NOT LIKE 'test'", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri     LIKE 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI IS NOT NULL", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE URI IS     NULL", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IS NOT NULL", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IS     NULL", 33, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' =  ANY URI", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' <> ANY URI", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' <  ANY URI", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' <= ANY URI", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' >  ANY URI", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE 'test' >= ANY URI", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' =  ANY Uri", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <> ANY Uri", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <  ANY Uri", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <= ANY Uri", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' >  ANY Uri", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' >= ANY Uri", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE ANY URI IN     ('test')", 0, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT URI FROM FOLDER_OBJECT_TYPE WHERE ANY URI NOT IN ('test')", 33, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE ANY Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE ANY Uri NOT IN ('test')", 33, false, "ObjectId", new String(), false);
     }
 
-    public void test_OBJECT_ID()
+    public void test_ObjectId()
     {
-        String companyHomeId = testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE NAME = '\"company home\"'", 1, false, "OBJECT_ID", new String(), false);
+        String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = '\"company home\"'", 1, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID =  '" + companyHomeId + "'", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID <> '" + companyHomeId + "'", 32, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID <  '" + companyHomeId + "'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID <= '" + companyHomeId + "'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID >  '" + companyHomeId + "'", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID >= '" + companyHomeId + "'", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId =  '" + companyHomeId + "'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <> '" + companyHomeId + "'", 32, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <  '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <= '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId >  '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId >= '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID IN     ('" + companyHomeId + "')", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID NOT IN ('" + companyHomeId + "')", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IN     ('" + companyHomeId + "')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT IN ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID     LIKE '" + companyHomeId + "'", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID NOT LIKE '" + companyHomeId + "'", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId     LIKE '" + companyHomeId + "'", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT LIKE '" + companyHomeId + "'", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE IN_FOLDER('" + companyHomeId + "')", 4, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE IN_TREE  ('" + companyHomeId + "')", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE IN_FOLDER('" + companyHomeId + "')", 4, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE IN_TREE  ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID IS NOT NULL", 33, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE OBJECT_ID IS     NULL", 0, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IS NOT NULL", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' =  ANY OBJECT_ID", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' <> ANY OBJECT_ID", 32, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' <  ANY OBJECT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' <= ANY OBJECT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' >  ANY OBJECT_ID", 0, false, "OBJECT_ID", new String(), true);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE '" + companyHomeId + "' >= ANY OBJECT_ID", 0, false, "OBJECT_ID", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' =  ANY ObjectId", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <> ANY ObjectId", 32, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <  ANY ObjectId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <= ANY ObjectId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' >  ANY ObjectId", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' >= ANY ObjectId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE ANY OBJECT_ID IN     ('" + companyHomeId + "')", 1, false, "OBJECT_ID", new String(), false);
-        testQuery("SELECT OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE ANY OBJECT_ID NOT IN ('" + companyHomeId + "')", 32, false, "OBJECT_ID", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ANY ObjectId IN     ('" + companyHomeId + "')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ANY ObjectId NOT IN ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
     }
 
     public void testOrderBy()
     {
 
-        String query = "SELECT  OBJECT_ID FROM DOCUMENT_OBJECT_TYPE ORDER OBJECT_ID";
+        String query = "SELECT  ObjectId FROM Document ORDER ObjectId";
         CMISResultSet rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("OBJECT_ID") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("ObjectId") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT  OBJECT_ID FROM DOCUMENT_OBJECT_TYPE ORDER OBJECT_ID ASC";
+        query = "SELECT  ObjectId FROM Document ORDER ObjectId ASC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("OBJECT_ID") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("ObjectId") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT  OBJECT_ID FROM DOCUMENT_OBJECT_TYPE ORDER OBJECT_ID DESC";
+        query = "SELECT  ObjectId FROM Document ORDER ObjectId DESC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("OBJECT_ID") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("ObjectId") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT SCORE() AS MEEP, OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE NAME IN ('company', 'home') ORDER BY MEEP ASC";
+        query = "SELECT SCORE() AS MEEP, ObjectId FROM Folder WHERE Name IN ('company', 'home') ORDER BY MEEP ASC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("OBJECT_ID") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("ObjectId") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT SCORE() AS MEEP, OBJECT_ID FROM FOLDER_OBJECT_TYPE WHERE NAME IN ('company', 'home') ORDER BY MEEP DESC";
+        query = "SELECT SCORE() AS MEEP, ObjectId FROM Folder WHERE Name IN ('company', 'home') ORDER BY MEEP DESC";
         rs = cmisQueryService.query(query);
         // assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("OBJECT_ID") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("ObjectId") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1184,172 +1184,172 @@ public class QueryTest extends BaseCMISTest
 
     public void testAllSimpleTextPredicates()
     {
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'company'";
+        String query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'company'";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NOT NAME = 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND NOT Name = 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND 'company' = ANY NAME";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND 'company' = ANY Name";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NOT NAME <> 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND NOT Name <> 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME <> 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <> 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME < 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name < 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(6, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME <= 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <= 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(7, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME > 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name > 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(30, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME >= 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name >= 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(30, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME IN ('company', 'home')";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name IN ('company', 'home')";
         rs = cmisQueryService.query(query);
         assertEquals(2, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME NOT IN ('company', 'home')";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT IN ('company', 'home')";
         rs = cmisQueryService.query(query);
         assertEquals(31, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND ANY NAME IN ('company', 'home')";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name IN ('company', 'home')";
         rs = cmisQueryService.query(query);
         assertEquals(2, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND ANY NAME NOT IN ('company', 'home')";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name NOT IN ('company', 'home')";
         rs = cmisQueryService.query(query);
         assertEquals(31, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME LIKE 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME LIKE 'com%'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'com%'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME LIKE 'c_m_a_y'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name LIKE 'c_m_a_y'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME NOT LIKE 'c_m_a_y'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'c_m_a_y'";
         rs = cmisQueryService.query(query);
         assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1358,32 +1358,32 @@ public class QueryTest extends BaseCMISTest
     public void testSimpleConjunction()
     {
 
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'company'";
+        String query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'company'";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'home'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'home'";
         rs = cmisQueryService.query(query);
         assertEquals(2, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'home' AND NAME = 'company'";
+        query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name = 'home' AND Name = 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1392,32 +1392,32 @@ public class QueryTest extends BaseCMISTest
     public void testSimpleDisjunction()
     {
 
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'guest'";
+        String query = "SELECT * FROM Folder WHERE Name = 'guest'";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'company'";
+        query = "SELECT * FROM Folder WHERE Name = 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'guest' OR NAME = 'company'";
+        query = "SELECT * FROM Folder WHERE Name = 'guest' OR Name = 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(2, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1426,42 +1426,42 @@ public class QueryTest extends BaseCMISTest
 
     public void testExists()
     {
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL";
+        String query = "SELECT * FROM Folder WHERE Name IS NOT NULL";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(33, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NULL";
+        query = "SELECT * FROM Folder WHERE Name IS NULL";
         rs = cmisQueryService.query(query);
         assertEquals(0, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE URI IS NOT NULL";
+        query = "SELECT * FROM Document WHERE Uri IS NOT NULL";
         rs = cmisQueryService.query(query);
         assertEquals(0, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE URI IS NULL";
+        query = "SELECT * FROM Document WHERE Uri IS NULL";
         rs = cmisQueryService.query(query);
         assertEquals(45, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1482,44 +1482,44 @@ public class QueryTest extends BaseCMISTest
         NodeRef rootNode = cmisService.getDefaultRootNodeRef();
 
         Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_NAME);
-        String name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
+        String Name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = '" + name + "'";
+        String query = "SELECT * FROM Folder WHERE Name = '" + Name + "'";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'company'";
+        query = "SELECT * FROM Folder WHERE Name = 'company'";
         rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE PARENT = '" + rootNode.toString() + "'";
+        query = "SELECT * FROM Folder WHERE ParentId = '" + rootNode.toString() + "'";
         rs = cmisQueryService.query(query);
         assertEquals(4, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
 
-        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES = 'meep'";
+        query = "SELECT * FROM Folder WHERE AllowedChildObjectTypeIds = 'meep'";
         rs = cmisQueryService.query(query);
         assertEquals(0, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
         rs = null;
@@ -1533,12 +1533,12 @@ public class QueryTest extends BaseCMISTest
         Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE IN_TREE('" + id + "')";
+        String query = "SELECT * FROM Folder WHERE IN_TREE('" + id + "')";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
 
@@ -1551,24 +1551,24 @@ public class QueryTest extends BaseCMISTest
         Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
-        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE IN_FOLDER('" + id + "')";
+        String query = "SELECT * FROM Folder WHERE IN_FOLDER('" + id + "')";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(4, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
     }
 
     public void testFTS()
     {
-        String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE CONTAINS('\"Sample demonstrating the listing of AVM folder contents\"')";
+        String query = "SELECT * FROM Document WHERE CONTAINS('\"Sample demonstrating the listing of AVM folder contents\"')";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(1, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
-            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+            System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
         }
         rs.close();
     }
@@ -1576,7 +1576,7 @@ public class QueryTest extends BaseCMISTest
     public void testBasicSelectAsGuest()
     {
         runAs("guest");
-        String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE";
+        String query = "SELECT * FROM Document";
         CMISResultSet rs = cmisQueryService.query(query);
         assertEquals(2, rs.getLength());
         rs.close();
@@ -1584,7 +1584,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicSelect()
     {
-        String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE";
+        String query = "SELECT * FROM Document";
         CMISResultSet rs = cmisQueryService.query(query);
         for (CMISResultSetRow row : rs)
         {
@@ -1595,7 +1595,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicDefaultMetaData()
     {
-        String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE";
+        String query = "SELECT * FROM Document";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
@@ -1608,12 +1608,12 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicMetaData()
     {
-        String query = "SELECT DOC.OBJECT_ID, DOC.OBJECT_ID AS ID FROM DOCUMENT_OBJECT_TYPE AS DOC";
+        String query = "SELECT DOC.ObjectId, DOC.ObjectId AS ID FROM Document AS DOC";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
         assertEquals(2, md.getColumnNames().length);
-        assertNotNull(md.getColumn("DOC.OBJECT_ID"));
+        assertNotNull(md.getColumn("DOC.ObjectId"));
         assertNotNull(md.getColumn("ID"));
         assertEquals(1, md.getSelectors().length);
         assertNotNull(md.getSelector("DOC"));
@@ -1622,12 +1622,12 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicColumns()
     {
-        String query = "SELECT DOC.OBJECT_ID, DOC.OBJECT_TYPE_ID AS ID FROM FOLDER_OBJECT_TYPE AS DOC";
+        String query = "SELECT DOC.ObjectId, DOC.ObjectTypeId AS ID FROM Folder AS DOC";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
         assertEquals(2, md.getColumnNames().length);
-        assertNotNull(md.getColumn("DOC.OBJECT_ID"));
+        assertNotNull(md.getColumn("DOC.ObjectId"));
         assertNotNull(md.getColumn("ID"));
         assertEquals(1, md.getSelectors().length);
         assertNotNull(md.getSelector("DOC"));
@@ -1640,7 +1640,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicAllDocumentColumns()
     {
-        String query = "SELECT DOC.*  FROM DOCUMENT_OBJECT_TYPE AS DOC";
+        String query = "SELECT DOC.*  FROM Document AS DOC";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
 
@@ -1657,7 +1657,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testBasicAllFolderColumns()
     {
-        String query = "SELECT *  FROM FOLDER_OBJECT_TYPE AS DOC";
+        String query = "SELECT *  FROM Folder AS DOC";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
 
@@ -1694,16 +1694,16 @@ public class QueryTest extends BaseCMISTest
 
     public void testFunctionColumns()
     {
-        String query = "SELECT DOC.NAME AS NAME, \nLOWER(\tDOC.NAME \n), LOWER ( DOC.NAME )  AS LNAME, UPPER ( DOC.NAME ) , UPPER(DOC.NAME) AS UNAME, Score(), SCORE(DOC), SCORE() AS SCORED, SCORE(DOC) AS DOCSCORE FROM FOLDER_OBJECT_TYPE AS DOC";
+        String query = "SELECT DOC.Name AS Name, \nLOWER(\tDOC.Name \n), LOWER ( DOC.Name )  AS LName, UPPER ( DOC.Name ) , UPPER(DOC.Name) AS UName, Score(), SCORE(DOC), SCORE() AS SCORED, SCORE(DOC) AS DOCSCORE FROM Folder AS DOC";
         CMISResultSet rs = cmisQueryService.query(query);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
         assertEquals(9, md.getColumnNames().length);
-        assertNotNull(md.getColumn("NAME"));
-        assertNotNull(md.getColumn("LOWER(\tDOC.NAME \n)"));
-        assertNotNull(md.getColumn("LNAME"));
-        assertNotNull(md.getColumn("UPPER ( DOC.NAME )"));
-        assertNotNull(md.getColumn("UNAME"));
+        assertNotNull(md.getColumn("Name"));
+        assertNotNull(md.getColumn("LOWER(\tDOC.Name \n)"));
+        assertNotNull(md.getColumn("LName"));
+        assertNotNull(md.getColumn("UPPER ( DOC.Name )"));
+        assertNotNull(md.getColumn("UName"));
         assertNotNull(md.getColumn("Score()"));
         assertNotNull(md.getColumn("SCORE(DOC)"));
         assertNotNull(md.getColumn("SCORED"));
@@ -1721,7 +1721,7 @@ public class QueryTest extends BaseCMISTest
 
     public void xtestParse1()
     {
-        String query = "SELECT UPPER(1.0) AS WOOF FROM DOCUMENT_OBJECT_TYPE AS DOC LEFT OUTER JOIN FOLDER_OBJECT_TYPE AS FOLDER ON (DOC.NAME = FOLDER.NAME) WHERE LOWER(DOC.NAME = ' woof' AND CONTAINS(, 'one two three') AND  CONTAINS(, 'DOC.NAME:lemur AND woof') AND (DOC.NAME in ('one', 'two') AND IN_FOLDER('meep') AND DOC.NAME like 'woof' and DOC.NAME = 'woof' and DOC.OBJECT_ID = 'meep') ORDER BY DOC.NAME DESC, WOOF";
+        String query = "SELECT UPPER(1.0) AS WOOF FROM Document AS DOC LEFT OUTER JOIN Folder AS FOLDER ON (DOC.Name = FOLDER.Name) WHERE LOWER(DOC.Name = ' woof' AND CONTAINS(, 'one two three') AND  CONTAINS(, 'DOC.Name:lemur AND woof') AND (DOC.Name in ('one', 'two') AND IN_FOLDER('meep') AND DOC.Name like 'woof' and DOC.Name = 'woof' and DOC.ObjectId = 'meep') ORDER BY DOC.Name DESC, WOOF";
         cmisQueryService.query(query);
     }
 
@@ -1733,7 +1733,7 @@ public class QueryTest extends BaseCMISTest
 
     public void xtestParse3()
     {
-        String query = "SELECT OBJECT_ID, SCORE() AS X, DESTINATION, DEPARTURE_DATES FROM TRAVEL_BROCHURE WHERE ( CONTAINS(, 'CARIBBEAN CENTRAL AMERICA CRUISE TOUR') ) AND ( '2009-1-1' < ANY DEPARTURE_DATES ) ORDER BY X DESC";
+        String query = "SELECT ObjectId, SCORE() AS X, DESTINATION, DEPARTURE_DATES FROM TRAVEL_BROCHURE WHERE ( CONTAINS(, 'CARIBBEAN CENTRAL AMERICA CRUISE TOUR') ) AND ( '2009-1-1' < ANY DEPARTURE_DATES ) ORDER BY X DESC";
         cmisQueryService.query(query);
     }
 

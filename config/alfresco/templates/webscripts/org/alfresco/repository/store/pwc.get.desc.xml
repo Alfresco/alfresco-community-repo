@@ -4,5 +4,5 @@
   <url>/api/pwc/{store_type}/{store_id}/{id}?filter={filter?}</url>
   <authentication>user</authentication>
   <format default="atomentry">argument</format>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

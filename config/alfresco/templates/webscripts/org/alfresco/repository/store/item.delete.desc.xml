@@ -5,5 +5,5 @@
   <url>/api/path/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
   <authentication>user</authentication>
   <format default="atomentry"/>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

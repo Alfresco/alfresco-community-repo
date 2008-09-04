@@ -5,5 +5,5 @@
   <url>/api/path/{store_type}/{store_id}/{id}/parent?returnToRoot={returnToRoot}</url>
   <authentication>guest</authentication>
   <format default="atomfeed">argument</format>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

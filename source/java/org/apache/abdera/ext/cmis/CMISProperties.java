@@ -55,14 +55,40 @@ public class CMISProperties extends ElementWrapper
 
     public String getObjectId()
     {
-        Element child = getInternal().getFirstChild(CMISConstants.OBJECTID);
-        return (child == null) ? null : child.getText();
+        return findPropertyID(CMISConstants.PROP_OBJECTID);
     }
 
     public String getBaseType()
     {
-        Element child = getInternal().getFirstChild(CMISConstants.BASETYPE);
-        return (child == null) ? null : child.getText();
+        return findPropertyString(CMISConstants.PROP_BASETYPE);
     }
     
+    private String findPropertyString(String name)
+    {
+        Element child = getFirstChild(CMISConstants.PROPERTY_STRING);
+        while(child != null)
+        {
+            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
+            {
+                return child.getText();
+            }
+            child = child.getNextSibling(CMISConstants.PROPERTY_STRING);
+        }
+        return null;
+    }
+
+    private String findPropertyID(String name)
+    {
+        Element child = getFirstChild(CMISConstants.PROPERTY_ID);
+        while(child != null)
+        {
+            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
+            {
+                return child.getText();
+            }
+            child = child.getNextSibling(CMISConstants.PROPERTY_ID);
+        }
+        return null;
+    }
+
 }

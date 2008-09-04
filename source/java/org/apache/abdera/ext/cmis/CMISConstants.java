@@ -43,10 +43,17 @@ public interface CMISConstants
 {
     public static final String CMIS_200805_NS = "http://www.cmis.org/2008/05";
 
+    // CMIS Schema
     public static final QName PROPERTIES  = new QName(CMIS_200805_NS, "properties");
-    public static final QName OBJECTID  = new QName(CMIS_200805_NS, "objectId");
-    public static final QName BASETYPE = new QName(CMIS_200805_NS, "baseType");
+    public static final QName PROPERTY_STRING = new QName(CMIS_200805_NS, "propertyString");
+    public static final QName PROPERTY_ID = new QName(CMIS_200805_NS, "propertyID");
+    public static final QName PROPERTY_NAME = new QName(CMIS_200805_NS, "name");
+    
+    // CMIS Properties
+    public static final String PROP_OBJECTID  = "objectId";
+    public static final String PROP_BASETYPE = "baseType";
  
+    // CMIS Relationships
     public static final String REL_CHILDREN = "cmis-children";
     public static final String REL_PARENT = "cmis-parent";
     public static final String REL_PARENTS = "cmis-parents";

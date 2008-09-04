@@ -8,5 +8,5 @@
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
   <authentication>guest</authentication>
   <format default="">argument</format>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

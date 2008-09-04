@@ -150,6 +150,13 @@ public class CMISSchemaTest extends TestCase
         assertValidXML(xml, cmisValidator.getCMISAtomValidator());
     }
 
+    public void testFolderChildrenAlfresco()
+        throws Exception
+    {
+        String xml = getXML("Example-FolderChildren-Alfresco.xml");
+        assertValidXML(xml, cmisValidator.getCMISAtomValidator());
+    }
+
     public void testFolderDescendants()
         throws Exception
     {

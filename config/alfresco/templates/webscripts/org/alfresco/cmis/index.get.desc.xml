@@ -1,6 +1,0 @@
-<webscript>
-  <shortname>CMIS Index</shortname>
-  <description>Provides an index of CMIS services</description>
-  <url>/cmis</url>
-  <url>/index/cmis</url>
-</webscript>

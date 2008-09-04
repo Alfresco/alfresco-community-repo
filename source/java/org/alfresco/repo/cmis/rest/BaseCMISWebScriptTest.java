@@ -111,9 +111,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     protected Validator getAtomValidator()
         throws IOException, SAXException
     {
-        return null;
-        // TODO: Enable Atom Feed/Entry validator once up-to-date with 0.42
-        //return getCMISValidator().getCMISAtomValidator();
+        return getCMISValidator().getCMISAtomValidator();
     }
 
     /**

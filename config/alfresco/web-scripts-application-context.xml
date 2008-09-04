@@ -409,8 +409,6 @@
       <property name="repository" ref="repositoryHelper" />
    </bean>
 
-   <bean id="webscripts.cmis.description" class="org.alfresco.repo.cmis.rest.CMISDescription"/>
-
    <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
       <property name="abderaService" ref="webscripts.abdera"/>
       <property name="defaultNamespace"><value>http://www.cmis.org/2008/05</value></property>
@@ -425,18 +423,5 @@
          </list>
       </property>
    </bean>
-
-   <!--  CMIS  -->
-   <bean id="webscript.org.alfresco.cmis.index.get" class="org.alfresco.repo.cmis.rest.Index" parent="webscript"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.repository.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.children.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.children.post" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.descendants.delete" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.parent.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.parents.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.item.delete" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.item.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.unfiled.get" name="webscripts.cmis.description"/>
-   <alias alias="webscriptdesc.org.alfresco.repository.store.content.get" name="webscripts.cmis.description"/>
    
 </beans>

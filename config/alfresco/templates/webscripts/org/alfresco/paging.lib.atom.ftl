@@ -1,9 +1,4 @@
-<#macro cursor cursor pageArg="pageNo" skipArg="skipCount">
-<#-- NOTE: this macro requires the definition of xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" in -->
-<#--       the enclosing document                                                                           -->
-<opensearch:totalResults>${cursor.totalRows}</opensearch:totalResults>
-<opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>
-<opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
+<#macro links cursor pageArg="pageNo" skipArg="skipCount">
 <#if cursor.pageType = "PAGE">
 <#if cursor.hasFirstPage>
 <link rel="first" href="${absurl(encodeuri(scripturl(argreplace(url.args, pageArg, cursor.firstPage))))?xml}" type="${format.type}"/>
@@ -31,4 +26,12 @@
 <link rel="next" href="${absurl(encodeuri(scripturl(argreplace(url.args, skipArg, cursor.nextPage))))?xml}" type="${format.type}"/>
 </#if>  
 </#if>
+</#macro>
+
+<#macro opensearch cursor>
+<#-- NOTE: this macro requires the definition of xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" in -->
+<#--       the enclosing document                                                                           -->
+<opensearch:totalResults>${cursor.totalRows}</opensearch:totalResults>
+<opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>
+<opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
 </#macro>

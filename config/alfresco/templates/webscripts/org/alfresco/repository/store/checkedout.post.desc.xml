@@ -4,5 +4,5 @@
   <url>/api/checkedout</url>
   <authentication>user</authentication>
   <format default="atomentry"/>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

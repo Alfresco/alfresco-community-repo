@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Repository AtomPub Service Document</shortname>
-  <description>Repository ATOM Publishing Service Document (with CMIS extensions)</description>
+  <description>Repository ATOM Publishing Service Document</description>
   <url>/api/repository</url>
   <format default="atom"/>
   <authentication>none</authentication>
-  <cmis version="0.21"/>
+  <family>CMIS</family>
 </webscript>

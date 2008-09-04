@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\CMIS.g 2008-07-08 14:37:52
+// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\CMIS.g 2008-07-15 16:24:39
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -278,7 +278,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: selectList, orderByClause, whereClause, fromClause
+            // elements: fromClause, selectList, whereClause, orderByClause
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -715,7 +715,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnName, valueExpression
+                    // elements: valueExpression, columnName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1248,7 +1248,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnName, qualifier
+            // elements: qualifier, multiValuedColumnName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2382,7 +2382,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinType, joinSpecification, JOIN, tableReference
+            // elements: joinSpecification, tableReference, JOIN, joinType
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2765,7 +2765,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: EQUALS, ON, lhs, rhs
+            // elements: rhs, EQUALS, lhs, ON
             // token labels: 
             // rule labels: retval, rhs, lhs
             // token list labels: 
@@ -3607,7 +3607,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: compOp, valueExpression, literalOrParameterName
+            // elements: valueExpression, literalOrParameterName, compOp
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3893,7 +3893,7 @@ public class CMISParser extends Parser {
     };
 
     // $ANTLR start inPredicate
-    // W:\\workspace-cmis\\ANTLR\\CMIS.g:335:1: inPredicate : columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference ( NOT )? inValueList ) ;
+    // W:\\workspace-cmis\\ANTLR\\CMIS.g:335:1: inPredicate : columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) ;
     public final CMISParser.inPredicate_return inPredicate() throws RecognitionException {
         CMISParser.inPredicate_return retval = new CMISParser.inPredicate_return();
         retval.start = input.LT(1);
@@ -3920,7 +3920,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_inValueList=new RewriteRuleSubtreeStream(adaptor,"rule inValueList");
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:336:2: ( columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference ( NOT )? inValueList ) )
+            // W:\\workspace-cmis\\ANTLR\\CMIS.g:336:2: ( columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:336:4: columnReference ( NOT )? IN LPAREN inValueList RPAREN
             {
             pushFollow(FOLLOW_columnReference_in_inPredicate1207);
@@ -3967,7 +3967,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference, inValueList
+            // elements: inValueList, NOT, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3977,22 +3977,22 @@ public class CMISParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 337:3: -> ^( PRED_IN ANY columnReference ( NOT )? inValueList )
+            // 337:3: -> ^( PRED_IN ANY columnReference inValueList ( NOT )? )
             {
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:337:6: ^( PRED_IN ANY columnReference ( NOT )? inValueList )
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:337:6: ^( PRED_IN ANY columnReference inValueList ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_IN, "PRED_IN"), root_1);
 
                 adaptor.addChild(root_1, (Object)adaptor.create(ANY, "ANY"));
                 adaptor.addChild(root_1, stream_columnReference.nextTree());
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:337:36: ( NOT )?
+                adaptor.addChild(root_1, stream_inValueList.nextTree());
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:337:48: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
                 }
                 stream_NOT.reset();
-                adaptor.addChild(root_1, stream_inValueList.nextTree());
 
                 adaptor.addChild(root_0, root_1);
                 }
@@ -4148,7 +4148,7 @@ public class CMISParser extends Parser {
     };
 
     // $ANTLR start likePredicate
-    // W:\\workspace-cmis\\ANTLR\\CMIS.g:345:1: likePredicate : columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference ( NOT )? characterStringLiteral ) ;
+    // W:\\workspace-cmis\\ANTLR\\CMIS.g:345:1: likePredicate : columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) ;
     public final CMISParser.likePredicate_return likePredicate() throws RecognitionException {
         CMISParser.likePredicate_return retval = new CMISParser.likePredicate_return();
         retval.start = input.LT(1);
@@ -4169,7 +4169,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_characterStringLiteral=new RewriteRuleSubtreeStream(adaptor,"rule characterStringLiteral");
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:346:2: ( columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference ( NOT )? characterStringLiteral ) )
+            // W:\\workspace-cmis\\ANTLR\\CMIS.g:346:2: ( columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:346:4: columnReference ( NOT )? LIKE characterStringLiteral
             {
             pushFollow(FOLLOW_columnReference_in_likePredicate1278);
@@ -4210,7 +4210,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: characterStringLiteral, columnReference, NOT
+            // elements: characterStringLiteral, NOT, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4220,21 +4220,21 @@ public class CMISParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 347:3: -> ^( PRED_LIKE columnReference ( NOT )? characterStringLiteral )
+            // 347:3: -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? )
             {
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:347:6: ^( PRED_LIKE columnReference ( NOT )? characterStringLiteral )
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:347:6: ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_LIKE, "PRED_LIKE"), root_1);
 
                 adaptor.addChild(root_1, stream_columnReference.nextTree());
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:347:34: ( NOT )?
+                adaptor.addChild(root_1, stream_characterStringLiteral.nextTree());
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:347:57: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
                 }
                 stream_NOT.reset();
-                adaptor.addChild(root_1, stream_characterStringLiteral.nextTree());
 
                 adaptor.addChild(root_0, root_1);
                 }
@@ -4448,7 +4448,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference
+            // elements: columnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4554,7 +4554,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ANY, multiValuedColumnReference, compOp, literalOrParameterName
+            // elements: ANY, literalOrParameterName, multiValuedColumnReference, compOp
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4609,7 +4609,7 @@ public class CMISParser extends Parser {
     };
 
     // $ANTLR start quantifiedInPredicate
-    // W:\\workspace-cmis\\ANTLR\\CMIS.g:361:1: quantifiedInPredicate : ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference ( NOT )? inValueList ) ;
+    // W:\\workspace-cmis\\ANTLR\\CMIS.g:361:1: quantifiedInPredicate : ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) ;
     public final CMISParser.quantifiedInPredicate_return quantifiedInPredicate() throws RecognitionException {
         CMISParser.quantifiedInPredicate_return retval = new CMISParser.quantifiedInPredicate_return();
         retval.start = input.LT(1);
@@ -4639,7 +4639,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_multiValuedColumnReference=new RewriteRuleSubtreeStream(adaptor,"rule multiValuedColumnReference");
         RewriteRuleSubtreeStream stream_inValueList=new RewriteRuleSubtreeStream(adaptor,"rule inValueList");
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:362:2: ( ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference ( NOT )? inValueList ) )
+            // W:\\workspace-cmis\\ANTLR\\CMIS.g:362:2: ( ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:362:4: ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN
             {
             ANY111=(Token)match(input,ANY,FOLLOW_ANY_in_quantifiedInPredicate1391); if (state.failed) return retval; 
@@ -4689,7 +4689,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: inValueList, multiValuedColumnReference, ANY, NOT
+            // elements: inValueList, ANY, multiValuedColumnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4699,22 +4699,22 @@ public class CMISParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 363:3: -> ^( PRED_IN ANY multiValuedColumnReference ( NOT )? inValueList )
+            // 363:3: -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? )
             {
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:363:6: ^( PRED_IN ANY multiValuedColumnReference ( NOT )? inValueList )
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:363:6: ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_IN, "PRED_IN"), root_1);
 
                 adaptor.addChild(root_1, stream_ANY.nextNode());
                 adaptor.addChild(root_1, stream_multiValuedColumnReference.nextTree());
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:363:47: ( NOT )?
+                adaptor.addChild(root_1, stream_inValueList.nextTree());
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:363:59: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
                 }
                 stream_NOT.reset();
-                adaptor.addChild(root_1, stream_inValueList.nextTree());
 
                 adaptor.addChild(root_0, root_1);
                 }
@@ -4749,7 +4749,7 @@ public class CMISParser extends Parser {
     };
 
     // $ANTLR start textSearchPredicate
-    // W:\\workspace-cmis\\ANTLR\\CMIS.g:366:1: textSearchPredicate : CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression qualifier ) ;
+    // W:\\workspace-cmis\\ANTLR\\CMIS.g:366:1: textSearchPredicate : CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) ;
     public final CMISParser.textSearchPredicate_return textSearchPredicate() throws RecognitionException {
         CMISParser.textSearchPredicate_return retval = new CMISParser.textSearchPredicate_return();
         retval.start = input.LT(1);
@@ -4778,7 +4778,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         RewriteRuleSubtreeStream stream_textSearchExpression=new RewriteRuleSubtreeStream(adaptor,"rule textSearchExpression");
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:367:2: ( CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression qualifier ) )
+            // W:\\workspace-cmis\\ANTLR\\CMIS.g:367:2: ( CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:367:4: CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN
             {
             CONTAINS118=(Token)match(input,CONTAINS,FOLLOW_CONTAINS_in_textSearchPredicate1434); if (state.failed) return retval; 
@@ -4847,15 +4847,20 @@ public class CMISParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 368:3: -> ^( PRED_FTS textSearchExpression qualifier )
+            // 368:3: -> ^( PRED_FTS textSearchExpression ( qualifier )? )
             {
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:368:6: ^( PRED_FTS textSearchExpression qualifier )
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:368:6: ^( PRED_FTS textSearchExpression ( qualifier )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_FTS, "PRED_FTS"), root_1);
 
                 adaptor.addChild(root_1, stream_textSearchExpression.nextTree());
-                adaptor.addChild(root_1, stream_qualifier.nextTree());
+                // W:\\workspace-cmis\\ANTLR\\CMIS.g:368:38: ( qualifier )?
+                if ( stream_qualifier.hasNext() ) {
+                    adaptor.addChild(root_1, stream_qualifier.nextTree());
+
+                }
+                stream_qualifier.reset();
 
                 adaptor.addChild(root_0, root_1);
                 }
@@ -4931,10 +4936,10 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:372:4: IN_FOLDER folderPredicateArgs
                     {
-                    IN_FOLDER125=(Token)match(input,IN_FOLDER,FOLLOW_IN_FOLDER_in_folderPredicate1475); if (state.failed) return retval; 
+                    IN_FOLDER125=(Token)match(input,IN_FOLDER,FOLLOW_IN_FOLDER_in_folderPredicate1476); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IN_FOLDER.add(IN_FOLDER125);
 
-                    pushFollow(FOLLOW_folderPredicateArgs_in_folderPredicate1478);
+                    pushFollow(FOLLOW_folderPredicateArgs_in_folderPredicate1479);
                     folderPredicateArgs126=folderPredicateArgs();
 
                     state._fsp--;
@@ -4973,10 +4978,10 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:374:10: IN_TREE folderPredicateArgs
                     {
-                    IN_TREE127=(Token)match(input,IN_TREE,FOLLOW_IN_TREE_in_folderPredicate1499); if (state.failed) return retval; 
+                    IN_TREE127=(Token)match(input,IN_TREE,FOLLOW_IN_TREE_in_folderPredicate1500); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IN_TREE.add(IN_TREE127);
 
-                    pushFollow(FOLLOW_folderPredicateArgs_in_folderPredicate1501);
+                    pushFollow(FOLLOW_folderPredicateArgs_in_folderPredicate1502);
                     folderPredicateArgs128=folderPredicateArgs();
 
                     state._fsp--;
@@ -5068,7 +5073,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:379:2: ( LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN -> folderId ( qualifier )? )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:379:4: LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN
             {
-            LPAREN129=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_folderPredicateArgs1523); if (state.failed) return retval; 
+            LPAREN129=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_folderPredicateArgs1524); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN129);
 
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:379:11: ( qualifier COMMA | COMMA )?
@@ -5085,13 +5090,13 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:379:12: qualifier COMMA
                     {
-                    pushFollow(FOLLOW_qualifier_in_folderPredicateArgs1526);
+                    pushFollow(FOLLOW_qualifier_in_folderPredicateArgs1527);
                     qualifier130=qualifier();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_qualifier.add(qualifier130.getTree());
-                    COMMA131=(Token)match(input,COMMA,FOLLOW_COMMA_in_folderPredicateArgs1528); if (state.failed) return retval; 
+                    COMMA131=(Token)match(input,COMMA,FOLLOW_COMMA_in_folderPredicateArgs1529); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COMMA.add(COMMA131);
 
 
@@ -5100,7 +5105,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:379:30: COMMA
                     {
-                    COMMA132=(Token)match(input,COMMA,FOLLOW_COMMA_in_folderPredicateArgs1532); if (state.failed) return retval; 
+                    COMMA132=(Token)match(input,COMMA,FOLLOW_COMMA_in_folderPredicateArgs1533); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COMMA.add(COMMA132);
 
 
@@ -5109,19 +5114,19 @@ public class CMISParser extends Parser {
 
             }
 
-            pushFollow(FOLLOW_folderId_in_folderPredicateArgs1536);
+            pushFollow(FOLLOW_folderId_in_folderPredicateArgs1537);
             folderId133=folderId();
 
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_folderId.add(folderId133.getTree());
-            RPAREN134=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_folderPredicateArgs1538); if (state.failed) return retval; 
+            RPAREN134=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_folderPredicateArgs1539); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN134);
 
 
 
             // AST REWRITE
-            // elements: qualifier, folderId
+            // elements: folderId, qualifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5198,13 +5203,13 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:386:2: ( ORDER BY sortSpecification ( COMMA sortSpecification )* -> ^( ORDER ( sortSpecification )+ ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:386:4: ORDER BY sortSpecification ( COMMA sortSpecification )*
             {
-            ORDER135=(Token)match(input,ORDER,FOLLOW_ORDER_in_orderByClause1577); if (state.failed) return retval; 
+            ORDER135=(Token)match(input,ORDER,FOLLOW_ORDER_in_orderByClause1578); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ORDER.add(ORDER135);
 
-            BY136=(Token)match(input,BY,FOLLOW_BY_in_orderByClause1579); if (state.failed) return retval; 
+            BY136=(Token)match(input,BY,FOLLOW_BY_in_orderByClause1580); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_BY.add(BY136);
 
-            pushFollow(FOLLOW_sortSpecification_in_orderByClause1581);
+            pushFollow(FOLLOW_sortSpecification_in_orderByClause1582);
             sortSpecification137=sortSpecification();
 
             state._fsp--;
@@ -5225,10 +5230,10 @@ public class CMISParser extends Parser {
             	case 1 :
             	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:386:33: COMMA sortSpecification
             	    {
-            	    COMMA138=(Token)match(input,COMMA,FOLLOW_COMMA_in_orderByClause1585); if (state.failed) return retval; 
+            	    COMMA138=(Token)match(input,COMMA,FOLLOW_COMMA_in_orderByClause1586); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA138);
 
-            	    pushFollow(FOLLOW_sortSpecification_in_orderByClause1587);
+            	    pushFollow(FOLLOW_sortSpecification_in_orderByClause1588);
             	    sortSpecification139=sortSpecification();
 
             	    state._fsp--;
@@ -5246,7 +5251,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ORDER, sortSpecification
+            // elements: sortSpecification, ORDER
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5308,7 +5313,7 @@ public class CMISParser extends Parser {
     };
 
     // $ANTLR start sortSpecification
-    // W:\\workspace-cmis\\ANTLR\\CMIS.g:390:1: sortSpecification : ( columnName -> ^( SORT_SPECIFICATION columnName ASC ) | columnName (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnName $by) );
+    // W:\\workspace-cmis\\ANTLR\\CMIS.g:390:1: sortSpecification : ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) );
     public final CMISParser.sortSpecification_return sortSpecification() throws RecognitionException {
         CMISParser.sortSpecification_return retval = new CMISParser.sortSpecification_return();
         retval.start = input.LT(1);
@@ -5316,125 +5321,33 @@ public class CMISParser extends Parser {
         Object root_0 = null;
 
         Token by=null;
-        CMISParser.columnName_return columnName140 = null;
+        CMISParser.columnReference_return columnReference140 = null;
 
-        CMISParser.columnName_return columnName141 = null;
+        CMISParser.columnReference_return columnReference141 = null;
 
 
         Object by_tree=null;
         RewriteRuleTokenStream stream_ASC=new RewriteRuleTokenStream(adaptor,"token ASC");
         RewriteRuleTokenStream stream_DESC=new RewriteRuleTokenStream(adaptor,"token DESC");
-        RewriteRuleSubtreeStream stream_columnName=new RewriteRuleSubtreeStream(adaptor,"rule columnName");
+        RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:391:2: ( columnName -> ^( SORT_SPECIFICATION columnName ASC ) | columnName (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnName $by) )
+            // W:\\workspace-cmis\\ANTLR\\CMIS.g:391:2: ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) )
             int alt41=2;
-            int LA41_0 = input.LA(1);
-
-            if ( (LA41_0==ID) ) {
-                int LA41_1 = input.LA(2);
-
-                if ( (LA41_1==EOF||LA41_1==COMMA) ) {
-                    alt41=1;
-                }
-                else if ( ((LA41_1>=ASC && LA41_1<=DESC)) ) {
-                    alt41=2;
-                }
-                else {
-                    if (state.backtracking>0) {state.failed=true; return retval;}
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 41, 1, input);
-
-                    throw nvae;
-                }
-            }
-            else if ( (LA41_0==DOUBLE_QUOTE) ) {
-                int LA41_2 = input.LA(2);
-
-                if ( (LA41_2==SELECT||LA41_2==AS||(LA41_2>=FROM && LA41_2<=ON)||(LA41_2>=WHERE && LA41_2<=NOT)||(LA41_2>=IN && LA41_2<=DESC)||(LA41_2>=UPPER && LA41_2<=SCORE)) ) {
-                    int LA41_5 = input.LA(3);
-
-                    if ( (LA41_5==DOUBLE_QUOTE) ) {
-                        int LA41_7 = input.LA(4);
-
-                        if ( (LA41_7==EOF||LA41_7==COMMA) ) {
-                            alt41=1;
-                        }
-                        else if ( ((LA41_7>=ASC && LA41_7<=DESC)) ) {
-                            alt41=2;
-                        }
-                        else {
-                            if (state.backtracking>0) {state.failed=true; return retval;}
-                            NoViableAltException nvae =
-                                new NoViableAltException("", 41, 7, input);
-
-                            throw nvae;
-                        }
-                    }
-                    else {
-                        if (state.backtracking>0) {state.failed=true; return retval;}
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 41, 5, input);
-
-                        throw nvae;
-                    }
-                }
-                else if ( (LA41_2==ID) ) {
-                    int LA41_6 = input.LA(3);
-
-                    if ( (LA41_6==DOUBLE_QUOTE) ) {
-                        int LA41_7 = input.LA(4);
-
-                        if ( (LA41_7==EOF||LA41_7==COMMA) ) {
-                            alt41=1;
-                        }
-                        else if ( ((LA41_7>=ASC && LA41_7<=DESC)) ) {
-                            alt41=2;
-                        }
-                        else {
-                            if (state.backtracking>0) {state.failed=true; return retval;}
-                            NoViableAltException nvae =
-                                new NoViableAltException("", 41, 7, input);
-
-                            throw nvae;
-                        }
-                    }
-                    else {
-                        if (state.backtracking>0) {state.failed=true; return retval;}
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 41, 6, input);
-
-                        throw nvae;
-                    }
-                }
-                else {
-                    if (state.backtracking>0) {state.failed=true; return retval;}
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 41, 2, input);
-
-                    throw nvae;
-                }
-            }
-            else {
-                if (state.backtracking>0) {state.failed=true; return retval;}
-                NoViableAltException nvae =
-                    new NoViableAltException("", 41, 0, input);
-
-                throw nvae;
-            }
+            alt41 = dfa41.predict(input);
             switch (alt41) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:391:4: columnName
+                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:391:4: columnReference
                     {
-                    pushFollow(FOLLOW_columnName_in_sortSpecification1613);
-                    columnName140=columnName();
+                    pushFollow(FOLLOW_columnReference_in_sortSpecification1614);
+                    columnReference140=columnReference();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_columnName.add(columnName140.getTree());
+                    if ( state.backtracking==0 ) stream_columnReference.add(columnReference140.getTree());
 
 
                     // AST REWRITE
-                    // elements: columnName
+                    // elements: columnReference
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -5444,14 +5357,14 @@ public class CMISParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 392:3: -> ^( SORT_SPECIFICATION columnName ASC )
+                    // 392:3: -> ^( SORT_SPECIFICATION columnReference ASC )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\CMIS.g:392:6: ^( SORT_SPECIFICATION columnName ASC )
+                        // W:\\workspace-cmis\\ANTLR\\CMIS.g:392:6: ^( SORT_SPECIFICATION columnReference ASC )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SORT_SPECIFICATION, "SORT_SPECIFICATION"), root_1);
 
-                        adaptor.addChild(root_1, stream_columnName.nextTree());
+                        adaptor.addChild(root_1, stream_columnReference.nextTree());
                         adaptor.addChild(root_1, (Object)adaptor.create(ASC, "ASC"));
 
                         adaptor.addChild(root_0, root_1);
@@ -5463,15 +5376,15 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:4: columnName (by= ASC | by= DESC )
+                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:4: columnReference (by= ASC | by= DESC )
                     {
-                    pushFollow(FOLLOW_columnName_in_sortSpecification1631);
-                    columnName141=columnName();
+                    pushFollow(FOLLOW_columnReference_in_sortSpecification1632);
+                    columnReference141=columnReference();
 
                     state._fsp--;
                     if (state.failed) return retval;
-                    if ( state.backtracking==0 ) stream_columnName.add(columnName141.getTree());
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:15: (by= ASC | by= DESC )
+                    if ( state.backtracking==0 ) stream_columnReference.add(columnReference141.getTree());
+                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:20: (by= ASC | by= DESC )
                     int alt40=2;
                     int LA40_0 = input.LA(1);
 
@@ -5490,18 +5403,18 @@ public class CMISParser extends Parser {
                     }
                     switch (alt40) {
                         case 1 :
-                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:17: by= ASC
+                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:22: by= ASC
                             {
-                            by=(Token)match(input,ASC,FOLLOW_ASC_in_sortSpecification1637); if (state.failed) return retval; 
+                            by=(Token)match(input,ASC,FOLLOW_ASC_in_sortSpecification1638); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_ASC.add(by);
 
 
                             }
                             break;
                         case 2 :
-                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:26: by= DESC
+                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:393:31: by= DESC
                             {
-                            by=(Token)match(input,DESC,FOLLOW_DESC_in_sortSpecification1643); if (state.failed) return retval; 
+                            by=(Token)match(input,DESC,FOLLOW_DESC_in_sortSpecification1644); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_DESC.add(by);
 
 
@@ -5513,7 +5426,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnName, by
+                    // elements: by, columnReference
                     // token labels: by
                     // rule labels: retval
                     // token list labels: 
@@ -5524,14 +5437,14 @@ public class CMISParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 394:3: -> ^( SORT_SPECIFICATION columnName $by)
+                    // 394:3: -> ^( SORT_SPECIFICATION columnReference $by)
                     {
-                        // W:\\workspace-cmis\\ANTLR\\CMIS.g:394:6: ^( SORT_SPECIFICATION columnName $by)
+                        // W:\\workspace-cmis\\ANTLR\\CMIS.g:394:6: ^( SORT_SPECIFICATION columnReference $by)
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SORT_SPECIFICATION, "SORT_SPECIFICATION"), root_1);
 
-                        adaptor.addChild(root_1, stream_columnName.nextTree());
+                        adaptor.addChild(root_1, stream_columnReference.nextTree());
                         adaptor.addChild(root_1, stream_by.nextNode());
 
                         adaptor.addChild(root_0, root_1);
@@ -5586,7 +5499,7 @@ public class CMISParser extends Parser {
             {
             root_0 = (Object)adaptor.nil();
 
-            pushFollow(FOLLOW_identifier_in_correlationName1670);
+            pushFollow(FOLLOW_identifier_in_correlationName1671);
             identifier142=identifier();
 
             state._fsp--;
@@ -5635,7 +5548,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:406:2: ( identifier -> identifier )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:406:4: identifier
             {
-            pushFollow(FOLLOW_identifier_in_tableName1684);
+            pushFollow(FOLLOW_identifier_in_tableName1685);
             identifier143=identifier();
 
             state._fsp--;
@@ -5703,7 +5616,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:411:2: ( identifier -> identifier )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:411:4: identifier
             {
-            pushFollow(FOLLOW_identifier_in_columnName1702);
+            pushFollow(FOLLOW_identifier_in_columnName1703);
             identifier144=identifier();
 
             state._fsp--;
@@ -5771,7 +5684,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:416:2: ( identifier -> identifier )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:416:4: identifier
             {
-            pushFollow(FOLLOW_identifier_in_multiValuedColumnName1721);
+            pushFollow(FOLLOW_identifier_in_multiValuedColumnName1722);
             identifier145=identifier();
 
             state._fsp--;
@@ -5842,10 +5755,10 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:421:2: ( COLON identifier -> ^( PARAMETER identifier ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:421:4: COLON identifier
             {
-            COLON146=(Token)match(input,COLON,FOLLOW_COLON_in_parameterName1739); if (state.failed) return retval; 
+            COLON146=(Token)match(input,COLON,FOLLOW_COLON_in_parameterName1740); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_COLON.add(COLON146);
 
-            pushFollow(FOLLOW_identifier_in_parameterName1741);
+            pushFollow(FOLLOW_identifier_in_parameterName1742);
             identifier147=identifier();
 
             state._fsp--;
@@ -5921,7 +5834,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:426:3: ( characterStringLiteral -> characterStringLiteral )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:426:5: characterStringLiteral
             {
-            pushFollow(FOLLOW_characterStringLiteral_in_folderId1764);
+            pushFollow(FOLLOW_characterStringLiteral_in_folderId1765);
             characterStringLiteral148=characterStringLiteral();
 
             state._fsp--;
@@ -5991,7 +5904,7 @@ public class CMISParser extends Parser {
             {
             root_0 = (Object)adaptor.nil();
 
-            QUOTED_STRING149=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_textSearchExpression1785); if (state.failed) return retval;
+            QUOTED_STRING149=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_textSearchExpression1786); if (state.failed) return retval;
             if ( state.backtracking==0 ) {
             QUOTED_STRING149_tree = (Object)adaptor.create(QUOTED_STRING149);
             adaptor.addChild(root_0, QUOTED_STRING149_tree);
@@ -6065,7 +5978,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:435:4: ID
                     {
-                    ID150=(Token)match(input,ID,FOLLOW_ID_in_identifier1797); if (state.failed) return retval; 
+                    ID150=(Token)match(input,ID,FOLLOW_ID_in_identifier1798); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID150);
 
 
@@ -6093,16 +6006,16 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:437:4: DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
                     {
-                    DOUBLE_QUOTE151=(Token)match(input,DOUBLE_QUOTE,FOLLOW_DOUBLE_QUOTE_in_identifier1808); if (state.failed) return retval; 
+                    DOUBLE_QUOTE151=(Token)match(input,DOUBLE_QUOTE,FOLLOW_DOUBLE_QUOTE_in_identifier1809); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_DOUBLE_QUOTE.add(DOUBLE_QUOTE151);
 
-                    pushFollow(FOLLOW_keyWordOrId_in_identifier1810);
+                    pushFollow(FOLLOW_keyWordOrId_in_identifier1811);
                     keyWordOrId152=keyWordOrId();
 
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_keyWordOrId.add(keyWordOrId152.getTree());
-                    DOUBLE_QUOTE153=(Token)match(input,DOUBLE_QUOTE,FOLLOW_DOUBLE_QUOTE_in_identifier1812); if (state.failed) return retval; 
+                    DOUBLE_QUOTE153=(Token)match(input,DOUBLE_QUOTE,FOLLOW_DOUBLE_QUOTE_in_identifier1813); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_DOUBLE_QUOTE.add(DOUBLE_QUOTE153);
 
 
@@ -6196,7 +6109,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:442:4: FLOATING_POINT_LITERAL
                     {
-                    FLOATING_POINT_LITERAL154=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral1832); if (state.failed) return retval; 
+                    FLOATING_POINT_LITERAL154=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral1833); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_FLOATING_POINT_LITERAL.add(FLOATING_POINT_LITERAL154);
 
 
@@ -6232,7 +6145,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:444:4: integerLiteral
                     {
-                    pushFollow(FOLLOW_integerLiteral_in_signedNumericLiteral1847);
+                    pushFollow(FOLLOW_integerLiteral_in_signedNumericLiteral1848);
                     integerLiteral155=integerLiteral();
 
                     state._fsp--;
@@ -6303,7 +6216,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:449:2: ( DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:449:4: DECIMAL_INTEGER_LITERAL
             {
-            DECIMAL_INTEGER_LITERAL156=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral1866); if (state.failed) return retval; 
+            DECIMAL_INTEGER_LITERAL156=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral1867); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_DECIMAL_INTEGER_LITERAL.add(DECIMAL_INTEGER_LITERAL156);
 
 
@@ -6377,7 +6290,7 @@ public class CMISParser extends Parser {
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:454:2: ( QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) )
             // W:\\workspace-cmis\\ANTLR\\CMIS.g:454:4: QUOTED_STRING
             {
-            QUOTED_STRING157=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_characterStringLiteral1889); if (state.failed) return retval; 
+            QUOTED_STRING157=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_characterStringLiteral1890); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_QUOTED_STRING.add(QUOTED_STRING157);
 
 
@@ -6528,7 +6441,7 @@ public class CMISParser extends Parser {
                 case 1 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:489:4: keyWord
                     {
-                    pushFollow(FOLLOW_keyWord_in_keyWordOrId2098);
+                    pushFollow(FOLLOW_keyWord_in_keyWordOrId2099);
                     keyWord159=keyWord();
 
                     state._fsp--;
@@ -6559,7 +6472,7 @@ public class CMISParser extends Parser {
                 case 2 :
                     // W:\\workspace-cmis\\ANTLR\\CMIS.g:491:4: ID
                     {
-                    ID160=(Token)match(input,ID,FOLLOW_ID_in_keyWordOrId2110); if (state.failed) return retval; 
+                    ID160=(Token)match(input,ID,FOLLOW_ID_in_keyWordOrId2111); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID160);
 
 
@@ -6756,6 +6669,7 @@ public class CMISParser extends Parser {
 
     protected DFA25 dfa25 = new DFA25(this);
     protected DFA27 dfa27 = new DFA27(this);
+    protected DFA41 dfa41 = new DFA41(this);
     static final String DFA25_eotS =
         "\31\uffff";
     static final String DFA25_eofS =
@@ -6947,6 +6861,71 @@ public class CMISParser extends Parser {
             return "300:1: predicate : ( comparisonPredicate | inPredicate | likePredicate | nullPredicate | quantifiedComparisonPredicate | quantifiedInPredicate | textSearchPredicate | folderPredicate );";
         }
     }
+    static final String DFA41_eotS =
+        "\16\uffff";
+    static final String DFA41_eofS =
+        "\1\uffff\1\4\6\uffff\1\4\1\uffff\1\4\2\uffff\1\4";
+    static final String DFA41_minS =
+        "\1\103\1\37\1\35\1\103\2\uffff\2\104\1\37\1\35\1\37\2\104\1\37";
+    static final String DFA41_maxS =
+        "\1\104\1\100\1\111\1\104\2\uffff\2\104\1\100\1\111\1\100\2\104"+
+        "\1\100";
+    static final String DFA41_acceptS =
+        "\4\uffff\1\1\1\2\10\uffff";
+    static final String DFA41_specialS =
+        "\16\uffff}>";
+    static final String[] DFA41_transitionS = {
+            "\1\1\1\2",
+            "\1\4\2\uffff\1\3\34\uffff\2\5",
+            "\1\6\2\uffff\1\6\4\uffff\6\6\1\uffff\4\6\5\uffff\14\6\2\uffff"+
+            "\1\7\3\uffff\3\6",
+            "\1\10\1\11",
+            "",
+            "",
+            "\1\12",
+            "\1\12",
+            "\1\4\37\uffff\2\5",
+            "\1\13\2\uffff\1\13\4\uffff\6\13\1\uffff\4\13\5\uffff\14\13"+
+            "\2\uffff\1\14\3\uffff\3\13",
+            "\1\4\2\uffff\1\3\34\uffff\2\5",
+            "\1\15",
+            "\1\15",
+            "\1\4\37\uffff\2\5"
+    };
+
+    static final short[] DFA41_eot = DFA.unpackEncodedString(DFA41_eotS);
+    static final short[] DFA41_eof = DFA.unpackEncodedString(DFA41_eofS);
+    static final char[] DFA41_min = DFA.unpackEncodedStringToUnsignedChars(DFA41_minS);
+    static final char[] DFA41_max = DFA.unpackEncodedStringToUnsignedChars(DFA41_maxS);
+    static final short[] DFA41_accept = DFA.unpackEncodedString(DFA41_acceptS);
+    static final short[] DFA41_special = DFA.unpackEncodedString(DFA41_specialS);
+    static final short[][] DFA41_transition;
+
+    static {
+        int numStates = DFA41_transitionS.length;
+        DFA41_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA41_transition[i] = DFA.unpackEncodedString(DFA41_transitionS[i]);
+        }
+    }
+
+    class DFA41 extends DFA {
+
+        public DFA41(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 41;
+            this.eot = DFA41_eot;
+            this.eof = DFA41_eof;
+            this.min = DFA41_min;
+            this.max = DFA41_max;
+            this.accept = DFA41_accept;
+            this.special = DFA41_special;
+            this.transition = DFA41_transition;
+        }
+        public String getDescription() {
+            return "390:1: sortSpecification : ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) );";
+        }
+    }
  
 
     public static final BitSet FOLLOW_SELECT_in_query172 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
@@ -7076,44 +7055,44 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_COMMA_in_textSearchPredicate1445 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x000000000000039DL});
     public static final BitSet FOLLOW_textSearchExpression_in_textSearchPredicate1449 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_textSearchPredicate1451 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IN_FOLDER_in_folderPredicate1475 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1478 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IN_TREE_in_folderPredicate1499 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1501 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_folderPredicateArgs1523 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
-    public static final BitSet FOLLOW_qualifier_in_folderPredicateArgs1526 = new BitSet(new long[]{0x0000000080000000L});
-    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1528 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
-    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1532 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
-    public static final BitSet FOLLOW_folderId_in_folderPredicateArgs1536 = new BitSet(new long[]{0x0000001000000000L});
-    public static final BitSet FOLLOW_RPAREN_in_folderPredicateArgs1538 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ORDER_in_orderByClause1577 = new BitSet(new long[]{0x4000000000000000L});
-    public static final BitSet FOLLOW_BY_in_orderByClause1579 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
-    public static final BitSet FOLLOW_sortSpecification_in_orderByClause1581 = new BitSet(new long[]{0x0000000080000002L});
-    public static final BitSet FOLLOW_COMMA_in_orderByClause1585 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
-    public static final BitSet FOLLOW_sortSpecification_in_orderByClause1587 = new BitSet(new long[]{0x0000000080000002L});
-    public static final BitSet FOLLOW_columnName_in_sortSpecification1613 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_columnName_in_sortSpecification1631 = new BitSet(new long[]{0x8000000000000000L,0x0000000000000001L});
-    public static final BitSet FOLLOW_ASC_in_sortSpecification1637 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DESC_in_sortSpecification1643 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_correlationName1670 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_tableName1684 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_columnName1702 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_multiValuedColumnName1721 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_parameterName1739 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
-    public static final BitSet FOLLOW_identifier_in_parameterName1741 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_characterStringLiteral_in_folderId1764 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTED_STRING_in_textSearchExpression1785 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_identifier1797 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier1808 = new BitSet(new long[]{0xFFE0F7E120000000L,0x0000000000000399L});
-    public static final BitSet FOLLOW_keyWordOrId_in_identifier1810 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
-    public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier1812 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral1832 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_integerLiteral_in_signedNumericLiteral1847 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral1866 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTED_STRING_in_characterStringLiteral1889 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IN_FOLDER_in_folderPredicate1476 = new BitSet(new long[]{0x0000000800000000L});
+    public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1479 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IN_TREE_in_folderPredicate1500 = new BitSet(new long[]{0x0000000800000000L});
+    public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1502 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAREN_in_folderPredicateArgs1524 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_qualifier_in_folderPredicateArgs1527 = new BitSet(new long[]{0x0000000080000000L});
+    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1529 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1533 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_folderId_in_folderPredicateArgs1537 = new BitSet(new long[]{0x0000001000000000L});
+    public static final BitSet FOLLOW_RPAREN_in_folderPredicateArgs1539 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ORDER_in_orderByClause1578 = new BitSet(new long[]{0x4000000000000000L});
+    public static final BitSet FOLLOW_BY_in_orderByClause1580 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_sortSpecification_in_orderByClause1582 = new BitSet(new long[]{0x0000000080000002L});
+    public static final BitSet FOLLOW_COMMA_in_orderByClause1586 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_sortSpecification_in_orderByClause1588 = new BitSet(new long[]{0x0000000080000002L});
+    public static final BitSet FOLLOW_columnReference_in_sortSpecification1614 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_columnReference_in_sortSpecification1632 = new BitSet(new long[]{0x8000000000000000L,0x0000000000000001L});
+    public static final BitSet FOLLOW_ASC_in_sortSpecification1638 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DESC_in_sortSpecification1644 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_correlationName1671 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_tableName1685 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_columnName1703 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_multiValuedColumnName1722 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_COLON_in_parameterName1740 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_identifier_in_parameterName1742 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_characterStringLiteral_in_folderId1765 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTED_STRING_in_textSearchExpression1786 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_identifier1798 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier1809 = new BitSet(new long[]{0xFFE0F7E120000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_keyWordOrId_in_identifier1811 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000010L});
+    public static final BitSet FOLLOW_DOUBLE_QUOTE_in_identifier1813 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral1833 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_integerLiteral_in_signedNumericLiteral1848 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral1867 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTED_STRING_in_characterStringLiteral1890 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_keyWord0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_keyWord_in_keyWordOrId2098 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_keyWordOrId2110 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_keyWord_in_keyWordOrId2099 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_keyWordOrId2111 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_valueExpression_in_synpred1_CMIS287 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_tableName_in_synpred2_CMIS562 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_joinedTable_in_synpred3_CMIS640 = new BitSet(new long[]{0x0000000000000002L});

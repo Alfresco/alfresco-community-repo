@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.namespace.QName;
@@ -52,7 +53,7 @@ public interface QueryModelFactory
 
     public LiteralArgument createLiteralArgument(String name, QName type, Serializable value);
 
-    public Ordering createOrdering(DynamicArgument argument, Order order);
+    public Ordering createOrdering(Column column, Order order);
 
     public ParameterArgument createParameterArgument(String name, String parameterName);
 
@@ -61,4 +62,6 @@ public interface QueryModelFactory
     public SelectorArgument createSelectorArgument(String name, String selectorAlias);
 
     public Function getFunction(String functionName);
+
+    public ListArgument createListArgument(String name, ArrayList<Argument> arguments);
 }

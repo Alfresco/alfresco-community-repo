@@ -30,7 +30,7 @@ package org.alfresco.repo.search.impl.querymodel;
  */
 public interface Ordering
 {
-    public DynamicArgument getArgument();
+    public Column getColumn();
     
     public Order getOrder();
 }

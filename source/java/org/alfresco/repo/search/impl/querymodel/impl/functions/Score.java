@@ -42,14 +42,14 @@ public class Score extends BaseFunction
 {
     public final static String NAME = "Score";
 
-    public final static String ARG_PROPERTY = "Qualifier";
+    public final static String ARG_QUALIFIER = "Qualifier";
 
     public static LinkedHashSet<ArgumentDefinition> args;
 
     static
     {
         args = new LinkedHashSet<ArgumentDefinition>();
-        args.add(new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, true));
+        args.add(new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_QUALIFIER, DataTypeDefinition.ANY, true));
     }
 
     /**

@@ -78,15 +78,26 @@ public abstract class BaseFunction implements Function
     {
         return returnType;
     }
-    
-    
+
+    public ArgumentDefinition getArgumentDefinition(String name)
+    {
+        for (ArgumentDefinition def : getArgumentDefinitions())
+        {
+            if (def.getName().equals(name))
+            {
+                return def;
+            }
+        }
+        throw new IllegalArgumentException(name);
+    }
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("BaseFunction[");
-        builder.append("Name="+getName()).append(", ");
-        builder.append("Return type="+getReturnType()).append(", ");
-        builder.append("ArgumentDefinitions="+getArgumentDefinitions());
+        builder.append("Name=" + getName()).append(", ");
+        builder.append("Return type=" + getReturnType()).append(", ");
+        builder.append("ArgumentDefinitions=" + getArgumentDefinitions());
         builder.append("]");
         return builder.toString();
     }

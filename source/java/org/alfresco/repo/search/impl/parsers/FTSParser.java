@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\FTS.g 2008-07-03 14:45:12
+// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\FTS.g 2008-07-15 16:32:01
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -11,10 +11,10 @@ import org.antlr.runtime.tree.*;
 
 public class FTSParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "FTS", "DISJUNCTION", "CONJUNCTION", "NEGATION", "TERM", "EXACT_TERM", "PHRASE", "SYNONYM", "FIELD_DISJUNCTION", "FIELD_CONJUNCTION", "FIELD_NEGATION", "FIELD_GROUP", "FG_TERM", "FG_EXACT_TERM", "FG_PHRASE", "FG_SYNONYM", "FG_PROXIMITY", "FG_RANGE", "COLUMN_REF", "OR", "AND", "MINUS", "LPAREN", "RPAREN", "COLON", "FTSWORD", "PLUS", "FTSPHRASE", "TILDA", "STAR", "DOTDOT", "DOT", "ID", "NOT", "INWORD", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "FTS", "DISJUNCTION", "CONJUNCTION", "NEGATION", "TERM", "EXACT_TERM", "PHRASE", "SYNONYM", "FIELD_DISJUNCTION", "FIELD_CONJUNCTION", "FIELD_NEGATION", "FIELD_GROUP", "FG_TERM", "FG_EXACT_TERM", "FG_PHRASE", "FG_SYNONYM", "FG_PROXIMITY", "FG_RANGE", "COLUMN_REF", "OR", "AND", "MINUS", "LPAREN", "RPAREN", "COLON", "PLUS", "FTSPHRASE", "TILDA", "STAR", "DOTDOT", "DOT", "ID", "FTSWORD", "NOT", "INWORD", "WS"
     };
     public static final int TERM=8;
-    public static final int STAR=33;
+    public static final int STAR=32;
     public static final int FG_PROXIMITY=20;
     public static final int CONJUNCTION=6;
     public static final int FG_TERM=16;
@@ -22,29 +22,29 @@ public class FTSParser extends Parser {
     public static final int FIELD_GROUP=15;
     public static final int INWORD=38;
     public static final int FIELD_DISJUNCTION=12;
-    public static final int DOTDOT=34;
+    public static final int DOTDOT=33;
     public static final int NOT=37;
     public static final int FG_EXACT_TERM=17;
     public static final int MINUS=25;
-    public static final int ID=36;
+    public static final int ID=35;
     public static final int AND=24;
     public static final int EOF=-1;
-    public static final int FTSWORD=29;
+    public static final int FTSWORD=36;
     public static final int LPAREN=26;
     public static final int PHRASE=10;
     public static final int COLON=28;
     public static final int DISJUNCTION=5;
     public static final int RPAREN=27;
-    public static final int TILDA=32;
+    public static final int TILDA=31;
     public static final int FTS=4;
     public static final int WS=39;
     public static final int FG_SYNONYM=19;
     public static final int NEGATION=7;
-    public static final int FTSPHRASE=31;
+    public static final int FTSPHRASE=30;
     public static final int FIELD_CONJUNCTION=13;
     public static final int OR=23;
-    public static final int PLUS=30;
-    public static final int DOT=35;
+    public static final int PLUS=29;
+    public static final int DOT=34;
     public static final int COLUMN_REF=22;
     public static final int FG_RANGE=21;
     public static final int SYNONYM=11;
@@ -75,18 +75,57 @@ public class FTSParser extends Parser {
     public String getGrammarFileName() { return "W:\\workspace-cmis\\ANTLR\\FTS.g"; }
 
 
+        private Stack<String> paraphrases = new Stack<String>();
+       
+        public boolean defaultConjunction()
+        {
+           return true;
+        }
+        
+        public boolean defaultFieldConjunction()
+        {
+           return true;
+        }
+        
+        protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
+        {
+           throw new MismatchedTokenException(ttype, input);
+        }
+        
+        public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
+        {
+           throw e;
+        }
+        
+        public String getErrorMessage(RecognitionException e, String[] tokenNames)
+        {
+           List stack = getRuleInvocationStack(e, this.getClass().getName());
+           String msg = null;
+           if(e instanceof NoViableAltException)
+           {
+                NoViableAltException nvae = (NoViableAltException)e;
+                msg = " no viable alt; token="+e.token+
+                 " (decision="+nvae.decisionNumber+
+                 " state "+nvae.stateNumber+")"+
+                 " decision=<<"+nvae.grammarDecisionDescription+">>";
+           }
+           else
+           {
+               msg = super.getErrorMessage(e, tokenNames);
+           }
+           if(paraphrases.size() > 0)
+           {
+               String paraphrase = (String)paraphrases.peek();
+               msg = msg+" "+paraphrase;
+           }
            
-    	public boolean defaultConjunction()
-    	{
-    	   return true;
-    	}
-    	
-    	public boolean defaultFieldConjunction()
-    	{
-    	   return true;
-    	}
-    	
-    	
+           return stack+" "+msg;
+        }
+        
+        public String getTokenErrorDisplay(Token t)
+        {
+           return t.toString();
+        }      
 
 
     public static class fts_return extends ParserRuleReturnScope {
@@ -95,27 +134,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start fts
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:85:1: fts : ftsImplicitConjunctionOrDisjunction -> ftsImplicitConjunctionOrDisjunction ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:132:1: fts : ftsImplicitConjunctionOrDisjunction EOF -> ftsImplicitConjunctionOrDisjunction ;
     public final FTSParser.fts_return fts() throws RecognitionException {
         FTSParser.fts_return retval = new FTSParser.fts_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
+        Token EOF2=null;
         FTSParser.ftsImplicitConjunctionOrDisjunction_return ftsImplicitConjunctionOrDisjunction1 = null;
 
 
+        Object EOF2_tree=null;
+        RewriteRuleTokenStream stream_EOF=new RewriteRuleTokenStream(adaptor,"token EOF");
         RewriteRuleSubtreeStream stream_ftsImplicitConjunctionOrDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsImplicitConjunctionOrDisjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:85:5: ( ftsImplicitConjunctionOrDisjunction -> ftsImplicitConjunctionOrDisjunction )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:85:8: ftsImplicitConjunctionOrDisjunction
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:133:5: ( ftsImplicitConjunctionOrDisjunction EOF -> ftsImplicitConjunctionOrDisjunction )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:133:8: ftsImplicitConjunctionOrDisjunction EOF
             {
-            pushFollow(FOLLOW_ftsImplicitConjunctionOrDisjunction_in_fts135);
+            pushFollow(FOLLOW_ftsImplicitConjunctionOrDisjunction_in_fts146);
             ftsImplicitConjunctionOrDisjunction1=ftsImplicitConjunctionOrDisjunction();
 
             state._fsp--;
 
             stream_ftsImplicitConjunctionOrDisjunction.add(ftsImplicitConjunctionOrDisjunction1.getTree());
+            EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_fts148);  
+            stream_EOF.add(EOF2);
+
 
 
             // AST REWRITE
@@ -128,7 +173,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 86:3: -> ftsImplicitConjunctionOrDisjunction
+            // 134:3: -> ftsImplicitConjunctionOrDisjunction
             {
                 adaptor.addChild(root_0, stream_ftsImplicitConjunctionOrDisjunction.nextTree());
 
@@ -143,11 +188,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -161,14 +205,12 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsImplicitConjunctionOrDisjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:89:1: ftsImplicitConjunctionOrDisjunction : ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:137:1: ftsImplicitConjunctionOrDisjunction : ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) );
     public final FTSParser.ftsImplicitConjunctionOrDisjunction_return ftsImplicitConjunctionOrDisjunction() throws RecognitionException {
         FTSParser.ftsImplicitConjunctionOrDisjunction_return retval = new FTSParser.ftsImplicitConjunctionOrDisjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
-
-        FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction2 = null;
 
         FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction3 = null;
 
@@ -176,46 +218,48 @@ public class FTSParser extends Parser {
 
         FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction5 = null;
 
+        FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction6 = null;
+
 
         RewriteRuleSubtreeStream stream_ftsExplicitDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsExplicitDisjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:90:2: ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:138:2: ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) )
             int alt3=2;
             alt3 = dfa3.predict(input);
             switch (alt3) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:90:4: {...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )*
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:138:4: {...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )*
                     {
                     if ( !(defaultConjunction()) ) {
                         throw new FailedPredicateException(input, "ftsImplicitConjunctionOrDisjunction", "defaultConjunction()");
                     }
-                    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction157);
-                    ftsExplicitDisjunction2=ftsExplicitDisjunction();
+                    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction170);
+                    ftsExplicitDisjunction3=ftsExplicitDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction2.getTree());
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:90:51: ( ftsExplicitDisjunction )*
+                    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction3.getTree());
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:138:51: ( ftsExplicitDisjunction )*
                     loop1:
                     do {
                         int alt1=2;
                         int LA1_0 = input.LA(1);
 
-                        if ( ((LA1_0>=MINUS && LA1_0<=LPAREN)||(LA1_0>=FTSWORD && LA1_0<=TILDA)||LA1_0==ID) ) {
+                        if ( ((LA1_0>=MINUS && LA1_0<=LPAREN)||(LA1_0>=PLUS && LA1_0<=TILDA)||(LA1_0>=ID && LA1_0<=FTSWORD)) ) {
                             alt1=1;
                         }
 
 
                         switch (alt1) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:90:52: ftsExplicitDisjunction
+                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:138:52: ftsExplicitDisjunction
                     	    {
-                    	    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction160);
-                    	    ftsExplicitDisjunction3=ftsExplicitDisjunction();
+                    	    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction173);
+                    	    ftsExplicitDisjunction4=ftsExplicitDisjunction();
 
                     	    state._fsp--;
 
-                    	    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction3.getTree());
+                    	    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction4.getTree());
 
                     	    }
                     	    break;
@@ -237,9 +281,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 91:3: -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ )
+                    // 139:3: -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:91:6: ^( CONJUNCTION ( ftsExplicitDisjunction )+ )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:139:6: ^( CONJUNCTION ( ftsExplicitDisjunction )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -262,35 +306,35 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:92:5: ftsExplicitDisjunction ( ftsExplicitDisjunction )*
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:140:5: ftsExplicitDisjunction ( ftsExplicitDisjunction )*
                     {
-                    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction179);
-                    ftsExplicitDisjunction4=ftsExplicitDisjunction();
+                    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction192);
+                    ftsExplicitDisjunction5=ftsExplicitDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction4.getTree());
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:92:28: ( ftsExplicitDisjunction )*
+                    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction5.getTree());
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:140:28: ( ftsExplicitDisjunction )*
                     loop2:
                     do {
                         int alt2=2;
                         int LA2_0 = input.LA(1);
 
-                        if ( ((LA2_0>=MINUS && LA2_0<=LPAREN)||(LA2_0>=FTSWORD && LA2_0<=TILDA)||LA2_0==ID) ) {
+                        if ( ((LA2_0>=MINUS && LA2_0<=LPAREN)||(LA2_0>=PLUS && LA2_0<=TILDA)||(LA2_0>=ID && LA2_0<=FTSWORD)) ) {
                             alt2=1;
                         }
 
 
                         switch (alt2) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:92:29: ftsExplicitDisjunction
+                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:140:29: ftsExplicitDisjunction
                     	    {
-                    	    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction182);
-                    	    ftsExplicitDisjunction5=ftsExplicitDisjunction();
+                    	    pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction195);
+                    	    ftsExplicitDisjunction6=ftsExplicitDisjunction();
 
                     	    state._fsp--;
 
-                    	    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction5.getTree());
+                    	    stream_ftsExplicitDisjunction.add(ftsExplicitDisjunction6.getTree());
 
                     	    }
                     	    break;
@@ -312,9 +356,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 93:3: -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ )
+                    // 141:3: -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:93:6: ^( DISJUNCTION ( ftsExplicitDisjunction )+ )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:141:6: ^( DISJUNCTION ( ftsExplicitDisjunction )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -344,11 +388,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -362,33 +405,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsExplicitDisjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:96:1: ftsExplicitDisjunction : ftsExplictConjunction ( OR ftsExplictConjunction )* -> ^( DISJUNCTION ( ftsExplictConjunction )+ ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:144:1: ftsExplicitDisjunction : ftsExplictConjunction ( OR ftsExplictConjunction )* -> ^( DISJUNCTION ( ftsExplictConjunction )+ ) ;
     public final FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction() throws RecognitionException {
         FTSParser.ftsExplicitDisjunction_return retval = new FTSParser.ftsExplicitDisjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token OR7=null;
-        FTSParser.ftsExplictConjunction_return ftsExplictConjunction6 = null;
+        Token OR8=null;
+        FTSParser.ftsExplictConjunction_return ftsExplictConjunction7 = null;
 
-        FTSParser.ftsExplictConjunction_return ftsExplictConjunction8 = null;
+        FTSParser.ftsExplictConjunction_return ftsExplictConjunction9 = null;
 
 
-        Object OR7_tree=null;
+        Object OR8_tree=null;
         RewriteRuleTokenStream stream_OR=new RewriteRuleTokenStream(adaptor,"token OR");
         RewriteRuleSubtreeStream stream_ftsExplictConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsExplictConjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:97:2: ( ftsExplictConjunction ( OR ftsExplictConjunction )* -> ^( DISJUNCTION ( ftsExplictConjunction )+ ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:97:4: ftsExplictConjunction ( OR ftsExplictConjunction )*
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:145:2: ( ftsExplictConjunction ( OR ftsExplictConjunction )* -> ^( DISJUNCTION ( ftsExplictConjunction )+ ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:145:4: ftsExplictConjunction ( OR ftsExplictConjunction )*
             {
-            pushFollow(FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction207);
-            ftsExplictConjunction6=ftsExplictConjunction();
+            pushFollow(FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction220);
+            ftsExplictConjunction7=ftsExplictConjunction();
 
             state._fsp--;
 
-            stream_ftsExplictConjunction.add(ftsExplictConjunction6.getTree());
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:97:26: ( OR ftsExplictConjunction )*
+            stream_ftsExplictConjunction.add(ftsExplictConjunction7.getTree());
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:145:26: ( OR ftsExplictConjunction )*
             loop4:
             do {
                 int alt4=2;
@@ -401,17 +444,17 @@ public class FTSParser extends Parser {
 
                 switch (alt4) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:97:27: OR ftsExplictConjunction
+            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:145:27: OR ftsExplictConjunction
             	    {
-            	    OR7=(Token)match(input,OR,FOLLOW_OR_in_ftsExplicitDisjunction210);  
-            	    stream_OR.add(OR7);
+            	    OR8=(Token)match(input,OR,FOLLOW_OR_in_ftsExplicitDisjunction223);  
+            	    stream_OR.add(OR8);
 
-            	    pushFollow(FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction212);
-            	    ftsExplictConjunction8=ftsExplictConjunction();
+            	    pushFollow(FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction225);
+            	    ftsExplictConjunction9=ftsExplictConjunction();
 
             	    state._fsp--;
 
-            	    stream_ftsExplictConjunction.add(ftsExplictConjunction8.getTree());
+            	    stream_ftsExplictConjunction.add(ftsExplictConjunction9.getTree());
 
             	    }
             	    break;
@@ -433,9 +476,9 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 98:3: -> ^( DISJUNCTION ( ftsExplictConjunction )+ )
+            // 146:3: -> ^( DISJUNCTION ( ftsExplictConjunction )+ )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:98:6: ^( DISJUNCTION ( ftsExplictConjunction )+ )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:146:6: ^( DISJUNCTION ( ftsExplictConjunction )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -463,11 +506,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -481,33 +523,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsExplictConjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:101:1: ftsExplictConjunction : ftsNot ( AND ftsNot )* -> ^( CONJUNCTION ftsNot ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:149:1: ftsExplictConjunction : ftsNot ( AND ftsNot )* -> ^( CONJUNCTION ftsNot ) ;
     public final FTSParser.ftsExplictConjunction_return ftsExplictConjunction() throws RecognitionException {
         FTSParser.ftsExplictConjunction_return retval = new FTSParser.ftsExplictConjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token AND10=null;
-        FTSParser.ftsNot_return ftsNot9 = null;
+        Token AND11=null;
+        FTSParser.ftsNot_return ftsNot10 = null;
 
-        FTSParser.ftsNot_return ftsNot11 = null;
+        FTSParser.ftsNot_return ftsNot12 = null;
 
 
-        Object AND10_tree=null;
+        Object AND11_tree=null;
         RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
         RewriteRuleSubtreeStream stream_ftsNot=new RewriteRuleSubtreeStream(adaptor,"rule ftsNot");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:102:2: ( ftsNot ( AND ftsNot )* -> ^( CONJUNCTION ftsNot ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:102:4: ftsNot ( AND ftsNot )*
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:150:2: ( ftsNot ( AND ftsNot )* -> ^( CONJUNCTION ftsNot ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:150:4: ftsNot ( AND ftsNot )*
             {
-            pushFollow(FOLLOW_ftsNot_in_ftsExplictConjunction237);
-            ftsNot9=ftsNot();
+            pushFollow(FOLLOW_ftsNot_in_ftsExplictConjunction250);
+            ftsNot10=ftsNot();
 
             state._fsp--;
 
-            stream_ftsNot.add(ftsNot9.getTree());
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:102:11: ( AND ftsNot )*
+            stream_ftsNot.add(ftsNot10.getTree());
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:150:11: ( AND ftsNot )*
             loop5:
             do {
                 int alt5=2;
@@ -520,17 +562,17 @@ public class FTSParser extends Parser {
 
                 switch (alt5) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:102:12: AND ftsNot
+            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:150:12: AND ftsNot
             	    {
-            	    AND10=(Token)match(input,AND,FOLLOW_AND_in_ftsExplictConjunction240);  
-            	    stream_AND.add(AND10);
+            	    AND11=(Token)match(input,AND,FOLLOW_AND_in_ftsExplictConjunction253);  
+            	    stream_AND.add(AND11);
 
-            	    pushFollow(FOLLOW_ftsNot_in_ftsExplictConjunction242);
-            	    ftsNot11=ftsNot();
+            	    pushFollow(FOLLOW_ftsNot_in_ftsExplictConjunction255);
+            	    ftsNot12=ftsNot();
 
             	    state._fsp--;
 
-            	    stream_ftsNot.add(ftsNot11.getTree());
+            	    stream_ftsNot.add(ftsNot12.getTree());
 
             	    }
             	    break;
@@ -552,9 +594,9 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 103:3: -> ^( CONJUNCTION ftsNot )
+            // 151:3: -> ^( CONJUNCTION ftsNot )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:103:6: ^( CONJUNCTION ftsNot )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:151:6: ^( CONJUNCTION ftsNot )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -575,11 +617,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -593,31 +634,31 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsNot
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:107:1: ftsNot : ( MINUS ftsTest -> ^( NEGATION ftsTest ) | ftsTest -> ftsTest );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:155:1: ftsNot : ( MINUS ftsTest -> ^( NEGATION ftsTest ) | ftsTest -> ftsTest );
     public final FTSParser.ftsNot_return ftsNot() throws RecognitionException {
         FTSParser.ftsNot_return retval = new FTSParser.ftsNot_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token MINUS12=null;
-        FTSParser.ftsTest_return ftsTest13 = null;
-
+        Token MINUS13=null;
         FTSParser.ftsTest_return ftsTest14 = null;
 
+        FTSParser.ftsTest_return ftsTest15 = null;
 
-        Object MINUS12_tree=null;
+
+        Object MINUS13_tree=null;
         RewriteRuleTokenStream stream_MINUS=new RewriteRuleTokenStream(adaptor,"token MINUS");
         RewriteRuleSubtreeStream stream_ftsTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsTest");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:107:9: ( MINUS ftsTest -> ^( NEGATION ftsTest ) | ftsTest -> ftsTest )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:156:5: ( MINUS ftsTest -> ^( NEGATION ftsTest ) | ftsTest -> ftsTest )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
             if ( (LA6_0==MINUS) ) {
                 alt6=1;
             }
-            else if ( (LA6_0==LPAREN||(LA6_0>=FTSWORD && LA6_0<=TILDA)||LA6_0==ID) ) {
+            else if ( (LA6_0==LPAREN||(LA6_0>=PLUS && LA6_0<=TILDA)||(LA6_0>=ID && LA6_0<=FTSWORD)) ) {
                 alt6=2;
             }
             else {
@@ -628,50 +669,12 @@ public class FTSParser extends Parser {
             }
             switch (alt6) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:107:11: MINUS ftsTest
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:156:7: MINUS ftsTest
                     {
-                    MINUS12=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsNot268);  
-                    stream_MINUS.add(MINUS12);
+                    MINUS13=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsNot286);  
+                    stream_MINUS.add(MINUS13);
 
-                    pushFollow(FOLLOW_ftsTest_in_ftsNot270);
-                    ftsTest13=ftsTest();
-
-                    state._fsp--;
-
-                    stream_ftsTest.add(ftsTest13.getTree());
-
-
-                    // AST REWRITE
-                    // elements: ftsTest
-                    // token labels: 
-                    // rule labels: retval
-                    // token list labels: 
-                    // rule list labels: 
-                    retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
-
-                    root_0 = (Object)adaptor.nil();
-                    // 108:3: -> ^( NEGATION ftsTest )
-                    {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:108:6: ^( NEGATION ftsTest )
-                        {
-                        Object root_1 = (Object)adaptor.nil();
-                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NEGATION, "NEGATION"), root_1);
-
-                        adaptor.addChild(root_1, stream_ftsTest.nextTree());
-
-                        adaptor.addChild(root_0, root_1);
-                        }
-
-                    }
-
-                    retval.tree = root_0;retval.tree = root_0;
-                    }
-                    break;
-                case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:109:4: ftsTest
-                    {
-                    pushFollow(FOLLOW_ftsTest_in_ftsNot285);
+                    pushFollow(FOLLOW_ftsTest_in_ftsNot288);
                     ftsTest14=ftsTest();
 
                     state._fsp--;
@@ -689,7 +692,45 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 110:3: -> ftsTest
+                    // 157:3: -> ^( NEGATION ftsTest )
+                    {
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:157:6: ^( NEGATION ftsTest )
+                        {
+                        Object root_1 = (Object)adaptor.nil();
+                        root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NEGATION, "NEGATION"), root_1);
+
+                        adaptor.addChild(root_1, stream_ftsTest.nextTree());
+
+                        adaptor.addChild(root_0, root_1);
+                        }
+
+                    }
+
+                    retval.tree = root_0;retval.tree = root_0;
+                    }
+                    break;
+                case 2 :
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:158:4: ftsTest
+                    {
+                    pushFollow(FOLLOW_ftsTest_in_ftsNot303);
+                    ftsTest15=ftsTest();
+
+                    state._fsp--;
+
+                    stream_ftsTest.add(ftsTest15.getTree());
+
+
+                    // AST REWRITE
+                    // elements: ftsTest
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+
+                    root_0 = (Object)adaptor.nil();
+                    // 159:3: -> ftsTest
                     {
                         adaptor.addChild(root_0, stream_ftsTest.nextTree());
 
@@ -706,11 +747,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -724,34 +764,34 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsTest
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:113:1: ftsTest : ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:162:1: ftsTest : ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction );
     public final FTSParser.ftsTest_return ftsTest() throws RecognitionException {
         FTSParser.ftsTest_return retval = new FTSParser.ftsTest_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token LPAREN22=null;
-        Token RPAREN24=null;
-        FTSParser.ftsTerm_return ftsTerm15 = null;
+        Token LPAREN23=null;
+        Token RPAREN25=null;
+        FTSParser.ftsTerm_return ftsTerm16 = null;
 
-        FTSParser.ftsExactTerm_return ftsExactTerm16 = null;
+        FTSParser.ftsExactTerm_return ftsExactTerm17 = null;
 
-        FTSParser.ftsPhrase_return ftsPhrase17 = null;
+        FTSParser.ftsPhrase_return ftsPhrase18 = null;
 
-        FTSParser.ftsSynonym_return ftsSynonym18 = null;
+        FTSParser.ftsSynonym_return ftsSynonym19 = null;
 
-        FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity19 = null;
+        FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity20 = null;
 
-        FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange20 = null;
+        FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange21 = null;
 
-        FTSParser.ftsFieldGroup_return ftsFieldGroup21 = null;
+        FTSParser.ftsFieldGroup_return ftsFieldGroup22 = null;
 
-        FTSParser.ftsImplicitConjunctionOrDisjunction_return ftsImplicitConjunctionOrDisjunction23 = null;
+        FTSParser.ftsImplicitConjunctionOrDisjunction_return ftsImplicitConjunctionOrDisjunction24 = null;
 
 
-        Object LPAREN22_tree=null;
-        Object RPAREN24_tree=null;
+        Object LPAREN23_tree=null;
+        Object RPAREN25_tree=null;
         RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
         RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
         RewriteRuleSubtreeStream stream_ftsFieldGroupRange=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupRange");
@@ -762,19 +802,19 @@ public class FTSParser extends Parser {
         RewriteRuleSubtreeStream stream_ftsSynonym=new RewriteRuleSubtreeStream(adaptor,"rule ftsSynonym");
         RewriteRuleSubtreeStream stream_ftsFieldGroupProximity=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximity");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:113:9: ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:163:5: ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction )
             int alt7=8;
             alt7 = dfa7.predict(input);
             switch (alt7) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:113:11: ftsTerm
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:163:7: ftsTerm
                     {
-                    pushFollow(FOLLOW_ftsTerm_in_ftsTest301);
-                    ftsTerm15=ftsTerm();
+                    pushFollow(FOLLOW_ftsTerm_in_ftsTest324);
+                    ftsTerm16=ftsTerm();
 
                     state._fsp--;
 
-                    stream_ftsTerm.add(ftsTerm15.getTree());
+                    stream_ftsTerm.add(ftsTerm16.getTree());
 
 
                     // AST REWRITE
@@ -787,9 +827,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 114:3: -> ^( TERM ftsTerm )
+                    // 164:3: -> ^( TERM ftsTerm )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:114:6: ^( TERM ftsTerm )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:164:6: ^( TERM ftsTerm )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
@@ -805,14 +845,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:115:4: ftsExactTerm
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:165:4: ftsExactTerm
                     {
-                    pushFollow(FOLLOW_ftsExactTerm_in_ftsTest316);
-                    ftsExactTerm16=ftsExactTerm();
+                    pushFollow(FOLLOW_ftsExactTerm_in_ftsTest339);
+                    ftsExactTerm17=ftsExactTerm();
 
                     state._fsp--;
 
-                    stream_ftsExactTerm.add(ftsExactTerm16.getTree());
+                    stream_ftsExactTerm.add(ftsExactTerm17.getTree());
 
 
                     // AST REWRITE
@@ -825,9 +865,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 116:3: -> ^( EXACT_TERM ftsExactTerm )
+                    // 166:3: -> ^( EXACT_TERM ftsExactTerm )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:116:6: ^( EXACT_TERM ftsExactTerm )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:166:6: ^( EXACT_TERM ftsExactTerm )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_TERM, "EXACT_TERM"), root_1);
@@ -843,14 +883,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:117:17: ftsPhrase
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:167:9: ftsPhrase
                     {
-                    pushFollow(FOLLOW_ftsPhrase_in_ftsTest344);
-                    ftsPhrase17=ftsPhrase();
+                    pushFollow(FOLLOW_ftsPhrase_in_ftsTest359);
+                    ftsPhrase18=ftsPhrase();
 
                     state._fsp--;
 
-                    stream_ftsPhrase.add(ftsPhrase17.getTree());
+                    stream_ftsPhrase.add(ftsPhrase18.getTree());
 
 
                     // AST REWRITE
@@ -863,9 +903,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 118:10: -> ^( PHRASE ftsPhrase )
+                    // 168:9: -> ^( PHRASE ftsPhrase )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:118:13: ^( PHRASE ftsPhrase )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:168:12: ^( PHRASE ftsPhrase )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
@@ -881,14 +921,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:119:17: ftsSynonym
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:169:9: ftsSynonym
                     {
-                    pushFollow(FOLLOW_ftsSynonym_in_ftsTest379);
-                    ftsSynonym18=ftsSynonym();
+                    pushFollow(FOLLOW_ftsSynonym_in_ftsTest385);
+                    ftsSynonym19=ftsSynonym();
 
                     state._fsp--;
 
-                    stream_ftsSynonym.add(ftsSynonym18.getTree());
+                    stream_ftsSynonym.add(ftsSynonym19.getTree());
 
 
                     // AST REWRITE
@@ -901,9 +941,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 120:10: -> ^( SYNONYM ftsSynonym )
+                    // 170:9: -> ^( SYNONYM ftsSynonym )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:120:13: ^( SYNONYM ftsSynonym )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:170:12: ^( SYNONYM ftsSynonym )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SYNONYM, "SYNONYM"), root_1);
@@ -919,14 +959,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:121:11: ftsFieldGroupProximity
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:171:7: ftsFieldGroupProximity
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsTest408);
-                    ftsFieldGroupProximity19=ftsFieldGroupProximity();
+                    pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsTest409);
+                    ftsFieldGroupProximity20=ftsFieldGroupProximity();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupProximity.add(ftsFieldGroupProximity19.getTree());
+                    stream_ftsFieldGroupProximity.add(ftsFieldGroupProximity20.getTree());
 
 
                     // AST REWRITE
@@ -939,9 +979,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 122:10: -> ^( FG_PROXIMITY ftsFieldGroupProximity )
+                    // 172:9: -> ^( FG_PROXIMITY ftsFieldGroupProximity )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:122:13: ^( FG_PROXIMITY ftsFieldGroupProximity )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:172:12: ^( FG_PROXIMITY ftsFieldGroupProximity )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PROXIMITY, "FG_PROXIMITY"), root_1);
@@ -957,14 +997,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:123:12: ftsFieldGroupRange
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:173:8: ftsFieldGroupRange
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsTest440);
-                    ftsFieldGroupRange20=ftsFieldGroupRange();
+                    pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsTest436);
+                    ftsFieldGroupRange21=ftsFieldGroupRange();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupRange.add(ftsFieldGroupRange20.getTree());
+                    stream_ftsFieldGroupRange.add(ftsFieldGroupRange21.getTree());
 
 
                     // AST REWRITE
@@ -977,9 +1017,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 124:10: -> ^( FG_RANGE ftsFieldGroupRange )
+                    // 174:9: -> ^( FG_RANGE ftsFieldGroupRange )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:124:13: ^( FG_RANGE ftsFieldGroupRange )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:174:12: ^( FG_RANGE ftsFieldGroupRange )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_RANGE, "FG_RANGE"), root_1);
@@ -995,33 +1035,33 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:125:11: ftsFieldGroup
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:175:7: ftsFieldGroup
                     {
                     root_0 = (Object)adaptor.nil();
 
-                    pushFollow(FOLLOW_ftsFieldGroup_in_ftsTest469);
-                    ftsFieldGroup21=ftsFieldGroup();
+                    pushFollow(FOLLOW_ftsFieldGroup_in_ftsTest460);
+                    ftsFieldGroup22=ftsFieldGroup();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, ftsFieldGroup21.getTree());
+                    adaptor.addChild(root_0, ftsFieldGroup22.getTree());
 
                     }
                     break;
                 case 8 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:126:4: LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:176:4: LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
                     {
-                    LPAREN22=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsTest478);  
-                    stream_LPAREN.add(LPAREN22);
+                    LPAREN23=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsTest469);  
+                    stream_LPAREN.add(LPAREN23);
 
-                    pushFollow(FOLLOW_ftsImplicitConjunctionOrDisjunction_in_ftsTest480);
-                    ftsImplicitConjunctionOrDisjunction23=ftsImplicitConjunctionOrDisjunction();
+                    pushFollow(FOLLOW_ftsImplicitConjunctionOrDisjunction_in_ftsTest471);
+                    ftsImplicitConjunctionOrDisjunction24=ftsImplicitConjunctionOrDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsImplicitConjunctionOrDisjunction.add(ftsImplicitConjunctionOrDisjunction23.getTree());
-                    RPAREN24=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsTest482);  
-                    stream_RPAREN.add(RPAREN24);
+                    stream_ftsImplicitConjunctionOrDisjunction.add(ftsImplicitConjunctionOrDisjunction24.getTree());
+                    RPAREN25=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsTest473);  
+                    stream_RPAREN.add(RPAREN25);
 
 
 
@@ -1035,7 +1075,7 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 127:3: -> ftsImplicitConjunctionOrDisjunction
+                    // 177:3: -> ftsImplicitConjunctionOrDisjunction
                     {
                         adaptor.addChild(root_0, stream_ftsImplicitConjunctionOrDisjunction.nextTree());
 
@@ -1052,11 +1092,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1070,46 +1109,50 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsTerm
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:130:1: ftsTerm : ( columnReference COLON )? FTSWORD -> FTSWORD ( columnReference )? ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:180:1: ftsTerm : ( columnReference COLON )? ftsWord -> ftsWord ( columnReference )? ;
     public final FTSParser.ftsTerm_return ftsTerm() throws RecognitionException {
         FTSParser.ftsTerm_return retval = new FTSParser.ftsTerm_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token COLON26=null;
-        Token FTSWORD27=null;
-        FTSParser.columnReference_return columnReference25 = null;
+        Token COLON27=null;
+        FTSParser.columnReference_return columnReference26 = null;
+
+        FTSParser.ftsWord_return ftsWord28 = null;
 
 
-        Object COLON26_tree=null;
-        Object FTSWORD27_tree=null;
+        Object COLON27_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
-        RewriteRuleTokenStream stream_FTSWORD=new RewriteRuleTokenStream(adaptor,"token FTSWORD");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
+        RewriteRuleSubtreeStream stream_ftsWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsWord");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:131:2: ( ( columnReference COLON )? FTSWORD -> FTSWORD ( columnReference )? )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:131:4: ( columnReference COLON )? FTSWORD
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:181:2: ( ( columnReference COLON )? ftsWord -> ftsWord ( columnReference )? )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:181:4: ( columnReference COLON )? ftsWord
             {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:131:4: ( columnReference COLON )?
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:181:4: ( columnReference COLON )?
             int alt8=2;
             int LA8_0 = input.LA(1);
 
             if ( (LA8_0==ID) ) {
-                alt8=1;
+                int LA8_1 = input.LA(2);
+
+                if ( (LA8_1==COLON||LA8_1==DOT) ) {
+                    alt8=1;
+                }
             }
             switch (alt8) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:131:5: columnReference COLON
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:181:5: columnReference COLON
                     {
-                    pushFollow(FOLLOW_columnReference_in_ftsTerm500);
-                    columnReference25=columnReference();
+                    pushFollow(FOLLOW_columnReference_in_ftsTerm491);
+                    columnReference26=columnReference();
 
                     state._fsp--;
 
-                    stream_columnReference.add(columnReference25.getTree());
-                    COLON26=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTerm502);  
-                    stream_COLON.add(COLON26);
+                    stream_columnReference.add(columnReference26.getTree());
+                    COLON27=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTerm493);  
+                    stream_COLON.add(COLON27);
 
 
                     }
@@ -1117,13 +1160,16 @@ public class FTSParser extends Parser {
 
             }
 
-            FTSWORD27=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsTerm506);  
-            stream_FTSWORD.add(FTSWORD27);
+            pushFollow(FOLLOW_ftsWord_in_ftsTerm497);
+            ftsWord28=ftsWord();
 
+            state._fsp--;
+
+            stream_ftsWord.add(ftsWord28.getTree());
 
 
             // AST REWRITE
-            // elements: FTSWORD, columnReference
+            // elements: columnReference, ftsWord
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1132,10 +1178,10 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 132:3: -> FTSWORD ( columnReference )?
+            // 182:3: -> ftsWord ( columnReference )?
             {
-                adaptor.addChild(root_0, stream_FTSWORD.nextNode());
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:132:14: ( columnReference )?
+                adaptor.addChild(root_0, stream_ftsWord.nextTree());
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:182:14: ( columnReference )?
                 if ( stream_columnReference.hasNext() ) {
                     adaptor.addChild(root_0, stream_columnReference.nextTree());
 
@@ -1153,11 +1199,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1171,33 +1216,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsExactTerm
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:135:1: ftsExactTerm : PLUS ftsTerm -> ftsTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:185:1: ftsExactTerm : PLUS ftsTerm -> ftsTerm ;
     public final FTSParser.ftsExactTerm_return ftsExactTerm() throws RecognitionException {
         FTSParser.ftsExactTerm_return retval = new FTSParser.ftsExactTerm_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token PLUS28=null;
-        FTSParser.ftsTerm_return ftsTerm29 = null;
+        Token PLUS29=null;
+        FTSParser.ftsTerm_return ftsTerm30 = null;
 
 
-        Object PLUS28_tree=null;
+        Object PLUS29_tree=null;
         RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
         RewriteRuleSubtreeStream stream_ftsTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:136:2: ( PLUS ftsTerm -> ftsTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:136:4: PLUS ftsTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:186:2: ( PLUS ftsTerm -> ftsTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:186:4: PLUS ftsTerm
             {
-            PLUS28=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsExactTerm527);  
-            stream_PLUS.add(PLUS28);
+            PLUS29=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsExactTerm518);  
+            stream_PLUS.add(PLUS29);
 
-            pushFollow(FOLLOW_ftsTerm_in_ftsExactTerm529);
-            ftsTerm29=ftsTerm();
+            pushFollow(FOLLOW_ftsTerm_in_ftsExactTerm520);
+            ftsTerm30=ftsTerm();
 
             state._fsp--;
 
-            stream_ftsTerm.add(ftsTerm29.getTree());
+            stream_ftsTerm.add(ftsTerm30.getTree());
 
 
             // AST REWRITE
@@ -1210,7 +1255,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 137:3: -> ftsTerm
+            // 187:3: -> ftsTerm
             {
                 adaptor.addChild(root_0, stream_ftsTerm.nextTree());
 
@@ -1225,11 +1270,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1243,28 +1287,28 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsPhrase
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:140:1: ftsPhrase : ( columnReference COLON )? FTSPHRASE -> FTSPHRASE ( columnReference )? ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:190:1: ftsPhrase : ( columnReference COLON )? FTSPHRASE -> FTSPHRASE ( columnReference )? ;
     public final FTSParser.ftsPhrase_return ftsPhrase() throws RecognitionException {
         FTSParser.ftsPhrase_return retval = new FTSParser.ftsPhrase_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token COLON31=null;
-        Token FTSPHRASE32=null;
-        FTSParser.columnReference_return columnReference30 = null;
+        Token COLON32=null;
+        Token FTSPHRASE33=null;
+        FTSParser.columnReference_return columnReference31 = null;
 
 
-        Object COLON31_tree=null;
-        Object FTSPHRASE32_tree=null;
+        Object COLON32_tree=null;
+        Object FTSPHRASE33_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:141:2: ( ( columnReference COLON )? FTSPHRASE -> FTSPHRASE ( columnReference )? )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:141:6: ( columnReference COLON )? FTSPHRASE
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:191:2: ( ( columnReference COLON )? FTSPHRASE -> FTSPHRASE ( columnReference )? )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:191:6: ( columnReference COLON )? FTSPHRASE
             {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:141:6: ( columnReference COLON )?
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:191:6: ( columnReference COLON )?
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1273,16 +1317,16 @@ public class FTSParser extends Parser {
             }
             switch (alt9) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:141:7: columnReference COLON
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:191:7: columnReference COLON
                     {
-                    pushFollow(FOLLOW_columnReference_in_ftsPhrase550);
-                    columnReference30=columnReference();
+                    pushFollow(FOLLOW_columnReference_in_ftsPhrase541);
+                    columnReference31=columnReference();
 
                     state._fsp--;
 
-                    stream_columnReference.add(columnReference30.getTree());
-                    COLON31=(Token)match(input,COLON,FOLLOW_COLON_in_ftsPhrase552);  
-                    stream_COLON.add(COLON31);
+                    stream_columnReference.add(columnReference31.getTree());
+                    COLON32=(Token)match(input,COLON,FOLLOW_COLON_in_ftsPhrase543);  
+                    stream_COLON.add(COLON32);
 
 
                     }
@@ -1290,8 +1334,8 @@ public class FTSParser extends Parser {
 
             }
 
-            FTSPHRASE32=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsPhrase556);  
-            stream_FTSPHRASE.add(FTSPHRASE32);
+            FTSPHRASE33=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsPhrase547);  
+            stream_FTSPHRASE.add(FTSPHRASE33);
 
 
 
@@ -1305,10 +1349,10 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 142:3: -> FTSPHRASE ( columnReference )?
+            // 192:3: -> FTSPHRASE ( columnReference )?
             {
                 adaptor.addChild(root_0, stream_FTSPHRASE.nextNode());
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:142:16: ( columnReference )?
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:192:16: ( columnReference )?
                 if ( stream_columnReference.hasNext() ) {
                     adaptor.addChild(root_0, stream_columnReference.nextTree());
 
@@ -1326,11 +1370,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1344,33 +1387,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsSynonym
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:145:1: ftsSynonym : TILDA ftsTerm -> ftsTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:195:1: ftsSynonym : TILDA ftsTerm -> ftsTerm ;
     public final FTSParser.ftsSynonym_return ftsSynonym() throws RecognitionException {
         FTSParser.ftsSynonym_return retval = new FTSParser.ftsSynonym_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token TILDA33=null;
-        FTSParser.ftsTerm_return ftsTerm34 = null;
+        Token TILDA34=null;
+        FTSParser.ftsTerm_return ftsTerm35 = null;
 
 
-        Object TILDA33_tree=null;
+        Object TILDA34_tree=null;
         RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
         RewriteRuleSubtreeStream stream_ftsTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:146:2: ( TILDA ftsTerm -> ftsTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:146:4: TILDA ftsTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:196:2: ( TILDA ftsTerm -> ftsTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:196:4: TILDA ftsTerm
             {
-            TILDA33=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsSynonym577);  
-            stream_TILDA.add(TILDA33);
+            TILDA34=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsSynonym568);  
+            stream_TILDA.add(TILDA34);
 
-            pushFollow(FOLLOW_ftsTerm_in_ftsSynonym579);
-            ftsTerm34=ftsTerm();
+            pushFollow(FOLLOW_ftsTerm_in_ftsSynonym570);
+            ftsTerm35=ftsTerm();
 
             state._fsp--;
 
-            stream_ftsTerm.add(ftsTerm34.getTree());
+            stream_ftsTerm.add(ftsTerm35.getTree());
 
 
             // AST REWRITE
@@ -1383,7 +1426,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 147:3: -> ftsTerm
+            // 197:3: -> ftsTerm
             {
                 adaptor.addChild(root_0, stream_ftsTerm.nextTree());
 
@@ -1398,11 +1441,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1416,58 +1458,58 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroup
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:151:1: ftsFieldGroup : columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:201:1: ftsFieldGroup : columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction ) ;
     public final FTSParser.ftsFieldGroup_return ftsFieldGroup() throws RecognitionException {
         FTSParser.ftsFieldGroup_return retval = new FTSParser.ftsFieldGroup_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token COLON36=null;
-        Token LPAREN37=null;
-        Token RPAREN39=null;
-        FTSParser.columnReference_return columnReference35 = null;
+        Token COLON37=null;
+        Token LPAREN38=null;
+        Token RPAREN40=null;
+        FTSParser.columnReference_return columnReference36 = null;
 
-        FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return ftsFieldGroupImplicitConjunctionOrDisjunction38 = null;
+        FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return ftsFieldGroupImplicitConjunctionOrDisjunction39 = null;
 
 
-        Object COLON36_tree=null;
-        Object LPAREN37_tree=null;
-        Object RPAREN39_tree=null;
+        Object COLON37_tree=null;
+        Object LPAREN38_tree=null;
+        Object RPAREN40_tree=null;
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
         RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_ftsFieldGroupImplicitConjunctionOrDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupImplicitConjunctionOrDisjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:152:2: ( columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:152:4: columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:202:2: ( columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:202:4: columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
             {
-            pushFollow(FOLLOW_columnReference_in_ftsFieldGroup598);
-            columnReference35=columnReference();
+            pushFollow(FOLLOW_columnReference_in_ftsFieldGroup589);
+            columnReference36=columnReference();
 
             state._fsp--;
 
-            stream_columnReference.add(columnReference35.getTree());
-            COLON36=(Token)match(input,COLON,FOLLOW_COLON_in_ftsFieldGroup600);  
-            stream_COLON.add(COLON36);
+            stream_columnReference.add(columnReference36.getTree());
+            COLON37=(Token)match(input,COLON,FOLLOW_COLON_in_ftsFieldGroup591);  
+            stream_COLON.add(COLON37);
 
-            LPAREN37=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroup602);  
-            stream_LPAREN.add(LPAREN37);
+            LPAREN38=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroup593);  
+            stream_LPAREN.add(LPAREN38);
 
-            pushFollow(FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroup604);
-            ftsFieldGroupImplicitConjunctionOrDisjunction38=ftsFieldGroupImplicitConjunctionOrDisjunction();
+            pushFollow(FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroup595);
+            ftsFieldGroupImplicitConjunctionOrDisjunction39=ftsFieldGroupImplicitConjunctionOrDisjunction();
 
             state._fsp--;
 
-            stream_ftsFieldGroupImplicitConjunctionOrDisjunction.add(ftsFieldGroupImplicitConjunctionOrDisjunction38.getTree());
-            RPAREN39=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroup606);  
-            stream_RPAREN.add(RPAREN39);
+            stream_ftsFieldGroupImplicitConjunctionOrDisjunction.add(ftsFieldGroupImplicitConjunctionOrDisjunction39.getTree());
+            RPAREN40=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroup597);  
+            stream_RPAREN.add(RPAREN40);
 
 
 
             // AST REWRITE
-            // elements: columnReference, ftsFieldGroupImplicitConjunctionOrDisjunction
+            // elements: ftsFieldGroupImplicitConjunctionOrDisjunction, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1476,9 +1518,9 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 153:3: -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction )
+            // 203:3: -> ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:153:6: ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:203:6: ^( FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_GROUP, "FIELD_GROUP"), root_1);
@@ -1500,11 +1542,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1518,14 +1559,12 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupImplicitConjunctionOrDisjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:156:1: ftsFieldGroupImplicitConjunctionOrDisjunction : ({...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) | ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:206:1: ftsFieldGroupImplicitConjunctionOrDisjunction : ({...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) | ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) );
     public final FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return ftsFieldGroupImplicitConjunctionOrDisjunction() throws RecognitionException {
         FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return retval = new FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
-
-        FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction40 = null;
 
         FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction41 = null;
 
@@ -1533,10 +1572,12 @@ public class FTSParser extends Parser {
 
         FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction43 = null;
 
+        FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction44 = null;
+
 
         RewriteRuleSubtreeStream stream_ftsFieldGroupExplicitDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExplicitDisjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:157:2: ({...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) | ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:207:2: ({...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) | ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ ) )
             int alt12=2;
             switch ( input.LA(1) ) {
             case MINUS:
@@ -1557,6 +1598,7 @@ public class FTSParser extends Parser {
                 }
                 }
                 break;
+            case ID:
             case FTSWORD:
                 {
                 int LA12_2 = input.LA(2);
@@ -1656,38 +1698,38 @@ public class FTSParser extends Parser {
 
             switch (alt12) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:157:4: {...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )*
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:207:4: {...}? ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )*
                     {
                     if ( !(defaultFieldConjunction()) ) {
                         throw new FailedPredicateException(input, "ftsFieldGroupImplicitConjunctionOrDisjunction", "defaultFieldConjunction()");
                     }
-                    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction632);
-                    ftsFieldGroupExplicitDisjunction40=ftsFieldGroupExplicitDisjunction();
+                    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction623);
+                    ftsFieldGroupExplicitDisjunction41=ftsFieldGroupExplicitDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction40.getTree());
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:157:66: ( ftsFieldGroupExplicitDisjunction )*
+                    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction41.getTree());
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:207:66: ( ftsFieldGroupExplicitDisjunction )*
                     loop10:
                     do {
                         int alt10=2;
                         int LA10_0 = input.LA(1);
 
-                        if ( ((LA10_0>=MINUS && LA10_0<=LPAREN)||(LA10_0>=FTSWORD && LA10_0<=TILDA)) ) {
+                        if ( ((LA10_0>=MINUS && LA10_0<=LPAREN)||(LA10_0>=PLUS && LA10_0<=TILDA)||(LA10_0>=ID && LA10_0<=FTSWORD)) ) {
                             alt10=1;
                         }
 
 
                         switch (alt10) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:157:67: ftsFieldGroupExplicitDisjunction
+                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:207:67: ftsFieldGroupExplicitDisjunction
                     	    {
-                    	    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction635);
-                    	    ftsFieldGroupExplicitDisjunction41=ftsFieldGroupExplicitDisjunction();
+                    	    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction626);
+                    	    ftsFieldGroupExplicitDisjunction42=ftsFieldGroupExplicitDisjunction();
 
                     	    state._fsp--;
 
-                    	    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction41.getTree());
+                    	    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction42.getTree());
 
                     	    }
                     	    break;
@@ -1709,9 +1751,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 158:3: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
+                    // 208:3: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:158:6: ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:208:6: ^( FIELD_CONJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_CONJUNCTION, "FIELD_CONJUNCTION"), root_1);
@@ -1734,35 +1776,35 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:159:4: ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )*
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:209:4: ftsFieldGroupExplicitDisjunction ( ftsFieldGroupExplicitDisjunction )*
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction653);
-                    ftsFieldGroupExplicitDisjunction42=ftsFieldGroupExplicitDisjunction();
+                    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction644);
+                    ftsFieldGroupExplicitDisjunction43=ftsFieldGroupExplicitDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction42.getTree());
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:159:37: ( ftsFieldGroupExplicitDisjunction )*
+                    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction43.getTree());
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:209:37: ( ftsFieldGroupExplicitDisjunction )*
                     loop11:
                     do {
                         int alt11=2;
                         int LA11_0 = input.LA(1);
 
-                        if ( ((LA11_0>=MINUS && LA11_0<=LPAREN)||(LA11_0>=FTSWORD && LA11_0<=TILDA)) ) {
+                        if ( ((LA11_0>=MINUS && LA11_0<=LPAREN)||(LA11_0>=PLUS && LA11_0<=TILDA)||(LA11_0>=ID && LA11_0<=FTSWORD)) ) {
                             alt11=1;
                         }
 
 
                         switch (alt11) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:159:38: ftsFieldGroupExplicitDisjunction
+                    	    // W:\\workspace-cmis\\ANTLR\\FTS.g:209:38: ftsFieldGroupExplicitDisjunction
                     	    {
-                    	    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction656);
-                    	    ftsFieldGroupExplicitDisjunction43=ftsFieldGroupExplicitDisjunction();
+                    	    pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction647);
+                    	    ftsFieldGroupExplicitDisjunction44=ftsFieldGroupExplicitDisjunction();
 
                     	    state._fsp--;
 
-                    	    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction43.getTree());
+                    	    stream_ftsFieldGroupExplicitDisjunction.add(ftsFieldGroupExplicitDisjunction44.getTree());
 
                     	    }
                     	    break;
@@ -1784,9 +1826,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 160:3: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
+                    // 210:3: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:160:6: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:210:6: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitDisjunction )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_DISJUNCTION, "FIELD_DISJUNCTION"), root_1);
@@ -1816,11 +1858,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1834,33 +1875,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupExplicitDisjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:163:1: ftsFieldGroupExplicitDisjunction : ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:213:1: ftsFieldGroupExplicitDisjunction : ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ ) ;
     public final FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction() throws RecognitionException {
         FTSParser.ftsFieldGroupExplicitDisjunction_return retval = new FTSParser.ftsFieldGroupExplicitDisjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token OR45=null;
-        FTSParser.ftsFieldGroupExplictConjunction_return ftsFieldGroupExplictConjunction44 = null;
+        Token OR46=null;
+        FTSParser.ftsFieldGroupExplictConjunction_return ftsFieldGroupExplictConjunction45 = null;
 
-        FTSParser.ftsFieldGroupExplictConjunction_return ftsFieldGroupExplictConjunction46 = null;
+        FTSParser.ftsFieldGroupExplictConjunction_return ftsFieldGroupExplictConjunction47 = null;
 
 
-        Object OR45_tree=null;
+        Object OR46_tree=null;
         RewriteRuleTokenStream stream_OR=new RewriteRuleTokenStream(adaptor,"token OR");
         RewriteRuleSubtreeStream stream_ftsFieldGroupExplictConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExplictConjunction");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:164:2: ( ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:164:4: ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )*
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:214:2: ( ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:214:4: ftsFieldGroupExplictConjunction ( OR ftsFieldGroupExplictConjunction )*
             {
-            pushFollow(FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction681);
-            ftsFieldGroupExplictConjunction44=ftsFieldGroupExplictConjunction();
+            pushFollow(FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction672);
+            ftsFieldGroupExplictConjunction45=ftsFieldGroupExplictConjunction();
 
             state._fsp--;
 
-            stream_ftsFieldGroupExplictConjunction.add(ftsFieldGroupExplictConjunction44.getTree());
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:164:36: ( OR ftsFieldGroupExplictConjunction )*
+            stream_ftsFieldGroupExplictConjunction.add(ftsFieldGroupExplictConjunction45.getTree());
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:214:36: ( OR ftsFieldGroupExplictConjunction )*
             loop13:
             do {
                 int alt13=2;
@@ -1873,17 +1914,17 @@ public class FTSParser extends Parser {
 
                 switch (alt13) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:164:37: OR ftsFieldGroupExplictConjunction
+            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:214:37: OR ftsFieldGroupExplictConjunction
             	    {
-            	    OR45=(Token)match(input,OR,FOLLOW_OR_in_ftsFieldGroupExplicitDisjunction684);  
-            	    stream_OR.add(OR45);
+            	    OR46=(Token)match(input,OR,FOLLOW_OR_in_ftsFieldGroupExplicitDisjunction675);  
+            	    stream_OR.add(OR46);
 
-            	    pushFollow(FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction686);
-            	    ftsFieldGroupExplictConjunction46=ftsFieldGroupExplictConjunction();
+            	    pushFollow(FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction677);
+            	    ftsFieldGroupExplictConjunction47=ftsFieldGroupExplictConjunction();
 
             	    state._fsp--;
 
-            	    stream_ftsFieldGroupExplictConjunction.add(ftsFieldGroupExplictConjunction46.getTree());
+            	    stream_ftsFieldGroupExplictConjunction.add(ftsFieldGroupExplictConjunction47.getTree());
 
             	    }
             	    break;
@@ -1905,9 +1946,9 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 165:3: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ )
+            // 215:3: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:165:6: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:215:6: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplictConjunction )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_DISJUNCTION, "FIELD_DISJUNCTION"), root_1);
@@ -1935,11 +1976,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -1953,33 +1993,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupExplictConjunction
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:168:1: ftsFieldGroupExplictConjunction : ftsFieldGroupNot ( AND ftsFieldGroupNot )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:218:1: ftsFieldGroupExplictConjunction : ftsFieldGroupNot ( AND ftsFieldGroupNot )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ ) ;
     public final FTSParser.ftsFieldGroupExplictConjunction_return ftsFieldGroupExplictConjunction() throws RecognitionException {
         FTSParser.ftsFieldGroupExplictConjunction_return retval = new FTSParser.ftsFieldGroupExplictConjunction_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token AND48=null;
-        FTSParser.ftsFieldGroupNot_return ftsFieldGroupNot47 = null;
+        Token AND49=null;
+        FTSParser.ftsFieldGroupNot_return ftsFieldGroupNot48 = null;
 
-        FTSParser.ftsFieldGroupNot_return ftsFieldGroupNot49 = null;
+        FTSParser.ftsFieldGroupNot_return ftsFieldGroupNot50 = null;
 
 
-        Object AND48_tree=null;
+        Object AND49_tree=null;
         RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
         RewriteRuleSubtreeStream stream_ftsFieldGroupNot=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupNot");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:169:2: ( ftsFieldGroupNot ( AND ftsFieldGroupNot )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:169:4: ftsFieldGroupNot ( AND ftsFieldGroupNot )*
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:219:2: ( ftsFieldGroupNot ( AND ftsFieldGroupNot )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:219:4: ftsFieldGroupNot ( AND ftsFieldGroupNot )*
             {
-            pushFollow(FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction711);
-            ftsFieldGroupNot47=ftsFieldGroupNot();
+            pushFollow(FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction702);
+            ftsFieldGroupNot48=ftsFieldGroupNot();
 
             state._fsp--;
 
-            stream_ftsFieldGroupNot.add(ftsFieldGroupNot47.getTree());
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:169:21: ( AND ftsFieldGroupNot )*
+            stream_ftsFieldGroupNot.add(ftsFieldGroupNot48.getTree());
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:219:21: ( AND ftsFieldGroupNot )*
             loop14:
             do {
                 int alt14=2;
@@ -1992,17 +2032,17 @@ public class FTSParser extends Parser {
 
                 switch (alt14) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:169:22: AND ftsFieldGroupNot
+            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:219:22: AND ftsFieldGroupNot
             	    {
-            	    AND48=(Token)match(input,AND,FOLLOW_AND_in_ftsFieldGroupExplictConjunction714);  
-            	    stream_AND.add(AND48);
+            	    AND49=(Token)match(input,AND,FOLLOW_AND_in_ftsFieldGroupExplictConjunction705);  
+            	    stream_AND.add(AND49);
 
-            	    pushFollow(FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction716);
-            	    ftsFieldGroupNot49=ftsFieldGroupNot();
+            	    pushFollow(FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction707);
+            	    ftsFieldGroupNot50=ftsFieldGroupNot();
 
             	    state._fsp--;
 
-            	    stream_ftsFieldGroupNot.add(ftsFieldGroupNot49.getTree());
+            	    stream_ftsFieldGroupNot.add(ftsFieldGroupNot50.getTree());
 
             	    }
             	    break;
@@ -2024,9 +2064,9 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 170:3: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ )
+            // 220:3: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:170:6: ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:220:6: ^( FIELD_CONJUNCTION ( ftsFieldGroupNot )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_CONJUNCTION, "FIELD_CONJUNCTION"), root_1);
@@ -2054,11 +2094,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2072,31 +2111,31 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupNot
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:174:1: ftsFieldGroupNot : ( MINUS ftsFieldGroupTest -> FIELD_NEGATION ftsFieldGroupTest | ftsFieldGroupTest -> ftsFieldGroupTest );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:224:1: ftsFieldGroupNot : ( MINUS ftsFieldGroupTest -> FIELD_NEGATION ftsFieldGroupTest | ftsFieldGroupTest -> ftsFieldGroupTest );
     public final FTSParser.ftsFieldGroupNot_return ftsFieldGroupNot() throws RecognitionException {
         FTSParser.ftsFieldGroupNot_return retval = new FTSParser.ftsFieldGroupNot_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token MINUS50=null;
-        FTSParser.ftsFieldGroupTest_return ftsFieldGroupTest51 = null;
-
+        Token MINUS51=null;
         FTSParser.ftsFieldGroupTest_return ftsFieldGroupTest52 = null;
 
+        FTSParser.ftsFieldGroupTest_return ftsFieldGroupTest53 = null;
 
-        Object MINUS50_tree=null;
+
+        Object MINUS51_tree=null;
         RewriteRuleTokenStream stream_MINUS=new RewriteRuleTokenStream(adaptor,"token MINUS");
         RewriteRuleSubtreeStream stream_ftsFieldGroupTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTest");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:174:19: ( MINUS ftsFieldGroupTest -> FIELD_NEGATION ftsFieldGroupTest | ftsFieldGroupTest -> ftsFieldGroupTest )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:224:19: ( MINUS ftsFieldGroupTest -> FIELD_NEGATION ftsFieldGroupTest | ftsFieldGroupTest -> ftsFieldGroupTest )
             int alt15=2;
             int LA15_0 = input.LA(1);
 
             if ( (LA15_0==MINUS) ) {
                 alt15=1;
             }
-            else if ( (LA15_0==LPAREN||(LA15_0>=FTSWORD && LA15_0<=TILDA)) ) {
+            else if ( (LA15_0==LPAREN||(LA15_0>=PLUS && LA15_0<=TILDA)||(LA15_0>=ID && LA15_0<=FTSWORD)) ) {
                 alt15=2;
             }
             else {
@@ -2107,43 +2146,12 @@ public class FTSParser extends Parser {
             }
             switch (alt15) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:174:21: MINUS ftsFieldGroupTest
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:224:21: MINUS ftsFieldGroupTest
                     {
-                    MINUS50=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsFieldGroupNot743);  
-                    stream_MINUS.add(MINUS50);
+                    MINUS51=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsFieldGroupNot734);  
+                    stream_MINUS.add(MINUS51);
 
-                    pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot745);
-                    ftsFieldGroupTest51=ftsFieldGroupTest();
-
-                    state._fsp--;
-
-                    stream_ftsFieldGroupTest.add(ftsFieldGroupTest51.getTree());
-
-
-                    // AST REWRITE
-                    // elements: ftsFieldGroupTest
-                    // token labels: 
-                    // rule labels: retval
-                    // token list labels: 
-                    // rule list labels: 
-                    retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
-
-                    root_0 = (Object)adaptor.nil();
-                    // 175:4: -> FIELD_NEGATION ftsFieldGroupTest
-                    {
-                        adaptor.addChild(root_0, (Object)adaptor.create(FIELD_NEGATION, "FIELD_NEGATION"));
-                        adaptor.addChild(root_0, stream_ftsFieldGroupTest.nextTree());
-
-                    }
-
-                    retval.tree = root_0;retval.tree = root_0;
-                    }
-                    break;
-                case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:176:5: ftsFieldGroupTest
-                    {
-                    pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot760);
+                    pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot736);
                     ftsFieldGroupTest52=ftsFieldGroupTest();
 
                     state._fsp--;
@@ -2161,7 +2169,38 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 177:4: -> ftsFieldGroupTest
+                    // 225:4: -> FIELD_NEGATION ftsFieldGroupTest
+                    {
+                        adaptor.addChild(root_0, (Object)adaptor.create(FIELD_NEGATION, "FIELD_NEGATION"));
+                        adaptor.addChild(root_0, stream_ftsFieldGroupTest.nextTree());
+
+                    }
+
+                    retval.tree = root_0;retval.tree = root_0;
+                    }
+                    break;
+                case 2 :
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:226:5: ftsFieldGroupTest
+                    {
+                    pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot751);
+                    ftsFieldGroupTest53=ftsFieldGroupTest();
+
+                    state._fsp--;
+
+                    stream_ftsFieldGroupTest.add(ftsFieldGroupTest53.getTree());
+
+
+                    // AST REWRITE
+                    // elements: ftsFieldGroupTest
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+
+                    root_0 = (Object)adaptor.nil();
+                    // 227:4: -> ftsFieldGroupTest
                     {
                         adaptor.addChild(root_0, stream_ftsFieldGroupTest.nextTree());
 
@@ -2178,11 +2217,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2196,32 +2234,32 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupTest
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:181:1: ftsFieldGroupTest : ( ftsFieldGroupTerm -> ^( FG_TERM ftsFieldGroupTerm ) | ftsFieldGroupExactTerm -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ) | ftsFieldGroupPhrase -> ^( FG_PHRASE ftsFieldGroupPhrase ) | ftsFieldGroupSynonym -> ^( FG_SYNONYM ftsFieldGroupSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ftsFieldGroupImplicitConjunctionOrDisjunction );
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:231:1: ftsFieldGroupTest : ( ftsFieldGroupTerm -> ^( FG_TERM ftsFieldGroupTerm ) | ftsFieldGroupExactTerm -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ) | ftsFieldGroupPhrase -> ^( FG_PHRASE ftsFieldGroupPhrase ) | ftsFieldGroupSynonym -> ^( FG_SYNONYM ftsFieldGroupSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ftsFieldGroupImplicitConjunctionOrDisjunction );
     public final FTSParser.ftsFieldGroupTest_return ftsFieldGroupTest() throws RecognitionException {
         FTSParser.ftsFieldGroupTest_return retval = new FTSParser.ftsFieldGroupTest_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token LPAREN59=null;
-        Token RPAREN61=null;
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm53 = null;
+        Token LPAREN60=null;
+        Token RPAREN62=null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm54 = null;
 
-        FTSParser.ftsFieldGroupExactTerm_return ftsFieldGroupExactTerm54 = null;
+        FTSParser.ftsFieldGroupExactTerm_return ftsFieldGroupExactTerm55 = null;
 
-        FTSParser.ftsFieldGroupPhrase_return ftsFieldGroupPhrase55 = null;
+        FTSParser.ftsFieldGroupPhrase_return ftsFieldGroupPhrase56 = null;
 
-        FTSParser.ftsFieldGroupSynonym_return ftsFieldGroupSynonym56 = null;
+        FTSParser.ftsFieldGroupSynonym_return ftsFieldGroupSynonym57 = null;
 
-        FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity57 = null;
+        FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity58 = null;
 
-        FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange58 = null;
+        FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange59 = null;
 
-        FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return ftsFieldGroupImplicitConjunctionOrDisjunction60 = null;
+        FTSParser.ftsFieldGroupImplicitConjunctionOrDisjunction_return ftsFieldGroupImplicitConjunctionOrDisjunction61 = null;
 
 
-        Object LPAREN59_tree=null;
-        Object RPAREN61_tree=null;
+        Object LPAREN60_tree=null;
+        Object RPAREN62_tree=null;
         RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
         RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
         RewriteRuleSubtreeStream stream_ftsFieldGroupRange=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupRange");
@@ -2232,12 +2270,18 @@ public class FTSParser extends Parser {
         RewriteRuleSubtreeStream stream_ftsFieldGroupExactTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactTerm");
         RewriteRuleSubtreeStream stream_ftsFieldGroupProximity=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximity");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:182:2: ( ftsFieldGroupTerm -> ^( FG_TERM ftsFieldGroupTerm ) | ftsFieldGroupExactTerm -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ) | ftsFieldGroupPhrase -> ^( FG_PHRASE ftsFieldGroupPhrase ) | ftsFieldGroupSynonym -> ^( FG_SYNONYM ftsFieldGroupSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ftsFieldGroupImplicitConjunctionOrDisjunction )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:232:2: ( ftsFieldGroupTerm -> ^( FG_TERM ftsFieldGroupTerm ) | ftsFieldGroupExactTerm -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ) | ftsFieldGroupPhrase -> ^( FG_PHRASE ftsFieldGroupPhrase ) | ftsFieldGroupSynonym -> ^( FG_SYNONYM ftsFieldGroupSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN -> ftsFieldGroupImplicitConjunctionOrDisjunction )
             int alt16=7;
             switch ( input.LA(1) ) {
+            case ID:
             case FTSWORD:
                 {
                 switch ( input.LA(2) ) {
+                case DOTDOT:
+                    {
+                    alt16=6;
+                    }
+                    break;
                 case STAR:
                     {
                     alt16=5;
@@ -2248,17 +2292,13 @@ public class FTSParser extends Parser {
                 case MINUS:
                 case LPAREN:
                 case RPAREN:
-                case FTSWORD:
                 case PLUS:
                 case FTSPHRASE:
                 case TILDA:
+                case ID:
+                case FTSWORD:
                     {
                     alt16=1;
-                    }
-                    break;
-                case DOTDOT:
-                    {
-                    alt16=6;
                     }
                     break;
                 default:
@@ -2299,14 +2339,14 @@ public class FTSParser extends Parser {
 
             switch (alt16) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:182:4: ftsFieldGroupTerm
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:232:4: ftsFieldGroupTerm
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest779);
-                    ftsFieldGroupTerm53=ftsFieldGroupTerm();
+                    pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest770);
+                    ftsFieldGroupTerm54=ftsFieldGroupTerm();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm53.getTree());
+                    stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm54.getTree());
 
 
                     // AST REWRITE
@@ -2319,9 +2359,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 183:3: -> ^( FG_TERM ftsFieldGroupTerm )
+                    // 233:3: -> ^( FG_TERM ftsFieldGroupTerm )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:183:6: ^( FG_TERM ftsFieldGroupTerm )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:233:6: ^( FG_TERM ftsFieldGroupTerm )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_TERM, "FG_TERM"), root_1);
@@ -2337,14 +2377,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:184:4: ftsFieldGroupExactTerm
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:234:4: ftsFieldGroupExactTerm
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest794);
-                    ftsFieldGroupExactTerm54=ftsFieldGroupExactTerm();
+                    pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest785);
+                    ftsFieldGroupExactTerm55=ftsFieldGroupExactTerm();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupExactTerm.add(ftsFieldGroupExactTerm54.getTree());
+                    stream_ftsFieldGroupExactTerm.add(ftsFieldGroupExactTerm55.getTree());
 
 
                     // AST REWRITE
@@ -2357,9 +2397,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 185:3: -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm )
+                    // 235:3: -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:185:6: ^( FG_EXACT_TERM ftsFieldGroupExactTerm )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:235:6: ^( FG_EXACT_TERM ftsFieldGroupExactTerm )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_EXACT_TERM, "FG_EXACT_TERM"), root_1);
@@ -2375,14 +2415,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:186:4: ftsFieldGroupPhrase
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:236:4: ftsFieldGroupPhrase
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest810);
-                    ftsFieldGroupPhrase55=ftsFieldGroupPhrase();
+                    pushFollow(FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest801);
+                    ftsFieldGroupPhrase56=ftsFieldGroupPhrase();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupPhrase.add(ftsFieldGroupPhrase55.getTree());
+                    stream_ftsFieldGroupPhrase.add(ftsFieldGroupPhrase56.getTree());
 
 
                     // AST REWRITE
@@ -2395,9 +2435,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 187:3: -> ^( FG_PHRASE ftsFieldGroupPhrase )
+                    // 237:3: -> ^( FG_PHRASE ftsFieldGroupPhrase )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:187:6: ^( FG_PHRASE ftsFieldGroupPhrase )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:237:6: ^( FG_PHRASE ftsFieldGroupPhrase )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PHRASE, "FG_PHRASE"), root_1);
@@ -2413,14 +2453,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:188:4: ftsFieldGroupSynonym
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:238:4: ftsFieldGroupSynonym
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest825);
-                    ftsFieldGroupSynonym56=ftsFieldGroupSynonym();
+                    pushFollow(FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest816);
+                    ftsFieldGroupSynonym57=ftsFieldGroupSynonym();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupSynonym.add(ftsFieldGroupSynonym56.getTree());
+                    stream_ftsFieldGroupSynonym.add(ftsFieldGroupSynonym57.getTree());
 
 
                     // AST REWRITE
@@ -2433,9 +2473,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 189:3: -> ^( FG_SYNONYM ftsFieldGroupSynonym )
+                    // 239:3: -> ^( FG_SYNONYM ftsFieldGroupSynonym )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:189:6: ^( FG_SYNONYM ftsFieldGroupSynonym )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:239:6: ^( FG_SYNONYM ftsFieldGroupSynonym )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_SYNONYM, "FG_SYNONYM"), root_1);
@@ -2451,14 +2491,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:190:10: ftsFieldGroupProximity
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:240:6: ftsFieldGroupProximity
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest846);
-                    ftsFieldGroupProximity57=ftsFieldGroupProximity();
+                    pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest833);
+                    ftsFieldGroupProximity58=ftsFieldGroupProximity();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupProximity.add(ftsFieldGroupProximity57.getTree());
+                    stream_ftsFieldGroupProximity.add(ftsFieldGroupProximity58.getTree());
 
 
                     // AST REWRITE
@@ -2471,9 +2511,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 191:3: -> ^( FG_PROXIMITY ftsFieldGroupProximity )
+                    // 241:3: -> ^( FG_PROXIMITY ftsFieldGroupProximity )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:191:6: ^( FG_PROXIMITY ftsFieldGroupProximity )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:241:6: ^( FG_PROXIMITY ftsFieldGroupProximity )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PROXIMITY, "FG_PROXIMITY"), root_1);
@@ -2489,14 +2529,14 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:192:12: ftsFieldGroupRange
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:242:8: ftsFieldGroupRange
                     {
-                    pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest871);
-                    ftsFieldGroupRange58=ftsFieldGroupRange();
+                    pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest854);
+                    ftsFieldGroupRange59=ftsFieldGroupRange();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupRange.add(ftsFieldGroupRange58.getTree());
+                    stream_ftsFieldGroupRange.add(ftsFieldGroupRange59.getTree());
 
 
                     // AST REWRITE
@@ -2509,9 +2549,9 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 193:10: -> ^( FG_RANGE ftsFieldGroupRange )
+                    // 243:9: -> ^( FG_RANGE ftsFieldGroupRange )
                     {
-                        // W:\\workspace-cmis\\ANTLR\\FTS.g:193:13: ^( FG_RANGE ftsFieldGroupRange )
+                        // W:\\workspace-cmis\\ANTLR\\FTS.g:243:12: ^( FG_RANGE ftsFieldGroupRange )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_RANGE, "FG_RANGE"), root_1);
@@ -2527,19 +2567,19 @@ public class FTSParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:194:4: LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:244:4: LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
                     {
-                    LPAREN59=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroupTest893);  
-                    stream_LPAREN.add(LPAREN59);
+                    LPAREN60=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroupTest875);  
+                    stream_LPAREN.add(LPAREN60);
 
-                    pushFollow(FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroupTest895);
-                    ftsFieldGroupImplicitConjunctionOrDisjunction60=ftsFieldGroupImplicitConjunctionOrDisjunction();
+                    pushFollow(FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroupTest877);
+                    ftsFieldGroupImplicitConjunctionOrDisjunction61=ftsFieldGroupImplicitConjunctionOrDisjunction();
 
                     state._fsp--;
 
-                    stream_ftsFieldGroupImplicitConjunctionOrDisjunction.add(ftsFieldGroupImplicitConjunctionOrDisjunction60.getTree());
-                    RPAREN61=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroupTest897);  
-                    stream_RPAREN.add(RPAREN61);
+                    stream_ftsFieldGroupImplicitConjunctionOrDisjunction.add(ftsFieldGroupImplicitConjunctionOrDisjunction61.getTree());
+                    RPAREN62=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroupTest879);  
+                    stream_RPAREN.add(RPAREN62);
 
 
 
@@ -2553,7 +2593,7 @@ public class FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 195:3: -> ftsFieldGroupImplicitConjunctionOrDisjunction
+                    // 245:3: -> ftsFieldGroupImplicitConjunctionOrDisjunction
                     {
                         adaptor.addChild(root_0, stream_ftsFieldGroupImplicitConjunctionOrDisjunction.nextTree());
 
@@ -2570,11 +2610,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2588,27 +2627,29 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupTerm
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:198:1: ftsFieldGroupTerm : FTSWORD ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:248:1: ftsFieldGroupTerm : ftsWord ;
     public final FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm() throws RecognitionException {
         FTSParser.ftsFieldGroupTerm_return retval = new FTSParser.ftsFieldGroupTerm_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token FTSWORD62=null;
+        FTSParser.ftsWord_return ftsWord63 = null;
 
-        Object FTSWORD62_tree=null;
+
 
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:199:2: ( FTSWORD )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:199:4: FTSWORD
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:249:2: ( ftsWord )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:249:4: ftsWord
             {
             root_0 = (Object)adaptor.nil();
 
-            FTSWORD62=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsFieldGroupTerm915); 
-            FTSWORD62_tree = (Object)adaptor.create(FTSWORD62);
-            adaptor.addChild(root_0, FTSWORD62_tree);
+            pushFollow(FOLLOW_ftsWord_in_ftsFieldGroupTerm897);
+            ftsWord63=ftsWord();
 
+            state._fsp--;
+
+            adaptor.addChild(root_0, ftsWord63.getTree());
 
             }
 
@@ -2618,11 +2659,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2636,33 +2676,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupExactTerm
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:202:1: ftsFieldGroupExactTerm : PLUS ftsFieldGroupTerm -> ftsFieldGroupTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:252:1: ftsFieldGroupExactTerm : PLUS ftsFieldGroupTerm -> ftsFieldGroupTerm ;
     public final FTSParser.ftsFieldGroupExactTerm_return ftsFieldGroupExactTerm() throws RecognitionException {
         FTSParser.ftsFieldGroupExactTerm_return retval = new FTSParser.ftsFieldGroupExactTerm_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token PLUS63=null;
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm64 = null;
+        Token PLUS64=null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm65 = null;
 
 
-        Object PLUS63_tree=null;
+        Object PLUS64_tree=null;
         RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
         RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:203:2: ( PLUS ftsFieldGroupTerm -> ftsFieldGroupTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:203:4: PLUS ftsFieldGroupTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:253:2: ( PLUS ftsFieldGroupTerm -> ftsFieldGroupTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:253:4: PLUS ftsFieldGroupTerm
             {
-            PLUS63=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsFieldGroupExactTerm927);  
-            stream_PLUS.add(PLUS63);
+            PLUS64=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsFieldGroupExactTerm909);  
+            stream_PLUS.add(PLUS64);
 
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm929);
-            ftsFieldGroupTerm64=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm911);
+            ftsFieldGroupTerm65=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm64.getTree());
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm65.getTree());
 
 
             // AST REWRITE
@@ -2675,7 +2715,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 204:3: -> ftsFieldGroupTerm
+            // 254:3: -> ftsFieldGroupTerm
             {
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
 
@@ -2690,11 +2730,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2708,26 +2747,26 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupPhrase
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:207:1: ftsFieldGroupPhrase : FTSPHRASE ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:257:1: ftsFieldGroupPhrase : FTSPHRASE ;
     public final FTSParser.ftsFieldGroupPhrase_return ftsFieldGroupPhrase() throws RecognitionException {
         FTSParser.ftsFieldGroupPhrase_return retval = new FTSParser.ftsFieldGroupPhrase_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token FTSPHRASE65=null;
+        Token FTSPHRASE66=null;
 
-        Object FTSPHRASE65_tree=null;
+        Object FTSPHRASE66_tree=null;
 
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:208:2: ( FTSPHRASE )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:208:6: FTSPHRASE
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:258:2: ( FTSPHRASE )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:258:6: FTSPHRASE
             {
             root_0 = (Object)adaptor.nil();
 
-            FTSPHRASE65=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase949); 
-            FTSPHRASE65_tree = (Object)adaptor.create(FTSPHRASE65);
-            adaptor.addChild(root_0, FTSPHRASE65_tree);
+            FTSPHRASE66=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase931); 
+            FTSPHRASE66_tree = (Object)adaptor.create(FTSPHRASE66);
+            adaptor.addChild(root_0, FTSPHRASE66_tree);
 
 
             }
@@ -2738,11 +2777,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2756,33 +2794,33 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupSynonym
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:211:1: ftsFieldGroupSynonym : TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:261:1: ftsFieldGroupSynonym : TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm ;
     public final FTSParser.ftsFieldGroupSynonym_return ftsFieldGroupSynonym() throws RecognitionException {
         FTSParser.ftsFieldGroupSynonym_return retval = new FTSParser.ftsFieldGroupSynonym_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token TILDA66=null;
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm67 = null;
+        Token TILDA67=null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm68 = null;
 
 
-        Object TILDA66_tree=null;
+        Object TILDA67_tree=null;
         RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
         RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:212:2: ( TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:212:4: TILDA ftsFieldGroupTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:262:2: ( TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:262:4: TILDA ftsFieldGroupTerm
             {
-            TILDA66=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupSynonym961);  
-            stream_TILDA.add(TILDA66);
+            TILDA67=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupSynonym943);  
+            stream_TILDA.add(TILDA67);
 
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym963);
-            ftsFieldGroupTerm67=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym945);
+            ftsFieldGroupTerm68=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm67.getTree());
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm68.getTree());
 
 
             // AST REWRITE
@@ -2795,7 +2833,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 213:3: -> ftsFieldGroupTerm
+            // 263:3: -> ftsFieldGroupTerm
             {
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
 
@@ -2810,11 +2848,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2828,41 +2865,41 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupProximity
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:216:1: ftsFieldGroupProximity : ftsFieldGroupTerm STAR ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:266:1: ftsFieldGroupProximity : ftsFieldGroupTerm STAR ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm ;
     public final FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity() throws RecognitionException {
         FTSParser.ftsFieldGroupProximity_return retval = new FTSParser.ftsFieldGroupProximity_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token STAR69=null;
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm68 = null;
+        Token STAR70=null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm69 = null;
 
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm70 = null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm71 = null;
 
 
-        Object STAR69_tree=null;
+        Object STAR70_tree=null;
         RewriteRuleTokenStream stream_STAR=new RewriteRuleTokenStream(adaptor,"token STAR");
         RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:217:2: ( ftsFieldGroupTerm STAR ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:217:4: ftsFieldGroupTerm STAR ftsFieldGroupTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:267:2: ( ftsFieldGroupTerm STAR ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:267:4: ftsFieldGroupTerm STAR ftsFieldGroupTerm
             {
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity981);
-            ftsFieldGroupTerm68=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity963);
+            ftsFieldGroupTerm69=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm68.getTree());
-            STAR69=(Token)match(input,STAR,FOLLOW_STAR_in_ftsFieldGroupProximity983);  
-            stream_STAR.add(STAR69);
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm69.getTree());
+            STAR70=(Token)match(input,STAR,FOLLOW_STAR_in_ftsFieldGroupProximity965);  
+            stream_STAR.add(STAR70);
 
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity985);
-            ftsFieldGroupTerm70=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity967);
+            ftsFieldGroupTerm71=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm70.getTree());
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm71.getTree());
 
 
             // AST REWRITE
@@ -2875,7 +2912,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 218:3: -> ftsFieldGroupTerm ftsFieldGroupTerm
+            // 268:3: -> ftsFieldGroupTerm ftsFieldGroupTerm
             {
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
@@ -2891,11 +2928,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2909,41 +2945,41 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start ftsFieldGroupRange
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:221:1: ftsFieldGroupRange : ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:271:1: ftsFieldGroupRange : ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm ;
     public final FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange() throws RecognitionException {
         FTSParser.ftsFieldGroupRange_return retval = new FTSParser.ftsFieldGroupRange_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token DOTDOT72=null;
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm71 = null;
+        Token DOTDOT73=null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm72 = null;
 
-        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm73 = null;
+        FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm74 = null;
 
 
-        Object DOTDOT72_tree=null;
+        Object DOTDOT73_tree=null;
         RewriteRuleTokenStream stream_DOTDOT=new RewriteRuleTokenStream(adaptor,"token DOTDOT");
         RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:221:19: ( ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:221:21: ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:271:19: ( ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm -> ftsFieldGroupTerm ftsFieldGroupTerm )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:271:21: ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm
             {
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange1003);
-            ftsFieldGroupTerm71=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange985);
+            ftsFieldGroupTerm72=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm71.getTree());
-            DOTDOT72=(Token)match(input,DOTDOT,FOLLOW_DOTDOT_in_ftsFieldGroupRange1005);  
-            stream_DOTDOT.add(DOTDOT72);
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm72.getTree());
+            DOTDOT73=(Token)match(input,DOTDOT,FOLLOW_DOTDOT_in_ftsFieldGroupRange987);  
+            stream_DOTDOT.add(DOTDOT73);
 
-            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange1007);
-            ftsFieldGroupTerm73=ftsFieldGroupTerm();
+            pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange989);
+            ftsFieldGroupTerm74=ftsFieldGroupTerm();
 
             state._fsp--;
 
-            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm73.getTree());
+            stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm74.getTree());
 
 
             // AST REWRITE
@@ -2956,7 +2992,7 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 222:3: -> ftsFieldGroupTerm ftsFieldGroupTerm
+            // 272:3: -> ftsFieldGroupTerm ftsFieldGroupTerm
             {
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
                 adaptor.addChild(root_0, stream_ftsFieldGroupTerm.nextTree());
@@ -2972,11 +3008,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -2990,27 +3025,27 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start columnReference
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:225:1: columnReference : (qualifier= identifier DOT )? name= identifier -> ^( COLUMN_REF $name ( $qualifier)? ) ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:275:1: columnReference : (qualifier= identifier DOT )? name= identifier -> ^( COLUMN_REF $name ( $qualifier)? ) ;
     public final FTSParser.columnReference_return columnReference() throws RecognitionException {
         FTSParser.columnReference_return retval = new FTSParser.columnReference_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token DOT74=null;
+        Token DOT75=null;
         FTSParser.identifier_return qualifier = null;
 
         FTSParser.identifier_return name = null;
 
 
-        Object DOT74_tree=null;
+        Object DOT75_tree=null;
         RewriteRuleTokenStream stream_DOT=new RewriteRuleTokenStream(adaptor,"token DOT");
         RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:226:2: ( (qualifier= identifier DOT )? name= identifier -> ^( COLUMN_REF $name ( $qualifier)? ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:226:4: (qualifier= identifier DOT )? name= identifier
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:276:2: ( (qualifier= identifier DOT )? name= identifier -> ^( COLUMN_REF $name ( $qualifier)? ) )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:276:4: (qualifier= identifier DOT )? name= identifier
             {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:226:4: (qualifier= identifier DOT )?
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:276:4: (qualifier= identifier DOT )?
             int alt17=2;
             int LA17_0 = input.LA(1);
 
@@ -3023,16 +3058,16 @@ public class FTSParser extends Parser {
             }
             switch (alt17) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\FTS.g:226:6: qualifier= identifier DOT
+                    // W:\\workspace-cmis\\ANTLR\\FTS.g:276:6: qualifier= identifier DOT
                     {
-                    pushFollow(FOLLOW_identifier_in_columnReference1031);
+                    pushFollow(FOLLOW_identifier_in_columnReference1013);
                     qualifier=identifier();
 
                     state._fsp--;
 
                     stream_identifier.add(qualifier.getTree());
-                    DOT74=(Token)match(input,DOT,FOLLOW_DOT_in_columnReference1033);  
-                    stream_DOT.add(DOT74);
+                    DOT75=(Token)match(input,DOT,FOLLOW_DOT_in_columnReference1015);  
+                    stream_DOT.add(DOT75);
 
 
                     }
@@ -3040,7 +3075,7 @@ public class FTSParser extends Parser {
 
             }
 
-            pushFollow(FOLLOW_identifier_in_columnReference1040);
+            pushFollow(FOLLOW_identifier_in_columnReference1022);
             name=identifier();
 
             state._fsp--;
@@ -3060,15 +3095,15 @@ public class FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"token qualifier",qualifier!=null?qualifier.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 227:3: -> ^( COLUMN_REF $name ( $qualifier)? )
+            // 277:3: -> ^( COLUMN_REF $name ( $qualifier)? )
             {
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:227:6: ^( COLUMN_REF $name ( $qualifier)? )
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:277:6: ^( COLUMN_REF $name ( $qualifier)? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMN_REF, "COLUMN_REF"), root_1);
 
                 adaptor.addChild(root_1, stream_name.nextTree());
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:227:25: ( $qualifier)?
+                // W:\\workspace-cmis\\ANTLR\\FTS.g:277:25: ( $qualifier)?
                 if ( stream_qualifier.hasNext() ) {
                     adaptor.addChild(root_1, stream_qualifier.nextTree());
 
@@ -3089,11 +3124,10 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
@@ -3107,26 +3141,26 @@ public class FTSParser extends Parser {
     };
 
     // $ANTLR start identifier
-    // W:\\workspace-cmis\\ANTLR\\FTS.g:230:1: identifier : ID ;
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:280:1: identifier : ID ;
     public final FTSParser.identifier_return identifier() throws RecognitionException {
         FTSParser.identifier_return retval = new FTSParser.identifier_return();
         retval.start = input.LT(1);
 
         Object root_0 = null;
 
-        Token ID75=null;
+        Token ID76=null;
 
-        Object ID75_tree=null;
+        Object ID76_tree=null;
 
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:231:2: ( ID )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:231:4: ID
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:281:2: ( ID )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:281:4: ID
             {
             root_0 = (Object)adaptor.nil();
 
-            ID75=(Token)match(input,ID,FOLLOW_ID_in_identifier1067); 
-            ID75_tree = (Object)adaptor.create(ID75);
-            adaptor.addChild(root_0, ID75_tree);
+            ID76=(Token)match(input,ID,FOLLOW_ID_in_identifier1050); 
+            ID76_tree = (Object)adaptor.create(ID76);
+            adaptor.addChild(root_0, ID76_tree);
 
 
             }
@@ -3137,17 +3171,70 @@ public class FTSParser extends Parser {
             adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
 
         }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (Object)adaptor.errorNode(input, retval.start, input.LT(-1), re);
 
+        catch(RecognitionException e)
+        {
+           throw e;
         }
         finally {
         }
         return retval;
     }
     // $ANTLR end identifier
+
+    public static class ftsWord_return extends ParserRuleReturnScope {
+        Object tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start ftsWord
+    // W:\\workspace-cmis\\ANTLR\\FTS.g:284:1: ftsWord : ( ID | FTSWORD );
+    public final FTSParser.ftsWord_return ftsWord() throws RecognitionException {
+        FTSParser.ftsWord_return retval = new FTSParser.ftsWord_return();
+        retval.start = input.LT(1);
+
+        Object root_0 = null;
+
+        Token set77=null;
+
+        Object set77_tree=null;
+
+        try {
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:285:5: ( ID | FTSWORD )
+            // W:\\workspace-cmis\\ANTLR\\FTS.g:
+            {
+            root_0 = (Object)adaptor.nil();
+
+            set77=(Token)input.LT(1);
+            if ( (input.LA(1)>=ID && input.LA(1)<=FTSWORD) ) {
+                input.consume();
+                adaptor.addChild(root_0, (Object)adaptor.create(set77));
+                state.errorRecovery=false;
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                throw mse;
+            }
+
+
+            }
+
+            retval.stop = input.LT(-1);
+
+            retval.tree = (Object)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+
+        }
+
+        catch(RecognitionException e)
+        {
+           throw e;
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end ftsWord
 
     // Delegated rules
 
@@ -3167,7 +3254,7 @@ public class FTSParser extends Parser {
     static final String DFA3_specialS =
         "\1\uffff\1\0\1\1\1\2\1\3\1\4\1\5\1\6\2\uffff}>";
     static final String[] DFA3_transitionS = {
-            "\1\1\1\7\2\uffff\1\3\1\4\1\5\1\6\3\uffff\1\2",
+            "\1\1\1\7\2\uffff\1\4\1\5\1\6\3\uffff\1\2\1\3",
             "\1\uffff",
             "\1\uffff",
             "\1\uffff",
@@ -3209,7 +3296,7 @@ public class FTSParser extends Parser {
             this.transition = DFA3_transition;
         }
         public String getDescription() {
-            return "89:1: ftsImplicitConjunctionOrDisjunction : ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) );";
+            return "137:1: ftsImplicitConjunctionOrDisjunction : ({...}? ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( CONJUNCTION ( ftsExplicitDisjunction )+ ) | ftsExplicitDisjunction ( ftsExplicitDisjunction )* -> ^( DISJUNCTION ( ftsExplicitDisjunction )+ ) );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -3330,30 +3417,30 @@ public class FTSParser extends Parser {
     static final String DFA7_eotS =
         "\16\uffff";
     static final String DFA7_eofS =
-        "\2\uffff\1\11\13\uffff";
+        "\1\uffff\2\13\13\uffff";
     static final String DFA7_minS =
-        "\1\32\1\34\1\27\4\uffff\1\44\1\32\3\uffff\1\34\1\uffff";
+        "\1\32\2\27\6\uffff\1\32\1\43\2\uffff\1\34";
     static final String DFA7_maxS =
-        "\1\44\1\43\1\44\4\uffff\1\44\1\37\3\uffff\1\34\1\uffff";
+        "\3\44\6\uffff\1\44\1\43\2\uffff\1\34";
     static final String DFA7_acceptS =
-        "\3\uffff\1\2\1\3\1\4\1\10\2\uffff\1\1\1\5\1\6\1\uffff\1\7";
+        "\3\uffff\1\2\1\3\1\4\1\10\1\6\1\5\2\uffff\1\1\1\7\1\uffff";
     static final String DFA7_specialS =
         "\16\uffff}>";
     static final String[] DFA7_transitionS = {
-            "\1\6\2\uffff\1\2\1\3\1\4\1\5\3\uffff\1\1",
-            "\1\10\6\uffff\1\7",
-            "\5\11\1\uffff\4\11\1\12\1\13\1\uffff\1\11",
+            "\1\6\2\uffff\1\3\1\4\1\5\3\uffff\1\1\1\2",
+            "\5\13\1\11\3\13\1\10\1\7\1\12\2\13",
+            "\5\13\1\uffff\3\13\1\10\1\7\1\uffff\2\13",
             "",
             "",
             "",
             "",
-            "\1\14",
-            "\1\15\2\uffff\1\11\1\uffff\1\4",
             "",
             "",
+            "\1\14\3\uffff\1\4\4\uffff\2\13",
+            "\1\15",
             "",
-            "\1\10",
-            ""
+            "",
+            "\1\11"
     };
 
     static final short[] DFA7_eot = DFA.unpackEncodedString(DFA7_eotS);
@@ -3386,87 +3473,89 @@ public class FTSParser extends Parser {
             this.transition = DFA7_transition;
         }
         public String getDescription() {
-            return "113:1: ftsTest : ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction );";
+            return "162:1: ftsTest : ( ftsTerm -> ^( TERM ftsTerm ) | ftsExactTerm -> ^( EXACT_TERM ftsExactTerm ) | ftsPhrase -> ^( PHRASE ftsPhrase ) | ftsSynonym -> ^( SYNONYM ftsSynonym ) | ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | ftsFieldGroup | LPAREN ftsImplicitConjunctionOrDisjunction RPAREN -> ftsImplicitConjunctionOrDisjunction );";
         }
     }
  
 
-    public static final BitSet FOLLOW_ftsImplicitConjunctionOrDisjunction_in_fts135 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction157 = new BitSet(new long[]{0x00000011E6000000L});
-    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction160 = new BitSet(new long[]{0x00000011E6000002L});
-    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction179 = new BitSet(new long[]{0x00000011E6000000L});
-    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction182 = new BitSet(new long[]{0x00000011E6000002L});
-    public static final BitSet FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction207 = new BitSet(new long[]{0x0000000000800002L});
-    public static final BitSet FOLLOW_OR_in_ftsExplicitDisjunction210 = new BitSet(new long[]{0x00000011E6800000L});
-    public static final BitSet FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction212 = new BitSet(new long[]{0x0000000000800002L});
-    public static final BitSet FOLLOW_ftsNot_in_ftsExplictConjunction237 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_AND_in_ftsExplictConjunction240 = new BitSet(new long[]{0x00000011E7000000L});
-    public static final BitSet FOLLOW_ftsNot_in_ftsExplictConjunction242 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_MINUS_in_ftsNot268 = new BitSet(new long[]{0x00000011E6000000L});
-    public static final BitSet FOLLOW_ftsTest_in_ftsNot270 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsTest_in_ftsNot285 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsTerm_in_ftsTest301 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsExactTerm_in_ftsTest316 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsPhrase_in_ftsTest344 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsSynonym_in_ftsTest379 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsTest408 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsTest440 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroup_in_ftsTest469 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_ftsTest478 = new BitSet(new long[]{0x00000011E6000000L});
-    public static final BitSet FOLLOW_ftsImplicitConjunctionOrDisjunction_in_ftsTest480 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_RPAREN_in_ftsTest482 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_columnReference_in_ftsTerm500 = new BitSet(new long[]{0x0000000010000000L});
-    public static final BitSet FOLLOW_COLON_in_ftsTerm502 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_FTSWORD_in_ftsTerm506 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PLUS_in_ftsExactTerm527 = new BitSet(new long[]{0x0000001020000000L});
-    public static final BitSet FOLLOW_ftsTerm_in_ftsExactTerm529 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_columnReference_in_ftsPhrase550 = new BitSet(new long[]{0x0000000010000000L});
-    public static final BitSet FOLLOW_COLON_in_ftsPhrase552 = new BitSet(new long[]{0x0000000080000000L});
-    public static final BitSet FOLLOW_FTSPHRASE_in_ftsPhrase556 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TILDA_in_ftsSynonym577 = new BitSet(new long[]{0x0000001020000000L});
-    public static final BitSet FOLLOW_ftsTerm_in_ftsSynonym579 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_columnReference_in_ftsFieldGroup598 = new BitSet(new long[]{0x0000000010000000L});
-    public static final BitSet FOLLOW_COLON_in_ftsFieldGroup600 = new BitSet(new long[]{0x0000000004000000L});
-    public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroup602 = new BitSet(new long[]{0x00000001EE000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroup604 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroup606 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction632 = new BitSet(new long[]{0x00000001E6000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction635 = new BitSet(new long[]{0x00000001E6000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction653 = new BitSet(new long[]{0x00000001E6000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction656 = new BitSet(new long[]{0x00000001E6000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction681 = new BitSet(new long[]{0x0000000000800002L});
-    public static final BitSet FOLLOW_OR_in_ftsFieldGroupExplicitDisjunction684 = new BitSet(new long[]{0x00000001E6800000L});
-    public static final BitSet FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction686 = new BitSet(new long[]{0x0000000000800002L});
-    public static final BitSet FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction711 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_AND_in_ftsFieldGroupExplictConjunction714 = new BitSet(new long[]{0x00000001E7000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction716 = new BitSet(new long[]{0x0000000001000002L});
-    public static final BitSet FOLLOW_MINUS_in_ftsFieldGroupNot743 = new BitSet(new long[]{0x00000001E6000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot745 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot760 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest779 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest794 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest810 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest825 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest846 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest871 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroupTest893 = new BitSet(new long[]{0x00000001EE000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroupTest895 = new BitSet(new long[]{0x0000000008000000L});
-    public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroupTest897 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FTSWORD_in_ftsFieldGroupTerm915 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PLUS_in_ftsFieldGroupExactTerm927 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm929 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase949 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupSynonym961 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym963 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity981 = new BitSet(new long[]{0x0000000200000000L});
-    public static final BitSet FOLLOW_STAR_in_ftsFieldGroupProximity983 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity985 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange1003 = new BitSet(new long[]{0x0000000400000000L});
-    public static final BitSet FOLLOW_DOTDOT_in_ftsFieldGroupRange1005 = new BitSet(new long[]{0x0000000020000000L});
-    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange1007 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_identifier_in_columnReference1031 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_DOT_in_columnReference1033 = new BitSet(new long[]{0x0000001000000000L});
-    public static final BitSet FOLLOW_identifier_in_columnReference1040 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ID_in_identifier1067 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsImplicitConjunctionOrDisjunction_in_fts146 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_fts148 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction170 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction173 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction192 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsImplicitConjunctionOrDisjunction195 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction220 = new BitSet(new long[]{0x0000000000800002L});
+    public static final BitSet FOLLOW_OR_in_ftsExplicitDisjunction223 = new BitSet(new long[]{0x00000018E6800000L});
+    public static final BitSet FOLLOW_ftsExplictConjunction_in_ftsExplicitDisjunction225 = new BitSet(new long[]{0x0000000000800002L});
+    public static final BitSet FOLLOW_ftsNot_in_ftsExplictConjunction250 = new BitSet(new long[]{0x0000000001000002L});
+    public static final BitSet FOLLOW_AND_in_ftsExplictConjunction253 = new BitSet(new long[]{0x00000018E7000000L});
+    public static final BitSet FOLLOW_ftsNot_in_ftsExplictConjunction255 = new BitSet(new long[]{0x0000000001000002L});
+    public static final BitSet FOLLOW_MINUS_in_ftsNot286 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsTest_in_ftsNot288 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsTest_in_ftsNot303 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsTerm_in_ftsTest324 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsExactTerm_in_ftsTest339 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsPhrase_in_ftsTest359 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsSynonym_in_ftsTest385 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsTest409 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsTest436 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroup_in_ftsTest460 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAREN_in_ftsTest469 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsImplicitConjunctionOrDisjunction_in_ftsTest471 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_RPAREN_in_ftsTest473 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_columnReference_in_ftsTerm491 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_COLON_in_ftsTerm493 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsWord_in_ftsTerm497 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PLUS_in_ftsExactTerm518 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsTerm_in_ftsExactTerm520 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_columnReference_in_ftsPhrase541 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_COLON_in_ftsPhrase543 = new BitSet(new long[]{0x0000000040000000L});
+    public static final BitSet FOLLOW_FTSPHRASE_in_ftsPhrase547 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TILDA_in_ftsSynonym568 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsTerm_in_ftsSynonym570 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_columnReference_in_ftsFieldGroup589 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_COLON_in_ftsFieldGroup591 = new BitSet(new long[]{0x0000000004000000L});
+    public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroup593 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroup595 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroup597 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction623 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction626 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction644 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupImplicitConjunctionOrDisjunction647 = new BitSet(new long[]{0x00000018E6000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction672 = new BitSet(new long[]{0x0000000000800002L});
+    public static final BitSet FOLLOW_OR_in_ftsFieldGroupExplicitDisjunction675 = new BitSet(new long[]{0x00000018E6800000L});
+    public static final BitSet FOLLOW_ftsFieldGroupExplictConjunction_in_ftsFieldGroupExplicitDisjunction677 = new BitSet(new long[]{0x0000000000800002L});
+    public static final BitSet FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction702 = new BitSet(new long[]{0x0000000001000002L});
+    public static final BitSet FOLLOW_AND_in_ftsFieldGroupExplictConjunction705 = new BitSet(new long[]{0x00000018E7000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupNot_in_ftsFieldGroupExplictConjunction707 = new BitSet(new long[]{0x0000000001000002L});
+    public static final BitSet FOLLOW_MINUS_in_ftsFieldGroupNot734 = new BitSet(new long[]{0x00000018E6000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot736 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupNot751 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest770 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest785 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest801 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest816 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest833 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest854 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroupTest875 = new BitSet(new long[]{0x00000018EE000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunctionOrDisjunction_in_ftsFieldGroupTest877 = new BitSet(new long[]{0x0000000008000000L});
+    public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroupTest879 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsWord_in_ftsFieldGroupTerm897 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PLUS_in_ftsFieldGroupExactTerm909 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm911 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase931 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupSynonym943 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym945 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity963 = new BitSet(new long[]{0x0000000100000000L});
+    public static final BitSet FOLLOW_STAR_in_ftsFieldGroupProximity965 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupProximity967 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange985 = new BitSet(new long[]{0x0000000200000000L});
+    public static final BitSet FOLLOW_DOTDOT_in_ftsFieldGroupRange987 = new BitSet(new long[]{0x0000001800000000L});
+    public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupRange989 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_identifier_in_columnReference1013 = new BitSet(new long[]{0x0000000400000000L});
+    public static final BitSet FOLLOW_DOT_in_columnReference1015 = new BitSet(new long[]{0x0000000800000000L});
+    public static final BitSet FOLLOW_identifier_in_columnReference1022 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ID_in_identifier1050 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_ftsWord0 = new BitSet(new long[]{0x0000000000000002L});
 
 }

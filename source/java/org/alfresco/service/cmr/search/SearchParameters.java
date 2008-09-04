@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,6 +49,8 @@ public class SearchParameters extends SearchStatement
      * The default limit if someone asks for a limited result set but does not say how to limit....
      */
     private static int DEFAULT_LIMIT = 500;
+    
+    private static int DEFAULT_BULK_FETCH_SIZE = 10;
 
     /*
      * Standard sort definitions for sorting in document and score order.
@@ -108,6 +111,10 @@ public class SearchParameters extends SearchStatement
     private HashSet<String> allAttributes = new HashSet<String>();
     
     private HashSet<String> textAttributes = new HashSet<String>();
+
+    private boolean bulkFetch = true;
+
+    private int bulkFetchSize = DEFAULT_BULK_FETCH_SIZE;
 
     /**
      * Default constructor
@@ -411,7 +418,45 @@ public class SearchParameters extends SearchStatement
         return Collections.unmodifiableSet(allAttributes);
     }
     
+    /**
+     * Bulk fetch results in the cache
+     * @param bulkFetch
+     * @return
+     */
+    public void setBulkFetch(boolean bulkFetch)
+    {
+        this.bulkFetch = bulkFetch;
+    }
+    
+    /**
+     * Do we bulk fect
+     * @return
+     */
+    public boolean getBulkFetch()
+    {
+        return bulkFetch;
+    }
 
+    /**
+     * Set the bulk fect size
+     * @param bulkFecthSize
+     */
+    public void setBulkFetchSize(int bulkFetchSize)
+    {
+        this.bulkFetchSize = bulkFetchSize;
+    }
+    
+    
+    /**
+     * Get the bulk fetch size.
+     * @return
+     */
+    public int getBulkFecthSize()
+    {
+        return bulkFetchSize;
+    }
+    
+    
     /**
      * A helper class for sort definition. Encapsulated using the lucene sortType, field name and a flag for
      * ascending/descending.

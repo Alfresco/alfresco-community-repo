@@ -25,36 +25,19 @@
 package org.alfresco.repo.search.impl.querymodel.impl.functions;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
-import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
-import org.alfresco.repo.search.impl.querymodel.Multiplicity;
-import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
-import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
+import org.alfresco.repo.search.impl.querymodel.impl.BaseComparison;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 
 /**
  * @author andyh
  *
  */
-public class Equals extends BaseFunction
+public class Equals extends BaseComparison
 {
     public final static String NAME = "Equals";
-    
-    public final static String ARG_LHS = "LHS";
-    
-    public final static String ARG_RHS = "RHS";
-    
-    public static LinkedHashSet<ArgumentDefinition> args;
-    
-    static 
-    {
-        args = new LinkedHashSet<ArgumentDefinition>();
-        args.add(new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
-        args.add(new BaseArgumentDefinition(Multiplicity.ANY, ARG_RHS, DataTypeDefinition.ANY, true));
-    }
     
     /**
      * @param name

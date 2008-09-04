@@ -40,9 +40,9 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
  */
 public class PropertyAccessor extends BaseFunction
 {
-    public final static String NAME = "Upper";
+    public final static String NAME = "PropertyAccessor";
 
-    public final static String ARG_PROPERTY = "Arg";
+    public final static String ARG_PROPERTY = "Property";
 
     public static LinkedHashSet<ArgumentDefinition> args;
 

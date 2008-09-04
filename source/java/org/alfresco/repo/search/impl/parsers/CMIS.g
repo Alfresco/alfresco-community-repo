@@ -334,7 +334,7 @@ literal
 	
 inPredicate
 	:	columnReference NOT? IN LPAREN inValueList RPAREN
-		-> ^(PRED_IN ANY columnReference NOT? inValueList)
+		-> ^(PRED_IN ANY columnReference inValueList NOT?)
 	;
 	
 inValueList
@@ -344,7 +344,7 @@ inValueList
 	
 likePredicate
 	:	columnReference NOT? LIKE characterStringLiteral
-		-> ^(PRED_LIKE columnReference NOT? characterStringLiteral)
+		-> ^(PRED_LIKE columnReference characterStringLiteral NOT?)
 	;
 	
 nullPredicate
@@ -360,12 +360,12 @@ quantifiedComparisonPredicate
 	
 quantifiedInPredicate
 	:	ANY multiValuedColumnReference NOT? IN  LPAREN inValueList RPAREN
-		-> ^(PRED_IN ANY multiValuedColumnReference NOT? inValueList)
+		-> ^(PRED_IN ANY multiValuedColumnReference inValueList NOT?)
 	;
 	
 textSearchPredicate
 	:	CONTAINS LPAREN (qualifier COMMA | COMMA)? textSearchExpression RPAREN
-		-> ^(PRED_FTS textSearchExpression qualifier)
+		-> ^(PRED_FTS textSearchExpression qualifier?)
 	;
 	
 folderPredicate
@@ -388,10 +388,10 @@ orderByClause
 	;
 	
 sortSpecification
-	:	columnName 
-		-> ^(SORT_SPECIFICATION columnName ASC)
-	|	columnName ( by=ASC | by=DESC )
-		-> ^(SORT_SPECIFICATION columnName $by)
+	:	columnReference 
+		-> ^(SORT_SPECIFICATION columnReference ASC)
+	|	columnReference ( by=ASC | by=DESC )
+		-> ^(SORT_SPECIFICATION columnReference $by)
 	;
 	
 correlationName

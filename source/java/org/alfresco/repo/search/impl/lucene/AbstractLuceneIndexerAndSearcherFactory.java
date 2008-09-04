@@ -47,6 +47,7 @@ import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeService;
+import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -117,7 +118,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private static final int DEFAULT_TIMEOUT = 600000;
 
     protected TenantService tenantService;
-    
+
     private String indexRootLocation;
 
     private QueryRegisterComponent queryRegister;
@@ -138,6 +139,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private MLAnalysisMode defaultMLSearchAnalysisMode = MLAnalysisMode.EXACT_LANGUAGE_AND_ALL;
 
     private ThreadPoolExecutor threadPoolExecutor;
+
+    private BulkLoader bulkLoader;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
@@ -168,7 +171,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
      * Set the query register
      * 
@@ -209,6 +212,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public long getMaxTransformationTime()
     {
         return maxAtomicTransformationTime;
+    }
+
+    public BulkLoader getBulkLoader()
+    {
+        return bulkLoader;
+    }
+
+    public void setBulkLoader(BulkLoader bulkLoader)
+    {
+        this.bulkLoader = bulkLoader;
     }
 
     /**
@@ -256,7 +269,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public LuceneIndexer getIndexer(StoreRef storeRef) throws IndexerException
     {
         storeRef = tenantService.getName(storeRef);
-        
+
         // register to receive txn callbacks
         // TODO: make this conditional on whether the XA stuff is being used
         // directly on not
@@ -369,7 +382,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public LuceneSearcher getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
         storeRef = tenantService.getName(storeRef);
-        
+
         String deltaId = null;
         LuceneIndexer indexer = null;
         if (searchDelta)

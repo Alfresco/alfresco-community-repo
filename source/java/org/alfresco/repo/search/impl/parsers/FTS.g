@@ -68,21 +68,69 @@ tokens
 
 @members
 {
+    private Stack<String> paraphrases = new Stack<String>();
+   
+    public boolean defaultConjunction()
+    {
+       return true;
+    }
+    
+    public boolean defaultFieldConjunction()
+    {
+       return true;
+    }
+    
+    protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
+    {
+       throw new MismatchedTokenException(ttype, input);
+    }
+    
+    public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
+    {
+       throw e;
+    }
+    
+    public String getErrorMessage(RecognitionException e, String[] tokenNames)
+    {
+       List stack = getRuleInvocationStack(e, this.getClass().getName());
+       String msg = null;
+       if(e instanceof NoViableAltException)
+       {
+            NoViableAltException nvae = (NoViableAltException)e;
+            msg = " no viable alt; token="+e.token+
+             " (decision="+nvae.decisionNumber+
+             " state "+nvae.stateNumber+")"+
+             " decision=<<"+nvae.grammarDecisionDescription+">>";
+       }
+       else
+       {
+           msg = super.getErrorMessage(e, tokenNames);
+       }
+       if(paraphrases.size() > 0)
+       {
+           String paraphrase = (String)paraphrases.peek();
+           msg = msg+" "+paraphrase;
+       }
        
-	public boolean defaultConjunction()
-	{
-	   return true;
-	}
-	
-	public boolean defaultFieldConjunction()
-	{
-	   return true;
-	}
-	
-	
+       return stack+" "+msg;
+    }
+    
+    public String getTokenErrorDisplay(Token t)
+    {
+       return t.toString();
+    }      
 }
 
-fts	: 	ftsImplicitConjunctionOrDisjunction
+@rulecatch
+{
+catch(RecognitionException e)
+{
+   throw e;
+}
+}
+
+fts	
+    : 	ftsImplicitConjunctionOrDisjunction EOF
 		->  ftsImplicitConjunctionOrDisjunction
 	;	
 
@@ -104,32 +152,34 @@ ftsExplictConjunction
 	;
 	
 	
-ftsNot  :	MINUS ftsTest
+ftsNot  
+    :	MINUS ftsTest
 		-> ^(NEGATION ftsTest)
 	|	ftsTest
 		-> ftsTest
 	;
 
-ftsTest	:	ftsTerm
+ftsTest	
+    :	ftsTerm
 		-> ^(TERM ftsTerm)
 	|	ftsExactTerm
 		-> ^(EXACT_TERM ftsExactTerm)
-        |       ftsPhrase
-        	-> ^(PHRASE ftsPhrase)
-        |       ftsSynonym
-        	-> ^(SYNONYM ftsSynonym)
-        |	ftsFieldGroupProximity  
-        	-> ^(FG_PROXIMITY ftsFieldGroupProximity)
-        | 	ftsFieldGroupRange
-        	-> ^(FG_RANGE ftsFieldGroupRange)
-        |	ftsFieldGroup    
+    |   ftsPhrase
+        -> ^(PHRASE ftsPhrase)
+    |   ftsSynonym
+        -> ^(SYNONYM ftsSynonym)
+    |	ftsFieldGroupProximity  
+        -> ^(FG_PROXIMITY ftsFieldGroupProximity)
+    | 	ftsFieldGroupRange
+        -> ^(FG_RANGE ftsFieldGroupRange)
+    |	ftsFieldGroup    
 	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
 		-> ftsImplicitConjunctionOrDisjunction
 	;
 
 ftsTerm
-	:	(columnReference COLON)? FTSWORD
-		-> FTSWORD columnReference?
+	:	(columnReference COLON)? ftsWord
+		-> ftsWord columnReference?
 	;
 	
 ftsExactTerm
@@ -187,16 +237,16 @@ ftsFieldGroupTest
 		-> ^(FG_PHRASE ftsFieldGroupPhrase)
 	|	ftsFieldGroupSynonym
 		-> ^(FG_SYNONYM ftsFieldGroupSynonym)
-	|       ftsFieldGroupProximity  
+	|   ftsFieldGroupProximity  
 		-> ^(FG_PROXIMITY ftsFieldGroupProximity)
-        | 	ftsFieldGroupRange
-        	-> ^(FG_RANGE ftsFieldGroupRange)
+    | 	ftsFieldGroupRange
+        -> ^(FG_RANGE ftsFieldGroupRange)
 	|	LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
 		-> ftsFieldGroupImplicitConjunctionOrDisjunction
 	;
 	
 ftsFieldGroupTerm
-	:	FTSWORD
+	:	ftsWord
 	;
 	
 ftsFieldGroupExactTerm
@@ -223,13 +273,18 @@ ftsFieldGroupRange:	ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm
 	;
 	
 columnReference
-	:	( qualifier=identifier DOT )? name=identifier
+	:	( qualifier=identifier DOT )? name=identifier 
 		-> ^(COLUMN_REF $name $qualifier?)
 	;
 	
 identifier
 	:	ID
 	;
+	
+ftsWord
+    :   ID
+    |   FTSWORD
+    ;
 	
 OR	:	('O'|'o')('R'|'r');
 AND	:	('A'|'a')('N'|'n')('D'|'d');
@@ -243,6 +298,8 @@ COLON	:	':' ;
 STAR	:	'*' ;
 DOTDOT	:	'..' ;
 DOT	:	'.' ;
+
+ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'0'|'_'|'$'|'#')* ;
 
 FTSWORD :	 INWORD+;
 	
@@ -278,7 +335,5 @@ INWORD	: '\u0041' .. '\u005A'
 	
 FTSPHRASE
 	:	'"' (~'"' | '""')* '"'	;
-
-ID	:	('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'0'|'_'|'$'|'#')* ;
 
 WS	:	( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; } ;

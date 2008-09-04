@@ -408,4 +408,10 @@
            <ref bean="sessionFactory"/>
        </property>
    </bean> 
+   
+   <bean id="hibernateL1CacheBulkLoader" class="org.alfresco.repo.domain.hibernate.HibernateL1CacheBulkLoader">
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+   </bean>
 </beans>

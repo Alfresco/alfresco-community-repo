@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\CMIS.g 2008-07-08 14:37:53
+// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\CMIS.g 2008-07-15 16:24:40
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;

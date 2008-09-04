@@ -26,6 +26,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
 
 public interface LuceneConfig
@@ -36,13 +37,14 @@ public interface LuceneConfig
      * @param lockDirectory
      */
     public void setLockDirectory(String lockDirectory);
-    
+
     /**
-     * The path to the index location 
+     * The path to the index location
+     * 
      * @return
      */
     public String getIndexRootLocation();
-    
+
     /**
      * The batch size in which to group flushes of the index.
      * 
@@ -52,35 +54,44 @@ public interface LuceneConfig
 
     /**
      * The maximum numbr of sub-queries the can be generated out of wild card expansion etc
+     * 
      * @return
      */
     public int getQueryMaxClauses();
-    
+
     /**
      * The default mode for analysing ML text during index.
      * 
      * @return
      */
     public MLAnalysisMode getDefaultMLIndexAnalysisMode();
-    
+
     /**
      * The default mode for analysis of ML text during search.
      * 
      * @return
      */
     public MLAnalysisMode getDefaultMLSearchAnalysisMode();
-    
+
     /**
      * Get the max field length that determine how many tokens are put into the index
+     * 
      * @return
      */
     public int getIndexerMaxFieldLength();
-    
+
     /**
      * Get the thread pool for index merging etc
      * 
      * @return
      */
     public ThreadPoolExecutor getThreadPoolExecutor();
-   
+
+    /**
+     * Get preloader - may be null if preloading is not supported
+     * 
+     * @return
+     */
+    public BulkLoader getBulkLoader();
+
 }

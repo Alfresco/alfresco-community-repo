@@ -24,13 +24,8 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import java.util.List;
-
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
 
 public interface LuceneIndexerAndSearcher extends IndexerAndSearcher, LuceneConfig
 {

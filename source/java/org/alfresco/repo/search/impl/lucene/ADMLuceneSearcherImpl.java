@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.lucene;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -42,11 +41,9 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
-import org.alfresco.repo.search.results.SortedResultSet;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -69,7 +66,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
@@ -320,7 +316,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
-                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters);
+                ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters, getLuceneConfig());
                 if(requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
@@ -362,7 +358,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters);
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters, getLuceneConfig());
             }
             catch (SAXPathException e)
             {

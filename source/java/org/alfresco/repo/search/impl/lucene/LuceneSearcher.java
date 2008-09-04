@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.util.Pair;

@@ -51,6 +51,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.domain.hibernate.HibernateL1CacheBulkLoader;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -133,7 +134,7 @@ public class ADMLuceneTest extends TestCase
     NodeService nodeService;
 
     DictionaryService dictionaryService;
-    
+
     TenantService tenantService;
 
     private NodeRef rootNodeRef;
@@ -198,6 +199,8 @@ public class ADMLuceneTest extends TestCase
 
     private Date testDate;
 
+    private HibernateL1CacheBulkLoader hibernateL1CacheBulkLoader;
+
     /**
      *
      */
@@ -220,7 +223,9 @@ public class ADMLuceneTest extends TestCase
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         tenantService = (TenantService) ctx.getBean("tenantService");
-        
+
+        hibernateL1CacheBulkLoader = (HibernateL1CacheBulkLoader) ctx.getBean("hibernateL1CacheBulkLoader");
+
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
@@ -469,6 +474,7 @@ public class ADMLuceneTest extends TestCase
         super(arg0);
     }
 
+
     public void testOverWritetoZeroSize() throws Exception
     {
         testTX.commit();
@@ -510,6 +516,247 @@ public class ADMLuceneTest extends TestCase
             testTX.commit();
         }
 
+    }
+
+    public void testBulkResultSet1() throws Exception
+    {
+        doBulkTest(1);
+    }
+
+    public void testBulkResultSet10() throws Exception
+    {
+        doBulkTest(10);
+    }
+
+    public void testBulkResultSet100() throws Exception
+    {
+
+        doBulkTest(100);
+    }
+
+    public void testBulkResultSet1000() throws Exception
+    {
+        doBulkTest(1000);
+    }
+
+    public void xtestBulkResultSet10000() throws Exception
+    {
+        doBulkTest(10000);
+    }
+
+    private void doBulkTest(int n) throws Exception
+    {
+
+        Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"), "BULK");
+        for (int i = 0; i < n; i++)
+        {
+            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas-" + i), testSuperType, testProperties).getChildRef();
+        }
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(false);
+        sp.setBulkFetchSize(10);
+        ResultSet results = searcher.query(sp);
+        assertEquals(n, results.length());
+        results.close();
+
+        getCold(searcher, n);
+        getWarm(searcher, n);
+        getCold(searcher, n);
+        getCold10(searcher, n);
+        getCold100(searcher, n);
+        getCold1000(searcher, n);
+        getCold10000(searcher, n);
+
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+    }
+
+    private void getCold(ADMLuceneSearcherImpl searcher, int n)
+    {
+        hibernateL1CacheBulkLoader.clear();
+        
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(false);
+        sp.setBulkFetchSize(0);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Cold in " + ((end - start) / 10e9));
+    }
+    
+    private void getWarm(ADMLuceneSearcherImpl searcher, int n)
+    {
+       
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(false);
+        sp.setBulkFetchSize(0);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Warm in " + ((end - start) / 10e9));
+    }
+    
+    private void getCold10(ADMLuceneSearcherImpl searcher, int n)
+    {
+        hibernateL1CacheBulkLoader.clear();
+        
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(true);
+        sp.setBulkFetchSize(10);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 10 in " + ((end - start) / 10e9));
+    }
+    
+    private void getCold100(ADMLuceneSearcherImpl searcher, int n)
+    {
+        hibernateL1CacheBulkLoader.clear();
+        
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(true);
+        sp.setBulkFetchSize(100);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 100 in " + ((end - start) / 10e9));
+    }
+    
+    private void getCold1000(ADMLuceneSearcherImpl searcher, int n)
+    {
+        hibernateL1CacheBulkLoader.clear();
+        
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(true);
+        sp.setBulkFetchSize(1000);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 1000 in " + ((end - start) / 10e9));
+    }
+    
+    private void getCold10000(ADMLuceneSearcherImpl searcher, int n)
+    {
+        hibernateL1CacheBulkLoader.clear();
+        
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        sp.setBulkFetch(true);
+        sp.setBulkFetchSize(10000);
+        ResultSet results = searcher.query(sp);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 10000 in " + ((end - start) / 10e9));
     }
 
     /**
@@ -4097,7 +4344,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4105,7 +4352,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -5230,7 +5477,7 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
-        
+
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@"
                 + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"keyone\"", null, null);
         assertEquals(1, results.length());

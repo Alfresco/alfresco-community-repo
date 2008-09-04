@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;

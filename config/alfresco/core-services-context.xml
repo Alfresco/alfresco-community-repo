@@ -540,6 +540,9 @@
 		<property name="threadPoolExecutor">
 			<ref bean="indexThreadPoolExecutor"></ref>
 		</property>
+      <property name="bulkLoader">
+			<ref bean="hibernateL1CacheBulkLoader"></ref>
+		</property>
     </bean>
 
 	<!-- Indexer and searchers for lucene -->

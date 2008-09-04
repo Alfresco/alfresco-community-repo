@@ -25,6 +25,8 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.BitSet;
 
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.ResultSetRowIterator;
@@ -48,7 +50,6 @@ import org.apache.lucene.search.Searcher;
  * Implementation of a ResultSet on top of Lucene Hits class.
  * 
  * @author andyh
- * 
  */
 public class LuceneResultSet extends AbstractResultSet
 {
@@ -58,20 +59,26 @@ public class LuceneResultSet extends AbstractResultSet
     Hits hits;
 
     private Searcher searcher;
-    
+
     private NodeService nodeService;
 
     private TenantService tenantService;
 
     SearchParameters searchParameters;
+
+    private LuceneConfig config;
+
+    private BitSet prefetch;
     
+
     /**
      * Wrap a lucene seach result with node support
      * 
      * @param storeRef
      * @param hits
      */
-    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, Path[]propertyPaths, SearchParameters searchParameters)
+    public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, Path[] propertyPaths, SearchParameters searchParameters,
+            LuceneConfig config)
     {
         super(propertyPaths);
         this.hits = hits;
@@ -79,6 +86,8 @@ public class LuceneResultSet extends AbstractResultSet
         this.nodeService = nodeService;
         this.tenantService = tenantService;
         this.searchParameters = searchParameters;
+        this.config = config;
+        prefetch = new BitSet(hits.length());
     }
 
     /*
@@ -97,18 +106,11 @@ public class LuceneResultSet extends AbstractResultSet
 
     public NodeRef getNodeRef(int n)
     {
-        try
-        {
-            // We have to get the document to resolve this
-            // It is possible the store ref is also stored in the index
-            Document doc = hits.doc(n);
-            String id = doc.get("ID");            
-            return tenantService.getBaseName(new NodeRef(id));
-        }
-        catch (IOException e)
-        {
-            throw new SearcherException("IO Error reading reading node ref from the result set", e);
-        }
+        // We have to get the document to resolve this
+        // It is possible the store ref is also stored in the index
+        Document doc = getDocument(n);
+        String id = doc.get("ID");
+        return tenantService.getBaseName(new NodeRef(id));
     }
 
     public float getScore(int n) throws SearcherException
@@ -128,7 +130,55 @@ public class LuceneResultSet extends AbstractResultSet
         try
         {
             Document doc = hits.doc(n);
+            if (!prefetch.get(n))
+            {
+                fetch(n);
+            }
             return doc;
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException("IO Error reading reading document from the result set", e);
+        }
+    }
+
+    private void fetch(int n)
+    {
+        if (searchParameters.getBulkFetch() && (config.getBulkLoader() != null))
+        {
+            while (!prefetch.get(n))
+            {
+                fetch();
+            }
+        }
+    }
+
+    private void fetch()
+    {
+        try
+        {
+            if (searchParameters.getBulkFetch() && (config.getBulkLoader() != null))
+            {
+                for (int i = 0; (i < hits.length()); i += searchParameters.getBulkFecthSize())
+                {
+                    if (!prefetch.get(i))
+                    {
+                        ArrayList<NodeRef> fetchList = new ArrayList<NodeRef>(searchParameters.getBulkFecthSize());
+                        for (int j = i; (j < i + searchParameters.getBulkFecthSize()) && (j < hits.length()); j++)
+                        {
+                            Document doc = hits.doc(j);
+                            String id = doc.get("ID");
+                            NodeRef nodeRef = tenantService.getBaseName(new NodeRef(id));
+                            fetchList.add(nodeRef);
+                        }
+                        config.getBulkLoader().loadIntoCache(fetchList);
+                        for (int j = i; j < i + searchParameters.getBulkFecthSize(); j++)
+                        {
+                            prefetch.set(j);
+                        }
+                    }
+                }
+            }
         }
         catch (IOException e)
         {
@@ -155,9 +205,9 @@ public class LuceneResultSet extends AbstractResultSet
 
     public ResultSetRow getRow(int i)
     {
-        if(i < length())
+        if (i < length())
         {
-           return new LuceneResultSetRow(this, i);
+            return new LuceneResultSetRow(this, i);
         }
         else
         {
@@ -167,10 +217,9 @@ public class LuceneResultSet extends AbstractResultSet
 
     public ChildAssociationRef getChildAssocRef(int n)
     {
-       return getRow(n).getChildAssocRef();
+        return getRow(n).getChildAssocRef();
     }
 
-    
     public ResultSetMetaData getResultSetMetaData()
     {
         return new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);

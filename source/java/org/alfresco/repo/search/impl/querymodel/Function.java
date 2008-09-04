@@ -62,5 +62,12 @@ public interface Function
      * @return
      */
     public LinkedHashSet<ArgumentDefinition> getArgumentDefinitions();
+    
+    
+    /**
+     * Get the argument Definition
+     * @return
+     */
+    public ArgumentDefinition getArgumentDefinition(String name);
 
 }

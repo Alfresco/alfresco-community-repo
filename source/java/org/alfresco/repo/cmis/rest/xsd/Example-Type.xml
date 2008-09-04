@@ -13,17 +13,21 @@
   <cmis:baseTypeQueryName>document</cmis:baseTypeQueryName>
   <cmis:parentId></cmis:parentId>
   <cmis:description>The document type</cmis:description>
-
   <cmis:isCreatable>true</cmis:isCreatable>
-  <cmis:isVersionable>true</cmis:isVersionable>
+  <cmis:isFileable>true</cmis:isFileable>
   <cmis:isQueryable>true</cmis:isQueryable>
-  <cmis:isContentStreamAllowed>true</cmis:isContentStreamAllowed>
   <cmis:isControllable>true</cmis:isControllable>
+  <cmis:isVersionable>true</cmis:isVersionable>
+  <cmis:contentStreamAllowed>allowed</cmis:contentStreamAllowed>
+
 
   <!--  optional property definitions -->
   <cmis:property cmis:id="foo1">
+  	<cmis:propertyName>foo1</cmis:propertyName>
+  	<cmis:propertyId>propIdForFoo1</cmis:propertyId>
     <cmis:displayName>foo1</cmis:displayName>
     <cmis:description>Description of foo1</cmis:description>
+    <cmis:isInherited>false</cmis:isInherited>
     <cmis:propertyType>String</cmis:propertyType>
     <cmis:cardinality>Single</cmis:cardinality>
     <cmis:maxLength>64</cmis:maxLength>

@@ -26,6 +26,7 @@
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(encodeuri(url.full))?xml}"/>
+<link rel="cmis-source" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 [#nested]  [#-- NOTE: Custom links --]
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>

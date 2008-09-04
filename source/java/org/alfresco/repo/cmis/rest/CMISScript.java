@@ -24,7 +24,8 @@
  */
 package org.alfresco.repo.cmis.rest;
 
-import org.alfresco.repo.cmis.rest.CMISService.TypesFilter;
+import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISService.TypesFilter;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -41,7 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author davic
  */
-public class CMISScript  extends BaseScopableProcessorExtension
+public class CMISScript extends BaseScopableProcessorExtension
 {
     private static final TypesFilter defaultTypesFilter = TypesFilter.FoldersAndDocuments;
     
@@ -89,6 +90,16 @@ public class CMISScript  extends BaseScopableProcessorExtension
     public void setCMISService(CMISService cmisService)
     {
         this.cmisService = cmisService;
+    }
+    
+    /**
+     * Gets the supported CMIS Version
+     * 
+     * @return  CMIS version
+     */
+    public String getVersion()
+    {
+        return cmisService.getCMISVersion();
     }
     
     /**

@@ -10,7 +10,6 @@
 
 [@feedLib.node node=node]
   [@pagingLib.links cursor=cursor/]
-  [@entryLib.folderCMISLinks node=node/]        [#-- TODO: not part of 0.42 schema --]
 [/@feedLib.node]
 
 [#list results as child]
@@ -24,7 +23,6 @@
 [/#list]
 
 [@feedLib.hasMore more=cursor/]
-[@entryLib.folderCMISProps node=node/]          [#-- TODO: not part of 0.42 schema --]
 [@pagingLib.opensearch cursor=cursor/]
 
 </feed>

@@ -19,9 +19,10 @@
         <cmis:capabilityVersionSpecificFiling>false</cmis:capabilityVersionSpecificFiling>        
         <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
         <cmis:capabilityAllVersionsSearchable>false</cmis:capabilityAllVersionsSearchable>
-        <cmis:capabilityJoin>innerAndOuter</cmis:capabilityJoin>   <#-- TODO: check -->
+        <cmis:capabilityJoin>noJoin</cmis:capabilityJoin>
         <cmis:capabilityFullText>fulltextandstructured</cmis:capabilityFullText>
       </cmis:capabilities> 
+      <cmis:cmisVersionsSupported>${cmisVersion}</cmis:cmisVersionsSupported>
       <cmis:repositorySpecificInformation></cmis:repositorySpecificInformation>
     </cmis:repositoryInfo>
 

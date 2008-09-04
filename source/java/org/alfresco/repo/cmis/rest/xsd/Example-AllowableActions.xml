@@ -5,12 +5,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
 
-	<!--  all -->
-	<cmis:canDelete>true</cmis:canDelete>
-
 	<!--  if not embedded in entry -->
 	<cmis:parentId>cmis:parentId</cmis:parentId>
 	<cmis:parentUrl>http://tempuri.org</cmis:parentUrl>
+	
+	<!--  all -->
+	<cmis:canDelete>true</cmis:canDelete>
 
 	<!--  all -->
 	<cmis:canUpdateProperties>true</cmis:canUpdateProperties>

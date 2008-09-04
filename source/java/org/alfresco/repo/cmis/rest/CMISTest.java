@@ -473,10 +473,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testGetCheckedOut");
-        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
-        assertNotNull(scope);
-        CMISProperties props = scope.getExtension(CMISConstants.PROPERTIES);
+        CMISProperties props = testFolder.getExtension(CMISConstants.PROPERTIES);
         String scopeId = props.getObjectId();
         assertNotNull(scopeId);
         
@@ -497,10 +494,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testCheckout");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
         
         // create document for checkout
-        Entry document = createDocument(scope.getSelfLink().getHref(), "testCheckout");
+        Entry document = createDocument(childrenLink.getHref(), "testCheckout");
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
@@ -528,10 +524,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testCancelCheckout");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
         
         // create document for checkout
-        Entry document = createDocument(scope.getSelfLink().getHref(), "testCancelCheckout");
+        Entry document = createDocument(childrenLink.getHref(), "testCancelCheckout");
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();
@@ -574,10 +569,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testCheckIn");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
         
         // create document for checkout
-        Entry document = createDocument(scope.getSelfLink().getHref(), "testCheckin");
+        Entry document = createDocument(childrenLink.getHref(), "testCheckin");
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();
@@ -648,10 +642,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testUpdateOnCheckIn");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
         
         // create document for checkout
-        Entry document = createDocument(scope.getSelfLink().getHref(), "testUpdateOnCheckIn");
+        Entry document = createDocument(childrenLink.getHref(), "testUpdateOnCheckIn");
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();
@@ -711,10 +704,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkins
         Entry testFolder = createTestFolder("testGetAllVersions");
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-        Feed scope = getFeed(childrenLink.getHref());
         
         // create document for checkout
-        Entry document = createDocument(scope.getSelfLink().getHref(), "testGetAllVersions");
+        Entry document = createDocument(childrenLink.getHref(), "testGetAllVersions");
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();

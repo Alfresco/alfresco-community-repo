@@ -394,21 +394,12 @@
       <property name="extensionName"><value>cmis</value></property>
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="repository" ref="repositoryHelper" />
-      <property name="CMISService" ref="webscripts.cmis.service" />
+      <property name="CMISService" ref="CMISService" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
 
    <!-- CMIS Helpers -->
-   <bean id="webscripts.cmis.service" class="org.alfresco.repo.cmis.rest.CMISService">
-      <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="searchService" ref="searchService" />
-      <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="repository" ref="repositoryHelper" />
-   </bean>
-
+   
    <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
       <property name="abderaService" ref="webscripts.abdera"/>
       <property name="defaultNamespace"><value>http://www.cmis.org/2008/05</value></property>

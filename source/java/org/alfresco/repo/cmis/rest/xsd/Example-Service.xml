@@ -23,6 +23,7 @@
         <cmis:capabilityJoin>innerAndOuter</cmis:capabilityJoin>
         <cmis:capabilityFullText>fulltextandstructured</cmis:capabilityFullText>
       </cmis:capabilities>
+      <cmis:cmisVersionsSupported>0.43</cmis:cmisVersionsSupported>
       <cmis:repositorySpecificInformation>Welcome to ACME 99</cmis:repositorySpecificInformation>
     </cmis:repositoryInfo>
     <app:collection cmis:collectionType="unfiled" href="http://www.cmis.org/rep1/unfiled">

@@ -36,7 +36,9 @@
   <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
   <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
   <cmis:propertyInteger cmis:name="contentStreamLength">${node.properties.content.size}</cmis:propertyInteger>
+  <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
   <cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
+  <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>  [#-- TODO --]
   <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
   <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
   <cmis:propertyString cmis:name="contentStreamMimetype">${node.properties.content.mimetype}</cmis:propertyString>  
@@ -125,10 +127,11 @@
   <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
   <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
   <cmis:propertyID cmis:name="parent">${node.parent.nodeRef}</cmis:propertyID>
+  <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
+  <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>  [#-- TODO --]
   <cmis:propertyString cmis:name="baseType">folder</cmis:propertyString>
   <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
   <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
-  <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
 </cmis:properties>
 [/#macro]
 

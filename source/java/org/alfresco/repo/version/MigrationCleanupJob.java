@@ -54,7 +54,7 @@ public class MigrationCleanupJob implements Job
         }
         
         String batchSizeStr = (String)jobData.get(KEY_BATCHSIZE);
-        if (batchSizeStr == null)
+        if (batchSizeStr != null)
         {
             try
             {

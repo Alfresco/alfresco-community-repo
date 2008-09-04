@@ -390,7 +390,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(10);
 
         // Set the version number
-        result.put(Version2Model.PROP_QNAME_VERSION_NUMBER, Integer.toString(versionNumber));
+        result.put(Version2Model.PROP_QNAME_VERSION_NUMBER, versionNumber);
         
         // Set the version label
         result.put(Version2Model.PROP_QNAME_VERSION_LABEL, versionLabel);
@@ -695,7 +695,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                }
                else if (key.equals(Version2Model.PROP_QNAME_VERSION_NUMBER))
                {
-                   versionProperties.put(VersionBaseModel.PROP_VERSION_NUMBER, (String)value);
+                   versionProperties.put(VersionBaseModel.PROP_VERSION_NUMBER, (Integer)value);
                }
                else
                {

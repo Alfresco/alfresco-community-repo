@@ -575,7 +575,14 @@ public class VersionMigrator
                                 logger.warn(I18NUtil.getMessage(MSG_DELETE_SKIP2, notMigratedCount));
                             }
                             
-                            logger.info(I18NUtil.getMessage(MSG_DELETE_COMPLETE, deletedCount, ((System.currentTimeMillis()-startTime)/1000)));
+                            if (deletedCount > 0)
+                            {
+                                logger.info(I18NUtil.getMessage(MSG_DELETE_COMPLETE, deletedCount, ((System.currentTimeMillis()-startTime)/1000)));
+                            }
+                            else if (logger.isDebugEnabled())
+                            {
+                                logger.debug(I18NUtil.getMessage(MSG_DELETE_COMPLETE, deletedCount, ((System.currentTimeMillis()-startTime)/1000)));
+                            }
                         }
                         
                         return null;

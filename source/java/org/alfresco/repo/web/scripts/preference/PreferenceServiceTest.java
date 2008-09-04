@@ -110,7 +110,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         jsonObject.put("comp1", getPreferenceObj());
         
         resp = sendRequest(new PostRequest(URL, jsonObject.toString(), "application/json"), 200);
-        assertEquals(0, resp.getContentAsByteArray().length);
+        assertEquals(0, resp.getContentLength());
         
         // Get the preferences
         
@@ -128,7 +128,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         jsonObject.put("comp2", getPreferenceObj());
         
         resp = sendRequest(new PostRequest(URL, jsonObject.toString(), "application/json"), 200);
-        assertEquals(0, resp.getContentAsByteArray().length);
+        assertEquals(0, resp.getContentLength());
         
         // Get the preferences
         

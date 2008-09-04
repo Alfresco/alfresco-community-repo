@@ -443,6 +443,18 @@ public abstract class BaseWebScriptTest extends TestCase
             return getHeader("Content-Type");
         }
 
+        public int getContentLength()
+        {
+            try
+            {
+                return method.getResponseBody().length;
+            }
+            catch (IOException e)
+            {
+                return 0;
+            }
+        }
+
         public String getHeader(String name)
         {
             Header header = method.getResponseHeader(name);
@@ -453,7 +465,7 @@ public abstract class BaseWebScriptTest extends TestCase
         {
             return method.getStatusCode();
         }
-        
+
     }
     
 }

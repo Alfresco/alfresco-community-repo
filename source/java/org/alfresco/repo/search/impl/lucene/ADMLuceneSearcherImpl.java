@@ -42,6 +42,7 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;

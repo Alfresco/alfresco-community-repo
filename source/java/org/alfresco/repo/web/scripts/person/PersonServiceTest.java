@@ -172,7 +172,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("email", email);
         
         Response response = sendRequest(new PostRequest(URL_PEOPLE, person.toString(), "application/json"), expectedStatus); 
-        this.createdPeople.add(userName);
         
         if ((userName != null) && (userName.length() != 0))
         {

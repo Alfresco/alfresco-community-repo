@@ -25,9 +25,11 @@
 package org.alfresco.cmis.property;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.lucene.search.Query;
 
@@ -35,7 +37,6 @@ import org.apache.lucene.search.Query;
  * The API to access a property.
  * 
  * @author andyh
- *
  */
 public interface GenericPropertyAccessor
 {
@@ -47,8 +48,26 @@ public interface GenericPropertyAccessor
      * @return
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName);
-    
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException;
-    
+
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
     public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException;
+
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException;
+    
+    public String getLuceneSortField(String propertyName);
+
+    
 }

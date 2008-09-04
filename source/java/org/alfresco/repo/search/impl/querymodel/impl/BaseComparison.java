@@ -25,9 +25,14 @@
 package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.Multiplicity;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.impl.querymodel.StaticArgument;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -37,12 +42,16 @@ import org.alfresco.service.namespace.QName;
 public abstract class BaseComparison extends BaseFunction
 {
     public final static String ARG_LHS = "LHS";
-    
+
     public final static String ARG_RHS = "RHS";
-    
+
     public static LinkedHashMap<String, ArgumentDefinition> args;
+
+    private PropertyArgument propertyArgument;
     
-    static 
+    private StaticArgument staticArgument;
+    
+    static
     {
         args = new LinkedHashMap<String, ArgumentDefinition>();
         args.put(ARG_LHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
@@ -59,4 +68,61 @@ public abstract class BaseComparison extends BaseFunction
         super(name, returnType, argumentDefinitions);
     }
 
+    public void setPropertyAndStaticArguments(Map<String, Argument> functionArgs)
+    {
+        Argument lhs = functionArgs.get(ARG_LHS);
+        Argument rhs = functionArgs.get(ARG_RHS);
+
+        if (lhs instanceof PropertyArgument)
+        {
+            if (rhs instanceof PropertyArgument)
+            {
+                throw new QueryModelException("Implicit join is not supported");
+            }
+            else if (rhs instanceof StaticArgument)
+            {
+                propertyArgument = (PropertyArgument) lhs;
+                staticArgument = (StaticArgument) rhs;
+            }
+            else
+            {
+                throw new QueryModelException("Argument of type " + rhs.getClass().getName() + " is not supported");
+            }
+        }
+        else if (rhs instanceof PropertyArgument)
+        {
+            if (lhs instanceof StaticArgument)
+            {
+                propertyArgument = (PropertyArgument) rhs;
+                staticArgument = (StaticArgument) lhs;
+            }
+            else
+            {
+                throw new QueryModelException("Argument of type " + lhs.getClass().getName() + " is not supported");
+            }
+        }
+        else
+        {
+            throw new QueryModelException("Equals must have one property argument");
+        }
+    }
+
+    /**
+     * @return the propertyArgument
+     */
+    protected PropertyArgument getPropertyArgument()
+    {
+        return propertyArgument;
+    }
+
+    /**
+     * @return the staticArgument
+     */
+    protected StaticArgument getStaticArgument()
+    {
+        return staticArgument;
+    }
+
+    
+    
 }

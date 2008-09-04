@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis2\\ANTLR\\CMIS.g 2008-07-29 14:25:59
+// $ANTLR 3.1b1 W:\\workspace-cmis2\\ANTLR\\CMIS.g 2008-08-07 14:37:14
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -12,11 +12,11 @@ import org.antlr.runtime.tree.*;
 
 public class CMISParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "QUERY", "ALL_COLUMNS", "COLUMN", "COLUMNS", "COLUMN_REF", "QUALIFIER", "FUNCTION", "SOURCE", "TABLE", "TABLE_REF", "PARAMETER", "CONJUNCTION", "DISJUNCTION", "NEGATION", "PRED_COMPARISON", "PRED_IN", "PRED_EXISTS", "PRED_LIKE", "PRED_FTS", "LIST", "PRED_CHILD", "PRED_DESCENDANT", "SORT_SPECIFICATION", "NUMERIC_LITERAL", "STRING_LITERAL", "SELECT", "STAR", "COMMA", "AS", "DOTSTAR", "DOT", "LPAREN", "RPAREN", "FROM", "JOIN", "INNER", "LEFT", "OUTER", "ON", "EQUALS", "WHERE", "OR", "AND", "NOT", "NOTEQUALS", "LESSTHAN", "GREATERTHAN", "LESSTHANOREQUALS", "GREATERTHANOREQUALS", "IN", "LIKE", "IS", "NULL", "ANY", "CONTAINS", "IN_FOLDER", "IN_TREE", "ORDER", "BY", "ASC", "DESC", "COLON", "QUOTED_STRING", "ID", "DOUBLE_QUOTE", "FLOATING_POINT_LITERAL", "DECIMAL_INTEGER_LITERAL", "UPPER", "LOWER", "SCORE", "SINGLE_QUOTE", "ESCAPED_SINGLE_QUOTE", "DOTDOT", "TILDA", "PLUS", "MINUS", "DECIMAL_NUMERAL", "DIGIT", "EXPONENT", "WS", "ZERO_DIGIT", "NON_ZERO_DIGIT", "E", "SIGNED_INTEGER"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "QUERY", "ALL_COLUMNS", "COLUMN", "COLUMNS", "COLUMN_REF", "QUALIFIER", "FUNCTION", "SOURCE", "TABLE", "TABLE_REF", "PARAMETER", "CONJUNCTION", "DISJUNCTION", "NEGATION", "PRED_COMPARISON", "PRED_IN", "PRED_EXISTS", "PRED_LIKE", "PRED_FTS", "LIST", "PRED_CHILD", "PRED_DESCENDANT", "SORT_SPECIFICATION", "NUMERIC_LITERAL", "STRING_LITERAL", "SELECT", "STAR", "COMMA", "AS", "DOTSTAR", "DOT", "LPAREN", "RPAREN", "FROM", "JOIN", "INNER", "LEFT", "OUTER", "ON", "EQUALS", "WHERE", "OR", "AND", "NOT", "NOTEQUALS", "LESSTHAN", "GREATERTHAN", "LESSTHANOREQUALS", "GREATERTHANOREQUALS", "IN", "LIKE", "IS", "NULL", "ANY", "CONTAINS", "IN_FOLDER", "IN_TREE", "ORDER", "BY", "ASC", "DESC", "COLON", "QUOTED_STRING", "ID", "DOUBLE_QUOTE", "FLOATING_POINT_LITERAL", "DECIMAL_INTEGER_LITERAL", "UPPER", "LOWER", "SCORE", "DOTDOT", "TILDA", "PLUS", "MINUS", "DECIMAL_NUMERAL", "DIGIT", "EXPONENT", "WS", "ZERO_DIGIT", "NON_ZERO_DIGIT", "E", "SIGNED_INTEGER"
     };
     public static final int FUNCTION=10;
     public static final int WHERE=44;
-    public static final int EXPONENT=82;
+    public static final int EXPONENT=80;
     public static final int PRED_FTS=22;
     public static final int STAR=30;
     public static final int INNER=39;
@@ -27,7 +27,7 @@ public class CMISParser extends Parser {
     public static final int CONTAINS=58;
     public static final int TABLE=12;
     public static final int SOURCE=11;
-    public static final int DOTDOT=76;
+    public static final int DOTDOT=74;
     public static final int EQUALS=43;
     public static final int NOT=47;
     public static final int ID=67;
@@ -36,42 +36,41 @@ public class CMISParser extends Parser {
     public static final int LPAREN=35;
     public static final int LESSTHANOREQUALS=51;
     public static final int AS=32;
-    public static final int SINGLE_QUOTE=74;
     public static final int RPAREN=36;
-    public static final int TILDA=77;
+    public static final int TILDA=75;
     public static final int PRED_LIKE=21;
     public static final int STRING_LITERAL=28;
     public static final int IN=53;
-    public static final int DECIMAL_NUMERAL=80;
+    public static final int DECIMAL_NUMERAL=78;
     public static final int FLOATING_POINT_LITERAL=69;
     public static final int COMMA=31;
     public static final int IS=55;
     public static final int LEFT=40;
-    public static final int SIGNED_INTEGER=87;
+    public static final int SIGNED_INTEGER=85;
     public static final int PARAMETER=14;
     public static final int COLUMN=6;
-    public static final int PLUS=78;
+    public static final int PLUS=76;
     public static final int QUOTED_STRING=66;
-    public static final int ZERO_DIGIT=84;
-    public static final int DIGIT=81;
+    public static final int ZERO_DIGIT=82;
+    public static final int DIGIT=79;
     public static final int DOT=34;
     public static final int COLUMN_REF=8;
     public static final int SELECT=29;
     public static final int LIKE=54;
     public static final int GREATERTHAN=50;
     public static final int DOTSTAR=33;
-    public static final int E=86;
+    public static final int E=84;
     public static final int OUTER=41;
     public static final int BY=62;
     public static final int LESSTHAN=49;
-    public static final int NON_ZERO_DIGIT=85;
+    public static final int NON_ZERO_DIGIT=83;
     public static final int ASC=63;
     public static final int QUALIFIER=9;
     public static final int CONJUNCTION=15;
     public static final int NULL=56;
     public static final int ON=42;
     public static final int NOTEQUALS=48;
-    public static final int MINUS=79;
+    public static final int MINUS=77;
     public static final int LIST=23;
     public static final int PRED_DESCENDANT=25;
     public static final int JOIN=38;
@@ -80,7 +79,7 @@ public class CMISParser extends Parser {
     public static final int GREATERTHANOREQUALS=52;
     public static final int DISJUNCTION=16;
     public static final int COLUMNS=7;
-    public static final int WS=83;
+    public static final int WS=81;
     public static final int ANY=57;
     public static final int SCORE=73;
     public static final int NEGATION=17;
@@ -98,7 +97,6 @@ public class CMISParser extends Parser {
     public static final int FROM=37;
     public static final int UPPER=71;
     public static final int PRED_IN=19;
-    public static final int ESCAPED_SINGLE_QUOTE=75;
 
     // delegates
     // delegators
@@ -278,7 +276,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: whereClause, selectList, fromClause, orderByClause
+            // elements: whereClause, orderByClause, selectList, fromClause
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1104,7 +1102,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnName, qualifier
+            // elements: qualifier, columnName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1375,7 +1373,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: LPAREN, RPAREN, functionName, functionArgument
+            // elements: functionArgument, RPAREN, LPAREN, functionName
             // token labels: 
             // rule labels: retval, functionName
             // token list labels: 
@@ -1587,7 +1585,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnName, qualifier
+                    // elements: qualifier, columnName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2035,7 +2033,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinedTable, singleTable
+            // elements: singleTable, joinedTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2384,7 +2382,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: tableReference, joinSpecification, JOIN, joinType
+            // elements: joinSpecification, joinType, tableReference, JOIN
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2511,7 +2509,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinedTable, singleTable
+            // elements: singleTable, joinedTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2767,7 +2765,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: rhs, ON, lhs, EQUALS
+            // elements: rhs, ON, EQUALS, lhs
             // token labels: 
             // rule labels: retval, rhs, lhs
             // token list labels: 
@@ -3609,7 +3607,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: valueExpression, compOp, literalOrParameterName
+            // elements: literalOrParameterName, compOp, valueExpression
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3969,7 +3967,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnReference, NOT, inValueList
+            // elements: inValueList, NOT, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4212,7 +4210,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnReference, characterStringLiteral, NOT
+            // elements: NOT, columnReference, characterStringLiteral
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4710,7 +4708,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ANY, multiValuedColumnReference, compOp, literalOrParameterName
+            // elements: multiValuedColumnReference, ANY, compOp, literalOrParameterName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4845,7 +4843,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnReference, ANY, NOT, inValueList
+            // elements: ANY, multiValuedColumnReference, NOT, inValueList
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4993,7 +4991,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: qualifier, textSearchExpression
+            // elements: textSearchExpression, qualifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5407,7 +5405,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ORDER, sortSpecification
+            // elements: sortSpecification, ORDER
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -7219,7 +7217,7 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_correlationName_in_qualifier583 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_FROM_in_fromClause620 = new BitSet(new long[]{0xFFE0F7E960000000L,0x0000000000000399L});
     public static final BitSet FOLLOW_tableReference_in_fromClause622 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_singleTable_in_tableReference640 = new BitSet(new long[]{0x000001C000000002L});
+    public static final BitSet FOLLOW_singleTable_in_tableReference640 = new BitSet(new long[]{0x000001C000000000L});
     public static final BitSet FOLLOW_joinedTable_in_tableReference649 = new BitSet(new long[]{0x000001C000000002L});
     public static final BitSet FOLLOW_tableName_in_singleTable678 = new BitSet(new long[]{0xFFE0F7E160000002L,0x0000000000000399L});
     public static final BitSet FOLLOW_AS_in_singleTable682 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
@@ -7284,7 +7282,7 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_literalOrParameterName_in_inValueList1256 = new BitSet(new long[]{0x0000000080000002L});
     public static final BitSet FOLLOW_columnReference_in_likePredicate1282 = new BitSet(new long[]{0x0040800000000000L});
     public static final BitSet FOLLOW_NOT_in_likePredicate1284 = new BitSet(new long[]{0x0040000000000000L});
-    public static final BitSet FOLLOW_LIKE_in_likePredicate1287 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000064L});
+    public static final BitSet FOLLOW_LIKE_in_likePredicate1287 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
     public static final BitSet FOLLOW_characterStringLiteral_in_likePredicate1289 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_columnReference_in_nullPredicate1323 = new BitSet(new long[]{0x0080000000000000L});
     public static final BitSet FOLLOW_multiValuedColumnReference_in_nullPredicate1327 = new BitSet(new long[]{0x0080000000000000L});

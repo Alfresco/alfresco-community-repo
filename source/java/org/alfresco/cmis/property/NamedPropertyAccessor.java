@@ -25,10 +25,12 @@
 package org.alfresco.cmis.property;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.lucene.search.Query;
 
@@ -36,37 +38,109 @@ import org.apache.lucene.search.Query;
  * Named property accessor
  * 
  * @author andyh
- *
  */
-public interface NamedPropertyAccessor 
+public interface NamedPropertyAccessor
 {
     /**
-     * Get the name of the CMIS property this accessor fetches 
+     * Get the name of the CMIS property this accessor fetches
+     * 
      * @return
      */
     public String getPropertyName();
-    
+
     /**
      * Get the property value
+     * 
      * @param nodeRef
      * @return
      */
     public Serializable getProperty(NodeRef nodeRef);
-    
+
     /**
      * To what types of objects does this property apply?
+     * 
      * @return
      */
     public CMISScope getScope();
-    
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException;
+
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
     /**
      * @param lqp
      * @param propertyName
      * @param not
      * @return
-     * @throws ParseException 
+     * @throws ParseException
      */
     public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param values
+     * @param not
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     */
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param not
+     * @return
+     */
+    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException;
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    public String getLuceneSortField(String propertyName);
 }

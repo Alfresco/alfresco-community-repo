@@ -103,7 +103,7 @@ public class CMISTypeDefinition implements Serializable
             {
                 objectTypeId = typeId;
                 objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
-                displayName = associationDefinition.getTitle();
+                displayName = (associationDefinition.getTitle() != null) ? associationDefinition.getTitle() : typeId.getTypeId();
                 parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
                 rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.RELATIONSHIP_QNAME);
                 description = associationDefinition.getDescription();
@@ -141,7 +141,7 @@ public class CMISTypeDefinition implements Serializable
                 TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
                 objectTypeId = typeId;
                 objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
-                displayName = typeDefinition.getTitle();
+                displayName = (typeDefinition.getTitle() != null) ? typeDefinition.getTitle() : typeId.getTypeId();
                 parentTypeId = null;
                 rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.RELATIONSHIP_QNAME);
                 description = typeDefinition.getDescription();
@@ -163,7 +163,7 @@ public class CMISTypeDefinition implements Serializable
 
                 objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
 
-                displayName = typeDefinition.getTitle();
+                displayName = (typeDefinition.getTitle() != null) ? typeDefinition.getTitle() : typeId.getTypeId();
 
                 QName parentTypeQName = cmisMapping.getCmisType(typeDefinition.getParentName());
                 if (parentTypeQName == null)

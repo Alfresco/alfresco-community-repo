@@ -24,6 +24,7 @@
  */
 package org.alfresco.cmis.search;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,8 +40,10 @@ import org.alfresco.service.cmr.search.ResultSet;
 /**
  * @author andyh
  */
-public class CMISResultSetImpl implements CMISResultSet
+public class CMISResultSetImpl implements CMISResultSet, Serializable
 {
+    private static final long serialVersionUID = 2014688399588268994L;
+
     private Map<String, ResultSet> wrapped;
 
     CMISQueryOptions options;
@@ -118,7 +121,7 @@ public class CMISResultSetImpl implements CMISResultSet
      * 
      * @see org.alfresco.cmis.search.CMISResultSet#length()
      */
-    public int length()
+    public int getLength()
     {
         for (ResultSet resultSet : wrapped.values())
         {
@@ -132,7 +135,7 @@ public class CMISResultSetImpl implements CMISResultSet
      * 
      * @see org.alfresco.cmis.search.CMISResultSet#start()
      */
-    public int start()
+    public int getStart()
     {
         return options.getSkipCount();
     }

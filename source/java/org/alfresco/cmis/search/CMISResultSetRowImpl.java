@@ -133,6 +133,26 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
     /*
      * (non-Javadoc)
      * 
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
+     */
+    public NodeRef getNodeRef(String selectorName)
+    {
+        return nodeRefs.get(selectorName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
+     */
+    public Map<String, NodeRef> getNodeRefs()
+    {
+        return nodeRefs;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
      */
     public Serializable getValue(String columnName)

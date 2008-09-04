@@ -79,6 +79,10 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
                         query.add(constraintQuery, Occur.MUST);
                     }
                 }
+                else
+                {
+                    throw new UnsupportedOperationException();
+                }
             }
             else
             {

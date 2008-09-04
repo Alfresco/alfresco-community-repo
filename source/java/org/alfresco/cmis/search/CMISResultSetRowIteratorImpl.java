@@ -54,7 +54,7 @@ public class CMISResultSetRowIteratorImpl implements ListIterator<CMISResultSetR
     public CMISResultSetRowIteratorImpl(CMISResultSet resultSet)
     {
         this.resultSet = resultSet;
-        this.max = resultSet.length();
+        this.max = resultSet.getLength();
     }
 
     public CMISResultSet getResultSet()

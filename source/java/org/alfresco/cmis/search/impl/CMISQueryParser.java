@@ -221,7 +221,7 @@ public class CMISQueryParser
     {
         if (notNode.getType() == CMISParser.NEGATION)
         {
-            Constraint constraint = buildTest(notNode, factory, selectors, columns);
+            Constraint constraint = buildTest((CommonTree)notNode.getChild(0), factory, selectors, columns);
             return factory.createNegation(constraint);
         }
         else
@@ -347,12 +347,15 @@ public class CMISQueryParser
             function = factory.getFunction(functionName);
             functionArguments = new LinkedHashMap<String, Argument>();
             argNode = (CommonTree) predicateNode.getChild(0);
-            arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_PROPERTY), factory, selectors);
+            arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_MODE), factory, selectors);
             functionArguments.put(arg.getName(), arg);
             argNode = (CommonTree) predicateNode.getChild(1);
-            arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_COLLECTION), factory, selectors);
+            arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_PROPERTY), factory, selectors);
             functionArguments.put(arg.getName(), arg);
-            arg = factory.createLiteralArgument(In.ARG_NOT, DataTypeDefinition.BOOLEAN, (predicateNode.getChildCount() > 2));
+            argNode = (CommonTree) predicateNode.getChild(2);
+            arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_LIST), factory, selectors);
+            functionArguments.put(arg.getName(), arg);
+            arg = factory.createLiteralArgument(In.ARG_NOT, DataTypeDefinition.BOOLEAN, (predicateNode.getChildCount() > 3));
             functionArguments.put(arg.getName(), arg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_LIKE:
@@ -1031,6 +1034,10 @@ public class CMISQueryParser
                 alias = singleTableNode.getChild(1).getText();
             }
             QName classQName = cmisMapping.getAlfrescoClassQNameFromCmisTableName(tableName);
+            if(classQName == null)
+            {
+                throw new CMISQueryException("Type is unsupported in query "+tableName);
+            }
             return factory.createSelector(classQName, alias);
         }
         else

@@ -30,9 +30,8 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
-import org.alfresco.repo.search.impl.querymodel.StaticArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
@@ -60,50 +59,13 @@ public class LuceneEquals extends Equals  implements LuceneQueryBuilderComponent
             throws ParseException
     {
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
-        Argument lhs = functionArgs.get(ARG_LHS);
-        Argument rhs = functionArgs.get(ARG_RHS);
-        
-        PropertyArgument propertyArgument;
-        StaticArgument staticArgument;
-        
-        if(lhs instanceof PropertyArgument)
-        {
-            if(rhs instanceof PropertyArgument)
-            {
-                throw new QueryModelException("Implicit join is not supported");
-            }
-            else if(rhs instanceof StaticArgument)
-            {
-                 propertyArgument = (PropertyArgument)lhs;
-                 staticArgument = (StaticArgument) rhs;
-            }
-            else
-            {
-                throw new QueryModelException("Argument of type "+rhs.getClass().getName()+" is not supported");
-            }
-        }
-        else if(rhs instanceof PropertyArgument)
-        {
-            if(lhs instanceof StaticArgument)
-            {
-                 propertyArgument = (PropertyArgument)rhs;
-                 staticArgument = (StaticArgument) lhs;
-            }
-            else
-            {
-                throw new QueryModelException("Argument of type "+lhs.getClass().getName()+" is not supported");
-            }
-        }
-        else
-        {
-            throw new QueryModelException("Equals must have one property argument");
-        }
+        setPropertyAndStaticArguments(functionArgs);
        
-        Query query = functionContext.buildLuceneEquality(lqp, propertyArgument.getPropertyName(), staticArgument.getValue(functionContext));
+        Query query = functionContext.buildLuceneEquality(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
         
         if(query == null)
         {
-            throw new QueryModelException("No query time mapping for property  "+propertyArgument.getPropertyName()+", it should not be allowed in predicates");
+            throw new QueryModelException("No query time mapping for property  "+getPropertyArgument().getPropertyName()+", it should not be allowed in predicates");
         }
         
         return query;

@@ -502,22 +502,10 @@ keyWordOrId
  * Quoted strings take precedence
  */
 
-SINGLE_QUOTE
-        :       '\'';
 
-/*
- * Fragments for quoted strings
- */      
- 
-fragment
-ESCAPED_SINGLE_QUOTE
-        :       '\'\'';
- 
 QUOTED_STRING 
-    :   SINGLE_QUOTE ( ~SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE)* SINGLE_QUOTE 
+    :   '\'' ( ~'\'' | '\'\'')* '\'' 
     ;
-   
-
 	
 SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
 AS	:	('A'|'a')('S'|'s');

@@ -139,7 +139,7 @@ public class CMISMapping
 
     public static String PROP_CONTENT_STREAM_LENGTH = "CONTENT_STREAM_LENGTH";
 
-    public static String PROP_CONTENT_STREAM_MIMETYPE = "CONTENT_STREAM_MIMETYPE";
+    public static String PROP_CONTENT_STREAM_MIME_TYPE = "CONTENT_STREAM_MIME_TYPE";
 
     public static String PROP_CONTENT_STREAM_FILENAME = "CONTENT_STREAM_FILENAME";
 
@@ -663,6 +663,10 @@ public class CMISMapping
         else if (tableName.equals(FOLDER_TYPE_ID.getTypeId()))
         {
             return ContentModel.TYPE_FOLDER;
+        }
+        else if (tableName.equals(RELATIONSHIP_TYPE_ID.getTypeId()))
+        {
+            return null;
         }
 
         // Find prefix and property name - in upper case

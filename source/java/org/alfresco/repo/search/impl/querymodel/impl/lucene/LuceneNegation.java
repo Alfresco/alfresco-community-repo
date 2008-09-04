@@ -35,7 +35,6 @@ import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
- *
  */
 public class LuceneNegation extends BaseNegation implements LuceneQueryBuilderComponent
 {
@@ -48,8 +47,12 @@ public class LuceneNegation extends BaseNegation implements LuceneQueryBuilderCo
         super(constraint);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String,
+     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
             throws ParseException
@@ -58,6 +61,10 @@ public class LuceneNegation extends BaseNegation implements LuceneQueryBuilderCo
         {
             LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) getConstraint();
             Query constraintQuery = luceneQueryBuilderComponent.addComponent(selector, functionArgs, luceneContext, functionContext);
+            if (constraintQuery == null)
+            {
+                throw new UnsupportedOperationException();
+            }
             return constraintQuery;
         }
         else

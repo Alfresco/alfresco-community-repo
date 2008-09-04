@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.Sort;
 
 /**
  * @author andyh
@@ -120,13 +121,14 @@ public class LuceneQueryEngine implements QueryEngine
         searchParameters.setBulkFetchSize(options.getFetchSize());
         if (options.getMaxItems() > 0)
         {
+            searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
             searchParameters.setLimit(options.getMaxItems() + options.getSkipCount());
         }
         else
         {
             searchParameters.setLimitBy(LimitBy.UNLIMITED);
         }
-        LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContext(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher);
+
         try
         {
             StoreRef storeRef = options.getStores().get(0);
@@ -137,11 +139,26 @@ public class LuceneQueryEngine implements QueryEngine
                 {
                     LuceneSearcher luceneSearcher = (LuceneSearcher) searchService;
                     ClosingIndexSearcher searcher = luceneSearcher.getClosingIndexSearcher();
+                    LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContext(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher,
+                            searcher.getIndexReader());
+
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorName, luceneContext, functionContext);
                     System.out.println(luceneQuery);
-                    
-                    Hits hits = searcher.search(luceneQuery);
+
+                    Sort sort = builder.buildSort(selectorName, luceneContext, functionContext);
+
+                    Hits hits;
+
+                    if (sort == null)
+                    {
+                        hits = searcher.search(luceneQuery);
+                    }
+                    else
+                    {
+                        hits = searcher.search(luceneQuery, sort);
+                    }
+
                     return new LuceneResultSet(hits, searcher, nodeService, tenantService, null, searchParameters, indexAndSearcher);
 
                 }

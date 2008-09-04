@@ -201,13 +201,10 @@ public class CMISDictionaryService
                     Collection<CMISTypeId> types = new HashSet<CMISTypeId>(alfrescoTypeQNames.size());
                     for (QName typeQName : alfrescoTypeQNames)
                     {
-                        if (cmisMapping.isValidCmisDocument(typeQName))
+                        CMISTypeId subTypeId = cmisMapping.getCmisTypeId(typeQName);
+                        if (typeId != null)
                         {
-                            types.add(cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, typeQName));
-                        }
-                        else if (cmisMapping.isValidCmisFolder(typeQName))
-                        {
-                            types.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, typeQName));
+                            types.add(subTypeId);
                         }
                     }
                     return types;

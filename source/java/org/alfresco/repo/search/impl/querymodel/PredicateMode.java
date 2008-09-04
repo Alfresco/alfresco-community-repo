@@ -22,17 +22,13 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
-
+package org.alfresco.repo.search.impl.querymodel;
 
 /**
- * Base class for generic property accessors
- *  
  * @author andyh
  *
  */
-public abstract class AbstractGenericPropertyAccessor extends AbstractPropertyAccessor implements GenericPropertyAccessor
+public enum PredicateMode
 {
-
-   
+    ANY, ALL;
 }

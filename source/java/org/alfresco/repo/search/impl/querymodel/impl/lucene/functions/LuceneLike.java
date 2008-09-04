@@ -24,13 +24,26 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Like;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
  *
  */
-public class LuceneLike extends Like
+public class LuceneLike extends Like implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -40,5 +53,33 @@ public class LuceneLike extends Like
     {
         super();
     }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
+     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
+     *      java.lang.String)
+     */
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
+        Argument inverseArgument = functionArgs.get(ARG_NOT);
+        Boolean not = DefaultTypeConverter.INSTANCE.convert(Boolean.class, inverseArgument.getValue(functionContext));
+        Argument expressionArgument = functionArgs.get(ARG_EXP);
+        Serializable expression = expressionArgument.getValue(functionContext);
+
+        Query query = functionContext.buildLuceneLike(lqp, propertyArgument.getPropertyName(), expression, not);
+
+        if (query == null)
+        {
+            throw new QueryModelException("No query time mapping for property  " + propertyArgument.getPropertyName() + ", it should not be allowed in predicates");
+        }
+
+        return query;
+    }
+
 
 }

@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -68,6 +69,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -137,7 +139,7 @@ public class LuceneQueryParser extends QueryParser
         this.config = config;
     }
 
-    private void setIndexReader(IndexReader indexReader)
+    public void setIndexReader(IndexReader indexReader)
     {
         this.indexReader = indexReader;
     }
@@ -185,6 +187,29 @@ public class LuceneQueryParser extends QueryParser
             internalSlop = 0;
         }
 
+    }
+
+    public Query getLikeQuery(String field, String sqlLikeClause) throws ParseException
+    {
+        String luceneWildCardExpression = SearchLanguageConversion.convertSQLLikeToLucene(sqlLikeClause);
+        return getFieldQuery(field, luceneWildCardExpression);
+    }
+
+    public Query getDoesNotMatchFieldQuery(String field, String queryText) throws ParseException
+    {
+        BooleanQuery query = new BooleanQuery();
+        Query allQuery = new MatchAllDocsQuery();
+        Query matchQuery = getFieldQuery(field, queryText);
+        if ((matchQuery != null))
+        {
+            query.add(allQuery, Occur.MUST);
+            query.add(matchQuery, Occur.MUST_NOT);
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+        return query;
     }
 
     public Query getFieldQuery(String field, String queryText) throws ParseException
@@ -495,7 +520,7 @@ public class LuceneQueryParser extends QueryParser
                 }
 
             }
-            else if (field.equals("ISNULL"))
+            else if (field.equals("ISUNSET"))
             {
                 String qnameString = expandFieldName(queryText);
                 QName qname = QName.createQName(qnameString);
@@ -521,6 +546,28 @@ public class LuceneQueryParser extends QueryParser
                 }
 
             }
+            else if (field.equals("ISNULL"))
+            {
+                String qnameString = expandFieldName(queryText);
+                QName qname = QName.createQName(qnameString);
+                PropertyDefinition pd = dictionaryService.getProperty(qname);
+                if (pd != null)
+                {
+                    BooleanQuery query = new BooleanQuery();
+                    Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
+                    if (presenceQuery != null)
+                    {
+                        query.add(new MatchAllDocsQuery(), Occur.MUST);
+                        query.add(presenceQuery, Occur.MUST_NOT);
+                    }
+                    return query;
+                }
+                else
+                {
+                    return getFieldQueryImpl(field, queryText);
+                }
+
+            }
             else if (field.equals("ISNOTNULL"))
             {
                 String qnameString = expandFieldName(queryText);
@@ -536,7 +583,7 @@ public class LuceneQueryParser extends QueryParser
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
-                        //query.add(typeQuery, Occur.MUST);
+                        // query.add(typeQuery, Occur.MUST);
                         query.add(presenceQuery, Occur.MUST);
                     }
                     return query;
@@ -734,7 +781,7 @@ public class LuceneQueryParser extends QueryParser
                     if (post.length() > 0)
                     {
                         // Add new token followed by * not given by the tokeniser
-                        org.apache.lucene.analysis.Token newToken = new org.apache.lucene.analysis.Token(post.toString(), index - post.length(), index, "ALPHANUM");
+                        org.apache.lucene.analysis.Token newToken = new org.apache.lucene.analysis.Token(post.toString(), index + 1, index + 1 + post.length(), "ALPHANUM");
                         if (isMlText)
                         {
                             Locale locale = I18NUtil.parseLocale(localeString);
@@ -1122,6 +1169,15 @@ public class LuceneQueryParser extends QueryParser
      */
     protected Query getRangeQuery(String field, String part1, String part2, boolean inclusive) throws ParseException
     {
+        return getRangeQuery(field, part1, part2, inclusive, inclusive);
+    }
+
+    /**
+     * @exception ParseException
+     *                throw in overridden method to disallow
+     */
+    public Query getRangeQuery(String field, String part1, String part2, boolean includeLower, boolean includeUpper) throws ParseException
+    {
         if (field.startsWith("@"))
         {
             String fieldName = expandAttributeFieldName(field);
@@ -1206,14 +1262,14 @@ public class LuceneQueryParser extends QueryParser
                         }
 
                         // Build a composite query for all the bits
-                        Query rq = buildDateTimeRange(fieldName, start, end, inclusive);
+                        Query rq = buildDateTimeRange(fieldName, start, end, includeLower, includeUpper);
                         return rq;
                     }
                     else
                     {
                         String first = getToken(fieldName, part1);
                         String last = getToken(fieldName, part2);
-                        return new ConstantScoreRangeQuery(fieldName, first, last, inclusive, inclusive);
+                        return new ConstantScoreRangeQuery(fieldName, first, last, includeLower, includeUpper);
                     }
                 }
                 else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
@@ -1224,13 +1280,13 @@ public class LuceneQueryParser extends QueryParser
                         part1 = part1.toLowerCase();
                         part2 = part2.toLowerCase();
                     }
-                    return new ConstantScoreRangeQuery(fieldName, part1.equals("\u0000") ? null : part1, part2.equals("\uFFFF") ? null : part2, inclusive, inclusive);
+                    return new ConstantScoreRangeQuery(fieldName, part1.equals("\u0000") ? null : part1, part2.equals("\uFFFF") ? null : part2, includeLower, includeUpper);
                 }
             }
 
             String first = getToken(fieldName, part1);
             String last = getToken(fieldName, part2);
-            return new ConstantScoreRangeQuery(fieldName, first, last, inclusive, inclusive);
+            return new ConstantScoreRangeQuery(fieldName, first, last, includeLower, includeUpper);
         }
         else
         {
@@ -1239,11 +1295,11 @@ public class LuceneQueryParser extends QueryParser
                 part1 = part1.toLowerCase();
                 part2 = part2.toLowerCase();
             }
-            return new ConstantScoreRangeQuery(field, part1, part2, inclusive, inclusive);
+            return new ConstantScoreRangeQuery(field, part1, part2, includeLower, includeUpper);
         }
     }
 
-    private Query buildDateTimeRange(String field, Calendar start, Calendar end, boolean inclusive) throws ParseException
+    private Query buildDateTimeRange(String field, Calendar start, Calendar end, boolean includeLower, boolean includeUpper) throws ParseException
     {
         BooleanQuery query = new BooleanQuery();
         Query part;
@@ -1273,7 +1329,7 @@ public class LuceneQueryParser extends QueryParser
                                 query.add(part, Occur.MUST);
                                 if (start.get(Calendar.MILLISECOND) == end.get(Calendar.MILLISECOND))
                                 {
-                                    if (inclusive)
+                                    if (includeLower && includeUpper)
                                     {
                                         part = new TermQuery(new Term(field, build3SF("MS", start.get(Calendar.MILLISECOND))));
                                         query.add(part, Occur.MUST);
@@ -1287,7 +1343,7 @@ public class LuceneQueryParser extends QueryParser
                                 {
                                     // only ms
                                     part = new ConstantScoreRangeQuery(field, build3SF("MS", start.get(Calendar.MILLISECOND)), build3SF("MS", end.get(Calendar.MILLISECOND)),
-                                            inclusive, inclusive);
+                                            includeLower, includeUpper);
                                     query.add(part, Occur.MUST);
                                 }
                             }
@@ -1298,7 +1354,7 @@ public class LuceneQueryParser extends QueryParser
                                 BooleanQuery subQuery = new BooleanQuery();
                                 Query subPart;
 
-                                subPart = buildStart(field, start, inclusive, Calendar.SECOND, Calendar.MILLISECOND);
+                                subPart = buildStart(field, start, includeLower, Calendar.SECOND, Calendar.MILLISECOND);
                                 if (subPart != null)
                                 {
                                     subQuery.add(subPart, Occur.SHOULD);
@@ -1310,7 +1366,7 @@ public class LuceneQueryParser extends QueryParser
                                     subQuery.add(subPart, Occur.SHOULD);
                                 }
 
-                                subPart = buildEnd(field, end, inclusive, Calendar.SECOND, Calendar.MILLISECOND);
+                                subPart = buildEnd(field, end, includeUpper, Calendar.SECOND, Calendar.MILLISECOND);
                                 if (subPart != null)
                                 {
                                     subQuery.add(subPart, Occur.SHOULD);
@@ -1332,7 +1388,7 @@ public class LuceneQueryParser extends QueryParser
 
                             for (int i : new int[] { Calendar.MILLISECOND, Calendar.SECOND })
                             {
-                                subPart = buildStart(field, start, inclusive, Calendar.MINUTE, i);
+                                subPart = buildStart(field, start, includeLower, Calendar.MINUTE, i);
                                 if (subPart != null)
                                 {
                                     subQuery.add(subPart, Occur.SHOULD);
@@ -1347,7 +1403,7 @@ public class LuceneQueryParser extends QueryParser
 
                             for (int i : new int[] { Calendar.SECOND, Calendar.MILLISECOND })
                             {
-                                subPart = buildEnd(field, end, inclusive, Calendar.MINUTE, i);
+                                subPart = buildEnd(field, end, includeUpper, Calendar.MINUTE, i);
                                 if (subPart != null)
                                 {
                                     subQuery.add(subPart, Occur.SHOULD);
@@ -1369,7 +1425,7 @@ public class LuceneQueryParser extends QueryParser
 
                         for (int i : new int[] { Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE })
                         {
-                            subPart = buildStart(field, start, inclusive, Calendar.HOUR_OF_DAY, i);
+                            subPart = buildStart(field, start, includeLower, Calendar.HOUR_OF_DAY, i);
                             if (subPart != null)
                             {
                                 subQuery.add(subPart, Occur.SHOULD);
@@ -1385,7 +1441,7 @@ public class LuceneQueryParser extends QueryParser
 
                         for (int i : new int[] { Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND })
                         {
-                            subPart = buildEnd(field, end, inclusive, Calendar.HOUR_OF_DAY, i);
+                            subPart = buildEnd(field, end, includeUpper, Calendar.HOUR_OF_DAY, i);
                             if (subPart != null)
                             {
                                 subQuery.add(subPart, Occur.SHOULD);
@@ -1407,7 +1463,7 @@ public class LuceneQueryParser extends QueryParser
 
                     for (int i : new int[] { Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE, Calendar.HOUR_OF_DAY })
                     {
-                        subPart = buildStart(field, start, inclusive, Calendar.DAY_OF_MONTH, i);
+                        subPart = buildStart(field, start, includeLower, Calendar.DAY_OF_MONTH, i);
                         if (subPart != null)
                         {
                             subQuery.add(subPart, Occur.SHOULD);
@@ -1422,7 +1478,7 @@ public class LuceneQueryParser extends QueryParser
 
                     for (int i : new int[] { Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND })
                     {
-                        subPart = buildEnd(field, end, inclusive, Calendar.DAY_OF_MONTH, i);
+                        subPart = buildEnd(field, end, includeUpper, Calendar.DAY_OF_MONTH, i);
                         if (subPart != null)
                         {
                             subQuery.add(subPart, Occur.SHOULD);
@@ -1445,7 +1501,7 @@ public class LuceneQueryParser extends QueryParser
 
                 for (int i : new int[] { Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE, Calendar.HOUR_OF_DAY, Calendar.DAY_OF_MONTH })
                 {
-                    subPart = buildStart(field, start, inclusive, Calendar.MONTH, i);
+                    subPart = buildStart(field, start, includeLower, Calendar.MONTH, i);
                     if (subPart != null)
                     {
                         subQuery.add(subPart, Occur.SHOULD);
@@ -1460,7 +1516,7 @@ public class LuceneQueryParser extends QueryParser
 
                 for (int i : new int[] { Calendar.DAY_OF_MONTH, Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND })
                 {
-                    subPart = buildEnd(field, end, inclusive, Calendar.MONTH, i);
+                    subPart = buildEnd(field, end, includeUpper, Calendar.MONTH, i);
                     if (subPart != null)
                     {
                         subQuery.add(subPart, Occur.SHOULD);
@@ -1482,7 +1538,7 @@ public class LuceneQueryParser extends QueryParser
 
             for (int i : new int[] { Calendar.MILLISECOND, Calendar.SECOND, Calendar.MINUTE, Calendar.HOUR_OF_DAY, Calendar.DAY_OF_MONTH, Calendar.MONTH })
             {
-                subPart = buildStart(field, start, inclusive, Calendar.YEAR, i);
+                subPart = buildStart(field, start, includeLower, Calendar.YEAR, i);
                 if (subPart != null)
                 {
                     subQuery.add(subPart, Occur.SHOULD);
@@ -1497,7 +1553,7 @@ public class LuceneQueryParser extends QueryParser
 
             for (int i : new int[] { Calendar.MONTH, Calendar.DAY_OF_MONTH, Calendar.HOUR_OF_DAY, Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND })
             {
-                subPart = buildEnd(field, end, inclusive, Calendar.YEAR, i);
+                subPart = buildEnd(field, end, includeUpper, Calendar.YEAR, i);
                 if (subPart != null)
                 {
                     subQuery.add(subPart, Occur.SHOULD);
@@ -2354,7 +2410,7 @@ public class LuceneQueryParser extends QueryParser
         // start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
         // start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
         LuceneQueryParser lqp = new LuceneQueryParser(null, null);
-        query = lqp.buildDateTimeRange("TEST", start, end, false);
+        query = lqp.buildDateTimeRange("TEST", start, end, false, false);
         System.out.println("Query is " + query);
     }
 }

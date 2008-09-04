@@ -25,6 +25,7 @@
 package org.alfresco.cmis.search;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
@@ -33,6 +34,7 @@ import org.alfresco.cmis.property.CMISPropertyServiceImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -159,13 +161,179 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         this.score = score;
     }
 
-    public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if(cmisPropertyService instanceof CMISPropertyServiceImpl)
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
         {
             String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl)cmisPropertyService;
-            return impl.buildLuceneEquality(lqp, propertyName, value);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneEquality(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneExists(lqp, propertyName, not);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneGreaterThan(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneGreaterThanOrEquals(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.util.Collection, java.lang.Boolean,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneIn(LuceneQueryParser lqp, QName propertyQName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneIn(lqp, propertyName, values, not, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneInequality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneInequality(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneLessThan(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneLessThanOrEquals(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      org.alfresco.service.namespace.QName, java.io.Serializable, java.lang.Boolean)
+     */
+    public Query buildLuceneLike(LuceneQueryParser lqp, QName propertyQName, Serializable value, Boolean not) throws ParseException
+    {
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.buildLuceneLike(lqp, propertyName, value, not);
         }
         else
         {
@@ -174,15 +342,15 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, org.alfresco.service.namespace.QName, java.lang.Boolean)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getLuceneSortField(org.alfresco.service.namespace.QName)
      */
-    public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException
+    public String getLuceneSortField(QName propertyQName)
     {
-        if(cmisPropertyService instanceof CMISPropertyServiceImpl)
+        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
         {
             String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl)cmisPropertyService;
-            return impl.buildLuceneExists(lqp, propertyName, not);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
+            return impl.getLuceneSortField(propertyName);
         }
         else
         {

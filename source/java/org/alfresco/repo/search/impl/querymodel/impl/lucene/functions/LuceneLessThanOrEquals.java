@@ -24,13 +24,24 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
+import java.util.Map;
+
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.LessThanOrEquals;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
  *
  */
-public class LuceneLessThanOrEquals extends LessThanOrEquals
+public class LuceneLessThanOrEquals extends LessThanOrEquals implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -40,5 +51,28 @@ public class LuceneLessThanOrEquals extends LessThanOrEquals
     {
         super();
     }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
+     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
+     *      java.lang.String)
+     */
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        setPropertyAndStaticArguments(functionArgs);
+       
+        Query query = functionContext.buildLuceneLessThanOrEquals(lqp, getPropertyArgument().getPropertyName(), getStaticArgument().getValue(functionContext), PredicateMode.ANY);
+        if(query == null)
+        {
+            throw new QueryModelException("No query time mapping for property  "+getPropertyArgument().getPropertyName()+", it should not be allowed in predicates");
+        }
+        
+        return query;
+    }
+
 
 }

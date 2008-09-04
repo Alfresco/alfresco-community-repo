@@ -45,7 +45,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      * set when executing the query.
      * @return
      */
-    public int start();
+    public int getStart();
     
     /**
      * Get the number of rows in this result set.
@@ -58,7 +58,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
      * 
      * @return
      */
-    public int length();
+    public int getLength();
     
     /**
      * Close the result set and release any resources held/

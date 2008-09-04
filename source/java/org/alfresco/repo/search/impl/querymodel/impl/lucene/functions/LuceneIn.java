@@ -24,13 +24,28 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Map;
+
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.ListArgument;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.In;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
- *
  */
-public class LuceneIn extends In
+public class LuceneIn extends In implements LuceneQueryBuilderComponent
 {
     /**
      * 
@@ -38,5 +53,34 @@ public class LuceneIn extends In
     public LuceneIn()
     {
         super();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
+     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
+     *      java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
+        Argument inverseArgument = functionArgs.get(ARG_NOT);
+        Boolean not = DefaultTypeConverter.INSTANCE.convert(Boolean.class, inverseArgument.getValue(functionContext));
+
+        ListArgument listArgument = (ListArgument)functionArgs.get(ARG_LIST);
+        Collection<Serializable> collection = (Collection<Serializable>)listArgument.getValue(functionContext);
+        
+        Query query = functionContext.buildLuceneIn(lqp, propertyArgument.getPropertyName(), collection, not, PredicateMode.ANY);
+
+        if (query == null)
+        {
+            throw new QueryModelException("No query time mapping for property  " + propertyArgument.getPropertyName() + ", it should not be allowed in predicates");
+        }
+
+        return query;
     }
 }

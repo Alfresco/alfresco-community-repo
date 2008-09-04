@@ -98,7 +98,7 @@ public class CMISPropertyDefinition implements Serializable
             // Properties of associations - all the same
             propertyName = cmisMapping.getCmisPropertyName(propertyQName);
             propertyId = cmisMapping.getCmisPropertyId(propertyQName);
-            displayName = propDef.getTitle();
+            displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyName;
             description = propDef.getDescription();
             isInherited = false;
             propertyType = cmisMapping.getPropertyType(propertyQName);
@@ -114,7 +114,7 @@ public class CMISPropertyDefinition implements Serializable
 
             propertyName = cmisMapping.getCmisPropertyName(propertyQName);
             propertyId = cmisMapping.getCmisPropertyId(propertyQName);
-            displayName = propDef.getTitle();
+            displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyName;
             description = propDef.getDescription();
             if(propDef.getContainerClass().isAspect())
             {

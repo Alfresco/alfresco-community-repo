@@ -46,7 +46,7 @@ public class In extends BaseFunction
     
     public final static String ARG_PROPERTY = "Property";
     
-    public final static String ARG_COLLECTION = "Collection";
+    public final static String ARG_LIST = "List";
     
     public final static String ARG_NOT = "Not";
     
@@ -59,7 +59,7 @@ public class In extends BaseFunction
         args = new LinkedHashMap<String, ArgumentDefinition>();
         args.put(ARG_MODE, new BaseArgumentDefinition(Multiplicity.ANY, ARG_MODE, DataTypeDefinition.ANY, true));
         args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.ANY, ARG_PROPERTY, DataTypeDefinition.ANY, true));
-        args.put(ARG_COLLECTION, new BaseArgumentDefinition(Multiplicity.ANY, ARG_COLLECTION, DataTypeDefinition.ANY, true));
+        args.put(ARG_LIST, new BaseArgumentDefinition(Multiplicity.ANY, ARG_LIST, DataTypeDefinition.ANY, true));
         args.put(ARG_NOT, new BaseArgumentDefinition(Multiplicity.ANY, ARG_NOT, DataTypeDefinition.ANY, false));
     }
     

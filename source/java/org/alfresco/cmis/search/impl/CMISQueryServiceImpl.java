@@ -165,7 +165,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
      */
     public FullTextSearchSupport getFullTextSearchSupport()
     {
-        return FullTextSearchSupport.FULL_TEXT_ONLY;
+        return FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED;
     }
 
     /*

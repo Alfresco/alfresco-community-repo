@@ -32,6 +32,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.apache.lucene.index.IndexReader;
 
 /**
  * @author andyh
@@ -39,11 +40,11 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 public class LuceneQueryBuilderContext
 {
     private LuceneQueryParser lqp;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
 
     public LuceneQueryBuilderContext(DictionaryService dictionaryService, NamespacePrefixResolver namespacePrefixResolver, TenantService tenantService,
-            SearchParameters searchParameters, LuceneConfig config)
+            SearchParameters searchParameters, LuceneConfig config, IndexReader indexReader)
     {
         LuceneAnalyser analyzer = new LuceneAnalyser(dictionaryService, searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
                 .getMlAnalaysisMode());
@@ -54,7 +55,7 @@ public class LuceneQueryBuilderContext
         lqp.setTenantService(tenantService);
         lqp.setSearchParameters(searchParameters);
         lqp.setLuceneConfig(config);
-        
+        lqp.setIndexReader(indexReader);
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
@@ -71,7 +72,7 @@ public class LuceneQueryBuilderContext
      */
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
-       return namespacePrefixResolver;
+        return namespacePrefixResolver;
     }
 
 }

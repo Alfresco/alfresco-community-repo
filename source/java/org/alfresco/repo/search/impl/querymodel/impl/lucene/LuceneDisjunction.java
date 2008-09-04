@@ -39,7 +39,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
  * @author andyh
- *
  */
 public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBuilderComponent
 {
@@ -52,14 +51,18 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
         super(constraints);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String,
+     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
             throws ParseException
     {
         BooleanQuery query = new BooleanQuery();
-        for(Constraint constraint : getConstraints())
+        for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof LuceneQueryBuilderComponent)
             {
@@ -76,6 +79,10 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
                         query.add(constraintQuery, Occur.SHOULD);
                     }
                 }
+                else
+                {
+                    throw new UnsupportedOperationException();
+                }
             }
             else
             {
@@ -83,8 +90,7 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
             }
         }
         return query;
-        
-       
+
     }
 
 }

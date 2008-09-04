@@ -27,6 +27,8 @@ package org.alfresco.cmis.search;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * A row in a CMISResultSet
  * 
@@ -62,11 +64,24 @@ public interface CMISResultSetRow
     public Map<String, Float> getScores();
     
     /**
-     * Get the score related to the names selector.
+     * Get the score related to the named selector.
      * @param selectorName
      * @return - the score.
      */
     public float getScore(String selectorName);
+    
+    /**
+     * Gets the node refs
+     * @return a map of selector name to node ref
+     */
+    public Map<String, NodeRef> getNodeRefs();
+
+    /**
+     * Gets the node ref related to the named selector
+     * @param selectorName
+     * @return the node ref
+     */
+    public NodeRef getNodeRef(String selectorName);
     
     /**
      * Get the index of this result set in the result set 

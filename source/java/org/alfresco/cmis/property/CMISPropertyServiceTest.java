@@ -70,7 +70,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISMapping.PROP_CHECKIN_COMMENT));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH));
-        assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE));
+        assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI));
 
@@ -107,7 +107,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -144,7 +144,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -165,7 +165,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         properties = cmisPropertyService.getProperties(content);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), size);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "text/plain");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "text/plain");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
     }
@@ -198,7 +198,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -245,7 +245,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -282,7 +282,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -328,7 +328,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -361,7 +361,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -407,7 +407,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -440,7 +440,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -477,7 +477,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -510,7 +510,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -556,7 +556,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -589,7 +589,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -635,7 +635,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -671,7 +671,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), "Meep");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -717,7 +717,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -753,7 +753,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CHECKIN_COMMENT), "Woof");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_ALLOWED), ContentStreamAllowed.ALLOWED.toString());
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIMETYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
 
@@ -787,7 +787,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CHECKIN_COMMENT));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_ALLOWED));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_LENGTH));
-        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_MIMETYPE));
+        assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_FILENAME));
         assertNull(cmisPropertyService.getProperty(folder, CMISMapping.PROP_CONTENT_STREAM_URI));
        

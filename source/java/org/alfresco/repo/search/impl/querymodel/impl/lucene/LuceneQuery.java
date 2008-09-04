@@ -31,12 +31,19 @@ import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Negation;
+import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.Source;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
+import org.alfresco.service.namespace.QName;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
@@ -105,6 +112,10 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                         luceneQuery.add(constraintQuery, Occur.MUST);
                     }
                 }
+                else
+                {
+                    throw new UnsupportedOperationException();
+                }
             }
             else
             {
@@ -114,6 +125,61 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 
         return luceneQuery;
 
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildSort(java.lang.String,
+     *      org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
+     */
+    public Sort buildSort(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+    {
+        if ((getOrderings() == null) || (getOrderings().size() == 0))
+        {
+            return null;
+        }
+
+        int index = 0;
+        SortField[] fields = new SortField[getOrderings().size()];
+
+        for (Ordering ordering : getOrderings())
+        {
+            if (ordering.getColumn().getFunction().getName().equals(PropertyAccessor.NAME))
+            {
+                PropertyArgument property = (PropertyArgument) ordering.getColumn().getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
+
+                if (property == null)
+                {
+                    throw new IllegalStateException();
+                }
+
+                QName propertyQName = property.getPropertyName();
+
+                String luceneField = functionContext.getLuceneSortField(propertyQName);
+
+                if (luceneField != null)
+                {
+                    fields[index++] = new SortField(luceneField, (ordering.getOrder() == Order.DESCENDING));
+                }
+                else
+                {
+                    throw new IllegalStateException();
+                }
+            }
+            else if(ordering.getColumn().getFunction().getName().equals(Score.NAME))
+            {
+                fields[index++] = new SortField(null, SortField.SCORE, !(ordering.getOrder() == Order.DESCENDING));
+            }
+            else
+            {
+                throw new IllegalStateException();
+            }
+
+        }
+
+        return new Sort(fields);
     }
 
 }

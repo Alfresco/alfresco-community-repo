@@ -25,6 +25,7 @@
 package org.alfresco.cmis.property;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.alfresco.cmis.dictionary.ContentStreamAllowed;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -404,19 +406,20 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
      * @param lqp
      * @param propertyName
      * @param value
+     * @param mode 
      * @return
      * @throws ParseException 
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
     {
         NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
         if (accessor != null)
         {
-            return accessor.buildLuceneEquality(lqp, propertyName, value);
+            return accessor.buildLuceneEquality(lqp, propertyName, value, mode);
         }
         else
         {
-            return genericPropertyAccessor.buildLuceneEquality(lqp, propertyName, value);
+            return genericPropertyAccessor.buildLuceneEquality(lqp, propertyName, value, mode);
         }
     }
 
@@ -436,6 +439,171 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         else
         {
             return genericPropertyAccessor.buildLuceneExists(lqp, propertyName, not);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneGreaterThan(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneGreaterThan(lqp, propertyName, value, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneGreaterThanOrEquals(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneGreaterThanOrEquals(lqp, propertyName, value, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param values
+     * @param not
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneIn(lqp, propertyName, values, not,  mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneIn(lqp, propertyName, values, not, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneInequality(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneInequality(lqp, propertyName, value, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneLessThan(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneLessThan(lqp, propertyName, value, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param mode
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneLessThanOrEquals(lqp, propertyName, value, mode);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneLessThanOrEquals(lqp, propertyName, value, mode);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @param not
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneLike(lqp, propertyName, value, not);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneLike(lqp, propertyName, value, not);
+        }
+    }
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    public String getLuceneSortField(String propertyName)
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.getLuceneSortField(propertyName);
+        }
+        else
+        {
+            return genericPropertyAccessor.getLuceneSortField(propertyName);
         }
     }
 

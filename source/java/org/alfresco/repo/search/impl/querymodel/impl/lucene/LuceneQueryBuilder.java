@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
 
 /**
  * @author andyh
@@ -34,4 +35,6 @@ import org.apache.lucene.search.Query;
 public interface LuceneQueryBuilder
 {
     public  Query buildQuery(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
+
+    public Sort buildSort(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext);
 }

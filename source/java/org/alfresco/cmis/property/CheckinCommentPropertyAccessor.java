@@ -25,19 +25,20 @@
 package org.alfresco.cmis.property;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.apache.lucene.search.Query;
 
 /**
- * Accesor for the CMIS Checkin Comment 
+ * Accessor for the CMIS Checkin Comment
  * 
  * @author andyh
- *
  */
 public class CheckinCommentPropertyAccessor extends AbstractNamedPropertyAccessor
 {
@@ -45,7 +46,7 @@ public class CheckinCommentPropertyAccessor extends AbstractNamedPropertyAccesso
     public Serializable getProperty(NodeRef nodeRef)
     {
         Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-        if(version != null)
+        if (version != null)
         {
             return version.getDescription();
         }
@@ -60,27 +61,119 @@ public class CheckinCommentPropertyAccessor extends AbstractNamedPropertyAccesso
     {
         return CMISMapping.PROP_CHECKIN_COMMENT;
     }
-    
+
     @Override
     public CMISScope getScope()
     {
-       return CMISScope.DOCUMENT;
+        return CMISScope.DOCUMENT;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value)
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
     {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.lang.Boolean)
      */
     public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not)
     {
         return null;
     }
-    
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.util.Collection, java.lang.Boolean,
+     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     */
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode)
+    {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, java.lang.Boolean)
+     */
+    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not)
+    {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
+     */
+    public String getLuceneSortField(String propertyName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
 }

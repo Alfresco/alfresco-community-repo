@@ -2,6 +2,7 @@
            xmlns:sys="http://www.alfresco.org/model/system/1.0">
 
 	<sys:descriptor view:childName="${system.descriptor.childname}">
+	    <sys:name>${repository.name}</sys:name>
 		<sys:versionMajor>${version.major}</sys:versionMajor>
 		<sys:versionMinor>${version.minor}</sys:versionMinor>
 		<sys:versionRevision>${version.revision}</sys:versionRevision>
@@ -11,6 +12,7 @@
 	</sys:descriptor>
 
 	<sys:descriptor view:childName="${system.descriptor.current.childname}">
+        <sys:name>${repository.name}</sys:name>
 		<sys:versionMajor>${version.major}</sys:versionMajor>
 		<sys:versionMinor>${version.minor}</sys:versionMinor>
 		<sys:versionRevision>${version.revision}</sys:versionRevision>

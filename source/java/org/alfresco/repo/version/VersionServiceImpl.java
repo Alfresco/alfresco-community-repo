@@ -862,7 +862,14 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     protected NodeRef getVersionHistoryNodeRef(NodeRef nodeRef)
     {
-        return this.dbNodeService.getChildByName(getRootNode(), CHILD_QNAME_VERSION_HISTORIES, nodeRef.getId());
+        if (nodeService.exists(nodeRef))
+        {
+            return this.dbNodeService.getChildByName(getRootNode(), CHILD_QNAME_VERSION_HISTORIES, (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_UUID));
+        }
+        else
+        {
+            return this.dbNodeService.getChildByName(getRootNode(), CHILD_QNAME_VERSION_HISTORIES, nodeRef.getId());
+        }
     }
 
     /**

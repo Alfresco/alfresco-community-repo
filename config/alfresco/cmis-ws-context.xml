@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+
+    <jaxws:endpoint address="/RepositoryService" implementor="#dmRepositoryService" implementorClass="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
+        <jaxws:inInterceptors>
+            <ref local="saajInInterceptor" />
+            <ref local="wss4jInInterceptor" />
+            <ref local="authenticationInterceptor" />
+        </jaxws:inInterceptors>
+
+        <jaxws:outInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outInterceptors>
+
+        <jaxws:outFaultInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outFaultInterceptors>
+
+        <jaxws:properties>
+            <entry key="mtom-enabled" value="false" />
+        </jaxws:properties>
+
+        <jaxws:features>
+            <bean class="org.apache.cxf.feature.LoggingFeature" />
+        </jaxws:features>
+    </jaxws:endpoint>
+
+    <jaxws:endpoint address="/NavigationService" implementor="#dmNavigationService" implementorClass="org.alfresco.repo.cmis.ws.DMNavigationServicePort">
+        <jaxws:inInterceptors>
+            <ref local="saajInInterceptor" />
+            <ref local="wss4jInInterceptor" />
+            <ref local="authenticationInterceptor" />
+        </jaxws:inInterceptors>
+
+        <jaxws:outInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outInterceptors>
+
+        <jaxws:outFaultInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outFaultInterceptors>
+
+        <jaxws:properties>
+            <entry key="mtom-enabled" value="false" />
+        </jaxws:properties>
+
+        <jaxws:features>
+            <bean class="org.apache.cxf.feature.LoggingFeature" />
+        </jaxws:features>
+    </jaxws:endpoint>
+
+    <jaxws:endpoint address="/ObjectService" implementor="#dmObjectService" implementorClass="org.alfresco.repo.cmis.ws.DMObjectServicePort">
+        <jaxws:inInterceptors>
+            <ref local="saajInInterceptor" />
+            <ref local="wss4jInInterceptor" />
+            <ref local="authenticationInterceptor" />
+        </jaxws:inInterceptors>
+
+        <jaxws:outInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outInterceptors>
+
+        <jaxws:outFaultInterceptors>
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outFaultInterceptors>
+
+        <jaxws:properties>
+            <entry key="mtom-enabled" value="true" />
+        </jaxws:properties>
+
+        <jaxws:features>
+            <bean class="org.apache.cxf.feature.LoggingFeature" />
+        </jaxws:features>
+    </jaxws:endpoint>
+
+    <bean id="dmRepositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.RepositoryServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmRepositoryServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmNavigationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.NavigationServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmNavigationServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmObjectService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.ObjectServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmObjectServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmAbstractServiceTx" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="dmRepositoryServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
+        <property name="rootPath">
+            <value>workspace://SpacesStore/app:company_home</value>
+        </property>
+    </bean>
+
+    <bean id="dmNavigationServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMNavigationServicePort" />
+
+    <bean id="dmObjectServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMObjectServicePort" />
+
+    <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="personService" ref="personService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="searchService" ref="searchService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="versionService" ref="versionService" />
+        <property name="checkOutCheckInService" ref="checkOutCheckInService" />
+        <property name="fileFolderService" ref="fileFolderService" />
+    </bean>
+
+    <bean id="exceptionPointcutAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <property name="advice">
+            <bean class="org.alfresco.repo.cmis.ws.DMServicePortThrowsAdvice" />
+        </property>
+    </bean>
+
+    <!-- ========================================================================================================= -->
+
+    <bean id="saajInInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
+
+    <bean id="saajOutInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor" />
+
+    <bean id="wss4jInInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="UsernameToken Timestamp" />
+                <entry key="passwordType" value="PasswordText" />
+                <entry>
+                    <key>
+                        <value>passwordCallbackRef</value>
+                    </key>
+                    <ref local="authenticationTokenCallback" />
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="wss4jOutInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="authenticationTokenCallback" class="org.alfresco.repo.cmis.ws.AuthenticationTokenCallbackHandler">
+        <property name="authenticationService" ref="AuthenticationService" />
+    </bean>
+
+    <bean id="authenticationInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationInterceptor" />
+
+</beans>

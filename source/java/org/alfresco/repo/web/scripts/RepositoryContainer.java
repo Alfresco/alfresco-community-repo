@@ -180,7 +180,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         Map<String, Object> params = new HashMap<String, Object>();
         params.putAll(super.getTemplateParameters());
         params.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver.getImageResolver());
-        params.put("cropContent", new CropContentMethod());
         addRepoParameters(params);
         return params;
     }

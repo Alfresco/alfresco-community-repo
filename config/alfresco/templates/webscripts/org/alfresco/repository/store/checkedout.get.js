@@ -29,7 +29,7 @@ script:
     // TODO: includeAllowableActions 
    
     // retrieve checked-out
-    var page = paging.createPageOrWindow(args.pageNo, args.pageSize, cmis.findArg(args.skipCount, headers["CMIS-skipCount"]), cmis.findArg(args.maxItems, headers["CMIS-maxItems"]));
+    var page = paging.createPageOrWindow(args, headers);
     var paged = cmis.queryCheckedOut(person.properties.userName, model.folder, model.includeDescendants, page);
     model.results = paged.results;
     model.cursor = paged.cursor;

@@ -4,8 +4,6 @@
   <workspace cmis:id="${server.id}">
     <atom:title>${server.name}</atom:title>
 
-    <#-- TODO: cmis version -->
-
     <cmis:repositoryInfo> 
       <cmis:repositoryId>${server.id}</cmis:repositoryId>
       <cmis:repositoryName>${server.name}</cmis:repositoryName>
@@ -35,10 +33,8 @@
     <collection href="${absurl(url.serviceContext)}/api/unfiled" cmis:collectionType="unfiled"> 
       <atom:title>unfiled collection</atom:title> 
     </collection>
-    
-    <#-- TODO: collection resources -->
-    <collection href="http://example.org/cmis/main?types" cmis:collectionType="types"> 
-      <atom:title>CMIS Types</atom:title> 
+    <collection href="${absurl(url.serviceContext)}/api/types" cmis:collectionType="types"> 
+      <atom:title>type collection</atom:title> 
     </collection> 
 
   </workspace> 

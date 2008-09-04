@@ -24,8 +24,15 @@
  */
 package org.alfresco.repo.cmis.rest;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.CMISService.TypesFilter;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -49,6 +56,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     private ServiceRegistry services;
     private Repository repository;
     private CMISService cmisService;
+    private CMISDictionaryService cmisDictionaryService;
     private Paging paging;
     
     
@@ -83,7 +91,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Set the CMIS Navigation helper
+     * Set the CMIS Service
      * 
      * @param cmisService
      */
@@ -91,7 +99,17 @@ public class CMISScript extends BaseScopableProcessorExtension
     {
         this.cmisService = cmisService;
     }
-    
+
+    /**
+     * Set the CMIS Dictionary Service
+     * 
+     * @param cmisDictionaryService
+     */
+    public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService = cmisDictionaryService;
+    }
+
     /**
      * Gets the supported CMIS Version
      * 
@@ -273,6 +291,83 @@ public class CMISScript extends BaseScopableProcessorExtension
         return results;
     }
     
+    /**
+     * Query for all Type Definitions
+     * 
+     * @param page
+     * @return  paged result set of types
+     */
+    public PagedResults queryTypes(Page page)
+    {
+        Collection<CMISTypeId> typeIds = cmisDictionaryService.getAllObjectTypeIds();
+        Cursor cursor = paging.createCursor(typeIds.size(), page);
+        
+        // skip
+        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        for (int i = 0; i < cursor.getStartRow(); i++)
+        {
+            iterTypeIds.next();
+        }
+
+        // get types for page
+        CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            types[i - cursor.getStartRow()] = cmisDictionaryService.getType(iterTypeIds.next());
+        }
+        
+        PagedResults results = paging.createPagedResults(types, cursor);
+        return results;
+    }
+
+    /**
+     * Query for all Type Definitions in a type hierarchy
+     * 
+     * @param page
+     * @return  paged result set of types
+     */
+    public PagedResults queryTypeHierarchy(CMISTypeDefinition typedef, boolean descendants, Page page)
+    {
+        Collection<CMISTypeId> typeIds = cmisDictionaryService.getChildTypeIds(typedef.getObjectTypeId(), descendants);
+        Cursor cursor = paging.createCursor(typeIds.size(), page);
+        
+        // skip
+        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        for (int i = 0; i < cursor.getStartRow(); i++)
+        {
+            iterTypeIds.next();
+        }
+
+        // get types for page
+        CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            types[i - cursor.getStartRow()] = cmisDictionaryService.getType(iterTypeIds.next());
+        }
+        
+        PagedResults results = paging.createPagedResults(types, cursor);
+        return results;
+    }
+
+    /**
+     * Query for all Type Definitions
+     * 
+     * @param page
+     * @return  paged result set of types
+     */
+    public CMISTypeDefinition queryType(String typeId)
+    {
+        try
+        {
+            CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId);
+            return cmisDictionaryService.getType(cmisTypeId);
+        }
+        catch(AlfrescoRuntimeException e)
+        {
+            return null;
+        }
+    }
+
     /**
      * Resolve to a Types Filter
      * 

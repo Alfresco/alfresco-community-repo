@@ -24,7 +24,7 @@ script:
     // TODO: property filters 
    
     // retrieve children
-    var page = paging.createPageOrWindow(args.pageNo, args.pageSize, cmis.findArg(args.skipCount, headers["CMIS-skipCount"]), cmis.findArg(args.maxItems, headers["CMIS-maxItems"]));
+    var page = paging.createPageOrWindow(args, headers);
     var paged = cmis.queryChildren(model.node, model.types, page);
     model.results = paged.results;
     model.cursor = paged.cursor;

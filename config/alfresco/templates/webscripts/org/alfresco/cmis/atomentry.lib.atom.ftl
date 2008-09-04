@@ -28,6 +28,7 @@
 <link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
 <link rel="cmis-stream" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 [/#macro]
 
 [#macro documentCMISProps node]
@@ -119,6 +120,7 @@
 <link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 <link rel="cmis-children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
 <link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 [/#macro]
 
 [#macro folderCMISProps node]
@@ -135,6 +137,109 @@
 </cmis:properties>
 [/#macro]
 
+
+[#--                                --]
+[#-- ATOM Entry for Type Definition --]
+[#--                                --]
+
+[#macro typedef typedef includeProperties=true includeInheritedProperties=true]
+[#if true]  [#-- TODO: spec issue 40 --]
+[@typedefCMISProps typedef includeProperties includeInheritedProperties/]
+[#else]
+<author><name>${person.properties.userName}</name></author>
+<content>${typedef.objectTypeId}</content>  [#-- TODO --]
+<id>urn:uuid:type-${typedef.objectTypeId}</id>
+<link rel="self" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}"/>
+[@typedefCMISLinks typedef/]
+<summary>${typedef.description!typedef.objectTypeDisplayName}</summary>
+<title>${typedef.objectTypeDisplayName}</title>
+<updated>${xmldate(date)}</updated>  [#-- TODO --]
+[@typedefCMISProps typedef includeProperties/]
+[/#if]
+[/#macro]
+
+[#macro typedefCMISLinks typedef]
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}"/>
+<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentTypeId}"/>
+<link rel="cmis-children" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/children"/>
+<link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/descendants"/>
+[/#macro]
+
+[#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
+<cmis:type>
+  <cmis:objectId>${typedef.objectTypeId}</cmis:objectId>
+  <cmis:baseType>[@cmisBaseType typedef.rootTypeQueryName/]</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
+  <cmis:lastModifiedBy>${xmldate(date)}</cmis:lastModifiedBy>  [#-- TODO: remove spec issue 36 --]
+  <cmis:creationDate>${xmldate(date)}</cmis:creationDate>  [#-- TODO: remove spec issue 36 --]
+  <cmis:queryName>${typedef.objectTypeQueryName}</cmis:queryName>
+  <cmis:displayName>[#if typedef.objectTypeDisplayName??]${typedef.objectTypeDisplayName?xml}[/#if]</cmis:displayName>
+  <cmis:baseTypeQueryName>${typedef.rootTypeQueryName}</cmis:baseTypeQueryName>
+  <cmis:parentId>${typedef.parentTypeId!""}</cmis:parentId>
+  <cmis:description>[#if typedef.description??]${typedef.description?xml}[/#if]</cmis:description>
+  <cmis:isCreatable>${typedef.creatable?string}</cmis:isCreatable>
+  <cmis:isFileable>${typedef.fileable?string}</cmis:isFileable>
+  <cmis:isQueryable>${typedef.queryable?string}</cmis:isQueryable>
+  <cmis:isControllable>${typedef.controllable?string}</cmis:isControllable>
+  <cmis:isVersionable>${typedef.versionable?string}</cmis:isVersionable>
+  <cmis:contentStreamAllowed>[@cmisContentStreamAllowed typedef.contentStreamAllowed/]</cmis:contentStreamAllowed>  [#-- TODO: spec issue 37 --]
+  [#if includeProperties]
+    [#list typedef.propertyDefinitions?values as propdef]
+      [#if includeInheritedProperties || !propdef.inherited]
+        [@propdefCMISProps propdef/]
+      [/#if]
+    [/#list]
+  [/#if]
+</cmis:type>
+[/#macro]
+
+[#macro propdefCMISProps propdef]
+<cmis:property cmis:id="${propdef.propertyId}">
+  <cmis:propertyName>${propdef.propertyName}</cmis:propertyName>
+  <cmis:propertyId>${propdef.propertyId}</cmis:propertyId>
+  <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
+  <cmis:description>[#if propdef.description??]${propdef.description?xml}[/#if]</cmis:description>
+  <cmis:isInherited>${propdef.inherited?string}</cmis:isInherited>
+  <cmis:propertyType>${propdef.propertyType}</cmis:propertyType>
+  <cmis:cardinality>[@cmisCardinality propdef.cardinality/]</cmis:cardinality>
+  [#if propdef.maximumLength != -1]
+  <cmis:maxLength>${propdef.maximumLength}</cmis:maxLength>
+  [/#if]
+  [@cmisChoices propdef.choices/]
+  <cmis:isOpenChoice>${propdef.openChoice?string}</cmis:isOpenChoice>
+  <cmis:isRequired>${propdef.required?string}</cmis:isRequired>
+  <cmis:defaultValue>${propdef.defaultValue!""}</cmis:defaultValue>
+  <cmis:updateability>[@cmisUpdatability propdef.updatability/]</cmis:updateability> [#-- TODO spec issue 38 --]
+  <cmis:isQueryable>${propdef.queryable?string}</cmis:isQueryable>
+  <cmis:isOrderable>${propdef.orderable?string}</cmis:isOrderable>
+</cmis:property>
+[/#macro]
+
+[#-- TODO: spec issue 40 --]
+[#macro cmisBaseType rootType]
+[#if rootType = "DOCUMENT_OBJECT_TYPE"]document[#elseif rootType = "FOLDER_OBJECT_TYPE"]folder[#elseif rootType = "RELATIONSHIP_OBJECT_TYPE"]relationship[#elseif rootType = "POLICY_OBJECT_TYPE"]policy[#else][/#if][/#macro]
+
+[#-- TODO: spec issue 37 --]
+[#macro cmisContentStreamAllowed allowed]
+[#if allowed = "NOT_ALLOWED"]notallowed[#elseif allowed = "ALLOWED"]allowed[#elseif allowed = "REQUIRED"]required[#else][/#if][/#macro]
+
+[#-- TODO: spec issue 37 --]
+[#macro cmisCardinality cardinality]
+[#if cardinality = "SINGLE_VALUED"]Single[#elseif cardinality = "MULTI_VALUED"]Multi[#else][/#if][/#macro]
+
+[#-- TODO: spec issue 37/38 --]
+[#macro cmisUpdatability updatability]
+[#if updatability = "READ_ONLY"]ro[#elseif updatability = "READ_AND_WRITE"]rw[#elseif updatability = "READ_AND_WRITE_WHEN_CHECKED_OUT"]checkedout[/#if][/#macro]
+
+[#-- TODO: spec issue 39 --]
+[#macro cmisChoices choices]
+[#if choices?exists]
+[#list choices as choice]
+<cmis:choices index="${choice.index}">${choice.value}
+[@cmisChoices choice.children/]
+</cmis:choices>
+[/#list]
+[/#if]
+[/#macro]
 
 
 [#-- Helper to render Alfresco content type to Atom content type --]

@@ -8,19 +8,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.generic "urn:uuid:checkedout" "Checked out Documents" "${person.properties.userName}"]
+[@feedLib.generic "urn:uuid:type-${typedef.objectTypeId}-children" "Child types of ${typedef.objectTypeId}" "${person.properties.userName}"]
   [@pagingLib.links cursor=cursor/]
 [/@feedLib.generic]
 
 [#list results as child]
 <entry>
-  [#if child.isDocument]  
-    [@entryLib.pwc node=child/]
-  [/#if]
+  [@entryLib.typedef typedef=child includeProperties=returnPropertyDefinitions/]
 </entry>
 [/#list]
 
 [@feedLib.hasMore more=cursor/]
+[@pagingLib.opensearch cursor=cursor/]
 
 </feed>
 

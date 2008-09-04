@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.web.util.paging;
 
+import java.util.Map;
+
 /**
  * Paging.  A utility for maintaining paged indexes for a collection of N items.
  * 
@@ -134,6 +136,90 @@ public class Paging
     {
         return zeroBasedRow;
     }
+
+    /**
+     * Create a Page or Window from standardised request arguments / headers
+     *
+     * For Paged based index (take precedence over window based index, if both are specified):
+     * 
+     * - request args
+     *     pageNo  => page number index 
+     *     pageSize  => size of page
+     * 
+     * For Window based index (as defined by CMIS):
+     * 
+     * - request args  (take precedence over header values if both are specified)
+     *     skipCount  => row number start index
+     *     maxItems  => size of page
+     * 
+     * - header values
+     *     CMIS-skipCount  => row number start index
+     *     CMIS-maxItems  => size of page
+     * 
+     * @param args  request args
+     * @param headers  request headers
+     * @return  page (if pageNumber driven) or window (if skipCount driven)
+     */
+    public Page createPageOrWindow(Map<String, String> args, Map<String, String> headers)
+    {
+        // page number
+        String strPageNo = args.get("pageNo");
+        Integer pageNo = null;
+        if (strPageNo != null)
+        {
+            try
+            {
+                pageNo = new Integer(strPageNo);
+            }
+            catch(NumberFormatException e) {};
+        }
+        
+        // page size
+        String strPageSize = args.get("pageSize");
+        Integer pageSize = null;
+        if (strPageSize != null)
+        {
+            try
+            {
+                pageSize = new Integer(strPageSize);
+            }
+            catch(NumberFormatException e) {};
+        }
+        
+        // skip count
+        String strSkipCount = args.get("skipCount");
+        if (strSkipCount == null)
+        {
+            strSkipCount = (headers == null) ? null : headers.get("CMIS-skipCount");
+        }
+        Integer skipCount = null;
+        if (strSkipCount != null)
+        {
+            try
+            {
+                skipCount = new Integer(strSkipCount);
+            }
+            catch(NumberFormatException e) {};
+        }
+
+        // max items
+        String strMaxItems = args.get("maxItems");
+        if (strMaxItems == null)
+        {
+            strMaxItems = (headers == null) ? null : headers.get("CMIS-maxItems");
+        }
+        Integer maxItems = null;
+        if (strMaxItems != null)
+        {
+            try
+            {
+                maxItems = new Integer(strMaxItems);
+            }
+            catch(NumberFormatException e) {};
+        }
+
+        return createPageOrWindow(pageNo, pageSize, skipCount, maxItems);
+    }
     
     /**
      * Create a Page or Window
@@ -146,13 +232,13 @@ public class Paging
      */
     public Page createPageOrWindow(Integer pageNumber, Integer pageSize, Integer skipCount, Integer maxItems)
     {
-        if (pageNumber != null)
+        if (pageNumber != null || pageSize != null)
         {
-            return createPage(pageNumber, pageSize == null ? 0 : pageSize);
+            return createPage(pageNumber == null ? isZeroBasedPage() ? 0 : 1 : pageNumber, pageSize == null ? 0 : pageSize);
         }
-        else if (skipCount != null)
+        else if (skipCount != null || maxItems != null)
         {
-            return createWindow(skipCount, maxItems == null ? 0 : maxItems);
+            return createWindow(skipCount == null ? isZeroBasedRow() ? 0 : 1 : skipCount, maxItems == null ? 0 : maxItems);
         }
         return createUnlimitedPage();
     }

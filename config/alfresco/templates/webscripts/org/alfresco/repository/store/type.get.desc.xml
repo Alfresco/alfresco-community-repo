@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Retrieve a Type</shortname>
+  <description>Retrieve a Type Definition</description>
+  <url>/api/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
+  <authentication>user</authentication>
+  <format default="atomentry"/>
+  <family>CMIS</family>
+</webscript>

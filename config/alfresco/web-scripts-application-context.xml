@@ -100,6 +100,15 @@
            </entry>
          </map>
       </property>
+      <property name="templateObjects">
+         <map merge="true">
+           <entry key="cmistypeid">
+              <bean class="org.alfresco.repo.cmis.rest.CMISTypeIdMethod">
+                 <constructor-arg><ref bean="CMISMapping"/></constructor-arg>    
+              </bean>
+           </entry>
+         </map>
+      </property>
       <property name="registryFactory">
           <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
              <property name="targetBeanName"><idref local="webscripts.registry.prototype"/></property>
@@ -395,6 +404,7 @@
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="repository" ref="repositoryHelper" />
       <property name="CMISService" ref="CMISService" />
+      <property name="CMISDictionaryService" ref="CMISDictionaryService" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
 

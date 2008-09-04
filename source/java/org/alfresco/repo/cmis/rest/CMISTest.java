@@ -26,7 +26,9 @@ package org.alfresco.repo.cmis.rest;
 
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
@@ -126,6 +128,15 @@ public class CMISTest extends BaseCMISWebScriptTest
     private IRI getCheckedOutCollection(Service service)
     {
         Collection root = service.getCollection("Main Repository", "checkedout collection");
+        assertNotNull(root);
+        IRI rootHREF = root.getHref();
+        assertNotNull(rootHREF);
+        return rootHREF;
+    }
+
+    private IRI getTypesCollection(Service service)
+    {
+        Collection root = service.getCollection("Main Repository", "type collection");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
@@ -247,8 +258,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     public void testRepository()
         throws Exception
     {
-        Service service = getRepository();
-        IRI rootHREF = getRootCollection(service);
+        IRI rootHREF = getRootCollection(getRepository());
         sendRequest(new GetRequest(rootHREF.toString()), 200, getAtomValidator());
     }
     
@@ -331,7 +341,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
         assertNotNull(documentXML);
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -344,10 +354,49 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(children.getEntry(document2.getId().toString()));
         assertNotNull(children.getEntry(document3.getId().toString()));
         assertNull(children.getEntry(pwc.getId().toString()));
-        
-        // TODO: paging
     }
-    
+
+    public void testChildrenPaging()
+        throws Exception
+    {
+        // create multiple children
+        Set<IRI> docIds = new HashSet<IRI>();
+        Entry testFolder = createTestFolder("testChildrenPaging");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        for (int i = 0; i < 15; i++)
+        {
+            Entry document = createDocument(childrenLink.getHref(), "testChildrenPaging" + i);
+            assertNotNull(document);
+            docIds.add(document.getId());
+        }
+        assertEquals(15, docIds.size());
+        
+        // get children, ensure they exist (but not private working copy)
+        int nextCount = 0;
+        Map<String, String> args = new HashMap<String, String>();
+        args.put("maxItems", "4");
+        IRI childrenHREF = childrenLink.getHref();
+        while (childrenHREF != null)
+        {
+            nextCount++;
+            Feed types = getFeed(childrenHREF, args);
+            assertNotNull(types);
+            assertEquals(nextCount < 4 ? 4 : 3, types.getEntries().size());
+            for (Entry entry : types.getEntries())
+            {
+                docIds.remove(entry.getId());
+            }
+            
+            // next page
+            Link nextLink = types.getLink("next");
+            childrenHREF = (nextLink != null) ? nextLink.getHref() : null;
+            args = null;
+        };
+        assertEquals(4, nextCount);
+        assertEquals(0, docIds.size());
+    }
+
     public void testGetParent()
         throws Exception
     {
@@ -480,7 +529,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve checkouts within scope of test checkout folder
         Service repository = getRepository();
         assertNotNull(repository);
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -503,7 +552,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(documentXML);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         // TODO: test private working copy properties
@@ -533,7 +582,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         String pwcXml = pwcRes.getContentAsString();
@@ -578,7 +627,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -651,7 +700,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -712,7 +761,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         String xml = documentRes.getContentAsString();
         assertNotNull(xml);
 
-        IRI checkedoutHREF = getCheckedOutCollection(service);
+        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         for (int i = 0; i < NUMBER_OF_VERSIONS; i++)
         {
             // checkout
@@ -751,7 +800,52 @@ public class CMISTest extends BaseCMISWebScriptTest
         }
     }
     
-    
+    public void testGetAllTypeDefinitions()
+        throws Exception
+    {
+        IRI typesHREF = getTypesCollection(getRepository());
+        Feed types = getFeed(typesHREF);
+        assertNotNull(types);
+        Feed typesWithProps = getFeed(typesHREF);
+        assertNotNull(typesWithProps);
+        // TODO: spec issue 40
+        for (Entry type : types.getEntries())
+        {
+            Entry retrievedType = getEntry(type.getSelfLink().getHref());
+            assertEquals(type.getId(), retrievedType.getId());
+            assertEquals(type.getTitle(), retrievedType.getTitle());
+            // TODO: type specific properties - extension to Abdera
+        }
+    }
+
+    public void testGetHierarchyTypeDefinitions()
+        throws Exception
+    {
+        IRI typesHREF = getTypesCollection(getRepository());
+        Map<String, String> args = new HashMap<String, String>();
+        args.put("type", "FOLDER_OBJECT_TYPE");
+        args.put("includePropertyDefinitions", "true");
+        args.put("maxItems", "5");
+        while (typesHREF != null)
+        {
+            Feed types = getFeed(typesHREF, args);
+            
+            // TODO: spec issue 40
+            for (Entry type : types.getEntries())
+            {
+                Entry retrievedType = getEntry(type.getSelfLink().getHref());
+                assertEquals(type.getId(), retrievedType.getId());
+                assertEquals(type.getTitle(), retrievedType.getTitle());
+                // TODO: type specific properties - extension to Abdera
+            }
+         
+            // next page
+            Link nextLink = types.getLink("next");
+            typesHREF = (nextLink != null) ? nextLink.getHref() : null;
+            args.remove("maxItems");
+        };
+    }
+
 //    public void testUnfiled()
 //    {
 //    }

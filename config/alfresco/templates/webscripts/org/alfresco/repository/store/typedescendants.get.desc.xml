@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Retrieve list of descendant Types</shortname>
+  <description>Retrieve list of all descendant Types</description>
+  <url>/api/type/{typeId}/descendants?includePropertyDefinitions={includePropertyDefinitions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <authentication>user</authentication>
+  <format default="atomfeed"/>
+  <family>CMIS</family>
+</webscript>

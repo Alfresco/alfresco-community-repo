@@ -157,7 +157,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public ServerModel getDescription()
     {
-        return new RepositoryServerModel(descriptorService.getServerDescriptor());
+        return new RepositoryServerModel(descriptorService.getCurrentRepositoryDescriptor());
     }
 
     /* (non-Javadoc)

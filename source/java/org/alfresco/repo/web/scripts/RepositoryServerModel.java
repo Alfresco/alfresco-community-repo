@@ -55,6 +55,22 @@ public class RepositoryServerModel implements ServerModel
         return "Repository";
     }
 
+    /*(non-Javadoc)
+     * @see org.alfresco.web.scripts.ServerModel#getId()
+     */
+    public String getId()
+    {
+        return serverDescriptor.getId();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.ServerModel#getName()
+     */
+    public String getName()
+    {
+        return serverDescriptor.getName();
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.ServerModel#getVersionMajor()
      */

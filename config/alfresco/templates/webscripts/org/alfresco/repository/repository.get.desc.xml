@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Repository AtomPub Service Document</shortname>
+  <description>Repository ATOM Publishing Service Document (with CMIS extensions)</description>
+  <url>/api/repository</url>
+  <format default="atom"/>
+  <authentication>none</authentication>
+</webscript>

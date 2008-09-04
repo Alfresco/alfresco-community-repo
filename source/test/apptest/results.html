@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link href="validator/res/base.css" type="text/css" rel="stylesheet">
+    <script type="text/javascript" src="validator/res/jquery-1.2.3.js"></script>
+    <script type="text/javascript" src="validator/res/report.js" ></script>
+    <link href="validator/res/prettify.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="validator/res/prettify.js"></script>
+    <title>AppClientTest - Results</title>
+  </head>
+<body>
+  <h1>Test Report</h1>
+  <dl>
+    <dt>Date</dt>
+    <dd>Thu May  1 16:48:30 2008</dd>
+  </dl>
+  <div class='legend'>
+  <h3>Legend</h3>
+  <dl>
+     <dt><img src='validator/res/info.gif'> Informational</dt>
+     <dd>Information on what was being tested.</dd>
+     <dt><img src='validator/res/warning.gif'> Warning</dt>
+     <dd>Warnings indicate behavior that, while legal, may cause<br/>
+       either performance or interoperability problems in the field.</dd>
+     <dt><img src='validator/res/error.gif'> Error</dt>
+     <dd>Errors are violations of either the Atom, AtomPub<br/> or HTTP specifications.</dd>
+     <dt><img src='validator/res/log.gif'> Log</dt>
+     <dd>Detailed information on the transaction to help you<br/> debug your service.</dd>
+     <dt><img src='validator/res/success.gif'> Success</dt>
+     <dd>A specific sub-test has been passed successfully.</dd>
+     
+  </div>
+  <h2>Entry Collection</h2><p>Find the first entry collection listed in an Introspection document and run the Entry collection tests against it.</p>
+<ol>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/repository
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/repository
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 01 May 2008 15:48:26 GMT
+content-type: application/atom+xml;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;service xmlns="http://www.w3.org/2007/app" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+  &lt;workspace cmis:id="63dbba8b-1224-11dd-bee8-852083ea779d"&gt; 
+    &lt;atom:title&gt;Main Repository&lt;/atom:title&gt;
+     
+    &lt;cmis:repository_info&gt; 
+      &lt;cmis:vendorName&gt;Alfresco&lt;/cmis:vendorName&gt; 
+      &lt;cmis:productName&gt;Alfresco Repository (Community Network)&lt;/cmis:productName&gt;
+      &lt;cmis:productVersion&gt;3.0.0 (dev @build-number@)&lt;/cmis:productVersion&gt; 
+      &lt;cmis:capabilities&gt;
+        &lt;cmis:capabilityMultifiling&gt;true&lt;/cmis:capabilityMultifiling&gt;
+        &lt;cmis:capabilityAllVersionsSearchable&gt;false&lt;/cmis:capabilityAllVersionsSearchable&gt;
+        &lt;cmis:capabilityPWCUpdatable&gt;true&lt;/cmis:capabilityPWCUpdatable&gt;
+      &lt;/cmis:capabilities&gt; 
+      &lt;cmis:description/&gt;
+      &lt;cmis:repositoryInfo/&gt;
+    &lt;/cmis:repository_info&gt;
+
+     
+    &lt;collection cmis:collectionType="root" href="http://example.org/cmis/main"&gt; 
+      &lt;atom:title&gt;CMIS root folder&lt;/atom:title&gt; 
+    &lt;/collection&gt; 
+    &lt;collection cmis:collectionType="checkedout" href="http://example.org/cmis/main?checkedout"&gt; 
+      &lt;atom:title&gt;CMIS checked-out documents&lt;/atom:title&gt; 
+    &lt;/collection&gt; 
+    &lt;collection cmis:collectionType="types" href="http://example.org/cmis/main?types"&gt; 
+      &lt;atom:title&gt;CMIS Types&lt;/atom:title&gt; 
+    &lt;/collection&gt; 
+
+         
+  &lt;/workspace&gt; 
+&lt;/service&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 4: atom_title should contain a xml:lang element (4 occurrences)</span></li>
+</ol>
+<h2>Basic Entry Manipulation</h2><p>Add and remove three entries to the collection</p>
+<ol>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Service Document: http://example.org/cmis/main</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://example.org/cmis/main
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 404
+content-length: 283
+server: Apache/2.2.3 (CentOS)
+connection: close
+date: Thu, 01 May 2008 15:48:30 GMT
+content-type: text/html; charset=iso-8859-1
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;
+&lt;html&gt;&lt;head&gt;
+&lt;title&gt;404 Not Found&lt;/title&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;h1&gt;Not Found&lt;/h1&gt;
+&lt;p&gt;The requested URL /cmis/main was not found on this server.&lt;/p&gt;
+&lt;hr&gt;
+&lt;address&gt;Apache/2.2.3 (CentOS) Server at example.org Port 80&lt;/address&gt;
+&lt;/body&gt;&lt;/html&gt;
+</code></pre></span></li>
+  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-10.2.1'>[RFC2616] Section 10.2.1</a> <span class='Error'>Could not successfully retrieve the document. Got a status code of: 404</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Didn't find any Media Collections that would accept GIF images</span></li>
+</ol>
+

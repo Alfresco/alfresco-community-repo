@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.alfresco.cmis.property.CMISPropertyNameMapping;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -195,7 +196,19 @@ public class CMISPropertyDefinition implements Serializable
     {
         return propertyName;
     }
-    
+
+    /**
+     * TODO: Remove this when spec ambiguity is removed
+     * 
+     * Get the property name for REST binding
+     * 
+     * @return
+     */
+    public String getPropertyNameREST()
+    {
+        return CMISPropertyNameMapping.getRESTName(propertyName);
+    }
+
     /**
      * Get the property id
      * 

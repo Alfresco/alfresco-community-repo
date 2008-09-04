@@ -1,0 +1,348 @@
+<model name="cmis:cmismodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>CMIS Model Definitions</description>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/cmis/0.3" prefix="cmis" />
+   </namespaces>
+    
+   
+   <types>
+    
+      <type name="cmis:DOCUMENT_OBJECT_TYPE">
+         <title>Document</title>
+         <description>Document Type</description>
+         <properties>
+            <property name="cmis:IS_IMMUTABLE">
+               <title>Is Immutable</title>
+               <description>Is the document immutable?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false" />
+            </property>
+            <property name="cmis:IS_LATEST_VERSION">
+               <title>Is Latest Version</title>
+               <description>Is this the latest version of the document?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:IS_MAJOR_VERSION">
+               <title>Is Major Version</title>
+               <description>Is this a major version of the document?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:IS_LATEST_MAJOR_VERSION">
+               <title>Is Latest Major Version</title>
+               <description>Is this the latest major version of the document?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:VERSION_SERIES_IS_CHECKED_OUT">
+               <title>Version Series Is Checked Out</title>
+               <description>Is the version series checked out?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:VERSION_SERIES_CHECKED_OUT_BY">
+               <title>Version Series Checked Out By</title>
+               <description>The authority who checked out this document version series</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:VERSION_SERIES_CHECKED_OUT_ID">
+               <title>Version Series Checked Out Id</title>
+               <description>The checked out version series id</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CHECKIN_COMMENT">
+               <title>Checkin Comment</title>
+               <description>The checkin comment</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CONTENT_STREAM_ALLOWED">
+               <title>Content Stream Allowed</title>
+               <description>Is a content stream allowed?</description>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CONTENT_STREAM_LENGTH">
+               <title>Content Stream Length</title>
+               <description>The length of the content stream</description>
+               <type>d:int</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CONTENT_STREAM_MIME_TYPE">
+               <title>Content Stream MIME Type</title>
+               <description>The content stream MIME type</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CONTENT_STREAM_FILEMANE">
+               <title>Content Stream Filename</title>
+               <description>The content stream filename</description>
+               <type>d:text</type>
+               <protected>false</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CONTENT_STREAM_URI">
+               <title>Content Stream URI</title>
+               <description>The content stream URI</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cmis:NAMED</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      
+      <type name="cmis:FOLDER_OBJECT_TYPE">
+         <title>Folder</title>
+         <description>Folder Type</description>
+         <properties>
+            <property name="cmis:PARENT">
+               <title>Parent</title>
+               <description>The parent of the folder</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property> 
+            <property name="cmis:ALLOWED_CHILD_OBJECT_TYPES">
+               <title>Allowed Child Object Types</title>
+               <description>The allowed child object types</description>
+               <type>d:qname</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cmis:NAMED</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="cmis:RELATIONSHIP_OBJECT_TYPE">
+         <title>Relationship</title>
+         <description>Relationship Type</description>
+         <properties>
+            <property name="cmis:SOURCE_ID">
+               <title>Source Id</title>
+               <description>The source id for the relationship</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+                <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property> 
+            <property name="cmis:TARGET_ID">
+               <title>Target Id</title>
+               <description>The target id for the relationship</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property> 
+         </properties>
+         <mandatory-aspects>
+            <aspect>cmis:CORE</aspect>
+         </mandatory-aspects>
+      </type>
+      
+   </types>
+   
+   <aspects>
+      <aspect name="cmis:CORE">
+         <properties>
+            <property name="cmis:OBJECT_ID">
+               <title>Object Id</title>
+               <description>The unique object id (a node ref)</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:URI">
+               <title>URI</title>
+               <description>URI</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="false">false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:OBJECT_TYPE_ID">
+               <title>Object Type Id</title>
+               <description>The object type id</description>
+               <type>d:qname</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CREATED_BY">
+               <title>Created by</title>
+               <description>The authority who created this object</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CREATION_DATE">
+               <title>Creation Date</title>
+               <description>The object creation date</description>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+             <property name="cmis:LAST_MODIFIED_BY">
+               <title>Last Modified By</title>
+               <description>The authority who last modified this object</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:LAST_MODIFICATION_DATE">
+               <title>Last Modified Date</title>
+               <description>The date this object was last modified</description>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cmis:CHANGE_TOKEN">
+               <title>Change token</title>
+               <description>Change Token</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="cmis:NAMED">
+         <parent>cmis:CORE</parent>
+         <properties>
+            <property name="cmis:NAME">
+               <title>Name</title>
+               <description>Name</description>
+               <type>d:text</type>
+               <protected>false</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+          
+</model>

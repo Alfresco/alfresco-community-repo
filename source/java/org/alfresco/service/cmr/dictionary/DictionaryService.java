@@ -150,6 +150,13 @@ public interface DictionaryService
     Collection<QName> getAspects(QName model);
 
     /**
+     * @param model the model to retrieve associations for
+     * @return the names of all associations defined within the specified model
+     */
+    @NotAuditable
+    public Collection<QName> getAssociations(QName model);
+    
+    /**
      * @param name the name of the aspect to retrieve
      * @return the aspect definition (or null, if it doesn't exist)
      */
@@ -231,7 +238,7 @@ public interface DictionaryService
     Collection<QName> getProperties(QName model, QName dataType);
     
     /**
-     * Get all poroperties for the specified model
+     * Get all properties for the specified model
      * 
      * @param model
      * @return
@@ -246,6 +253,14 @@ public interface DictionaryService
      */
     @NotAuditable
     AssociationDefinition getAssociation(QName associationName);
+    
+    /**
+     * Get all the association definitions
+    
+     * @return all the association qnames
+     */
+    @NotAuditable
+    Collection<QName> getAllAssociations();
     
     // TODO: Behaviour definitions
     

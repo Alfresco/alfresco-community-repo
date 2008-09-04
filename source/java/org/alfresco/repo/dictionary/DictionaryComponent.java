@@ -161,6 +161,19 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return aspects;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryService#getAllAssociations()
+     */
+    public Collection<QName> getAllAssociations()
+    {
+        Collection<QName> associations = new ArrayList<QName>(64);
+        for (QName model : getAllModels())
+        {
+            associations.addAll(getAssociations(model));
+        }
+        return associations;
+    }
 
     
     /* (non-Javadoc)
@@ -180,6 +193,20 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         Collection<AspectDefinition> aspects = dictionaryDAO.getAspects(model);
         Collection<QName> qnames = new ArrayList<QName>(aspects.size());
         for (AspectDefinition def : aspects)
+        {
+            qnames.add(def.getName());
+        }
+        return qnames;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryService#getAssociations(org.alfresco.repo.ref.QName)
+     */
+    public Collection<QName> getAssociations(QName model)
+    {
+        Collection<AssociationDefinition> associations = dictionaryDAO.getAssociations(model);
+        Collection<QName> qnames = new ArrayList<QName>(associations.size());
+        for (AssociationDefinition def : associations)
         {
             qnames.add(def.getName());
         }

@@ -26,6 +26,7 @@ package org.alfresco.service.cmr.dictionary;
 
 import java.util.List;
 
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -103,9 +104,9 @@ public interface PropertyDefinition
     public boolean isStoredInIndex();
 
     /**
-     * @return true => tokenised when it is indexed (the stored value will not be tokenised)
+     * @return IndexTokenisationMode.TREU => tokenised when it is indexed (the stored value will not be tokenised)
      */
-    public boolean isTokenisedInIndex();
+    public IndexTokenisationMode getIndexTokenisationMode();
     
     /**
      * All non atomic properties will be indexed at the same time.

@@ -27,6 +27,7 @@ package org.alfresco.repo.dictionary;
 import java.util.Collection;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
@@ -78,6 +79,13 @@ public interface DictionaryDAO extends ModelQuery
      * @return the aspects of the model
      */
     public Collection<AspectDefinition> getAspects(QName model);
+    
+    
+    /**
+     * @param model the model to retrieve associations for
+     * @return the associations of the model
+     */
+    public Collection<AssociationDefinition> getAssociations(QName model);
     
     /**
      * @param superAspect

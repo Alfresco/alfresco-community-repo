@@ -51,9 +51,9 @@ import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.IndexMode;
-import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -677,7 +677,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
         boolean store = true;
         boolean index = true;
-        boolean tokenise = true;
+        IndexTokenisationMode tokenise = IndexTokenisationMode.TRUE;
         @SuppressWarnings("unused")
         boolean atomic = true;
         boolean isContent = false;
@@ -690,7 +690,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         {
             index = propertyDef.isIndexed();
             store = propertyDef.isStoredInIndex();
-            tokenise = propertyDef.isTokenisedInIndex();
+            tokenise = propertyDef.getIndexTokenisationMode();
             atomic = propertyDef.isIndexedAtomically();
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
             isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
@@ -874,21 +874,22 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 Field.Store fieldStore = store ? Field.Store.YES : Field.Store.NO;
                 Field.Index fieldIndex;
 
-                if (index)
+                if (index) 
                 {
-                    if (tokenise)
-                    {
-                        fieldIndex = Field.Index.TOKENIZED;
-                    }
-                    else
-                    {
-                        fieldIndex = Field.Index.UN_TOKENIZED;
-                    }
-                }
-                else
-                {
-                    fieldIndex = Field.Index.NO;
-                }
+					switch (tokenise) {
+					case TRUE:
+					case BOTH:
+					default:
+						fieldIndex = Field.Index.TOKENIZED;
+						break;
+					case FALSE:
+						fieldIndex = Field.Index.UN_TOKENIZED;
+						break;
+
+					}
+				} else {
+					fieldIndex = Field.Index.NO;
+				}
 
                 if ((fieldIndex != Field.Index.NO) || (fieldStore != Field.Store.NO))
                 {
@@ -926,15 +927,26 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         {
                             locale = I18NUtil.getLocale();
                         }
-                        if (tokenise)
+                        
+                        StringBuilder builder;
+                        switch(tokenise)
                         {
-                            StringBuilder builder = new StringBuilder();
+                        default:
+                        case TRUE:
+                        	builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
                             doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
-                        }
-                        else
-                        {
+                        	break;
+                        case FALSE:
+                        	doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                        	break;
+                        case BOTH:
+                        	builder = new StringBuilder();
+                            builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
+                            
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                        	break;
                         }
                     }
                     else if (isDateTime)

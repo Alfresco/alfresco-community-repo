@@ -114,7 +114,7 @@
          <value style="attribute" name="enabled" field="isIndexed"/>
          <value name="atomic" field="isIndexedAtomically" usage="optional"/>
          <value name="stored" field="isStoredInIndex" usage="optional"/>
-         <value name="tokenised" field="isTokenisedInIndex" usage="optional"/>
+         <value name="tokenised" field="indexTokenisationMode" usage="optional" serializer="org.alfresco.repo.dictionary.IndexTokenisationMode.serializer" deserializer="org.alfresco.repo.dictionary.IndexTokenisationMode.deserializer"/>
       </structure>
       <structure name="constraints" usage="optional">
          <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList"/>

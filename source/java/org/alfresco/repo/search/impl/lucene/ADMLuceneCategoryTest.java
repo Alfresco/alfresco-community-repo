@@ -39,6 +39,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
@@ -286,7 +287,7 @@ public class ADMLuceneCategoryTest extends TestCase
         genCatProp.setMandatory(true);
         genCatProp.setMultiValued(true);
         genCatProp.setStoredInIndex(true);
-        genCatProp.setTokenisedInIndex(false);
+        genCatProp.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
         genCatProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         assetClassCategorisationQName = QName.createQName(TEST_NAMESPACE, "assetClass");
@@ -298,7 +299,7 @@ public class ADMLuceneCategoryTest extends TestCase
         acProp.setMandatory(true);
         acProp.setMultiValued(true);
         acProp.setStoredInIndex(true);
-        acProp.setTokenisedInIndex(false);
+        acProp.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
         acProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         investmentRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "investmentRegion");
@@ -310,7 +311,7 @@ public class ADMLuceneCategoryTest extends TestCase
         irProp.setMandatory(true);
         irProp.setMultiValued(true);
         irProp.setStoredInIndex(true);
-        irProp.setTokenisedInIndex(false);
+        irProp.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
         irProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
         
         marketingRegionCategorisationQName = QName.createQName(TEST_NAMESPACE, "marketingRegion");
@@ -322,7 +323,7 @@ public class ADMLuceneCategoryTest extends TestCase
         mrProp.setMandatory(true);
         mrProp.setMultiValued(true);
         mrProp.setStoredInIndex(true);
-        mrProp.setTokenisedInIndex(false);
+        mrProp.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
         mrProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());
 
         dictionaryDAO.putModel(model);

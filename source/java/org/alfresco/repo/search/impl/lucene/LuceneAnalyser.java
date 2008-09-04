@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser;
@@ -178,7 +179,7 @@ public class LuceneAnalyser extends Analyzer
                     PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
                     if (propertyDef != null)
                     {
-                        if (propertyDef.isTokenisedInIndex())
+                        if ((propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.BOTH) || (propertyDef.getIndexTokenisationMode() == IndexTokenisationMode.TRUE))
                         {
                             DataTypeDefinition dataType = propertyDef.getDataType();
                             if (dataType.getName().equals(DataTypeDefinition.CONTENT))

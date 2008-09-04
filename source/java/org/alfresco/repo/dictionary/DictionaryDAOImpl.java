@@ -688,6 +688,12 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return null;
     }
 
+    public Collection<AssociationDefinition> getAssociations(QName modelName)
+    {
+        CompiledModel model = getCompiledModel(modelName);
+        return model.getAssociations();
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.DictionaryDAO#getModels()

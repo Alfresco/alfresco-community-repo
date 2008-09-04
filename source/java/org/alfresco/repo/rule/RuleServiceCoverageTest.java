@@ -57,6 +57,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
@@ -224,7 +225,7 @@ public class RuleServiceCoverageTest extends TestCase
         genCatProp.setMandatory(true);
         genCatProp.setMultiValued(true);
         genCatProp.setStoredInIndex(true);
-        genCatProp.setTokenisedInIndex(true);
+        genCatProp.setIndexTokenisationMode(IndexTokenisationMode.TRUE);
         genCatProp.setType("d:" + DataTypeDefinition.CATEGORY.getLocalName());        
 
         // Save the mode

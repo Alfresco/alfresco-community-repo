@@ -50,7 +50,7 @@ public class M2Property
     private boolean isIndexed = true;
     private boolean isIndexedAtomically = true;
     private boolean isStoredInIndex = false;
-    private boolean isTokenisedInIndex = true;
+    private IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
     private List<M2Constraint> constraints;
 
     /*package*/ M2Property()
@@ -204,15 +204,15 @@ public class M2Property
     }
     
 
-    public boolean isTokenisedInIndex()
+    public IndexTokenisationMode getIndexTokenisationMode()
     {
-        return isTokenisedInIndex;
+        return indexTokenisationMode;
     }
     
     
-    public void setTokenisedInIndex(boolean isTokenisedInIndex)
+    public void setIndexTokenisationMode(IndexTokenisationMode indexTokenisationMode)
     {
-        this.isTokenisedInIndex = isTokenisedInIndex;
+        this.indexTokenisationMode = indexTokenisationMode;
     }
 
 

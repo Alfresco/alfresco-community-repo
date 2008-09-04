@@ -404,6 +404,15 @@ import org.apache.commons.logging.LogFactory;
         return associations.get(name);
     }
 
+    /**
+     * @return the compiled associations
+     */
+    public Collection<AssociationDefinition> getAssociations()
+    {
+        return associations.values();
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.ModelQuery#getConstraint(QName)
      */

@@ -214,7 +214,7 @@ import org.alfresco.service.namespace.QName;
         property.setProtected(propertyDef.isProtected());
         property.setStoredInIndex(propertyDef.isStoredInIndex());
         property.setTitle(propertyDef.getTitle());
-        property.setTokenisedInIndex(propertyDef.isTokenisedInIndex());
+        property.setIndexTokenisationMode(propertyDef.getIndexTokenisationMode());
         
         return property;
     }
@@ -240,7 +240,7 @@ import org.alfresco.service.namespace.QName;
         sb.append("isIndexed: " + isIndexed() + "\n");
         sb.append("isStoredInIndex: " + isStoredInIndex() + "\n");
         sb.append("isIndexedAtomically: " + isIndexedAtomically() + "\n");
-        sb.append("isTokenisedInIndex: " + isTokenisedInIndex() + "\n");
+        sb.append("indexTokenisationMode: " + getIndexTokenisationMode() + "\n");
         
         return sb.toString();
     }
@@ -378,9 +378,9 @@ import org.alfresco.service.namespace.QName;
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.PropertyDefinition#isTokenisedInIndex()
      */
-    public boolean isTokenisedInIndex()
+    public IndexTokenisationMode getIndexTokenisationMode()
     {
-        return m2Property.isTokenisedInIndex();
+        return m2Property.getIndexTokenisationMode();
     }
 
     

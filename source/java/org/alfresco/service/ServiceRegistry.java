@@ -27,6 +27,7 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -114,6 +115,7 @@ public interface ServiceRegistry
     static final QName AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AuditService");
     static final QName OWNABLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OwnableService");
     static final QName PERSON_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PersonService");
+    static final QName SITE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SiteService");
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
     static final QName AVM_LOCKING_AWARE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingAwareService");
     static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
@@ -346,6 +348,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     PersonService getPersonService();
+
+    /**
+     * Get the site service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    SiteService getSiteService();
 
     /**
      * Get the cross repository copy service (or null if one is not provided)

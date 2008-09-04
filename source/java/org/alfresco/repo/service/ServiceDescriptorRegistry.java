@@ -27,6 +27,7 @@ package org.alfresco.repo.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -369,6 +370,14 @@ public class ServiceDescriptorRegistry
     public PersonService getPersonService()
     {
         return (PersonService)getService(PERSON_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getSiteService()
+     */
+    public SiteService getSiteService()
+    {
+        return (SiteService) getService(SITE_SERVICE);
     }
 
     /* (non-Javadoc)

@@ -1,0 +1,1 @@
+model.defaultRootFolderPath = cmis.defaultRootFolderPath;

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cmis:allowableActions xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
+
+	<!--  all -->
+	<cmis:canDelete>true</cmis:canDelete>
+
+	<!--  if not embedded in entry -->
+	<cmis:parentId>cmis:parentId</cmis:parentId>
+	<cmis:parentUrl>http://tempuri.org</cmis:parentUrl>
+
+	<!--  all -->
+	<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+	<cmis:canGetProperties>true</cmis:canGetProperties>
+
+	<!--  policy, document -->
+	<cmis:canGetParents>true</cmis:canGetParents>
+
+	<!--  folder -->
+	<cmis:canGetDescendants>true</cmis:canGetDescendants>
+	
+	<!-- doc, folder, policy -->
+	<cmis:canMove>true</cmis:canMove>
+	
+	<!-- doc -->
+	<cmis:canDeleteVersion>true</cmis:canDeleteVersion>
+	<cmis:canDeleteContent>true</cmis:canDeleteContent>
+	<cmis:canCheckout>true</cmis:canCheckout>
+	<cmis:canCancelCheckout>true</cmis:canCancelCheckout>
+	<cmis:canCheckin>true</cmis:canCheckin>
+	<cmis:canSetContent>true</cmis:canSetContent>
+	<cmis:canGetAllVersions>true</cmis:canGetAllVersions>
+	<cmis:canAddToFolder>true</cmis:canAddToFolder>
+	<cmis:canRemoveFromFolder>true</cmis:canRemoveFromFolder>
+	<cmis:canViewContent>true</cmis:canViewContent>
+	
+	<!-- doc, folder, policy -->
+	<cmis:canAddPolicy>true</cmis:canAddPolicy>
+	<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+	
+	<!-- folder -->
+	<cmis:canGetChildren>true</cmis:canGetChildren>
+
+
+
+</cmis:allowableActions>

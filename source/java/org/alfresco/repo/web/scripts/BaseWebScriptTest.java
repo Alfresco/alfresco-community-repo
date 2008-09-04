@@ -27,10 +27,12 @@ package org.alfresco.repo.web.scripts;
 import java.io.IOException;
 import java.util.HashMap;
 
+import junit.framework.TestCase;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.web.scripts.TestWebScriptServer;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import junit.framework.TestCase;
 
 /**
  * Base unit test class for web scripts.
@@ -56,7 +58,7 @@ public abstract class BaseWebScriptTest extends TestCase
         }
         return BaseWebScriptTest.server;
     }
-    
+
     /**
      * "GET" the url and check for the expected status code 
      * 
@@ -68,7 +70,7 @@ public abstract class BaseWebScriptTest extends TestCase
     protected MockHttpServletResponse getRequest(String url, int expectedStatus)
         throws IOException
     {
-        return sendRequest(METHOD_GET, url, expectedStatus, null, null);
+        return getRequest(url, expectedStatus, null);
     }
 
     /**
@@ -86,6 +88,21 @@ public abstract class BaseWebScriptTest extends TestCase
     }
     
     /**
+     * "GET" the url and check for the expected status code 
+     * 
+     * @param url
+     * @param expectedStatus
+     * @param asUser
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse getRequest(String url, int expectedStatus, String asUser)
+        throws IOException
+    {
+        return sendRequest(METHOD_GET, url, expectedStatus, null, null, asUser);
+    }
+
+    /**
      * "POST" the url and check for the expected status code
      * 
      * @param url
@@ -98,7 +115,22 @@ public abstract class BaseWebScriptTest extends TestCase
     protected MockHttpServletResponse postRequest(String url, int expectedStatus, String body, String contentType)
         throws IOException
     {
-        return postRequest(url, expectedStatus, body.getBytes(), contentType);
+        return postRequest(url, expectedStatus, body.getBytes(), contentType, null);
+    }
+
+    /**
+     * "POST" the url and check for the expected status code
+     * 
+     * @param url
+     * @param expectedStatus
+     * @param asUser
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse postRequest(String url, int expectedStatus, String body, String contentType, String asUser)
+        throws IOException
+    {
+        return postRequest(url, expectedStatus, body.getBytes(), contentType, asUser);
     }
 
     /**
@@ -112,11 +144,26 @@ public abstract class BaseWebScriptTest extends TestCase
     protected MockHttpServletResponse postRequest(String url, int expectedStatus, byte[] body, String contentType)
         throws IOException
     {
-        return sendRequest(METHOD_POST, url, expectedStatus, body, contentType);
+        return postRequest(url, expectedStatus, body, contentType, null);
     }
-    
+
     /**
-     * "PUT" the url and check for the expected status code
+     * "POST" the url and check for the expected status code
+     * 
+     * @param url
+     * @param expectedStatus
+     * @param asUser
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse postRequest(String url, int expectedStatus, byte[] body, String contentType, String asUser)
+        throws IOException
+    {
+        return sendRequest(METHOD_POST, url, expectedStatus, body, contentType, asUser);
+    }
+
+    /**
+     * Send request to Test Web Script Server
      * 
      * @param url
      * @param expectedStatus
@@ -136,21 +183,34 @@ public abstract class BaseWebScriptTest extends TestCase
      * @param method
      * @param url
      * @param expectedStatus
+     * @param body
+     * @param contentType
+     * @param asUser
      * @return
      * @throws IOException
      */
-    private MockHttpServletResponse sendRequest(String method, String url, int expectedStatus, byte[] body, String contentType)
+    private MockHttpServletResponse sendRequest(final String method, final String url, final int expectedStatus, final byte[] body, final String contentType, String asUser)
         throws IOException
     {
-        MockHttpServletResponse response = BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);
+        // send request in context of specified user
+        String runAsUser = (asUser == null) ? AuthenticationUtil.getSystemUserName() : asUser;
+        MockHttpServletResponse response = AuthenticationUtil.runAs(new RunAsWork<MockHttpServletResponse>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public MockHttpServletResponse doWork() throws Exception
+            {
+                return BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);
+            }
+        }, runAsUser);
+        
         if (expectedStatus > 0 && expectedStatus != response.getStatus())
         {
             //if (response.getStatus() == 500)
             //{
-                System.out.println(response.getContentAsString());
+            //    System.out.println(response.getContentAsString());
             //}
                         
-            fail("Expected status code " + expectedStatus + " , " + response.getStatus() + " was returned");
+            fail("Status code " + response.getStatus() + " returned, but expected " + expectedStatus + " for " + url + " (" + method + ")");
         }
         return response;
     }

@@ -41,9 +41,10 @@ import javax.xml.namespace.QName;
  */
 public interface CMISConstants
 {
-    public static final String CMIS_V10_NS = "http://www.cmis.org/CMIS/1.0";
+    public static final String CMIS_200805_NS = "http://www.cmis.org/2008/05";
 
-    public static final QName OBJECT  = new QName(CMIS_V10_NS, "object");
-    public static final QName BASETYPE = new QName(CMIS_V10_NS, "baseType");
+    public static final QName PROPERTIES  = new QName(CMIS_200805_NS, "properties");
+    public static final QName OBJECTID  = new QName(CMIS_200805_NS, "objectId");
+    public static final QName BASETYPE = new QName(CMIS_200805_NS, "baseType");
     
 }

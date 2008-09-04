@@ -32,8 +32,8 @@ script:
     var updated = entry.updated;
     var author = (entry.author !== null) ? entry.author.name : null;
     var content = entry.content;
-    var cmisObject = entry.getExtension(atom.names.cmis_object);
-    var baseType = (cmisObject !== null) ? cmisObject.baseType : null;
+    var cmisProperties = entry.getExtension(atom.names.cmis_properties);
+    var baseType = (cmisProperties !== null) ? cmisProperties.baseType : null;
     
     // create the item
     // TODO: author/updated/id

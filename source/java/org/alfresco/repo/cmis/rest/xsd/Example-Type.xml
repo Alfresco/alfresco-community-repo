@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cmis:type xmlns:cmis="http://www.cmis.org/2008/05" 
+	xmlns:xhtml="http://www.w3.org/1999/xhtml" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.cmis.org/2008/05 CMIS-REST.xsd ">
+  <cmis:objectId>documentTypeId</cmis:objectId>
+  <cmis:baseType>document</cmis:baseType>
+  <cmis:lastModifiedBy>2001-12-31T12:00:00</cmis:lastModifiedBy>
+  <cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
+  <cmis:queryName>document</cmis:queryName>
+  <cmis:displayName>document</cmis:displayName>
+  <cmis:baseTypeQueryName>document</cmis:baseTypeQueryName>
+  <cmis:parentId></cmis:parentId>
+  <cmis:description>The document type</cmis:description>
+
+  <cmis:isCreatable>true</cmis:isCreatable>
+  <cmis:isVersionable>true</cmis:isVersionable>
+  <cmis:isQueryable>true</cmis:isQueryable>
+  <cmis:isContentStreamAllowed>true</cmis:isContentStreamAllowed>
+  <cmis:isControllable>true</cmis:isControllable>
+
+  <cmis:property cmis:id="foo1">
+    <cmis:displayName>foo1</cmis:displayName>
+    <cmis:description>Description of foo1</cmis:description>
+    <cmis:propertyType>String</cmis:propertyType>
+    <cmis:cardinality>Single</cmis:cardinality>
+    <cmis:maxLength>64</cmis:maxLength>
+    <cmis:choices index="1">cmis:choices</cmis:choices>
+    <cmis:isOpenChoice>true</cmis:isOpenChoice>
+    <cmis:isRequired>true</cmis:isRequired>
+    <cmis:defaultValue>cmis:defaultValue</cmis:defaultValue>
+    <cmis:updateability>ro</cmis:updateability>
+    <cmis:isQueryable>true</cmis:isQueryable>
+    <cmis:isOrderable>true</cmis:isOrderable>
+  </cmis:property>
+
+</cmis:type>

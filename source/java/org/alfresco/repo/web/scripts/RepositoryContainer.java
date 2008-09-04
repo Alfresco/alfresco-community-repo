@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.template.CropContentMethod;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -179,6 +180,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         Map<String, Object> params = new HashMap<String, Object>();
         params.putAll(super.getTemplateParameters());
         params.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver.getImageResolver());
+        params.put("cropContent", new CropContentMethod());
         addRepoParameters(params);
         return params;
     }

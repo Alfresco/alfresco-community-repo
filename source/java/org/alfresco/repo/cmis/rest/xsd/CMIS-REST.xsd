@@ -16,19 +16,19 @@
 
 	<xs:element name="repositoryInfo" type="cmis:repositoryInfoType"></xs:element>
 	<xs:element name="property" type="cmis:propertyDefinitionType"></xs:element>
-	<xs:element name="parent" type="xs:string"></xs:element>
+	<xs:element name="parentId" type="xs:string"></xs:element>
 	<xs:element name="displayName" type="xs:string"></xs:element>
 	<xs:element name="isVersionable" type="xs:boolean"></xs:element>
 	<xs:element name="description" type="xs:string"></xs:element>
-	<xs:element name="isQueryable" type="xs:string"></xs:element>
-  <xs:element name="isCreatable" type="xs:string"></xs:element>
+	<xs:element name="isQueryable" type="xs:boolean"></xs:element>
+	<xs:element name="isCreatable" type="xs:boolean"></xs:element>
 	<xs:element name="queryName" type="xs:string"></xs:element>
 	<xs:element name="baseTypeQueryName" type="xs:string"></xs:element>
 	<xs:element name="isContentStreamAllowed" type="xs:boolean"></xs:element>
-  <xs:element name="AllowedSourceTypes" type="xs:string"></xs:element>
-  <xs:element name="AllowedTargetTypes" type="xs:string"></xs:element>
-  <xs:element name="constraints" type="xs:string"></xs:element>
-  
+	<xs:element name="AllowedSourceTypes" type="xs:string"></xs:element>
+	<xs:element name="AllowedTargetTypes" type="xs:string"></xs:element>
+	<xs:element name="constraints" type="xs:string"></xs:element>
+
 
 	<xs:element name="propertyType">
 		<xs:simpleType>
@@ -110,10 +110,9 @@
 			<xs:element name="repositorySpecificInformation"
 				type="xs:string" maxOccurs="1" minOccurs="0">
 			</xs:element>
-			<!-- 
-			<xs:any namespace="##any" processContents="skip"
+			<xs:any namespace="##other" processContents="skip"
 				minOccurs="0" maxOccurs="unbounded">
-			</xs:any> -->
+			</xs:any>
 		</xs:sequence>
 	</xs:complexType>
 
@@ -199,6 +198,9 @@
 
 	<xs:group name="entryCommonElements">
 		<xs:sequence>
+			<xs:element ref="cmis:objectId" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
 			<xs:element ref="cmis:baseType" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
@@ -347,22 +349,28 @@
 
 	<xs:element name="isControllable" type="xs:boolean"></xs:element>
 
-    <xs:element name="source" type="xs:string"></xs:element>
+	<xs:element name="source" type="xs:string"></xs:element>
 
-    <xs:element name="target" type="xs:string"></xs:element>
+	<xs:element name="target" type="xs:string"></xs:element>
 
-    <xs:element name="isImmutable" type="xs:boolean"></xs:element>
+	<xs:element name="isImmutable" type="xs:boolean"></xs:element>
 
-    <xs:element name="isMajorVersion" type="xs:boolean"></xs:element>
-    <xs:element name="isLatestMajorVersion" type="xs:boolean"></xs:element>
+	<xs:element name="isMajorVersion" type="xs:boolean"></xs:element>
+	<xs:element name="isLatestMajorVersion" type="xs:boolean"></xs:element>
 	<xs:element name="isVersionSeriesCheckedOut" type="xs:boolean"></xs:element>
 	<xs:element name="versionSeriesCheckedOutBy" type="xs:string"></xs:element>
-	<xs:element name="versionSeriesCheckedOutID" type="xs:string"></xs:element>    
-	<xs:element name="checkinComment" type="xs:string"></xs:element>    
-        
-<xs:group name="CMISActionsEntry">
-      <xs:sequence>
-						<xs:element ref="cmis:canDelete" minOccurs="0"
+	<xs:element name="versionSeriesCheckedOutID" type="xs:string"></xs:element>
+	<xs:element name="checkinComment" type="xs:string"></xs:element>
+
+	<xs:group name="CMISActionsEntry">
+		<xs:sequence>
+			<xs:element ref="cmis:canDelete" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:parentId" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:parentUrl" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
 			<xs:element ref="cmis:canUpdateProperties" minOccurs="0"
@@ -419,13 +427,13 @@
 			<xs:element ref="cmis:canGetChildren" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
-      </xs:sequence>
+		</xs:sequence>
 
-</xs:group>
+	</xs:group>
 
 
-<xs:group name="CMISTypeEntry">
-      <xs:sequence>
+	<xs:group name="CMISTypeEntry">
+		<xs:sequence>
 			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
 				maxOccurs="1">
 			</xs:group>
@@ -435,18 +443,16 @@
 			<xs:element ref="cmis:displayName" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-			<!-- 
-			<xs:element ref="cmis:baseType" minOccurs="1"
-				maxOccurs="1">
-			</xs:element> -->
 			<xs:element ref="cmis:baseTypeQueryName" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:parent" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element ref="cmis:parentId" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
 			<xs:element ref="cmis:description" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
-	      <xs:element ref="cmis:isCreatable" minOccurs="1"
+			<xs:element ref="cmis:isCreatable" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
 			<xs:element ref="cmis:isVersionable" minOccurs="1"
@@ -458,26 +464,25 @@
 			<xs:element ref="cmis:isContentStreamAllowed" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-      <xs:element ref="cmis:AllowedSourceTypes" minOccurs="1" maxOccurs="1">
-      </xs:element>
-        <xs:element ref="cmis:AllowedTargetTypes" minOccurs="1" maxOccurs="1">
-        </xs:element>
-        <xs:element ref="cmis:constraints" minOccurs="0"
+			<xs:element ref="cmis:isControllable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:AllowedSourceTypes" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:AllowedTargetTypes" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:property" minOccurs="0"
 				maxOccurs="unbounded">
 			</xs:element>
+		</xs:sequence>
 
-			<xs:element ref="cmis:property"></xs:element>
-			<xs:element ref="cmis:isControllable"></xs:element>
-      </xs:sequence>
-
-</xs:group>
+	</xs:group>
 
 
-<xs:group name="CMISDocumentEntry">
-      <xs:sequence>
-			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
-				maxOccurs="1">
-			</xs:group>
+	<xs:group name="CMISDocumentEntry">
+		<xs:sequence>
 			<xs:element ref="cmis:objectType" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
@@ -489,21 +494,21 @@
 			</xs:element>
 			<xs:element ref="cmis:isMajorVersion" minOccurs="0"
 				maxOccurs="1">
-				</xs:element>
+			</xs:element>
 			<xs:element ref="cmis:isLatestMajorVersion" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
 			<xs:element ref="cmis:isImmutable" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:isVersionSeriesCheckedOut" minOccurs="0"
-				maxOccurs="1">
+			<xs:element ref="cmis:isVersionSeriesCheckedOut"
+				minOccurs="0" maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:versionSeriesCheckedOutBy" minOccurs="0"
-				maxOccurs="1">
+			<xs:element ref="cmis:versionSeriesCheckedOutBy"
+				minOccurs="0" maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:versionSeriesCheckedOutID" minOccurs="0"
-				maxOccurs="1">
+			<xs:element ref="cmis:versionSeriesCheckedOutID"
+				minOccurs="0" maxOccurs="1">
 			</xs:element>
 			<xs:element ref="cmis:checkinComment" minOccurs="1"
 				maxOccurs="1">
@@ -512,125 +517,145 @@
 			<xs:element ref="cmis:versionLabel" minOccurs="0"
 				maxOccurs="1">
 			</xs:element>
-						
+
 			<xs:group ref="cmis:entryContentStreamElements"
 				minOccurs="0" maxOccurs="1">
 			</xs:group>
-			<xs:element ref="cmis:allowableActions" minOccurs="0"
-				maxOccurs="1">
-			</xs:element>
-      </xs:sequence>
-</xs:group>
+		</xs:sequence>
+	</xs:group>
 
-<xs:group name="CMISFolderEntry">
-      <xs:sequence>
-			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
-				maxOccurs="1">
-			</xs:group>
+	<xs:group name="CMISFolderEntry">
+		<xs:sequence>
 			<xs:element ref="cmis:objectType" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:parent" minOccurs="1" maxOccurs="1"></xs:element>
-			<xs:element ref="cmis:allowableActions" minOccurs="0"
-				maxOccurs="1">
-			</xs:element>
-      </xs:sequence>
-
-</xs:group>
-
-<xs:group name="CMISRelationshipEntry">
-      <xs:sequence>
-			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
-				maxOccurs="1">
-			</xs:group>
-			<xs:element ref="cmis:objectType" minOccurs="1"
-				maxOccurs="1">
-			</xs:element>
-			<xs:element ref="cmis:source" minOccurs="1"
-				maxOccurs="1">
-				</xs:element>
-			<xs:element ref="cmis:target" minOccurs="1"
-				maxOccurs="1">
-			</xs:element>
-			<xs:element ref="cmis:allowableActions" minOccurs="0"
+			<xs:element ref="cmis:parentId" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
 		</xs:sequence>
 
-</xs:group>
+	</xs:group>
 
-<xs:group name="CMISPolicyEntry">
-      <xs:sequence>
-			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
-				maxOccurs="1">
-			</xs:group>
+	<xs:group name="CMISRelationshipEntry">
+		<xs:sequence>
 			<xs:element ref="cmis:objectType" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-			<xs:element ref="cmis:allowableActions" minOccurs="0"
+			<xs:element ref="cmis:source" minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:target" minOccurs="1" maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+
+	</xs:group>
+
+	<xs:group name="CMISPolicyEntry">
+		<xs:sequence>
+			<xs:element ref="cmis:objectType" minOccurs="1"
 				maxOccurs="1">
 			</xs:element>
-      </xs:sequence>
-</xs:group>
-    
+		</xs:sequence>
+	</xs:group>
 
-    <xs:element name="function" type="xs:string"></xs:element>
 
-    <xs:element name="hasMoreItems" type="xs:boolean"></xs:element>
+	<xs:element name="function" type="xs:string"></xs:element>
 
-    <xs:element name="allowableActions" type="cmis:allowableActions"></xs:element>
-    
-    <xs:complexType name="allowableActions">
-    	<xs:sequence maxOccurs="1" minOccurs="1">
-            <xs:group ref="cmis:CMISActionsEntry"></xs:group>
-    	</xs:sequence>
-    </xs:complexType>
+	<xs:element name="hasMoreItems" type="xs:boolean"></xs:element>
 
-    <xs:element name="versionLabel" type="xs:string"></xs:element>
+	<xs:element name="allowableActions" type="cmis:allowableActions"></xs:element>
 
-    <xs:element name="query" type="cmis:queryType"></xs:element>
+	<xs:complexType name="allowableActions">
+		<xs:sequence maxOccurs="1" minOccurs="1">
+			<xs:group ref="cmis:CMISActionsEntry"></xs:group>
+		</xs:sequence>
+	</xs:complexType>
 
-    <xs:complexType name="queryType">
-    	<xs:sequence>
-    		<xs:element ref="cmis:statement" minOccurs="1" maxOccurs="1"></xs:element>
-    		<xs:element ref="cmis:searchAllVersions" minOccurs="0" maxOccurs="1"></xs:element>
-    		<xs:element ref="cmis:pageSize" minOccurs="0" maxOccurs="1"></xs:element>
-    		<xs:element ref="cmis:skipCount" minOccurs="0" maxOccurs="1"></xs:element>
-    		<xs:element ref="cmis:returnAllowableActions" minOccurs="0" maxOccurs="1"></xs:element>
-    	</xs:sequence>
-    </xs:complexType>
+	<xs:element name="versionLabel" type="xs:string"></xs:element>
 
-    <xs:element name="statement" type="xs:string"></xs:element>
+	<xs:element name="query" type="cmis:queryType"></xs:element>
 
-    <xs:element name="pageSize" type="xs:int"></xs:element>
+	<xs:complexType name="queryType">
+		<xs:sequence>
+			<xs:element ref="cmis:statement" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:searchAllVersions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:pageSize" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:skipCount" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:returnAllowableActions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 
-    <xs:element name="skipCount" type="xs:int"></xs:element>
+	<xs:element name="statement" type="xs:string"></xs:element>
 
-    <xs:element name="returnAllowableActions" type="xs:boolean"></xs:element>
+	<xs:element name="pageSize" type="xs:int"></xs:element>
 
-    <xs:element name="searchAllVersions" type="xs:boolean"></xs:element>
+	<xs:element name="skipCount" type="xs:int"></xs:element>
 
-    <xs:attribute name="collectionType">
-    	<xs:simpleType>
-    		<xs:restriction base="xs:string">
-    			<xs:enumeration value="root"></xs:enumeration>
-    			<xs:enumeration value="unfiled"></xs:enumeration>
-    			<xs:enumeration value="checkedout"></xs:enumeration>
-    			<xs:enumeration value="types"></xs:enumeration>
-    		</xs:restriction>
-    	</xs:simpleType>
-    </xs:attribute>
+	<xs:element name="returnAllowableActions" type="xs:boolean"></xs:element>
 
-    <xs:attribute name="repositoryRelationship">
-    	<xs:simpleType>
-    		<xs:restriction base="xs:string">
-    			<xs:enumeration value="self"></xs:enumeration>
-    			<xs:enumeration value="sibling"></xs:enumeration>
-    			<xs:enumeration value="parent"></xs:enumeration>
-    			<xs:enumeration value="child"></xs:enumeration>
-    			<xs:enumeration value="replica"></xs:enumeration>
-    		</xs:restriction>
-    	</xs:simpleType>
-    </xs:attribute>
+	<xs:element name="searchAllVersions" type="xs:boolean"></xs:element>
+
+	<xs:attribute name="collectionType">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="root"></xs:enumeration>
+				<xs:enumeration value="unfiled"></xs:enumeration>
+				<xs:enumeration value="checkedout"></xs:enumeration>
+				<xs:enumeration value="types"></xs:enumeration>
+				<xs:enumeration value="query"></xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:attribute name="repositoryRelationship">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="self"></xs:enumeration>
+				<xs:enumeration value="sibling"></xs:enumeration>
+				<xs:enumeration value="parent"></xs:enumeration>
+				<xs:enumeration value="child"></xs:enumeration>
+				<xs:enumeration value="replica"></xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:complexType name="typeType">
+		<xs:sequence>
+			<xs:group ref="cmis:CMISTypeEntry"></xs:group>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="objectId" type="xs:string"></xs:element>
+
+	<xs:element name="type" type="cmis:typeType"></xs:element>
+
+	<xs:element name="parentUrl" type="xs:anyURI"></xs:element>
+
+	<xs:element name="properties" type="cmis:propertiesType"></xs:element>
+
+	<xs:complexType name="propertiesType">
+		<xs:sequence>
+			<xs:choice minOccurs="0" maxOccurs="1">
+				<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+					maxOccurs="1">
+				</xs:group>
+			</xs:choice>
+			<xs:choice minOccurs="0" maxOccurs="1">
+				<xs:group ref="cmis:CMISDocumentEntry" />
+				<xs:group ref="cmis:CMISFolderEntry" />
+				<xs:group ref="cmis:CMISRelationshipEntry" />
+				<xs:group ref="cmis:CMISPolicyEntry" />
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
 </xs:schema>
 <!-- EOF -->

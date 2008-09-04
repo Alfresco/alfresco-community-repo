@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atom:feed xml:base="http://tempuri.org" xml:lang=""
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
+
+	<!-- This is a feed of folder containing:
+		folder1\
+			folder2
+			docid1
+	 -->
+	<atom:author xml:base="http://tempuri.org" xml:lang="">
+		<atom:name>Al Brown</atom:name>
+	</atom:author>
+	<atom:title>Folder1's Children - page 3</atom:title>
+	<atom:link href="http://www.cmis.org/rep1/folder1/children/3" />
+	
+	<!--  Points to the folder entry document -->
+	<atom:link rel="cmis-source" href="http://www.cmis.org/rep1/folder1" />
+	
+	<atom:updated>2007-12-31T12:00:00</atom:updated>
+
+	<!-- RFC 5005 Feed Paging -->
+	<atom:link rel="first"
+		href="http://www.cmis.org/rep1/folder1/children" />
+	<atom:link rel="next"
+		href="http://www.cmis.org/rep1/folder1/children/4" />
+	<atom:link rel="previous"
+		href="http://www.cmis.org/rep1/folder1/children/2" />
+	<atom:link rel="last"
+		href="http://www.cmis.org/rep1/folder1/children/last" />
+
+	<!--  sub-folder 1 -->
+	<atom:entry xml:base="http://tempuri.org" xml:lang="en-US">
+		<title>Folder Entry example (folder2)</title>
+		<atom:author xml:base="http://tempuri.org" xml:lang="">
+			<atom:name>Al Brown</atom:name>
+		</atom:author>
+
+		<!-- URI to document entry resource  -->
+		<atom:id>http://www.cmis.org/rep1/folder-entry2</atom:id>
+		<atom:link rel='self'
+			href="http://www.cmis.org/rep1/folder-entry2" />
+
+		<!-- lastModifiedDate -->
+		<atom:updated>2001-12-31T12:00:00</atom:updated>
+
+		<!-- createdDate -->
+		<atom:published>2001-12-31T12:00:00</atom:published>
+
+		<!-- atom links -->
+		<atom:link rel="edit"
+			href="http://www.cmis.org/rep1/folder-entry2" />
+
+		<!--  CMIS Links -->
+		<atom:link rel="cmis-parent"
+			href="http://www.cmis.org/rep1/folder-entry2/parent" />
+		<atom:link rel="cmis-allowableactions"
+			href="http://www.cmis.org/rep1/folder-entry2/actions" />
+		<atom:link rel="cmis-relationships"
+			href="http://www.cmis.org/rep1/folder-entry2/relationships" />
+		<atom:link rel="cmis-type"
+			href="http://www.cmis.org/rep1/type/emailfolder" />
+
+		<!--  atom:content -->
+		<atom:content>
+			<!-- auto-generated HTML table of properties -->
+			Folder Entry Example (folderid2) Property1 Value1
+		</atom:content>
+
+		<cmis:properties>
+			<cmis:objectId>folderid2</cmis:objectId>
+			<cmis:baseType>folder</cmis:baseType>
+			<cmis:lastModifiedBy>
+				2001-12-31T12:00:00
+			</cmis:lastModifiedBy>
+			<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
+			<cmis:objectType>emailfolder</cmis:objectType>
+			<cmis:parentId>folderid1</cmis:parentId>
+		</cmis:properties>
+
+		<!-- Optional Allowable actions -->
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canGetParents>true</cmis:canGetParents>
+			<cmis:canGetDescendants>true</cmis:canGetDescendants>
+			<cmis:canMove>true</cmis:canMove>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+			<cmis:canGetChildren>true</cmis:canGetChildren>
+		</cmis:allowableActions>
+	</atom:entry>
+
+	<atom:entry xml:base="http://tempuri.org" xml:lang="">
+		<title>Document Entry example</title>
+		<atom:author xml:base="http://tempuri.org" xml:lang="">
+			<atom:name>Al Brown</atom:name>
+		</atom:author>
+
+		<!-- URI to document entry resource  -->
+		<atom:id>http://www.cmis.org/rep1/document-entry</atom:id>
+		<atom:link rel='self'
+			href="http://www.cmis.org/rep1/document-entry" />
+
+		<!-- lastModifiedDate -->
+		<atom:updated>2001-12-31T12:00:00</atom:updated>
+
+		<!-- createdDate -->
+		<atom:published>2001-12-31T12:00:00</atom:published>
+
+		<!-- atom links -->
+		<atom:link rel="edit"
+			href="http://www.cmis.org/rep1/document-entry" />
+		<atom:link rel="edit-media"
+			href="http://www.cmis.org/rep1/media/document-entry" />
+		<atom:link rel="enclosure"
+			href="http://www.cmis.org/rep1/media/document-entry" />
+		<atom:link rel="alternate"
+			href="http://www.cmis.org/rep1/media/document-entry" />
+
+		<!--  CMIS Links -->
+		<atom:link rel="cmis-parents"
+			href="http://www.cmis.org/rep1/document-entry/parents" />
+		<atom:link rel="cmis-allowableactions"
+			href="http://www.cmis.org/rep1/document-entry/actions" />
+		<atom:link rel="cmis-allversions"
+			href="http://www.cmis.org/rep1/document-entry/allversions" />
+		<atom:link rel="cmis-latestversion"
+			href="http://www.cmis.org/rep1/document-entry/latestversion" />
+		<atom:link rel="cmis-relationships"
+			href="http://www.cmis.org/rep1/document-entry/relationships" />
+		<atom:link rel="cmis-type"
+			href="http://www.cmis.org/rep1/type/email" />
+		<atom:link rel="cmis-stream"
+			href="http://www.cmis.org/rep1/media/document-entry" />
+
+		<!--  atom:content -->
+		<atom:content
+			src="http://www.cmis.org/rep1/media/document-entry">
+		</atom:content>
+
+		<atom:summary>
+			<!-- auto-generated HTML table of properties -->
+		</atom:summary>
+
+
+		<cmis:properties>
+			<cmis:objectId>docid1</cmis:objectId>
+			<cmis:baseType>document</cmis:baseType>
+			<cmis:lastModifiedBy>
+				2001-12-31T12:00:00
+			</cmis:lastModifiedBy>
+			<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
+			<cmis:objectType>email</cmis:objectType>
+			<cmis:isCheckedOut>false</cmis:isCheckedOut>
+			<cmis:isLatestVersion>true</cmis:isLatestVersion>
+			<cmis:isMajorVersion>true</cmis:isMajorVersion>
+			<cmis:isLatestMajorVersion>true</cmis:isLatestMajorVersion>
+			<cmis:isImmutable>false</cmis:isImmutable>
+			<cmis:isVersionSeriesCheckedOut>
+				false
+			</cmis:isVersionSeriesCheckedOut>
+			<cmis:versionSeriesCheckedOutBy></cmis:versionSeriesCheckedOutBy>
+			<cmis:versionSeriesCheckedOutID></cmis:versionSeriesCheckedOutID>
+			<cmis:checkinComment>
+				This is the initial checkin comment
+			</cmis:checkinComment>
+			<cmis:versionLabel>1.0</cmis:versionLabel>
+			<cmis:contentStreamLength>70</cmis:contentStreamLength>
+			<cmis:contentStreamMimetype>
+				text/plain
+			</cmis:contentStreamMimetype>
+			<cmis:contentStreamName>foo.txt</cmis:contentStreamName>
+			<cmis:contentStreamURI>
+				http://www.cmis.org/rep1/media/document-entry
+			</cmis:contentStreamURI>
+		</cmis:properties>
+
+		<!-- Optional Allowable actions -->
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canGetParents>true</cmis:canGetParents>
+			<cmis:canMove>true</cmis:canMove>
+			<cmis:canDeleteVersion>true</cmis:canDeleteVersion>
+			<cmis:canDeleteContent>true</cmis:canDeleteContent>
+			<cmis:canCheckout>true</cmis:canCheckout>
+			<cmis:canCancelCheckout>true</cmis:canCancelCheckout>
+			<cmis:canCheckin>true</cmis:canCheckin>
+			<cmis:canSetContent>true</cmis:canSetContent>
+			<cmis:canGetAllVersions>true</cmis:canGetAllVersions>
+			<cmis:canAddToFolder>true</cmis:canAddToFolder>
+			<cmis:canRemoveFromFolder>true</cmis:canRemoveFromFolder>
+			<cmis:canViewContent>true</cmis:canViewContent>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+		</cmis:allowableActions>
+	</atom:entry>
+
+	<!-- notification of more items -->
+	<cmis:hasMoreItems>true</cmis:hasMoreItems>
+</atom:feed>

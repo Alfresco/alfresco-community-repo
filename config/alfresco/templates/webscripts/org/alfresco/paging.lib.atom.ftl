@@ -6,29 +6,29 @@
 <opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
 <#if cursor.pageType = "PAGE">
 <#if cursor.hasFirstPage>
-<link rel="first" href="${absurl(scripturl(argreplace(url.args, pageArg, cursor.firstPage)))?xml}" type="${format.type}"/>
+<link rel="first" href="${absurl(encodeuri(scripturl(argreplace(url.args, pageArg, cursor.firstPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasLastPage>
-<link rel="last" href="${absurl(scripturl(argreplace(url.args, pageArg, cursor.lastPage)))?xml}" type="${format.type}"/>
+<link rel="last" href="${absurl(encodeuri(scripturl(argreplace(url.args, pageArg, cursor.lastPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasPrevPage>
-<link rel="prev" href="${absurl(scripturl(argreplace(url.args, pageArg, cursor.prevPage)))?xml}" type="${format.type}"/>
+<link rel="prev" href="${absurl(encodeuri(scripturl(argreplace(url.args, pageArg, cursor.prevPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasNextPage>
-<link rel="next" href="${absurl(scripturl(argreplace(url.args, pageArg, cursor.nextPage)))?xml}" type="${format.type}"/>
+<link rel="next" href="${absurl(encodeuri(scripturl(argreplace(url.args, pageArg, cursor.nextPage))))?xml}" type="${format.type}"/>
 </#if>
 <#else>  
 <#if cursor.hasFirstPage>
-<link rel="first" href="${absurl(scripturl(argreplace(url.args, skipArg, cursor.firstPage)))?xml}" type="${format.type}"/>
+<link rel="first" href="${absurl(encodeuri(scripturl(argreplace(url.args, skipArg, cursor.firstPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasLastPage>
-<link rel="last" href="${absurl(scripturl(argreplace(url.args, skipArg, cursor.lastPage)))?xml}" type="${format.type}"/>
+<link rel="last" href="${absurl(encodeuri(scripturl(argreplace(url.args, skipArg, cursor.lastPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasPrevPage>
-<link rel="prev" href="${absurl(scripturl(argreplace(url.args, skipArg, cursor.prevPage)))?xml}" type="${format.type}"/>
+<link rel="prev" href="${absurl(encodeuri(scripturl(argreplace(url.args, skipArg, cursor.prevPage))))?xml}" type="${format.type}"/>
 </#if>  
 <#if cursor.hasNextPage>
-<link rel="next" href="${absurl(scripturl(argreplace(url.args, skipArg, cursor.nextPage)))?xml}" type="${format.type}"/>
+<link rel="next" href="${absurl(encodeuri(scripturl(argreplace(url.args, skipArg, cursor.nextPage))))?xml}" type="${format.type}"/>
 </#if>  
 </#if>
 </#macro>

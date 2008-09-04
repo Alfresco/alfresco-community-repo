@@ -5,8 +5,7 @@
 <#import "/org/alfresco/paging.lib.atom.ftl" as pagingLib/>
 <?xml version="1.0" encoding="UTF-8"?>
 <feed <@nsLib.feedNS/>>
-<@feedLib.node node=node/>
-<@cmisLib.folder node=node/>
+<@feedLib.generic id="urn:uuid:checkedout" title="Checked out Documents" author="${person.properties.userName}"/>
 <@pagingLib.cursor cursor=cursor/>
 <#list results as child>
 <entry>

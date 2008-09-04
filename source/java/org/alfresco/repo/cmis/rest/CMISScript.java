@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.cmis.rest;
 
-import org.alfresco.repo.cmis.rest.Navigation.TypesFilter;
+import org.alfresco.repo.cmis.rest.CMISService.TypesFilter;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.web.scripts.Repository;
@@ -45,11 +45,11 @@ public class CMISScript  extends BaseScopableProcessorExtension
 {
     private static final TypesFilter defaultTypesFilter = TypesFilter.FoldersAndDocuments;
     
-    
     private ServiceRegistry services;
     private Repository repository;
-    private Navigation navigation;
+    private CMISService cmisService;
     private Paging paging;
+    
     
     /**
      * Set the service registry
@@ -84,13 +84,32 @@ public class CMISScript  extends BaseScopableProcessorExtension
     /**
      * Set the CMIS Navigation helper
      * 
-     * @param navigation
+     * @param cmisService
      */
-    public void setNavigation(Navigation navigation)
+    public void setCMISService(CMISService cmisService)
     {
-        this.navigation = navigation;
+        this.cmisService = cmisService;
     }
     
+    /**
+     * Gets the default root folder path
+     * 
+     * @return  default root folder path
+     */
+    public String getDefaultRootFolderPath()
+    {
+        return cmisService.getDefaultRootPath();
+    }
+    
+    /**
+     * Gets the default root folder
+     * 
+     * @return  default root folder
+     */
+    public ScriptNode getDefaultRootFolder()
+    {
+        return new ScriptNode(cmisService.getDefaultRootNodeRef(), services, getScope());
+    }
 
     /**
      * Finds the arg value from the specified url argument and header
@@ -182,13 +201,61 @@ public class CMISScript  extends BaseScopableProcessorExtension
     public PagedResults queryChildren(ScriptNode parent, String typesFilter, Page page)
     {
         TypesFilter filter = resolveTypesFilter(typesFilter);
-        NodeRef[] children = navigation.getChildren(parent.getNodeRef(), filter);
+        NodeRef[] children = cmisService.getChildren(parent.getNodeRef(), filter);
         
         Cursor cursor = paging.createCursor(children.length, page);
         ScriptNode[] nodes = new ScriptNode[cursor.getRowCount()];
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
             nodes[i - cursor.getStartRow()] = new ScriptNode(children[i], services, getScope());
+        }
+        
+        PagedResults results = paging.createPagedResults(nodes, cursor);
+        return results;
+    }
+
+    /**
+     * Query for items checked-out to user
+     * 
+     * @param username  user
+     * @param page
+     * @return  paged result set of checked-out items
+     */
+    public PagedResults queryCheckedOut(String username, Page page)
+    {
+        return queryCheckedOut(username, null, false, page);
+    }
+
+    /**
+     * Query for items checked-out to user within folder
+     * 
+     * @param username  user
+     * @param folder  folder
+     * @param page
+     * @return  paged result set of checked-out items
+     */
+    public PagedResults queryCheckedOut(String username, ScriptNode folder, Page page)
+    {
+        return queryCheckedOut(username, folder, false, page);
+    }
+
+    /**
+     * Query for items checked-out to user within folder (and possibly descendants)
+     * 
+     * @param username  user
+     * @param folder  folder
+     * @param includeDescendants  true = include descendants  
+     * @param page
+     * @return  paged result set of checked-out items
+     */
+    public PagedResults queryCheckedOut(String username, ScriptNode folder, boolean includeDescendants, Page page)
+    {
+        NodeRef[] checkedout = cmisService.getCheckedOut(username, (folder == null) ? null : folder.getNodeRef(), includeDescendants);
+        Cursor cursor = paging.createCursor(checkedout.length, page);
+        ScriptNode[] nodes = new ScriptNode[cursor.getRowCount()];
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            nodes[i - cursor.getStartRow()] = new ScriptNode(checkedout[i], services, getScope());
         }
         
         PagedResults results = paging.createPagedResults(nodes, cursor);

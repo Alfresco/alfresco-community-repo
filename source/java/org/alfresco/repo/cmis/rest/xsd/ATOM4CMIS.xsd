@@ -12,9 +12,10 @@
 	xmlns:cmis="http://www.cmis.org/2008/05"
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	>
+	
     <xs:import namespace="http://www.w3.org/1999/xhtml" schemaLocation="xhtml1-strict.xsd"/>
     <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
-	<xs:import namespace="http://www.cmis.org/2008/05" schemaLocation="CMIS REST.xsd"/>
+	<xs:import namespace="http://www.cmis.org/2008/05" schemaLocation="CMIS-REST.xsd"/>
 
 
  <!-- Common attributes -->
@@ -104,12 +105,7 @@
           <xs:group ref="atom:extensionElement"/>
         </xs:choice>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="atom:entry"/>
-      <!--   
-      <xs:choice minOccurs="0" maxOccurs="1">
-            	<xs:group ref="cmis:CMISFolderEntry" />
-            	<xs:group ref="cmis:CMISTypeEntry" />
-      </xs:choice> -->
-              
+                 
         <xs:element minOccurs="0" maxOccurs="1" ref="cmis:hasMoreItems"/>        
       </xs:sequence>
       <xs:attributeGroup ref="atom:atomCommonAttributes"/>
@@ -137,17 +133,18 @@
       	<xs:element ref="atom:updated" />
       	<xs:group ref="atom:extensionElement" />
       	<xs:element ref="atom:uri"></xs:element>
-
       </xs:choice>
-      <!--
+      
+      <xs:sequence>
+      	<xs:element ref="cmis:properties" minOccurs="0" maxOccurs="1"/>
+      	<xs:element ref="cmis:allowableActions" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+     
+      <!--  This is necessary for nested entries such as descendants -->
       <xs:choice minOccurs="0" maxOccurs="1">
-            	<xs:group ref="cmis:CMISDocumentEntry" />
-            	<xs:group ref="cmis:CMISFolderEntry" />
-            	<xs:group ref="cmis:CMISRelationshipEntry" />
-            	<xs:group ref="cmis:CMISPolicyEntry" />
-            	<xs:group ref="cmis:CMISActionsEntry" />
-            	<xs:group ref="cmis:CMISTypeEntry" />
-      </xs:choice> -->
+            	<xs:element ref="atom:entry" />
+      </xs:choice>
+      
       </xs:sequence>
       <xs:attributeGroup ref="atom:atomCommonAttributes"/>
     </xs:complexType>
@@ -426,7 +423,6 @@
     		<xs:element ref="atom:title"></xs:element>
     		<xs:element ref="cmis:repositoryInfo"></xs:element>
     	</xs:sequence>
-    	<xs:attribute ref="cmis:id"></xs:attribute>
     </xs:complexType>
 
     <xs:element name="collection" type="xs:string"></xs:element>
@@ -435,8 +431,8 @@
        	<xs:sequence>
     		<xs:element ref="atom:title"></xs:element>
     	</xs:sequence>
-    	<xs:attribute ref="cmis:id"></xs:attribute>
     	<xs:attribute ref="cmis:collectionType"></xs:attribute>    
+    	<xs:attribute ref="cmis:id"></xs:attribute>    	
     </xs:complexType>
 </xs:schema>
 <!-- EOF -->

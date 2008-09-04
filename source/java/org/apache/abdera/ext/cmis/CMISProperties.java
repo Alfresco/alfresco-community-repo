@@ -41,16 +41,22 @@ import org.apache.abdera.model.ElementWrapper;
  * 
  * @author davidc
  */
-public class CMISObject extends ElementWrapper
+public class CMISProperties extends ElementWrapper
 {
-    public CMISObject(Element internal)
+    public CMISProperties(Element internal)
     {
         super(internal);
     }
 
-    public CMISObject(Factory factory)
+    public CMISProperties(Factory factory)
     {
-        super(factory, CMISConstants.OBJECT);
+        super(factory, CMISConstants.PROPERTIES);
+    }
+
+    public String getObjectId()
+    {
+        Element child = getInternal().getFirstChild(CMISConstants.OBJECTID);
+        return (child == null) ? null : child.getText();
     }
 
     public String getBaseType()

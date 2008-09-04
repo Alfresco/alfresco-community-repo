@@ -1,0 +1,40 @@
+<?xml version="1.0" ?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://www.cmis.org/2008/05" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+<author><name>System</name></author> 
+<generator version="3.0.0 (SeaMistPreview1 @build-number@)">Alfresco (Community Network)</generator>
+<icon>http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico</icon>
+<id>urn:uuid:78974cc9-2e91-11dd-add7-d79ea16aaad7</id>
+<title>Company Home</title> 
+<updated>2008-05-30T22:44:50.379+01:00</updated>
+<link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/>
+<opensearch:totalResults>31</opensearch:totalResults>
+<opensearch:startIndex>0</opensearch:startIndex>
+<opensearch:itemsPerPage>0</opensearch:itemsPerPage>
+<link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;guest=&amp;format=atomfeed" rel="first" type="application/atom+xml;type=feed"/>
+<link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;guest=&amp;format=atomfeed" rel="last" type="application/atom+xml;type=feed"/>
+<entry>
+<author><name>System</name></author>
+<content>78aef380-2e91-11dd-add7-d79ea16aaad7</content>  
+<id>urn:uuid:78aef380-2e91-11dd-add7-d79ea16aaad7</id>
+<published>2008-05-30T22:43:42.120+01:00</published>
+<summary>User managed definitions</summary>  
+<title>Data Dictionary</title>
+<updated>2008-05-30T22:44:50.575+01:00</updated>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7" rel="self"/>
+<app:edited>2008-05-30T22:44:50.575+01:00</app:edited>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7" rel="edit"/>
+<alf:icon>http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif</alf:icon>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7/permissions" rel="cmis-allowableactions"/>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7/associations" rel="cmis-relationships"/>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7/parent" rel="cmis-parent"/>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7/children" rel="cmis-children"/>
+<link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7/descendants" rel="cmis-descendants"/>
+  <cmis:objectId>workspace://SpacesStore/78aef380-2e91-11dd-add7-d79ea16aaad7</cmis:objectId>
+  <cmis:baseType>folder</cmis:baseType>
+  <!--  <cmis:createdBy>System</cmis:createdBy> -->
+  <cmis:creationDate>2008-05-30T22:43:42.120+01:00</cmis:creationDate>
+  <!--  <cmis:lastModifiedBy>System</cmis:lastModifiedBy> -->
+  <cmis:lastModificationDate>2008-05-30T22:44:50.575+01:00</cmis:lastModificationDate>
+  <cmis:name>Data Dictionary</cmis:name>
+  <cmis:parent>workspace://SpacesStore/78974cc9-2e91-11dd-add7-d79ea16aaad7</cmis:parent>
+</entry>
+</feed>

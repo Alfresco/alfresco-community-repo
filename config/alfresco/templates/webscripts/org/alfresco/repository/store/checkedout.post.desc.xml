@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Checkout a document</shortname>
+  <description></description>
+  <url>/api/checkedout</url>
+  <authentication>user</authentication>
+  <format default="atomentry"/>
+  <cmis version="0.21"/>
+</webscript>

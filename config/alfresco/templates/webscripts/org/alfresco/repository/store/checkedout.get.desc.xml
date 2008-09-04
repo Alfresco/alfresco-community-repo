@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Checked-out Documents</shortname>
+  <description>Retrieve list of documents that are checked-out</description>
+  <url>/api/checkedout</url>
+  <authentication>user</authentication>
+  <format default="atomfeed"/>
+  <cmis version="0.21"/>
+</webscript>

@@ -26,24 +26,20 @@
       <cmis:repositorySpecificInformation></cmis:repositorySpecificInformation>
     </cmis:repositoryInfo>
 
-    <#-- TODO: cmis:id on collection elements - are they required by cmis? -->
+    <collection href="${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}/children" cmis:collectionType="root"> 
+      <atom:title>root collection</atom:title> 
+    </collection> 
+    <collection href="${absurl(url.serviceContext)}/api/checkedout" cmis:collectionType="checkedout"> 
+      <atom:title>checkedout collection</atom:title> 
+    </collection> 
+    <collection href="${absurl(url.serviceContext)}/api/unfiled" cmis:collectionType="unfiled"> 
+      <atom:title>unfiled collection</atom:title> 
+    </collection>
+    
     <#-- TODO: collection resources -->
-     
-    <collection href="${absurl(url.serviceContext)}/api/path/workspace/SpacesStore//children" cmis:collectionType="root"> 
-      <atom:title>CMIS root folder</atom:title> 
-    </collection> 
-    <collection href="http://example.org/cmis/main?checkedout" cmis:collectionType="checkedout"> 
-      <atom:title>CMIS checked-out documents</atom:title> 
-    </collection> 
     <collection href="http://example.org/cmis/main?types" cmis:collectionType="types"> 
       <atom:title>CMIS Types</atom:title> 
     </collection> 
 
-    <#-- NOTE: alfresco does not support notion of unfiled...
-    <collection href="http://example.org/cmis/main?unfiled" cmis:collectionType="unfiled"> 
-      <atom:title>CMIS unfiled documents</atom:title> 
-    </collection>
-    -->
-         
   </workspace> 
 </service> 

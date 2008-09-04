@@ -9,18 +9,18 @@
 	elementFormDefault="qualified"
 	targetNamespace="http://www.w3.org/2007/app"
 	xmlns:atom="http://www.w3.org/2005/Atom"
-    xmlns:app="http://www.w3.org/2007/app"
+	xmlns:app="http://www.w3.org/2007/app"
 	xmlns:cmis="http://www.cmis.org/2008/05"
 	>
     <xs:import namespace="http://www.w3.org/2005/Atom" schemaLocation="ATOM4CMIS.xsd"/>
-	<xs:import namespace="http://www.cmis.org/2008/05" schemaLocation="CMIS REST.xsd"/>
+	<xs:import namespace="http://www.cmis.org/2008/05" schemaLocation="CMIS-REST.xsd"/>
 
 
     <xs:element name="service" type="app:appServiceType"></xs:element>
 
     <xs:complexType name="appServiceType">
     	<xs:sequence>
-    		<!-- <xs:element ref="atom:author"></xs:element>  -->
+    		<xs:element ref="atom:author" minOccurs="0" maxOccurs="1"></xs:element>
     		<xs:element ref="app:workspace" minOccurs="1" maxOccurs="unbounded"></xs:element>
     	</xs:sequence>
     </xs:complexType>
@@ -44,11 +44,11 @@
        	<xs:sequence>
     		<xs:element ref="atom:title"></xs:element>
     	</xs:sequence>
-        <xs:attribute name="href" type="xs:anyURI" use="required"></xs:attribute>
     	<xs:attribute ref="cmis:id"></xs:attribute>
     	<xs:attribute ref="cmis:collectionType"></xs:attribute>    
+    	<xs:attribute name="href" type="xs:anyURI"></xs:attribute>    
     </xs:complexType>
 
-    <!-- <xs:attribute name="href" type="xs:anyURI"></xs:attribute> -->
+    <xs:attribute name="href" type="xs:anyURI"></xs:attribute>
 </xs:schema>
 <!-- EOF -->

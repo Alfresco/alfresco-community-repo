@@ -1,0 +1,39 @@
+<?xml version="1.0" ?><service xmlns="http://www.w3.org/2007/app" xmlns:alf="http://www.alfresco.org" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
+  <workspace cmis:id="786f2b47-2e91-11dd-add7-d79ea16aaad7">
+    <atom:title>Main Repository</atom:title>
+
+
+    <cmis:repositoryInfo> 
+      <cmis:repositoryId>786f2b47-2e91-11dd-add7-d79ea16aaad7</cmis:repositoryId>
+      <cmis:repositoryName>Main Repository</cmis:repositoryName>
+      <cmis:repositoryDescription/>         
+      <cmis:vendorName>Alfresco</cmis:vendorName> 
+      <cmis:productName>Alfresco Repository (Community Network)</cmis:productName>
+      <cmis:productVersion>3.0.0 (SeaMistPreview1 @build-number@)</cmis:productVersion> 
+      <cmis:capabilities>
+        <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
+        <cmis:capabilityUnfiling>false</cmis:capabilityUnfiling>
+        <cmis:capabilityVersionSpecificFiling>false</cmis:capabilityVersionSpecificFiling>        
+        <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
+        <cmis:capabilityAllVersionsSearchable>false</cmis:capabilityAllVersionsSearchable>
+        <cmis:capabilityInnerJoin>true</cmis:capabilityInnerJoin>
+        <cmis:capabilityOuterJoin>true</cmis:capabilityOuterJoin>
+        <cmis:capabilityFullText>fulltextwithmetadata</cmis:capabilityFullText>
+      </cmis:capabilities> 
+      <cmis:repositorySpecificInformation/>
+    </cmis:repositoryInfo>
+
+     
+    <collection cmis:collectionType="root" href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children"> 
+      <atom:title>CMIS root folder</atom:title> 
+    </collection> 
+    <collection cmis:collectionType="checkedout" href="http://example.org/cmis/main?checkedout"> 
+      <atom:title>CMIS checked-out documents</atom:title> 
+    </collection> 
+    <collection cmis:collectionType="types" href="http://example.org/cmis/main?types"> 
+      <atom:title>CMIS Types</atom:title> 
+    </collection> 
+
+         
+  </workspace> 
+</service>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app:service xmlns:app="http://www.w3.org/2007/app" 
+	xmlns:atom="http://www.w3.org/2005/Atom" 
+	xmlns:cmis="http://www.cmis.org/2008/05" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xsi:schemaLocation="http://www.w3.org/2007/app APP.xsd http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
+  <app:workspace cmis:repositoryRelationship="self">
+    <atom:title>Repository 1</atom:title>
+    <cmis:repositoryInfo>
+      <cmis:repositoryId>repid1</cmis:repositoryId>
+      <cmis:repositoryName>repository1</cmis:repositoryName>
+      <cmis:repositoryDescription>Repository Description</cmis:repositoryDescription>
+      <cmis:vendorName>ACME Vendor</cmis:vendorName>
+      <cmis:productName>ACME Repository</cmis:productName>
+      <cmis:productVersion>ACME Version 99.01</cmis:productVersion>
+      <cmis:capabilities>
+        <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
+        <cmis:capabilityUnfiling>true</cmis:capabilityUnfiling>
+        <cmis:capabilityVersionSpecificFiling>true</cmis:capabilityVersionSpecificFiling>
+        <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
+        <cmis:capabilityAllVersionsSearchable>true</cmis:capabilityAllVersionsSearchable>
+        <cmis:capabilityInnerJoin>true</cmis:capabilityInnerJoin>
+        <cmis:capabilityOuterJoin>true</cmis:capabilityOuterJoin>
+        <cmis:capabilityFullText>fulltextwithmetadata</cmis:capabilityFullText>
+      </cmis:capabilities>
+      <cmis:repositorySpecificInformation>Welcome to ACME 99</cmis:repositorySpecificInformation>
+    </cmis:repositoryInfo>
+    <app:collection cmis:collectionType="unfiled" href="http://www.cmis.org/rep1/unfiled">
+    	<atom:title>unfiled collection</atom:title>
+    </app:collection>
+    <app:collection cmis:collectionType="root" href="http://www.cmis.org/rep1/root">
+    	<atom:title>root collection</atom:title>
+    </app:collection>
+    <app:collection cmis:collectionType="checkedout" href="http://www.cmis.org/rep1/checkedout">
+    	<atom:title>checkedout collection</atom:title>
+    </app:collection>
+    <app:collection cmis:collectionType="types" href="http://www.cmis.org/rep1/types">
+    	<atom:title>type collection</atom:title>
+    </app:collection>
+    <app:collection cmis:collectionType="query" href="http://www.cmis.org/rep1/query">
+    	<atom:title>type collection</atom:title>
+    </app:collection>
+  </app:workspace>
+</app:service>

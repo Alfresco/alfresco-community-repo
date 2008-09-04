@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atom:entry xml:base="http://tempuri.org" xml:lang="en-US"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
+
+	<title>Policy Entry example</title>
+	<atom:author xml:base="http://tempuri.org" xml:lang="">
+		<atom:name>Al Brown</atom:name>
+	</atom:author>
+
+	<!-- URI to document entry resource  -->
+	<atom:id>http://www.cmis.org/rep1/policy-entry</atom:id>
+	<atom:link rel='self'
+		href="http://www.cmis.org/rep1/policy-entry" />
+
+	<!-- lastModifiedDate -->
+	<atom:updated>2001-12-31T12:00:00</atom:updated>
+
+	<!-- createdDate -->
+	<atom:published>2001-12-31T12:00:00</atom:published>
+
+	<!-- atom links -->
+	<atom:link rel="edit"
+		href="http://www.cmis.org/rep1/v-entry" />
+
+	<!--  CMIS Links -->
+	<atom:link rel="cmis-allowableactions"
+		href="http://www.cmis.org/rep1/policy-entry/actions" />
+	<atom:link rel="cmis-type"
+		href="http://www.cmis.org/rep1/type/securitypolicy" />
+	<atom:link rel="cmis-source"
+		href="http://www.cmis.org/rep1/policy-entry/source" />
+	<atom:link rel="cmis-target"
+		href="http://www.cmis.org/rep1/policy-entry/target" />
+
+	<!--  atom:content -->
+	<atom:content>
+		<!-- auto-generated HTML table of properties -->
+		Policy Entry Example (policyid1) Property1 Value1
+	</atom:content>
+
+	<cmis:properties>
+		<cmis:objectId>policyid1</cmis:objectId>
+		<cmis:baseType>policy</cmis:baseType>
+		<cmis:lastModifiedBy>2001-12-31T12:00:00</cmis:lastModifiedBy>
+		<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
+		<cmis:objectType>securitypolicy</cmis:objectType>
+		<cmis:source>docid1</cmis:source>
+		<cmis:target>docid2</cmis:target>
+	</cmis:properties>
+
+	<!-- Optional Allowable actions -->
+	<cmis:allowableActions>
+		<cmis:canDelete>true</cmis:canDelete>
+		<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+		<cmis:canGetProperties>true</cmis:canGetProperties>
+		<cmis:canAddPolicy>true</cmis:canAddPolicy>
+		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+	</cmis:allowableActions>
+</atom:entry>

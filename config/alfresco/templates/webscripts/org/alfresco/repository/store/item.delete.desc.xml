@@ -1,6 +1,22 @@
 <webscript>
-  <shortname>Delete item</shortname>
-  <description>Delete item (and cancel checkout for private working copies)</description>
+  <shortname>Delete item (deleteObject)</shortname>
+  <description>
+<![CDATA[
+Deletes specified object<br>
+<br>
+Inputs:<br>
+<br>
+ID objectId<br>
+<br>
+Notes:<br>
+<br>
+If the object is a Folder with at least one child, throw ConstraintViolationException.<br>
+If the object is the Root Folder, throw OperationNotSupportedException.<br>
+When a filed object is deleted, it is removed from all folders it is filed in.<br>
+This service deletes a specific version of a document object.  To delete all versions, use deleteAllVersions()<br> 
+Deletion of a private working copy (checked out version) is the same as to cancel checkout.<br>
+]]>
+  </description>
   <url>/api/node/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
   <authentication>user</authentication>

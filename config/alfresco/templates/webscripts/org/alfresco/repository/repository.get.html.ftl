@@ -25,17 +25,18 @@
         </tr>
     </table>
     <br>
-    <span class="mainSubTitle">REST Binding</span>
+    <span class="mainSubTitle">REST API Binding</span>
     <table>
         <tr><td>Alfresco's Content Repository provides the CMIS REST v${cmisVersion} binding, an extension of the Atom Publishing Protocol. 
                 All <a href="${url.serviceContext}/index/family/CMIS">CMIS services</a> are implemented as <a href="http://wiki.alfresco.com/wiki/Web Scripts">Web Scripts</a>, 
                 therefore support all Web Script capabilities such as authentication, content negotiation, tunelling etc.</td>
         </tr>
+        <tr><td><a href="${url.serviceContext}/index/family/CMIS">CMIS services Reference</a></td></tr>
     </table>
     <br>
     <span class="mainSubTitle">REST TEST</span>
     <table>
-        <tr><td>The following test harness exercises the CMIS REST binding.  By default, its parameters are setup to this
+        <tr><td>The following test harness exercises the CMIS REST API binding.  By default, its parameters are setup to this
                 repository, although any CMIS REST provider may be tested.</td></tr>
         <form action="${url.serviceContext}/api/cmis/test" method="post">
         <tr><td></td></tr>
@@ -50,7 +51,7 @@
         </form>
     </table>    
     <br>
-    <span class="mainSubTitle">Web Services Binding</span>
+    <span class="mainSubTitle">Web Services API Binding</span>
     <table>
         <tr><td>Alfresco's Content Repository provides the CMIS Web Services v${cmisVersion} binding as defined by the following
                 <a href="${url.serviceContext}/alfresco/cmis">WSDL</a>.</td></tr>

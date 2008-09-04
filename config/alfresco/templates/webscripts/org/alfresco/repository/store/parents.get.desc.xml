@@ -1,6 +1,28 @@
 <webscript>
-  <shortname>Retrieve Parent Folders</shortname>
-  <description>Retrieve parent folders (primary and secondary)</description>
+  <shortname>Retrieve Parent Folders (getObjectParents)</shortname>
+  <description>
+<![CDATA[
+Returns the parent folders for the specified non-folder, fileable object<br>
+<br>
+Inputs:<br>
+<br>
+ID objectId: ID of a non-folder, fileable object.<br>
+(Optional) String filter: filter specifying which properties to return.<br>
+(Optional) Boolean includeAllowableActions: False (default)<br>
+(Optional) Enum includeRelationships: none (default), source, target, both<br>
+<br>
+Outputs:<br>
+<br>
+ResultSet resultSet - Set of folders containing the object.<br>
+<br>
+Notes:<br>
+<br> 
+Order is repository-specific<br>
+It is suggested that the parent and the ObjectId properties are included in the filter to allow re-ordering if necessary.<br>
+If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each parent folder as part of the output.<br>
+"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
+]]>  
+  </description>
   <!-- TODO: returnToRoot argument required? -->
   <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/parents?filter={filter?}</url>

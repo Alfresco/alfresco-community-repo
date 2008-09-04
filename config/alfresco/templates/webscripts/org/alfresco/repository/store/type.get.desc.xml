@@ -1,6 +1,24 @@
 <webscript>
-  <shortname>Retrieve a Type</shortname>
-  <description>Retrieve a Type Definition</description>
+  <shortname>Retrieve a Type (getTypeDefinition)</shortname>
+  <description>
+<![CDATA[
+Gets the definition for specified object type<br>
+<br>
+Inputs:<br>
+<br>
+ID typeId: Type Id<br>
+<br>
+Outputs:<br>
+<br>
+Collection typeAttributeCollection: Type attributes of an object type definition. See the “Object Type” section for a complete list of type attributes.<br>
+<Array> propertyDefinition: A list of property definitions. Each property definition consists of a collection of property attributes. See the “Object Type” section for a complete list of property attributes.<br>
+<br>
+Notes:<br>
+<br>
+canCreateInstances if false, the user MUST NOT be able to create instances of this particular type.  If true, the user may be able to create instances.<br> 
+When includeInheritedProperties is true, the repository SHOULD return all properties defined for the Object Type, including any properties inherited from its parent. If false, only Properties defined on the Object Type (but not its parent) SHOULD be returned. 
+]]>
+  </description>
   <url>/api/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
   <authentication>user</authentication>
   <format default="atomentry"/>

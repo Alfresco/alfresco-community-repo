@@ -1,6 +1,19 @@
 <webscript>
   <shortname>CMIS Test Harness</shortname>
-  <description>Execute a series of tests against a CMIS server</description>
+  <description>
+<![CDATA[
+Execute a series of tests against a CMIS server.<br>
+<br>
+Inputs:<br>
+<br>
+String url: CMIS service url of the repository to test<br>
+String user: username/password for authentication (HTTP BASIC Authentication)<br>
+String args: Enum url, headers or both - dictates how arguments are passed to services (Default: url)<br>
+boolean validate: true => validate repository responses against CMIS XSDs<br>
+boolean trace: true => trace request and response bodies
+String tests: names of tests to execute (use * in test name to represent wildcard) (Default: *)<br>
+]]>
+</description>
   <url>/api/cmis/test?url={serviceUrl}&amp;user={user?}&amp;args={args?}&amp;validate={validate?}&amp;trace={trace?}&amp;tests={tests?}</url>
   <authentication>none</authentication>
   <format default="text"/>

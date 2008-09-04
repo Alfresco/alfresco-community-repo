@@ -1,6 +1,30 @@
 <webscript>
-  <shortname>Checkin Private Working Copy</shortname>
-  <description>Checkin private working copy</description>
+  <shortname>Checkin Private Working Copy (checkin)</shortname>
+  <description>
+<![CDATA[
+Makes the private working copy the current version of the document.<br>
+<br>
+Inputs:<br>
+<br>  
+ID documentId: ObjectId of the private working copy<br>
+Optional) Boolean major: True (Default)<br>
+(Optional) Property bag<br>
+(Optional) ContentStream stream<br>
+(Optional) String CheckinComment<br>
+<br>
+Outputs:<br>
+<br>
+ID documentId: ID for the new version of the document.<br>
+<br>
+Notes:<br>
+<br>
+It is left to the repository to determine who can check-in a document.<br>
+CheckinComment is persisted if specified.<br>
+For repositories that do not support updating private working copies, all updates MUST be set on the check-in service.<br>
+If Document is not checked out, throw OperationNotSupportedException.<br>
+If the Document has “Content_Stream_Allowed” set to FALSE, and a call is made to checkIn that includes a content-stream, throw ConstraintViolationException.<br>
+]]>
+  </description>
   <url>/api/pwc/{store_type}/{store_id}/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
   <authentication>user</authentication>
   <format default="atomentry"/>

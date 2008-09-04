@@ -1,6 +1,25 @@
 <webscript>
-  <shortname>Content Retrieval</shortname>
-  <description>Stream a content property from the Repository</description>
+  <shortname>Content Retrieval (getContent)</shortname>
+  <description>
+<![CDATA[
+The service returns the content-stream for a document.  This is the only service that returns content-stream.<br>
+<br>
+Inputs:<br>
+<br>
+ID documentId: Document to return the content-stream<br>
+(Optional) Integer offset:<br>
+(Optional) Integer length:<br>
+<br>
+Outputs:<br>
+<br>
+Byte[] stream<br>
+<br>
+Notes:<br>
+<br>
+Some CMIS protocol bindings MAY choose not to explicitly implement a “getContentStream” method, in cases where the protocol itself provides built-in mechanisms for retrieving byte streams. (E.g. in the ATOM/REST binding, content streams may be retrieved via standard HTTP gets on an “edit-media” URL, rather than a CMIS-specific “getContentStream” URL). See Part II of the CMIS specification for additional details.<br>
+Each CMIS protocol binding will provide a way for fetching a  sub-range within a content stream, in a manner appropriate to that protocol.<br> 
+]]>
+  </description>
   <url>/api/node/content{property}/{store_type}/{store_id}/{node_id}?a={attach?}</url>
   <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}</url>
   <url>/api/avmpath/content{property}/{store_id}/{path}?a={attach?}</url>

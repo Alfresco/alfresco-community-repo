@@ -125,6 +125,7 @@
    <!--  Web Script Authenticators -->
    <!--                            -->
 
+
    <!--  HTTP Basic Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
@@ -140,18 +141,6 @@
    <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
 
 
-   <!--                -->
-   <!--  CMIS Support  -->
-   <!--                -->
-
-   <bean id="webscripts.cmis.navigation" class="org.alfresco.repo.cmis.Navigation">
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="searchService" ref="searchService" />
-   </bean>
-
-   <bean id="webscripts.cmis.description" class="org.alfresco.repo.cmis.CMISDescription"/>
-
-
    <!--                                    -->
    <!--  Web Script Javascript Extensions  -->
    <!--                                    -->
@@ -159,14 +148,6 @@
    <!-- TODO: the following root js objects should only really be available in context of web scripts -->
 
    <bean id="webscripts.js.paging" class="org.alfresco.repo.web.util.paging.Paging" />
-
-   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.CMISScript">
-      <property name="extensionName"><value>cmis</value></property>
-      <property name="serviceRegistry" ref="ServiceRegistry" />
-      <property name="repository" ref="webscripts.repo" />
-      <property name="navigation" ref="webscripts.cmis.navigation" />
-      <property name="paging" ref="webscripts.js.paging" />
-   </bean>
 
 
    <!--            -->
@@ -257,7 +238,6 @@
    </bean>
 
 
-
    <!--                            -->
    <!-- Activity Feed Web Scripts  -->
    <!--                            -->
@@ -311,7 +291,6 @@
           </list>
       </property>
    </bean>
-
 
 
    <!--                         -->
@@ -402,18 +381,52 @@
    </bean>
 
 
-
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
+   
+   
    <!--          -->
    <!-- CMIS API -->
    <!--          -->
 
-   <!--  CMIS Index -->
-   <bean id="webscript.org.alfresco.cmis.index.get" class="org.alfresco.repo.cmis.Index" parent="webscript"/>
+   <!-- CMIS Javsascript API -->
+   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
+      <property name="extensionName"><value>cmis</value></property>
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="repository" ref="webscripts.repo" />
+      <property name="navigation" ref="webscripts.cmis.navigation" />
+      <property name="paging" ref="webscripts.js.paging" />
+   </bean>
 
+   <!-- CMIS Helpers -->
+   <bean id="webscripts.cmis.navigation" class="org.alfresco.repo.cmis.rest.Navigation">
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="searchService" ref="searchService" />
+   </bean>
+
+   <bean id="webscripts.cmis.description" class="org.alfresco.repo.cmis.rest.CMISDescription"/>
+
+   <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
+      <property name="abderaService" ref="webscripts.abdera"/>
+      <property name="defaultNamespace"><value>http://www.cmis.org/CMIS/1.0</value></property>
+      <property name="QNames">
+         <props>
+            <prop key="cmis_object">object</prop>
+            <prop key="cmis_baseType">baseType</prop>
+         </props>
+      </property>
+      <property name="extensionFactories">
+         <list>
+           <bean class="org.apache.abdera.ext.cmis.CMISExtensionFactory"/>
+         </list>
+      </property>
+   </bean>
+
+   <!--  CMIS  -->
+   <bean id="webscript.org.alfresco.cmis.index.get" class="org.alfresco.repo.cmis.rest.Index" parent="webscript"/>
    <alias alias="webscriptdesc.org.alfresco.repository.repository.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.children.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.children.post" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.parent.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.parents.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.properties.get" name="webscripts.cmis.description"/>

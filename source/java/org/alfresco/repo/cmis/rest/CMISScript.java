@@ -22,9 +22,9 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis;
+package org.alfresco.repo.cmis.rest;
 
-import org.alfresco.repo.cmis.Navigation.TypesFilter;
+import org.alfresco.repo.cmis.rest.Navigation.TypesFilter;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.web.scripts.Repository;

@@ -182,7 +182,8 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
         {
             // This should probably be configurable but frankly the nauseous extrusion of Gavin King's
             // programmatic alimentary tract (hibernate) will go away before this could make a difference.
-            if (!key.getEntityName().startsWith("org.alfresco"))
+            String entityName = key.getEntityName();
+            if (!entityName.startsWith("org.alfresco") || entityName.startsWith("org.alfresco.repo.workflow.jbpm"))
             {
                 continue;
             }

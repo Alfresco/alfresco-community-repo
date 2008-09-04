@@ -346,6 +346,7 @@
                 <value>alfresco.messages.webdav-messages</value>
                 <value>alfresco.messages.copy-service</value>
                 <value>alfresco.messages.avm-messages</value>
+                <value>alfresco.messages.linkvalidation-messages</value>
                 <value>alfresco.messages.content-filter-languages</value>
             </list>
         </property>

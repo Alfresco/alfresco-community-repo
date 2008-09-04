@@ -1608,6 +1608,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 continue;
             }
+            // Ordering is meaningless here as we are constructing a path upwards
+            // and have no idea where the node comes in the sibling order or even
+            // if there are like-pathed siblings.
+            assocRef.setNthSibling(-1);
             // build a path element
             Path.Element element = new Path.ChildAssocElement(assocRef);
             // create a new path that builds on the current path

@@ -29,9 +29,10 @@ package org.alfresco.linkvalidation;
 
 import java.net.SocketException;
 import java.util.List;
+
 import javax.net.ssl.SSLException;
+
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
-import org.alfresco.util.NameMatcher;
 
 public interface LinkValidationService
 {
@@ -189,7 +190,6 @@ public interface LinkValidationService
     //-------------------------------------------------------------------------
     public List<String> getHrefsDependentUponFile(String path);
 
-    
     public void setLinkValidationDisabled(boolean disabled);
 
     public boolean isLinkValidationDisabled();

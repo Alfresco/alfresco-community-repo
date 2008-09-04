@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -51,6 +52,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class LinkValidationAction extends ActionExecuterAbstractBase
 {
+    private static final String MSG_DISABLED = "linkvalidation.disabled";
+    
     public static final String NAME = "avm-link-validation";
 
     public static final String PARAM_COMPARE_TO_STAGING = "compare-to-staging";
@@ -163,12 +166,13 @@ public class LinkValidationAction extends ActionExecuterAbstractBase
         LinkValidationReport report = null;
         try
         {
-        	if (this.linkValidationService.isLinkValidationDisabled())
-        	{
-        		logger.warn("Link validation (action) not performed - currently disabled by system administrator");
-        		throw new AlfrescoRuntimeException("Link validation not performed - currently disabled by the system administrator");
-        	}
-        	
+            if (this.linkValidationService.isLinkValidationDisabled())
+            {
+                String warnMsg = I18NUtil.getMessage(MSG_DISABLED);
+                logger.warn(warnMsg);
+                throw new AlfrescoRuntimeException(warnMsg);
+            }
+
             // determine which API to call depending on whether there is a destination webapp present 
             if (destWebappPath != null)
             {

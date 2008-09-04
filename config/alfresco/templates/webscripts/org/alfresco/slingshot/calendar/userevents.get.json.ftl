@@ -9,7 +9,7 @@
 		"name" : "${event.name}",
 		"title" : "${event.properties["ia:whatEvent"]}",
 		"where" : "${event.properties["ia:whereEvent"]}",
-		"when" : "${event.properties["ia:fromDate"]?string("dd MMMM yyyy")}",
+		"when" : "${event.properties["ia:fromDate"]?string("dd MMM yyyy")}",
 	   "url" : "page/site/${event.parent.parent.name}/calendar?date=${event.properties["ia:fromDate"]?string("MM/dd/yyyy")}",
 		"start" : "${event.properties["ia:fromDate"]?string("HH:mm")}",
 		"end" : "${event.properties["ia:toDate"]?string("HH:mm")}",

@@ -25,7 +25,10 @@
          </list>
       </property>
       <property name="labels">
-         <list />
+         <list>
+            <!-- Remote API invite workflow Model -->
+            <value>alfresco/workflow/invite-workflow-messages</value>
+         </list>
       </property>
    </bean>
 </beans>

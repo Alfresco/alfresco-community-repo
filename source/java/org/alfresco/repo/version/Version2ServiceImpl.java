@@ -725,7 +725,19 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             return super.getVersionHistoryNodeRef(nodeRef);
         }
         
-        return this.dbNodeService.getChildByName(getRootNode(), Version2Model.CHILD_QNAME_VERSION_HISTORIES, nodeRef.getId());
+        // assume noderef is a 'live' node
+        NodeRef vhNodeRef = this.dbNodeService.getChildByName(getRootNode(), Version2Model.CHILD_QNAME_VERSION_HISTORIES, nodeRef.getId());
+        
+        // DEPRECATED: for backwards compatibility, in case of a version node (eg. via getCurrentVersion) can lookup 'live' node via UUID
+        if (vhNodeRef == null)
+        {
+        	if (nodeService.exists(nodeRef))
+            {
+        		vhNodeRef = this.dbNodeService.getChildByName(getRootNode(), Version2Model.CHILD_QNAME_VERSION_HISTORIES, (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_UUID));
+            }
+        }
+
+        return vhNodeRef;
     }
 
     /**

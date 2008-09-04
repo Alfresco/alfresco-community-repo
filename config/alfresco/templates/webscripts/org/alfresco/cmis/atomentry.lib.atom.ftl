@@ -4,14 +4,21 @@
 [#-- ATOM Entry for Document --]
 [#--                         --]
 
+
+[#macro contentLink node]
+
+${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content.${node.properties.name}
+
+[/#macro]
+
 [#macro document node propfilter="*"]
 <author><name>${node.properties.creator!""}</name></author>
-<content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
+<content type="${node.mimetype}" src="[@contentLink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentLink node/]" type="${node.mimetype}"/>
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="edit-media" href="[@contentLink node/]" type="${node.mimetype}"/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node, 50)}</summary>
@@ -27,7 +34,7 @@
 <link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
 <link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
-<link rel="cmis-stream" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="cmis-stream" href="[@contentLink node/]" type="${node.mimetype}"/>
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 [/#macro]
 
@@ -54,7 +61,7 @@
   [@filter propfilter "VERSION_LABEL"][@prop "versionLabel" cmisproperty(node, "VERSION_LABEL")!"" "String"/][/@filter]
   [@filter propfilter "VERSION_SERIES_CHECKED_OUT_BY"][@prop "versionSeriesCheckedOutBy" cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_BY")!"" "String"/][/@filter]
   [@filter propfilter "CHECKIN_COMMENT"][@prop "checkinComment" cmisproperty(node, "CHECKIN_COMMENT")!"" "String"/][/@filter]
-  [@filter propfilter "CONTENT_STREAM_URI"][@prop "contentStreamURI" absurl(url.serviceContext) + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id + "/content" "String"/][/@filter]
+  [@filter propfilter "CONTENT_STREAM_URI"][@prop "contentStreamURI" absurl(url.serviceContext) + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id + "/content." + node.properties.name "String"/][/@filter]
 </cmis:properties>
 [/#macro]
 
@@ -65,10 +72,10 @@
 
 [#macro version node version propfilter="*"]
 <author><name>${node.properties.creator}</name></author>
-<content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
+<content type="${node.mimetype}" src="[@contentLink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentLink node/]" type="${node.mimetype}"/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -86,12 +93,12 @@
 
 [#macro pwc node propfilter="*"]
 <author><name>${node.properties.creator}</name></author>
-<content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
+<content type="${node.mimetype}" src="[@contentLink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/pwc/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentLink node/]" type="${node.mimetype}"/>
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content" type="${node.mimetype}"/>
+<link rel="edit-media" href="[@contentLink node/]" type="${node.mimetype}"/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -160,21 +167,33 @@
 [#if row.nodes??]
 [#assign node = row.nodes?first]
 <author><name>${node.properties.creator!""}</name></author>
-<content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
+<content type="${node.mimetype}" src="[@contentLink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 [/#if]
-[#assign values = row.values]
-[#if values?size &gt; 0]
 <cmis:properties>
+
+[#-- TODO: spec issue: baseType to become formal property --]
+[#if node??]
+  [#if node.isDocument]
+    [@prop "baseType" "document" "String"/]
+  [#else]
+    [@prop "baseType" "folder" "String"/]
+  [/#if]    
+[/#if]
+
+[#assign values = row.values]
 [#list values?keys as colname]
   [#assign coltype = row.getColumnType(colname)]
+  [#if values[colname]??]
   [@prop colname values[colname] coltype/]
+  [#else]
+  [@propnull colname coltype/]
+  [/#if]
 [/#list]
 </cmis:properties>
-[/#if]
 [#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>  --]
 [/#macro]
 
@@ -235,7 +254,7 @@
 
 [#macro propdefCMISProps propdef]
 <cmis:property cmis:id="${propdef.propertyId}">
-  <cmis:propertyName>${propdef.propertyName}</cmis:propertyName>
+  <cmis:propertyName>${propdef.propertyNameREST}</cmis:propertyName>
   <cmis:propertyId>${propdef.propertyId}</cmis:propertyId>
   <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
   <cmis:description>[#if propdef.description??]${propdef.description?xml}[/#if]</cmis:description>
@@ -283,6 +302,24 @@
 [/#if]
 [/#macro]
 
+[#macro propnull name type]
+[#if type == "String"]
+<cmis:propertyString cmis:name="${name}"></cmis:propertyString>
+[#elseif type == "Integer"]
+<cmis:propertyInteger cmis:name="${name}"></cmis:propertyInteger>
+[#elseif type == "Decimal"]
+<cmis:propertyDecimal cmis:name="${name}"></cmis:propertyDecimal>
+[#elseif type == "Boolean"]
+<cmis:propertyBoolean cmis:name="${name}"></cmis:propertyBoolean>
+[#elseif type == "DateTime"]
+<cmis:propertyDateTime cmis:name="${name}"></cmis:propertyDateTime>
+[#elseif type == "URI"]
+<cmis:propertyURI cmis:name="${name}"></cmis:propertyString>
+[#elseif type == "ID"]
+<cmis:propertyID cmis:name="${name}"/>
+[#-- TODO: remaining property types --]
+[/#if]
+[/#macro]
 
 [#-- TODO: spec issue 40 --]
 [#macro cmisBaseType rootType]

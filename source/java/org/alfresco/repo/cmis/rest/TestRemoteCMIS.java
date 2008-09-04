@@ -35,29 +35,6 @@ import junit.textui.TestRunner;
  */
 public class TestRemoteCMIS extends CMISTest
 {
-    // remote CMIS server
-    private static String repositoryUrl = "http://localhost:8080/alfresco/service/api/repository";
-    private static String username = "admin";
-    private static String password = "admin";
-    private static boolean argsAsHeaders = false;
-
-
-    @Override
-    protected void setUp() throws Exception
-    {
-        if (repositoryUrl != null)
-        {
-            setRepositoryUrl(repositoryUrl);
-            RemoteServer server = new RemoteServer();
-            server.username = username;
-            server.password = password;
-            setRemoteServer(server);
-        }
-        
-        setArgsAsHeaders(argsAsHeaders);
-
-        super.setUp();
-    }
 
     /**
      * Execute Unit Tests as client to remote CMIS Server
@@ -70,6 +47,8 @@ public class TestRemoteCMIS extends CMISTest
      */
     public static void main(String[] args)
     {
+        remote = true;
+        
         if (args.length > 0)
         {
             repositoryUrl = args[0];
@@ -88,7 +67,7 @@ public class TestRemoteCMIS extends CMISTest
         String params = "both";
         if (args.length > 2)
         {
-            String[] paramSegment = args[1].split("=");
+            String[] paramSegment = args[2].split("=");
             if (paramSegment[0].equalsIgnoreCase("params"))
             {
                 params = paramSegment[1].toLowerCase();

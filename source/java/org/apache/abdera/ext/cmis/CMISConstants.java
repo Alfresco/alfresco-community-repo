@@ -43,6 +43,9 @@ public interface CMISConstants
 {
     public static final String CMIS_200805_NS = "http://www.cmis.org/2008/05";
 
+    // CMIS Service Document
+    public static final QName COLLECTION_TYPE = new QName(CMIS_200805_NS, "collectionType");
+    
     // CMIS Repository Info
     public static final QName REPOSITORY_INFO = new QName(CMIS_200805_NS, "repositoryInfo");
     public static final QName REPOSITORY_ID = new QName(CMIS_200805_NS, "repositoryId");

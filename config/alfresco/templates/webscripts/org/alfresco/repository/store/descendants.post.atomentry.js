@@ -1,3 +1,5 @@
+// TODO: consolidate with children.post.atomentry.js
+
 script:
 {
     // ensure atom entry is posted

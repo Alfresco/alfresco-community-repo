@@ -28,6 +28,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.property.CMISPropertyNameMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -115,13 +116,13 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     @Override
     protected String[] getConfigLocations()
     {
-        return new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/test-cmis-context.xml" };
+        return new String[] { "classpath:alfresco/application-context.xml", "classpath:test-cmis-context.xml" };
     }
 
     protected String getPropertyIDValue(PropertiesType properties, String propertyName)
     {
         String result = null;
-        String realPropertyName = CMISPropNamesMapping.getResponsePropertyName(propertyName);
+        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyIDType property : properties.getPropertyID())
         {
@@ -138,7 +139,7 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected String getPropertyStringValue(PropertiesType properties, String propertyName)
     {
         String result = null;
-        String realPropertyName = CMISPropNamesMapping.getResponsePropertyName(propertyName);
+        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyStringType property : properties.getPropertyString())
         {
@@ -155,7 +156,7 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected boolean getPropertyBooleanValue(PropertiesType properties, String propertyName)
     {
         boolean result = false;
-        String realPropertyName = CMISPropNamesMapping.getResponsePropertyName(propertyName);
+        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyBooleanType property : properties.getPropertyBoolean())
         {

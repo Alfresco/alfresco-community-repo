@@ -46,18 +46,13 @@ script:
     var content = entry.content;
     if (content !== null)
     {
-        if (!model.node.isDocument)
+        if (model.node.isDocument)
         {
-            status.code = 400;
-            status.message = "Cannot update content on folder " + pathSegments[2] + " " + reference.join("/");
-            status.redirect = true;
-            break script;
+	        model.node.content = content;
+	        model.node.properties.content.encoding = "UTF-8";
+	        model.node.properties.content.mimetype = atom.toMimeType(entry);
+	        updated = true;
         }
-    
-        model.node.content = content;
-        model.node.properties.content.encoding = "UTF-8";
-        model.node.properties.content.mimetype = atom.toMimeType(entry);
-        updated = true;
     }
     
     // only save if an update actually occurred

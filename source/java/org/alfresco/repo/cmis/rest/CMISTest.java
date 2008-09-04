@@ -27,6 +27,7 @@ package org.alfresco.repo.cmis.rest;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,31 +64,27 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CMISTest extends BaseCMISWebScriptTest
 {
+    // test context
+    protected static boolean remote = false;
+    
+    // Alfresco
+    protected static String repositoryUrl = "http://localhost:8080/alfresco/service/api/repository";
+    protected static boolean validateResponse = true;
+    protected static String username = "admin";
+    protected static String password = "admin";
+    protected static boolean argsAsHeaders = false;
+    
     // Logger
     private static final Log logger = LogFactory.getLog(CMISTest.class);
-    
-    private AbderaService abdera;
-    
-    // test context
-    private String repositoryUrl = "http://localhost:8080/alfresco/service/api/repository";
-    
+
     // cached responses
+    private AbderaService abdera;
     private static Service service = null;
     private static String fulltextCapability = null;
     private static Entry testsFolder = null;
     private static Entry testRunFolder = null;
 
-    
-    /**
-     * Sets the Repository "service" URL
-     * 
-     * @param repositoryUrl  repository service url
-     */
-    public void setRepositoryUrl(String repositoryUrl)
-    {
-        this.repositoryUrl = repositoryUrl;
-    }
-    
+        
     
     @Override
     protected void setUp()
@@ -99,8 +96,21 @@ public class CMISTest extends BaseCMISWebScriptTest
         abderaImpl.registerExtensionFactory(new CMISExtensionFactory());
         abdera = abderaImpl;
 
-        // setup user
-        setDefaultRunAs("admin");
+        if (remote)
+        {
+            RemoteServer server = new RemoteServer();
+            server.username = username;
+            server.password = password;
+            setRemoteServer(server);
+        }
+        else
+        {
+            // setup user
+            setDefaultRunAs("admin");
+        }
+        
+        setArgsAsHeaders(argsAsHeaders);
+        setValidateResponse(validateResponse);
         
         super.setUp();
         
@@ -120,7 +130,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             
             service = abdera.parseService(new StringReader(xml), null);
             assertNotNull(service);
-            Workspace workspace = service.getWorkspaces().get(0);
+            Workspace workspace = getWorkspace(service);
             CMISRepositoryInfo repoInfo = workspace.getExtension(CMISConstants.REPOSITORY_INFO);
             assertNotNull(repoInfo);
             CMISCapabilities capabilities = repoInfo.getCapabilities();
@@ -131,36 +141,55 @@ public class CMISTest extends BaseCMISWebScriptTest
         return service;
     }
     
-    private IRI getRootCollection(Service service)
+    private Workspace getWorkspace(Service service)
     {
-        Collection root = service.getCollection("Main Repository", "root collection");
+        return service.getWorkspaces().get(0);
+    }
+    
+    private Collection getCMISCollection(Workspace workspace, String collectionId)
+    {
+        List<Collection> collections = workspace.getCollections();
+        for (Collection collection : collections)
+        {
+            String id = collection.getAttributeValue(CMISConstants.COLLECTION_TYPE);
+            if (id != null && id.equals(collectionId))
+            {
+                return collection;
+            }
+        }
+        return null;
+    }
+    
+    private IRI getRootCollection(Workspace workspace)
+    {
+        Collection root = getCMISCollection(workspace, "root");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
         return rootHREF;
     }
 
-    private IRI getCheckedOutCollection(Service service)
+    private IRI getCheckedOutCollection(Workspace workspace)
     {
-        Collection root = service.getCollection("Main Repository", "checkedout collection");
+        Collection root = getCMISCollection(workspace, "checkedout");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
         return rootHREF;
     }
 
-    private IRI getTypesCollection(Service service)
+    private IRI getTypesCollection(Workspace workspace)
     {
-        Collection root = service.getCollection("Main Repository", "type collection");
+        Collection root = getCMISCollection(workspace, "types");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
         return rootHREF;
     }
 
-    private IRI getQueryCollection(Service service)
+    private IRI getQueryCollection(Workspace workspace)
     {
-        Collection root = service.getCollection("Main Repository", "query collection");
+        Collection root = getCMISCollection(workspace, "query");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
@@ -241,7 +270,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         if (testRunFolder == null)
         {
             Service service = getRepository();
-            IRI rootFolderHREF = getRootCollection(service);
+            IRI rootFolderHREF = getRootCollection(getWorkspace(service));
             testsFolder = createTestsFolder(rootFolderHREF);
             Link testsChildrenLink = testsFolder.getLink(CMISConstants.REL_CHILDREN);
             testRunFolder = createFolder(testsChildrenLink.getHref(), "Test Run " + System.currentTimeMillis());
@@ -293,7 +322,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     public void testRepository()
         throws Exception
     {
-        IRI rootHREF = getRootCollection(getRepository());
+        IRI rootHREF = getRootCollection(getWorkspace(getRepository()));
         sendRequest(new GetRequest(rootHREF.toString()), 200, getAtomValidator());
     }
     
@@ -316,7 +345,22 @@ public class CMISTest extends BaseCMISWebScriptTest
         Entry entry = feedFolderAfter.getEntry(document.getId().toString());
         assertNotNull(entry);
     }
-    
+
+    public void testCreateDocument2()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testCreateDocument2");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        String createFile = loadString("/cmis/rest/createdocument2.atomentry.xml");
+        Response res = sendRequest(new PostRequest(childrenLink.getHref().toString(), createFile, Format.ATOM.mimetype()), 201, getAtomValidator());
+        String xml = res.getContentAsString();
+        Entry entry = abdera.parseEntry(new StringReader(xml), null);
+        Response documentContentRes = sendRequest(new GetRequest(entry.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals("1", resContent);
+    }
+
     public void testCreateDocumentBase64()
         throws Exception
     {
@@ -400,7 +444,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
         assertNotNull(documentXML);
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -529,7 +573,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
         assertEquals(testsFolder.getId(), parentsToRoot.getEntries().get(2).getId());
         assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
-        Feed root = getFeed(getRootCollection(getRepository()));
+        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
         assertEquals(root.getId(), parentsToRoot.getEntries().get(3).getId());
         assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
     }
@@ -563,7 +607,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
         assertEquals(testsFolder.getId(), parentsToRoot.getEntries().get(2).getId());
         assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
-        Feed root = getFeed(getRootCollection(getRepository()));
+        Feed root = getFeed(getRootCollection(getWorkspace(getRepository())));
         assertEquals(root.getId(), parentsToRoot.getEntries().get(3).getId());
         assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
     }
@@ -640,7 +684,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve checkouts within scope of test checkout folder
         Service repository = getRepository();
         assertNotNull(repository);
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -664,7 +708,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(documentXML);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         String pwcXml = pwcRes.getContentAsString();
@@ -703,7 +747,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         String pwcXml = pwcRes.getContentAsString();
@@ -748,7 +792,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -841,7 +885,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(xml);
         
         // checkout
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
@@ -903,7 +947,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         String xml = documentRes.getContentAsString();
         assertNotNull(xml);
 
-        IRI checkedoutHREF = getCheckedOutCollection(getRepository());
+        IRI checkedoutHREF = getCheckedOutCollection(getWorkspace(getRepository()));
         for (int i = 0; i < NUMBER_OF_VERSIONS; i++)
         {
             // checkout
@@ -948,7 +992,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     public void testGetAllTypeDefinitions()
         throws Exception
     {
-        IRI typesHREF = getTypesCollection(getRepository());
+        IRI typesHREF = getTypesCollection(getWorkspace(getRepository()));
         Feed types = getFeed(typesHREF);
         assertNotNull(types);
         Feed typesWithProps = getFeed(typesHREF);
@@ -966,7 +1010,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     public void testGetHierarchyTypeDefinitions()
         throws Exception
     {
-        IRI typesHREF = getTypesCollection(getRepository());
+        IRI typesHREF = getTypesCollection(getWorkspace(getRepository()));
         Map<String, String> args = new HashMap<String, String>();
         args.put("type", "FOLDER_OBJECT_TYPE");
         args.put("includePropertyDefinitions", "true");
@@ -1027,14 +1071,14 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         // retrieve query collection
-        IRI queryHREF = getQueryCollection(getRepository());
+        IRI queryHREF = getQueryCollection(getWorkspace(getRepository()));
         
         // retrieve test folder for query
         Entry testFolder = createTestFolder("testQuery");
         CMISProperties testFolderProps = testFolder.getExtension(CMISConstants.PROPERTIES);
         Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
         
-        // create documents query
+        // create documents to query
         Entry document1 = createDocument(childrenLink.getHref(), "apple1");
         assertNotNull(document1);
         CMISProperties document1Props = document1.getExtension(CMISConstants.PROPERTIES);
@@ -1046,20 +1090,22 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(document2Props);
         Entry document3 = createDocument(childrenLink.getHref(), "banana1");
         assertNotNull(document3);
-        
-        // TODO: query based on query capabilities
+
+        // retrieve query request document
         String queryDoc = loadString("/cmis/rest/query.cmissqlquery.xml");
 
+        // TODO: Enable XSD Validation when cmis:propertyXXX mapping is sorted in spec
+        
         {
             // construct structured query
-            String query = "SELECT OBJECT_ID, OBJECT_TYPE_ID, NAME FROM DOCUMENT_OBJECT_TYPE " +
+            String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE " +
                            "WHERE IN_FOLDER('" + testFolderProps.getObjectId() + "') " +
                            "AND NAME = 'apple1'";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200);
             assertNotNull(queryRes);
             Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
@@ -1080,7 +1126,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue fulltext query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200);
             assertNotNull(queryRes);
             Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
@@ -1097,13 +1143,13 @@ public class CMISTest extends BaseCMISWebScriptTest
             // construct fulltext and structured query
             String query = "SELECT OBJECT_ID, OBJECT_TYPE_ID, NAME FROM DOCUMENT_OBJECT_TYPE " +
                            "WHERE IN_FOLDER('" + testFolderProps.getObjectId() + "') " +
-                           "AND NAME = 'apple1'" +
+                           "AND NAME = 'apple1' " +
                            "AND CONTAINS('test content')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200);
             assertNotNull(queryRes);
             Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);

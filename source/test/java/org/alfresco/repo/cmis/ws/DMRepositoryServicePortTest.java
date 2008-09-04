@@ -68,4 +68,11 @@ public class DMRepositoryServicePortTest extends BaseServicePortTest
         assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdatable());
         assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
     }
+    
+    public void testGetTypeDefinition() throws Exception
+    {
+        List<RepositoryType> repositories = repositoryServicePort.getRepositories();
+        repositoryServicePort.getTypeDefinition(repositories.get(0).getRepositoryID(), "DOCUMENT_OBJECT_TYPE");
+    }
+    
 }

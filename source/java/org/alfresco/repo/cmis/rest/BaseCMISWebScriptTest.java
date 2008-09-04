@@ -55,6 +55,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
 {
     private CMISValidator cmisValidator = new CMISValidator();
     private boolean argsAsHeaders = false;
+    private boolean validateResponse = true;
     
     /**
      * Pass URL arguments as headers
@@ -65,7 +66,17 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     {
         this.argsAsHeaders = argsAsHeaders;
     }
-    
+
+    /**
+     * Validate Response
+     * 
+     * @param validateResponse
+     */
+    protected void setValidateResponse(boolean validateResponse)
+    {
+        this.validateResponse = validateResponse;
+    }
+
     /**
      * Determines if URL arguments are passed as headers
      * 
@@ -125,14 +136,17 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     protected void assertValidXML(String xml, Validator validator)
         throws IOException, ParserConfigurationException
     {
-        try
+        if (validateResponse)
         {
-            Document document = cmisValidator.getDocumentBuilder().parse(new InputSource(new StringReader(xml)));
-            validator.validate(new DOMSource(document));
-        }
-        catch (SAXException e)
-        {
-            fail(cmisValidator.toString(e, xml));
+            try
+            {
+                Document document = cmisValidator.getDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+                validator.validate(new DOMSource(document));
+            }
+            catch (SAXException e)
+            {
+                fail(cmisValidator.toString(e, xml));
+            }
         }
     }
      

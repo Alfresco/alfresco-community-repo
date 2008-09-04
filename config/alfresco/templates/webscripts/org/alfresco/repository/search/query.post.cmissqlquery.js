@@ -3,17 +3,30 @@ script:
     // process query statement
     // <?xml version="1.0"?>
     // <query xmlns="http://www.cmis.org/CMIS/2008/05">
-    //    <statement>object_id1</statement >
+    //    <statement>SELECT name FROM DOCUMENT_OBJECT_TYPE</statement>
     //    <searchAllVersions>false</searchAllVersions>
     //    <pageSize>0</pageSize>
     //    <skipCount>0</skipCount>
     //    <returnAllowableActions>false</returnAllowableActions>
     // </query>
     
+    // XML parsing need to be moved to Java
+
+    function ltrim(str){
+        return str.replace(/^\s+/, '');
+    }
+
     default xml namespace = 'http://www.cmis.org/2008/05';
     
-    var cmisQuery = new XML(query);
+    // regex to match an XML declaration
+    var xmlDeclaration = /^<\?xml version[^>]+?>/; 
     
+    // remove xml declaration and leading whitespace
+    query = ltrim(query.replace(xmlDeclaration, ''));
+
+    // need to move the XML declaration if it exists
+    var cmisQuery = new XML(query);
+
     // extract query statement
     model.statement = cmisQuery.statement.toString();
     if (model.statement == null || model.statement.length == 0)

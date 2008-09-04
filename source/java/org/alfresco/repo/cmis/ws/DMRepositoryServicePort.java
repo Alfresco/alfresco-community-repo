@@ -205,7 +205,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         objectTypeDefinitionType.setObjectTypeID(typeDefinition.getObjectTypeId().getTypeId());
         objectTypeDefinitionType.setObjectTypeQueryName(typeDefinition.getObjectTypeQueryName());
         objectTypeDefinitionType.setObjectTypeDisplayName(typeDefinition.getObjectTypeDisplayName());
-        objectTypeDefinitionType.setParentTypeID(typeDefinition.getParentTypeId().getTypeId());
+        objectTypeDefinitionType.setParentTypeID(typeDefinition.getParentTypeId() == null ? null : typeDefinition.getParentTypeId().getTypeId());
         objectTypeDefinitionType.setRootTypeQueryName(typeDefinition.getRootTypeQueryName());
         objectTypeDefinitionType.setDescription(typeDefinition.getDescription());
         objectTypeDefinitionType.setCreatable(typeDefinition.isCreatable());

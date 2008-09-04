@@ -18,12 +18,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--            <ref local="wss4jOutInterceptor" /> -->
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--             <ref local="wss4jOutInterceptor" /> -->
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
@@ -44,12 +44,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--             <ref local="wss4jOutInterceptor" />  -->
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--             <ref local="wss4jOutInterceptor" />  -->
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
@@ -70,12 +70,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--             <ref local="wss4jOutInterceptor" />  -->
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-            <ref local="wss4jOutInterceptor" />
+<!--               <ref local="wss4jOutInterceptor" />  -->
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>

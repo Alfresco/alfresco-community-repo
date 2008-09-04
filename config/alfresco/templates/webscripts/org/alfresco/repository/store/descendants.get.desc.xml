@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Retrieve tree of descendants</shortname>
+  <description>Retrieve descendants</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}</url>
+  <authentication>guest</authentication>
+  <format default="atomfeed">argument</format>
+  <family>CMIS</family>
+</webscript>

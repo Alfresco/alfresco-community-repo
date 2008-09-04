@@ -4,6 +4,6 @@
     <summary>${NAME} (summary)</summary>
     <content type="html">test content ${NAME}</content>    
     <cmis:properties>
-       <cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
+       <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>
     </cmis:properties>
 </entry>

@@ -3,6 +3,6 @@
     <title>${NAME}</title>
     <summary>${NAME} (summary)</summary>
     <cmis:properties>
-        <cmis:propertyString cmis:name="baseType">folder</cmis:propertyString>
+        <cmis:propertyString cmis:name="objectType">folder</cmis:propertyString>
     </cmis:properties>
 </entry>

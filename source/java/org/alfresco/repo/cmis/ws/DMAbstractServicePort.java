@@ -36,6 +36,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.property.CMISPropertyNameMapping;
 import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -107,7 +108,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyBooleanType propBoolean = new PropertyBooleanType();
-            propBoolean.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propBoolean.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propBoolean.setValue((Boolean) value);
             properties.getPropertyBoolean().add(propBoolean);
         }
@@ -119,7 +120,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyDateTimeType propDateTime = new PropertyDateTimeType();
-            propDateTime.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propDateTime.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propDateTime.setValue(convert((Date) value));
             properties.getPropertyDateTime().add(propDateTime);
         }
@@ -131,7 +132,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyIDType propID = new PropertyIDType();
-            propID.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propID.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propID.setValue(value.toString());
             properties.getPropertyID().add(propID);
         }
@@ -143,7 +144,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyIntegerType propInteger = new PropertyIntegerType();
-            propInteger.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propInteger.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propInteger.setValue(BigInteger.valueOf((Long) value));
             properties.getPropertyInteger().add(propInteger);
         }
@@ -155,7 +156,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyStringType propString = new PropertyStringType();
-            propString.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propString.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propString.setValue(value.toString());
             properties.getPropertyString().add(propString);
         }
@@ -178,7 +179,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyURIType propString = new PropertyURIType();
-            propString.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propString.setName(CMISPropertyNameMapping.getWebServiceName(name));
             propString.setValue(value.toString());
             properties.getPropertyURI().add(propString);
         }

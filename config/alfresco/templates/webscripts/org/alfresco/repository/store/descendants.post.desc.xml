@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Create folder or document</shortname>
+  <description></description>
+  <url>/api/node/{store_type}/{store_id}/{id}/descendants</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/descendants</url>
+  <authentication>user</authentication>
+  <format default="atomentry"/>
+  <family>CMIS</family>
+</webscript>

@@ -1814,7 +1814,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_PROPERTIES), "andy", AccessStatus.ALLOWED));
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_CONTENT), "andy", AccessStatus.ALLOWED));
 
-        printPermissions(rootNodeRef, "/");
+        //printPermissions(rootNodeRef, "/");
         
         runAs("andy");
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);

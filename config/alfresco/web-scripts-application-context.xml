@@ -107,6 +107,11 @@
                  <constructor-arg><ref bean="CMISMapping"/></constructor-arg>    
               </bean>
            </entry>
+           <entry key="cmisproperty">
+              <bean class="org.alfresco.repo.cmis.rest.CMISPropertyValueMethod">
+                 <constructor-arg><ref bean="CMISPropertyService"/></constructor-arg>    
+              </bean>
+           </entry>
          </map>
       </property>
       <property name="registryFactory">
@@ -398,6 +403,30 @@
    <!-- CMIS API -->
    <!--          -->
 
+   <!-- CMIS custom mimetypes -->
+   <bean id="webscripts.cmis.adaptors" parent="webscripts.adaptorset">
+      <property name="readers">
+         <list>
+           <bean class="org.alfresco.repo.cmis.rest.CMISQueryReader" />
+         </list>
+      </property>
+   </bean>
+
+   <!--  Default Formats -->
+   <bean id="webscripts.cmis.formats" parent="webscripts.formatmap">
+      <property name="formats">
+         <props>
+            <prop key="cmissqlquery">application/cmisrequest+xml;type=query</prop>
+         </props>
+      </property>
+      <property name="mimetypes">
+         <props>
+            <prop key="application/cmisrequest+xml;type=query">cmissqlquery</prop>
+         </props>
+      </property>
+   </bean>
+
+
    <!-- CMIS Javsascript API -->
    <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
       <property name="extensionName"><value>cmis</value></property>
@@ -405,6 +434,7 @@
       <property name="repository" ref="repositoryHelper" />
       <property name="CMISService" ref="CMISService" />
       <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+      <property name="CMISQueryService" ref="CMISQueryService" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
 

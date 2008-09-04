@@ -141,6 +141,7 @@ public abstract class BaseWebScriptTest extends TestCase
         if (logger.isDebugEnabled())
         {
             logger.debug("Request");
+            logger.debug(req.getMethod() + " " + req.getFullUri());
             logger.debug(req.getBody() == null ? null : new String(req.getBody()));
         }
 

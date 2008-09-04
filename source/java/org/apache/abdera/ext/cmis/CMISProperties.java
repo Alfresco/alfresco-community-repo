@@ -55,13 +55,64 @@ public class CMISProperties extends ElementWrapper
 
     public String getObjectId()
     {
-        return findPropertyID(CMISConstants.PROP_OBJECTID);
+        return findPropertyID(CMISConstants.PROP_OBJECT_ID);
     }
 
     public String getBaseType()
     {
         return findPropertyString(CMISConstants.PROP_BASETYPE);
     }
+    
+    public boolean isImmutable()
+    {
+        return findPropertyBoolean(CMISConstants.PROP_IS_IMMUTABLE);
+    }
+
+    public boolean isLatestVersion()
+    {
+        return findPropertyBoolean(CMISConstants.PROP_IS_LATEST_VERSION);
+    }
+
+    public boolean isMajorVersion()
+    {
+        return findPropertyBoolean(CMISConstants.PROP_IS_MAJOR_VERSION);
+    }
+
+    public boolean isLatestMajorVersion()
+    {
+        return findPropertyBoolean(CMISConstants.PROP_IS_LATEST_MAJOR_VERSION);
+    }
+
+    public String getVersionLabel()
+    {
+        return findPropertyString(CMISConstants.PROP_VERSION_LABEL);
+    }
+
+    public String getVersionSeriesId()
+    {
+        return findPropertyID(CMISConstants.PROP_VERSION_SERIES_ID);
+    }
+
+    public boolean isVersionSeriesCheckedOut()
+    {
+        return findPropertyBoolean(CMISConstants.PROP_VERSION_SERIES_IS_CHECKED_OUT);
+    }
+    
+    public String getVersionSeriesCheckedOutBy()
+    {
+        return findPropertyString(CMISConstants.PROP_VERSION_SERIES_CHECKED_OUT_BY);
+    }
+
+    public String getVersionSeriesCheckedOutId()
+    {
+        return findPropertyID(CMISConstants.PROP_VERSION_SERIES_CHECKED_OUT_ID);
+    }
+
+    public String getCheckinComment()
+    {
+        return findPropertyString(CMISConstants.PROP_CHECKIN_COMMENT);
+    }
+
     
     private String findPropertyString(String name)
     {
@@ -90,5 +141,20 @@ public class CMISProperties extends ElementWrapper
         }
         return null;
     }
+
+    private boolean findPropertyBoolean(String name)
+    {
+        Element child = getFirstChild(CMISConstants.PROPERTY_BOOLEAN);
+        while(child != null)
+        {
+            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
+            {
+                return Boolean.valueOf(child.getText());
+            }
+            child = child.getNextSibling(CMISConstants.PROPERTY_BOOLEAN);
+        }
+        return false;
+    }
+
 
 }

@@ -32,6 +32,9 @@ import org.alfresco.cmis.CMISService.TypesFilter;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.search.CMISQueryService;
+import org.alfresco.cmis.search.FullTextSearchSupport;
+import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -51,12 +54,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CMISScript extends BaseScopableProcessorExtension
 {
-    private static final TypesFilter defaultTypesFilter = TypesFilter.FoldersAndDocuments;
+    private static final TypesFilter defaultTypesFilter = TypesFilter.Any;
     
     private ServiceRegistry services;
     private Repository repository;
     private CMISService cmisService;
     private CMISDictionaryService cmisDictionaryService;
+    private CMISQueryService cmisQueryService;
     private Paging paging;
     
     
@@ -108,6 +112,16 @@ public class CMISScript extends BaseScopableProcessorExtension
     public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
+    }
+
+    /**
+     * Set the CMIS Query Service
+     * 
+     * @param cmisQueryService
+     */
+    public void setCMISQueryService(CMISQueryService cmisQueryService)
+    {
+        this.cmisQueryService = cmisQueryService;
     }
 
     /**
@@ -367,7 +381,43 @@ public class CMISScript extends BaseScopableProcessorExtension
             return null;
         }
     }
-
+    
+    //
+    // SQL Query
+    // 
+    
+    /**
+     * Can you query non-latest versions of a document.
+     *  
+     * The current latest version is always searchable according to  the type definition.
+     * 
+     * @return
+     */
+    public boolean getAllVersionsSearchable()
+    {
+        return cmisQueryService.getAllVersionsSearchable();
+    }
+    
+    /**
+     * Get the join support level in queries.
+     * 
+     * @return
+     */
+    public JoinSupport getJoinSupport()
+    {
+       return cmisQueryService.getJoinSupport(); 
+    }
+    
+    /**
+     * Get the full text search support level in queries.
+     * 
+     * @return
+     */
+    public FullTextSearchSupport getFullTextSearchSupport()
+    {
+        return cmisQueryService.getFullTextSearchSupport();
+    }
+    
     /**
      * Resolve to a Types Filter
      * 

@@ -4,8 +4,8 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
-<entry [@nsLib.entryNS/]>
+[#-- <entry>  TODO: spec issue 40 --]
   [@entryLib.typedef typedef true includeInheritedProperties/]
-</entry>
+[#-- </entry>  TODO: spec issue 40 --]
 
 [/#compress]

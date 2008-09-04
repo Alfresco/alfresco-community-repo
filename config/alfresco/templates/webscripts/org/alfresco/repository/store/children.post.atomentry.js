@@ -31,7 +31,6 @@ script:
     var description = entry.summary;    
     var updated = entry.updated;
     var author = (entry.author !== null) ? entry.author.name : null;
-    var content = entry.content;
     var cmisProperties = entry.getExtension(atom.names.cmis_properties);
     var baseType = (cmisProperties !== null) ? cmisProperties.baseType : null;
     
@@ -40,20 +39,34 @@ script:
     
     if (baseType === null || baseType == "document")
     {
+        // TODO: objectTypeId to Alfresco content type
         var node = model.parent.createFile(name);
         node.properties.title = title;
         node.properties.description = description;
-        if (content !== null)
+
+        // write entry content
+        if (entry.content != null)
         {
-            node.content = content;
+            if (entry.contentType !== null && entry.contentType == "MEDIA")
+            {
+                node.properties.content.write(entry.contentStream);
+            }
+            else
+            {
+                node.content = entry.content;
+            }
             node.properties.content.encoding = "UTF-8";
             node.properties.content.mimetype = atom.toMimeType(entry);
-        }
+        }        
+                
         node.save();
         model.node = node;
+        
+        // TODO: versioningState argument (CheckedOut/CheckedInMinor/CheckedInMajor)
     }
     else if (baseType == "folder")
     {
+        // TODO: objectTypeId to Alfresco content type
         var node = model.parent.createFolder(name);
         node.properties.title = title;
         node.properties.description = description;

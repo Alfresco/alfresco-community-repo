@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
+    <title>${NAME}</title>
+    <summary>${NAME} (summary)</summary>
+    <content type="text/plain">
+		VGhpcyBtZXRob2QgZm9sbG93cyB0aGUgQXRvbSBQdWJsaXNoaW5nIG1vZGVsIHdoZXJlIHRoZSBl
+		bnRyeSBkb2N1bWVudCwgYXRvbSBvciBjbWlzLCBpcyBwb3N0ZWQgdG8gdGhlIHJvb3Qgb3Igc3Bl
+		Y2lmaWMgZm9sZGVyIFVSSS4gIEZvciB1bmZpbGVkIGRvY3VtZW50cywgcG9zdCB0aGUgZG9jdW1l
+		bnQgdG8gdGhlIHVuZmlsZWQgY29sbGVjdGlvbi4gICBUaGUgZG9jdW1lbnQgd2lsbCBiZSBjcmVh
+		dGVkIGluIHRoZSBmb2xkZXIgcG9zdGVkLiBJZiB0aGUgZG9jdW1lbnQgaXMgcG9zdGVkIHRvIHRo
+		ZSByb290IGNvbGxlY3Rpb24gYW5kIGEgZm9sZGVyIHByb3BlcnR5IGlzIHNwZWNpZmllZCwgdGhl
+		biB0aGUgcmVwb3NpdG9yeSB3aWxsIGNyZWF0ZSB0aGUgZG9jdW1lbnQgaW4gdGhlIHNwZWNpZmll
+		ZCBmb2xkZXIuICBJZiB0aGUgY29udGVudCBzdHJlYW0gaXMgc3BlY2lmaWVkIG9uIGNyZWF0ZSwg
+		aXQgc2hvdWxkIGJlIGJhc2U2NCBlbmNvZGVkIGluIHRoZSBhdG9tIGVudHJ5Lg==
+    </content>    
+    <cmis:properties>
+       <cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
+    </cmis:properties>
+</entry>

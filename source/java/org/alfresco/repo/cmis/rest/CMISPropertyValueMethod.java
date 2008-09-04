@@ -26,35 +26,33 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.repo.template.TemplateNode;
-import org.alfresco.service.namespace.QName;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateScalarModel;
 
 /**
  * Custom FreeMarker Template language method.
  * <p>
- * Retrieve the CMIS Type Id for an Alfresco node
+ * Retrieve the CMIS property value for an Alfresco node
  * <p>
- * Usage: cmistypeid(TemplaateNode node)
- *        cmistypeid(QName nodeType)
+ * Usage: cmisproperty(TemplateNode node, String propertyName)
  *        
  * @author davidc
  */
-public final class CMISTypeIdMethod implements TemplateMethodModelEx
+public final class CMISPropertyValueMethod implements TemplateMethodModelEx
 {
-    private CMISMapping mappingService;
+    private CMISPropertyService propertyService;
     
     /**
      * Construct
      */
-    public CMISTypeIdMethod(CMISMapping mappingService)
+    public CMISPropertyValueMethod(CMISPropertyService propertyService)
     {
-        this.mappingService = mappingService;
+        this.propertyService = propertyService;
     }
     
     /**
@@ -63,33 +61,31 @@ public final class CMISTypeIdMethod implements TemplateMethodModelEx
     @SuppressWarnings("unchecked")
     public Object exec(List args) throws TemplateModelException
     {
-        CMISTypeId result = null;
+        Object result = null;
         
-        if (args.size() == 1)
+        if (args.size() == 2)
         {
             Object arg0 = args.get(0);
             if (arg0 instanceof BeanModel)
             {
-                // extract node type qname
-                QName nodeType = null;
+                // extract node
+                TemplateNode node = null;
                 Object wrapped = ((BeanModel)arg0).getWrappedObject();
-                if (wrapped != null)
+                if (wrapped != null && wrapped instanceof TemplateNode)
                 {
-                    if (wrapped instanceof TemplateNode)
-                    {
-                        nodeType = ((TemplateNode)wrapped).getType();
-                    }
-                    else if (wrapped instanceof QName)
-                    {
-                        nodeType = (QName)wrapped;
-                    }
+                    node = (TemplateNode)wrapped;
                 }
                 
-                // convert to CMIS type id
-                if (nodeType != null)
+                // extract property name
+                String propertyName = null;
+                Object arg1 = args.get(1);
+                if (arg1 instanceof TemplateScalarModel)
                 {
-                    result = mappingService.getCmisTypeId(nodeType);
+                     propertyName = ((TemplateScalarModel)arg1).getAsString();
                 }
+
+                // retrieve property value
+                result = propertyService.getProperty(node.getNodeRef(), propertyName);
             }
         }
         

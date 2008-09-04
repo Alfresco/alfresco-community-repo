@@ -33,17 +33,27 @@
 
 [#macro documentCMISProps node]
 <cmis:properties>
+  <cmis:propertyBoolean cmis:name="isImmutable">${cmisproperty(node, "IS_IMMUTABLE")?string}</cmis:propertyBoolean>
+  <cmis:propertyBoolean cmis:name="isLatestVersion">${cmisproperty(node, "IS_LATEST_VERSION")?string}</cmis:propertyBoolean>
+  <cmis:propertyBoolean cmis:name="isMajorVersion">${cmisproperty(node, "IS_MAJOR_VERSION")?string}</cmis:propertyBoolean>
+  <cmis:propertyBoolean cmis:name="isLatestMajorVersion">${cmisproperty(node, "IS_LATEST_MAJOR_VERSION")?string}</cmis:propertyBoolean>
+  <cmis:propertyBoolean cmis:name="isVersionSeriesCheckedOut">${cmisproperty(node, "VERSION_SERIES_IS_CHECKED_OUT")?string}</cmis:propertyBoolean>
   <cmis:propertyDateTime cmis:name="creationDate">${xmldate(node.properties.created)}</cmis:propertyDateTime>
   <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
   <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
+  <cmis:propertyID cmis:name="versionSeriesID">${cmisproperty(node, "VERSION_SERIES_ID")}</cmis:propertyID>
+  <cmis:propertyID cmis:name="versionSeriesCheckedOutID">${cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_ID")!""}</cmis:propertyID>
   <cmis:propertyInteger cmis:name="contentStreamLength">${node.properties.content.size}</cmis:propertyInteger>
   <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
   <cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
-  <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>  [#-- TODO --]
+  <cmis:propertyString cmis:name="objectType">${cmistypeid(node)}</cmis:propertyString>
   <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
   <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
   <cmis:propertyString cmis:name="contentStreamMimetype">${node.properties.content.mimetype}</cmis:propertyString>  
   <cmis:propertyString cmis:name="contentStreamName">${node.name}</cmis:propertyString>
+  <cmis:propertyString cmis:name="versionLabel">${cmisproperty(node, "VERSION_LABEL")!""}</cmis:propertyString>
+  <cmis:propertyString cmis:name="versionSeriesCheckedOutBy">${cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_BY")!""}</cmis:propertyString>
+  <cmis:propertyString cmis:name="checkinComment">${cmisproperty(node, "CHECKIN_COMMENT")!""}</cmis:propertyString>
   <cmis:propertyURI cmis:name="contentStreamURI">${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content</cmis:propertyURI>
 </cmis:properties>
 [/#macro]
@@ -117,7 +127,10 @@
 [#macro folderCMISLinks node]
 <link rel="cmis-allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
 <link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
-<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
+[#if cmisproperty(node, "PARENT")??]
+<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/node/${node.parent.nodeRef.storeRef.protocol}/${node.parent.nodeRef.storeRef.identifier}/${node.parent.nodeRef.id}"/>
+<link rel="cmis-folderparent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
+[/#if]
 <link rel="cmis-children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
 <link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
@@ -128,9 +141,9 @@
   <cmis:propertyDateTime cmis:name="creationDate">${xmldate(node.properties.created)}</cmis:propertyDateTime>
   <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
   <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
-  <cmis:propertyID cmis:name="parent">${node.parent.nodeRef}</cmis:propertyID>
+  <cmis:propertyID cmis:name="parent">${cmisproperty(node, "PARENT")!""}</cmis:propertyID>
   <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
-  <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>  [#-- TODO --]
+  <cmis:propertyString cmis:name="objectType">${cmistypeid(node)}</cmis:propertyString>
   <cmis:propertyString cmis:name="baseType">folder</cmis:propertyString>
   <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
   <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
@@ -166,7 +179,7 @@
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-<cmis:type>
+<cmis:type xmlns:cmis="http://www.cmis.org/2008/05">  [#-- TODO: spec issue 40, remove ns decl --]
   <cmis:objectId>${typedef.objectTypeId}</cmis:objectId>
   <cmis:baseType>[@cmisBaseType typedef.rootTypeQueryName/]</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
   <cmis:lastModifiedBy>${xmldate(date)}</cmis:lastModifiedBy>  [#-- TODO: remove spec issue 36 --]

@@ -146,7 +146,13 @@ public class CMISTest extends BaseCMISWebScriptTest
     private Entry createFolder(IRI parent, String name)
         throws Exception
     {
-        String createFolder = loadString("/cmis/rest/createfolder.atomentry.xml");
+        return createFolder(parent, name, "/cmis/rest/createfolder.atomentry.xml");
+    }
+
+    private Entry createFolder(IRI parent, String name, String atomEntryFile)
+        throws Exception
+    {
+        String createFolder = loadString(atomEntryFile);
         createFolder = createFolder.replace("${NAME}", name);
         Response res = sendRequest(new PostRequest(parent.toString(), createFolder, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(res);
@@ -165,7 +171,13 @@ public class CMISTest extends BaseCMISWebScriptTest
     private Entry createDocument(IRI parent, String name)
         throws Exception
     {
-        String createFile = loadString("/cmis/rest/createdocument.atomentry.xml");
+        return createDocument(parent, name, "/cmis/rest/createdocument.atomentry.xml");
+    }
+
+    private Entry createDocument(IRI parent, String name, String atomEntryFile)
+        throws Exception
+    {
+        String createFile = loadString(atomEntryFile);
         name = name + " " + System.currentTimeMillis();
         createFile = createFile.replace("${NAME}", name);
         Response res = sendRequest(new PostRequest(parent.toString(), createFile, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
@@ -272,6 +284,30 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(children);
         int entriesBefore = children.getEntries().size();
         Entry document = createDocument(children.getSelfLink().getHref(), "testCreateDocument");
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals("test content " + document.getTitle(), resContent);
+        Feed feedFolderAfter = getFeed(childrenLink.getHref());
+        int entriesAfter = feedFolderAfter.getEntries().size();
+        assertEquals(entriesBefore +1, entriesAfter);
+        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
+        assertNotNull(entry);
+    }
+    
+    public void testCreateDocumentBase64()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testCreateDocumentBase64");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        int entriesBefore = children.getEntries().size();
+        Entry document = createDocument(children.getSelfLink().getHref(), "testCreateDocument", "/cmis/rest/createdocumentBase64.atomentry.xml");
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String testContent = loadString("/cmis/rest/createdocumentBase64.txt");
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals(testContent, resContent);
         Feed feedFolderAfter = getFeed(childrenLink.getHref());
         int entriesAfter = feedFolderAfter.getEntries().size();
         assertEquals(entriesBefore +1, entriesAfter);
@@ -396,6 +432,50 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(4, nextCount);
         assertEquals(0, docIds.size());
     }
+    
+    public void testGetChildrenTypeFilter()
+        throws Exception
+    {
+        // create multiple children
+        Entry testFolder = createTestFolder("testChildrenTypeFilter");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Entry document = createDocument(childrenLink.getHref(), "testChildren1");
+        assertNotNull(document);
+        Entry folder = createFolder(childrenLink.getHref(), "testChildren2");
+        assertNotNull(folder);
+        
+        // invalid type filter
+        Map<String, String> args = new HashMap<String, String>();
+        args.put("types", "Invalid");
+        Response invalidRes = sendRequest(new GetRequest(childrenLink.getHref().toString()).setArgs(args), 400);
+        assertNotNull(invalidRes);
+
+        // no filter
+        Feed noFilters = getFeed(childrenLink.getHref());
+        assertNotNull(noFilters);
+        assertEquals(2, noFilters.getEntries().size());
+
+        // any filter
+        args.put("types", "Any");
+        Feed any = getFeed(childrenLink.getHref(), args);
+        assertNotNull(any);
+        assertEquals(2, any.getEntries().size());
+
+        // folders filter
+        args.put("types", "Folders");
+        Feed folders = getFeed(childrenLink.getHref(), args);
+        assertNotNull(folders);
+        assertEquals(1, folders.getEntries().size());
+        assertNotNull(folders.getEntry(folder.getId().toString()));
+
+        // documents filter
+        args.put("types", "Documents");
+        Feed documents = getFeed(childrenLink.getHref(), args);
+        assertNotNull(documents);
+        assertEquals(1, documents.getEntries().size());
+        assertNotNull(documents.getEntry(document.getId().toString()));
+    }
 
     public void testGetParent()
         throws Exception
@@ -405,7 +485,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(childrenLink);
         Entry childFolder = createFolder(childrenLink.getHref(), "testParentChild");
         assertNotNull(childFolder);
-        Link parentLink = childFolder.getLink(CMISConstants.REL_PARENT);
+        Link parentLink = childFolder.getLink(CMISConstants.REL_FOLDERPARENT);
         assertNotNull(parentLink);
 
         // ensure there is parent 'testParent'
@@ -421,10 +501,14 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot);
         assertEquals(4, parentsToRoot.getEntries().size());
         assertEquals(testFolder.getId(), parentsToRoot.getEntries().get(0).getId());
+        assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENT));
         assertEquals(testRunFolder.getId(), parentsToRoot.getEntries().get(1).getId());
+        assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
         assertEquals(testsFolder.getId(), parentsToRoot.getEntries().get(2).getId());
+        assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
         Feed root = getFeed(getRootCollection(getRepository()));
         assertEquals(root.getId(), parentsToRoot.getEntries().get(3).getId());
+        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
     }
 
     public void testGetParents()
@@ -451,10 +535,14 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(parentsToRoot);
         assertEquals(4, parentsToRoot.getEntries().size());
         assertEquals(testFolder.getId(), parentsToRoot.getEntries().get(0).getId());
+        assertNotNull(parentsToRoot.getEntries().get(0).getLink(CMISConstants.REL_PARENT));
         assertEquals(testRunFolder.getId(), parentsToRoot.getEntries().get(1).getId());
+        assertNotNull(parentsToRoot.getEntries().get(1).getLink(CMISConstants.REL_PARENT));
         assertEquals(testsFolder.getId(), parentsToRoot.getEntries().get(2).getId());
+        assertNotNull(parentsToRoot.getEntries().get(2).getLink(CMISConstants.REL_PARENT));
         Feed root = getFeed(getRootCollection(getRepository()));
         assertEquals(root.getId(), parentsToRoot.getEntries().get(3).getId());
+        assertNull(parentsToRoot.getEntries().get(3).getLink(CMISConstants.REL_PARENT));
     }
     
     public void testDelete()
@@ -546,6 +634,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         
         // create document for checkout
         Entry document = createDocument(childrenLink.getHref(), "testCheckout");
+        CMISProperties docProps = document.getExtension(CMISConstants.PROPERTIES);
         Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
@@ -555,7 +644,16 @@ public class CMISTest extends BaseCMISWebScriptTest
         IRI checkedoutHREF = getCheckedOutCollection(getRepository());
         Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(pwcRes);
-        // TODO: test private working copy properties
+        String pwcXml = pwcRes.getContentAsString();
+        assertNotNull(pwcXml);
+        Entry pwc = abdera.parseEntry(new StringReader(pwcXml), null);
+        assertNotNull(pwc);
+        CMISProperties pwcProps = pwc.getExtension(CMISConstants.PROPERTIES);
+        assertNotNull(pwcProps);
+        assertTrue(pwcProps.isVersionSeriesCheckedOut());
+        assertEquals(docProps.getObjectId(), pwcProps.getVersionSeriesId());
+        assertEquals(pwcProps.getObjectId(), pwcProps.getVersionSeriesCheckedOutId());
+        assertNotNull(pwcProps.getVersionSeriesCheckedOutBy());
 
         // test getCheckedOut is updated
         CMISProperties props = testFolder.getExtension(CMISConstants.PROPERTIES);
@@ -642,6 +740,16 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(checkedout);
         assertEquals(1, checkedout.getEntries().size());
 
+        // test version properties of checked-out item
+        // test checked-in version properties
+        Entry checkedoutdoc = getEntry(document.getSelfLink().getHref());
+        CMISProperties checkedoutdocProps = checkedoutdoc.getExtension(CMISConstants.PROPERTIES);
+        assertNotNull(checkedoutdocProps);
+        assertTrue(checkedoutdocProps.isVersionSeriesCheckedOut());
+        assertEquals(checkedoutdocProps.getObjectId(), checkedoutdocProps.getVersionSeriesId());
+        assertNotNull(checkedoutdocProps.getVersionSeriesCheckedOutId());
+        assertNotNull(checkedoutdocProps.getVersionSeriesCheckedOutBy());
+        
         // test update of private working copy
         String updateFile = loadString("/cmis/rest/updatedocument.atomentry.xml");
         String guid = GUID.generate();
@@ -683,6 +791,15 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("text/plain", updatedDoc.getContentMimeType().toString());
         Response updatedContentRes = sendRequest(new GetRequest(updatedDoc.getContentSrc().toString()), 200);
         assertEquals("updated content " + guid, updatedContentRes.getContentAsString());
+        
+        // test checked-in version properties
+        CMISProperties updatedProps = updatedDoc.getExtension(CMISConstants.PROPERTIES);
+        assertNotNull(updatedProps);
+        assertFalse(updatedProps.isVersionSeriesCheckedOut());
+        assertEquals(updatedProps.getObjectId(), updatedProps.getVersionSeriesId());
+        assertEquals("", updatedProps.getVersionSeriesCheckedOutId());
+        assertEquals("", updatedProps.getVersionSeriesCheckedOutBy());
+        assertEquals(guid, updatedProps.getCheckinComment());
     }
 
     public void testUpdateOnCheckIn()
@@ -846,6 +963,38 @@ public class CMISTest extends BaseCMISWebScriptTest
         };
     }
 
+    public void testGetTypeDefinition()
+        throws Exception
+    {
+        // retrieve test folder for checkins
+        Entry testFolder = createTestFolder("testGetEntryTypeDefinition");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document
+        Entry document = createDocument(childrenLink.getHref(), "testGetEntryTypeDefinitionDoc");
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
+        assertNotNull(documentRes);
+
+        // create folder
+        Entry folder = createFolder(childrenLink.getHref(), "testGetEntryTypeDefinitionFolder");
+        Response folderRes = sendRequest(new GetRequest(folder.getSelfLink().getHref().toString()), 200, getAtomValidator());
+        assertNotNull(folderRes);
+        
+        // retrieve children
+        Feed children = getFeed(childrenLink.getHref());
+        for (Entry entry : children.getEntries())
+        {
+            // get type definition
+            Link typeLink = entry.getLink(CMISConstants.REL_TYPE);
+            assertNotNull(typeLink);
+            // TODO: spec issue 40 - use getEntry when wrapped as entry
+            Response type = sendRequest(new GetRequest(typeLink.getHref().toString()), 200, getAtomValidator());
+            //Entry type = getEntry(typeLink.getHref());
+            assertNotNull(type);
+            // TODO: test correct type for entry & properties of type
+        }
+    }
+    
 //    public void testUnfiled()
 //    {
 //    }

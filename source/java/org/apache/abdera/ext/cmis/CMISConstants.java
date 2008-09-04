@@ -47,15 +47,29 @@ public interface CMISConstants
     public static final QName PROPERTIES  = new QName(CMIS_200805_NS, "properties");
     public static final QName PROPERTY_STRING = new QName(CMIS_200805_NS, "propertyString");
     public static final QName PROPERTY_ID = new QName(CMIS_200805_NS, "propertyID");
+    public static final QName PROPERTY_BOOLEAN = new QName(CMIS_200805_NS, "propertyBoolean");
     public static final QName PROPERTY_NAME = new QName(CMIS_200805_NS, "name");
     
     // CMIS Properties
-    public static final String PROP_OBJECTID  = "objectId";
+    public static final String PROP_OBJECT_ID  = "objectId";
     public static final String PROP_BASETYPE = "baseType";
+    public static final String PROP_IS_IMMUTABLE = "isImmutable";
+    public static final String PROP_IS_LATEST_VERSION = "isLatestVersion";
+    public static final String PROP_IS_MAJOR_VERSION = "isMajorVersion";
+    public static final String PROP_IS_LATEST_MAJOR_VERSION = "isLatestMajorVersion";
+    public static final String PROP_VERSION_LABEL = "versionLabel";
+    public static final String PROP_VERSION_SERIES_ID = "versionSeriesID";
+    public static final String PROP_VERSION_SERIES_IS_CHECKED_OUT = "isVersionSeriesCheckedOut";
+    public static final String PROP_VERSION_SERIES_CHECKED_OUT_BY = "versionSeriesCheckedOutBy";
+    public static final String PROP_VERSION_SERIES_CHECKED_OUT_ID = "versionSeriesCheckedOutID";
+    public static final String PROP_CHECKIN_COMMENT = "checkinComment";
  
     // CMIS Relationships
     public static final String REL_CHILDREN = "cmis-children";
     public static final String REL_PARENT = "cmis-parent";
+    public static final String REL_FOLDERPARENT = "cmis-folderparent";
     public static final String REL_PARENTS = "cmis-parents";
     public static final String REL_ALLVERSIONS = "cmis-allversions";
+    public static final String REL_TYPE = "cmis-type";
+    
 }

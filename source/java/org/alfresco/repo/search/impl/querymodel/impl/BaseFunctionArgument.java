@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 
 /**
  * @author andyh
@@ -52,9 +53,9 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
      */
-    public Serializable getValue()
+    public Serializable getValue(FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        return function.getValue(arguments, context);
     }
 
     /* (non-Javadoc)

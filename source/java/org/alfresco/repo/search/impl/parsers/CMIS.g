@@ -193,7 +193,7 @@ multiValuedColumnReference
 	
 valueFunction
 	:	functionName=keyWordOrId LPAREN functionArgument* RPAREN
-		-> ^(FUNCTION $functionName functionArgument*)
+		-> ^(FUNCTION $functionName LPAREN functionArgument* RPAREN)
 	;
 	
 functionArgument
@@ -348,8 +348,10 @@ likePredicate
 	;
 	
 nullPredicate
-	:	( (columnReference)=> columnReference | multiValuedColumnReference) IS NOT? NULL
-		-> ^(PRED_EXISTS columnReference NOT?)
+	:	( (columnReference)=> columnReference | multiValuedColumnReference) IS NULL
+		-> ^(PRED_EXISTS columnReference NOT)
+    |   ( (columnReference)=> columnReference | multiValuedColumnReference) IS NOT NULL
+        -> ^(PRED_EXISTS columnReference)
 	;
 	
 quantifiedComparisonPredicate

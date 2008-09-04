@@ -26,6 +26,7 @@ package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.LiteralArgument;
 import org.alfresco.service.namespace.QName;
 
@@ -50,7 +51,7 @@ public class BaseLiteralArgument extends BaseStaticArgument implements LiteralAr
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.LiteralArgument#getValue()
      */
-    public Serializable getValue()
+    public Serializable getValue(FunctionEvaluationContext context)
     {
         return value;
     }
@@ -69,7 +70,7 @@ public class BaseLiteralArgument extends BaseStaticArgument implements LiteralAr
         builder.append("BaseLiteralArgument[");
         builder.append("name=").append(getName()).append(", ");
         builder.append("type=").append(getType()).append(", ");
-        builder.append("value=").append(getValue()).append(", ");
+        builder.append("value=").append(getValue(null)).append(", ");
         builder.append("]");
         return builder.toString();
     }

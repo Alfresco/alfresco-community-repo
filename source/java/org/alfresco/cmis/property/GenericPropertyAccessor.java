@@ -26,7 +26,10 @@ package org.alfresco.cmis.property;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.search.Query;
 
 /**
  * The API to access a property.
@@ -44,4 +47,8 @@ public interface GenericPropertyAccessor
      * @return
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName);
+    
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException;
+    
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException;
 }

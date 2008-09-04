@@ -26,8 +26,13 @@ package org.alfresco.cmis.property;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.Query;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -37,7 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class SimplePropertyAccessor extends AbstractNamedPropertyAccessor implements InitializingBean
 {
-    private QName qname;
+    private QName propertyQname;
 
     private String mapping;
 
@@ -48,12 +53,45 @@ public class SimplePropertyAccessor extends AbstractNamedPropertyAccessor implem
 
     public Serializable getProperty(NodeRef nodeRef)
     {
-        return getServiceRegistry().getNodeService().getProperty(nodeRef, qname);
+        return getServiceRegistry().getNodeService().getProperty(nodeRef, propertyQname);
     }
 
     public void afterPropertiesSet() throws Exception
     {
-        qname = QName.resolveToQName(getServiceRegistry().getNamespaceService(), mapping);
+        propertyQname = QName.resolveToQName(getServiceRegistry().getNamespaceService(), mapping);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.GenericPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        StringBuilder field = new StringBuilder();
+        field.append("@");
+        field.append(propertyQname);
+        
+        // Check type conversion 
+        
+        PropertyDefinition pd = getServiceRegistry().getDictionaryService().getProperty(propertyQname);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(pd.getDataType(), value);
+        String asString =  DefaultTypeConverter.INSTANCE.convert(String.class, converted);
+        
+        return lqp.getFieldQuery(field.toString(), asString);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.GenericPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+
+        if(not)
+        {
+            return lqp.getFieldQuery("ISNULL", propertyQname.toString());
+        }
+        else
+        {
+            return lqp.getFieldQuery("ISNOTNULL", propertyQname.toString());
+        }   
+    }
 }

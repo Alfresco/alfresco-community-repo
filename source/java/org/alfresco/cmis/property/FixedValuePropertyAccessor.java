@@ -26,7 +26,13 @@ package org.alfresco.cmis.property;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 /**
  * Property accessor for fixed value mapping (eg to null, true, etc)
@@ -51,6 +57,51 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
     public Serializable getProperty(NodeRef nodeRef)
     {
         return fixedValue;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        if(value.equals(fixedValue))
+        {
+            return new MatchAllDocsQuery();
+        }
+        else
+        {
+            return new TermQuery(new Term("NO_TOKENS", "__"));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+        if(not)
+        {
+            if(fixedValue == null)
+            {
+                return new MatchAllDocsQuery();
+            }
+            else
+            {
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+        }
+        else
+        {
+            if(fixedValue == null)
+            {
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+            else
+            {
+                return new MatchAllDocsQuery();
+            }
+        }
+            
     }
 
 }

@@ -24,13 +24,21 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
+import java.util.Map;
+
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
- *
  */
-public class LuceneFTSExactTerm extends FTSExactTerm
+public class LuceneFTSExactTerm extends FTSExactTerm implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -39,5 +47,24 @@ public class LuceneFTSExactTerm extends FTSExactTerm
     public LuceneFTSExactTerm()
     {
         super();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
+     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
+     *      java.lang.String)
+     */
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        Argument argument = functionArgs.get(ARG_TERM);
+        String term = (String) argument.getValue(functionContext);
+
+        Query query = lqp.getFieldQuery("TEXT", term);
+        return query;
+
     }
 }

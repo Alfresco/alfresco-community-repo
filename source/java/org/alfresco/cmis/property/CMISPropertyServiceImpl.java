@@ -29,13 +29,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.ContentStreamAllowed;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.Query;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -49,11 +53,21 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     private AbstractGenericPropertyAccessor genericPropertyAccessor;
 
+    private CMISService cmisService;
+
     private CMISMapping cmisMapping;
-    
+
     private ServiceRegistry serviceRegistry;
 
     private boolean strict = false;
+
+    /**
+     * @param cmisService
+     */
+    public void setCMISService(CMISService cmisService)
+    {
+        this.cmisService = cmisService;
+    }
 
     /**
      * @param cmisMapping
@@ -64,13 +78,13 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     }
 
     /**
-     * @return  cmis mapping service
+     * @return cmis mapping service
      */
     public CMISMapping getCMISMapping()
     {
         return cmisMapping;
     }
-    
+
     /**
      * @param serviceRegistry
      */
@@ -233,7 +247,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
         // CMIS Folder
         addNamedPropertyAccessor(getParentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_ALLLOWED_CHILD_OBJECT_TYPES, null, CMISScope.FOLDER));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPES, null, CMISScope.FOLDER));
     }
 
     public void addNamedPropertyAccessor(NamedPropertyAccessor namedPropertyAccessor)
@@ -269,7 +283,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
-    
+
     public NamedPropertyAccessor getFixedValuePropertyAccessor(String propertyName, Serializable fixedValue, CMISScope scope)
     {
         FixedValuePropertyAccessor accessor = new FixedValuePropertyAccessor();
@@ -328,7 +342,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
-    
+
     public NamedPropertyAccessor getVersionSeriesIsCheckedOutPropertyAccessor()
     {
         VersionSeriesIsCheckedOutPropertyAccessor accessor = new VersionSeriesIsCheckedOutPropertyAccessor();
@@ -336,7 +350,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
-    
+
     public NamedPropertyAccessor getVersionSeriesCheckedOutByPropertyAccessor()
     {
         VersionSeriesCheckedOutByPropertyAccessor accessor = new VersionSeriesCheckedOutByPropertyAccessor();
@@ -382,7 +396,47 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         ParentPropertyAccessor accessor = new ParentPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
         accessor.setCMISMapping(cmisMapping);
+        accessor.setCMISService(cmisService);
         return accessor;
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param value
+     * @return
+     * @throws ParseException 
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneEquality(lqp, propertyName, value);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneEquality(lqp, propertyName, value);
+        }
+    }
+
+    /**
+     * @param lqp
+     * @param propertyName
+     * @param not
+     * @return
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            return accessor.buildLuceneExists(lqp, propertyName, not);
+        }
+        else
+        {
+            return genericPropertyAccessor.buildLuceneExists(lqp, propertyName, not);
+        }
     }
 
 }

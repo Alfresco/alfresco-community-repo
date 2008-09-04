@@ -27,9 +27,12 @@ package org.alfresco.repo.search.impl.querymodel;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
@@ -44,4 +47,10 @@ public interface FunctionEvaluationContext
     public Serializable getProperty(NodeRef nodeRef, QName propertyQName);
     
     public NodeService getNodeService();
+    
+    public Float getScore();
+
+    public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value) throws ParseException;
+
+    public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException;
 }

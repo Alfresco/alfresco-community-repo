@@ -25,9 +25,11 @@
 package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.ListArgument;
 
 /**
@@ -58,9 +60,16 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
      */
-    public Serializable getValue()
+    public Serializable getValue(FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        ArrayList<Serializable> answer = new ArrayList<Serializable>(arguments.size());
+        for(Argument argument : arguments)
+        {
+            Serializable value = argument.getValue(context);
+            answer.add(value);
+        }
+        return answer;
+        
     }
 
     public String toString()

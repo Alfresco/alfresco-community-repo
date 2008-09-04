@@ -97,9 +97,7 @@
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:VERSION_SERIES_CHECKED_OUT_BY">
                <title>Version Series Checked Out By</title>
@@ -108,7 +106,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true" />
+               <index enabled="false" />
             </property>
             <property name="cmis:VERSION_SERIES_CHECKED_OUT_ID">
                <title>Version Series Checked Out Id</title>
@@ -148,7 +146,7 @@
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
                <index enabled="true">
-                  <tokenised>true</tokenised>
+                  <tokenised>false</tokenised>
                </index>
             </property>
             <property name="cmis:CONTENT_STREAM_MIME_TYPE">
@@ -230,9 +228,7 @@
                <protected>true</protected>
                 <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>false</tokenised>
-               </index>
+               <index enabled="false" />
             </property> 
             <property name="cmis:TARGET_ID">
                <title>Target Id</title>
@@ -241,9 +237,7 @@
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>false</tokenised>
-               </index>
+               <index enabled="false" />
             </property> 
          </properties>
          <mandatory-aspects>
@@ -274,9 +268,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>false</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:OBJECT_TYPE_ID">
                <title>Object Type Id</title>
@@ -340,9 +332,7 @@
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>false</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
          </properties>
       </aspect>

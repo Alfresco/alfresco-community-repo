@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.search.impl.querymodel;
 
-import java.io.IOException;
-
 import org.alfresco.service.cmr.search.ResultSet;
 
 /**
@@ -34,7 +32,7 @@ import org.alfresco.service.cmr.search.ResultSet;
  */
 public interface QueryEngine
 {
-    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options) throws IOException;
+    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options, FunctionEvaluationContext functionContext);
     
     public QueryModelFactory getQueryModelFactory();
 }

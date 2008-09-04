@@ -147,6 +147,7 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
                 context.setNodeRefs(nodeRefs);
                 context.setNodeService(nodeService);
                 context.setScores(scores);
+                context.setScore(getScore());
                 return column.getFunction().getValue(column.getFunctionArguments(), context);
             }
         }

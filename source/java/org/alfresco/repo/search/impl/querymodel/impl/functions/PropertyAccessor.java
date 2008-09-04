@@ -37,8 +37,6 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -79,13 +77,7 @@ public class PropertyAccessor extends BaseFunction
         {
             throw new QueryModelException("Function "+NAME+" requires a property argument");
         }
-        PropertyArgument propertyArgument = (PropertyArgument)arg;
-        String selectorName = propertyArgument.getSelector();
-        QName propertyQName = propertyArgument.getPropertyName();
-        
-        NodeRef nodeRef = context.getNodeRefs().get(selectorName);
-        return context.getProperty(nodeRef, propertyQName);
-        
+        return arg.getValue(context);
     }
 
 }

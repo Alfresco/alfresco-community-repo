@@ -29,10 +29,14 @@ import java.util.Map;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.property.CMISPropertyService;
+import org.alfresco.cmis.property.CMISPropertyServiceImpl;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
@@ -49,44 +53,49 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
 
     private CMISDictionaryService cmisDictionaryService;
 
-    
-    
+    private Float score;
+
     /**
-     * @param nodeRefs the nodeRefs to set
+     * @param nodeRefs
+     *            the nodeRefs to set
      */
-    protected void setNodeRefs(Map<String, NodeRef> nodeRefs)
+    public void setNodeRefs(Map<String, NodeRef> nodeRefs)
     {
         this.nodeRefs = nodeRefs;
     }
 
     /**
-     * @param scores the scores to set
+     * @param scores
+     *            the scores to set
      */
-    protected void setScores(Map<String, Float> scores)
+    public void setScores(Map<String, Float> scores)
     {
         this.scores = scores;
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
-    protected void setNodeService(NodeService nodeService)
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
     /**
-     * @param cmisPropertyService the cmisPropertyService to set
+     * @param cmisPropertyService
+     *            the cmisPropertyService to set
      */
-    protected void setCmisPropertyService(CMISPropertyService cmisPropertyService)
+    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
     {
         this.cmisPropertyService = cmisPropertyService;
     }
 
     /**
-     * @param cmisDictionaryService the cmisDictionaryService to set
+     * @param cmisDictionaryService
+     *            the cmisDictionaryService to set
      */
-    protected void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
+    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
     }
@@ -131,6 +140,54 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     public Map<String, Float> getScores()
     {
         return scores;
+    }
+
+    /**
+     * @return the score
+     */
+    public Float getScore()
+    {
+        return score;
+    }
+
+    /**
+     * @param score
+     *            the score to set
+     */
+    public void setScore(Float score)
+    {
+        this.score = score;
+    }
+
+    public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value) throws ParseException
+    {
+        if(cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl)cmisPropertyService;
+            return impl.buildLuceneEquality(lqp, propertyName, value);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, org.alfresco.service.namespace.QName, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException
+    {
+        if(cmisPropertyService instanceof CMISPropertyServiceImpl)
+        {
+            String propertyName = cmisDictionaryService.getCMISMapping().getCmisPropertyName(propertyQName);
+            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl)cmisPropertyService;
+            return impl.buildLuceneExists(lqp, propertyName, not);
+        }
+        else
+        {
+            return null;
+        }
     }
 
 }

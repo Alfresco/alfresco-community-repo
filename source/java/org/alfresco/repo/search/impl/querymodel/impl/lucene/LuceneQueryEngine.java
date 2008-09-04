@@ -26,10 +26,13 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.io.IOException;
 
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.ClosingIndexSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.LuceneSearcher;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
@@ -42,7 +45,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.lucene.search.BooleanQuery;
+import org.alfresco.service.namespace.NamespaceService;
 import org.apache.lucene.search.Hits;
 
 /**
@@ -57,6 +60,8 @@ public class LuceneQueryEngine implements QueryEngine
     private NodeService nodeService;
 
     private TenantService tenantService;
+
+    private NamespaceService namespaceService;
 
     /**
      * @param dictionaryService
@@ -94,47 +99,69 @@ public class LuceneQueryEngine implements QueryEngine
         this.tenantService = tenantService;
     }
 
+    /**
+     * @param namespaceService
+     *            the namespaceService to set
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     public QueryModelFactory getQueryModelFactory()
     {
         return new LuceneQueryModelFactory();
     }
 
-    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options) throws IOException
+    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options, FunctionEvaluationContext functionContext)
     {
-        StoreRef storeRef = options.getStores().get(0);
-        if (query instanceof LuceneQueryBuilder)
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.setBulkFetch(options.getFetchSize() > 0);
+        searchParameters.setBulkFetchSize(options.getFetchSize());
+        if (options.getMaxItems() > 0)
         {
-            SearchService searchService = indexAndSearcher.getSearcher(storeRef, options.isIncludeInTransactionData());
-            if (searchService instanceof LuceneSearcher)
+            searchParameters.setLimit(options.getMaxItems() + options.getSkipCount());
+        }
+        else
+        {
+            searchParameters.setLimitBy(LimitBy.UNLIMITED);
+        }
+        LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContext(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher);
+        try
+        {
+            StoreRef storeRef = options.getStores().get(0);
+            if (query instanceof LuceneQueryBuilder)
             {
-                LuceneSearcher luceneSearcher = (LuceneSearcher) searchService;
-                ClosingIndexSearcher searcher = luceneSearcher.getClosingIndexSearcher();
-                LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
-                BooleanQuery luceneQuery = builder.buildQuery(selectorName, dictionaryService);
-                System.out.println(luceneQuery);
-                SearchParameters sp = new SearchParameters();
-                sp.setBulkFetch(options.getFetchSize() > 0);
-                sp.setBulkFetchSize(options.getFetchSize());
-                if (options.getMaxItems() > 0)
+                SearchService searchService = indexAndSearcher.getSearcher(storeRef, options.isIncludeInTransactionData());
+                if (searchService instanceof LuceneSearcher)
                 {
-                    sp.setLimit(options.getMaxItems() + options.getSkipCount());
+                    LuceneSearcher luceneSearcher = (LuceneSearcher) searchService;
+                    ClosingIndexSearcher searcher = luceneSearcher.getClosingIndexSearcher();
+                    LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
+                    org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorName, luceneContext, functionContext);
+                    System.out.println(luceneQuery);
+                    
+                    Hits hits = searcher.search(luceneQuery);
+                    return new LuceneResultSet(hits, searcher, nodeService, tenantService, null, searchParameters, indexAndSearcher);
+
                 }
                 else
                 {
-                    sp.setLimitBy(LimitBy.UNLIMITED);
+                    throw new UnsupportedOperationException();
                 }
-                Hits hits = searcher.search(luceneQuery);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, null, sp, indexAndSearcher);
-
             }
             else
             {
                 throw new UnsupportedOperationException();
             }
         }
-        else
+        catch (ParseException e)
         {
-            throw new UnsupportedOperationException();
+            throw new SearcherException("Failed to parse query: " + e);
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException("IO exception during search", e);
         }
     }
 }

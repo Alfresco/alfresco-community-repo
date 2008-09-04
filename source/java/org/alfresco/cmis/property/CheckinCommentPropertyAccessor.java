@@ -28,8 +28,10 @@ import java.io.Serializable;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.apache.lucene.search.Query;
 
 /**
  * Accesor for the CMIS Checkin Comment 
@@ -63,6 +65,22 @@ public class CheckinCommentPropertyAccessor extends AbstractNamedPropertyAccesso
     public CMISScope getScope()
     {
        return CMISScope.DOCUMENT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value)
+    {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not)
+    {
+        return null;
     }
     
 }

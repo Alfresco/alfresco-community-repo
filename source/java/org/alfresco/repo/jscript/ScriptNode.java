@@ -2695,6 +2695,21 @@ public class ScriptNode implements Serializable, Scopeable
         }
 
         /**
+         * Set the content stream from another input stream
+         *  
+         * @param inputStream
+         */
+        public void write(InputStream inputStream)
+        {
+            ContentService contentService = services.getContentService();
+            ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
+            writer.putContent(inputStream);
+
+            // update cached variables after putContent()
+            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+        }
+
+        /**
          * @return download URL to the content
          */
         public String getUrl()

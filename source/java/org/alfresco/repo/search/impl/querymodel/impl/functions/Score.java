@@ -70,7 +70,15 @@ public class Score extends BaseFunction
      */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        Argument qualifier = args.get(ARG_QUALIFIER);
+        if(qualifier != null)
+        {
+            return context.getScores().get(qualifier.getValue(context));
+        }
+        else
+        {
+            return context.getScore();
+        }
     }
 
 }

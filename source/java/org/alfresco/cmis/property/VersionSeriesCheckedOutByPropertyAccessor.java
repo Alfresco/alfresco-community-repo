@@ -29,8 +29,11 @@ import java.io.Serializable;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.search.Query;
 
 /**
  * Get the CMIS version series checked out by property
@@ -44,7 +47,7 @@ public class VersionSeriesCheckedOutByPropertyAccessor extends AbstractNamedProp
     {
         if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            return null;
+            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
         }
         else
         {
@@ -78,5 +81,22 @@ public class VersionSeriesCheckedOutByPropertyAccessor extends AbstractNamedProp
     public CMISScope getScope()
     {
         return CMISScope.DOCUMENT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        return null;
+    }
+    
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+        return null;
     }
 }

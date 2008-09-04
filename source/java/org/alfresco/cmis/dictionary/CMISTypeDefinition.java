@@ -142,7 +142,7 @@ public class CMISTypeDefinition implements Serializable
                 objectTypeId = typeId;
                 objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
                 displayName = typeDefinition.getTitle();
-                parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
+                parentTypeId = null;
                 rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.RELATIONSHIP_QNAME);
                 description = typeDefinition.getDescription();
                 creatable = false;

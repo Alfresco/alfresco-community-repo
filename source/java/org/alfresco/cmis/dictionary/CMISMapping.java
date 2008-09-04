@@ -147,7 +147,7 @@ public class CMISMapping
 
     public static String PROP_PARENT = "PARENT";
 
-    public static String PROP_ALLLOWED_CHILD_OBJECT_TYPES = "ALLLOWED_CHILD_OBJECT_TYPES";
+    public static String PROP_ALLOWED_CHILD_OBJECT_TYPES = "ALLOWED_CHILD_OBJECT_TYPES";
 
     public static String PROP_SOURCE_ID = "SOURCE_ID";
 

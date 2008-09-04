@@ -36,5 +36,5 @@ public interface Argument
 {
     public String getName();
     
-    public Serializable getValue();
+    public Serializable getValue(FunctionEvaluationContext context);
 }

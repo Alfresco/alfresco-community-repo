@@ -26,6 +26,7 @@ package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.SelectorArgument;
 
 /**
@@ -60,9 +61,9 @@ public class BaseSelectorArgument  extends BaseStaticArgument implements Selecto
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
      */
-    public Serializable getValue()
+    public Serializable getValue(FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        return getSelector();
     }
 
     

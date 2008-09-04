@@ -26,8 +26,13 @@ package org.alfresco.cmis.property;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.search.Query;
 
 /**
  * Generic mapping of CMIS style property names to Alfresco properties (for non CMIS properties)
@@ -41,5 +46,43 @@ public class MappingPropertyAccessor extends AbstractGenericPropertyAccessor
         QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
         return getServiceRegistry().getNodeService().getProperty(nodeRef, propertyQname);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.GenericPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
+        StringBuilder field = new StringBuilder();
+        field.append("@");
+        field.append(propertyQname);
+        
+        // Check type conversion 
+        
+        PropertyDefinition pd = getServiceRegistry().getDictionaryService().getProperty(propertyQname);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(pd.getDataType(), value);
+        String asString =  DefaultTypeConverter.INSTANCE.convert(String.class, converted);
+        
+        return lqp.getFieldQuery(field.toString(), asString);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.GenericPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+
+        QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
+        if(not)
+        {
+            return lqp.getFieldQuery("ISNULL", propertyQname.toString());
+        }
+        else
+        {
+            return lqp.getFieldQuery("ISNOTNULL", propertyQname.toString());
+        }   
+    }
+    
+
 
 }

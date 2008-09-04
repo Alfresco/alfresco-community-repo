@@ -71,9 +71,10 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      */
     public enum TypesFilter
     {
+        Documents,
         Folders,
-        FoldersAndDocuments,
-        Documents
+        Policies,
+        Any,
     };
         
     /** Query Parameters */
@@ -342,7 +343,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      */
     public NodeRef[] getChildren(NodeRef parent, TypesFilter typesFilter)
     {
-        if (typesFilter == TypesFilter.FoldersAndDocuments)
+        if (typesFilter == TypesFilter.Any)
         {
             NodeRef[] folders = queryChildren(parent, TypesFilter.Folders);
             NodeRef[] docs = queryChildren(parent, TypesFilter.Documents);

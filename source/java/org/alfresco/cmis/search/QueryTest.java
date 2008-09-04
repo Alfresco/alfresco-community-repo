@@ -24,14 +24,239 @@
  */
 package org.alfresco.cmis.search;
 
+import java.io.Serializable;
+
 import org.alfresco.cmis.dictionary.BaseCMISTest;
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * @author andyh
  */
 public class QueryTest extends BaseCMISTest
 {
+    public void testSimpleConjunction()
+    {
+
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'company'";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'home'";
+        rs = cmisQueryService.query(query);
+        assertEquals(2, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL AND NAME = 'home' AND NAME = 'company'";
+        rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+    }
+    
+    public void testSimpleDisjunction()
+    {
+
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'guest'";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'company'";
+        rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'guest' OR NAME = 'company'";
+        rs = cmisQueryService.query(query);
+        assertEquals(2, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+     
+    }
+    
+    public void testExists()
+    {
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NOT NULL";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(33, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME IS NULL";
+        rs = cmisQueryService.query(query);
+        assertEquals(0, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        
+        query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE URI IS NOT NULL";
+        rs = cmisQueryService.query(query);
+        assertEquals(0, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+        
+        query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE URI IS NULL";
+        rs = cmisQueryService.query(query);
+        assertEquals(45, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null; 
+    }
+    
+    public void testObjectEquals()
+    {
+        
+    }
+
+    public void testDocumentEquals()
+    {
+        
+    }
+
+    public void testFolderEquals()
+    {
+        NodeRef rootNode = cmisService.getDefaultRootNodeRef();
+
+        Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_NAME);
+        String name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
+
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = '" + name + "'";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE NAME = 'company'";
+        rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE PARENT = '" + rootNode.toString() + "'";
+        rs = cmisQueryService.query(query);
+        assertEquals(4, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+        
+        query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE ALLOWED_CHILD_OBJECT_TYPES = 'meep'";
+        rs = cmisQueryService.query(query);
+        assertEquals(0, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+        rs = null;
+
+    }
+
+    public void test_IN_TREE()
+    {
+        NodeRef rootNode = cmisService.getDefaultRootNodeRef();
+
+        Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_OBJECT_ID);
+        String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
+
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE IN_TREE('" + id + "')";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(32, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+
+    }
+
+    public void test_IN_FOLDER()
+    {
+        NodeRef rootNode = cmisService.getDefaultRootNodeRef();
+
+        Serializable ser = cmisPropertyService.getProperty(rootNode, CMISMapping.PROP_OBJECT_ID);
+        String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
+
+        String query = "SELECT * FROM FOLDER_OBJECT_TYPE WHERE IN_FOLDER('" + id + "')";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(4, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+    }
+
+    public void testFTS()
+    {
+        String query = "SELECT * FROM DOCUMENT_OBJECT_TYPE WHERE CONTAINS('\"Sample demonstrating the listing of AVM folder contents\"')";
+        CMISResultSet rs = cmisQueryService.query(query);
+        assertEquals(1, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println(row.getValue("NAME") + " Score " + row.getScore() + " " + row.getScores());
+        }
+        rs.close();
+    }
+
     public void testBasicSelectAsGuest()
     {
         runAs("guest");
@@ -107,13 +332,13 @@ public class QueryTest extends BaseCMISTest
         {
             for (String column : md.getColumnNames())
             {
-                System.out.println("Column  " +column + " value =" + row.getValue(column));
+                System.out.println("Column  " + column + " value =" + row.getValue(column));
             }
             System.out.println("\n\n");
         }
         rs.close();
     }
-    
+
     public void testBasicAllFolderColumns()
     {
         String query = "SELECT *  FROM FOLDER_OBJECT_TYPE AS DOC";
@@ -124,13 +349,13 @@ public class QueryTest extends BaseCMISTest
         {
             for (String column : md.getColumnNames())
             {
-                System.out.println("Column  " +column + " value =" + row.getValue(column));
+                System.out.println("Column  " + column + " value =" + row.getValue(column));
             }
             System.out.println("\n\n");
         }
         rs.close();
     }
-    
+
     public void testBasicAll_ST_SITES_Columns()
     {
         String query = "SELECT *  FROM ST_SITES AS DOC";
@@ -141,17 +366,42 @@ public class QueryTest extends BaseCMISTest
         {
             for (String column : md.getColumnNames())
             {
-                System.out.println("Column  " +column + " value =" + row.getValue(column));
+                System.out.println("Column  " + column + " value =" + row.getValue(column));
             }
             System.out.println("\n\n");
             System.out.println(row.getValues());
             System.out.println("\n\n");
         }
-        
+
         rs.close();
     }
-    
-    
+
+    public void testFunctionColumns()
+    {
+        String query = "SELECT DOC.NAME AS NAME, \nLOWER(\tDOC.NAME \n), LOWER ( DOC.NAME )  AS LNAME, UPPER ( DOC.NAME ) , UPPER(DOC.NAME) AS UNAME, Score(), SCORE(DOC), SCORE() AS SCORED, SCORE(DOC) AS DOCSCORE FROM FOLDER_OBJECT_TYPE AS DOC";
+        CMISResultSet rs = cmisQueryService.query(query);
+        CMISResultSetMetaData md = rs.getMetaData();
+        assertNotNull(md.getQueryOptions());
+        assertEquals(9, md.getColumnNames().length);
+        assertNotNull(md.getColumn("NAME"));
+        assertNotNull(md.getColumn("LOWER(\tDOC.NAME \n)"));
+        assertNotNull(md.getColumn("LNAME"));
+        assertNotNull(md.getColumn("UPPER ( DOC.NAME )"));
+        assertNotNull(md.getColumn("UNAME"));
+        assertNotNull(md.getColumn("Score()"));
+        assertNotNull(md.getColumn("SCORE(DOC)"));
+        assertNotNull(md.getColumn("SCORED"));
+        assertNotNull(md.getColumn("DOCSCORE"));
+        assertEquals(1, md.getSelectors().length);
+        assertNotNull(md.getSelector("DOC"));
+        for (CMISResultSetRow row : rs)
+        {
+            System.out.println("\n\n");
+            System.out.println(row.getValues());
+            System.out.println("\n\n");
+        }
+        rs.close();
+    }
 
     public void xtestParse1()
     {

@@ -174,7 +174,50 @@ public class PathQuery extends Query
      */
     public String toString()
     {
-        return "";
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("PATH:");
+        int i = 0;
+        for(StructuredFieldPosition sfp : pathStructuredFieldPositions)
+        {
+            if(i % 2 == 0)
+            {
+                stringBuilder.append('/');
+            }
+            else
+            {
+                stringBuilder.append(':');
+            }
+            if(sfp.matchesAll())
+            {
+                stringBuilder.append("*");
+            }
+            else
+            {
+                stringBuilder.append(sfp.getTermText());
+            }
+            i++;
+        }
+        for(StructuredFieldPosition sfp : qNameStructuredFieldPositions)
+        {
+            if(i % 2 == 0)
+            {
+                stringBuilder.append('/');
+            }
+            else
+            {
+                stringBuilder.append(':');
+            }
+            if(sfp.matchesAll())
+            {
+                stringBuilder.append("*");
+            }
+            else
+            {
+                stringBuilder.append(sfp.getTermText());
+            }
+            i++;
+        }
+        return stringBuilder.toString();
     }
 
     /*
@@ -182,7 +225,7 @@ public class PathQuery extends Query
      */
     public String toString(String field)
     {
-        return "";
+        return toString();
     }
 
     private class StructuredFieldWeight implements Weight

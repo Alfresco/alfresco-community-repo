@@ -29,7 +29,10 @@ import java.io.Serializable;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.search.Query;
 
 /**
  * Accesser for CMIS is latest version property
@@ -54,6 +57,22 @@ public class IsLatestVersionPropertyAccessor extends AbstractNamedPropertyAccess
     public CMISScope getScope()
     {
        return CMISScope.DOCUMENT;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+        return null;
     }
     
 }

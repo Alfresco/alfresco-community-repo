@@ -24,15 +24,15 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-import java.util.Collection;
+import java.util.Map;
 
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseSelector;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
@@ -53,20 +53,11 @@ public class LuceneSelector extends BaseSelector implements LuceneQueryBuilderCo
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery)
      */
-    public BooleanQuery addComponent(BooleanQuery base, BooleanQuery current, DictionaryService dictionaryService)
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
     {
-        Collection<QName> subclasses = dictionaryService.getSubTypes(getType(), true);
-        BooleanQuery booleanQuery = new BooleanQuery();
-        for (QName qname : subclasses)
-        {
-            TermQuery termQuery = new TermQuery(new Term("TYPE", qname.toString()));
-            if (termQuery != null)
-            {
-                booleanQuery.add(termQuery, Occur.SHOULD);
-            }
-        }
-        base.add(booleanQuery, Occur.MUST);
-        return current;
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        return lqp.getFieldQuery("TYPE", getType().toString());
+        
     }
 
     

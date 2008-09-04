@@ -26,7 +26,9 @@ package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -74,9 +76,10 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
      * 
      * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
      */
-    public Serializable getValue()
+    public Serializable getValue(FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        NodeRef nodeRef = context.getNodeRefs().get(getSelector());
+        return context.getProperty(nodeRef, getPropertyName());
     }
 
     public String toString()

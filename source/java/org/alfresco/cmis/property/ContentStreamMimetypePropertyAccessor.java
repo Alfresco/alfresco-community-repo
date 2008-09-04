@@ -29,9 +29,13 @@ import java.io.Serializable;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.apache.lucene.search.Query;
 
 /**
  * Accessor for CMIS content stream mimetype property
@@ -69,4 +73,36 @@ public class ContentStreamMimetypePropertyAccessor extends AbstractNamedProperty
        return CMISScope.DOCUMENT;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        StringBuilder field = new StringBuilder();
+        field.append("@");
+        field.append(ContentModel.PROP_CONTENT);
+        field.append(".mimetype");
+        
+        // Check type conversion 
+        
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.TEXT), value);
+        String asString =  DefaultTypeConverter.INSTANCE.convert(String.class, converted);
+        
+        return lqp.getFieldQuery(field.toString(), asString);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+       if(not)
+       {
+           return lqp.getFieldQuery("ISNULL", ContentModel.PROP_CONTENT.toString());
+       }
+       else
+       {
+           return lqp.getFieldQuery("ISNOTNULL", ContentModel.PROP_CONTENT.toString());
+       }   
+    }
 }

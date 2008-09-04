@@ -24,13 +24,14 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.apache.lucene.search.BooleanQuery;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
  */
 public interface LuceneQueryBuilder
 {
-    public BooleanQuery buildQuery(String selectorName, DictionaryService dictionaryService);
+    public  Query buildQuery(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
 }

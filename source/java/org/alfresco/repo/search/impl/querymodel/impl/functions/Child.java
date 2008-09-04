@@ -77,9 +77,9 @@ public class Child extends BaseFunction
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         Argument selectorArgument = args.get(ARG_SELECTOR);
-        String selectorName = DefaultTypeConverter.INSTANCE.convert(String.class, selectorArgument.getValue());
+        String selectorName = DefaultTypeConverter.INSTANCE.convert(String.class, selectorArgument.getValue(context));
         Argument parentArgument = args.get(ARG_PARENT);
-        NodeRef parent = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, parentArgument.getValue());
+        NodeRef parent = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, parentArgument.getValue(context));
 
         NodeRef child = context.getNodeRefs().get(selectorName);
 

@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -89,6 +91,10 @@ public abstract class BaseCMISTest extends TestCase
 
     private MutableAuthenticationDao authenticationDAO;
 
+    protected CMISService cmisService;
+
+    protected SearchService searchService;
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -97,6 +103,7 @@ public abstract class BaseCMISTest extends TestCase
         cmisMapping = cmisDictionaryService.getCMISMapping();
         cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
         cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
+        cmisService = (CMISService) ctx.getBean("CMISService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         nodeService = (NodeService) ctx.getBean("nodeService");
         fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
@@ -104,6 +111,8 @@ public abstract class BaseCMISTest extends TestCase
         
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        
+        searchService = (SearchService) ctx.getBean("searchService");
         
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");

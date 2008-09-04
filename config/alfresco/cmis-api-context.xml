@@ -36,6 +36,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
+        <property name="CMISService">
+            <ref bean="CMISService" />
+        </property>
         <property name="CMISMapping">
             <ref bean="CMISMapping" />
         </property>
@@ -85,6 +88,9 @@
         </property>
         <property name="tenantService">
             <ref bean="tenantService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
         </property>
     </bean>
    

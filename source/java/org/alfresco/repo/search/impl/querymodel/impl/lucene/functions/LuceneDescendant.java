@@ -24,13 +24,28 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Descendant;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
  *
  */
-public class LuceneDescendant extends Descendant
+public class LuceneDescendant extends Descendant implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -41,4 +56,53 @@ public class LuceneDescendant extends Descendant
         super();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
+     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
+     *      java.lang.String)
+     */
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
+        Argument argument = functionArgs.get(ARG_ANCESTOR);
+        String id = (String) argument.getValue(functionContext);
+        NodeRef nodeRef;
+        if(NodeRef.isNodeRef(id))
+        {
+            nodeRef = new NodeRef(id);
+        }
+        else
+        {
+            int lastIndex = id.lastIndexOf('/');
+            String versionLabel = id.substring(lastIndex+1);
+            String actualId = id.substring(0, lastIndex);
+            if(NodeRef.isNodeRef(actualId))
+            {
+                nodeRef = new NodeRef(actualId);
+                Serializable value = functionContext.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+                if (value != null)
+                {
+                    String actualVersionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                    if(!actualVersionLabel.equals(versionLabel))
+                    {
+                        throw new QueryModelException("Object id does not refer to the current version"+id);
+                    }
+                }
+            }
+            else
+            {
+                throw new QueryModelException("Invalid Object Id "+id);
+            }
+        }
+        Path path = functionContext.getNodeService().getPath(nodeRef);
+        StringBuilder builder = new StringBuilder(path.toPrefixString(luceneContext.getNamespacePrefixResolver()));
+        builder.append("//*");
+        Query query = lqp.getFieldQuery("PATH", builder.toString());
+        return query;
+        
+    }
+    
 }

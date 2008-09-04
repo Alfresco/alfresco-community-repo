@@ -25,15 +25,22 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.repo.search.impl.lucene.ParseException;
+import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.Negation;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseConjunction;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
  * @author andyh
- *
  */
-public class LuceneConjunction extends BaseConjunction
+public class LuceneConjunction extends BaseConjunction implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -42,6 +49,44 @@ public class LuceneConjunction extends BaseConjunction
     public LuceneConjunction(List<Constraint> constraints)
     {
         super(constraints);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.lang.String,
+     *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
+     *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
+     */
+    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+            throws ParseException
+    {
+        BooleanQuery query = new BooleanQuery();
+        for (Constraint constraint : getConstraints())
+        {
+            if (constraint instanceof LuceneQueryBuilderComponent)
+            {
+                LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
+                Query constraintQuery = luceneQueryBuilderComponent.addComponent(selector, functionArgs, luceneContext, functionContext);
+                if (constraintQuery != null)
+                {
+                    if (constraint instanceof Negation)
+                    {
+                        query.add(constraintQuery, Occur.MUST_NOT);
+                    }
+                    else
+                    {
+                        query.add(constraintQuery, Occur.MUST);
+                    }
+                }
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+        return query;
+
     }
 
 }

@@ -108,9 +108,8 @@ public class LuceneQueryParser extends QueryParser
      * @throws ParseException
      *             if the parsing fails
      */
-    static public Query parse(String query, String field, Analyzer analyzer,
-            NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, TenantService tenantService,
-            Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config, IndexReader indexReader) throws ParseException
+    static public Query parse(String query, String field, Analyzer analyzer, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService,
+            TenantService tenantService, Operator defaultOperator, SearchParameters searchParameters, LuceneConfig config, IndexReader indexReader) throws ParseException
     {
         if (s_logger.isDebugEnabled())
         {
@@ -133,7 +132,7 @@ public class LuceneQueryParser extends QueryParser
         return result;
     }
 
-    private void setLuceneConfig(LuceneConfig config)
+    public void setLuceneConfig(LuceneConfig config)
     {
         this.config = config;
     }
@@ -143,7 +142,7 @@ public class LuceneQueryParser extends QueryParser
         this.indexReader = indexReader;
     }
 
-    private void setSearchParameters(SearchParameters searchParameters)
+    public void setSearchParameters(SearchParameters searchParameters)
     {
         this.searchParameters = searchParameters;
     }
@@ -152,7 +151,7 @@ public class LuceneQueryParser extends QueryParser
     {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -188,7 +187,7 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
-    protected Query getFieldQuery(String field, String queryText) throws ParseException
+    public Query getFieldQuery(String field, String queryText) throws ParseException
     {
         try
         {
@@ -409,9 +408,8 @@ public class LuceneQueryParser extends QueryParser
                     }
                 }
 
+                Collection<QName> subclasses = dictionaryService.getSubAspects(target.getName(), true);
 
-                Collection<QName> subclasses = dictionaryService.getSubAspects(target.getName(), true);               
-              
                 BooleanQuery booleanQuery = new BooleanQuery();
                 for (QName qname : subclasses)
                 {
@@ -538,7 +536,7 @@ public class LuceneQueryParser extends QueryParser
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
-                        query.add(typeQuery, Occur.MUST);
+                        //query.add(typeQuery, Occur.MUST);
                         query.add(presenceQuery, Occur.MUST);
                     }
                     return query;
@@ -888,6 +886,7 @@ public class LuceneQueryParser extends QueryParser
                             if (isMlText)
                             {
                                 int position = c.termText().indexOf("}");
+                                @SuppressWarnings("unused")
                                 String language = c.termText().substring(0, position + 1);
                                 String token = c.termText().substring(position + 1);
                                 int oldPositionIncrement = replace.getPositionIncrement();

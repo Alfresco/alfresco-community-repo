@@ -28,8 +28,15 @@ import java.io.Serializable;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 /**
  * Get the CMIS object type id property
@@ -71,5 +78,34 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
        return CMISScope.OBJECT;
     }
    
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.String, java.io.Serializable)
+     */
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value) throws ParseException
+    {
+        // TODO: version label form
+        String asString =  DefaultTypeConverter.INSTANCE.convert(String.class, value);
+        return lqp.getFieldQuery("TYPE", asString);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.lang.Boolean)
+     */
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    {
+        if (not)
+        {
+            return new TermQuery(new Term("NO_TOKENS", "__"));
+        }
+        else
+        {
+            return new MatchAllDocsQuery();
+        }
+    }
+    
+    
 
 }

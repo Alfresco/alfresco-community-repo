@@ -32,9 +32,12 @@ import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Multiplicity;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * @author andyh
@@ -70,7 +73,14 @@ public class Upper extends BaseFunction
      */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        Argument arg = args.get(ARG_PROPERTY);
+        if(!(arg instanceof PropertyArgument))
+        {
+            throw new QueryModelException("Function "+NAME+" requires a property argument");
+        }
+        Serializable value = arg.getValue(context);
+        String stringValue = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+        return stringValue.toUpperCase();
     }
 
 }

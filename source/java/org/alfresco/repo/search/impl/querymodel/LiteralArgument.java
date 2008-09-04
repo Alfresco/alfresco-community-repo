@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.search.impl.querymodel;
 
-import java.io.Serializable;
-
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -34,6 +32,4 @@ import org.alfresco.service.namespace.QName;
 public interface LiteralArgument extends StaticArgument
 {
     public QName getType();
-
-    public Serializable getValue();
 }

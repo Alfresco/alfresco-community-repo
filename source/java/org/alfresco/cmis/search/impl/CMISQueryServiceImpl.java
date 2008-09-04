@@ -24,7 +24,6 @@
  */
 package org.alfresco.cmis.search.impl;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +35,7 @@ import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.cmis.search.CMISResultSetImpl;
+import org.alfresco.cmis.search.CmisFunctionEvaluationContext;
 import org.alfresco.cmis.search.FullTextSearchSupport;
 import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.repo.search.impl.querymodel.Query;
@@ -51,7 +51,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
     private CMISService cmisService;
 
     private CMISDictionaryService cmisDictionaryService;
-    
+
     private CMISPropertyService cmisPropertyService;
 
     private CMISMapping cmisMapping;
@@ -105,10 +105,9 @@ public class CMISQueryServiceImpl implements CMISQueryService
         this.nodeService = nodeService;
     }
 
-    
-    
     /**
-     * @param cmisPropertyService the cmisPropertyService to set
+     * @param cmisPropertyService
+     *            the cmisPropertyService to set
      */
     public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
     {
@@ -125,20 +124,17 @@ public class CMISQueryServiceImpl implements CMISQueryService
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, getJoinSupport());
         Query query = parser.parse(queryEngine.getQueryModelFactory());
         System.out.println(query);
-        try
-        {
-            ResultSet lucene = queryEngine.executeQuery(query, query.getSource().getSelector(), options);
-            Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();
-            wrapped.put(query.getSource().getSelector(), lucene);
-            CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, cmisPropertyService);
-            return cmis;
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
+        
+        CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
+        functionContext.setCmisDictionaryService(cmisDictionaryService);
+        functionContext.setCmisPropertyService(cmisPropertyService);
+        functionContext.setNodeService(nodeService);
+
+        ResultSet lucene = queryEngine.executeQuery(query, query.getSource().getSelector(), options, functionContext);
+        Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();
+        wrapped.put(query.getSource().getSelector(), lucene);
+        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, cmisPropertyService);
+        return cmis;
     }
 
     /*
@@ -169,7 +165,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
      */
     public FullTextSearchSupport getFullTextSearchSupport()
     {
-        return FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED;
+        return FullTextSearchSupport.FULL_TEXT_ONLY;
     }
 
     /*

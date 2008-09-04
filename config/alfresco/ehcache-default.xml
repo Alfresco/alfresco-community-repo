@@ -43,7 +43,7 @@
     <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
         />
@@ -57,21 +57,21 @@
     <!-- approx 40MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
         />
     <!-- approx 15MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.aspects" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="40000"
         eternal="true"
         overflowToDisk="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.properties" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
         />

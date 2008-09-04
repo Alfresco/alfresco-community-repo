@@ -39,7 +39,7 @@ import javax.xml.validation.Validator;
 import org.alfresco.repo.cmis.rest.xsd.CMISValidator;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.web.scripts.TestWebScriptServer.Request;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -153,7 +153,7 @@ public class CMISWebScriptTest extends BaseWebScriptTest
      * @return response
      * @throws IOException
      */
-    protected MockHttpServletResponse sendRequest(Request req, int expectedStatus, String asUser)
+    protected Response sendRequest(Request req, int expectedStatus, String asUser)
         throws IOException
     {
         if (argsAsHeaders)

@@ -35,6 +35,7 @@ import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Request;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.alfresco.web.scripts.atom.AbderaService;
 import org.alfresco.web.scripts.atom.AbderaServiceImpl;
 import org.apache.abdera.ext.cmis.CMISConstants;
@@ -46,7 +47,6 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.abdera.model.Service;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 
 /**
@@ -83,7 +83,7 @@ public class TestCMIS extends CMISWebScriptTest
     {
         if (service == null)
         {
-            MockHttpServletResponse res = sendRequest(new GetRequest("/api/repository"), 200);
+            Response res = sendRequest(new GetRequest("/api/repository"), 200);
             String xml = res.getContentAsString();
             assertNotNull(xml);
             assertTrue(xml.length() > 0);
@@ -138,7 +138,7 @@ public class TestCMIS extends CMISWebScriptTest
         throws Exception
     {
         Request get = new GetRequest(href.toString()).setArgs(args);
-        MockHttpServletResponse res = sendRequest(get, 200);
+        Response res = sendRequest(get, 200);
         assertNotNull(res);
         String xml = res.getContentAsString();
         Entry entry = abdera.parseEntry(new StringReader(xml), null);
@@ -157,7 +157,7 @@ public class TestCMIS extends CMISWebScriptTest
         throws Exception
     {
         Request get = new GetRequest(href.toString()).setArgs(args);
-        MockHttpServletResponse res = sendRequest(get, 200);
+        Response res = sendRequest(get, 200);
         assertNotNull(res);
         String xml = res.getContentAsString();
         Feed feed = abdera.parseFeed(new StringReader(xml), null);
@@ -173,7 +173,7 @@ public class TestCMIS extends CMISWebScriptTest
         String guid = GUID.generate();
         createFolder = createFolder.replace("${NAME}", name);
         createFolder = createFolder.replace("${GUID}", guid);
-        MockHttpServletResponse res = sendRequest(new PostRequest(parent.toString(), createFolder, Format.ATOMENTRY.mimetype()), 201);
+        Response res = sendRequest(new PostRequest(parent.toString(), createFolder, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(res);
         String xml = res.getContentAsString();
         Entry entry = abdera.parseEntry(new StringReader(xml), null);
@@ -194,7 +194,7 @@ public class TestCMIS extends CMISWebScriptTest
         String guid = GUID.generate();
         createFile = createFile.replace("${NAME}", name);
         createFile = createFile.replace("${GUID}", guid);
-        MockHttpServletResponse res = sendRequest(new PostRequest(parent.toString(), createFile, Format.ATOMENTRY.mimetype()), 201);
+        Response res = sendRequest(new PostRequest(parent.toString(), createFile, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(res);
         String xml = res.getContentAsString();
         Entry entry = abdera.parseEntry(new StringReader(xml), null);
@@ -273,7 +273,7 @@ public class TestCMIS extends CMISWebScriptTest
         assertEquals(testDocument.getSummary(), testDocumentFromGet.getSummary());
         
         // get something that doesn't exist
-        MockHttpServletResponse res = sendRequest(new GetRequest("/api/node/workspace/SpacesStore/" + GUID.generate()), 404);
+        Response res = sendRequest(new GetRequest("/api/node/workspace/SpacesStore/" + GUID.generate()), 404);
         assertNotNull(res);
     }
 
@@ -292,12 +292,12 @@ public class TestCMIS extends CMISWebScriptTest
         assertNotNull(document3);
         
         // checkout one of the children to ensure private working copy isn't included
-        MockHttpServletResponse documentRes = sendRequest(new GetRequest(document2.getSelfLink().getHref().toString()), 200);
+        Response documentRes = sendRequest(new GetRequest(document2.getSelfLink().getHref().toString()), 200);
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
         assertNotNull(documentXML);
         IRI checkedoutHREF = getCheckedOutCollection(service);
-        MockHttpServletResponse pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201);
+        Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
         
@@ -382,7 +382,7 @@ public class TestCMIS extends CMISWebScriptTest
         
         // create document for delete
         Entry document = createDocument(childrenLink.getHref(), "testDelete");
-        MockHttpServletResponse documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
         assertNotNull(documentRes);
 
         // ensure document has been created
@@ -392,7 +392,7 @@ public class TestCMIS extends CMISWebScriptTest
         assertEquals(entriesAfterCreate, entriesBefore +1);
 
         // delete
-        MockHttpServletResponse deleteRes = sendRequest(new DeleteRequest(document.getSelfLink().getHref().toString()), 204);
+        Response deleteRes = sendRequest(new DeleteRequest(document.getSelfLink().getHref().toString()), 204);
         assertNotNull(deleteRes);
 
         // ensure document has been deleted
@@ -418,7 +418,7 @@ public class TestCMIS extends CMISWebScriptTest
         String updateFile = loadString("/cmis/rest/updatedocument.atomentry.xml");
         String guid = GUID.generate();
         updateFile = updateFile.replace("${GUID}", guid);
-        MockHttpServletResponse res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200);
+        Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200);
         assertNotNull(res);
         Entry updated = abdera.parseEntry(new StringReader(res.getContentAsString()), null);
         
@@ -427,7 +427,7 @@ public class TestCMIS extends CMISWebScriptTest
         assertEquals(document.getPublished(), updated.getPublished());
         assertEquals("Updated Title " + guid, updated.getTitle());
         assertEquals("text/plain", updated.getContentMimeType().toString());
-        MockHttpServletResponse contentRes = sendRequest(new GetRequest(updated.getContentSrc().toString()), 200);
+        Response contentRes = sendRequest(new GetRequest(updated.getContentSrc().toString()), 200);
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
@@ -464,14 +464,14 @@ public class TestCMIS extends CMISWebScriptTest
         
         // create document for checkout
         Entry document = createDocument(scope.getSelfLink().getHref(), "testCheckout");
-        MockHttpServletResponse documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
         assertNotNull(documentRes);
         String documentXML = documentRes.getContentAsString();
         assertNotNull(documentXML);
         
         // checkout
         IRI checkedoutHREF = getCheckedOutCollection(service);
-        MockHttpServletResponse pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201);
+        Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), documentXML, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(pwcRes);
         // TODO: test private working copy properties
 
@@ -495,14 +495,14 @@ public class TestCMIS extends CMISWebScriptTest
         
         // create document for checkout
         Entry document = createDocument(scope.getSelfLink().getHref(), "testCancelCheckout");
-        MockHttpServletResponse documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();
         assertNotNull(xml);
         
         // checkout
         IRI checkedoutHREF = getCheckedOutCollection(service);
-        MockHttpServletResponse pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201);
+        Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(pwcRes);
         
         // test getCheckedOut is updated
@@ -518,7 +518,7 @@ public class TestCMIS extends CMISWebScriptTest
         String pwcXml = pwcRes.getContentAsString();
         Entry pwc = abdera.parseEntry(new StringReader(pwcXml), null);
         assertNotNull(pwc);
-        MockHttpServletResponse cancelRes = sendRequest(new DeleteRequest(pwc.getSelfLink().getHref().toString()), 204);
+        Response cancelRes = sendRequest(new DeleteRequest(pwc.getSelfLink().getHref().toString()), 204);
         assertNotNull(cancelRes);
 
         // test getCheckedOut is updated
@@ -541,14 +541,14 @@ public class TestCMIS extends CMISWebScriptTest
         
         // create document for checkout
         Entry document = createDocument(scope.getSelfLink().getHref(), "testCheckin");
-        MockHttpServletResponse documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200);
         assertNotNull(documentRes);
         String xml = documentRes.getContentAsString();
         assertNotNull(xml);
         
         // checkout
         IRI checkedoutHREF = getCheckedOutCollection(service);
-        MockHttpServletResponse pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201);
+        Response pwcRes = sendRequest(new PostRequest(checkedoutHREF.toString(), xml, Format.ATOMENTRY.mimetype()), 201);
         assertNotNull(pwcRes);
         Entry pwc = abdera.parseEntry(new StringReader(pwcRes.getContentAsString()), null);
         assertNotNull(pwc);
@@ -566,7 +566,7 @@ public class TestCMIS extends CMISWebScriptTest
         String updateFile = loadString("/cmis/rest/updatedocument.atomentry.xml");
         String guid = GUID.generate();
         updateFile = updateFile.replace("${GUID}", guid);
-        MockHttpServletResponse pwcUpdatedres = sendRequest(new PutRequest(pwc.getEditLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200);
+        Response pwcUpdatedres = sendRequest(new PutRequest(pwc.getEditLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200);
         assertNotNull(pwcUpdatedres);
         Entry updated = abdera.parseEntry(new StringReader(pwcUpdatedres.getContentAsString()), null);
         // ensure update occurred
@@ -574,7 +574,7 @@ public class TestCMIS extends CMISWebScriptTest
         assertEquals(pwc.getPublished(), updated.getPublished());
         assertEquals("Updated Title " + guid, updated.getTitle());
         assertEquals("text/plain", updated.getContentMimeType().toString());
-        MockHttpServletResponse pwcContentRes = sendRequest(new GetRequest(pwc.getContentSrc().toString()), 200);
+        Response pwcContentRes = sendRequest(new GetRequest(pwc.getContentSrc().toString()), 200);
         assertEquals("updated content " + guid, pwcContentRes.getContentAsString());
         
         // checkin
@@ -582,7 +582,7 @@ public class TestCMIS extends CMISWebScriptTest
         String checkinUrl = pwc.getSelfLink().getHref().toString();
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("checkinComment", guid);
-        MockHttpServletResponse checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200);
+        Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200);
         assertNotNull(checkinRes);
     
         // test getCheckedOut is updated
@@ -600,7 +600,7 @@ public class TestCMIS extends CMISWebScriptTest
         // TODO: issue with updating name on PWC and it not reflecting on checked-in document
         //assertEquals("Updated Title " + guid, updatedDoc.getTitle());
         assertEquals("text/plain", updatedDoc.getContentMimeType().toString());
-        MockHttpServletResponse updatedContentRes = sendRequest(new GetRequest(updatedDoc.getContentSrc().toString()), 200);
+        Response updatedContentRes = sendRequest(new GetRequest(updatedDoc.getContentSrc().toString()), 200);
         assertEquals("updated content " + guid, updatedContentRes.getContentAsString());
     }
 

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Retrieve list of children</shortname>
+  <description>Retrieve list of child folders and/or documents</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxChildren={maxChildren?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxChildren={maxChildren?}</url>
+  <authentication>guest</authentication>
+  <format default="atomfeed" />
+</webscript>

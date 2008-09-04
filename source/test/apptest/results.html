@@ -13,7 +13,7 @@
   <h1>Test Report</h1>
   <dl>
     <dt>Date</dt>
-    <dd>Thu May  1 16:48:30 2008</dd>
+    <dd>Mon May 12 15:38:50 2008</dd>
   </dl>
   <div class='legend'>
   <h3>Legend</h3>
@@ -48,7 +48,7 @@ transfer-encoding: chunked
 server: Apache-Coyote/1.1
 pragma: no-cache
 cache-control: no-cache
-date: Thu, 01 May 2008 15:48:26 GMT
+date: Mon, 12 May 2008 14:38:47 GMT
 content-type: application/atom+xml;charset=UTF-8
 
 
@@ -71,7 +71,7 @@ content-type: application/atom+xml;charset=UTF-8
     &lt;/cmis:repository_info&gt;
 
      
-    &lt;collection cmis:collectionType="root" href="http://example.org/cmis/main"&gt; 
+    &lt;collection cmis:collectionType="root" href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children"&gt; 
       &lt;atom:title&gt;CMIS root folder&lt;/atom:title&gt; 
     &lt;/collection&gt; 
     &lt;collection cmis:collectionType="checkedout" href="http://example.org/cmis/main?checkedout"&gt; 
@@ -91,9 +91,9 @@ content-type: application/atom+xml;charset=UTF-8
 </ol>
 <h2>Basic Entry Manipulation</h2><p>Add and remove three entries to the collection</p>
 <ol>
-  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Service Document: http://example.org/cmis/main</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Service Document: http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children</span></li>
   <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
-GET http://example.org/cmis/main
+GET http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
 
 
 
@@ -101,26 +101,193 @@ GET http://example.org/cmis/main
 <pre><code class='prettyprint'></code></pre></span></li>
   <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
 
-status: 404
-content-length: 283
-server: Apache/2.2.3 (CentOS)
-connection: close
-date: Thu, 01 May 2008 15:48:30 GMT
-content-type: text/html; charset=iso-8859-1
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Mon, 12 May 2008 14:38:50 GMT
+content-type: application/atom+xml;type=feed;charset=UTF-8
 
 
 </code></pre>
-<pre><code class='prettyprint'>&lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;
-&lt;html&gt;&lt;head&gt;
-&lt;title&gt;404 Not Found&lt;/title&gt;
-&lt;/head&gt;&lt;body&gt;
-&lt;h1&gt;Not Found&lt;/h1&gt;
-&lt;p&gt;The requested URL /cmis/main was not found on this server.&lt;/p&gt;
-&lt;hr&gt;
-&lt;address&gt;Apache/2.2.3 (CentOS) Server at example.org Port 80&lt;/address&gt;
-&lt;/body&gt;&lt;/html&gt;
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+  &lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
+  &lt;title&gt;Company Home&lt;/title&gt; 
+  &lt;updated&gt;2008-04-24T18:33:35.511+01:00&lt;/updated&gt;
+  &lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
+  &lt;author&gt; 
+    &lt;name&gt;System&lt;/name&gt;
+  &lt;/author&gt; 
+  &lt;id&gt;urn:uuid:6413e19d-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+  &lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
+
+  &lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?skipCount=0&amp;amp;guest=" rel="first" type="application/atom+xml;type=feed"/&gt;
+  
+  &lt;entry&gt;
+    &lt;title&gt;Data Dictionary&lt;/title&gt;
+    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/642ce7e4-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
+    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
+    &lt;id&gt;urn:uuid:642ce7e4-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+    &lt;updated&gt;2008-04-24T18:33:35.708+01:00&lt;/updated&gt;
+    &lt;published&gt;2008-04-24T18:32:20.013+01:00&lt;/published&gt;
+    &lt;summary&gt;User managed definitions&lt;/summary&gt;
+    &lt;author&gt; 
+      &lt;name&gt;System&lt;/name&gt;
+    &lt;/author&gt; 
+    &lt;alf:noderef&gt;workspace://SpacesStore/642ce7e4-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
+  &lt;/entry&gt;
+  &lt;entry&gt;
+    &lt;title&gt;Guest Home&lt;/title&gt;
+    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/648715e5-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
+    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
+    &lt;id&gt;urn:uuid:648715e5-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+    &lt;updated&gt;2008-04-24T18:33:36.941+01:00&lt;/updated&gt;
+    &lt;published&gt;2008-04-24T18:32:20.608+01:00&lt;/published&gt;
+    &lt;summary&gt;The guest root space&lt;/summary&gt;
+    &lt;author&gt; 
+      &lt;name&gt;System&lt;/name&gt;
+    &lt;/author&gt; 
+    &lt;alf:noderef&gt;workspace://SpacesStore/648715e5-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
+  &lt;/entry&gt;
+  &lt;entry&gt;
+    &lt;title&gt;User Homes&lt;/title&gt;
+    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/64963118-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
+    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
+    &lt;id&gt;urn:uuid:64963118-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+    &lt;updated&gt;2008-04-24T18:33:37.110+01:00&lt;/updated&gt;
+    &lt;published&gt;2008-04-24T18:32:20.699+01:00&lt;/published&gt;
+    &lt;summary&gt;User Homes&lt;/summary&gt;
+    &lt;author&gt; 
+      &lt;name&gt;System&lt;/name&gt;
+    &lt;/author&gt; 
+    &lt;alf:noderef&gt;workspace://SpacesStore/64963118-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
+  &lt;/entry&gt;
+  &lt;entry&gt;
+    &lt;title&gt;Projects&lt;/title&gt;
+    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/90df9f8b-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
+    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
+    &lt;id&gt;urn:uuid:90df9f8b-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+    &lt;updated&gt;2008-04-24T18:33:47.401+01:00&lt;/updated&gt;
+    &lt;published&gt;2008-04-24T18:33:35.091+01:00&lt;/published&gt;
+    &lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
+    &lt;author&gt; 
+      &lt;name&gt;System&lt;/name&gt;
+    &lt;/author&gt; 
+    &lt;alf:noderef&gt;workspace://SpacesStore/90df9f8b-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
+  &lt;/entry&gt;
+  &lt;entry&gt;
+    &lt;title&gt;Web Projects&lt;/title&gt;
+    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/a3beb60b-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
+    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
+    &lt;id&gt;urn:uuid:a3beb60b-1224-11dd-bee8-852083ea779d&lt;/id&gt;
+    &lt;updated&gt;2008-04-24T18:34:06.711+01:00&lt;/updated&gt;
+    &lt;published&gt;2008-04-24T18:34:06.649+01:00&lt;/published&gt;
+    &lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
+    &lt;author&gt; 
+      &lt;name&gt;System&lt;/name&gt;
+    &lt;/author&gt; 
+    &lt;alf:noderef&gt;workspace://SpacesStore/a3beb60b-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
+  &lt;/entry&gt;
+
+&lt;/feed&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Error'><img src='validator/res/error.gif'> [RFC4287] <span class='Error'>line 18, column 4: Undefined entry element: icon (5 occurrences)</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 11, column 145: "self" link references a non-Atom representation</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 2: title should contain a xml:lang element (6 occurrences)
+line 22, column 4: summary should contain a xml:lang element (5 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Create new entry #1</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+POST http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+content-type: application/atom+xml
+slug: ddabfdegge
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;
+&lt;title&gt;Iñtërnâtiônàlizætiøn - 1&lt;/title&gt;
+&lt;id&gt;tag:bitworking.org,2008-02-26:1210603130.5665419&lt;/id&gt;
+&lt;updated&gt;2005-07-10T12:29:29Z&lt;/updated&gt;
+&lt;author&gt;
+&lt;name&gt;Joe Gregorio&lt;/name&gt;
+&lt;/author&gt;
+&lt;content type="xhtml"&gt;
+&lt;div xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;p&gt;&lt;i&gt;A test of utf-8&lt;/i&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/content&gt;
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 405
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Mon, 12 May 2008 14:38:50 GMT
+content-type: text/html;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+   &lt;head&gt;
+      &lt;title&gt;Web Script Status 405 - Method Not Allowed&lt;/title&gt;
+      &lt;link rel="stylesheet" href="/alfresco/css/base.css" TYPE="text/css"&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;table&gt;
+         &lt;tr&gt;
+            &lt;td&gt;&lt;img src="/alfresco/images/logo/AlfrescoLogo32.png" alt="Alfresco" /&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span class="title"&gt;Web Script Status 405 - Method Not Allowed&lt;/span&gt;&lt;/td&gt;
+         &lt;/tr&gt;
+      &lt;/table&gt;
+      &lt;br/&gt;
+      &lt;table&gt;
+         &lt;tr&gt;&lt;td&gt;The Web Script &lt;a href="/alfresco/service/api/path/workspace/SpacesStore//children"&gt;/alfresco/service/api/path/workspace/SpacesStore//children&lt;/a&gt; has responded with a status of 405 - Method Not Allowed.&lt;/td&gt;&lt;/tr&gt;
+      &lt;/table&gt;
+      &lt;br/&gt;
+      &lt;table&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;405 Description:&lt;/b&gt;&lt;/td&gt;&lt;td&gt; The method specified in the Request-Line is not allowed for the resource identified by the Request-URI.&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Message:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;Script url /api/path/workspace/SpacesStore//children does not support the method POST&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+   &lt;tr&gt;&lt;td&gt;&lt;b&gt;Exception:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.WebScriptException - Script url /api/path/workspace/SpacesStore//children does not support the method POST&lt;/td&gt;&lt;/tr&gt;
+   &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.AbstractRuntime.executeScript(AbstractRuntime.java:113)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.servlet.WebScriptServlet.service(WebScriptServlet.java:116)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;javax.servlet.http.HttpServlet.service(HttpServlet.java:803)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:269)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:188)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.app.servlet.MTWebScriptAuthenticationFilter.doFilter(MTWebScriptAuthenticationFilter.java:102)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:215)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:188)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:213)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:174)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:127)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:117)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:108)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:151)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:874)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.coyote.http11.Http11BaseProtocol$Http11ConnectionHandler.processConnection(Http11BaseProtocol.java:665)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.tomcat.util.net.PoolTcpEndpoint.processSocket(PoolTcpEndpoint.java:528)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.tomcat.util.net.LeaderFollowerWorkerThread.runIt(LeaderFollowerWorkerThread.java:81)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.apache.tomcat.util.threads.ThreadPool$ControlRunnable.run(ThreadPool.java:689)&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;java.lang.Thread.run(Thread.java:613)&lt;/td&gt;&lt;/tr&gt;
+   &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Server&lt;/b&gt;:&lt;/td&gt;&lt;td&gt;Alfresco Community Network v3.0.0 (dev @build-number@) schema 124&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Time&lt;/b&gt;:&lt;/td&gt;&lt;td&gt;May 12, 2008 3:38:50 PM&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
+      &lt;/table&gt;
+   &lt;/body&gt;
+&lt;/html&gt;
+
 </code></pre></span></li>
-  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-10.2.1'>[RFC2616] Section 10.2.1</a> <span class='Error'>Could not successfully retrieve the document. Got a status code of: 404</span></li>
+  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.2'>[RFC5023] Section 9.2</a> <span class='Error'>Entry creation failed with status: 405 Method Not Allowed</span></li>
   <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Didn't find any Media Collections that would accept GIF images</span></li>
 </ol>
 

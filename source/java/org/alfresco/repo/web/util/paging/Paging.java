@@ -136,6 +136,28 @@ public class Paging
     }
     
     /**
+     * Create a Page or Window
+     * 
+     * @param pageNumber  page number (optional and paired with pageSize)
+     * @param pageSize   page size (optional and paired with pageNumber)
+     * @param skipCount  skipCount (optional and paired with maxItems)
+     * @param maxItems  maxItems (optional and paired with skipCount)
+     * @return  page (if pageNumber driven) or window (if skipCount driven)
+     */
+    public Page createPageOrWindow(Integer pageNumber, Integer pageSize, Integer skipCount, Integer maxItems)
+    {
+        if (pageNumber != null)
+        {
+            return createPage(pageNumber, pageSize == null ? 0 : pageSize);
+        }
+        else if (skipCount != null)
+        {
+            return createWindow(skipCount, maxItems == null ? 0 : maxItems);
+        }
+        return createUnlimitedPage();
+    }
+    
+    /**
      * Create a Page
      * 
      * @param pageNumber  page number
@@ -145,6 +167,16 @@ public class Paging
     public Page createPage(int pageNumber, int pageSize)
     {
         return new Page(PageType.PAGE, zeroBasedPage, pageNumber, pageSize);
+    }
+    
+    /**
+     * Create an unlimited Page
+     * 
+     * @return  page (single Page starting at first page of unlimited page size)
+     */
+    public Page createUnlimitedPage()
+    {
+        return new Page(PageType.PAGE, zeroBasedPage, zeroBasedPage ? 0 : 1, 0);
     }
     
     /**

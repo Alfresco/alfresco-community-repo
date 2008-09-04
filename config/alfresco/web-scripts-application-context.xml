@@ -93,6 +93,13 @@
  
    <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer" parent="webscripts.abstractcontainer">
       <property name="name"><value>Repository</value></property>
+      <property name="scriptObjects">
+         <map>
+           <entry key="paging">
+              <ref bean="webscripts.js.paging" />
+           </entry>
+         </map>
+      </property>
       <property name="registryFactory">
           <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
              <property name="targetBeanName"><idref local="webscripts.registry.prototype"/></property>
@@ -132,6 +139,32 @@
    <!--  Facebook Authenticator -->
    <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
 
+
+   <!--                -->
+   <!--  CMIS Support  -->
+   <!--                -->
+
+   <bean id="webscripts.cmis.navigation" class="org.alfresco.repo.cmis.Navigation">
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="searchService" ref="searchService" />
+   </bean>
+
+
+   <!--                                    -->
+   <!--  Web Script Javascript Extensions  -->
+   <!--                                    -->
+
+   <!-- TODO: the following root js objects should only really be available in context of web scripts -->
+
+   <bean id="webscripts.js.paging" class="org.alfresco.repo.web.util.paging.Paging" />
+
+   <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.CMISScript">
+      <property name="extensionName"><value>cmis</value></property>
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="repository" ref="webscripts.repo" />
+      <property name="navigation" ref="webscripts.cmis.navigation" />
+      <property name="paging" ref="webscripts.js.paging" />
+   </bean>
 
 
    <!--            -->

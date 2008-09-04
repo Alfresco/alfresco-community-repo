@@ -19,7 +19,7 @@
     <#-- TODO: cmis:id on collection elements - are they required by cmis? -->
     <#-- TODO: collection resources -->
      
-    <collection href="http://example.org/cmis/main" cmis:collectionType="root"> 
+    <collection href="${absurl(url.serviceContext)}/api/path/workspace/SpacesStore//children" cmis:collectionType="root"> 
       <atom:title>CMIS root folder</atom:title> 
     </collection> 
     <collection href="http://example.org/cmis/main?checkedout" cmis:collectionType="checkedout"> 

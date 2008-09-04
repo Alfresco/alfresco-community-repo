@@ -242,7 +242,7 @@ public class UploadContentServlet extends BaseServlet
         writer.setEncoding(encoding);
         
         // Stream the content into the repository
-        writer.putContent(req.getInputStream());
+        writer.putContent(inputStream);
         
         if (logger.isDebugEnabled() == true)
         {

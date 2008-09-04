@@ -22,5 +22,11 @@
             </list>
         </property>
     </bean>
+   
+    <bean id="CMISPropertyService" class="org.alfresco.cmis.property.CMISPropertyServiceImpl" >
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
+    </bean>
     
 </beans>

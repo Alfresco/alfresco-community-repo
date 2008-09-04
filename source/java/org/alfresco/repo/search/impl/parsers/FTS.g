@@ -62,6 +62,10 @@ tokens
 	COLUMN_REF;
 }
 
+@lexer::header{package org.alfresco.repo.search.impl.parsers;} 
+
+@header {package org.alfresco.repo.search.impl.parsers;}
+
 @members
 {
        
@@ -150,7 +154,7 @@ ftsFieldGroup
 	;
 
 ftsFieldGroupImplicitConjunctionOrDisjunction	
-	:	{defaultFieldConjunction}? ftsFieldGroupExplicitDisjunction (ftsFieldGroupExplicitDisjunction)*
+	:	{defaultFieldConjunction()}? ftsFieldGroupExplicitDisjunction (ftsFieldGroupExplicitDisjunction)*
 		-> ^(FIELD_CONJUNCTION ftsFieldGroupExplicitDisjunction+)
 	|	ftsFieldGroupExplicitDisjunction (ftsFieldGroupExplicitDisjunction)*
 		-> ^(FIELD_DISJUNCTION ftsFieldGroupExplicitDisjunction+)

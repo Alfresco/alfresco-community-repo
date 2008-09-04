@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.DoubleAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.FloatAnalyser;
@@ -35,6 +37,8 @@ import org.alfresco.repo.search.impl.lucene.analysis.IntegerAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
@@ -102,35 +106,61 @@ public class CMISPropertyDefinition
             description = propDef.getDescription();
             propertyType = CMISMapping.getPropertyType(dictionaryService, propertyQName);
             cardinality = propDef.isMultiValued() ? CMISCardinality.MULTI_VALUED : CMISCardinality.SINGLE_VALUED;
+            for (ConstraintDefinition constraintDef : propDef.getConstraints())
+            {
+                Constraint constraint = constraintDef.getConstraint();
+                if (constraint instanceof ListOfValuesConstraint)
+                {
+                    int position = 0;
+                    ListOfValuesConstraint lovc = (ListOfValuesConstraint) constraint;
+                    for (String allowed : lovc.getAllowedValues())
+                    {
+                        CMISChoice choice = new CMISChoice(allowed, allowed, position++);
+                        choices.add(choice);
+                    }
+                }
+                if (constraint instanceof StringLengthConstraint)
+                {
+                    StringLengthConstraint slc = (StringLengthConstraint) constraint;
+                    maximumLength = slc.getMaxLength();
+                }
+            }
             required = propDef.isMandatory();
             defaultValue = propDef.getDefaultValue();
             updatability = propDef.isProtected() ? CMISUpdatability.READ_ONLY : CMISUpdatability.READ_AND_WRITE;
             queryable = propDef.isIndexed();
-            IndexTokenisationMode  indexTokenisationMode = IndexTokenisationMode.TRUE;
-            if(propDef.getIndexTokenisationMode() != null)
+            if (queryable)
             {
-                indexTokenisationMode = propDef.getIndexTokenisationMode();
-            }
-            switch (indexTokenisationMode)
-            {
-            case BOTH:
-            case FALSE:
-                orderable = true;
-                break;
-            case TRUE:
-            default:
-                String analyserClassName = propDef.getDataType().getAnalyserClassName();
-                if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
+                if (propDef.getIndexTokenisationMode() != null)
                 {
+                    indexTokenisationMode = propDef.getIndexTokenisationMode();
+                }
+                switch (indexTokenisationMode)
+                {
+                case BOTH:
+                case FALSE:
                     orderable = true;
+                    break;
+                case TRUE:
+                default:
+                    String analyserClassName = propDef.getDataType().getAnalyserClassName();
+                    if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                    {
+                        orderable = true;
+                    }
+                    else
+                    {
+                        orderable = false;
+                    }
                 }
-                else
-                {
-                    orderable = false;
-                }
+            }
+            else
+            {
+                orderable = false;
             }
         }
 
@@ -138,6 +168,7 @@ public class CMISPropertyDefinition
 
     /**
      * Get the property name
+     * 
      * @return
      */
     public String getPropertyName()
@@ -147,6 +178,7 @@ public class CMISPropertyDefinition
 
     /**
      * Get the display name
+     * 
      * @return
      */
     public String getDisplayName()
@@ -156,6 +188,7 @@ public class CMISPropertyDefinition
 
     /**
      * Get the description
+     * 
      * @return
      */
     public String getDescription()
@@ -165,6 +198,7 @@ public class CMISPropertyDefinition
 
     /**
      * Get the property type
+     * 
      * @return
      */
     public CMISPropertyType getPropertyType()
@@ -174,6 +208,7 @@ public class CMISPropertyDefinition
 
     /**
      * Get the cardinality
+     * 
      * @return
      */
     public CMISCardinality getCardinality()
@@ -182,8 +217,7 @@ public class CMISPropertyDefinition
     }
 
     /**
-     * For variable length properties, get the maximum length allowed.
-     * Unsupported.
+     * For variable length properties, get the maximum length allowed. Unsupported.
      * 
      * @return
      */
@@ -213,8 +247,8 @@ public class CMISPropertyDefinition
     }
 
     /**
-     * Get the choices available as values for this property
-     * TODO: not implemented yet
+     * Get the choices available as values for this property TODO: not implemented yet
+     * 
      * @return
      */
     public Collection<CMISChoice> getChioces()
@@ -224,6 +258,7 @@ public class CMISPropertyDefinition
 
     /**
      * Is this a choice where a user can enter other values (ie a list with common options)
+     * 
      * @return
      */
     public boolean isOpenChioce()
@@ -233,6 +268,7 @@ public class CMISPropertyDefinition
 
     /**
      * Is this property required?
+     * 
      * @return
      */
     public boolean isRequired()
@@ -252,6 +288,7 @@ public class CMISPropertyDefinition
 
     /**
      * Is this property updatable?
+     * 
      * @return
      */
     public CMISUpdatability getUpdatability()
@@ -261,6 +298,7 @@ public class CMISPropertyDefinition
 
     /**
      * Is this property queryable?
+     * 
      * @return
      */
     public boolean isQueryable()
@@ -270,13 +308,14 @@ public class CMISPropertyDefinition
 
     /**
      * Is this property orderable in queries?
+     * 
      * @return
      */
     public boolean isOrderable()
     {
         return orderable;
     }
-    
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
@@ -299,5 +338,5 @@ public class CMISPropertyDefinition
         builder.append("]");
         return builder.toString();
     }
-    
+
 }

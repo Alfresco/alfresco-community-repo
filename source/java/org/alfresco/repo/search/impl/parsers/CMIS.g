@@ -45,8 +45,7 @@ tokens
 	COLUMNS;
 	COLUMN_REF;
 	QUALIFIER;
-	STRING_FUNCTION;
-	NUMERIC_FUNCTION;
+	FUNCTION;
 	SOURCE;
 	TABLE;
 	TABLE_REF;
@@ -69,6 +68,10 @@ tokens
 	STRING_LITERAL;
 }
 
+@lexer::header{package org.alfresco.repo.search.impl.parsers;} 
+
+@header {package org.alfresco.repo.search.impl.parsers;}
+
 /*
  * Instance methods and properties for the parser.
  * Realisations of the parser should over-ride these as required
@@ -76,14 +79,65 @@ tokens
  
 @members
 {
-        /**
-         * CMIS strict
-         */
+    private Stack<String> paraphrases = new Stack<String>();
+
+    /**
+     * CMIS strict
+     */
 	public boolean strict()
 	{
 	   return true;
 	}
+	
+	protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
+	{
+	   throw new MismatchedTokenException(ttype, input);
+	}
+	
+	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
+	{
+	   throw e;
+	}
+	
+	public String getErrorMessage(RecognitionException e, String[] tokenNames)
+	{
+       List stack = getRuleInvocationStack(e, this.getClass().getName());
+	   String msg = null;
+	   if(e instanceof NoViableAltException)
+	   {
+	        NoViableAltException nvae = (NoViableAltException)e;
+	        msg = " no viable alt; token="+e.token+
+	         " (decision="+nvae.decisionNumber+
+	         " state "+nvae.stateNumber+")"+
+	         " decision=<<"+nvae.grammarDecisionDescription+">>";
+	   }
+	   else
+	   {
+	       msg = super.getErrorMessage(e, tokenNames);
+	   }
+	   if(paraphrases.size() > 0)
+	   {
+	       String paraphrase = (String)paraphrases.peek();
+	       msg = msg+" "+paraphrase;
+	   }
+	   
+	   return stack+" "+msg;
+	}
+	
+	public String getTokenErrorDisplay(Token t)
+	{
+	   return t.toString();
+	}
 }
+
+@rulecatch
+{
+catch(RecognitionException e)
+{
+   throw e;
+}
+}
+
 
 /**
  * This is mostly a direct take fom the CMIS spec.
@@ -92,12 +146,14 @@ tokens
  * The top level rule for the parser
  */
 query
-	:	SELECT selectList fromClause whereClause? orderByClause? 
+	:	SELECT selectList fromClause whereClause? orderByClause? EOF
 		-> ^(QUERY selectList fromClause whereClause? orderByClause?)
 	;
 
 	
-selectList 
+selectList
+    @init {    paraphrases.push("in select list"); }
+    @after{    paraphrases.pop(); } 
 	:	STAR  
 		-> ^(ALL_COLUMNS)
 	| 	selectSubList ( COMMA selectSubList )*  
@@ -117,10 +173,8 @@ selectSubList
 valueExpression
 	:	columnReference 
 		-> columnReference
-	| 	stringValueFunction
-		-> stringValueFunction
-	|	numericValueFunction
-		-> numericValueFunction
+	| 	valueFunction
+		-> valueFunction
 	;				
 
 columnReference
@@ -137,15 +191,17 @@ multiValuedColumnReference
 		-> ^(COLUMN_REF multiValuedColumnName qualifier?)
 	;
 	
-stringValueFunction
-	:	( functionName=UPPER | functionName=LOWER ) LPAREN columnReference RPAREN
-		-> ^(STRING_FUNCTION $functionName columnReference)
+valueFunction
+	:	functionName=keyWordOrId LPAREN functionArgument* RPAREN
+		-> ^(FUNCTION $functionName functionArgument*)
 	;
 	
-numericValueFunction
-	:	functionName=SCORE LPAREN qualifier? RPAREN
-		-> ^(NUMERIC_FUNCTION $functionName qualifier?)
-	;
+functionArgument
+    :   qualifier DOT columnName
+    -> ^(COLUMN_REF columnName qualifier)
+    |   identifier
+    |   literalOrParameterName
+    ;
 	
 qualifier
 	:	(tableName) => tableName
@@ -155,6 +211,8 @@ qualifier
 	;
 	
 fromClause
+    @init {    paraphrases.push("in from"); }
+    @after{    paraphrases.pop(); } 
 	:	FROM tableReference
 		-> tableReference
 	;
@@ -182,14 +240,14 @@ joinedTable
 	
 joinedTables
 	:	singleTable joinedTable+
-		-> singleTable joinedTable+
+		-> ^(SOURCE singleTable joinedTable+)
 	;
 	
 joinType 
 	:	INNER
 		-> INNER
 	| 	LEFT OUTER?
-		-> LEFT OUTER?
+		-> LEFT 
 	;
 	
 joinSpecification
@@ -202,6 +260,8 @@ joinSpecification
  * Broken out the left recursion from the spec 
  */
 whereClause
+    @init {    paraphrases.push("in where"); }
+    @after{    paraphrases.pop(); } 
 	:	WHERE searchOrCondition
 		-> searchOrCondition
 	;
@@ -321,6 +381,8 @@ folderPredicateArgs
 	;
 	
 orderByClause
+    @init {    paraphrases.push("in order by"); }
+    @after{    paraphrases.pop(); } 
 	:	ORDER BY sortSpecification ( COMMA sortSpecification )*
 		-> ^(ORDER sortSpecification+)
 	;

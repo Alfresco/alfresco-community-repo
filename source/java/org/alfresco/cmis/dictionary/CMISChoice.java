@@ -24,7 +24,9 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Choice for property definitions
@@ -34,22 +36,37 @@ import java.util.Collection;
  */
 public class CMISChoice
 {
+    private String name;
+    
+    Serializable value;
+    
+    private int index;
+    
+    private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
+    
+    public CMISChoice(String name, Serializable value, int index)
+    {
+        this.name = name;
+        this.value = value;
+        this.index = index;
+    }
+    
     /**
      * Get the name of the choice
      * @return
      */
     public String getName()
     {
-        throw new UnsupportedOperationException();
+       return name;
     }
     
     /**
      * Get the value when chosen
      * @return
      */
-    public CMISPropertyValue getValue()
+    public Serializable getValue()
     {
-        throw new UnsupportedOperationException();
+        return value;
     }
     
     /**
@@ -58,7 +75,7 @@ public class CMISChoice
      */
     public int getIndex()
     {
-        throw new UnsupportedOperationException();
+       return index;
     }
     
     /**
@@ -67,6 +84,50 @@ public class CMISChoice
      */
     public Collection<CMISChoice> getChildren()
     {
-        throw new UnsupportedOperationException();
+        return choices;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + index;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final CMISChoice other = (CMISChoice) obj;
+        if (index != other.index)
+            return false;
+        if (name == null)
+        {
+            if (other.name != null)
+                return false;
+        }
+        else if (!name.equals(other.name))
+            return false;
+        return true;
+    }
+    
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[Choice ");
+        builder.append("name=").append(getName()).append(",");
+        builder.append("index=").append(getIndex()).append(",");
+        builder.append("value=").append(getValue()).append(",");
+        builder.append("children=").append(getChildren());
+        builder.append("]");
+        return builder.toString();
     }
 }

@@ -68,50 +68,68 @@ public class CMISTypeDefinition
 
     private ArrayList<CMISTypeId> allowedTargetTypes = new ArrayList<CMISTypeId>(1);
 
-    public CMISTypeDefinition(DictionaryService dictionaryService, NamespaceService namespaceService, QName typeQName)
+    public CMISTypeDefinition(DictionaryService dictionaryService, NamespaceService namespaceService, CMISTypeId typeId)
     {
-        isAssociation = (typeQName.equals(CMISMapping.RELATIONSHIP_QNAME) || (dictionaryService.getAssociation(typeQName) != null));
-
-        if (isAssociation)
+        switch (typeId.getScope())
         {
-            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeQName);
+        case RELATIONSHIP:
+            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
             if (associationDefinition != null)
             {
-                objectTypeId = CMISMapping.getCmisTypeId(typeQName);
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeQName);
+                objectTypeId = typeId;
+                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
                 displayName = associationDefinition.getTitle();
-                parentTypeId = CMISMapping.getCmisTypeId(CMISMapping.RELATIONSHIP_QNAME);
+                parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
                 rootTypeQueryName = CMISMapping.getQueryName(namespaceService, CMISMapping.RELATIONSHIP_QNAME);
                 description = associationDefinition.getDescription();
                 queryable = false;
                 versionable = false;
                 isAssociation = true;
-                allowedSourceTypes.add(CMISMapping.getCmisTypeId(CMISMapping.getCmisType(associationDefinition.getSourceClass().getName())));
-                allowedTargetTypes.add(CMISMapping.getCmisTypeId(CMISMapping.getCmisType(associationDefinition.getTargetClass().getName())));
+
+                QName sourceType = CMISMapping.getCmisType(associationDefinition.getSourceClass().getName());
+                if (CMISMapping.isValidCmisDocument(dictionaryService, sourceType))
+                {
+                    allowedSourceTypes.add(CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, sourceType));
+                }
+                else if (CMISMapping.isValidCmisFolder(dictionaryService, sourceType))
+                {
+                    allowedSourceTypes.add(CMISMapping.getCmisTypeId(CMISScope.FOLDER, sourceType));
+                }
+
+                QName targetType = CMISMapping.getCmisType(associationDefinition.getTargetClass().getName());
+                if (CMISMapping.isValidCmisDocument(dictionaryService, targetType))
+                {
+                    allowedTargetTypes.add(CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, targetType));
+                }
+                else if (CMISMapping.isValidCmisFolder(dictionaryService, targetType))
+                {
+                    allowedTargetTypes.add(CMISMapping.getCmisTypeId(CMISScope.FOLDER, targetType));
+                }
+
             }
             else
             {
                 // TODO: Add CMIS Association mapping??
-                TypeDefinition typeDefinition = dictionaryService.getType(typeQName);
-                objectTypeId = CMISMapping.getCmisTypeId(typeQName);
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeQName);
+                TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
+                objectTypeId = typeId;
+                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
                 displayName = typeDefinition.getTitle();
-                parentTypeId = CMISMapping.getCmisTypeId(CMISMapping.RELATIONSHIP_QNAME);
+                parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
                 rootTypeQueryName = CMISMapping.getQueryName(namespaceService, CMISMapping.RELATIONSHIP_QNAME);
                 description = typeDefinition.getDescription();
                 queryable = false;
                 versionable = false;
                 isAssociation = true;
             }
-        }
-        else
-        {
-            TypeDefinition typeDefinition = dictionaryService.getType(typeQName);
+            break;
+        case DOCUMENT:
+        case FOLDER:
+            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
             if (typeDefinition != null)
             {
-                objectTypeId = CMISMapping.getCmisTypeId(typeQName);
+                objectTypeId = typeId;
 
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeQName);
+                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
 
                 displayName = typeDefinition.getTitle();
 
@@ -123,13 +141,17 @@ public class CMISTypeDefinition
                 }
                 else
                 {
-                    if (CMISMapping.isValidCmisType(dictionaryService, typeQName))
+                    if (CMISMapping.isValidCmisDocument(dictionaryService, parentTypeQName))
                     {
-                        parentTypeId = CMISMapping.getCmisTypeId(parentTypeQName);
+                        parentTypeId = CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, parentTypeQName);
+                    }
+                    else if (CMISMapping.isValidCmisFolder(dictionaryService, parentTypeQName))
+                    {
+                        parentTypeId = CMISMapping.getCmisTypeId(CMISScope.FOLDER, parentTypeQName);
                     }
                 }
 
-                rootTypeQueryName = CMISMapping.getQueryName(namespaceService, CMISMapping.getCmisRootType(dictionaryService, typeQName));
+                rootTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getRootTypeId().getQName());
 
                 description = typeDefinition.getDescription();
 
@@ -147,8 +169,13 @@ public class CMISTypeDefinition
                 }
             }
 
+            break;
+        case UNKNOWN:
+        default:
+            break;
         }
 
+        
     }
 
     /**

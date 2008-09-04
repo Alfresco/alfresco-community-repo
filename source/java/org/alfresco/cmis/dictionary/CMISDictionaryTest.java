@@ -70,6 +70,16 @@ public class CMISDictionaryTest extends BaseCMISTest
                 System.out.println(proDef);
             }
         }
+        
+        
+        cmisDictionaryService.setStrict(false);
+        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        {
+            for (CMISPropertyDefinition proDef : cmisDictionaryService.getPropertyDefinitions(name).values())
+            {
+                System.out.println(proDef);
+            }
+        }
 
     }
 }

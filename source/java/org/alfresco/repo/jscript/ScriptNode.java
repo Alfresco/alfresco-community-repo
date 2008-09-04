@@ -151,7 +151,7 @@ public class ScriptNode implements Serializable, Scopeable
 
     /** The versions of this node */
     private Scriptable versions = null;
-    
+
     /** The active workflows acting on this node */
     private Scriptable activeWorkflows = null;
 

@@ -88,11 +88,68 @@ public class CMISMapping
      */
     public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, RELATIONSHIP_OBJECT_TYPE);
 
-   
+    public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_QNAME, DOCUMENT_OBJECT_TYPE);
+
+    public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, FOLDER_QNAME, FOLDER_OBJECT_TYPE);
+
+    public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, RELATIONSHIP_QNAME, RELATIONSHIP_OBJECT_TYPE);
+
+    // CMIS properties
+
+    public static String PROP_OBJECT_ID = "OBJECT_ID";
+
+    public static String PROP_URI = "URI";
+
+    public static String PROP_OBJECT_TYPE_ID = "OBJECT_TYPE_ID";
+
+    public static String PROP_CREATED_BY = "CREATED_BY";
+
+    public static String PROP_CREATION_DATE = "CREATION_DATE";
+
+    public static String PROP_LAST_MODIFIED_BY = "LAST_MODIFIED_BY";
+
+    public static String PROP_LAST_MODIFICATION_DATE = "LAST_MODIFICATION_DATE";
+
+    public static String PROP_CHANGE_TOKEN = "CHANGE_TOKEN";
+
+    public static String PROP_NAME = "NAME";
+
+    public static String PROP_IS_IMMUTABLE = "IS_IMMUTABLE";
+
+    public static String PROP_IS_LATEST_VERSION = "IS_LATEST_VERSION";
+
+    public static String PROP_IS_MAJOR_VERSION = "IS_MAJOR_VERSION";
+
+    public static String PROP_IS_LATEST_MAJOR_VERSION = "IS_LATEST_MAJOR_VERSION";
+
+    public static String PROP_VERSION_SERIES_IS_CHECKED_OUT = "VERSION_SERIES_IS_CHECKED_OUT";
+
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_BY = "VERSION_SERIES_CHECKED_OUT_BY";
+
+    public static String PROP_VERSION_SERIES_CHECKED_OUT_ID = "VERSION_SERIES_CHECKED_OUT_ID";
+
+    public static String PROP_CHECKIN_COMMENT = "CHECKIN_COMMENT";
+
+    public static String PROP_CONTENT_STREAM_ALLOWED = "CONTENT_STREAM_ALLOWED";
+
+    public static String PROP_CONTENT_STREAM_LENGTH = "CONTENT_STREAM_LENGTH";
+
+    public static String PROP_CONTENT_STREAM_MIMETYPE = "CONTENT_STREAM_MIMETYPE";
+
+    public static String PROP_CONTENT_STREAM_FILENAME = "CONTENT_STREAM_FILENAME";
+
+    public static String PROP_CONTENT_STREAM_URI = "CONTENT_STREAM_URI";
+
+    public static String PROP_PARENT = "PARENT";
+
+    public static String PROP_ALLLOWED_CHILD_OBJECT_TYPES = "ALLLOWED_CHILD_OBJECT_TYPES";
+
+    public static String PROP_SOURCE_ID = "SOURCE_ID";
+
+    public static String PROP_TARGET_ID = "TARGET_ID";
 
     // Mappings
     // - no entry means no mapping and pass through as is
-    private static HashMap<CMISTypeId, QName> cmisTypeIdToTypeQName = new HashMap<CMISTypeId, QName>();
 
     private static HashMap<QName, CMISTypeId> qNameToCmisTypeId = new HashMap<QName, CMISTypeId>();
 
@@ -101,18 +158,15 @@ public class CMISMapping
     private static HashMap<QName, QName> alfrescoToCmisTypes = new HashMap<QName, QName>();
 
     private static HashMap<QName, CMISPropertyType> alfrescoPropertyTypesToCimsPropertyTypes = new HashMap<QName, CMISPropertyType>();
+
     /**
      * Set up mappings
      */
     static
     {
-        cmisTypeIdToTypeQName.put(new CMISTypeId(DOCUMENT_OBJECT_TYPE), DOCUMENT_QNAME);
-        cmisTypeIdToTypeQName.put(new CMISTypeId(FOLDER_OBJECT_TYPE), FOLDER_QNAME);
-        cmisTypeIdToTypeQName.put(new CMISTypeId(RELATIONSHIP_OBJECT_TYPE), RELATIONSHIP_QNAME);
-
-        qNameToCmisTypeId.put(DOCUMENT_QNAME, new CMISTypeId(DOCUMENT_OBJECT_TYPE));
-        qNameToCmisTypeId.put(FOLDER_QNAME, new CMISTypeId(FOLDER_OBJECT_TYPE));
-        qNameToCmisTypeId.put(RELATIONSHIP_QNAME, new CMISTypeId(RELATIONSHIP_OBJECT_TYPE));
+        qNameToCmisTypeId.put(DOCUMENT_QNAME, DOCUMENT_TYPE_ID);
+        qNameToCmisTypeId.put(FOLDER_QNAME, FOLDER_TYPE_ID);
+        qNameToCmisTypeId.put(RELATIONSHIP_QNAME, RELATIONSHIP_TYPE_ID);
 
         cmisToAlfrecsoTypes.put(DOCUMENT_QNAME, ContentModel.TYPE_CONTENT);
         cmisToAlfrecsoTypes.put(FOLDER_QNAME, ContentModel.TYPE_FOLDER);
@@ -120,7 +174,7 @@ public class CMISMapping
 
         alfrescoToCmisTypes.put(ContentModel.TYPE_CONTENT, DOCUMENT_QNAME);
         alfrescoToCmisTypes.put(ContentModel.TYPE_FOLDER, FOLDER_QNAME);
-        
+
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ANY, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyType.BOOLEAN);
@@ -139,7 +193,6 @@ public class CMISMapping
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.PATH, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.QNAME, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyType.STRING);
-
     }
 
     /**
@@ -159,35 +212,33 @@ public class CMISMapping
      * @param typeQName
      * @return
      */
-    public static CMISTypeId getCmisTypeId(QName typeQName)
+    public static CMISTypeId getCmisTypeId(CMISScope scope, QName typeQName)
     {
         CMISTypeId typeId = qNameToCmisTypeId.get(typeQName);
         if (typeId == null)
         {
-            return new CMISTypeId(typeQName.toString());
+            StringBuilder builder = new StringBuilder(128);
+            switch (scope)
+            {
+            case DOCUMENT:
+                builder.append("D");
+                break;
+            case FOLDER:
+                builder.append("F");
+                break;
+            case RELATIONSHIP:
+                builder.append("R");
+                break;
+            default:
+                builder.append("U");
+                break;
+            }
+            builder.append(typeQName.toString());
+            return new CMISTypeId(scope, typeQName, builder.toString());
         }
         else
         {
             return typeId;
-        }
-    }
-
-    /**
-     * Given a type id - get the appropriate Alfresco QName
-     * 
-     * @param typeId
-     * @return
-     */
-    public static QName getTypeQname(CMISTypeId typeId)
-    {
-        QName typeQName = cmisTypeIdToTypeQName.get(typeId);
-        if (typeQName != null)
-        {
-            return typeQName;
-        }
-        else
-        {
-            return QName.createQName(typeId.getTypeId());
         }
     }
 
@@ -216,14 +267,14 @@ public class CMISMapping
             }
             String resolvedPrefix = prefixes.iterator().next();
 
-            builder.append(resolvedPrefix);
+            builder.append(resolvedPrefix.toUpperCase());
             builder.append("_");
         }
 
-        builder.append(qname.getLocalName());
+        builder.append(qname.getLocalName().toUpperCase());
         return builder.toString();
     }
-    
+
     /**
      * Is this a valid CMIS type The type must be a core CMIS type or extend cm:content or cm:folder The alfresco types
      * cm:content and cm:folder are hidden by the CMIS types
@@ -234,22 +285,78 @@ public class CMISMapping
      */
     public static boolean isValidCmisType(DictionaryService dictionaryService, QName typeQName)
     {
-        if (CMISMapping.isCmisCoreType(typeQName))
+        return isValidCmisFolder(dictionaryService, typeQName) || isValidCmisDocument(dictionaryService, typeQName) || isValidCmisRelationship(dictionaryService, typeQName);
+    }
+
+    /**
+     * Is this a valid cmis document or folder type (not a relationship)
+     * 
+     * @param dictionaryService
+     * @param typeQName
+     * @return
+     */
+    public static boolean isValidCmisDocumentOrFolder(DictionaryService dictionaryService, QName typeQName)
+    {
+        return isValidCmisFolder(dictionaryService, typeQName) || isValidCmisDocument(dictionaryService, typeQName);
+    }
+
+    /**
+     * Is this a valid CMIS folder type?
+     * 
+     * @param dictionaryService
+     * @param typeQName
+     * @return
+     */
+    public static boolean isValidCmisFolder(DictionaryService dictionaryService, QName typeQName)
+    {
+        if (typeQName == null)
+        {
+            return false;
+        }
+        if (typeQName.equals(FOLDER_QNAME))
         {
             return true;
         }
 
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT) || dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        {
+            if (typeQName.equals(ContentModel.TYPE_FOLDER))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Is this a valid CMIS document type?
+     * 
+     * @param dictionaryService
+     * @param typeQName
+     * @return
+     */
+    public static boolean isValidCmisDocument(DictionaryService dictionaryService, QName typeQName)
+    {
+        if (typeQName == null)
+        {
+            return false;
+        }
+        if (typeQName.equals(DOCUMENT_QNAME))
+        {
+            return true;
+        }
+
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
         {
             if (typeQName.equals(ContentModel.TYPE_CONTENT))
             {
                 return false;
             }
-            else if (typeQName.equals(ContentModel.TYPE_FOLDER))
-            {
-                return false;
-            }
-
             else
             {
                 return true;
@@ -267,8 +374,16 @@ public class CMISMapping
      * @param associationQName
      * @return
      */
-    public static boolean isValidCmisAssociation(DictionaryService dictionaryService, QName associationQName)
+    public static boolean isValidCmisRelationship(DictionaryService dictionaryService, QName associationQName)
     {
+        if (associationQName == null)
+        {
+            return false;
+        }
+        if (associationQName.equals(RELATIONSHIP_QNAME))
+        {
+            return true;
+        }
         AssociationDefinition associationDefinition = dictionaryService.getAssociation(associationQName);
         if (associationDefinition == null)
         {
@@ -278,11 +393,11 @@ public class CMISMapping
         {
             return false;
         }
-        if (!isValidCmisType(dictionaryService, getCmisType(associationDefinition.getSourceClass().getName())))
+        if (!isValidCmisDocumentOrFolder(dictionaryService, getCmisType(associationDefinition.getSourceClass().getName())))
         {
             return false;
         }
-        if (!isValidCmisType(dictionaryService, getCmisType(associationDefinition.getTargetClass().getName())))
+        if (!isValidCmisDocumentOrFolder(dictionaryService, getCmisType(associationDefinition.getTargetClass().getName())))
         {
             return false;
         }
@@ -307,67 +422,159 @@ public class CMISMapping
     }
 
     /**
-     * Get the root CMIS object (in the alfresco model) for any type.
+     * Get the CMIS property name from the property QName.
      * 
-     * @param dictionaryService
-     * @param typeQName
+     * @param namespaceService
+     * @param propertyQName
      * @return
      */
-    public static QName getCmisRootType(DictionaryService dictionaryService, QName typeQName)
-    {
-        if (isCmisCoreType(typeQName))
-        {
-            return typeQName;
-        }
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
-        {
-            return DOCUMENT_QNAME;
-        }
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
-        {
-            return FOLDER_QNAME;
-        }
-        if (isValidCmisAssociation(dictionaryService, typeQName))
-        {
-            return RELATIONSHIP_QNAME;
-        }
-        throw new UnsupportedOperationException();
-
-    }
-    
     public static String getCmisPropertyName(NamespaceService namespaceService, QName propertyQName)
     {
         return buildPrefixEncodedString(namespaceService, propertyQName);
     }
-    
+
+    /**
+     * Get the CMIS property type for a property
+     * 
+     * @param dictionaryService
+     * @param propertyQName
+     * @return
+     */
     public static CMISPropertyType getPropertyType(DictionaryService dictionaryService, QName propertyQName)
     {
         PropertyDefinition propertyDefinition = dictionaryService.getProperty(propertyQName);
         DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
         QName dQName = dataTypeDefinition.getName();
-        if(propertyQName.getNamespaceURI().equals(CMIS_MODEL_URI) && dQName.equals(DataTypeDefinition.QNAME))
+        if (propertyQName.getNamespaceURI().equals(CMIS_MODEL_URI) && dQName.equals(DataTypeDefinition.QNAME))
         {
             return CMISPropertyType.TYPE_ID;
         }
         return alfrescoPropertyTypesToCimsPropertyTypes.get(dQName);
-        
+
     }
-        
+
+    /**
+     * Lookup a CMIS property name and get the Alfresco property QName
+     * 
+     * @param dictionaryService
+     * @param namespaceService
+     * @param cmisPropertyName
+     * @return
+     */
     public static QName getPropertyQName(DictionaryService dictionaryService, NamespaceService namespaceService, String cmisPropertyName)
     {
         // Try the cmis model first - it it matches we are done
         QName cmisPropertyQName = QName.createQName(CMIS_MODEL_URI, cmisPropertyName);
-        if(dictionaryService.getProperty(cmisPropertyQName) != null)
+        if (dictionaryService.getProperty(cmisPropertyQName) != null)
         {
             return cmisPropertyQName;
         }
-        
+
+        // Find prefix and property name - in upper case
+
         int split = cmisPropertyName.indexOf('_');
         String prefix = cmisPropertyName.substring(0, split);
-        String localName = cmisPropertyName.substring(split+1);
+        String localName = cmisPropertyName.substring(split + 1);
+
+        // Try lower case version first.
+
+        QName propertyQName = QName.createQName(prefix.toLowerCase(), localName.toLowerCase(), namespaceService);
+        if (dictionaryService.getProperty(propertyQName) != null)
+        {
+            return propertyQName;
+        }
+
+        // Full case insensitive hunt
+
+        for (String test : namespaceService.getPrefixes())
+        {
+            if (test.equalsIgnoreCase(prefix))
+            {
+                prefix = test;
+                break;
+            }
+        }
+        String uri = namespaceService.getNamespaceURI(prefix);
+
+        for (QName qname : dictionaryService.getAllProperties(null))
+        {
+            if (qname.getNamespaceURI().equals(uri))
+            {
+                if (qname.getLocalName().equalsIgnoreCase(localName))
+                {
+                    return qname;
+                }
+            }
+        }
+
+        return null;
+
+    }
+
+    /**
+     * @param tableName
+     * @return
+     */
+    public static QName getAlfrescoClassQNameFromCmisTableName(DictionaryService dictionaryService, NamespaceService namespaceService, String tableName)
+    {
+        if (tableName.equals(DOCUMENT_TYPE_ID.getTypeId()))
+        {
+            return ContentModel.TYPE_CONTENT;
+        }
+        else if (tableName.equals(FOLDER_TYPE_ID.getTypeId()))
+        {
+            return ContentModel.TYPE_FOLDER;
+        }
+
+        // Find prefix and property name - in upper case
+
+        int split = tableName.indexOf('_');
+        String prefix = tableName.substring(0, split);
+        String localName = tableName.substring(split + 1);
+
+        // Try lower case version first.
+
+        QName classQName = QName.createQName(prefix.toLowerCase(), localName.toLowerCase(), namespaceService);
+        if (dictionaryService.getClass(classQName) != null)
+        {
+            return classQName;
+        }
+
+        // Full case insensitive hunt
+
+        for (String test : namespaceService.getPrefixes())
+        {
+            if (test.equalsIgnoreCase(prefix))
+            {
+                prefix = test;
+                break;
+            }
+        }
+        String uri = namespaceService.getNamespaceURI(prefix);
+
+        for (QName qname : dictionaryService.getAllTypes())
+        {
+            if (qname.getNamespaceURI().equals(uri))
+            {
+                if (qname.getLocalName().equalsIgnoreCase(localName))
+                {
+                    return qname;
+                }
+            }
+        }
         
-        QName qname = QName.createQName(prefix, localName, namespaceService);
-        return qname;
-        
+        for (QName qname : dictionaryService.getAllAspects())
+        {
+            if (qname.getNamespaceURI().equals(uri))
+            {
+                if (qname.getLocalName().equalsIgnoreCase(localName))
+                {
+                    return qname;
+                }
+            }
+        }
+
+        return null;
+
     }
 }

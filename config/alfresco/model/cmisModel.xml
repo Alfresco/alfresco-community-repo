@@ -35,9 +35,7 @@
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:IS_MAJOR_VERSION">
                <title>Is Major Version</title>
@@ -46,9 +44,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:IS_LATEST_MAJOR_VERSION">
                <title>Is Latest Major Version</title>
@@ -57,9 +53,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:VERSION_SERIES_IS_CHECKED_OUT">
                <title>Version Series Is Checked Out</title>
@@ -79,9 +73,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="true" />
             </property>
             <property name="cmis:VERSION_SERIES_CHECKED_OUT_ID">
                <title>Version Series Checked Out Id</title>
@@ -90,9 +82,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:CHECKIN_COMMENT">
                <title>Checkin Comment</title>
@@ -101,9 +91,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:CONTENT_STREAM_ALLOWED">
                <title>Content Stream Allowed</title>
@@ -112,9 +100,7 @@
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
             <property name="cmis:CONTENT_STREAM_LENGTH">
                <title>Content Stream Length</title>
@@ -135,7 +121,7 @@
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
                <index enabled="true">
-                  <tokenised>true</tokenised>
+                  <tokenised>false</tokenised>
                </index>
             </property>
             <property name="cmis:CONTENT_STREAM_FILEMANE">
@@ -156,9 +142,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
-               <index enabled="true">
-                  <tokenised>true</tokenised>
-               </index>
+               <index enabled="false" />
             </property>
          </properties>
          <mandatory-aspects>
@@ -189,9 +173,7 @@
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>true</multiple>
-               <index enabled="true">
-                  <tokenised>false</tokenised>
-               </index>
+               <index enabled="false"/>
             </property>
          </properties>
          <mandatory-aspects>

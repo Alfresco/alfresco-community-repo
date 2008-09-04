@@ -24,14 +24,23 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.util.Date;
+
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -57,10 +66,29 @@ public abstract class BaseCMISTest extends TestCase
 
     protected UserTransaction testTX;
 
+    protected CMISPropertyService cmisPropertyService;
+
+    protected NodeService nodeService;
+
+    protected NodeRef rootNodeRef;
+
+    protected FileFolderService fileFolderService;
+
+    protected ServiceRegistry serviceRegistry;
+
+    protected NamespaceService namespaceService;
+
     public void setUp() throws Exception
     {
+        serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
+        
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("CMISDictionaryService");
+        cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
+        namespaceService = (NamespaceService) ctx.getBean("namespaceService");
+        
         
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
@@ -68,6 +96,10 @@ public abstract class BaseCMISTest extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        String storeName = "CMISTest-" + getName() + "-" + (new Date().getTime());
+        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
+        rootNodeRef = nodeService.getRootNode(storeRef);
 
        
     }

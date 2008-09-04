@@ -24,20 +24,83 @@
  */
 package org.alfresco.cmis.dictionary;
 
-public class CMISTypeId implements CMISPropertyValue
+import java.io.Serializable;
+
+import org.alfresco.service.namespace.QName;
+
+/**
+ * A CMIS property type id
+ * 
+ * @author andyh
+ *
+ */
+public class CMISTypeId implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4709046883083948302L;
+
     private String typeId;
-    
-    public CMISTypeId(String typeId)
+
+    private CMISScope scope;
+
+    private QName qName;
+
+    public CMISTypeId(CMISScope scope, QName qName, String typeId)
     {
+        this.scope = scope;
+        this.qName = qName;
         this.typeId = typeId;
     }
 
+    /**
+     * Get the CMIS type id string 
+     * @return
+     */
     public String getTypeId()
     {
         return typeId;
     }
-    
+
+    /**
+     * Get the Alfresco model QName associated with the type
+     * @return
+     */
+    public QName getQName()
+    {
+        return qName;
+    }
+
+    /**
+     * Get the scope for the type (Doc, Folder, Relationship or unknown)
+     * @return
+     */
+    public CMISScope getScope()
+    {
+        return scope;
+    }
+
+    /**
+     * Get the root type id
+     * @return
+     */
+    public CMISTypeId getRootTypeId()
+    {
+        switch (scope)
+        {
+        case DOCUMENT:
+            return CMISMapping.DOCUMENT_TYPE_ID;
+        case FOLDER:
+            return CMISMapping.FOLDER_TYPE_ID;
+        case RELATIONSHIP:
+            return CMISMapping.RELATIONSHIP_TYPE_ID;
+        case UNKNOWN:
+        default:
+            return null;
+        }
+    }
+
     public String toString()
     {
         return getTypeId();
@@ -71,6 +134,5 @@ public class CMISTypeId implements CMISPropertyValue
             return false;
         return true;
     }
-    
-    
+
 }

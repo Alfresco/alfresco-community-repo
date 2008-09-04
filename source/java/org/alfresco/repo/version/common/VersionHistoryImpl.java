@@ -225,11 +225,11 @@ public class VersionHistoryImpl implements VersionHistory
      */
     public static class VersionComparator implements Comparator<Version>, Serializable
     {
-		private static final long serialVersionUID = 6227528170880231770L;
+        private static final long serialVersionUID = 6227528170880231770L;
 
-		public int compare(Version v1, Version v2)
+        public int compare(Version v1, Version v2)
         {
-        	return v2.getCreatedDate().compareTo(v1.getCreatedDate());
+            return v2.getCreatedDate().compareTo(v1.getCreatedDate());
         }
     }
 

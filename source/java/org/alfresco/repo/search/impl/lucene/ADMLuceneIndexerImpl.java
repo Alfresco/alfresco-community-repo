@@ -48,6 +48,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
@@ -105,7 +106,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
      * The node service we use to get information about nodes
      */
     NodeService nodeService;
-    
+
     /**
      * The tenant service we use for multi-tenancy
      */
@@ -148,7 +149,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * IOC setting of the tenant service
      * 
@@ -183,13 +184,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         try
         {
             NodeRef childRef = relationshipRef.getChildRef();
-            if(!childRef.getStoreRef().equals(store))
+            if (!childRef.getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Create node failed - node is not in the required store"); 
+                throw new LuceneIndexException("Create node failed - node is not in the required store");
             }
             // If we have the root node we delete all other root nodes first
-            if ((relationshipRef.getParentRef() == null)
-                    && tenantService.getBaseName(childRef).equals(nodeService.getRootNode(childRef.getStoreRef())))
+            if ((relationshipRef.getParentRef() == null) && tenantService.getBaseName(childRef).equals(nodeService.getRootNode(childRef.getStoreRef())))
             {
                 addRootNodesToDeletionList();
                 s_logger.warn("Detected root node addition: deleting all nodes from the index");
@@ -245,7 +245,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     public void updateNode(NodeRef nodeRef) throws LuceneIndexException
     {
         nodeRef = tenantService.getName(nodeRef);
-        
+
         if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Update node " + nodeRef);
@@ -253,9 +253,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            if(!nodeRef.getStoreRef().equals(store))
+            if (!nodeRef.getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Update node failed - node is not in the required store"); 
+                throw new LuceneIndexException("Update node failed - node is not in the required store");
             }
             reindex(nodeRef, false);
         }
@@ -275,9 +275,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            if (!relationshipRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Delete node failed - node is not in the required store"); 
+                throw new LuceneIndexException("Delete node failed - node is not in the required store");
             }
             // The requires a reindex - a delete may remove too much from under this node - that also lives under
             // other nodes via secondary associations. All the nodes below require reindex.
@@ -302,9 +302,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             // TODO: Optimise
             // reindex(relationshipRef.getParentRef());
-            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            if (!relationshipRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Create child relationship failed - node is not in the required store"); 
+                throw new LuceneIndexException("Create child relationship failed - node is not in the required store");
             }
             reindex(relationshipRef.getChildRef(), true);
         }
@@ -325,13 +325,13 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         try
         {
             // TODO: Optimise
-            if(!relationshipBeforeRef.getChildRef().getStoreRef().equals(store))
+            if (!relationshipBeforeRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Update child relationship failed - node is not in the required store"); 
+                throw new LuceneIndexException("Update child relationship failed - node is not in the required store");
             }
-            if(!relationshipAfterRef.getChildRef().getStoreRef().equals(store))
+            if (!relationshipAfterRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Update child relationship failed - node is not in the required store"); 
+                throw new LuceneIndexException("Update child relationship failed - node is not in the required store");
             }
             if (relationshipBeforeRef.getParentRef() != null)
             {
@@ -355,9 +355,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            if(!relationshipRef.getChildRef().getStoreRef().equals(store))
+            if (!relationshipRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Delete child relationship failed - node is not in the required store"); 
+                throw new LuceneIndexException("Delete child relationship failed - node is not in the required store");
             }
             // TODO: Optimise
             if (relationshipRef.getParentRef() != null)
@@ -741,7 +741,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         boolean store = true;
         boolean index = true;
-        boolean tokenise = true;
+        IndexTokenisationMode tokenise = IndexTokenisationMode.TRUE;
         boolean atomic = true;
         boolean isContent = false;
         boolean isMultiLingual = false;
@@ -753,7 +753,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             index = propertyDef.isIndexed();
             store = propertyDef.isStoredInIndex();
-            tokenise = propertyDef.isTokenisedInIndex();
+            tokenise = propertyDef.getIndexTokenisationMode();
             atomic = propertyDef.isIndexedAtomically();
             isContent = propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
             isMultiLingual = propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
@@ -844,7 +844,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             // log it
                             if (s_logger.isInfoEnabled())
                             {
-                                s_logger.info("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN + " at "+nodeService.getPath(nodeRef));
+                                s_logger.info("Not indexed: No transformation: \n"
+                                        + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN + " at " + nodeService.getPath(nodeRef));
                             }
                             // don't index from the reader
                             readerReady = false;
@@ -883,7 +884,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                 // log it
                                 if (s_logger.isInfoEnabled())
                                 {
-                                    s_logger.info("Not indexed: Transformation failed at "+nodeService.getPath(nodeRef), e);
+                                    s_logger.info("Not indexed: Transformation failed at " + nodeService.getPath(nodeRef), e);
                                 }
                                 // don't index from the reader
                                 readerReady = false;
@@ -930,7 +931,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     if (s_logger.isInfoEnabled())
                     {
                         s_logger.info("Not indexed: Content Missing \n"
-                                + "   node: " + nodeRef  + " at "+nodeService.getPath(nodeRef)+ "\n" + "   reader: " + reader + "\n" + "   content exists: "
+                                + "   node: " + nodeRef + " at " + nodeService.getPath(nodeRef) + "\n" + "   reader: " + reader + "\n" + "   content exists: "
                                 + (reader == null ? " --- " : Boolean.toString(reader.exists())));
                     }
                     // not indexed: content missing
@@ -945,13 +946,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
                 if (index)
                 {
-                    if (tokenise)
+                    switch (tokenise)
                     {
+                    case TRUE:
+                    case BOTH:
+                    default:
                         fieldIndex = Field.Index.TOKENIZED;
-                    }
-                    else
-                    {
+                        break;
+                    case FALSE:
                         fieldIndex = Field.Index.UN_TOKENIZED;
+                        break;
+
                     }
                 }
                 else
@@ -995,15 +1000,26 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         {
                             locale = I18NUtil.getLocale();
                         }
-                        if (tokenise)
+                        StringBuilder builder;
+                        switch (tokenise)
                         {
-                            StringBuilder builder = new StringBuilder();
+                        default:
+                        case TRUE:
+                            builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
                             doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
-                        }
-                        else
-                        {
+
+                            break;
+                        case FALSE:
                             doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                            break;
+                        case BOTH:
+                            builder = new StringBuilder();
+                            builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
+                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
+
+                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                            break;
                         }
                     }
                     else if (isDateTime)
@@ -1133,7 +1149,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             {
                                 // can be running in context of System user, hence use input nodeRef
                                 catRef = tenantService.getName(nodeRef, catRef);
-                                
+
                                 try
                                 {
                                     for (Path path : nodeService.getPaths(catRef, false))

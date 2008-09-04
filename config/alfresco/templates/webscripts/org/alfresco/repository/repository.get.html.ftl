@@ -1,39 +1,28 @@
+<#import "/org/alfresco/webscripts.lib.html.ftl" as wsLib/>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head> 
-    <title>Alfresco CMIS v${cmisVersion}</title> 
-    <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
-  </head>
+  <@wsLib.head>Alfresco CMIS v${cmisVersion}</@wsLib.head>
   <body>
-    <table>
-     <tr>
-        <td><img src="${url.context}/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
-        <td><nobr><span class="title">Alfresco CMIS v${cmisVersion}</span></nobr></td>
-     </tr>
-    </table>
-    <br>
-    <table>
-      <tr><td><a href="${url.serviceContext}/index">Back to Web Scripts Home</a></td></tr>
-    </table>
-    <br>
+    <div>
+    <@wsLib.header>Alfresco CMIS v${cmisVersion}</@wsLib.header>
+    <br/>
     <span class="mainSubTitle">Introduction</span>
     <table>
         <tr>
-           <td>The Content Management Interoperability Services (CMIS) standard defines a domain
+           <td>The Content Management Interoperability Services (CMIS) specification defines a domain
                model and set of API bindings, such as Web Services and REST/Atom that can be used
                by applications to work with one or more Content Management repositories/systems.</td>
         </tr>
+        <tr><td><ul><li><a href="http://wiki.alfresco.com/wiki/CMIS">More Info...</a></li></ul></td></tr>
     </table>
-    <br>
     <span class="mainSubTitle">REST API Binding</span>
     <table>
         <tr><td>Alfresco's Content Repository provides the CMIS REST v${cmisVersion} binding, an extension of the Atom Publishing Protocol. 
-                All <a href="${url.serviceContext}/index/family/CMIS">CMIS services</a> are implemented as <a href="http://wiki.alfresco.com/wiki/Web Scripts">Web Scripts</a>, 
+                All <a href="${url.serviceContext}/index/family/CMIS">CMIS REST services</a> are implemented as <a href="http://wiki.alfresco.com/wiki/Web Scripts">Alfresco Web Scripts</a>, 
                 therefore support all Web Script capabilities such as authentication, content negotiation, tunelling etc.</td>
         </tr>
-        <tr><td><a href="${url.serviceContext}/index/family/CMIS">CMIS services Reference</a></td></tr>
+        <tr><td><ul><li><a href="${url.serviceContext}/index/family/CMIS">CMIS REST API Reference</a></li></ul></td></tr>
     </table>
-    <br>
     <span class="mainSubTitle">REST TEST</span>
     <table>
         <tr><td>The following test harness exercises the CMIS REST API binding.  By default, its parameters are setup to this
@@ -55,8 +44,8 @@
     <table>
         <tr><td>Alfresco's Content Repository provides the CMIS Web Services v${cmisVersion} binding as defined by the following
                 <a href="${url.serviceContext}/alfresco/cmis">WSDL</a>.</td></tr>
+        <tr><td><ul><li><a href="${url.context}/cmis">CMIS Web Service WSDL</a></li></ul></td></tr>
     </table>
-    <br>
     <span class="mainSubTitle">Alfresco Repository Information</span>
     <table>
         <tr><td>(also available as an <a href="${url.serviceContext}/api/repository">CMIS/APP Service Document</a>)</td></tr>
@@ -83,5 +72,6 @@
         <tr><td>VersionsSupported:</td><td>${cmisVersion}</td></tr>
         <tr><td>repositorySpecificInformation:</td><td>[none]</td></tr>
     </table>
+    </div>
   </body>    
 </html>

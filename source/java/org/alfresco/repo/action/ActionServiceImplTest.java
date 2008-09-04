@@ -696,7 +696,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 		assertFalse(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE));
 		
 		Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
-		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+		action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
 		action.setExecuteAsynchronously(true);
 		
 		this.actionService.executeAction(action, this.nodeRef);
@@ -716,7 +716,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 					public boolean executeTest() 
 					{
 						return (
-							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE));
+							finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
 					};
 				});
 	}	

@@ -22,43 +22,34 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
+package org.alfresco.cmis.search;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
+import org.alfresco.cmis.dictionary.CMISPropertyType;
 
 /**
- * Base class for all property accessors - provides the service registry
+ * The column meta data for a result set
  * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public interface CMISResultSetColumn
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
-
     /**
-     * @param cmisMapping
+     * The column name
+     * @return - the column name
      */
-    public void setCMISMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
-    }
+    public String getName();
     
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
-    }
-
+    /**
+     * The property definition if there is one for the column 
+     * @return - the property definition or null if it does not make sense for the column 
+     */
+    public CMISPropertyDefinition getPropertyDefinition();
+    
+    /**
+     * The type of the column
+     * @return - the CMIS type for the column
+     */
+    public CMISPropertyType getPropertyType();
 }

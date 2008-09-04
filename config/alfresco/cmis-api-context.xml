@@ -3,15 +3,24 @@
 
 <beans>
 
+    <bean id="CMISMapping" class="org.alfresco.cmis.dictionary.CMISMapping" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+    </bean>
+
     <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISDictionaryService" >
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="CMISMapping">
+            <ref bean="CMISMapping" />
+        </property>
         <property name="strict">
            <value>true</value>
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
         </property>
     </bean>
     
@@ -27,6 +36,32 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
+        <property name="CMISMapping">
+            <ref bean="CMISMapping" />
+        </property>
+    </bean>
+   
+    <bean id="CMISService" class="org.alfresco.cmis.CMISService">
+        <property name="CMISSpecVersion"><value>0.43</value></property>
+        <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="searchService" ref="SearchService" />
+        <property name="transactionHelper" ref="retryingTransactionHelper" />
+        <property name="tenantDeployerService" ref="tenantAdminService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="repository" ref="repositoryHelper" />
     </bean>
     
+    <bean id="CMISQueryService" class="org.alfresco.cmis.search.impl.CMISQueryServiceImpl" >
+        <property name="cmisMapping">
+            <ref bean="CMISMapping" />
+        </property>
+        <property name="cmisDictionaryService">
+            <ref bean="CMISDictionaryService" />
+        </property>
+        <property name="cmisService">
+            <ref bean="CMISService" />
+        </property>
+    </bean>
+   
 </beans>

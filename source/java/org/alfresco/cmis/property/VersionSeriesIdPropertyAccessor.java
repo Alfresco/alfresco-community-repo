@@ -24,41 +24,36 @@
  */
 package org.alfresco.cmis.property;
 
+import java.io.Serializable;
+
 import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Base class for all property accessors - provides the service registry
- * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public class VersionSeriesIdPropertyAccessor extends AbstractNamedPropertyAccessor
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
 
-    /**
-     * @param cmisMapping
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#getProperty(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void setCMISMapping(CMISMapping cmisMapping)
+    public Serializable getProperty(NodeRef nodeRef)
     {
-        this.cmisMapping = cmisMapping;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
+        return nodeRef.toString();
     }
 
-    public ServiceRegistry getServiceRegistry()
+    @Override
+    public String getPropertyName()
     {
-        return serviceRegistry;
+        return CMISMapping.PROP_VERSION_SERIES_ID;
     }
 
-    public CMISMapping getCMISMapping()
+    @Override
+    public CMISScope getScope()
     {
-        return cmisMapping;
+        return CMISScope.DOCUMENT;
     }
-
 }

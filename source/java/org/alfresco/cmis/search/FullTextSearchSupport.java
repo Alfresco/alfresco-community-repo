@@ -22,43 +22,13 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
-
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+package org.alfresco.cmis.search;
 
 /**
- * Base class for all property accessors - provides the service registry
- * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public enum FullTextSearchSupport
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
-
-    /**
-     * @param cmisMapping
-     */
-    public void setCMISMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
-    }
-
+    NO_FULL_TEXT, FULL_TEXT_ONLY, FULL_TEXT_AND_STRUCTURED;
 }

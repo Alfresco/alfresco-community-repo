@@ -33,6 +33,7 @@ import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.Function;
+import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.Join;
 import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.search.impl.querymodel.ListArgument;
@@ -285,6 +286,14 @@ public class LuceneQueryModelFactory implements QueryModelFactory
     public ListArgument createListArgument(String name, ArrayList<Argument> arguments)
     {
         return new LuceneListArgument(name, arguments);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionArgument(java.lang.String, org.alfresco.repo.search.impl.querymodel.Function, java.util.List)
+     */
+    public FunctionArgument createFunctionArgument(String name, Function function, List<Argument> functionArguments)
+    {
+        return new LuceneFunctionArgument(name, function, functionArguments);
     }
 
 }

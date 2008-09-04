@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\CMIS.g 2008-07-15 16:24:40
+// $ANTLR 3.1b1 W:\\workspace-cmis2\\ANTLR\\CMIS.g 2008-07-21 10:14:45
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -21,7 +21,7 @@ public class CMISLexer extends Lexer {
     public static final int TABLE=12;
     public static final int SOURCE=11;
     public static final int EQUALS=43;
-    public static final int DOTDOT=74;
+    public static final int DOTDOT=76;
     public static final int NOT=47;
     public static final int ID=67;
     public static final int AND=46;
@@ -29,9 +29,9 @@ public class CMISLexer extends Lexer {
     public static final int LPAREN=35;
     public static final int LESSTHANOREQUALS=51;
     public static final int AS=32;
-    public static final int SINGLE_QUOTE=76;
+    public static final int SINGLE_QUOTE=74;
     public static final int RPAREN=36;
-    public static final int TILDA=75;
+    public static final int TILDA=77;
     public static final int PRED_LIKE=21;
     public static final int STRING_LITERAL=28;
     public static final int IN=53;
@@ -91,7 +91,7 @@ public class CMISLexer extends Lexer {
     public static final int FROM=37;
     public static final int UPPER=71;
     public static final int PRED_IN=19;
-    public static final int ESCAPED_SINGLE_QUOTE=77;
+    public static final int ESCAPED_SINGLE_QUOTE=75;
 
     // delegates
     // delegators
@@ -104,15 +104,122 @@ public class CMISLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "W:\\workspace-cmis\\ANTLR\\CMIS.g"; }
+    public String getGrammarFileName() { return "W:\\workspace-cmis2\\ANTLR\\CMIS.g"; }
+
+    // $ANTLR start SINGLE_QUOTE
+    public final void mSINGLE_QUOTE() throws RecognitionException {
+        try {
+            int _type = SINGLE_QUOTE;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:504:9: ( '\\'' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:504:17: '\\''
+            {
+            match('\''); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end SINGLE_QUOTE
+
+    // $ANTLR start ESCAPED_SINGLE_QUOTE
+    public final void mESCAPED_SINGLE_QUOTE() throws RecognitionException {
+        try {
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:512:9: ( '\\'\\'' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:512:17: '\\'\\''
+            {
+            match("\'\'"); 
+
+
+            }
+
+        }
+        finally {
+        }
+    }
+    // $ANTLR end ESCAPED_SINGLE_QUOTE
+
+    // $ANTLR start QUOTED_STRING
+    public final void mQUOTED_STRING() throws RecognitionException {
+        try {
+            int _type = QUOTED_STRING;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:515:5: ( SINGLE_QUOTE (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )* SINGLE_QUOTE )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:515:9: SINGLE_QUOTE (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )* SINGLE_QUOTE
+            {
+            mSINGLE_QUOTE(); 
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:515:22: (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )*
+            loop1:
+            do {
+                int alt1=3;
+                int LA1_0 = input.LA(1);
+
+                if ( (LA1_0=='\'') ) {
+                    int LA1_1 = input.LA(2);
+
+                    if ( (LA1_1=='\'') ) {
+                        alt1=2;
+                    }
+
+
+                }
+                else if ( ((LA1_0>='\u0000' && LA1_0<='&')||(LA1_0>='(' && LA1_0<='\uFFFE')) ) {
+                    alt1=1;
+                }
+
+
+                switch (alt1) {
+            	case 1 :
+            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:515:24: ~ SINGLE_QUOTE
+            	    {
+            	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='I')||(input.LA(1)>='K' && input.LA(1)<='\uFFFE') ) {
+            	        input.consume();
+
+            	    }
+            	    else {
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
+
+
+            	    }
+            	    break;
+            	case 2 :
+            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:515:40: ESCAPED_SINGLE_QUOTE
+            	    {
+            	    mESCAPED_SINGLE_QUOTE(); 
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop1;
+                }
+            } while (true);
+
+            mSINGLE_QUOTE(); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end QUOTED_STRING
 
     // $ANTLR start SELECT
     public final void mSELECT() throws RecognitionException {
         try {
             int _type = SELECT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:499:8: ( ( 'S' | 's' ) ( 'E' | 'e' ) ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'T' | 't' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:499:10: ( 'S' | 's' ) ( 'E' | 'e' ) ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'T' | 't' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:520:8: ( ( 'S' | 's' ) ( 'E' | 'e' ) ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'T' | 't' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:520:10: ( 'S' | 's' ) ( 'E' | 'e' ) ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
                 input.consume();
@@ -184,8 +291,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = AS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:500:4: ( ( 'A' | 'a' ) ( 'S' | 's' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:500:6: ( 'A' | 'a' ) ( 'S' | 's' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:521:4: ( ( 'A' | 'a' ) ( 'S' | 's' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:521:6: ( 'A' | 'a' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -221,8 +328,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = UPPER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:501:7: ( ( 'U' | 'u' ) ( 'P' | 'p' ) ( 'P' | 'p' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:501:9: ( 'U' | 'u' ) ( 'P' | 'p' ) ( 'P' | 'p' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:522:7: ( ( 'U' | 'u' ) ( 'P' | 'p' ) ( 'P' | 'p' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:522:9: ( 'U' | 'u' ) ( 'P' | 'p' ) ( 'P' | 'p' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
                 input.consume();
@@ -285,8 +392,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LOWER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:502:7: ( ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'W' | 'w' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:502:9: ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'W' | 'w' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:523:7: ( ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'W' | 'w' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:523:9: ( 'L' | 'l' ) ( 'O' | 'o' ) ( 'W' | 'w' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
                 input.consume();
@@ -349,8 +456,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = FROM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:503:6: ( ( 'F' | 'f' ) ( 'R' | 'r' ) ( 'O' | 'o' ) ( 'M' | 'm' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:503:8: ( 'F' | 'f' ) ( 'R' | 'r' ) ( 'O' | 'o' ) ( 'M' | 'm' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:524:6: ( ( 'F' | 'f' ) ( 'R' | 'r' ) ( 'O' | 'o' ) ( 'M' | 'm' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:524:8: ( 'F' | 'f' ) ( 'R' | 'r' ) ( 'O' | 'o' ) ( 'M' | 'm' )
             {
             if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
                 input.consume();
@@ -404,8 +511,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = JOIN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:504:6: ( ( 'J' | 'j' ) ( 'O' | 'o' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:504:8: ( 'J' | 'j' ) ( 'O' | 'o' ) ( 'I' | 'i' ) ( 'N' | 'n' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:525:6: ( ( 'J' | 'j' ) ( 'O' | 'o' ) ( 'I' | 'i' ) ( 'N' | 'n' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:525:8: ( 'J' | 'j' ) ( 'O' | 'o' ) ( 'I' | 'i' ) ( 'N' | 'n' )
             {
             if ( input.LA(1)=='J'||input.LA(1)=='j' ) {
                 input.consume();
@@ -459,8 +566,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = INNER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:505:7: ( ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:505:9: ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:526:7: ( ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:526:9: ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'N' | 'n' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                 input.consume();
@@ -523,8 +630,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LEFT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:506:6: ( ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'F' | 'f' ) ( 'T' | 't' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:506:8: ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'F' | 'f' ) ( 'T' | 't' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:527:6: ( ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'F' | 'f' ) ( 'T' | 't' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:527:8: ( 'L' | 'l' ) ( 'E' | 'e' ) ( 'F' | 'f' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
                 input.consume();
@@ -578,8 +685,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = OUTER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:507:7: ( ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:507:9: ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:528:7: ( ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:528:9: ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -642,8 +749,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:508:4: ( ( 'O' | 'o' ) ( 'N' | 'n' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:508:6: ( 'O' | 'o' ) ( 'N' | 'n' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:529:4: ( ( 'O' | 'o' ) ( 'N' | 'n' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:529:6: ( 'O' | 'o' ) ( 'N' | 'n' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -679,8 +786,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = WHERE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:509:7: ( ( 'W' | 'w' ) ( 'H' | 'h' ) ( 'E' | 'e' ) ( 'R' | 'r' ) ( 'E' | 'e' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:509:9: ( 'W' | 'w' ) ( 'H' | 'h' ) ( 'E' | 'e' ) ( 'R' | 'r' ) ( 'E' | 'e' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:530:7: ( ( 'W' | 'w' ) ( 'H' | 'h' ) ( 'E' | 'e' ) ( 'R' | 'r' ) ( 'E' | 'e' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:530:9: ( 'W' | 'w' ) ( 'H' | 'h' ) ( 'E' | 'e' ) ( 'R' | 'r' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='W'||input.LA(1)=='w' ) {
                 input.consume();
@@ -743,8 +850,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:510:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:510:6: ( 'O' | 'o' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:531:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:531:6: ( 'O' | 'o' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -780,8 +887,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:511:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:511:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:532:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:532:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -826,8 +933,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:512:5: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:512:7: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:533:5: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:533:7: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -872,8 +979,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = IN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:513:4: ( ( 'I' | 'i' ) ( 'N' | 'n' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:513:6: ( 'I' | 'i' ) ( 'N' | 'n' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:534:4: ( ( 'I' | 'i' ) ( 'N' | 'n' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:534:6: ( 'I' | 'i' ) ( 'N' | 'n' )
             {
             if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                 input.consume();
@@ -909,8 +1016,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LIKE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:514:6: ( ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'K' | 'k' ) ( 'E' | 'e' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:514:8: ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'K' | 'k' ) ( 'E' | 'e' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:535:6: ( ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'K' | 'k' ) ( 'E' | 'e' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:535:8: ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'K' | 'k' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
                 input.consume();
@@ -964,8 +1071,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = IS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:515:4: ( ( 'I' | 'i' ) ( 'S' | 's' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:515:6: ( 'I' | 'i' ) ( 'S' | 's' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:536:4: ( ( 'I' | 'i' ) ( 'S' | 's' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:536:6: ( 'I' | 'i' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                 input.consume();
@@ -1001,8 +1108,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = NULL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:516:6: ( ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'L' | 'l' ) ( 'L' | 'l' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:516:8: ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'L' | 'l' ) ( 'L' | 'l' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:537:6: ( ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'L' | 'l' ) ( 'L' | 'l' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:537:8: ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'L' | 'l' ) ( 'L' | 'l' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -1056,8 +1163,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ANY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:517:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'Y' | 'y' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:517:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'Y' | 'y' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:538:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'Y' | 'y' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:538:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'Y' | 'y' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -1102,8 +1209,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = CONTAINS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:518:9: ( ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'S' | 's' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:518:11: ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'S' | 's' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:539:9: ( ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'S' | 's' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:539:11: ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'A' | 'a' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='C'||input.LA(1)=='c' ) {
                 input.consume();
@@ -1193,8 +1300,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = IN_FOLDER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:520:2: ( ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:520:4: ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:541:2: ( ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:541:4: ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'F' | 'f' ) ( 'O' | 'o' ) ( 'L' | 'l' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                 input.consume();
@@ -1285,8 +1392,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = IN_TREE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:521:9: ( ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:521:11: ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:542:9: ( ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:542:11: ( 'I' | 'i' ) ( 'N' | 'n' ) '_' ( 'T' | 't' ) ( 'R' | 'r' ) ( 'E' | 'e' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                 input.consume();
@@ -1359,8 +1466,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ORDER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:522:7: ( ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:522:9: ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:543:7: ( ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:543:9: ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -1423,8 +1530,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = BY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:523:4: ( ( 'B' | 'b' ) ( 'Y' | 'y' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:523:6: ( 'B' | 'b' ) ( 'Y' | 'y' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:544:4: ( ( 'B' | 'b' ) ( 'Y' | 'y' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:544:6: ( 'B' | 'b' ) ( 'Y' | 'y' )
             {
             if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                 input.consume();
@@ -1460,8 +1567,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ASC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:524:5: ( ( 'A' | 'a' ) ( 'S' | 's' ) ( 'C' | 'c' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:524:7: ( 'A' | 'a' ) ( 'S' | 's' ) ( 'C' | 'c' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:545:5: ( ( 'A' | 'a' ) ( 'S' | 's' ) ( 'C' | 'c' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:545:7: ( 'A' | 'a' ) ( 'S' | 's' ) ( 'C' | 'c' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -1506,8 +1613,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = DESC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:525:6: ( ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'S' | 's' ) ( 'C' | 'c' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:525:8: ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'S' | 's' ) ( 'C' | 'c' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:546:6: ( ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'S' | 's' ) ( 'C' | 'c' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:546:8: ( 'D' | 'd' ) ( 'E' | 'e' ) ( 'S' | 's' ) ( 'C' | 'c' )
             {
             if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
                 input.consume();
@@ -1561,8 +1668,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = SCORE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:526:7: ( ( 'S' | 's' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'E' | 'e' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:526:9: ( 'S' | 's' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'E' | 'e' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:547:7: ( ( 'S' | 's' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'E' | 'e' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:547:9: ( 'S' | 's' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'R' | 'r' ) ( 'E' | 'e' )
             {
             if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
                 input.consume();
@@ -1625,8 +1732,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:527:8: ( '(' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:527:10: '('
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:548:8: ( '(' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:548:10: '('
             {
             match('('); 
 
@@ -1645,8 +1752,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = RPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:528:8: ( ')' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:528:10: ')'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:549:8: ( ')' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:549:10: ')'
             {
             match(')'); 
 
@@ -1665,8 +1772,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:529:6: ( '*' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:529:8: '*'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:550:6: ( '*' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:550:8: '*'
             {
             match('*'); 
 
@@ -1685,8 +1792,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:530:7: ( ',' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:530:9: ','
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:551:7: ( ',' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:551:9: ','
             {
             match(','); 
 
@@ -1705,8 +1812,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = DOTSTAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:531:9: ( '.*' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:531:11: '.*'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:552:9: ( '.*' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:552:11: '.*'
             {
             match(".*"); 
 
@@ -1726,8 +1833,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:532:5: ( '.' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:532:7: '.'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:553:5: ( '.' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:553:7: '.'
             {
             match('.'); 
 
@@ -1746,8 +1853,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = DOTDOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:533:8: ( '..' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:533:10: '..'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:554:8: ( '..' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:554:10: '..'
             {
             match(".."); 
 
@@ -1767,8 +1874,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = EQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:534:9: ( '=' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:534:11: '='
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:555:9: ( '=' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:555:11: '='
             {
             match('='); 
 
@@ -1787,8 +1894,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = TILDA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:535:7: ( '~' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:535:9: '~'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:556:7: ( '~' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:556:9: '~'
             {
             match('~'); 
 
@@ -1807,8 +1914,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = NOTEQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:537:2: ( '<>' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:537:4: '<>'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:558:2: ( '<>' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:558:4: '<>'
             {
             match("<>"); 
 
@@ -1828,8 +1935,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = GREATERTHAN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:539:2: ( '>' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:539:4: '>'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:560:2: ( '>' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:560:4: '>'
             {
             match('>'); 
 
@@ -1848,8 +1955,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LESSTHAN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:541:2: ( '<' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:541:4: '<'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:562:2: ( '<' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:562:4: '<'
             {
             match('<'); 
 
@@ -1868,8 +1975,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = GREATERTHANOREQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:543:2: ( '>=' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:543:4: '>='
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:564:2: ( '>=' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:564:4: '>='
             {
             match(">="); 
 
@@ -1889,8 +1996,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = LESSTHANOREQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:545:2: ( '<=' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:545:4: '<='
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:566:2: ( '<=' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:566:4: '<='
             {
             match("<="); 
 
@@ -1910,8 +2017,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:546:7: ( ':' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:546:9: ':'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:567:7: ( ':' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:567:9: ':'
             {
             match(':'); 
 
@@ -1925,33 +2032,13 @@ public class CMISLexer extends Lexer {
     }
     // $ANTLR end COLON
 
-    // $ANTLR start SINGLE_QUOTE
-    public final void mSINGLE_QUOTE() throws RecognitionException {
-        try {
-            int _type = SINGLE_QUOTE;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:549:9: ( '\\'' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:549:17: '\\''
-            {
-            match('\''); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end SINGLE_QUOTE
-
     // $ANTLR start DOUBLE_QUOTE
     public final void mDOUBLE_QUOTE() throws RecognitionException {
         try {
             int _type = DOUBLE_QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:552:2: ( '\"' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:552:4: '\"'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:570:2: ( '\"' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:570:4: '\"'
             {
             match('\"'); 
 
@@ -1965,85 +2052,15 @@ public class CMISLexer extends Lexer {
     }
     // $ANTLR end DOUBLE_QUOTE
 
-    // $ANTLR start QUOTED_STRING
-    public final void mQUOTED_STRING() throws RecognitionException {
-        try {
-            int _type = QUOTED_STRING;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:556:2: ( SINGLE_QUOTE (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )* SINGLE_QUOTE )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:556:4: SINGLE_QUOTE (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )* SINGLE_QUOTE
-            {
-            mSINGLE_QUOTE(); 
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:556:17: (~ SINGLE_QUOTE | ESCAPED_SINGLE_QUOTE )*
-            loop1:
-            do {
-                int alt1=3;
-                int LA1_0 = input.LA(1);
-
-                if ( (LA1_0=='\'') ) {
-                    int LA1_1 = input.LA(2);
-
-                    if ( (LA1_1=='\'') ) {
-                        alt1=2;
-                    }
-
-
-                }
-                else if ( ((LA1_0>='\u0000' && LA1_0<='&')||(LA1_0>='(' && LA1_0<='\uFFFE')) ) {
-                    alt1=1;
-                }
-
-
-                switch (alt1) {
-            	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:556:19: ~ SINGLE_QUOTE
-            	    {
-            	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='K')||(input.LA(1)>='M' && input.LA(1)<='\uFFFE') ) {
-            	        input.consume();
-
-            	    }
-            	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        recover(mse);
-            	        throw mse;}
-
-
-            	    }
-            	    break;
-            	case 2 :
-            	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:556:35: ESCAPED_SINGLE_QUOTE
-            	    {
-            	    mESCAPED_SINGLE_QUOTE(); 
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop1;
-                }
-            } while (true);
-
-            mSINGLE_QUOTE(); 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end QUOTED_STRING
-
     // $ANTLR start DECIMAL_INTEGER_LITERAL
     public final void mDECIMAL_INTEGER_LITERAL() throws RecognitionException {
         try {
             int _type = DECIMAL_INTEGER_LITERAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:564:9: ( ( PLUS | MINUS )? DECIMAL_NUMERAL )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:564:11: ( PLUS | MINUS )? DECIMAL_NUMERAL
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:578:9: ( ( PLUS | MINUS )? DECIMAL_NUMERAL )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:578:11: ( PLUS | MINUS )? DECIMAL_NUMERAL
             {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:564:11: ( PLUS | MINUS )?
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:578:11: ( PLUS | MINUS )?
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -2052,7 +2069,7 @@ public class CMISLexer extends Lexer {
             }
             switch (alt2) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
                     {
                     if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
                         input.consume();
@@ -2086,14 +2103,14 @@ public class CMISLexer extends Lexer {
         try {
             int _type = FLOATING_POINT_LITERAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:2: ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:2: ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT )
             int alt9=3;
             alt9 = dfa9.predict(input);
             switch (alt9) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:4: ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:4: ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
                     {
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:4: ( DIGIT )+
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:4: ( DIGIT )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -2107,7 +2124,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt3) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:4: DIGIT
+                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:4: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2124,7 +2141,7 @@ public class CMISLexer extends Lexer {
                     } while (true);
 
                     mDOT(); 
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:15: ( DIGIT )*
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:15: ( DIGIT )*
                     loop4:
                     do {
                         int alt4=2;
@@ -2137,7 +2154,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:15: DIGIT
+                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:15: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2149,7 +2166,7 @@ public class CMISLexer extends Lexer {
                         }
                     } while (true);
 
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:22: ( EXPONENT )?
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:22: ( EXPONENT )?
                     int alt5=2;
                     int LA5_0 = input.LA(1);
 
@@ -2158,7 +2175,7 @@ public class CMISLexer extends Lexer {
                     }
                     switch (alt5) {
                         case 1 :
-                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:571:22: EXPONENT
+                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:585:22: EXPONENT
                             {
                             mEXPONENT(); 
 
@@ -2171,10 +2188,10 @@ public class CMISLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:572:4: DOT ( DIGIT )+ ( EXPONENT )?
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:586:4: DOT ( DIGIT )+ ( EXPONENT )?
                     {
                     mDOT(); 
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:572:8: ( DIGIT )+
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:586:8: ( DIGIT )+
                     int cnt6=0;
                     loop6:
                     do {
@@ -2188,7 +2205,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:572:8: DIGIT
+                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:586:8: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2204,7 +2221,7 @@ public class CMISLexer extends Lexer {
                         cnt6++;
                     } while (true);
 
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:572:15: ( EXPONENT )?
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:586:15: ( EXPONENT )?
                     int alt7=2;
                     int LA7_0 = input.LA(1);
 
@@ -2213,7 +2230,7 @@ public class CMISLexer extends Lexer {
                     }
                     switch (alt7) {
                         case 1 :
-                            // W:\\workspace-cmis\\ANTLR\\CMIS.g:572:15: EXPONENT
+                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:586:15: EXPONENT
                             {
                             mEXPONENT(); 
 
@@ -2226,9 +2243,9 @@ public class CMISLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:573:4: ( DIGIT )+ EXPONENT
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:587:4: ( DIGIT )+ EXPONENT
                     {
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:573:4: ( DIGIT )+
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:587:4: ( DIGIT )+
                     int cnt8=0;
                     loop8:
                     do {
@@ -2242,7 +2259,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt8) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:573:4: DIGIT
+                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:587:4: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2277,8 +2294,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:577:4: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )* )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:577:6: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:591:4: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )* )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:591:6: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -2289,7 +2306,7 @@ public class CMISLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:577:29: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:591:29: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
             loop10:
             do {
                 int alt10=2;
@@ -2302,7 +2319,7 @@ public class CMISLexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:
+            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
             	    {
             	    if ( (input.LA(1)>='#' && input.LA(1)<='$')||input.LA(1)=='0'||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -2338,10 +2355,10 @@ public class CMISLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:578:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:578:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:592:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:592:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:578:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:592:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -2355,7 +2372,7 @@ public class CMISLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:
+            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -2391,27 +2408,10 @@ public class CMISLexer extends Lexer {
     }
     // $ANTLR end WS
 
-    // $ANTLR start ESCAPED_SINGLE_QUOTE
-    public final void mESCAPED_SINGLE_QUOTE() throws RecognitionException {
-        try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:586:9: ( '\\'\\'' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:586:17: '\\'\\''
-            {
-            match("\'\'"); 
-
-
-            }
-
-        }
-        finally {
-        }
-    }
-    // $ANTLR end ESCAPED_SINGLE_QUOTE
-
     // $ANTLR start DECIMAL_NUMERAL
     public final void mDECIMAL_NUMERAL() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:594:2: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:601:2: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -2429,17 +2429,17 @@ public class CMISLexer extends Lexer {
             }
             switch (alt13) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:594:4: ZERO_DIGIT
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:601:4: ZERO_DIGIT
                     {
                     mZERO_DIGIT(); 
 
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:595:4: NON_ZERO_DIGIT ( DIGIT )*
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:602:4: NON_ZERO_DIGIT ( DIGIT )*
                     {
                     mNON_ZERO_DIGIT(); 
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:595:19: ( DIGIT )*
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:602:19: ( DIGIT )*
                     loop12:
                     do {
                         int alt12=2;
@@ -2452,7 +2452,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt12) {
                     	case 1 :
-                    	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:595:19: DIGIT
+                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:602:19: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2478,8 +2478,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start DIGIT
     public final void mDIGIT() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:598:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:605:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9') ) {
                 input.consume();
@@ -2502,8 +2502,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start ZERO_DIGIT
     public final void mZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:601:2: ( '0' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:601:4: '0'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:608:2: ( '0' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:608:4: '0'
             {
             match('0'); 
 
@@ -2518,8 +2518,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start NON_ZERO_DIGIT
     public final void mNON_ZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:604:2: ( '1' .. '9' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:604:4: '1' .. '9'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:611:2: ( '1' .. '9' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:611:4: '1' .. '9'
             {
             matchRange('1','9'); 
 
@@ -2534,8 +2534,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start PLUS
     public final void mPLUS() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:606:6: ( '+' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:606:8: '+'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:613:6: ( '+' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:613:8: '+'
             {
             match('+'); 
 
@@ -2550,8 +2550,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start MINUS
     public final void mMINUS() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:608:7: ( '-' )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:608:9: '-'
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:615:7: ( '-' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:615:9: '-'
             {
             match('-'); 
 
@@ -2566,8 +2566,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start E
     public final void mE() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:611:3: ( ( 'e' | 'E' ) )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:611:5: ( 'e' | 'E' )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:618:3: ( ( 'e' | 'E' ) )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:618:5: ( 'e' | 'E' )
             {
             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                 input.consume();
@@ -2590,8 +2590,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start EXPONENT
     public final void mEXPONENT() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:622:2: ( E SIGNED_INTEGER )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:622:4: E SIGNED_INTEGER
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:629:2: ( E SIGNED_INTEGER )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:629:4: E SIGNED_INTEGER
             {
             mE(); 
             mSIGNED_INTEGER(); 
@@ -2607,10 +2607,10 @@ public class CMISLexer extends Lexer {
     // $ANTLR start SIGNED_INTEGER
     public final void mSIGNED_INTEGER() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:626:2: ( ( PLUS | MINUS )? ( DIGIT )+ )
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:626:4: ( PLUS | MINUS )? ( DIGIT )+
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:633:2: ( ( PLUS | MINUS )? ( DIGIT )+ )
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:633:4: ( PLUS | MINUS )? ( DIGIT )+
             {
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:626:4: ( PLUS | MINUS )?
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:633:4: ( PLUS | MINUS )?
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -2619,7 +2619,7 @@ public class CMISLexer extends Lexer {
             }
             switch (alt14) {
                 case 1 :
-                    // W:\\workspace-cmis\\ANTLR\\CMIS.g:
+                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
                     {
                     if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
                         input.consume();
@@ -2636,7 +2636,7 @@ public class CMISLexer extends Lexer {
 
             }
 
-            // W:\\workspace-cmis\\ANTLR\\CMIS.g:626:20: ( DIGIT )+
+            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:633:20: ( DIGIT )+
             int cnt15=0;
             loop15:
             do {
@@ -2650,7 +2650,7 @@ public class CMISLexer extends Lexer {
 
                 switch (alt15) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\CMIS.g:626:20: DIGIT
+            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:633:20: DIGIT
             	    {
             	    mDIGIT(); 
 
@@ -2676,348 +2676,348 @@ public class CMISLexer extends Lexer {
     // $ANTLR end SIGNED_INTEGER
 
     public void mTokens() throws RecognitionException {
-        // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:8: ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | SINGLE_QUOTE | DOUBLE_QUOTE | QUOTED_STRING | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS )
+        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:8: ( SINGLE_QUOTE | QUOTED_STRING | SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | DOUBLE_QUOTE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS )
         int alt16=49;
         alt16 = dfa16.predict(input);
         switch (alt16) {
             case 1 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:10: SELECT
-                {
-                mSELECT(); 
-
-                }
-                break;
-            case 2 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:17: AS
-                {
-                mAS(); 
-
-                }
-                break;
-            case 3 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:20: UPPER
-                {
-                mUPPER(); 
-
-                }
-                break;
-            case 4 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:26: LOWER
-                {
-                mLOWER(); 
-
-                }
-                break;
-            case 5 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:32: FROM
-                {
-                mFROM(); 
-
-                }
-                break;
-            case 6 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:37: JOIN
-                {
-                mJOIN(); 
-
-                }
-                break;
-            case 7 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:42: INNER
-                {
-                mINNER(); 
-
-                }
-                break;
-            case 8 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:48: LEFT
-                {
-                mLEFT(); 
-
-                }
-                break;
-            case 9 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:53: OUTER
-                {
-                mOUTER(); 
-
-                }
-                break;
-            case 10 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:59: ON
-                {
-                mON(); 
-
-                }
-                break;
-            case 11 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:62: WHERE
-                {
-                mWHERE(); 
-
-                }
-                break;
-            case 12 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:68: OR
-                {
-                mOR(); 
-
-                }
-                break;
-            case 13 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:71: AND
-                {
-                mAND(); 
-
-                }
-                break;
-            case 14 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:75: NOT
-                {
-                mNOT(); 
-
-                }
-                break;
-            case 15 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:79: IN
-                {
-                mIN(); 
-
-                }
-                break;
-            case 16 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:82: LIKE
-                {
-                mLIKE(); 
-
-                }
-                break;
-            case 17 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:87: IS
-                {
-                mIS(); 
-
-                }
-                break;
-            case 18 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:90: NULL
-                {
-                mNULL(); 
-
-                }
-                break;
-            case 19 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:95: ANY
-                {
-                mANY(); 
-
-                }
-                break;
-            case 20 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:99: CONTAINS
-                {
-                mCONTAINS(); 
-
-                }
-                break;
-            case 21 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:108: IN_FOLDER
-                {
-                mIN_FOLDER(); 
-
-                }
-                break;
-            case 22 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:118: IN_TREE
-                {
-                mIN_TREE(); 
-
-                }
-                break;
-            case 23 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:126: ORDER
-                {
-                mORDER(); 
-
-                }
-                break;
-            case 24 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:132: BY
-                {
-                mBY(); 
-
-                }
-                break;
-            case 25 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:135: ASC
-                {
-                mASC(); 
-
-                }
-                break;
-            case 26 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:139: DESC
-                {
-                mDESC(); 
-
-                }
-                break;
-            case 27 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:144: SCORE
-                {
-                mSCORE(); 
-
-                }
-                break;
-            case 28 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:150: LPAREN
-                {
-                mLPAREN(); 
-
-                }
-                break;
-            case 29 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:157: RPAREN
-                {
-                mRPAREN(); 
-
-                }
-                break;
-            case 30 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:164: STAR
-                {
-                mSTAR(); 
-
-                }
-                break;
-            case 31 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:169: COMMA
-                {
-                mCOMMA(); 
-
-                }
-                break;
-            case 32 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:175: DOTSTAR
-                {
-                mDOTSTAR(); 
-
-                }
-                break;
-            case 33 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:183: DOT
-                {
-                mDOT(); 
-
-                }
-                break;
-            case 34 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:187: DOTDOT
-                {
-                mDOTDOT(); 
-
-                }
-                break;
-            case 35 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:194: EQUALS
-                {
-                mEQUALS(); 
-
-                }
-                break;
-            case 36 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:201: TILDA
-                {
-                mTILDA(); 
-
-                }
-                break;
-            case 37 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:207: NOTEQUALS
-                {
-                mNOTEQUALS(); 
-
-                }
-                break;
-            case 38 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:217: GREATERTHAN
-                {
-                mGREATERTHAN(); 
-
-                }
-                break;
-            case 39 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:229: LESSTHAN
-                {
-                mLESSTHAN(); 
-
-                }
-                break;
-            case 40 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:238: GREATERTHANOREQUALS
-                {
-                mGREATERTHANOREQUALS(); 
-
-                }
-                break;
-            case 41 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:258: LESSTHANOREQUALS
-                {
-                mLESSTHANOREQUALS(); 
-
-                }
-                break;
-            case 42 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:275: COLON
-                {
-                mCOLON(); 
-
-                }
-                break;
-            case 43 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:281: SINGLE_QUOTE
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:10: SINGLE_QUOTE
                 {
                 mSINGLE_QUOTE(); 
 
                 }
                 break;
-            case 44 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:294: DOUBLE_QUOTE
-                {
-                mDOUBLE_QUOTE(); 
-
-                }
-                break;
-            case 45 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:307: QUOTED_STRING
+            case 2 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:23: QUOTED_STRING
                 {
                 mQUOTED_STRING(); 
 
                 }
                 break;
+            case 3 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:37: SELECT
+                {
+                mSELECT(); 
+
+                }
+                break;
+            case 4 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:44: AS
+                {
+                mAS(); 
+
+                }
+                break;
+            case 5 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:47: UPPER
+                {
+                mUPPER(); 
+
+                }
+                break;
+            case 6 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:53: LOWER
+                {
+                mLOWER(); 
+
+                }
+                break;
+            case 7 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:59: FROM
+                {
+                mFROM(); 
+
+                }
+                break;
+            case 8 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:64: JOIN
+                {
+                mJOIN(); 
+
+                }
+                break;
+            case 9 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:69: INNER
+                {
+                mINNER(); 
+
+                }
+                break;
+            case 10 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:75: LEFT
+                {
+                mLEFT(); 
+
+                }
+                break;
+            case 11 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:80: OUTER
+                {
+                mOUTER(); 
+
+                }
+                break;
+            case 12 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:86: ON
+                {
+                mON(); 
+
+                }
+                break;
+            case 13 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:89: WHERE
+                {
+                mWHERE(); 
+
+                }
+                break;
+            case 14 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:95: OR
+                {
+                mOR(); 
+
+                }
+                break;
+            case 15 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:98: AND
+                {
+                mAND(); 
+
+                }
+                break;
+            case 16 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:102: NOT
+                {
+                mNOT(); 
+
+                }
+                break;
+            case 17 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:106: IN
+                {
+                mIN(); 
+
+                }
+                break;
+            case 18 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:109: LIKE
+                {
+                mLIKE(); 
+
+                }
+                break;
+            case 19 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:114: IS
+                {
+                mIS(); 
+
+                }
+                break;
+            case 20 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:117: NULL
+                {
+                mNULL(); 
+
+                }
+                break;
+            case 21 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:122: ANY
+                {
+                mANY(); 
+
+                }
+                break;
+            case 22 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:126: CONTAINS
+                {
+                mCONTAINS(); 
+
+                }
+                break;
+            case 23 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:135: IN_FOLDER
+                {
+                mIN_FOLDER(); 
+
+                }
+                break;
+            case 24 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:145: IN_TREE
+                {
+                mIN_TREE(); 
+
+                }
+                break;
+            case 25 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:153: ORDER
+                {
+                mORDER(); 
+
+                }
+                break;
+            case 26 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:159: BY
+                {
+                mBY(); 
+
+                }
+                break;
+            case 27 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:162: ASC
+                {
+                mASC(); 
+
+                }
+                break;
+            case 28 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:166: DESC
+                {
+                mDESC(); 
+
+                }
+                break;
+            case 29 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:171: SCORE
+                {
+                mSCORE(); 
+
+                }
+                break;
+            case 30 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:177: LPAREN
+                {
+                mLPAREN(); 
+
+                }
+                break;
+            case 31 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:184: RPAREN
+                {
+                mRPAREN(); 
+
+                }
+                break;
+            case 32 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:191: STAR
+                {
+                mSTAR(); 
+
+                }
+                break;
+            case 33 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:196: COMMA
+                {
+                mCOMMA(); 
+
+                }
+                break;
+            case 34 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:202: DOTSTAR
+                {
+                mDOTSTAR(); 
+
+                }
+                break;
+            case 35 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:210: DOT
+                {
+                mDOT(); 
+
+                }
+                break;
+            case 36 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:214: DOTDOT
+                {
+                mDOTDOT(); 
+
+                }
+                break;
+            case 37 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:221: EQUALS
+                {
+                mEQUALS(); 
+
+                }
+                break;
+            case 38 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:228: TILDA
+                {
+                mTILDA(); 
+
+                }
+                break;
+            case 39 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:234: NOTEQUALS
+                {
+                mNOTEQUALS(); 
+
+                }
+                break;
+            case 40 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:244: GREATERTHAN
+                {
+                mGREATERTHAN(); 
+
+                }
+                break;
+            case 41 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:256: LESSTHAN
+                {
+                mLESSTHAN(); 
+
+                }
+                break;
+            case 42 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:265: GREATERTHANOREQUALS
+                {
+                mGREATERTHANOREQUALS(); 
+
+                }
+                break;
+            case 43 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:285: LESSTHANOREQUALS
+                {
+                mLESSTHANOREQUALS(); 
+
+                }
+                break;
+            case 44 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:302: COLON
+                {
+                mCOLON(); 
+
+                }
+                break;
+            case 45 :
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:308: DOUBLE_QUOTE
+                {
+                mDOUBLE_QUOTE(); 
+
+                }
+                break;
             case 46 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:321: DECIMAL_INTEGER_LITERAL
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:321: DECIMAL_INTEGER_LITERAL
                 {
                 mDECIMAL_INTEGER_LITERAL(); 
 
                 }
                 break;
             case 47 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:345: FLOATING_POINT_LITERAL
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:345: FLOATING_POINT_LITERAL
                 {
                 mFLOATING_POINT_LITERAL(); 
 
                 }
                 break;
             case 48 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:368: ID
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:368: ID
                 {
                 mID(); 
 
                 }
                 break;
             case 49 :
-                // W:\\workspace-cmis\\ANTLR\\CMIS.g:1:371: WS
+                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:1:371: WS
                 {
                 mWS(); 
 
@@ -3081,91 +3081,93 @@ public class CMISLexer extends Lexer {
             this.transition = DFA9_transition;
         }
         public String getDescription() {
-            return "570:1: FLOATING_POINT_LITERAL : ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT );";
+            return "584:1: FLOATING_POINT_LITERAL : ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT );";
         }
     }
     static final String DFA16_eotS =
-        "\1\uffff\15\35\4\uffff\1\66\2\uffff\1\72\1\74\1\uffff\1\75\2\uffff"+
-        "\2\32\2\uffff\2\35\1\103\7\35\1\116\1\117\1\35\1\121\1\123\4\35"+
-        "\1\130\1\35\13\uffff\1\32\2\35\1\134\1\uffff\1\135\1\136\10\35\2"+
-        "\uffff\1\35\1\uffff\1\35\1\uffff\1\35\1\153\2\35\1\uffff\3\35\3"+
-        "\uffff\2\35\1\163\1\164\1\165\1\166\6\35\1\uffff\1\175\1\35\1\177"+
-        "\1\35\1\u0081\1\u0082\1\u0083\4\uffff\1\u0084\2\35\1\u0087\1\u0088"+
-        "\1\u0089\1\uffff\1\35\1\uffff\1\u008b\4\uffff\2\35\3\uffff\1\35"+
-        "\1\uffff\1\35\1\u0090\2\35\1\uffff\1\u0093\1\u0094\2\uffff";
+        "\1\uffff\1\37\15\35\4\uffff\1\70\2\uffff\1\74\1\76\3\uffff\2\32"+
+        "\4\uffff\2\35\1\103\7\35\1\116\1\117\1\35\1\121\1\123\4\35\1\130"+
+        "\1\35\11\uffff\1\32\2\35\1\134\1\uffff\1\135\1\136\10\35\2\uffff"+
+        "\1\35\1\uffff\1\35\1\uffff\1\35\1\153\2\35\1\uffff\3\35\3\uffff"+
+        "\2\35\1\163\1\164\1\165\1\166\6\35\1\uffff\1\175\1\35\1\177\1\35"+
+        "\1\u0081\1\u0082\1\u0083\4\uffff\1\u0084\2\35\1\u0087\1\u0088\1"+
+        "\u0089\1\uffff\1\35\1\uffff\1\u008b\4\uffff\2\35\3\uffff\1\35\1"+
+        "\uffff\1\35\1\u0090\2\35\1\uffff\1\u0093\1\u0094\2\uffff";
     static final String DFA16_eofS =
         "\u0095\uffff";
     static final String DFA16_minS =
-        "\1\11\1\103\1\116\1\120\1\105\1\122\1\117\2\116\1\110\2\117\1\131"+
-        "\1\105\4\uffff\1\52\2\uffff\2\75\1\uffff\1\0\2\uffff\2\56\2\uffff"+
-        "\1\114\1\117\1\43\1\104\1\120\1\127\1\106\1\113\1\117\1\111\2\43"+
-        "\1\124\2\43\1\105\1\124\1\114\1\116\1\43\1\123\13\uffff\1\56\1\105"+
-        "\1\122\1\43\1\uffff\2\43\2\105\1\124\1\105\1\115\1\116\1\105\1\106"+
-        "\2\uffff\1\105\1\uffff\1\105\1\uffff\1\122\1\43\1\114\1\124\1\uffff"+
-        "\2\103\1\105\3\uffff\2\122\4\43\1\122\1\117\3\122\1\105\1\uffff"+
-        "\1\43\1\101\1\43\1\124\3\43\4\uffff\1\43\1\114\1\105\3\43\1\uffff"+
-        "\1\111\1\uffff\1\43\4\uffff\1\104\1\105\3\uffff\1\116\1\uffff\1"+
-        "\105\1\43\1\123\1\122\1\uffff\2\43\2\uffff";
+        "\1\11\1\0\1\103\1\116\1\120\1\105\1\122\1\117\2\116\1\110\2\117"+
+        "\1\131\1\105\4\uffff\1\52\2\uffff\2\75\3\uffff\2\56\4\uffff\1\114"+
+        "\1\117\1\43\1\104\1\120\1\127\1\106\1\113\1\117\1\111\2\43\1\124"+
+        "\2\43\1\105\1\124\1\114\1\116\1\43\1\123\11\uffff\1\56\1\105\1\122"+
+        "\1\43\1\uffff\2\43\2\105\1\124\1\105\1\115\1\116\1\105\1\106\2\uffff"+
+        "\1\105\1\uffff\1\105\1\uffff\1\122\1\43\1\114\1\124\1\uffff\2\103"+
+        "\1\105\3\uffff\2\122\4\43\1\122\1\117\3\122\1\105\1\uffff\1\43\1"+
+        "\101\1\43\1\124\3\43\4\uffff\1\43\1\114\1\105\3\43\1\uffff\1\111"+
+        "\1\uffff\1\43\4\uffff\1\104\1\105\3\uffff\1\116\1\uffff\1\105\1"+
+        "\43\1\123\1\122\1\uffff\2\43\2\uffff";
     static final String DFA16_maxS =
-        "\1\176\1\145\1\163\1\160\1\157\1\162\1\157\1\163\1\165\1\150\1"+
-        "\165\1\157\1\171\1\145\4\uffff\1\71\2\uffff\1\76\1\75\1\uffff\1"+
-        "\ufffe\2\uffff\2\145\2\uffff\1\154\1\157\1\172\1\171\1\160\1\167"+
-        "\1\146\1\153\1\157\1\151\2\172\1\164\2\172\1\145\1\164\1\154\1\156"+
-        "\1\172\1\163\13\uffff\2\145\1\162\1\172\1\uffff\2\172\2\145\1\164"+
-        "\1\145\1\155\1\156\1\145\1\164\2\uffff\1\145\1\uffff\1\145\1\uffff"+
-        "\1\162\1\172\1\154\1\164\1\uffff\2\143\1\145\3\uffff\2\162\4\172"+
-        "\1\162\1\157\3\162\1\145\1\uffff\1\172\1\141\1\172\1\164\3\172\4"+
-        "\uffff\1\172\1\154\1\145\3\172\1\uffff\1\151\1\uffff\1\172\4\uffff"+
-        "\1\144\1\145\3\uffff\1\156\1\uffff\1\145\1\172\1\163\1\162\1\uffff"+
-        "\2\172\2\uffff";
+        "\1\176\1\ufffe\1\145\1\163\1\160\1\157\1\162\1\157\1\163\1\165"+
+        "\1\150\1\165\1\157\1\171\1\145\4\uffff\1\71\2\uffff\1\76\1\75\3"+
+        "\uffff\2\145\4\uffff\1\154\1\157\1\172\1\171\1\160\1\167\1\146\1"+
+        "\153\1\157\1\151\2\172\1\164\2\172\1\145\1\164\1\154\1\156\1\172"+
+        "\1\163\11\uffff\2\145\1\162\1\172\1\uffff\2\172\2\145\1\164\1\145"+
+        "\1\155\1\156\1\145\1\164\2\uffff\1\145\1\uffff\1\145\1\uffff\1\162"+
+        "\1\172\1\154\1\164\1\uffff\2\143\1\145\3\uffff\2\162\4\172\1\162"+
+        "\1\157\3\162\1\145\1\uffff\1\172\1\141\1\172\1\164\3\172\4\uffff"+
+        "\1\172\1\154\1\145\3\172\1\uffff\1\151\1\uffff\1\172\4\uffff\1\144"+
+        "\1\145\3\uffff\1\156\1\uffff\1\145\1\172\1\163\1\162\1\uffff\2\172"+
+        "\2\uffff";
     static final String DFA16_acceptS =
-        "\16\uffff\1\34\1\35\1\36\1\37\1\uffff\1\43\1\44\2\uffff\1\52\1"+
-        "\uffff\1\54\1\56\2\uffff\1\60\1\61\25\uffff\1\40\1\42\1\41\1\57"+
-        "\1\45\1\51\1\47\1\50\1\46\1\53\1\55\4\uffff\1\2\12\uffff\1\17\1"+
-        "\21\1\uffff\1\12\1\uffff\1\14\4\uffff\1\30\3\uffff\1\31\1\15\1\23"+
-        "\14\uffff\1\16\7\uffff\1\10\1\20\1\5\1\6\6\uffff\1\22\1\uffff\1"+
-        "\32\1\uffff\1\33\1\3\1\4\1\7\2\uffff\1\11\1\27\1\13\1\uffff\1\1"+
-        "\4\uffff\1\26\2\uffff\1\24\1\25";
+        "\17\uffff\1\36\1\37\1\40\1\41\1\uffff\1\45\1\46\2\uffff\1\54\1"+
+        "\55\1\56\2\uffff\1\60\1\61\1\1\1\2\25\uffff\1\42\1\44\1\43\1\57"+
+        "\1\47\1\53\1\51\1\52\1\50\4\uffff\1\4\12\uffff\1\21\1\23\1\uffff"+
+        "\1\14\1\uffff\1\16\4\uffff\1\32\3\uffff\1\33\1\17\1\25\14\uffff"+
+        "\1\20\7\uffff\1\12\1\22\1\7\1\10\6\uffff\1\24\1\uffff\1\34\1\uffff"+
+        "\1\35\1\5\1\6\1\11\2\uffff\1\13\1\31\1\15\1\uffff\1\3\4\uffff\1"+
+        "\30\2\uffff\1\26\1\27";
     static final String DFA16_specialS =
         "\u0095\uffff}>";
     static final String[] DFA16_transitionS = {
-            "\2\36\2\uffff\1\36\22\uffff\1\36\1\uffff\1\31\4\uffff\1\30"+
-            "\1\16\1\17\1\20\1\32\1\21\1\32\1\22\1\uffff\1\33\11\34\1\27"+
-            "\1\uffff\1\25\1\23\1\26\2\uffff\1\2\1\14\1\13\1\15\1\35\1\5"+
-            "\2\35\1\7\1\6\1\35\1\4\1\35\1\12\1\10\3\35\1\1\1\35\1\3\1\35"+
-            "\1\11\3\35\4\uffff\1\35\1\uffff\1\2\1\14\1\13\1\15\1\35\1\5"+
-            "\2\35\1\7\1\6\1\35\1\4\1\35\1\12\1\10\3\35\1\1\1\35\1\3\1\35"+
-            "\1\11\3\35\3\uffff\1\24",
-            "\1\40\1\uffff\1\37\35\uffff\1\40\1\uffff\1\37",
-            "\1\42\4\uffff\1\41\32\uffff\1\42\4\uffff\1\41",
-            "\1\43\37\uffff\1\43",
-            "\1\45\3\uffff\1\46\5\uffff\1\44\25\uffff\1\45\3\uffff\1\46"+
-            "\5\uffff\1\44",
-            "\1\47\37\uffff\1\47",
-            "\1\50\37\uffff\1\50",
-            "\1\51\4\uffff\1\52\32\uffff\1\51\4\uffff\1\52",
-            "\1\54\3\uffff\1\55\2\uffff\1\53\30\uffff\1\54\3\uffff\1\55"+
-            "\2\uffff\1\53",
-            "\1\56\37\uffff\1\56",
-            "\1\57\5\uffff\1\60\31\uffff\1\57\5\uffff\1\60",
-            "\1\61\37\uffff\1\61",
-            "\1\62\37\uffff\1\62",
+            "\2\36\2\uffff\1\36\22\uffff\1\36\1\uffff\1\31\4\uffff\1\1\1"+
+            "\17\1\20\1\21\1\32\1\22\1\32\1\23\1\uffff\1\33\11\34\1\30\1"+
+            "\uffff\1\26\1\24\1\27\2\uffff\1\3\1\15\1\14\1\16\1\35\1\6\2"+
+            "\35\1\10\1\7\1\35\1\5\1\35\1\13\1\11\3\35\1\2\1\35\1\4\1\35"+
+            "\1\12\3\35\4\uffff\1\35\1\uffff\1\3\1\15\1\14\1\16\1\35\1\6"+
+            "\2\35\1\10\1\7\1\35\1\5\1\35\1\13\1\11\3\35\1\2\1\35\1\4\1\35"+
+            "\1\12\3\35\3\uffff\1\25",
+            "\uffff\40",
+            "\1\42\1\uffff\1\41\35\uffff\1\42\1\uffff\1\41",
+            "\1\44\4\uffff\1\43\32\uffff\1\44\4\uffff\1\43",
+            "\1\45\37\uffff\1\45",
+            "\1\47\3\uffff\1\50\5\uffff\1\46\25\uffff\1\47\3\uffff\1\50"+
+            "\5\uffff\1\46",
+            "\1\51\37\uffff\1\51",
+            "\1\52\37\uffff\1\52",
+            "\1\53\4\uffff\1\54\32\uffff\1\53\4\uffff\1\54",
+            "\1\56\3\uffff\1\57\2\uffff\1\55\30\uffff\1\56\3\uffff\1\57"+
+            "\2\uffff\1\55",
+            "\1\60\37\uffff\1\60",
+            "\1\61\5\uffff\1\62\31\uffff\1\61\5\uffff\1\62",
             "\1\63\37\uffff\1\63",
+            "\1\64\37\uffff\1\64",
+            "\1\65\37\uffff\1\65",
             "",
             "",
             "",
             "",
-            "\1\64\3\uffff\1\65\1\uffff\12\67",
+            "\1\66\3\uffff\1\67\1\uffff\12\71",
             "",
             "",
-            "\1\71\1\70",
-            "\1\73",
-            "",
-            "\uffff\76",
+            "\1\73\1\72",
+            "\1\75",
             "",
             "",
-            "\1\67\1\uffff\12\67\13\uffff\1\67\37\uffff\1\67",
-            "\1\67\1\uffff\12\77\13\uffff\1\67\37\uffff\1\67",
+            "",
+            "\1\71\1\uffff\12\71\13\uffff\1\71\37\uffff\1\71",
+            "\1\71\1\uffff\12\77\13\uffff\1\71\37\uffff\1\71",
+            "",
+            "",
             "",
             "",
             "\1\100\37\uffff\1\100",
@@ -3204,9 +3206,7 @@ public class CMISLexer extends Lexer {
             "",
             "",
             "",
-            "",
-            "",
-            "\1\67\1\uffff\12\77\13\uffff\1\67\37\uffff\1\67",
+            "\1\71\1\uffff\12\77\13\uffff\1\71\37\uffff\1\71",
             "\1\132\37\uffff\1\132",
             "\1\133\37\uffff\1\133",
             "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
@@ -3345,7 +3345,7 @@ public class CMISLexer extends Lexer {
             this.transition = DFA16_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | SINGLE_QUOTE | DOUBLE_QUOTE | QUOTED_STRING | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS );";
+            return "1:1: Tokens : ( SINGLE_QUOTE | QUOTED_STRING | SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | DOUBLE_QUOTE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS );";
         }
     }
  

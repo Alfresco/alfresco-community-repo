@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -41,7 +42,15 @@ public class ParentPropertyAccessor extends AbstractNamedPropertyAccessor
 
     public Serializable getProperty(NodeRef nodeRef)
     {
-        return getServiceRegistry().getNodeService().getPrimaryParent(nodeRef).getParentRef();
+        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeRef);
+        if((car != null) && (car.getParentRef() != null))
+        {
+            return car.getParentRef().toString();
+        }
+        else
+        {
+            return null;
+        }
     }
     
 

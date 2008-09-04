@@ -32,6 +32,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.cmis.property.CMISPropertyService;
+import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -56,6 +57,8 @@ public abstract class BaseCMISTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
+    protected CMISMapping cmisMapping;
+    
     protected CMISDictionaryService cmisDictionaryService;
 
     protected DictionaryService dictionaryService;
@@ -77,18 +80,21 @@ public abstract class BaseCMISTest extends TestCase
     protected ServiceRegistry serviceRegistry;
 
     protected NamespaceService namespaceService;
+    
+    protected CMISQueryService cmisQueryService;
 
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         
+        cmisMapping = (CMISMapping) ctx.getBean("CMISMapping");
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("CMISDictionaryService");
         cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
+        cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         nodeService = (NodeService) ctx.getBean("nodeService");
         fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
         namespaceService = (NamespaceService) ctx.getBean("namespaceService");
-        
         
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
@@ -100,14 +106,11 @@ public abstract class BaseCMISTest extends TestCase
         String storeName = "CMISTest-" + getName() + "-" + (new Date().getTime());
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
         rootNodeRef = nodeService.getRootNode(storeRef);
-
-       
     }
 
     @Override
     protected void tearDown() throws Exception
     {
-
         if (testTX.getStatus() == Status.STATUS_ACTIVE)
         {
             testTX.rollback();

@@ -26,7 +26,6 @@ package org.alfresco.cmis.property;
 
 import java.io.Serializable;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -39,7 +38,7 @@ public class MappingPropertyAccessor extends AbstractGenericPropertyAccessor
 {
     public Serializable getProperty(NodeRef nodeRef, String propertyName)
     {
-        QName propertyQname = CMISMapping.getPropertyQName(getServiceRegistry().getDictionaryService(), getServiceRegistry().getNamespaceService(), propertyName);
+        QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
         return getServiceRegistry().getNodeService().getProperty(nodeRef, propertyQname);
     }
 

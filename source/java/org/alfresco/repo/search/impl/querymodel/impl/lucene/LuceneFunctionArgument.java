@@ -22,43 +22,29 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
+package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+import java.util.List;
+
+import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.Function;
+import org.alfresco.repo.search.impl.querymodel.impl.BaseFunctionArgument;
 
 /**
- * Base class for all property accessors - provides the service registry
- * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public class LuceneFunctionArgument extends BaseFunctionArgument
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
 
     /**
-     * @param cmisMapping
+     * @param name
+     * @param function
+     * @param arguments
      */
-    public void setCMISMapping(CMISMapping cmisMapping)
+    public LuceneFunctionArgument(String name, Function function, List<Argument> arguments)
     {
-        this.cmisMapping = cmisMapping;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
+        super(name, function, arguments);
     }
 
 }

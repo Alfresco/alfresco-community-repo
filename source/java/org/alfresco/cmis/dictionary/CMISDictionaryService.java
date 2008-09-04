@@ -33,7 +33,6 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -43,11 +42,10 @@ import org.alfresco.service.namespace.QName;
  */
 public class CMISDictionaryService
 {
-
+    private CMISMapping cmisMapping;
+    
     private DictionaryService dictionaryService;
-
-    private NamespaceService namespaceService;
-
+    
     private boolean strict = true;
 
     /**
@@ -61,14 +59,15 @@ public class CMISDictionaryService
     }
 
     /**
-     * Set the namespace service
+     * Set the mapping service
      * 
-     * @param namespaceService
+     * @param cmisMapping
      */
-    public void setNamespaceService(NamespaceService namespaceService)
+    public void setCMISMapping(CMISMapping cmisMapping)
     {
-        this.namespaceService = namespaceService;
+        this.cmisMapping = cmisMapping;
     }
+    
 
     /**
      * Is the service strict (CMIS types only)
@@ -116,25 +115,25 @@ public class CMISDictionaryService
 
         for (QName typeQName : alfrescoTypeQNames)
         {
-            if (CMISMapping.isValidCmisDocument(dictionaryService, typeQName))
+            if (cmisMapping.isValidCmisDocument(typeQName))
             {
-                answer.add(CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, typeQName));
+                answer.add(cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, typeQName));
             }
-            else if (CMISMapping.isValidCmisFolder(dictionaryService, typeQName))
+            else if (cmisMapping.isValidCmisFolder(typeQName))
             {
-                answer.add(CMISMapping.getCmisTypeId(CMISScope.FOLDER, typeQName));
+                answer.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, typeQName));
             }
             else if (typeQName.equals(CMISMapping.RELATIONSHIP_QNAME))
             {
-                answer.add(CMISMapping.getCmisTypeId(CMISScope.RELATIONSHIP, typeQName));
+                answer.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, typeQName));
             }
         }
 
         for (QName associationName : alfrescoAssociationQNames)
         {
-            if (CMISMapping.isValidCmisRelationship(dictionaryService, associationName))
+            if (cmisMapping.isValidCmisRelationship(associationName))
             {
-                answer.add(CMISMapping.getCmisTypeId(CMISScope.RELATIONSHIP, associationName));
+                answer.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, associationName));
             }
         }
 
@@ -154,30 +153,23 @@ public class CMISDictionaryService
         {
         case RELATIONSHIP:
             // Associations
-            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
-            if (associationDefinition != null)
+            if (cmisMapping.isValidCmisRelationship(typeId.getQName()))
             {
-                if (CMISMapping.isValidCmisRelationship(dictionaryService, typeId.getQName()))
-                {
-                    return new CMISTypeDefinition(dictionaryService, namespaceService, typeId);
-                }
-                else
-                {
-                    return null;
-                }
+                return new CMISTypeDefinition(cmisMapping, typeId);
             }
             else
             {
                 return null;
             }
+
         case DOCUMENT:
         case FOLDER:
             TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
             if (typeDefinition != null)
             {
-                if (CMISMapping.isValidCmisType(dictionaryService, typeId.getQName()))
+                if (cmisMapping.isValidCmisType(typeId.getQName()))
                 {
-                    return new CMISTypeDefinition(dictionaryService, namespaceService, typeId);
+                    return new CMISTypeDefinition(cmisMapping, typeId);
                 }
                 else
                 {
@@ -210,7 +202,7 @@ public class CMISDictionaryService
             AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
             if (associationDefinition != null)
             {
-                if (CMISMapping.isValidCmisRelationship(dictionaryService, typeId.getQName()))
+                if (cmisMapping.isValidCmisRelationship(typeId.getQName()))
                 {
                     return getPropertyDefinitions(CMISMapping.RELATIONSHIP_TYPE_ID);
                 }
@@ -227,13 +219,13 @@ public class CMISDictionaryService
             TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
             if (typeDefinition != null)
             {
-                if (CMISMapping.isValidCmisDocumentOrFolder(dictionaryService, typeId.getQName()) || typeId.getQName().equals(CMISMapping.RELATIONSHIP_QNAME))
+                if (cmisMapping.isValidCmisDocumentOrFolder(typeId.getQName()) || typeId.getQName().equals(CMISMapping.RELATIONSHIP_QNAME))
                 {
                     for (QName qname : typeDefinition.getProperties().keySet())
                     {
-                        if (CMISMapping.getPropertyType(dictionaryService, qname) != null)
+                        if (cmisMapping.getPropertyType(qname) != null)
                         {
-                            CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(dictionaryService, namespaceService, qname);
+                            CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(cmisMapping, qname, typeDefinition.getName());
                             properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
                         }
                     }
@@ -241,19 +233,19 @@ public class CMISDictionaryService
                     {
                         for (QName qname : aspect.getProperties().keySet())
                         {
-                            if (CMISMapping.getPropertyType(dictionaryService, qname) != null)
+                            if (cmisMapping.getPropertyType(qname) != null)
                             {
-                                CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(dictionaryService, namespaceService, qname);
+                                CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(cmisMapping, qname, typeDefinition.getName());
                                 properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
                             }
                         }
                     }
 
                 }
-                if (CMISMapping.isValidCmisDocumentOrFolder(dictionaryService, typeId.getQName()))
+                if (cmisMapping.isValidCmisDocumentOrFolder(typeId.getQName()))
                 {
                     // Add CMIS properties if required
-                    if (!CMISMapping.isCmisCoreType(typeId.getQName()))
+                    if (!cmisMapping.isCmisCoreType(typeId.getQName()))
                     {
                         properties.putAll(getPropertyDefinitions(typeId.getRootTypeId()));
                     }

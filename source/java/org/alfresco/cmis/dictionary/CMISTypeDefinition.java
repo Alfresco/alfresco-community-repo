@@ -32,9 +32,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -56,11 +54,17 @@ public class CMISTypeDefinition
 
     private String description;
 
+    private boolean creatable;
+
+    private boolean fileable;
+
     private boolean queryable;
+
+    private boolean controllable;
 
     private boolean versionable;
 
-    private String constraints = "";
+    private ContentStreamAllowed contentStreamAllowed;
 
     private boolean isAssociation;
 
@@ -68,72 +72,80 @@ public class CMISTypeDefinition
 
     private ArrayList<CMISTypeId> allowedTargetTypes = new ArrayList<CMISTypeId>(1);
 
-    public CMISTypeDefinition(DictionaryService dictionaryService, NamespaceService namespaceService, CMISTypeId typeId)
+    public CMISTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId)
     {
         switch (typeId.getScope())
         {
         case RELATIONSHIP:
-            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
+            AssociationDefinition associationDefinition = cmisMapping.getDictionaryService().getAssociation(typeId.getQName());
             if (associationDefinition != null)
             {
                 objectTypeId = typeId;
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
+                objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
                 displayName = associationDefinition.getTitle();
                 parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
-                rootTypeQueryName = CMISMapping.getQueryName(namespaceService, CMISMapping.RELATIONSHIP_QNAME);
+                rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.RELATIONSHIP_QNAME);
                 description = associationDefinition.getDescription();
+                creatable = false;
+                fileable = false;
                 queryable = false;
+                controllable = false;
                 versionable = false;
+                contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
                 isAssociation = true;
 
-                QName sourceType = CMISMapping.getCmisType(associationDefinition.getSourceClass().getName());
-                if (CMISMapping.isValidCmisDocument(dictionaryService, sourceType))
+                QName sourceType = cmisMapping.getCmisType(associationDefinition.getSourceClass().getName());
+                if (cmisMapping.isValidCmisDocument(sourceType))
                 {
-                    allowedSourceTypes.add(CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, sourceType));
+                    allowedSourceTypes.add(cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, sourceType));
                 }
-                else if (CMISMapping.isValidCmisFolder(dictionaryService, sourceType))
+                else if (cmisMapping.isValidCmisFolder(sourceType))
                 {
-                    allowedSourceTypes.add(CMISMapping.getCmisTypeId(CMISScope.FOLDER, sourceType));
+                    allowedSourceTypes.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, sourceType));
                 }
 
-                QName targetType = CMISMapping.getCmisType(associationDefinition.getTargetClass().getName());
-                if (CMISMapping.isValidCmisDocument(dictionaryService, targetType))
+                QName targetType = cmisMapping.getCmisType(associationDefinition.getTargetClass().getName());
+                if (cmisMapping.isValidCmisDocument(targetType))
                 {
-                    allowedTargetTypes.add(CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, targetType));
+                    allowedTargetTypes.add(cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, targetType));
                 }
-                else if (CMISMapping.isValidCmisFolder(dictionaryService, targetType))
+                else if (cmisMapping.isValidCmisFolder(targetType))
                 {
-                    allowedTargetTypes.add(CMISMapping.getCmisTypeId(CMISScope.FOLDER, targetType));
+                    allowedTargetTypes.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, targetType));
                 }
 
             }
             else
             {
                 // TODO: Add CMIS Association mapping??
-                TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
+                TypeDefinition typeDefinition = cmisMapping.getDictionaryService().getType(typeId.getQName());
                 objectTypeId = typeId;
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
+                objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
                 displayName = typeDefinition.getTitle();
                 parentTypeId = CMISMapping.RELATIONSHIP_TYPE_ID;
-                rootTypeQueryName = CMISMapping.getQueryName(namespaceService, CMISMapping.RELATIONSHIP_QNAME);
+                rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.RELATIONSHIP_QNAME);
                 description = typeDefinition.getDescription();
+                creatable = false;
+                fileable = false;
                 queryable = false;
+                controllable = false;
                 versionable = false;
+                contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
                 isAssociation = true;
             }
             break;
         case DOCUMENT:
         case FOLDER:
-            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
+            TypeDefinition typeDefinition = cmisMapping.getDictionaryService().getType(typeId.getQName());
             if (typeDefinition != null)
             {
                 objectTypeId = typeId;
 
-                objectTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getQName());
+                objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
 
                 displayName = typeDefinition.getTitle();
 
-                QName parentTypeQName = CMISMapping.getCmisType(typeDefinition.getParentName());
+                QName parentTypeQName = cmisMapping.getCmisType(typeDefinition.getParentName());
                 if (parentTypeQName == null)
                 {
                     // Core and unknown types
@@ -141,31 +153,50 @@ public class CMISTypeDefinition
                 }
                 else
                 {
-                    if (CMISMapping.isValidCmisDocument(dictionaryService, parentTypeQName))
+                    if (cmisMapping.isValidCmisDocument(parentTypeQName))
                     {
-                        parentTypeId = CMISMapping.getCmisTypeId(CMISScope.DOCUMENT, parentTypeQName);
+                        parentTypeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, parentTypeQName);
                     }
-                    else if (CMISMapping.isValidCmisFolder(dictionaryService, parentTypeQName))
+                    else if (cmisMapping.isValidCmisFolder(parentTypeQName))
                     {
-                        parentTypeId = CMISMapping.getCmisTypeId(CMISScope.FOLDER, parentTypeQName);
+                        parentTypeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, parentTypeQName);
                     }
                 }
 
-                rootTypeQueryName = CMISMapping.getQueryName(namespaceService, typeId.getRootTypeId().getQName());
+                rootTypeQueryName = cmisMapping.getQueryName(typeId.getRootTypeId().getQName());
 
                 description = typeDefinition.getDescription();
 
+                creatable = true;
+
+                fileable = true;
+
                 queryable = true;
 
+                controllable = false;
+
                 versionable = false;
-                List<AspectDefinition> defaultAspects = typeDefinition.getDefaultAspects();
-                for (AspectDefinition aspectDefinition : defaultAspects)
+
+                if (typeId.getScope() == CMISScope.DOCUMENT)
                 {
-                    if (aspectDefinition.getName().equals(ContentModel.ASPECT_VERSIONABLE))
+                    List<AspectDefinition> defaultAspects = typeDefinition.getDefaultAspects();
+                    for (AspectDefinition aspectDefinition : defaultAspects)
                     {
-                        versionable = true;
-                        break;
+                        if (aspectDefinition.getName().equals(ContentModel.ASPECT_VERSIONABLE))
+                        {
+                            versionable = true;
+                            break;
+                        }
                     }
+                }
+
+                if (typeId.getScope() == CMISScope.DOCUMENT)
+                {
+                    contentStreamAllowed = ContentStreamAllowed.ALLOWED;
+                }
+                else
+                {
+                    contentStreamAllowed = ContentStreamAllowed.NOT_ALLOWED;
                 }
             }
 
@@ -175,7 +206,6 @@ public class CMISTypeDefinition
             break;
         }
 
-        
     }
 
     /**
@@ -242,6 +272,26 @@ public class CMISTypeDefinition
     }
 
     /**
+     * Can objects of this type be created?
+     * 
+     * @return
+     */
+    public boolean isCreatable()
+    {
+        return creatable;
+    }
+
+    /**
+     * Are objects of this type fileable?
+     * 
+     * @return
+     */
+    public boolean isFileable()
+    {
+        return fileable;
+    }
+
+    /**
      * Is this type queryable? If not, the type may not appear in the FROM clause of a query. This property of the type
      * is not inherited in the type hierarchy. It is set on each type.
      * 
@@ -250,6 +300,16 @@ public class CMISTypeDefinition
     public boolean isQueryable()
     {
         return queryable;
+    }
+
+    /**
+     * Are objects of this type controllable.
+     * 
+     * @return
+     */
+    public boolean isControllable()
+    {
+        return controllable;
     }
 
     /**
@@ -263,13 +323,13 @@ public class CMISTypeDefinition
     }
 
     /**
-     * Get the constraints for the type. These are not currently supported.
+     * Is a content stream allowed for this type? It may be disallowed, optional or mandatory.
      * 
      * @return
      */
-    public String getConstraints()
+    public ContentStreamAllowed getContentStreamAllowed()
     {
-        return constraints;
+        return contentStreamAllowed;
     }
 
     /**
@@ -312,9 +372,12 @@ public class CMISTypeDefinition
         builder.append("ParentTypeId=").append(getParentTypeId()).append(", ");
         builder.append("RootTypeQueryName=").append(getRootTypeQueryName()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
+        builder.append("Creatable=").append(isCreatable()).append(", ");
+        builder.append("Fileable=").append(isFileable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
+        builder.append("Controllable=").append(isControllable()).append(", ");
         builder.append("Versionable=").append(isVersionable()).append(", ");
-        builder.append("Constraints=").append(getConstraints()).append(", ");
+        builder.append("ContentStreamAllowed=").append(getContentStreamAllowed()).append(", ");
         builder.append("IsAssociation=").append(isAssociation()).append(", ");
         builder.append("AllowedSourceTypes=").append(getAllowedSourceTypes()).append(", ");
         builder.append("AllowedTargetTypes=").append(getAllowedTargetTypes());

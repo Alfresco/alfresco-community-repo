@@ -51,7 +51,8 @@ public class VersionSeriesCheckedOutIdPropertyAccessor extends AbstractNamedProp
             LockType type = getServiceRegistry().getLockService().getLockType(nodeRef);
             if (type == LockType.READ_ONLY_LOCK)
             {
-                return getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
+                NodeRef pwc = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
+                return (pwc == null) ? null : pwc.toString();
             }
             else
             {

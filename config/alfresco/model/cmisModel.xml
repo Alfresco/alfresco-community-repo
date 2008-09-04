@@ -12,6 +12,19 @@
       <namespace uri="http://www.alfresco.org/model/cmis/0.3" prefix="cmis" />
    </namespaces>
     
+   <constraints>
+
+        <constraint name="cmis:allowedValuesForContentStreamAllowed" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>NOT_ALLOWED</value>
+                    <value>ALLOWED</value>
+                    <value>REQUIRED</value>
+                </list>
+            </parameter>
+        </constraint>
+      
+   </constraints>
    
    <types>
     
@@ -55,6 +68,28 @@
                <multiple>false</multiple>
                <index enabled="false" />
             </property>
+            <property name="cmis:VERSION_LABEL">
+               <title>Version Label</title>
+               <description>The version label</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>true</tokenised>
+               </index>
+            </property>
+            <property name="cmis:VERSION_SERIES_ID">
+               <title>Version series id</title>
+               <description>The version series id</description>
+               <type>d:noderef</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
             <property name="cmis:VERSION_SERIES_IS_CHECKED_OUT">
                <title>Version Series Is Checked Out</title>
                <description>Is the version series checked out?</description>
@@ -96,11 +131,14 @@
             <property name="cmis:CONTENT_STREAM_ALLOWED">
                <title>Content Stream Allowed</title>
                <description>Is a content stream allowed?</description>
-               <type>d:boolean</type>
+               <type>d:text</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
                <index enabled="false" />
+               <constraints>
+                   <constraint ref="cmis:allowedValuesForContentStreamAllowed" />
+               </constraints>
             </property>
             <property name="cmis:CONTENT_STREAM_LENGTH">
                <title>Content Stream Length</title>
@@ -124,7 +162,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="cmis:CONTENT_STREAM_FILEMANE">
+            <property name="cmis:CONTENT_STREAM_FILENAME">
                <title>Content Stream Filename</title>
                <description>The content stream filename</description>
                <type>d:text</type>
@@ -273,7 +311,7 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-             <property name="cmis:LAST_MODIFIED_BY">
+            <property name="cmis:LAST_MODIFIED_BY">
                <title>Last Modified By</title>
                <description>The authority who last modified this object</description>
                <type>d:text</type>

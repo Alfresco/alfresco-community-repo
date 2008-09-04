@@ -22,43 +22,57 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
-
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+package org.alfresco.cmis.search;
 
 /**
- * Base class for all property accessors - provides the service registry
+ * The meta data associated with a result set
  * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public interface CMISResultSetMetaData
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
-
     /**
-     * @param cmisMapping
+     * The selector meta-data.
+     * @return - the selector meta-data.
      */
-    public void setCMISMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
-    }
+    public CMISResultSetSelector[] getSelectors();
     
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
-    }
-
+    /**
+     * The column meta-data.
+     * @return - the column meta-data.
+     */
+    public CMISResultSetColumn[] getColumns();
+    
+    /**
+     * Get the query options used to create this result set
+     * @return the query options
+     */
+    public CMISQueryOptions getQueryOptions();
+    
+    /**
+     * Get the names of the selectors.
+     * @return - the selector names.
+     */
+    public String[] getSelectorNames();
+    
+    /**
+     * Get the column names.
+     * @return - the names of the columns.
+     */
+    public String[] getColumnNames();
+    
+    /**
+     * Get the selector meta-data by name.
+     * @param name
+     * @return - the selector meta-data.
+     */
+    public CMISResultSetSelector getSelector(String name);
+    
+    /**
+     * Get the column meta-data by column name.
+     * @param name
+     * @return - the column meta-data.
+     */
+    public CMISResultSetColumn getCoumn(String name);
 }

@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.ContentStreamAllowed;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,10 +49,23 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     private AbstractGenericPropertyAccessor genericPropertyAccessor;
 
+    private CMISMapping cmisMapping;
+    
     private ServiceRegistry serviceRegistry;
 
     private boolean strict = false;
 
+    /**
+     * @param cmisMapping
+     */
+    public void setCMISMapping(CMISMapping cmisMapping)
+    {
+        this.cmisMapping = cmisMapping;
+    }
+
+    /**
+     * @param serviceRegistry
+     */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
@@ -70,13 +84,13 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     public Map<String, Serializable> getProperties(NodeRef nodeRef)
     {
         // Map
-        QName typeQName = CMISMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
+        QName typeQName = cmisMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
         CMISScope scope;
-        if (CMISMapping.isValidCmisDocument(serviceRegistry.getDictionaryService(), typeQName))
+        if (cmisMapping.isValidCmisDocument(typeQName))
         {
             scope = CMISScope.DOCUMENT;
         }
-        else if (CMISMapping.isValidCmisFolder(serviceRegistry.getDictionaryService(), typeQName))
+        else if (cmisMapping.isValidCmisFolder(typeQName))
         {
             scope = CMISScope.FOLDER;
         }
@@ -96,7 +110,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
             Map<QName, Serializable> unmapped = serviceRegistry.getNodeService().getProperties(nodeRef);
             for (QName propertyQName : unmapped.keySet())
             {
-                String cmisPropertyName = CMISMapping.getCmisPropertyName(serviceRegistry.getNamespaceService(), propertyQName);
+                String cmisPropertyName = cmisMapping.getCmisPropertyName(propertyQName);
                 mapped.put(cmisPropertyName, unmapped.get(propertyQName));
             }
         }
@@ -116,13 +130,13 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     public Serializable getProperty(NodeRef nodeRef, String propertyName)
     {
 
-        QName typeQName = CMISMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
+        QName typeQName = cmisMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
         CMISScope scope;
-        if (CMISMapping.isValidCmisDocument(serviceRegistry.getDictionaryService(), typeQName))
+        if (cmisMapping.isValidCmisDocument(typeQName))
         {
             scope = CMISScope.DOCUMENT;
         }
-        else if (CMISMapping.isValidCmisFolder(serviceRegistry.getDictionaryService(), typeQName))
+        else if (cmisMapping.isValidCmisFolder(typeQName))
         {
             scope = CMISScope.FOLDER;
         }
@@ -177,9 +191,10 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         // Generic Alfresco mappings
         genericPropertyAccessor = new MappingPropertyAccessor();
         genericPropertyAccessor.setServiceRegistry(serviceRegistry);
+        genericPropertyAccessor.setCMISMapping(cmisMapping);
 
         // CMIS Object
-        addNamedPropertyAccessor(new ObjectIdPropertyAccessor());
+        addNamedPropertyAccessor(getObjectIdPropertyAccessor());
         addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_URI, null, CMISScope.OBJECT));
         addNamedPropertyAccessor(getObjectTypeIdPropertyAccessor());
         addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CREATED_BY, ContentModel.PROP_CREATOR, CMISScope.OBJECT));
@@ -191,16 +206,18 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         // CMIS Document and Folder
         addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_NAME, ContentModel.PROP_NAME, CMISScope.OBJECT));
 
-        // CMIS Docuement
+        // CMIS Document
         addNamedPropertyAccessor(getIsImmutablePropertyAccessor());
         addNamedPropertyAccessor(getIsLatestVersionPropertyAccessor());
         addNamedPropertyAccessor(getIsMajorVersionPropertyAccessor());
         addNamedPropertyAccessor(getIsLatestMajorVersionPropertyAccessor());
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL, CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getVersionSeriesIdPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesIsCheckedOutPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesCheckedOutByPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesCheckedOutIdPropertyAccessor());
         addNamedPropertyAccessor(getCheckinCommentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, Boolean.valueOf(true), CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, ContentStreamAllowed.ALLOWED.toString(), CMISScope.DOCUMENT));
         addNamedPropertyAccessor(getContentStreamLengthPropertyAccessor());
         addNamedPropertyAccessor(getContentStreamMimetypePropertyAccessor());
         addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME, CMISScope.DOCUMENT));
@@ -221,6 +238,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         SimplePropertyAccessor accessor = new SimplePropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         accessor.setPropertyName(propertyName);
         accessor.setMapping(to.toString());
         accessor.setScope(scope);
@@ -236,10 +254,19 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         return accessor;
     }
 
+    public NamedPropertyAccessor getObjectIdPropertyAccessor()
+    {
+        ObjectIdPropertyAccessor accessor = new ObjectIdPropertyAccessor();
+        accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
+        return accessor;
+    }
+    
     public NamedPropertyAccessor getFixedValuePropertyAccessor(String propertyName, Serializable fixedValue, CMISScope scope)
     {
         FixedValuePropertyAccessor accessor = new FixedValuePropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         accessor.setPropertyName(propertyName);
         accessor.setFixedValue(fixedValue);
         accessor.setScope(scope);
@@ -250,6 +277,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         ObjectTypeIdPropertyAccessor accessor = new ObjectTypeIdPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -257,6 +285,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         IsImmutablePropertyAccessor accessor = new IsImmutablePropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -264,6 +293,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         IsLatestVersionPropertyAccessor accessor = new IsLatestVersionPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -271,6 +301,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         IsMajorVersionPropertyAccessor accessor = new IsMajorVersionPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -278,13 +309,23 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         IsLatestMajorVersionPropertyAccessor accessor = new IsLatestMajorVersionPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
+    public NamedPropertyAccessor getVersionSeriesIdPropertyAccessor()
+    {
+        VersionSeriesIdPropertyAccessor accessor = new VersionSeriesIdPropertyAccessor();
+        accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
+        return accessor;
+    }
+    
     public NamedPropertyAccessor getVersionSeriesIsCheckedOutPropertyAccessor()
     {
         VersionSeriesIsCheckedOutPropertyAccessor accessor = new VersionSeriesIsCheckedOutPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
     
@@ -292,6 +333,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         VersionSeriesCheckedOutByPropertyAccessor accessor = new VersionSeriesCheckedOutByPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -299,6 +341,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         VersionSeriesCheckedOutIdPropertyAccessor accessor = new VersionSeriesCheckedOutIdPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -306,6 +349,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         CheckinCommentPropertyAccessor accessor = new CheckinCommentPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -313,6 +357,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         ContentStreamLengthPropertyAccessor accessor = new ContentStreamLengthPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -320,6 +365,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         ContentStreamMimetypePropertyAccessor accessor = new ContentStreamMimetypePropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 
@@ -327,6 +373,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     {
         ParentPropertyAccessor accessor = new ParentPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
         return accessor;
     }
 

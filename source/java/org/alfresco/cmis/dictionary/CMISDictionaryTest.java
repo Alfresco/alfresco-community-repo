@@ -34,9 +34,8 @@ public class CMISDictionaryTest extends BaseCMISTest
             System.out.println(name);
         }
         assertEquals(3, cmisDictionaryService.getAllObjectTypeIds().size());
-
     }
-
+    
     public void testBasicTypeDefinitions()
     {
         cmisDictionaryService.setStrict(false);
@@ -44,7 +43,21 @@ public class CMISDictionaryTest extends BaseCMISTest
         {
             System.out.println(cmisDictionaryService.getType(name));
         }
+    }
 
+    public void testTypeIds()
+    {
+        cmisDictionaryService.setStrict(false);
+        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        {
+            String typeId = name.getTypeId();
+            CMISTypeId lookup = cmisMapping.getCmisTypeId(typeId);
+            assertEquals(name, lookup);
+            System.out.println(name + " => " + lookup);
+            CMISTypeDefinition type = cmisDictionaryService.getType(lookup);
+            assertNotNull(type);
+            assertEquals(lookup, type.getObjectTypeId());
+        }
     }
 
     public void testBasicProperties()
@@ -57,7 +70,6 @@ public class CMISDictionaryTest extends BaseCMISTest
                 System.out.println(name +" -> "+ propertyName);
             }
         }
-
     }
     
     public void testBasicPropertyDefinitions()
@@ -71,7 +83,6 @@ public class CMISDictionaryTest extends BaseCMISTest
             }
         }
         
-        
         cmisDictionaryService.setStrict(false);
         for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
         {
@@ -80,6 +91,5 @@ public class CMISDictionaryTest extends BaseCMISTest
                 System.out.println(proDef);
             }
         }
-
     }
 }

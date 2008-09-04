@@ -42,13 +42,13 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     public Serializable getProperty(NodeRef nodeRef)
     {
-        QName typeQName = CMISMapping.getCmisType(getServiceRegistry().getNodeService().getType(nodeRef));
+        QName typeQName = getCMISMapping().getCmisType(getServiceRegistry().getNodeService().getType(nodeRef));
         CMISScope scope;
-        if(CMISMapping.isValidCmisDocument(getServiceRegistry().getDictionaryService(), typeQName))
+        if(getCMISMapping().isValidCmisDocument(typeQName))
         {
             scope = CMISScope.DOCUMENT;
         }
-        else if(CMISMapping.isValidCmisFolder(getServiceRegistry().getDictionaryService(), typeQName))
+        else if(getCMISMapping().isValidCmisFolder(typeQName))
         {
             scope = CMISScope.FOLDER;
         }
@@ -56,7 +56,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
         {
             scope = CMISScope.UNKNOWN;
         }
-        return CMISMapping.getCmisTypeId(scope, typeQName);
+        return getCMISMapping().getCmisTypeId(scope, typeQName).getTypeId();
     }
 
     @Override
@@ -64,7 +64,6 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
     {
         return CMISMapping.PROP_OBJECT_TYPE_ID;
     }
-
     
     @Override
     public CMISScope getScope()

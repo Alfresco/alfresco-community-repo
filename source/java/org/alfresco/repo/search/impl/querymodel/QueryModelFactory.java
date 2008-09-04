@@ -64,4 +64,6 @@ public interface QueryModelFactory
     public Function getFunction(String functionName);
 
     public ListArgument createListArgument(String name, ArrayList<Argument> arguments);
+    
+    public FunctionArgument createFunctionArgument(String name, Function function, List<Argument> functionArguments);
 }

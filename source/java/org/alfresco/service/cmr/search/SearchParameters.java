@@ -50,7 +50,7 @@ public class SearchParameters extends SearchStatement
      */
     private static int DEFAULT_LIMIT = 500;
     
-    private static int DEFAULT_BULK_FETCH_SIZE = 10;
+    private static int DEFAULT_BULK_FETCH_SIZE = 1000;
 
     /*
      * Standard sort definitions for sorting in document and score order.

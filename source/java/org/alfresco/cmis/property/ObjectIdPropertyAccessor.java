@@ -28,20 +28,37 @@ import java.io.Serializable;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * Get the CMIS object id property.
  * 
  * @author andyh
- *
  */
 public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 {
 
     public Serializable getProperty(NodeRef nodeRef)
     {
-        return nodeRef;
+        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            if (value != null)
+            {
+                String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                StringBuilder builder = new StringBuilder(128);
+                builder.append(nodeRef.toString());
+                builder.append("/");
+                builder.append(versionLabel);
+                return builder.toString();
+            }
+
+        }
+
+        return nodeRef.toString();
+
     }
 
     @Override
@@ -53,9 +70,7 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
     @Override
     public CMISScope getScope()
     {
-       return CMISScope.OBJECT;
+        return CMISScope.OBJECT;
     }
-    
-    
 
 }

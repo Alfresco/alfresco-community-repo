@@ -22,49 +22,62 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.dictionary;
+package org.alfresco.cmis.search;
+
+import java.io.Serializable;
+import java.util.Map;
 
 /**
- * CMIS Property Types
+ * A row in a CMISResultSet
+ * 
  * @author andyh
  *
  */
-public enum CMISPropertyType
+public interface CMISResultSetRow
 {
     /**
-     * String
+     * Get all the column data.
+     * @return - a map of serializable column values with teh column name as the key
      */
-    STRING, 
+    public Map<String, Serializable> getValues();
+    
     /**
-     * Decimal
+     * Get the data for a single column
+     * @param columnName
+     * @return the value
      */
-    DECIMAL, 
+    public Serializable getValue(String columnName);
+    
     /**
-     * Integer
+     * Get the overall score.
+     * 
+     * @return
      */
-    INTEGER, 
+    public float getScore();
+    
     /**
-     * Boolean
+     * Get the scores .
+     * @return a map of selector name to score.
      */
-    BOOLEAN, 
+    public Map<String, Float> getScores();
+    
     /**
-     * Date-time
+     * Get the score related to the names selector.
+     * @param selectorName
+     * @return - the score.
      */
-    DATE_TIME, 
+    public float getScore(String selectorName);
+    
     /**
-     * URI
+     * Get the index of this result set in the result set 
+     * If you want the overall position in paged reults you have to add the skipCount fo the result set. 
+     * @return
      */
-    URI, 
+    public int getIndex();
+    
     /**
-     * HTML
+     * Get the result set for which this row is a member.
+     * @return - the result set.
      */
-    HTML, 
-    /**
-     * XML
-     */
-    XML, 
-    /**
-     * ID
-     */
-    ID;
+    public CMISResultSet getResultSet();
 }

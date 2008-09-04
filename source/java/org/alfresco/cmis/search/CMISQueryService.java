@@ -22,43 +22,47 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.property;
-
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.service.ServiceRegistry;
+package org.alfresco.cmis.search;
 
 /**
- * Base class for all property accessors - provides the service registry
+ * Support to execute CMIS queries
  * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public interface CMISQueryService
 {
-    private CMISMapping cmisMapping;
-    private ServiceRegistry serviceRegistry;
-
     /**
-     * @param cmisMapping
+     * Execute a CMIS query as defined by options 
+     * 
+     * @param options
+     * @return a result set
      */
-    public void setCMISMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
-    }
+    public CMISResultSet query(CMISQueryOptions options);
     
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ServiceRegistry getServiceRegistry()
-    {
-        return serviceRegistry;
-    }
-
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
-    }
-
+    /**
+     * Execute a CMIS query with all the default options;
+     * 
+     * @param query
+     * @return
+     */
+    public CMISResultSet query(String query);
+    
+    /**
+     * Can you query non-latest versions of a document. 
+     * The current latest version is always searchable according to  the type definition.
+     * @return
+     */
+    public boolean getAllVersionsSearchable();
+    
+    /**
+     * Get the join support level in queries.
+     * @return
+     */
+    public JoinSupport getJoinSupport();
+    
+    /**
+     * Get the full text search support level in queries.
+     */
+    public FullTextSearchSupport getFullTextSearchSupport();
 }

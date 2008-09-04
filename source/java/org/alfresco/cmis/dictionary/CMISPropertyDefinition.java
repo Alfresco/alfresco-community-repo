@@ -39,9 +39,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -53,9 +51,13 @@ public class CMISPropertyDefinition
 {
     private String propertyName;
 
+    private String propertyId;
+    
     private String displayName;
 
     private String description;
+    
+    private boolean isInherited;
 
     private CMISPropertyType propertyType;
 
@@ -81,16 +83,18 @@ public class CMISPropertyDefinition
 
     private boolean orderable;
 
-    public CMISPropertyDefinition(DictionaryService dictionaryService, NamespaceService namespaceService, QName propertyQName)
+    public CMISPropertyDefinition(CMISMapping cmisMapping, QName propertyQName, QName typeQName)
     {
-        PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
+        PropertyDefinition propDef = cmisMapping.getDictionaryService().getProperty(propertyQName);
         if (propDef.getContainerClass().getName().equals(CMISMapping.RELATIONSHIP_QNAME))
         {
             // Properties of associations - all the same
-            propertyName = CMISMapping.getCmisPropertyName(namespaceService, propertyQName);
+            propertyName = cmisMapping.getCmisPropertyName(propertyQName);
+            propertyId = cmisMapping.getCmisPropertyId(propertyQName);
             displayName = propDef.getTitle();
             description = propDef.getDescription();
-            propertyType = CMISMapping.getPropertyType(dictionaryService, propertyQName);
+            isInherited = false;
+            propertyType = cmisMapping.getPropertyType(propertyQName);
             cardinality = propDef.isMultiValued() ? CMISCardinality.MULTI_VALUED : CMISCardinality.SINGLE_VALUED;
             required = propDef.isMandatory();
             defaultValue = propDef.getDefaultValue();
@@ -101,10 +105,19 @@ public class CMISPropertyDefinition
         else
         {
 
-            propertyName = CMISMapping.getCmisPropertyName(namespaceService, propertyQName);
+            propertyName = cmisMapping.getCmisPropertyName(propertyQName);
+            propertyId = cmisMapping.getCmisPropertyId(propertyQName);
             displayName = propDef.getTitle();
             description = propDef.getDescription();
-            propertyType = CMISMapping.getPropertyType(dictionaryService, propertyQName);
+            if(propDef.getContainerClass().isAspect())
+            {
+                isInherited = false;
+            }
+            else
+            {
+                isInherited = !propDef.getContainerClass().equals(typeQName);
+            }
+            propertyType = cmisMapping.getPropertyType(propertyQName);
             cardinality = propDef.isMultiValued() ? CMISCardinality.MULTI_VALUED : CMISCardinality.SINGLE_VALUED;
             for (ConstraintDefinition constraintDef : propDef.getConstraints())
             {
@@ -175,6 +188,16 @@ public class CMISPropertyDefinition
     {
         return propertyName;
     }
+    
+    /**
+     * Get the property id
+     * 
+     * @return
+     */
+    public String getPropertyId()
+    {
+        return propertyId;
+    }
 
     /**
      * Get the display name
@@ -194,6 +217,16 @@ public class CMISPropertyDefinition
     public String getDescription()
     {
         return description;
+    }
+    
+    /**
+     * Is the property definition inherited?
+     * 
+     * @return
+     */
+    public boolean isInherited()
+    {
+        return isInherited;
     }
 
     /**
@@ -321,8 +354,10 @@ public class CMISPropertyDefinition
         StringBuilder builder = new StringBuilder();
         builder.append("CMISPropertyDefinition[");
         builder.append("PropertyName=").append(getPropertyName()).append(", ");
+        builder.append("PropertyId=").append(getPropertyId()).append(", ");
         builder.append("DisplayName=").append(getDisplayName()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
+        builder.append("IsInherited=").append(isInherited()).append(", ");
         builder.append("PropertyType=").append(getPropertyType()).append(", ");
         builder.append("Cardinality=").append(getCardinality()).append(", ");
         builder.append("MaximumLength=").append(getMaximumLength()).append(", ");

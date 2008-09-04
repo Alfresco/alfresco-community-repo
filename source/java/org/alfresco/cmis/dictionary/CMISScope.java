@@ -24,6 +24,9 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * The scope for a CMIS name
@@ -37,5 +40,37 @@ package org.alfresco.cmis.dictionary;
  */
 public enum CMISScope
 {
-    OBJECT, RELATIONSHIP, DOCUMENT, FOLDER, POLICY, UNKNOWN;
+    OBJECT ('O'), 
+    RELATIONSHIP ('R'), 
+    DOCUMENT ('D'), 
+    FOLDER ('F'),
+    POLICY ('P'),
+    UNKNOWN ('U');
+
+    private static Map<Character, CMISScope> discriminatorMap = new HashMap<Character, CMISScope>(10);
+    static
+    {
+        for (CMISScope scope : CMISScope.values())
+        {
+            discriminatorMap.put(scope.discriminator, scope);
+        }
+    }
+
+    private char discriminator;
+
+    CMISScope(char discriminator)
+    {
+        this.discriminator = discriminator;
+    }
+    
+    public char discriminator()
+    {
+        return discriminator;
+    }
+
+    public static CMISScope toScope(char discrimator)
+    {
+        return discriminatorMap.get(discrimator);
+    }
+    
 }

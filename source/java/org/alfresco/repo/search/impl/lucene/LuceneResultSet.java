@@ -64,7 +64,7 @@ public class LuceneResultSet extends AbstractResultSet
 
     private TenantService tenantService;
 
-    SearchParameters searchParameters;
+    private SearchParameters searchParameters;
 
     private LuceneConfig config;
 

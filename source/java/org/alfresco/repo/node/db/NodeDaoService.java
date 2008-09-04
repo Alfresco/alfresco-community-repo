@@ -27,19 +27,23 @@ package org.alfresco.repo.node.db;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.domain.ChildAssoc;
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.NodeStatus;
-import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Service layer accessing persistent <b>node</b> entities directly
@@ -65,89 +69,113 @@ public interface NodeDaoService
      * 
      * @return Returns a list of stores
      */
-    public List<Store> getStores();
+    @DirtySessionAnnotation(markDirty=false)
+    public List<StoreRef> getStoreRefs();
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, NodeRef> getRootNode(StoreRef storeRef);
     
     /**
-     * Creates a unique store for the given protocol and identifier combination
-     * 
-     * @param protocol a protocol, e.g. {@link org.alfresco.service.cmr.repository.StoreRef#PROTOCOL_WORKSPACE}
-     * @param identifier a protocol-specific identifier
-     * @return Returns the new persistent entity
+     * Creates a unique store for the given protocol and identifier combination.
+     * The root node is created with the "root" aspect.
+     * @return      Returns the root node, which is added automatically.
+     * @throws StoreExistsException if the store already exists
      */
-    public Store createStore(String protocol, String identifier);
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, NodeRef> createStore(StoreRef storeRef);
     
-    
-    /**
-     * Deletes the unique store for the given protocol and identifier combination
-     * 
-     * @param protocol a protocol, e.g. {@link org.alfresco.service.cmr.repository.StoreRef#PROTOCOL_WORKSPACE}
-     * @param identifier a protocol-specific identifier
-     */
-    public void deleteStore(String protocol, String identifier);   
+    @DirtySessionAnnotation(markDirty=false)
+    public NodeRef.Status getNodeRefStatus(NodeRef nodeRef);
     
     /**
-     * @param protocol the protocol that the store serves
-     * @param identifier the protocol-specific identifer
-     * @return Returns a store with the given values or null if one doesn't exist
-     */
-    public Store getStore(String protocol, String identifier);
-    
-    /**
-     * Gets the node's status.  If the node <i>never</i> existed, then
-     * <code>null</code> is returned.
-     * 
-     * @param nodeRef the node reference
-     * @param create true if the node status is to be updated in the transaction, i.e.
-     *      the current transaction must be assigned to the status
-     * @return Returns the node status if the node exists or once existed, otherwise
-     *      returns <code>null</code> if <code>create == false</code>
-     */
-    public NodeStatus getNodeStatus(NodeRef nodeRef, boolean update);
-    
-    /**
-     * Sets the current transaction ID on the node status.  Note that the node
-     * may not exist, but the status will.
-     * 
-     * @param nodeRef the node reference
-     */
-    public void recordChangeId(NodeRef nodeRef);
-
-    /**
-     * @param store the store to which the node must belong
+     * @param storeRef the store to which the node must belong
      * @param uuid the node store-unique identifier
      * @param nodeTypeQName the type of the node
-     * @return Returns a new node of the given type and attached to the store
+     * @return Returns a new node Id of the given type and attached to the store
      * @throws InvalidTypeException if the node type is invalid or if the node type
      *      is not a valid real node
      */
-    public Node newNode(Store store, String uuid, QName nodeTypeQName) throws InvalidTypeException;
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, NodeRef> newNode(StoreRef storeRef, String uuid, QName nodeTypeQName) throws InvalidTypeException;
+
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, NodeRef> moveNodeToStore(Long nodeId, StoreRef storeRef);
     
     /**
      * @param nodeRef the node reference
-     * @return Returns the <b>node</b> entity
+     * @return Returns the <b>node</b> entity ID
      */
-    public Node getNode(NodeRef nodeRef);
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, NodeRef> getNodePair(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public QName getNodeType(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void setNodeStatus(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Long getNodeAccessControlList(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void setNodeAccessControlList(Long nodeId, Long aclId);
     
     /**
-     * Deletes the node instance, taking care of any cascades that are required over
-     * and above those provided by the persistence mechanism.
-     * <p>
-     * A caller must able to delete the node using this method and not have to follow
-     * up with any other ancillary deletes
-     * 
-     * @param node the entity to delete
-     * @param cascade true if the assoc deletions must cascade to primary child nodes
+     * @param storeRef          the new store or <tt>null</tt> to keep the existing one
+     * @param uuid              the new UUID for the node or <tt>null</tt> to keep it the same
+     * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
      */
-    public void deleteNode(Node node, boolean cascade);
+    @DirtySessionAnnotation(markDirty=true)
+    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public PropertyValue getNodeProperty(Long nodeId, QName propertyQName);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Map<QName, PropertyValue> getNodeProperties(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void addNodeProperty(Long nodeId, QName qname, PropertyValue propertyValue);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void addNodeProperties(Long nodeId, Map<QName, PropertyValue> properties);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void removeNodeProperties(Long nodeId, Set<QName> propertyQNames);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void setNodeProperties(Long nodeId, Map<QName, PropertyValue> properties);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Set<QName> getNodeAspects(Long nodeId);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void addNodeAspects(Long nodeId, Set<QName> aspectQNames);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void removeNodeAspects(Long nodeId, Set<QName> aspectQNames);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public boolean hasNodeAspect(Long nodeId, QName aspectQName);
     
     /**
-     * @return Returns the persisted and filled association
+     * Deletes the node and all entities
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void deleteNode(Long nodeId);
+    
+    /**
+     * @return Returns the persisted and filled association's ID
      * 
      * @see ChildAssoc
      */
-    public ChildAssoc newChildAssoc(
-            Node parentNode,
-            Node childNode,
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, ChildAssociationRef> newChildAssoc(
+            Long parentNodeId,
+            Long childNodeId,
             boolean isPrimary,
             QName assocTypeQName,
             QName qname);
@@ -155,126 +183,210 @@ public interface NodeDaoService
     /**
      * Change the name of the child node.
      * 
-     * @param childAssoc the child association to change
+     * @param childId   the child association to change
      * @param childName the name to put on the association
      */
-    public void setChildNameUnique(ChildAssoc childAssoc, String childName);
+    @DirtySessionAnnotation(markDirty=false)
+    public void setChildNameUnique(Long assocId, String childName);
     
     /**
-     * Get the statuses of all the child primary child nodes of the given parent
+     * @param index                 the association index.  <b>-1</b> to keep the existing value
      */
-    public Collection<NodeStatus> getPrimaryChildNodeStatuses(final Node parentNode);
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, ChildAssociationRef> updateChildAssoc(
+            Long childAssocId,
+            Long parentNodeId,
+            Long childNodeId,
+            QName assocTypeQName,
+            QName qname,
+            int index);
     
     /**
-     * Get all child associations for a given node
+     * Interface used to iterate over results from child association queries
+     * @author Derek Hulley
+     */
+    public interface ChildAssocRefQueryCallback
+    {
+        /**
+         * 
+         * @return              Return <tt>true</tt> if resursion into the child node
+         *                      is required.
+         */
+        boolean handle(
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair,
+                Pair<Long, NodeRef> childNodePair
+                );
+    }
+
+    /**
+     * Get a collection of all child association references for a given parent node.
+     * <p>
+     * <b>WARNING:</b> Be sure selective when doing this call recursively.
      * 
-     * @param parentNode the parent of the child associations
-     * @return Returns all child associations for the given node
+     * @param parentNodeId          the parent node
+     * @param resultsCallback       the callback that will be called with the results
+     * @param recurse               if <tt>true</tt> then iterate over the entire tree of nodes.
+     *                              Resursion is done top-down i.e. the first level children are all
+     *                              enumerated first, followed by all second level children and so on.
      */
-    public Collection<ChildAssoc> getChildAssocs(final Node parentNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocs(Long parentNodeId, ChildAssocRefQueryCallback resultsCallback, boolean recurse);
     
     /**
      * Get a collection of all child association references for a given parent node.
      * 
-     * @param parentNode the parent node
-     * @return Returns a collection of association references
+     * @param parentNodeId the parent node
+     * @param resultsCallback       the callback that will be called with the results
      */
-    public Collection<ChildAssociationRef> getChildAssocRefs(Node parentNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocs(Long parentNodeId, QName assocQName, ChildAssocRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocsByTypeQNames(
+            Long parentNodeId,
+            List<QName> assocTypeQNames,
+            ChildAssocRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocsByTypeQNameAndQName(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            ChildAssocRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getPrimaryChildAssocs(Long parentNodeId, ChildAssocRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getPrimaryChildAssocsNotInSameStore(Long parentNodeId, ChildAssocRefQueryCallback resultsCallback);
     
     /**
-     * Get a collection of all child association references for a given parent node.
-     * 
-     * @param parentNode the parent node
-     * @return Returns a collection of association references
+     * Interface used to iterate over pure node results
+     * @author Derek Hulley
      */
-    public Collection<ChildAssociationRef> getChildAssocRefs(Node parentNode, QName assocQName);
+    public interface NodeRefQueryCallback
+    {
+        /**
+         * 
+         * @param nodePair          the node result
+         * @return                  Returns <tt>true</tt> if more results are required
+         */
+        boolean handle(Pair<Long, NodeRef> nodePair);
+    }
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getNodesWithChildrenInDifferentStores(Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public void getNodesWithAspect(QName aspectQName, Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
+    
+    /**
+     * @return Returns an association matching the given parent, type and child name - or null
+     *      if not found
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName);
     
     /**
      * @return Returns a matching association or null if one was not found
      * 
      * @see ChildAssoc
      */
-    public ChildAssoc getChildAssoc(
-            Node parentNode,
-            Node childNode,
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, ChildAssociationRef> getChildAssoc(
+            Long parentNodeId,
+            Long childNodeId,
             QName assocTypeQName,
             QName qname);
 
-    /**
-     * @return Returns an association matching the given parent, type and child name - or null
-     *      if not found
-     */
-    public ChildAssoc getChildAssoc(Node parentNode, QName assocTypeQName, String childName);
-    
     /**
      * Deletes an explicit child association.
      * 
      * @return Returns <tt>true</tt> if the association was deleted, otherwise <tt>false</tt>
      */
+    @DirtySessionAnnotation(markDirty=true)
     public boolean deleteChildAssoc(
-            final Node parentNode,
-            final Node childNode,
+            final Long parentNodeId,
+            final Long childNodeId,
             final QName assocTypeQName,
             final QName qname);
     
     /**
      * @param assoc the child association to remove
-     * @param cascade true if the assoc deletions must cascade to primary child nodes
      */
-    public void deleteChildAssoc(ChildAssoc assoc, boolean cascade);
+    @DirtySessionAnnotation(markDirty=true)
+    public void deleteChildAssoc(Long childAssocId);
     
     /**
      * Finds the association between the node's primary parent and the node itself
-     * 
-     * @param childNode the child node
-     * @return Returns the primary <code>ChildAssoc</code> instance where the given node is the child.
-     *      The return value could be null for a root node - but ONLY a root node
      */
-    public ChildAssoc getPrimaryParentAssoc(Node childNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, ChildAssociationRef> getPrimaryParentAssoc(Long childNodeId);
     
     /**
      * Get all parent associations for the node.  This methods includes a cache safety check.
      * @param childNode the child node
      * @return Returns all parent associations for the node.
      */
-    public Collection<ChildAssoc> getParentAssocs(Node childNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public Collection<Pair<Long, ChildAssociationRef>> getParentAssocs(final Long childNodeId);
     
     /**
      * @return Returns the persisted and filled association
      * @see NodeAssoc
      */
-    public NodeAssoc newNodeAssoc(
-            Node sourceNode,
-            Node targetNode,
+    @DirtySessionAnnotation(markDirty=true)
+    public Pair<Long, AssociationRef> newNodeAssoc(
+            Long sourceNodeId,
+            Long targetNodeId,
             QName assocTypeQName);
     
     /**
      * @return Returns a list of all node associations associated with the given node
      */
-    public List<NodeAssoc> getNodeAssocsToAndFrom(final Node node);
+    @DirtySessionAnnotation(markDirty=false)
+    public Collection<Pair<Long, AssociationRef>> getNodeAssocsToAndFrom(final Long nodeId);
 
     /**
      * @return Returns the node association or null if not found
      */
-    public NodeAssoc getNodeAssoc(
-            Node sourceNode,
-            Node targetNode,
-            QName assocTypeQName);
+    @DirtySessionAnnotation(markDirty=false)
+    public Pair<Long, AssociationRef> getNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName);
     
     /**
      * @return Returns all the node associations where the node is the <b>source</b>
      */
-    public List<NodeAssoc> getTargetNodeAssocs(Node sourceNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId);
     
     /**
      * @return Returns all the node associations where the node is the </b>target</b>
      */
-    public List<NodeAssoc> getSourceNodeAssocs(Node targetNode);
+    @DirtySessionAnnotation(markDirty=false)
+    public Collection<Pair<Long, AssociationRef>> getSourceNodeAssocs(Long targetNodeId);
     
     /**
      * @param assoc the node association to remove
      */
-    public void deleteNodeAssoc(NodeAssoc assoc);
+    @DirtySessionAnnotation(markDirty=true)
+    public void deleteNodeAssoc(Long assocId);
+    
+    /**
+     * Iterate over all nodes that have a given property type with a given string value.
+     * 
+     * @param storeRef                          the store to search in
+     * @param propertyQName                     the qualified name of the property
+     * @param value                             the string value to match
+     * @param handler                           the callback to use while iterating over the URLs
+     * @return Returns the values for the given type definition
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void getPropertyValuesByPropertyAndValue(
+            StoreRef storeRef,
+            QName propertyQName,
+            String value,
+            NodePropertyHandler handler);
     
     /**
      * Iterate over all property values for the given type definition.  This will also dig out values that
@@ -284,21 +396,18 @@ public interface NodeDaoService
      * @param handler                           the callback to use while iterating over the URLs
      * @return Returns the values for the given type definition
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler);
-    
-    /**
-     * Get properties with the given type and string value.
-     * TODO: Refactor as in getPropertyValuesByActualType
-     */
-    public Collection<Node> getNodesWithPropertyStringValueForStore(StoreRef storeRef, QName propQName, String propStringValue);
     
     /**
      * @return      Returns the total number of nodes in the ADM repository
      */
+    @DirtySessionAnnotation(markDirty=false)
     public int getNodeCount();
     /**
      * @return      Returns the total number of nodes in the ADM store
      */
+    @DirtySessionAnnotation(markDirty=false)
     public int getNodeCount(final StoreRef storeRef);
     
     /**
@@ -309,9 +418,10 @@ public interface NodeDaoService
      */
     public interface NodePropertyHandler
     {
-        void handle(Node node, Serializable value);
+        void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value);
     }
     
+    @DirtySessionAnnotation(markDirty=true)
     public Transaction getTxnById(long txnId);
     /**
      * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
@@ -320,6 +430,7 @@ public interface NodeDaoService
      * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
      * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
      */
+    @DirtySessionAnnotation(markDirty=true)
     public List<Transaction> getTxnsByCommitTimeAscending(
             long fromTimeInclusive,
             long toTimeExclusive,
@@ -333,6 +444,7 @@ public interface NodeDaoService
      * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
      * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
      */
+    @DirtySessionAnnotation(markDirty=true)
     public List<Transaction> getTxnsByCommitTimeDescending(
             long fromTimeInclusive,
             long toTimeExclusive,
@@ -345,10 +457,21 @@ public interface NodeDaoService
      * @param includeTxnIds     a list of transaction IDs to search for
      * @return      Returns the transactions by commit time for the given IDs
      */
+    @DirtySessionAnnotation(markDirty=true)
     public List<Transaction> getTxnsByMinCommitTime(List<Long> includeTxnIds);
+    
+    @DirtySessionAnnotation(markDirty=false)
     public int getTxnUpdateCount(final long txnId);
+
+    @DirtySessionAnnotation(markDirty=false)
     public int getTxnDeleteCount(final long txnId);
+    
+    @DirtySessionAnnotation(markDirty=false)
     public int getTransactionCount();
+    
+    @DirtySessionAnnotation(markDirty=false)
     public List<NodeRef> getTxnChangesForStore(final StoreRef storeRef, final long txnId);
+    
+    @DirtySessionAnnotation(markDirty=false)
     public List<NodeRef> getTxnChanges(final long txnId);
 }

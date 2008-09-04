@@ -25,33 +25,26 @@
 package org.alfresco.repo.node.index;
 
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * Handles the node policy callbacks to ensure that the node hierarchy is properly
- * indexed.
+ * Passes index information to the index services.
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("unused")
 public class NodeIndexer
-        implements NodeServicePolicies.OnCreateNodePolicy,
-                   NodeServicePolicies.OnUpdateNodePolicy,
-                   NodeServicePolicies.OnDeleteNodePolicy,
-                   NodeServicePolicies.OnCreateChildAssociationPolicy,
-                   NodeServicePolicies.OnDeleteChildAssociationPolicy
 {
-    /** the component to register the behaviour with */
-    private PolicyComponent policyComponent;
+    private static Log logger = LogFactory.getLog(NodeIndexer.class);
+    
     /** the component to index the node hierarchy */
     private Indexer indexer;
-    private TenantService tenantService;
     /** enabled or disabled */
     private boolean enabled;
     
@@ -61,24 +54,11 @@ public class NodeIndexer
     }
     
     /**
-     * @param policyComponent used for registrations
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
      * @param indexer the indexer that will be index
      */
     public void setIndexer(Indexer indexer)
     {
         this.indexer = indexer;
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
     
     /* package */ void setEnabled(boolean enabled)
@@ -87,69 +67,58 @@ public class NodeIndexer
     }
 
     /**
-     * Registers the policy behaviour methods
+     * @deprecated
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                this,
-                new JavaBehaviour(this, "onCreateNode"));   
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode"),
-                this,
-                new JavaBehaviour(this, "onUpdateNode"));   
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
-                this,
-                new JavaBehaviour(this, "onDeleteNode"));   
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
-                this,
-                new JavaBehaviour(this, "onCreateChildAssociation"));   
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
-                this,
-                new JavaBehaviour(this, "onDeleteChildAssociation"));   
+        logger.warn("NodeIndexer.init() has been deprecated.");
     }
 
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    public void indexCreateNode(ChildAssociationRef childAssocRef)
     {
         if (enabled)
         {
-            indexer.createNode(tenantService.getName(childAssocRef));
+            indexer.createNode(childAssocRef);
         }
     }
 
-    public void onUpdateNode(NodeRef nodeRef)
+    public void indexUpdateNode(NodeRef nodeRef)
     {
         if (enabled)
         {
-            indexer.updateNode(tenantService.getName(nodeRef));
+            indexer.updateNode(nodeRef);
         }
     }
 
-    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
+    public void indexDeleteNode(ChildAssociationRef childAssocRef)
     {
         if (enabled)
         {
-            indexer.deleteNode(tenantService.getName(childAssocRef));
+            indexer.deleteNode(childAssocRef);
         }
     }
 
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
-    {
-        if (!isNew && enabled)
-        {
-            indexer.createChildRelationship(tenantService.getName(childAssocRef));
-        }
-    }
-
-    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    public void indexCreateChildAssociation(ChildAssociationRef childAssocRef)
     {
         if (enabled)
         {
-            indexer.deleteChildRelationship(tenantService.getName(childAssocRef));
+            indexer.createChildRelationship(childAssocRef);
+        }
+    }
+
+    public void indexDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        if (enabled)
+        {
+            indexer.deleteChildRelationship(childAssocRef);
         } 
+    }
+    
+    public void indexUpdateChildAssociation(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        if (enabled)
+        {
+            indexer.updateChildRelationship(oldChildAssocRef, newChildAssocRef);
+        }
     }
 }

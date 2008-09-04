@@ -39,6 +39,7 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
+import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -49,8 +50,10 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 
 /**
  * @see org.alfresco.repo.node.db.DbNodeServiceImpl
@@ -66,6 +69,10 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     
     protected NodeService getNodeService()
     {
+        // Force cascading
+        DbNodeServiceImpl dbNodeServiceImpl = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
+        dbNodeServiceImpl.setCascadeInTransaction(true);
+        
         return (NodeService) applicationContext.getBean("dbNodeService");
     }
 
@@ -207,13 +214,13 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             public Object execute()
             {
                 // check n6
-                NodeStatus n6Status = nodeDaoService.getNodeStatus(n6Ref, false);
+                NodeRef.Status n6Status = nodeDaoService.getNodeRefStatus(n6Ref);
                 if (!n6Status.isDeleted())
                 {
                     throw new RuntimeException("Deleted node does not have deleted status");
                 }
                 // n8 is a primary child - it should be deleted too
-                NodeStatus n8Status = nodeDaoService.getNodeStatus(n8Ref, false);
+                NodeRef.Status n8Status = nodeDaoService.getNodeRefStatus(n8Ref);
                 if (!n8Status.isDeleted())
                 {
                     throw new RuntimeException("Cascade-deleted node does not have deleted status");
@@ -301,7 +308,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         final List<Serializable> allContentDatas = new ArrayList<Serializable>(500);
         NodePropertyHandler handler = new NodePropertyHandler()
         {
-            public void handle(Node node, Serializable value)
+            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
             {
                 allContentDatas.add(value);
             }
@@ -356,11 +363,11 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         final NodeRef n8Ref = n6pn8Ref.getChildRef();
         
         // Add a make n1 a second primary parent of n8
-        Node n1 = nodeDaoService.getNode(n1Ref);
-        Node n8 = nodeDaoService.getNode(n8Ref);
-        ChildAssoc assoc = nodeDaoService.newChildAssoc(
-                n1,
-                n8,
+        Pair<Long, NodeRef> n1Pair = nodeDaoService.getNodePair(n1Ref);
+        Pair<Long, NodeRef> n8Pair = nodeDaoService.getNodePair(n8Ref);
+        Pair<Long, ChildAssociationRef> assocPair = nodeDaoService.newChildAssoc(
+                n1Pair.getFirst(),
+                n8Pair.getFirst(),
                 true,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NAMESPACE, "n1pn8"));
@@ -385,5 +392,42 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 TYPE_QNAME_TEST_CONTENT).getChildRef();
         // Delete the node
         nodeService.deleteNode(nodeRef);
+    }
+    
+    public void testCleanup() throws Exception
+    {
+        @SuppressWarnings("unchecked")
+        StoreArchiveMap storeArchiveMap = (StoreArchiveMap) applicationContext.getBean("storeArchiveMap");
+        DbNodeServiceImpl ns = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
+        ns.setCascadeInTransaction(false);
+        
+        NodeRef parentNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(NAMESPACE, this.getName()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef childNodeRef = nodeService.createNode(
+                parentNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NAMESPACE, this.getName()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // Ensure that the archive feature is enabled
+        StoreRef archiveStoreRef = ns.createStore("test", getName() + "-" + System.currentTimeMillis());
+        storeArchiveMap.getArchiveMap().put(parentNodeRef.getStoreRef(), archiveStoreRef);
+        
+        // Delete parent.  Cascade is OFF, so children should be left in their current store.
+        ns.deleteNode(parentNodeRef);
+        // Check that the node n1 is in the archive store
+        assertFalse("Parent should be deleted", ns.exists(parentNodeRef));
+        NodeRef parentArchiveRef = new NodeRef(archiveStoreRef, parentNodeRef.getId());
+        assertTrue("Parent should be in the archive store", ns.exists(parentArchiveRef));
+        
+        // Force a commit here
+        setComplete();
+        endTransaction();
+        
+        // Run cleanup
+        ns.cleanup();
     }
 }

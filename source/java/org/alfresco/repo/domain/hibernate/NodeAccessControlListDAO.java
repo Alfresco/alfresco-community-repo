@@ -28,22 +28,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.AclChange;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * The Node implementation for getting and setting ACLs.
  * 
  * @author britt
  */
-public class NodeAccessControlListDAO implements AccessControlListDAO
+public class NodeAccessControlListDAO extends HibernateDaoSupport implements AccessControlListDAO
 {
     /**
      * The DAO for Nodes.
@@ -62,41 +63,38 @@ public class NodeAccessControlListDAO implements AccessControlListDAO
         fNodeDAOService = nodeDAOService;
     }
 
-    /**
-     * Get the ACL from a node.
-     * 
-     * @param nodeRef
-     *            The reference to the node.
-     * @return The ACL.
-     * @throws InvalidNodeRefException
-     */
+    private Pair<Long, NodeRef> getNodePairNotNull(NodeRef nodeRef)
+    {
+        Pair<Long, NodeRef> nodePair = fNodeDAOService.getNodePair(nodeRef);
+        if (nodePair == null)
+        {
+            throw new InvalidNodeRefException(nodeRef);
+        }
+        return nodePair;
+    }
+    
     public DbAccessControlList getAccessControlList(NodeRef nodeRef)
     {
-        Node node = fNodeDAOService.getNode(nodeRef);
-        if (node == null)
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long aclId = fNodeDAOService.getNodeAccessControlList(nodePair.getFirst());
+        // Now get the entity
+        DbAccessControlList acl;
+        if (aclId == null)
         {
-            throw new InvalidNodeRefException(nodeRef);
+            return null;
         }
-        return node.getAccessControlList();
+        else
+        {
+            acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, aclId);
+        }
+        return acl;
     }
 
-    /**
-     * Set the ACL on a node.
-     * 
-     * @param nodeRef
-     *            The reference to the node.
-     * @param acl
-     *            The ACL.
-     * @throws InvalidNodeRefException
-     */
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
     {
-        Node node = fNodeDAOService.getNode(nodeRef);
-        if (node == null)
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
-        node.setAccessControlList(acl);
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long aclId = (acl == null) ? null : acl.getId();
+        fNodeDAOService.setNodeAccessControlList(nodePair.getFirst(), aclId);
     }
 
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
@@ -112,24 +110,22 @@ public class NodeAccessControlListDAO implements AccessControlListDAO
 
     public Long getIndirectAcl(NodeRef nodeRef)
     {
-        return getAccessControlList(nodeRef).getId();
+        DbAccessControlList acl = getAccessControlList(nodeRef);
+        return (acl == null) ? null : acl.getId();
     }
 
     public Long getInheritedAcl(NodeRef nodeRef)
     {
-        Node node = fNodeDAOService.getNode(nodeRef);
-        ChildAssoc ca = fNodeDAOService.getPrimaryParentAssoc(node);
-        if ((ca != null) && (ca.getParent() != null))
+        Pair<Long, NodeRef> nodePair = fNodeDAOService.getNodePair(nodeRef);
+        if (nodePair == null)
         {
-            DbAccessControlList acl = getAccessControlList(ca.getParent().getNodeRef());
-            if (acl != null)
-            {
-                return acl.getId();
-            }
-            else
-            {
-                return null;
-            }
+            throw new InvalidNodeRefException(nodeRef);
+        }
+        Pair<Long, ChildAssociationRef> caPair = fNodeDAOService.getPrimaryParentAssoc(nodePair.getFirst());
+        if ((caPair != null) && (caPair.getSecond().getParentRef() != null))
+        {
+            Long aclId = fNodeDAOService.getNodeAccessControlList(caPair.getFirst());
+            return aclId;
         }
         else
         {
@@ -157,5 +153,8 @@ public class NodeAccessControlListDAO implements AccessControlListDAO
         throw new UnsupportedOperationException();
     }
 
-    
+    public void setAccessControlList(NodeRef nodeRef, Long aclId)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

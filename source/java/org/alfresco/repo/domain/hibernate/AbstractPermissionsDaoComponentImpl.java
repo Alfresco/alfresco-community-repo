@@ -641,8 +641,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return npe;
     }
 
-    
-
     public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef)
     {
         DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);

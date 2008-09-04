@@ -127,6 +127,14 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     /**
+     * No-op
+     */
+    public List<String> cleanup()
+    {
+        return Collections.emptyList();
+    }
+
+    /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
     public List<StoreRef> getStores()
@@ -140,6 +148,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public StoreRef createStore(String protocol, String identifier)
     {
         return dbNodeService.createStore(protocol, identifier);
+    }
+    
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public void deleteStore(StoreRef storeRef)
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
 
     /**

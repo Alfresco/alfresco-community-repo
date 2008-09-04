@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;

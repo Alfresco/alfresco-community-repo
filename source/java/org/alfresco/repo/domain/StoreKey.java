@@ -26,6 +26,7 @@ package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -50,6 +51,11 @@ public class StoreKey implements Serializable
 		setIdentifier(identifier);
 	}
 	
+    public StoreKey(StoreRef storeRef)
+    {
+        this(storeRef.getProtocol(), storeRef.getIdentifier());
+    }
+    
 	public String toString()
 	{
 		return ("StoreKey[" +

@@ -93,7 +93,7 @@ public class OldADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCom
         if (acl != null)
         {
             // maintain referencial integrity
-            getACLDAO(nodeRef).setAccessControlList(nodeRef, null);
+            getACLDAO(nodeRef).setAccessControlList(nodeRef, (Long) null);
             aclDaoComponent.deleteAccessControlList(acl.getId());
         }
     }

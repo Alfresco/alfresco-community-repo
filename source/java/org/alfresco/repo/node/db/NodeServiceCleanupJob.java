@@ -22,27 +22,36 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.repository;
+package org.alfresco.repo.node.db;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
- * Thrown when a cyclic parent-child relationship is detected.
+ * Prompts the Node Service to perform regular cleanup operations.
+ * 
+ * @see NodeService#cleanup()
  * 
  * @author Derek Hulley
+ * @since 2.1.6
  */
-public class CyclicChildRelationshipException extends RuntimeException
+public class NodeServiceCleanupJob implements Job
 {
-    private static final long serialVersionUID = 3545794381924874036L;
-
-    private ChildAssociationRef assocRef;
-    
-    public CyclicChildRelationshipException(String msg, ChildAssociationRef assocRef)
+    public void execute(JobExecutionContext context) throws JobExecutionException
     {
-        super(msg);
-        this.assocRef = assocRef;
-    }
-
-    public ChildAssociationRef getAssocRef()
-    {
-        return assocRef;
+        JobDataMap jobData = context.getJobDetail().getJobDataMap();
+        // extract the content cleaner to use
+        Object nodeServiceObj = jobData.get("nodeService");
+        if (nodeServiceObj == null || !(nodeServiceObj instanceof NodeService))
+        {
+            throw new AlfrescoRuntimeException(
+                    "NodeServiceCleanupJob data must contain valid 'nodeService' reference");
+        }
+        NodeService nodeService = (NodeService) nodeServiceObj;
+        nodeService.cleanup();
     }
 }

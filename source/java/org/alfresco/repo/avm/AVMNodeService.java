@@ -154,6 +154,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
     
     /**
+     * @throws UnsupportedOperationException        Always
+     */
+    public void deleteStore(StoreRef storeRef) throws InvalidStoreRefException
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Does the indicated store exist?
      * @param storeRef a reference to the store to look for
      * @return Returns true if the store exists, otherwise false
@@ -303,7 +311,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             {
                 throw new InvalidTypeException("Invalid node type for AVM.", nodeTypeQName);
             }
-            addDefaultPropertyValues(nodeTypeDef, properties);
+            properties.putAll(getDefaultProperties(nodeTypeDef));
             addDefaultAspects(nodeTypeDef, avmPath, properties);
         }
         catch (AVMNotFoundException e)
@@ -316,7 +324,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         String newAVMPath = AVMNodeConverter.ExtendAVMPath(avmPath, nodeName);
         NodeRef childRef = AVMNodeConverter.ToNodeRef(-1, newAVMPath);
-        addDefaultPropertyValues(nodeTypeDef, properties);
+        properties.putAll(getDefaultProperties(nodeTypeDef));
         addDefaultAspects(nodeTypeDef, newAVMPath, properties);
         Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>();
         for (Map.Entry<QName, Serializable> entry : properties.entrySet())
@@ -578,7 +586,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             properties.putAll(aspectProperties);
         }
         // Now set any unspecified default properties for the aspect.
-        addDefaultPropertyValues(aspectDef, properties);
+        Map<QName, Serializable> defaultProperties = getDefaultProperties(aspectDef);
+        properties.putAll(defaultProperties);
         // Now add any cascading aspects.
         addDefaultAspects(aspectDef, avmPath, properties);
         // Set the property values on the AVM Node.
@@ -637,7 +646,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
 //            invokeBeforeAddAspect(nodeRef, def.getName());
             addAspect(nodeRef, def.getName(), Collections.<QName, Serializable>emptyMap());
-            addDefaultPropertyValues(def, properties);
+            properties.putAll(getDefaultProperties(def));
 //            invokeOnAddAspect(nodeRef, def.getName());
             // recurse
             addDefaultAspects(def, path, properties);

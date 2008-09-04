@@ -700,4 +700,48 @@ public class HibernateNodeTest extends BaseSpringTest
             count++;
         }
     }
+    
+    private static final String GET_NODE =
+    "      select"+
+    "         node" +
+    "      from" +
+    "         org.alfresco.repo.domain.hibernate.NodeImpl as node" +
+    "      where" +
+    "         node.id in (:nodeIds)";
+    @SuppressWarnings("unchecked")
+    public void testPropertiesViaJoin() throws Exception
+    {
+        getSession().setCacheMode(CacheMode.IGNORE);
+        
+        List<Long> nodeIds = new ArrayList<Long>(10);
+        
+        for (int i = 0; i < 100; i++)
+        {
+            // make a container node
+            Node node = new NodeImpl();
+            node.setStore(store);
+            node.setUuid(GUID.generate());
+            node.setTypeQName(containerQNameEntity);
+            node.getProperties().put(propAuthorQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+            node.getProperties().put(propArchivedByQNameEntity.getId(), new PropertyValue(DataTypeDefinition.TEXT, "ABC"));
+            Long nodeId = (Long) getSession().save(node);
+            // Keep the ID
+            nodeIds.add(nodeId);
+        }
+        getSession().flush();
+        getSession().clear();
+        
+        // Now select it
+        Query query = getSession()
+            .createQuery(GET_NODE)
+            .setParameterList("nodeIds", nodeIds)
+            .setCacheMode(CacheMode.IGNORE);
+        List<Node> queryList = (List<Node>) query.list();
+        
+        for (Node node : queryList)
+        {
+            // Get the node properties - this should not execute a query to retrieve
+            node.getProperties().size();
+        }
+    }
 }

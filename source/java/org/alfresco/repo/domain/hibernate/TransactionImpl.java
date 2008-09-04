@@ -59,7 +59,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
         StringBuilder sb = new StringBuilder(50);
         sb.append("Transaction")
           .append("[id=").append(id)
-          .append(", txnTimeMs=").append(new Date(commitTimeMs))
+          .append(", txnTimeMs=").append(commitTimeMs == null ? "---" : new Date(commitTimeMs))
           .append(", changeTxnId=").append(changeTxnId)
           .append("]");
         return sb.toString();

@@ -24,8 +24,11 @@
  */
 package org.alfresco.repo.search;
 
+import org.alfresco.repo.service.StoreRedirectorProxyFactory;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Component API for indexing. Delegates to the real index retrieved from the
@@ -38,9 +41,26 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author andyh
  * 
  */
-public class IndexerComponent implements Indexer
+public class IndexerComponent extends AbstractLifecycleBean implements Indexer
 {
+    private StoreRedirectorProxyFactory<IndexerAndSearcher> storeRedirectorProxyFactory;
     private IndexerAndSearcher indexerAndSearcherFactory;
+
+    public void setStoreRedirectorProxyFactory(StoreRedirectorProxyFactory<IndexerAndSearcher> storeRedirectorProxyFactory)
+    {
+        this.storeRedirectorProxyFactory = storeRedirectorProxyFactory;
+    }
+    
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        this.indexerAndSearcherFactory = storeRedirectorProxyFactory.getObject();
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+    }
 
     public void setIndexerAndSearcherFactory(IndexerAndSearcher indexerAndSearcherFactory)
     {

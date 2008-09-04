@@ -63,6 +63,20 @@ import org.alfresco.service.namespace.QNamePattern;
 public interface NodeService
 {
     /**
+     * Kick off any cleanup processes relating to the the particular implementation.
+     * <p>
+     * This must cover cleanup of orphaned data and other housekeeping tasks that may
+     * be required.
+     * <p>
+     * <b>NB:</b> Implementations should guard against multithreaded entry without
+     *            blocking.
+     * 
+     * @return      Returns a list of messages detailing what was done.
+     */
+    @Auditable(key = Auditable.Key.NO_KEY)
+    public List<String> cleanup();
+    
+    /**
      * Gets a list of all available node store references
      * 
      * @return Returns a list of store references
@@ -75,13 +89,22 @@ public interface NodeService
      * may create the store in any number of locations, including a database or
      * Subversion.
      * 
-     * @param protocol the implementation protocol
+     * @param protocolthe implementation protocol
      * @param identifier the protocol-specific identifier
      * @return Returns a reference to the store
      * @throws StoreExistsException
      */
     @Auditable(key = Auditable.Key.RETURN, parameters = {"protocol", "identifier"})
     public StoreRef createStore(String protocol, String identifier) throws StoreExistsException;
+
+    /**
+     * Delete a store and all its contents.
+     *
+     * @param storeRef                              the store to delete
+     * @throws InvalidStoreRefException             if the store reference is invalid
+     */
+    @Auditable(key= Auditable.Key.ARG_0, parameters = {"storeRef"})
+    public void deleteStore(StoreRef storeRef);
     
     /**
      * @param storeRef a reference to the store to look for

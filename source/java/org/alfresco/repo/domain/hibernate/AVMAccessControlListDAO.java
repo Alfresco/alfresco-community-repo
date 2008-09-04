@@ -253,6 +253,11 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
+    public void setAccessControlList(NodeRef nodeRef, Long aclId)
+    {
+        throw new UnsupportedOperationException("Not implemented for AVM: setAccessControlList(NodeRef nodeRef, Long aclId)");
+    }
+
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
     {
         // If their are no actual changes there is nothing to do (the changes are all in TX and have already COWed so they can just change)

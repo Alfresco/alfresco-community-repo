@@ -248,6 +248,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      * <pre>
      *      return (NodeService) applicationContext.getBean("dbNodeService");
      * </pre>
+     * The <tt>NodeService<tt> returned must support cascade deletion.
      * 
      * @return Returns the implementation of <code>NodeService</code> to be
      *      used for this test.  It must have transaction demarcation.
@@ -674,9 +675,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
         
         // Check that the associations were removed
-        assertEquals("Expected exactly one child",
+        assertEquals("Expected exactly zero child",
                 0, nodeService.getChildAssocs(sourceNodeRef).size());
-        assertEquals("Expected exactly one target",
+        assertEquals("Expected exactly zero target",
                 0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
     }
     

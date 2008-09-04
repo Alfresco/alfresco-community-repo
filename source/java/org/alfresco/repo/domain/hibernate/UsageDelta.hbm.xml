@@ -54,7 +54,7 @@
         from
             org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
         where
-            usage_delta.node = :node
+            usage_delta.node.id = :nodeId
     </query>
     
     
@@ -73,7 +73,7 @@
         from
             org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
         where
-            usage_delta.node = :node
+            usage_delta.node.id = :nodeId
     </query>
     
     <query name="usage.DeleteUsageDeltasForNode">

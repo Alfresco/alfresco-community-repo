@@ -67,7 +67,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         refReadLock = lock.readLock();
         refWriteLock = lock.writeLock();
 
-        setIndex(Integer.MAX_VALUE);              // comes last
+        index = -1;                     // The index is irrelevant
     }
 
     public void buildAssociation(Node parentNode, Node childNode)

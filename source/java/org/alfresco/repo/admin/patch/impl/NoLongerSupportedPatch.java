@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,27 +22,47 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.repository;
+package org.alfresco.repo.admin.patch.impl;
+
+import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.service.cmr.admin.PatchException;
 
 /**
- * Thrown when a cyclic parent-child relationship is detected.
+ * Notifies the user that the patch about to be run is no longer supported and an incremental upgrade
+ * path must be followed.
  * 
  * @author Derek Hulley
+ * @since 2.1.5
  */
-public class CyclicChildRelationshipException extends RuntimeException
+public class NoLongerSupportedPatch extends AbstractPatch
 {
-    private static final long serialVersionUID = 3545794381924874036L;
-
-    private ChildAssociationRef assocRef;
+    private static final String ERR_USE_INCREMENTAL_UPGRADE = "patch.NoLongerSupportedPatch.err.use_incremental_upgrade";
     
-    public CyclicChildRelationshipException(String msg, ChildAssociationRef assocRef)
+    private String lastSupportedVersion;
+    
+    public NoLongerSupportedPatch()
     {
-        super(msg);
-        this.assocRef = assocRef;
+    }
+    
+    public void setLastSupportedVersion(String lastSupportedVersion)
+    {
+        this.lastSupportedVersion = lastSupportedVersion;
     }
 
-    public ChildAssociationRef getAssocRef()
+    @Override
+    protected void checkProperties()
     {
-        return assocRef;
+        super.checkProperties();
+        checkPropertyNotNull(lastSupportedVersion, "lastSupportedVersion");
+    }
+
+    @Override
+    protected String applyInternal() throws Exception
+    {
+        throw new PatchException(
+                ERR_USE_INCREMENTAL_UPGRADE,
+                super.getId(),
+                lastSupportedVersion,
+                lastSupportedVersion);
     }
 }

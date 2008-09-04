@@ -93,19 +93,6 @@
 		</property>
 	</bean>
 
-   <!-- Handles policy callbacks to ensure that node hierarchy gets indexed -->
-   <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer" init-method="init">
-      <property name="policyComponent">
-         <ref bean="policyComponent" />
-      </property>
-      <property name="indexer">
-         <ref bean="indexerComponent" />
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService"/>
-      </property>
-   </bean>
-
    <!-- ensures model-compliance of node structures -->
    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker" init-method="init">
       <property name="policyComponent">
@@ -154,6 +141,13 @@
       </property>
    </bean>
 
+   <!-- node indexing for ADM -->
+   <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer">
+      <property name="indexer">
+         <ref bean="indexerComponent" />
+      </property>
+   </bean>
+
    <!-- NodeService implemented to persist to Database.  Resource management enabled. -->
    <bean id="dbNodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
@@ -169,11 +163,11 @@
       </property>
    </bean>
    <bean id="dbNodeServiceImpl" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
-      <property name="qnameDAO">
-         <ref bean="qnameDAO" />
-      </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
       </property>
       <property name="nodeDaoService">
          <ref bean="nodeDaoService" />
@@ -187,11 +181,11 @@
       <property name="avmNodeService">
          <ref bean="avmNodeService"/>
       </property>
-      <property name="tenantService">
-         <ref bean="tenantService"/>
+      <property name="nodeIndexer">
+         <ref bean="nodeIndexer" />
       </property>
-	  <property name="aclDaoComponent">
-         <ref bean="aclDaoComponent"/>
+      <property name="cascadeInTransaction">
+         <value>${system.cascadeDeleteInTransaction}</value>
       </property>
    </bean>
    <bean id="sessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >

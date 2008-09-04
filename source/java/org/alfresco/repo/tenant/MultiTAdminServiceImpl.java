@@ -56,6 +56,7 @@ import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -79,7 +80,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
     private static Log logger = LogFactory.getLog(MultiTAdminServiceImpl.class);
     
     // Dependencies    
-    private DbNodeServiceImpl nodeService; // TODO - replace with NodeService, when deleteStore is exposed via public API
+    private NodeService nodeService;
     private DictionaryComponent dictionaryComponent;
     private RepoAdminService repoAdminService;
     private AuthenticationComponent authenticationComponent;    

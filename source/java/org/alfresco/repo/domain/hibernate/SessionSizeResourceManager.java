@@ -144,7 +144,7 @@ public class SessionSizeResourceManager extends HibernateDaoSupport implements M
         int collectionCount = stats.getCollectionCount();
         if ((entityCount + collectionCount) > threshold)
         {
-            session.flush();
+            DirtySessionMethodInterceptor.flushSession(session, true);
             selectivelyClear(session, stats);
             // session.clear();
             if (logger.isDebugEnabled())

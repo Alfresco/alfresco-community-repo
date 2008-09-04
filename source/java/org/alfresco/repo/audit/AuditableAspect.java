@@ -272,13 +272,8 @@ public class AuditableAspect
             this.properties = properties;
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
-         */
         public Boolean doWork() throws Exception
         {
-            // Callback here must be done on a per-property basis to avoid the cm:name updates to the child association
-            
             for (Map.Entry<QName, Serializable> entry : properties.entrySet()) 
             {
                 QName propertyQName = entry.getKey();

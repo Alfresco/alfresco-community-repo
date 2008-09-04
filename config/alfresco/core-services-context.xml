@@ -415,9 +415,14 @@
     <!--                         -->
 
     <bean id="indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;indexerAndSearcherFactory" />
+        </property>
+<!--
         <property name="indexerAndSearcherFactory">
             <ref bean="indexerAndSearcherFactory" />
         </property>
+   -->
     </bean>
 
     <bean id="searchService" class="org.alfresco.repo.search.SearcherComponent">

@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -690,7 +691,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	NodeRef root = this.dbNodeService.getRootNode(spacesStoreRef);
     	
     	HashMap<QName, Serializable> props2 = new HashMap<QName, Serializable>();
-        props2.put(ContentModel.PROP_NAME, "test.txt");
+        props2.put(ContentModel.PROP_NAME, "test-" + GUID.generate() + ".txt");
         final NodeRef nodeRef = this.dbNodeService.createNode(
                 root, 
                 ContentModel.ASSOC_CHILDREN, 

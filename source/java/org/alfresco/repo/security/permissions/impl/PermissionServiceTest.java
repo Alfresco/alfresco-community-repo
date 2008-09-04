@@ -25,7 +25,6 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -370,7 +369,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     private void printPermissions(NodeRef nodeRef, String path)
     {
-        Long id = nodeDaoService.getNode(nodeRef).getAccessControlList().getId();
+        Long id = nodeDaoService.getNodePair(nodeRef).getFirst();
         System.out.println(path + " has "+id);
         for(AccessControlEntry entry : aclDaoComponent.getAccessControlList(id).getEntries())
         {
@@ -1094,6 +1093,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         NodeRef n7 = nodeService.createNode(n6, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}seven"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n8 = nodeService.createNode(n7, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}eight"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n9 = nodeService.createNode(n8, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}nine"), ContentModel.TYPE_FOLDER).getChildRef();
+        @SuppressWarnings("unused")
         NodeRef n10 = nodeService.createNode(n9, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}ten"), ContentModel.TYPE_FOLDER).getChildRef();
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));

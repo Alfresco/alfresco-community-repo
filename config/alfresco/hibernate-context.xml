@@ -319,10 +319,10 @@
         </property>
         <property name="hibernateSessionHelper">
             <ref bean="hibernateSessionHelper"/>
-        </property>
+      </property>
     </bean>
 
-    <bean id="usageDeltaDao" class="org.alfresco.repo.domain.hibernate.HibernateUsageDeltaDAO">
+    <bean id="usageDeltaDAO" class="org.alfresco.repo.domain.hibernate.HibernateUsageDeltaDAO">
        <property name="sessionFactory">
            <ref bean="sessionFactory"/>
        </property>
@@ -331,21 +331,21 @@
        </property>
    </bean>
     
-   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl">
+   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl" >
       <property name="qnameDAO">
          <ref bean="qnameDAO" />
+      </property>
+      <property name="usageDeltaDAO">
+          <ref bean="usageDeltaDAO"/>
+      </property>
+      <property name="aclDaoComponent">
+          <ref bean="aclDaoComponent"/>
       </property>
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
       </property>
       <property name="parentAssocsCache">
          <ref bean="parentAssocsCache"/>
-      </property>
-      <property name="tenantService">
-          <ref bean="tenantService"/>
-      </property>
-      <property name="usageDeltaDao">
-          <ref bean="usageDeltaDao"/>
       </property>
    </bean>
 
@@ -355,15 +355,19 @@
       </property>
    </bean>
 
-   <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.repo.node.db.NodeDaoService</value>
+   <bean id="dbNodeDaoServiceDirtySessionInterceptor" class="org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor" >
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
       </property>
+   </bean>
+
+   <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="target">
          <ref bean="nodeDaoServiceImpl" />
       </property>
       <property name="interceptorNames">
          <list>
+            <value>dbNodeDaoServiceDirtySessionInterceptor</value>
             <value>dbNodeDaoServiceTxnRegistration</value>
          </list>
       </property>

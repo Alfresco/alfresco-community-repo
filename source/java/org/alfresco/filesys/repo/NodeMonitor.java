@@ -349,19 +349,19 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
     	// Check if the node is a file/folder, and for our store
     	
-    	NodeRef nodeRef = oldChildAssocRef.getChildRef();
-    	if ( nodeRef.getStoreRef().equals( m_storeRef) == false)
+    	NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
+    	if ( oldNodeRef.getStoreRef().equals( m_storeRef) == false)
     		return;
     	
-    	QName nodeType = m_nodeService.getType( nodeRef);
+    	QName nodeType = m_nodeService.getType( oldNodeRef);
     	FileFolderServiceType fType = m_fileFolderService.getType( nodeType);
     	
     	if ( fType != FileFolderServiceType.INVALID) {
     		
     		// Get the full path to the file/folder node
     		
-    		Path nodePath = m_nodeService.getPath( nodeRef);
-    		String fName = (String) m_nodeService.getProperty( nodeRef, ContentModel.PROP_NAME);
+    		Path nodePath = m_nodeService.getPath( oldNodeRef);
+    		String fName = (String) m_nodeService.getProperty( oldNodeRef, ContentModel.PROP_NAME);
     		
     		// Build the share relative path to the node
     		
@@ -376,7 +376,7 @@ public class NodeMonitor extends TransactionListenerAdapter
     		// DEBUG
     		
     		if ( logger.isDebugEnabled())
-    			logger.debug("OnMoveNode: nodeRef=" + nodeRef + ", relPath=" + relPath);
+    			logger.debug("OnMoveNode: nodeRef=" + oldNodeRef + ", relPath=" + relPath);
 
     		// Queue an event to process the node move
     		
@@ -384,7 +384,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 
 	    		// Create a move event
 		 		
-				NodeEvent nodeEvent = new MoveNodeEvent( fType, nodeRef, relPath, newChildAssocRef.getChildRef());
+				NodeEvent nodeEvent = new MoveNodeEvent( fType, oldNodeRef, relPath, newChildAssocRef.getChildRef());
 			
 	    		// Store the event in the transaction until committed, and register the transaction listener
 	    		
@@ -550,7 +550,15 @@ public class NodeMonitor extends TransactionListenerAdapter
                         {
                             return null;
                         }
-                        else if ( nodeEvent instanceof CreateNodeEvent) {
+                        
+                        // Check that the node is still valid
+                        
+                        if (!m_nodeService.exists(nodeEvent.getNodeRef()))
+                        {
+                            return null;
+                        }
+                        
+                        if ( nodeEvent instanceof CreateNodeEvent) {
                             
                             // Node created
                             

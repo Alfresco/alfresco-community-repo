@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.PropertyValue;
@@ -60,6 +61,8 @@ import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -75,7 +78,9 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -102,6 +107,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     /** controls policy delegates */
     private PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
+    protected TransactionService transactionService;
 
     /*
      * Policy delegates
@@ -147,6 +153,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         this.dictionaryService = dictionaryService;
     }
     
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * Checks equality by type and uuid
      */
@@ -564,8 +575,10 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         }
         else
         {
-            // remove the property as we don't want to persist it
-            preCreationProperties.remove(ContentModel.PROP_NODE_UUID);
+            if (uuid.length() > 50)
+            {
+                throw new IllegalArgumentException("Explicit UUID may not be greater than 50 characters: " + uuid);
+            }
         }
         // done
         return uuid;
@@ -701,21 +714,28 @@ public abstract class AbstractNodeServiceImpl implements NodeService
                     e);
         }
     }
+    
+    protected Map<QName, Serializable> getDefaultProperties(QName typeQName)
+    {
+        ClassDefinition classDefinition = this.dictionaryService.getClass(typeQName);
+        if (classDefinition == null)
+        {
+            return Collections.emptyMap();
+        }
+        return getDefaultProperties(classDefinition);
+    }
+    
     /**
      * Sets the default property values
      * 
      * @param classDefinition       the model type definition for which to get defaults
      * @param properties            the properties of the node
      */
-    protected void addDefaultPropertyValues(ClassDefinition classDefinition, Map<QName, Serializable> properties)
+    protected Map<QName, Serializable> getDefaultProperties(ClassDefinition classDefinition)
     {
+        PropertyMap properties = new PropertyMap();
         for (Map.Entry<QName, Serializable> entry : classDefinition.getDefaultValues().entrySet())
         {
-            if (properties.containsKey(entry.getKey()))
-            {
-                // property is present
-                continue;
-            }
             Serializable value = entry.getValue();
             
             // Check the type of the default property
@@ -746,6 +766,50 @@ public abstract class AbstractNodeServiceImpl implements NodeService
             
             // Set the default value of the property
             properties.put(entry.getKey(), value);
+        }
+        return properties;
+    }
+
+    /**
+     * Override to implement cleanup processes.  The default does nothing.
+     * <p>
+     * This method will be called as the <b>system</b> user but without any
+     * additional transactions.
+     */
+    protected List<String> cleanupImpl()
+    {
+        // No operation
+        return Collections.emptyList();
+    }
+    
+    /** Prevent multiple executions of the implementation method */
+    private ReentrantLock cleanupLock = new ReentrantLock();
+    public final List<String> cleanup()
+    {
+        boolean locked = cleanupLock.tryLock();
+        if (locked)
+        {
+            try
+            {
+                // Authenticate as system
+                RunAsWork<List<String>> cleanupWork = new RunAsWork<List<String>>()
+                {
+                    public List<String> doWork() throws Exception
+                    {
+                        // The current thread got the lock
+                        return cleanupImpl();
+                    }
+                };
+                return AuthenticationUtil.runAs(cleanupWork, AuthenticationUtil.SYSTEM_USER_NAME);
+            }
+            finally
+            {
+                cleanupLock.unlock();
+            }
+        }
+        else
+        {
+            return Collections.emptyList();
         }
     }
 }

@@ -28,7 +28,7 @@
                name="store"
                class="org.alfresco.repo.domain.hibernate.StoreImpl"
                not-null="true"
-               lazy="proxy" 
+               lazy="proxy"
                foreign-key="fk_alf_n_store"
                optimistic-lock="true"
                fetch="join">
@@ -157,20 +157,34 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <!-- Optimistic locking -->
-      <version column="version" name="version" type="long" />
+      <natural-id mutable="true">
       <!-- forward assoc to parent node -->
       <many-to-one 
             name="parent"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             lazy="proxy"
-            foreign-key="fk_alf_ca_pnode"
+               foreign-key="fk_alf_ca_pnode"
             fetch="select"
             optimistic-lock="false"
-            not-null="true"
-            unique-key="UIDX_CHILD_NAME" >
+               not-null="true" >
          <column name="parent_node_id" not-null="true" />
       </many-to-one>
+         <!-- forward assoc to assoc type (mandatory) -->
+         <many-to-one
+               name="typeQName"
+               class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+               column="type_qname_id"
+               foreign-key="fk_alf_ca_tqn"
+               lazy="proxy"
+               fetch="select"
+               unique="false"
+               not-null="true"
+               cascade="none" />
+         <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" />
+         <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" />
+      </natural-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
       <!-- forward assoc to child node -->
       <many-to-one
             name="child" 
@@ -182,18 +196,6 @@
             not-null="true" >
          <column name="child_node_id" not-null="true"/>
       </many-to-one>
-      <!-- forward assoc to assoc type (mandatory) -->
-      <many-to-one
-            name="typeQName"
-            class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
-            column="type_qname_id"
-            foreign-key="fk_alf_ca_tqn"
-            unique-key="UIDX_CHILD_NAME"
-            lazy="proxy"
-            fetch="select"
-            unique="false"
-            not-null="true"
-            cascade="none" />
       <!-- forward assoc to namespace for local QName (mandatory) -->
       <many-to-one
             name="qnameNamespace"
@@ -206,8 +208,6 @@
             not-null="true"
             cascade="none" />
       <property name="qnameLocalName" column="qname_localname" type="string" length="200" not-null="true" index="idx_alf_ca_qn_ln" />
-      <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" unique-key="UIDX_CHILD_NAME" />
-      <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" unique-key="UIDX_CHILD_NAME" />
       <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
    </class>
@@ -243,17 +243,17 @@
                not-null="true" >
             <column name="target_node_id" not-null="true" />
          </many-to-one>
-      <!-- forward assoc to assoc type (mandatory) -->
-      <many-to-one
-            name="typeQName"
-            class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
-            column="type_qname_id"
-            foreign-key="fk_alf_na_tqn"
-            lazy="proxy"
-            fetch="select"
-            unique="false"
-            not-null="true"
-            cascade="none" />
+          <!-- forward assoc to assoc type (mandatory) -->
+          <many-to-one
+                name="typeQName"
+                class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
+                column="type_qname_id"
+                foreign-key="fk_alf_na_tqn"
+                lazy="proxy"
+                fetch="select"
+                unique="false"
+                not-null="true"
+                cascade="none" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
@@ -282,12 +282,37 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.child = :child
+         assoc.child.id = :childId
       order by
          assoc.index,
          assoc.id
    </query>
    
+   <query name="node.DeleteParentAssocs">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+      where
+         assoc.child.id = :childId
+   </query>
+   
+   <query name="node.DeleteChildAssocs">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+      where
+         assoc.parent.id = :parentId
+   </query>
+   
+   <query name="node.DeleteNodeAssocs">
+      delete
+      from
+         org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
+      where
+         assoc.source.id = :nodeId or
+         assoc.target.id = :nodeId
+   </query>
+
    <query name="node.GetPrimaryChildNodeStatuses">
       select
          status
@@ -296,9 +321,21 @@
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.child as child
       where
-         assoc.parent = :parent and
+         assoc.parent.id = :parentId and
          assoc.isPrimary = true and
-         status.node = child
+         status.node.id = childId
+   </query>
+   
+   <query name="node.GetChildNodeIds">
+      select
+         child.id
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.child as child
+      where
+         assoc.parent.id = :parentId
+      order by
+         child.id
    </query>
    
    <query name="node.GetChildAssocsByAll">
@@ -307,8 +344,8 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent = :parent and
-         assoc.child = :child and
+         assoc.parent.id = :parentId and
+         assoc.child.id = :childId and
          assoc.typeQName = :typeQName and
          assoc.qnameNamespace = :qnameNamespace and
          assoc.qnameLocalName = :qnameLocalName
@@ -323,7 +360,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent = :parent
+         assoc.parent.id = :parentId
       order by
          assoc.index,
          assoc.id
@@ -335,7 +372,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent = :parent and
+         assoc.parent.id = :parentId and
          assoc.typeQName = :typeQName and
          assoc.childNodeName = :childNodeName and
          assoc.childNodeNameCrc = :childNodeNameCrc
@@ -347,7 +384,7 @@
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
       where
-         assoc.parent = :parent and
+         assoc.parent.id = :parentId and
          assoc.typeQName = :typeQName and
          assoc.childNodeName = :childNodeName and
          assoc.childNodeNameCrc = :childNodeNameCrc
@@ -358,6 +395,7 @@
    
    <query name="node.GetChildAssocRefs">
       select
+         assoc.id,
          assoc.typeQName,
          assoc.qnameNamespace,
          assoc.qnameLocalName,
@@ -372,7 +410,7 @@
          join assoc.parent as parent
          join assoc.child as child
       where
-         assoc.parent = :parent
+         assoc.parent.id = :parentId
       order by
          assoc.index,
          assoc.id
@@ -380,6 +418,7 @@
    
    <query name="node.GetChildAssocRefsByQName">
       select
+         assoc.id,
          assoc.typeQName,
          assoc.qnameNamespace,
          assoc.qnameLocalName,
@@ -394,12 +433,150 @@
          join assoc.parent as parent
          join assoc.child as child
       where
-         assoc.parent = :parent and
+         assoc.parent.id = :parentId and
          assoc.qnameNamespace = :qnameNamespace and
          assoc.qnameLocalName = :qnameLocalName
       order by
          assoc.index,
          assoc.id
+   </query>
+   
+   <query name="node.GetChildAssocRefsByTypeQNames">
+      select
+         assoc.id,
+         assoc.typeQName,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         child.store.key.protocol,
+         child.store.key.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+      where
+         assoc.parent.id = :parentId and
+         assoc.typeQName.id in (:childAssocTypeQNameIds)
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
+   <query name="node.GetChildAssocRefsByTypeQNameAndQName">
+      select
+         assoc.id,
+         assoc.typeQName,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         child.store.key.protocol,
+         child.store.key.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+      where
+         assoc.parent.id = :parentId and
+         assoc.typeQName = :typeQName and
+         assoc.qnameNamespace = :qnameNamespace and
+         assoc.qnameLocalName = :qnameLocalName
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
+   <query name="node.GetPrimaryChildAssocs">
+      select
+         assoc.id,
+         assoc.typeQName,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         child.store.key.protocol,
+         child.store.key.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+      where
+         assoc.parent.id = :parentId and
+         assoc.isPrimary = true
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
+   <query name="node.GetPrimaryChildAssocsNotInSameStore">
+      select
+         assoc.id,
+         assoc.typeQName,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         child.store.key.protocol,
+         child.store.key.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+      where
+         assoc.parent.id = :parentId and
+         assoc.isPrimary = true and
+         (
+            child.store.key.protocol != parent.store.key.protocol or
+            child.store.key.identifier != parent.store.key.identifier
+         )
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
+   <query name="node.GetNodesWithChildrenInDifferentStores">
+      select
+         parent.id,
+         parent.store.key.protocol,
+         parent.store.key.identifier,
+         parent.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+      where
+         parent.id > :minNodeId and
+         assoc.isPrimary = true and
+         (
+            child.store.key.protocol != parent.store.key.protocol or
+            child.store.key.identifier != parent.store.key.identifier
+         )
+      order by
+         parent.id
+   </query>
+   
+   <query name="node.GetNodesWithAspect">
+      select
+         node.id,
+         node.store.key.protocol,
+         node.store.key.identifier,
+         node.uuid
+      from
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+      where
+         node.id > :minNodeId and
+         node.aspects.id = :aspectQName
+       order by
+         node.id
    </query>
    
    <query name="node.GetNodeAssoc">
@@ -408,8 +585,8 @@
       from
          org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
       where
-         assoc.source = :source and
-         assoc.target = :target and
+         assoc.source.id = :sourceId and
+         assoc.target.id = :targetId and
          assoc.typeQName = :assocTypeQName
    </query>
    
@@ -419,8 +596,8 @@
       from
          org.alfresco.repo.domain.hibernate.NodeAssocImpl as assoc
       where
-         assoc.source = :node or
-         assoc.target = :node
+         assoc.source.id = :nodeId or
+         assoc.target.id = :nodeId
    </query>
 
    <query name="node.GetTargetAssocs">
@@ -431,7 +608,7 @@
          join assoc.source as source
          join assoc.target as target
       where
-         assoc.source = :source
+         assoc.source.id = :sourceId
    </query>
    
    <query name="node.GetSourceAssocs">
@@ -442,7 +619,21 @@
          join assoc.source as source
          join assoc.target as target
       where
-         assoc.target = :target
+         assoc.target.id = :targetId
+   </query>
+   
+   <query name="node.GetNodesWithPropertyValuesByStringAndStore">
+      select
+         node,
+         node.typeQName
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.properties prop
+      where
+         node.store.key.protocol = :protocol and
+         node.store.key.identifier = :identifier and
+         index(prop) = :propQNameId and
+         prop.stringValue = :propStringValue
    </query>
    
    <query name="node.GetNodesWithPropertyValuesByActualType">
@@ -543,19 +734,6 @@
       where
          node.store.key.protocol = :protocol and
          node.store.key.identifier = :identifier
-   </query>
-   
-    <query name="node.GetNodesWithPropertyStringValueForStore">
-      select 
-         node 
-      from 
-         org.alfresco.repo.domain.hibernate.NodeImpl as node
-         join node.properties prop
-      where
-         node.store.key.protocol = :protocol and
-         node.store.key.identifier = :identifier and
-         index(prop) = :propQNameId and
-         prop.stringValue = :propStringValue
    </query>
    
 </hibernate-mapping>

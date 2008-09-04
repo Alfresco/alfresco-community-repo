@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -45,6 +46,10 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
 {
     protected NodeService getNodeService()
     {
+        // Force cascading
+        DbNodeServiceImpl dbNodeServiceImpl = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
+        dbNodeServiceImpl.setCascadeInTransaction(true);
+        
         return (NodeService) applicationContext.getBean("NodeService");
     }
 

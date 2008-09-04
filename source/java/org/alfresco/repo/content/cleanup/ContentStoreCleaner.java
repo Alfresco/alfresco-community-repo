@@ -34,7 +34,6 @@ import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.avm.AVMNodeDAO.ContentUrlHandler;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.ContentUrlDAO;
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -42,7 +41,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
@@ -180,7 +181,7 @@ public class ContentStoreCleaner
         // Handler that records the URL
         final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
         {
-            public void handle(Node node, Serializable value)
+            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
             {
                 if (vmShutdownListener.isVmShuttingDown())
                 {

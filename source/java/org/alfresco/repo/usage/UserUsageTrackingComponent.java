@@ -24,17 +24,14 @@
  */
 package org.alfresco.repo.usage;
 
-import java.util.Collection;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -46,9 +43,11 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,28 +63,16 @@ public class UserUsageTrackingComponent
     
     private static boolean busy = false;
     
-    private NodeDaoService nodeDaoService;
-    private QNameDAO qnameDAO;
     private TransactionServiceImpl transactionService;
     private ContentUsageImpl contentUsageImpl;
     
     private PersonService personService;
-    private NodeService nodeService;   
+    private NodeService nodeService;
+    private NodeDaoService nodeDaoService;
     private UsageService usageService;
     private TenantDeployerService tenantDeployerService;
     
     private boolean enabled = true;
-    
-    
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
-    }
-    
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
-    }
     
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
@@ -107,6 +94,11 @@ public class UserUsageTrackingComponent
         this.nodeService = nodeService;
     }
     
+    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    {
+        this.nodeDaoService = nodeDaoService;
+    }
+
     public void setUsageService(UsageService usageService)
     {
         this.usageService = usageService;
@@ -273,9 +265,9 @@ public class UserUsageTrackingComponent
      * have not had their initial usage calculated. In a future release, could also be called explicitly by
      * a SysAdmin, eg. via a JMX operation.
      * 
-     * @param userName
+     * @param username          the username to for which calcualte usages
      */
-    public void recalculateUsage(final String userName)
+    public void recalculateUsage(final String username)
     { 
         final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         
@@ -284,75 +276,80 @@ public class UserUsageTrackingComponent
         {
             public Long execute() throws Throwable
             {
-                QNameEntity ownerQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_OWNER);
-                QNameEntity contentQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_CONTENT);
-                
+//                QNameEntity ownerQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_OWNER);
+//                QNameEntity contentQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_CONTENT);
+//                
                 List<String> stores = contentUsageImpl.getStores();
-                long totalUsage = 0;
+                final MutableLong totalUsage = new MutableLong(0L);
                 
-                if (contentQnameEntity != null)
+                for (String store : stores)
                 {
-                    for (String store : stores)
-                    {
-                        StoreRef storeRef = new StoreRef(store);
-                        
-                        // get nodes for which user is owner
-                        Collection<Node> ownerNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_OWNER, userName);
-                        
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Recalc usage ("+ userName+") store="+storeRef+", ownerNodeCount="+ownerNodes.size());
-                        }
-                        
-                        for (Node ownerNode : ownerNodes)
-                        {
-                            if (ownerNode.getTypeQName().equals(ContentModel.TYPE_CONTENT))
-                            {
-                                PropertyValue content = ownerNode.getProperties().get(contentQnameEntity.getId());
-                                if (content != null)
-                                {
-                                    ContentData contentData = ContentData.createContentProperty(content.getStringValue());
-                                    totalUsage = totalUsage + contentData.getSize();
-                                }
-                            }
-                        }
-                        
-                        // get nodes for which user is creator, and then filter out those that have an owner
-                        Collection<Node> creatorNodes = nodeDaoService.getNodesWithPropertyStringValueForStore(storeRef, ContentModel.PROP_CREATOR, userName);
-                        
-                        if (logger.isDebugEnabled()) 
-                        {
-                            logger.debug("Recalc usage ("+ userName+") store="+storeRef+", creatorNodeCount="+creatorNodes.size());
-                        }
-                        
-                        for (Node creatorNode : creatorNodes)
-                        {
-                            // note: it is possible for "owner" qname to be null (eg. ownership never taken)
-                            if (creatorNode.getTypeQName().toString().equals(ContentModel.TYPE_CONTENT.toString()) &&
-                                ((ownerQnameEntity != null) && creatorNode.getProperties().get(ownerQnameEntity.getId()) == null))
-                            {
-                                PropertyValue content = creatorNode.getProperties().get(contentQnameEntity.getId());
-                                if (content != null)
-                                {
-                                    ContentData contentData = ContentData.createContentProperty(content.getStringValue());
-                                    totalUsage = totalUsage + contentData.getSize();
-                                }
-                            }
-                        }
-                    }
+                    final StoreRef storeRef = new StoreRef(store);
                     
-                    if (logger.isDebugEnabled()) 
+                    if (logger.isDebugEnabled())
                     {
-                        long quotaSize = contentUsageImpl.getUserQuota(userName);
-                        logger.debug("Recalc usage ("+ userName+") totalUsage="+totalUsage+", quota="+quotaSize);
+                        logger.debug("Recalc usage (" + username + ") store=" + storeRef);
                     }
+
+                    NodePropertyHandler propOwnerHandler = new NodePropertyHandler()
+                    {
+                        public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
+                        {
+                            if (nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
+                            {
+                                // It is not content
+                            }
+                            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(
+                                    ContentData.class,
+                                    nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+                            if (contentData != null)
+                            {
+                                long currentTotalUsage = totalUsage.longValue();
+                                totalUsage.setValue(currentTotalUsage + contentData.getSize());
+                            }
+                        }
+                    };
+                    nodeDaoService.getPropertyValuesByPropertyAndValue(storeRef, ContentModel.PROP_OWNER, username, propOwnerHandler);
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Recalc usage (" + username + ") store=" + storeRef);
+                    }
+
+                    NodePropertyHandler propCreatorHandler = new NodePropertyHandler()
+                    {
+                        public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
+                        {
+                            if (!nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
+                            {
+                                // It is not content
+                                return;
+                            }
+                            if (nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER) != null)
+                            {
+                                // There is an owner property so we will have process this already
+                                return;
+                            }
+                            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(
+                                    ContentData.class,
+                                    nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+                            if (contentData != null)
+                            {
+                                long currentTotalUsage = totalUsage.longValue();
+                                totalUsage.setValue(currentTotalUsage + contentData.getSize());
+                            }
+                        }
+                    };
+                    nodeDaoService.getPropertyValuesByPropertyAndValue(storeRef, ContentModel.PROP_OWNER, username, propCreatorHandler);
                 }
-                else
+                
+                if (logger.isDebugEnabled()) 
                 {
-                    logger.error("Failed to re-calculate usages - cannot find QName: " + ContentModel.PROP_CONTENT.toString());
+                    long quotaSize = contentUsageImpl.getUserQuota(username);
+                    logger.debug("Recalc usage ("+ username+") totalUsage="+totalUsage+", quota="+quotaSize);
                 }
                 		
-                return totalUsage;
+                return totalUsage.longValue();
             }
         };
         // execute in READ-ONLY txn
@@ -363,7 +360,7 @@ public class UserUsageTrackingComponent
         {
             public Object execute() throws Throwable
             {
-                NodeRef personNodeRef = personService.getPerson(userName);
+                NodeRef personNodeRef = personService.getPerson(username);
                 contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                 usageService.deleteDeltas(personNodeRef);
                 return null;

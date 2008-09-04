@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.TransactionalCache;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
@@ -174,6 +175,8 @@ public abstract class AlfrescoTransactionSupport
      * Are there any pending changes which must be synchronized with the store?
      * 
      * @return true => changes are pending
+     * 
+     * @deprecated  To be replaced by {@link DirtySessionMethodInterceptor}
      */
     public static boolean isDirty()
     {

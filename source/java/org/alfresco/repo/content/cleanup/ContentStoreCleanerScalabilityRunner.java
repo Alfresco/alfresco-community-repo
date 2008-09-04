@@ -40,7 +40,6 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
@@ -52,6 +51,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -186,7 +186,7 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
         {
             int count = 0;
-            public void handle(Node node, Serializable value)
+            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
             {
                 count++;
                 if (count % 1000 == 0)
@@ -331,12 +331,9 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         public void makeNode(ContentData contentData)
         {
             throw new UnsupportedOperationException("Fix this method up");
-//            Store store = nodeDaoService.getStore(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-//            Node node = new NodeImpl();
-//            // set other required properties
-//            node.setStore(store);
-//            node.setUuid(GUID.generate());
-//            node.setTypeQName(ContentModel.TYPE_CONTENT);
+//            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+//            Long nodeId = nodeDaoService.newNode(storeRef, GUID.generate(), ContentModel.TYPE_CONTENT).getFirst();
+//            Node node = (Node) getHibernateTemplate().get(NodeImpl.class, nodeId);
 //            
 //            PropertyValue propertyValue = new PropertyValue(dataTypeDefContent, contentData);
 //            node.getProperties().put(contentQName, propertyValue);

@@ -465,28 +465,14 @@
             <value>classpath:alfresco/dbscripts/upgrade/1.4/${db.script.dialect}/AlfrescoSchemaUpdate-1.4-1.sql</value>
         </property>
     </bean>
-    <bean id="patch.uniqueChildName" class="org.alfresco.repo.admin.patch.impl.UniqueChildNamePatch" parent="basePatch" >
+    <bean id="patch.uniqueChildName" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.uniqueChildName</value></property>
         <property name="description"><value>patch.uniqueChildName.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>19</value></property>
         <property name="targetSchema"><value>20</value></property>
-        <!-- helper beans -->
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService" />
-        </property>
-        <!-- dependent on upgrade script 1.4-1 having being run -->
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.schemaUpdateScript-V1.4-1" />
-                <ref bean="patch.InvalidNameEnding" />
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>2.1.4</value>
         </property>
     </bean>
     <bean id="patch.schemaUpdateScript-V1.4-2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">

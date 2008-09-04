@@ -133,6 +133,31 @@
         </property>
     </bean>
 
+    <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.node.db.NodeServiceCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="nodeService">
+                    <ref bean="nodeService" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="nodeServiceCleanupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="nodeServiceCleanupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger hourly -->
+        <property name="cronExpression">
+            <value>0 15 * * * ?</value>
+        </property>
+    </bean>
+
     <bean id="openOfficeConnectionTesterJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.util.OpenOfficeConnectionTester$OpenOfficeConnectionTesterJob</value>
@@ -257,12 +282,6 @@
     </bean>
     
     <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
-        <property name="nodeDaoService">
-        	<ref bean="nodeDaoService"/>
-        </property>
-        <property name="qnameDAO">
-         <ref bean="qnameDAO" />
-        </property>
         <property name="transactionService">
         	<ref bean="transactionService"/>
         </property>
@@ -274,6 +293,9 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService"/>
         </property>
         <property name="usageService">
             <ref bean="usageService"/>

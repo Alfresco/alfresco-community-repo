@@ -45,7 +45,6 @@ public interface PermissionsDaoComponent
     /**
      * Get the permissions that have been set on a given node.
      * 
-     * @param nodeRef
      * @return the node permission entry
      */
     public NodePermissionEntry getPermissions(NodeRef nodeRef);
@@ -60,8 +59,6 @@ public interface PermissionsDaoComponent
 
     /**
      * Remove all permissions for the specified authority
-     * 
-     * @param authority
      */
     public void deletePermissions(String authority);
 
@@ -91,40 +88,27 @@ public interface PermissionsDaoComponent
     /**
      * Set a permission on a node. If the node has no permissions set then a default node permission (allowing
      * inheritance) will be created to contain the permission entry.
-     * 
-     * @param nodeRef
-     * @param authority
-     * @param perm
-     * @param allow
      */
     public void setPermission(NodeRef nodeRef, String authority, PermissionReference perm, boolean allow);
 
     /**
      * Create a persisted permission entry given and other representation of a permission entry.
-     * 
-     * @param permissionEntry
      */
     public void setPermission(PermissionEntry permissionEntry);
 
     /**
      * Create a persisted node permission entry given a template object from which to copy.
-     * 
-     * @param nodePermissionEntry
      */
     public void setPermission(NodePermissionEntry nodePermissionEntry);
 
     /**
      * Set the inheritance behaviour for permissions on a given node.
-     * 
-     * @param nodeRef
-     * @param inheritParentPermissions
      */
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions);
 
     /**
      * Return the inheritance behaviour for permissions on a given node.
      * 
-     * @param nodeRef
      * @return inheritParentPermissions
      */
     public boolean getInheritParentPermissions(NodeRef nodeRef);
@@ -132,7 +116,6 @@ public interface PermissionsDaoComponent
     /**
      * Get all the permissions set for the given authority
      * 
-     * @param authority
      * @return - the permissions set on all nodes for the given authority.
      */
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority);
@@ -152,42 +135,28 @@ public interface PermissionsDaoComponent
 
     /**
      * Delete entries from a permission mask on a store by authority
-     * 
-     * @param storeRef
-     * @param authority
      */
     public void deletePermissions(StoreRef storeRef, String authority);
 
     /**
      * Remove part of a permission mask from a store
-     * 
-     * @param storeRef
-     * @param authority
-     * @param perm
      */
     public void deletePermission(StoreRef storeRef, String authority, PermissionReference perm);
 
     /**
      * Remove all permission masks from a store
      * 
-     * @param storeRef
      */
     public void deletePermissions(StoreRef storeRef);
 
     /**
      * Set part of a permission mask on a store.
-     * 
-     * @param storeRef
-     * @param authority
-     * @param permission
-     * @param allow
      */
     public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow);
 
     /**
      * Get permission masks set on a store
      * 
-     * @param storeRef
      * @return the node permission entry
      */
     public NodePermissionEntry getPermissions(StoreRef storeRef);
@@ -195,9 +164,7 @@ public interface PermissionsDaoComponent
     /**
      * Get the properties for the access control list
      * 
-     * @param nodeRef
      * @return the properties for the access control list
      */
     public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef);
-
 }

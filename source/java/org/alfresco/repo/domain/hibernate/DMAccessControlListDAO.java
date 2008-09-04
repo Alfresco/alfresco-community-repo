@@ -29,9 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.avm.AVMNodeService;
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.hibernate.AVMAccessControlListDAO.CounterSet;
@@ -47,6 +45,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 
 /**
  * DAO layer for the improved ACL implemtentation. This layer is responsible for setting ACLs and any cascade behaviour
@@ -111,14 +110,21 @@ public class DMAccessControlListDAO implements AccessControlListDAO
     {
         // Nothing to do
     }
-
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    
+    private Node getNodeNotNull(NodeRef nodeRef)
     {
-        Node node = nodeDaoService.getNode(nodeRef);
-        if (node == null)
+        Pair<Long, NodeRef> nodePair = nodeDaoService.getNodePair(nodeRef);
+        if (nodePair == null)
         {
             throw new InvalidNodeRefException(nodeRef);
         }
+        Node node = (Node) hibernateSessionHelper.getHibernateTemplate().get(NodeImpl.class, nodePair.getFirst());
+        return node;
+    }
+
+    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    {
+        Node node = getNodeNotNull(nodeRef);
         return node.getAccessControlList();
     }
 
@@ -134,19 +140,20 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
     public Long getInheritedAcl(NodeRef nodeRef)
     {
-        Node node = nodeDaoService.getNode(nodeRef);
-        ChildAssoc ca = nodeDaoService.getPrimaryParentAssoc(node);
-        if ((ca != null) && (ca.getParent() != null))
+        Pair<Long, NodeRef> nodePair = nodeDaoService.getNodePair(nodeRef);
+        if (nodePair == null)
         {
-            DbAccessControlList acl = getAccessControlList(ca.getParent().getNodeRef());
-            if (acl != null)
-            {
-                return acl.getId();
-            }
-            else
-            {
-                return null;
-            }
+            return null;
+        }
+        Pair<Long, ChildAssociationRef> parentAssocRefPair = nodeDaoService.getPrimaryParentAssoc(nodePair.getFirst());
+        if (parentAssocRefPair == null || parentAssocRefPair.getSecond().getParentRef() == null)
+        {
+            return null;
+        }
+        DbAccessControlList acl = getAccessControlList(parentAssocRefPair.getSecond().getParentRef());
+        if (acl != null)
+        {
+            return acl.getId();
         }
         else
         {
@@ -273,13 +280,20 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         return result;
     }
 
+    public void setAccessControlList(NodeRef nodeRef, Long aclId)
+    {
+        Node node = getNodeNotNull(nodeRef);
+        DbAccessControlList acl = aclDaoComponent.getDbAccessControlList(aclId);
+        if (acl == null)
+        {
+            throw new IllegalArgumentException("The ACL ID provided is invalid: " + aclId);
+        }
+        node.setAccessControlList(acl);
+    }
+
     public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
     {
-        Node node = nodeDaoService.getNode(nodeRef);
-        if (node == null)
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
+        Node node = getNodeNotNull(nodeRef);
         node.setAccessControlList(acl);
     }
 
@@ -368,80 +382,5 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                 }
             }
         }
-
     }
-
-    /**
-     * Static support to set ACLs - required for use by the dbNodeService
-     * 
-     * @param nodeRef
-     * @param mergeFrom
-     * @param set
-     * @param nodeService
-     * @param aclDaoComponent
-     * @param nodeDaoService
-     */
-    public static void setFixedAcls(NodeRef nodeRef, Long mergeFrom, boolean set, NodeService nodeService, AclDaoComponent aclDaoComponent, NodeDaoService nodeDaoService)
-    {
-        if (nodeRef == null)
-        {
-            return;
-        }
-        else
-        {
-            if (set)
-            {
-                setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(mergeFrom), nodeDaoService);
-            }
-
-            List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
-
-            for (ChildAssociationRef child : children)
-            {
-                if (child.isPrimary())
-                {
-                    DbAccessControlList acl = getAccessControlList(child.getChildRef(), nodeDaoService);
-
-                    if (acl == null)
-                    {
-                        setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
-                    }
-                    else if (acl.getAclType() == ACLType.LAYERED)
-                    {
-                        throw new UnsupportedOperationException();
-                    }
-                    else if (acl.getAclType() == ACLType.DEFINING)
-                    {
-                        @SuppressWarnings("unused")
-                        List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(mergeFrom, acl.getId());
-                    }
-                    else
-                    {
-                        setFixedAcls(child.getChildRef(), mergeFrom, true, nodeService, aclDaoComponent, nodeDaoService);
-                    }
-                }
-            }
-        }
-    }
-
-    private static DbAccessControlList getAccessControlList(NodeRef nodeRef, NodeDaoService nodeDaoService)
-    {
-        Node node = nodeDaoService.getNode(nodeRef);
-        if (node == null)
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
-        return node.getAccessControlList();
-    }
-
-    private static void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl, NodeDaoService nodeDaoService)
-    {
-        Node node = nodeDaoService.getNode(nodeRef);
-        if (node == null)
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
-        node.setAccessControlList(acl);
-    }
-
 }

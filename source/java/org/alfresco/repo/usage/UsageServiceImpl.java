@@ -26,6 +26,7 @@ package org.alfresco.repo.usage;
 
 import java.util.Set;
 
+import org.alfresco.repo.domain.UsageDeltaDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.usage.UsageService;
 
@@ -37,30 +38,30 @@ import org.alfresco.service.cmr.usage.UsageService;
  */
 public class UsageServiceImpl implements UsageService
 {
-    private UsageDeltaDAO usageDeltaDao;
+    private UsageDeltaDAO usageDeltaDAO;
 
-    public void setUsageDeltaDao(UsageDeltaDAO usageDeltaDao)
+    public void setUsageDeltaDAO(UsageDeltaDAO usageDeltaDAO)
     {
-        this.usageDeltaDao = usageDeltaDao;
+        this.usageDeltaDAO = usageDeltaDAO;
     }
 
     public void insertDelta(NodeRef usageNodeRef, long deltaSize)
     {
-        usageDeltaDao.insertDelta(usageNodeRef, deltaSize);
+        usageDeltaDAO.insertDelta(usageNodeRef, deltaSize);
     }
 
     public long getTotalDeltaSize(NodeRef usageNodeRef)
     {
-        return usageDeltaDao.getTotalDeltaSize(usageNodeRef);
+        return usageDeltaDAO.getTotalDeltaSize(usageNodeRef);
     }
     
     public Set<NodeRef> getUsageDeltaNodes()
     {
-        return usageDeltaDao.getUsageDeltaNodes();
+        return usageDeltaDAO.getUsageDeltaNodes();
     }
     
     public int deleteDeltas(NodeRef usageNodeRef)
     {
-        return usageDeltaDao.deleteDeltas(usageNodeRef);
+        return usageDeltaDAO.deleteDeltas(usageNodeRef);
     }
 }

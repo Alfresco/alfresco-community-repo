@@ -35,6 +35,20 @@ import org.alfresco.util.VersionNumber;
 public interface Descriptor
 {
     /**
+     * Gets the id of the item being described
+     * 
+     * @return  identifier
+     */
+    public String getId();
+    
+    /**
+     * Gets the name of the item being described
+     * 
+     * @return  name
+     */
+    public String getName();
+    
+    /**
      * Gets the major version number, e.g. <u>1</u>.2.3
      * 
      * @return  major version number

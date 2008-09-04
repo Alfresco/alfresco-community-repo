@@ -84,6 +84,7 @@ public interface ContentModel
     static final QName TYPE_STOREROOT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "store_root");
 
     // descriptor properties
+    static final QName PROP_SYS_NAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "name");
     static final QName PROP_SYS_VERSION_MAJOR = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionMajor");
     static final QName PROP_SYS_VERSION_MINOR = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionMinor");
     static final QName PROP_SYS_VERSION_REVISION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "versionRevision");

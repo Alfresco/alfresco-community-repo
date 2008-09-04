@@ -28,6 +28,10 @@
          <title>Descriptor</title>
          <parent>sys:base</parent>
          <properties>
+            <property name="sys:name">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
             <property name="sys:versionMajor">
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>

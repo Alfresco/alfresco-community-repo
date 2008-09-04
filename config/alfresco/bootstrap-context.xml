@@ -399,6 +399,9 @@
     <!-- Descriptor Service -->
 
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
+       <property name="repositoryName">
+           <value>${repository.name}</value>
+       </property>
        <property name="descriptor">
            <value>classpath:alfresco/version.properties</value>
        </property>

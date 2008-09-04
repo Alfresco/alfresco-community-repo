@@ -46,9 +46,18 @@ public interface DescriptorService
     public Descriptor getServerDescriptor();
     
     /**
-     * Get descriptor for the repository as it was when first installed.  The current
-     * repository descriptor will always be the same as the
+     * Get descriptor for the repository as it is currently installed.
+     * 
+     * The current repository descriptor will always be the same as the
      * {@link #getServerDescriptor() server descriptor}.
+     * 
+     * @return  repository descriptor
+     */
+    @NotAuditable
+    public Descriptor getCurrentRepositoryDescriptor();
+    
+    /**
+     * Get descriptor for the repository as it was when first installed.
      * 
      * @return  repository descriptor
      */

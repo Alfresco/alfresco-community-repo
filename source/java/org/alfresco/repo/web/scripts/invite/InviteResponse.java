@@ -28,11 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
@@ -53,49 +48,13 @@ import org.alfresco.web.scripts.WebScriptRequest;
  */
 public class InviteResponse extends DeclarativeWebScript
 {
-    /**
-     * Inner class providing functionality (which needs to run under admin
-     * rights) to set membership of invitee (given as invitee user name) to site
-     * (given as site short name) as given site role
-     */
-    private class SetSiteMembershipWorker implements
-            AuthenticationUtil.RunAsWork<Boolean>
-    {
-        private String siteShortName;
-        private String inviteeUserName;
-        private String siteRole;
-
-        private SetSiteMembershipWorker(String siteShortName,
-                String inviteeUserName, String siteRole)
-        {
-            this.siteShortName = siteShortName;
-            this.inviteeUserName = inviteeUserName;
-            this.siteRole = siteRole;
-        }
-
-        /**
-         * Does the work to set the site membership
-         */
-        public Boolean doWork() throws Exception
-        {
-            InviteResponse.this.siteService.setMembership(this.siteShortName,
-                    this.inviteeUserName, this.siteRole);
-
-            return Boolean.TRUE;
-        }
-    }
-
     private static final String RESPONSE_ACCEPT = "accept";
     private static final String RESPONSE_REJECT = "reject";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
-    private static final String USER_ADMIN = "admin";
 
     // properties for services
     private WorkflowService workflowService;
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private SiteService siteService;
-    private PersonService personService;
 
     /**
      * Sets the workflow service property
@@ -106,40 +65,6 @@ public class InviteResponse extends DeclarativeWebScript
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
-    }
-
-    /**
-     * Sets the mutableAuthenticationDao service property
-     * 
-     * @param mutableAuthenticationDao
-     *            the MutableAuthenticationDao service to set
-     */
-    public void setMutableAuthenticationDao(
-            MutableAuthenticationDao mutableAuthenticationDao)
-    {
-        this.mutableAuthenticationDao = mutableAuthenticationDao;
-    }
-
-    /**
-     * Sets the siteService property
-     * 
-     * @param siteService
-     *            the siteService to set
-     */
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
-
-    /**
-     * Sets the personService property
-     * 
-     * @param personService
-     *            the person service to set
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
     }
 
     /*
@@ -160,7 +85,7 @@ public class InviteResponse extends DeclarativeWebScript
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
         
-        // fetch the start task - it might not exist if the workflow has been finished/canceled already
+        // fetch the start task - it might not exist if the workflow has been finished/cancelled already
         WorkflowTask inviteStartTask = InviteHelper.findInviteStartTask(inviteId, workflowService);
         if (inviteStartTask == null)
         {
@@ -173,7 +98,8 @@ public class InviteResponse extends DeclarativeWebScript
         if (ticket == null || (! ticket.equals(inviteTicket)))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
-            "Invalid ticket"); 
+                "Response to invite has supplied an invalid ticket. The response to the "
+                    + "invitation could thus not be processed"); 
         }
         
         // process response
@@ -197,7 +123,7 @@ public class InviteResponse extends DeclarativeWebScript
     }
 
     /**
-     * Processes 'accept' response from invitee
+     * Processes 'accept invite' response from invitee
      * 
      * @param model
      *            model to add objects to, which will be passed to the template
@@ -205,44 +131,17 @@ public class InviteResponse extends DeclarativeWebScript
      * @param inviteId
      *            ID of invite
      * @param inviteStartTask
+     *            wf:inviteToSiteTask instance containing the invite parameters the
+     *            invite workflow instance (it belongs to) was started with 
      */
     private void acceptInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
-        String inviteeUserName = (String) inviteStartTask.properties.get(
-                InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
         String siteShortName = (String) inviteStartTask.properties.get(
                 InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
-        String inviteeSiteRole = (String) inviteStartTask.properties.get(
-                InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE);
         
-        // complete the wf:invitePendingTask task because the invitation has been accepted
+        // complete the wf:invitePendingTask along the 'accept' transition because the invitation has been accepted
         completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_ACCEPT);
         
-        // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
-        // the model) out into workflow action class that gets run when task wf:acceptInviteTask
-        // is completed by this web script
-
-        // if there is already a user account for the invitee and that account
-        // is disabled, then enable the account because he/she has accepted the
-        // site invitation
-        if ((this.mutableAuthenticationDao.userExists(inviteeUserName))
-            && (this.mutableAuthenticationDao.getEnabled(inviteeUserName) == false))
-        {
-            this.mutableAuthenticationDao.setEnabled(inviteeUserName, true);
-        }
-
-        // add Invitee to Site with the site role that the inviter "started" the invite process with
-        RunAsWork<Boolean> setSiteMembershipWorker = new InviteResponse.SetSiteMembershipWorker(
-                siteShortName, inviteeUserName, inviteeSiteRole);
-        AuthenticationUtil.runAs(setSiteMembershipWorker, USER_ADMIN);
-        
-        // complete the wf:acceptInviteTask because the operations that need to be performed
-        // when the invitee has accepted the invitation have now been performed (code block
-        // starting from above where wf:invitePendingTask is completed, up to here). This code 
-        // block will soon be farmed out into a workflow action which gets executed when 
-        // wf:acceptInviteTask gets completed
-        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_ACCEPT_INVITE, InviteWorkflowModel.WF_TRANSITION_ACCEPT_INVITE_END);
-
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
@@ -264,40 +163,12 @@ public class InviteResponse extends DeclarativeWebScript
      */
     private void rejectInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
-        String inviteeUserName = (String) inviteStartTask.properties.get(
-                InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
         String siteShortName = (String) inviteStartTask.properties.get(
                 InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
         
-        // complete the wf:invitePendingTask task because the invitation has been accepted
+        // complete the wf:invitePendingTask task along the 'reject' transition because the invitation has been rejected
         completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_REJECT);
         
-        // TODO glen dot johnson at alfresco dot com - farm the code that follows (up until adding properties onto
-        // the model) out into workflow action class that gets run when task wf:rejectInviteTask
-        // is completed by this web script
-
-        // if invitee's user account is still disabled then remove the account and 
-        // delete the invitee's person node
-        if ((this.mutableAuthenticationDao.userExists(inviteeUserName))
-                && (this.mutableAuthenticationDao.getEnabled(inviteeUserName) == false))
-        {
-            // delete the invitee's user account
-            this.mutableAuthenticationDao.deleteUser(inviteeUserName);
-            
-            // delete the invitee's person node if one exists
-            if (this.personService.personExists(inviteeUserName))
-            {
-                this.personService.deletePerson(inviteeUserName);
-            }
-        }
-
-        // complete the wf:rejectInviteTask because the operations that need to be performed
-        // when the invitee has rejected the invitation have now been performed (code block
-        // starting from above where wf:invitePendingTask is completed, up to here). This code 
-        // block will soon be farmed out into a workflow action which gets executed when 
-        // wf:rejectInviteTask gets completed
-        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_REJECT_INVITE, InviteWorkflowModel.WF_TRANSITION_REJECT_INVITE_END);
-
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);

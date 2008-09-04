@@ -122,7 +122,7 @@ public class Invites extends DeclarativeWebScript
                     "No parameters have been provided on URL");
         }
 
-        // get URL request parameters, checking if they have been provided
+        // get URL request parameters, checking if at least one has been provided
 
         // check if 'inviterUserName' parameter provided
         String inviterUserName = req.getParameter(PARAM_INVITER_USER_NAME);
@@ -163,12 +163,12 @@ public class Invites extends DeclarativeWebScript
         // if 'inviteId' has been provided then set that as the workflow query
         // process ID
         // - since this is unique don't bother about setting the other workflow
-        // query
-        // - properties
+        // query properties
         if (inviteIdProvided)
         {
             wfTaskQuery.setProcessId(inviteId);
-        } else
+        }
+        else
         // 'inviteId' has not been provided, so create the query properties from
         // the invite URL request
         // parameters
@@ -181,32 +181,32 @@ public class Invites extends DeclarativeWebScript
             // workflow query properties
             HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(3,
                     1.0f);
-            if (inviterUserName != null)
+            if (inviterUserNameProvided)
             {
                 wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME,
                         inviterUserName);
             }
-            if (inviteeUserName != null)
+            if (inviteeUserNameProvided)
             {
                 wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
                         inviteeUserName);
             }
-            if (siteShortName != null)
+            if (siteShortNameProvided)
             {
                 wfQueryProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME,
                         siteShortName);
             }
 
             // set workflow task query parameters
-            wfTaskQuery.setTaskCustomProps(wfQueryProps);
+            wfTaskQuery.setProcessCustomProps(wfQueryProps);
         }
 
         // query only active workflows
         wfTaskQuery.setActive(Boolean.TRUE);
 
         // pick up the start task
-        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE);
+        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING);
 
         // set process name to "wf:invite" so that only tasks associated with
         // invite workflow instances
@@ -226,7 +226,13 @@ public class Invites extends DeclarativeWebScript
         // onto model for each invite workflow task returned by the query
         for (WorkflowTask workflowTask : wf_invite_tasks)
         {
-            InviteInfo inviteInfo = InviteHelper.getPendingInviteInfo(workflowTask, serviceRegistry, siteService);
+            // get workflow instance (ID) that pendingInvite task (in query result set)
+            // belongs to, and get startTask associated with the same workflow instance -
+            // to create a InviteInfo instance from that startTask's properties
+            
+            String workflowId = workflowTask.path.instance.id;
+            WorkflowTask startInvite = InviteHelper.findInviteStartTask(workflowId, workflowService);
+            InviteInfo inviteInfo = InviteHelper.getPendingInviteInfo(startInvite, serviceRegistry, siteService);
             inviteInfoList.add(inviteInfo);
         }
 

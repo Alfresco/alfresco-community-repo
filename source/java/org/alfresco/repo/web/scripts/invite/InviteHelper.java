@@ -25,7 +25,9 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.site.SiteInfo;
@@ -47,7 +49,7 @@ import org.alfresco.service.namespace.QName;
 public class InviteHelper
 {   
     /**
-     * Find an invite start task given the task id.
+     * Find an invite start task by the given task id.
      * 
      * @return a WorkflowTask or null if not found.
      */
@@ -62,8 +64,7 @@ public class InviteHelper
         // invite workflow instances are returned by query
         wfTaskQuery.setProcessName(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invite"));
 
-        // pick up the start task because it has the "wf:inviteeSiteRole" property set with the
-        // site role value that we want to retrieve 
+        // filter to find only the invite start task
         wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
         wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE);
 
@@ -83,35 +84,71 @@ public class InviteHelper
     }
     
     /**
-     * Returns an InviteInfo object usable for rendering the response.
+     * Find invitePending tasks (in-progress) by the given invitee user name
      * 
-     * @return object containing invite information
+     * @return a list of workflow tasks
      */
-    public static InviteInfo getPendingInviteInfo(WorkflowTask workflowTask,
-            ServiceRegistry serviceRegistry, SiteService siteService)
+    public static List<WorkflowTask> findInvitePendingTasks(String inviteeUserName, WorkflowService workflowService)
     {
-        PersonService personService = serviceRegistry.getPersonService();
+            // create workflow task query
+            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+            
+            // set process name to "wf:invite" so that only tasks associated with
+            // invite workflow instances are returned by query
+            wfTaskQuery.setProcessName(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invite"));
+            
+            // set query to only pick up invite workflow instances
+            // associated with the given invitee user name
+            Map<QName, Object> processCustomProps = new HashMap<QName, Object>(1, 1.0f);
+            processCustomProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
+            wfTaskQuery.setProcessCustomProps(processCustomProps);
+
+            // set query to only pick up in-progress invite pending tasks 
+            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+            wfTaskQuery.setTaskName(InviteWorkflowModel.WF_TASK_INVITE_PENDING);
+
+            // query for invite workflow task associate
+            List<WorkflowTask> inviteStartTasks = workflowService
+                    .queryTasks(wfTaskQuery);
+
+            return inviteStartTasks;
+    }
+    
+    /**
+     * Returns an InviteInfo instance for the given startInvite task
+     * (used for rendering the response).
+     * 
+     * @param startInviteTask startInvite task to get invite info properties from
+     * @param serviceRegistry service registry instance
+     * @param siteService site service instance
+     * 
+     * @return InviteInfo instance containing invite information
+     */
+    public static InviteInfo getPendingInviteInfo(final WorkflowTask startInviteTask,
+            final ServiceRegistry serviceRegistry, final SiteService siteService)
+    {
+        final PersonService personService = serviceRegistry.getPersonService();
         
         // get the inviter, invitee, role and site short name
-        String inviterUserNameProp = (String) workflowTask.properties.get(
+        final String inviterUserNameProp = (String) startInviteTask.properties.get(
                 InviteWorkflowModel.WF_PROP_INVITER_USER_NAME);
-        String inviteeUserNameProp = (String) workflowTask.properties.get(
+        final String inviteeUserNameProp = (String) startInviteTask.properties.get(
                 InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME);
-        String role = (String) workflowTask.properties.get(
+        final String role = (String) startInviteTask.properties.get(
                 InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE);
-        String siteShortNameProp = (String) workflowTask.properties.get(
+        final String siteShortNameProp = (String) startInviteTask.properties.get(
                 InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
 
-        // fetch the site object
+        // get the site info
         SiteInfo siteInfo = siteService.getSite(siteShortNameProp);
         
         // get workflow instance id (associated with workflow task) to place
         // as "inviteId" onto model
-        String workflowId = workflowTask.path.instance.id;
+        String workflowId = startInviteTask.path.instance.id;
 
         // set the invite start date to the time the workflow instance
         // (associated with the task) was started
-        Date sentInviteDate = workflowTask.path.instance.startDate;
+        Date sentInviteDate = startInviteTask.path.instance.startDate;
         
         // TODO: glen johnson at alfresco com - as this web script only returns
         // pending invites, this is hard coded to "pending" for now
@@ -133,7 +170,7 @@ public class InviteHelper
             inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
         }
         
-        // create and add InviteInfo to inviteInfoList
+        // create and return a invite info
         InviteInfo inviteInfo = new InviteInfo(invitationStatus, inviterUserNameProp, inviterPerson,
                 inviteeUserNameProp, inviteePerson, role, siteShortNameProp, siteInfo, sentInviteDate, workflowId);
 

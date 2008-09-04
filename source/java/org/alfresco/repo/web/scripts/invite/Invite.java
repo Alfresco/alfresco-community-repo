@@ -190,7 +190,7 @@ public class Invite extends DeclarativeWebScript
     {
         this.nodeService = nodeService;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -562,13 +562,17 @@ public class Invite extends DeclarativeWebScript
                             + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist");
         }
 
+        // Get invitee person NodeRef to add as assignee
+        NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
+        
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
-                7);
+                10);
         workflowProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME,
                 inviterUserName);
         workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
                 inviteeUserName);
+        workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
         workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_FIRSTNAME,
                 inviteeFirstName);
         workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_LASTNAME,

@@ -91,15 +91,11 @@ public class InviteServiceTest extends BaseWebScriptTest
     private static final String SITE_SHORT_NAME_INVITE_1 = "BananaMilkshakeSite";
     private static final String SITE_SHORT_NAME_INVITE_2 = "DoubleScoopSite";
 
-    private static final String URL_INVITE_SERVICE = "/api/invite";
-    private static final String URL_INVITERSP_SERVICE = "/api/inviteresponse";
-    private static final String URL_INVITES_SERVICE = "/api/invites";
+    private static final String URL_INVITE = "/api/invite";
+    private static final String URL_INVITES = "/api/invites";
 
     private static final String INVITE_ACTION_START = "start";
     private static final String INVITE_ACTION_CANCEL = "cancel";
-
-    private static final String INVITE_RSP_ACCEPT = "accept";
-    private static final String INVITE_RSP_REJECT = "reject";
 
     @Override
     protected void setUp() throws Exception
@@ -145,6 +141,9 @@ public class InviteServiceTest extends BaseWebScriptTest
                     InviteServiceTest.this.siteService.createSite(
                             "InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
                             "InviteSiteTitle", "InviteSiteDescription", true);
+                    
+                    InviteServiceTest.this.siteService.setMembership(
+                            SITE_SHORT_NAME_INVITE_1, USER_INVITER, SiteModel.SITE_MANAGER);
                 }
                 
                 SiteInfo siteInfo2 = InviteServiceTest.this.siteService
@@ -154,6 +153,9 @@ public class InviteServiceTest extends BaseWebScriptTest
                     InviteServiceTest.this.siteService.createSite(
                             "InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
                             "InviteSiteTitle", "InviteSiteDescription", true);
+                    
+                    InviteServiceTest.this.siteService.setMembership(
+                            SITE_SHORT_NAME_INVITE_2, USER_INVITER, SiteModel.SITE_MANAGER);
                 }
 
                 return null;
@@ -308,7 +310,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.inviteeEmailAddrs.add(inviteeEmail);
 
         // Inviter sends invitation to Invitee to join a Site
-        String startInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_START
+        String startInviteUrl = URL_INVITE + "/" + INVITE_ACTION_START
                 + "?inviteeFirstName=" + inviteeFirstName + "&inviteeLastName="
                 + inviteeLastName + "&inviteeEmail="
                 + URLEncoder.encode(inviteeEmail) + "&siteShortName="
@@ -341,7 +343,7 @@ public class InviteServiceTest extends BaseWebScriptTest
             throws Exception
     {
         // construct get invites URL
-        String getInvitesUrl = URL_INVITES_SERVICE + "?inviteId=" + inviteId;
+        String getInvitesUrl = URL_INVITES + "?inviteId=" + inviteId;
 
         // invoke get invites web script
         Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
@@ -355,7 +357,7 @@ public class InviteServiceTest extends BaseWebScriptTest
             int expectedStatus) throws Exception
     {
         // construct get invites URL
-        String getInvitesUrl = URL_INVITES_SERVICE + "?inviterUserName="
+        String getInvitesUrl = URL_INVITES + "?inviterUserName="
                 + inviterUserName;
 
         // invoke get invites web script
@@ -370,7 +372,7 @@ public class InviteServiceTest extends BaseWebScriptTest
             int expectedStatus) throws Exception
     {
         // construct get invites URL
-        String getInvitesUrl = URL_INVITES_SERVICE + "?inviteeUserName="
+        String getInvitesUrl = URL_INVITES + "?inviteeUserName="
                 + inviteeUserName;
 
         // invoke get invites web script
@@ -385,7 +387,7 @@ public class InviteServiceTest extends BaseWebScriptTest
             int expectedStatus) throws Exception
     {
         // construct get invites URL
-        String getInvitesUrl = URL_INVITES_SERVICE + "?siteShortName="
+        String getInvitesUrl = URL_INVITES + "?siteShortName="
                 + siteShortName;
 
         // invoke get invites web script
@@ -477,7 +479,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteId = result.getString("inviteId");
 
         // Inviter cancels pending invitation
-        String cancelInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
+        String cancelInviteUrl = URL_INVITE + "/"
+                + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
         Response response = sendRequest(new GetRequest(cancelInviteUrl), Status.STATUS_OK);
     }
 
@@ -487,16 +490,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
 
-        // get hold of invite ID of started invite
+        // get hold of invite ID and invite ticket of started invite
         String inviteId = result.getString("inviteId");
         String inviteTicket = result.getString("inviteTicket");
 
-        // get hold of invitee user name that was generated as part of starting
-        // the invite
-        String inviteeUserName = result.getString("inviteeUserName");
-
         // Invitee accepts invitation to a Site from Inviter
-        String acceptInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/accept";
+        String acceptInviteUrl = URL_INVITE + "/" + inviteId + "/" + inviteTicket + "/accept";
         Response response = sendRequest(new PutRequest(acceptInviteUrl, (byte[])null, null), Status.STATUS_OK);
 
         //
@@ -506,12 +505,13 @@ public class InviteServiceTest extends BaseWebScriptTest
         // accepted)
         //
 
-        // get pending invite matching inviteId from invite started above
+        // get pending invite matching inviteId from invite started above (run as inviter user)
+        this.authenticationComponent.setCurrentUser(USER_INVITER);
         JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
                 Status.STATUS_OK);
 
         // there should no longer be any invites identified by invite ID pending
-        assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
+        assertEquals(0, getInvitesResult.getJSONArray("invites").length());
     }
 
     public void testRejectInvite() throws Exception
@@ -524,12 +524,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteId = result.getString("inviteId");
         String inviteTicket = result.getString("inviteTicket");
 
-        // get hold of invitee user name that was generated as part of starting
-        // the invite
-        String inviteeUserName = result.getString("inviteeUserName");
-
         // Invitee rejects invitation to a Site from Inviter
-        String rejectInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/reject";
+        String rejectInviteUrl = URL_INVITE + "/" + inviteId + "/" + inviteTicket + "/reject";
         Response response = sendRequest(new PutRequest(rejectInviteUrl, (byte[])null, null), Status.STATUS_OK);
 
         //
@@ -539,11 +535,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         // rejected)
         //
 
-        // get pending invite matching inviteId from invite started above
+        // get pending invite matching inviteId from invite started above (run as inviter user)
+        this.authenticationComponent.setCurrentUser(USER_INVITER);
         JSONObject getInvitesResult = getInvitesByInviteId(inviteId, Status.STATUS_OK);
 
         // there should no longer be any invites identified by invite ID pending
-        assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
+        assertEquals(0, getInvitesResult.getJSONArray("invites").length());
     }
 
     public void testGetInvitesByInviteId() throws Exception

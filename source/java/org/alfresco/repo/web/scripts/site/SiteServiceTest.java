@@ -159,17 +159,17 @@ public class SiteServiceTest extends BaseWebScriptTest
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
         createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
         
-        response = getRequest(URL_SITES, 200);        
+        response = sendRequest(new GetRequest(URL_SITES), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(5, result.length());
         
-        response = getRequest(URL_SITES + "?size=3", 200);        
+        response = sendRequest(new GetRequest(URL_SITES + "?size=3"), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(3, result.length());        
 
-        response = getRequest(URL_SITES + "?size=13", 200);        
+        response = sendRequest(new GetRequest(URL_SITES + "?size=13"), 200);        
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(5, result.length());
@@ -361,7 +361,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         String shortName2  = GUID.generate();
         createSite("myPreset", shortName2, "myTitle", "myDescription", true, 200);
         
-        MockHttpServletResponse response = getRequest("/api/people/" + USER_TWO + "/sites", 200);
+        Response response = sendRequest(new GetRequest("/api/people/" + USER_TWO + "/sites"), 200);
         JSONArray result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);
@@ -373,39 +373,39 @@ public class SiteServiceTest extends BaseWebScriptTest
         JSONObject person = new JSONObject();
         person.put("userName", USER_TWO);
         membership.put("person", person);
-        postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         membership = new JSONObject();
         membership.put("role", SiteModel.SITE_CONSUMER);
         person = new JSONObject();
         person.put("userName", USER_TWO);
         membership.put("person", person);
-        postRequest(URL_SITES + "/" + shortName2 + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");        
+        sendRequest(new PostRequest(URL_SITES + "/" + shortName2 + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);        
         
-        response = getRequest("/api/people/" + USER_TWO + "/sites", 200);
+        response = sendRequest(new GetRequest("/api/people/" + USER_TWO + "/sites"), 200);
         result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);
         assertEquals(2, result.length());
         
-        response = getRequest("/api/people/" + USER_ONE + "/sites", 200);
+        response = sendRequest(new GetRequest("/api/people/" + USER_ONE + "/sites"), 200);
         result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);
         assertEquals(2, result.length());
         
-        response = getRequest("/api/people/" + USER_THREE + "/sites", 200);
+        response = sendRequest(new GetRequest("/api/people/" + USER_THREE + "/sites"), 200);
         result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);
         assertEquals(0, result.length());
         
-        response = getRequest("/api/people/" + USER_ONE + "/sites?size=1", 200);
+        response = sendRequest(new GetRequest("/api/people/" + USER_ONE + "/sites?size=1"), 200);
         result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);
         assertEquals(1, result.length());
         
-        response = getRequest("/api/people/" + USER_ONE + "/sites?size=5", 200);
+        response = sendRequest(new GetRequest("/api/people/" + USER_ONE + "/sites?size=5"), 200);
         result = new JSONArray(response.getContentAsString());
         
         assertNotNull(result);

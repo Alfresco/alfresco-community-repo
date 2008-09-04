@@ -175,7 +175,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         JSONObject post = new JSONObject();
         post.put("title", title);
         post.put("content", content);
-	    Response response = sendRequest(new PutRequest(URL_FORUM_POST + name, post.toString(), "application/json"), expectedStatus);
+	    Response response = sendRequest(new PutRequest(URL_FORUM_POST + nodeRef, post.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {

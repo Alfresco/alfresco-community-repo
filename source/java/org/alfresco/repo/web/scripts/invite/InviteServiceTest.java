@@ -50,12 +50,10 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.Status;
-<<<<<<< .working
-import org.apache.commons.lang.RandomStringUtils;
-=======
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
->>>>>>> .merge-right.r9819
+import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
 
 /**
@@ -283,18 +281,11 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     private void deletePersonByUserName(String userName)
     {
-<<<<<<< .working
         // delete authentication if authentication exists for given user name
         if (this.authenticationService.authenticationExists(userName))
         {
             this.authenticationService.deleteAuthentication(userName);
         }
-=======
-        // Inviter sends invitation to Invitee to join a Site
-        String startInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_START + "?inviteeEmail=" + inviteeEmail
-            + "&siteShortName=" + siteShortName;
-        Response response = sendRequest(new GetRequest(startInviteUrl), expectedStatus);
->>>>>>> .merge-right.r9819
         
         // delete user account
         if (this.mutableAuthenticationDao.userExists(userName))
@@ -326,8 +317,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + "&acceptUrl=" + "page/accept-invite"
                 + "&rejectUrl=" + "page/reject-invite";
 
-        MockHttpServletResponse response = getRequest(startInviteUrl,
-                expectedStatus);
+        Response response = sendRequest(new GetRequest(startInviteUrl), expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -354,8 +344,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         String getInvitesUrl = URL_INVITES_SERVICE + "?inviteId=" + inviteId;
 
         // invoke get invites web script
-        MockHttpServletResponse response = getRequest(getInvitesUrl,
-                expectedStatus);
+        Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -370,8 +359,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + inviterUserName;
 
         // invoke get invites web script
-        MockHttpServletResponse response = getRequest(getInvitesUrl,
-                expectedStatus);
+        Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -386,8 +374,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + inviteeUserName;
 
         // invoke get invites web script
-        MockHttpServletResponse response = getRequest(getInvitesUrl,
-                expectedStatus);
+        Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -402,8 +389,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 + siteShortName;
 
         // invoke get invites web script
-        MockHttpServletResponse response = getRequest(getInvitesUrl,
-                expectedStatus);
+        Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 
@@ -491,15 +477,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteId = result.getString("inviteId");
 
         // Inviter cancels pending invitation
-<<<<<<< .working
-        String cancelInviteUrl = URL_INVITE_SERVICE + "/"
-                + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
-        MockHttpServletResponse response = getRequest(cancelInviteUrl,
-                Status.STATUS_OK);
-=======
-        String cancelInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_CANCEL + "?workflowId=" + workflowId;
+        String cancelInviteUrl = URL_INVITE_SERVICE + "/" + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
         Response response = sendRequest(new GetRequest(cancelInviteUrl), Status.STATUS_OK);
->>>>>>> .merge-right.r9819
     }
 
     public void testAcceptInvite() throws Exception
@@ -517,10 +496,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteeUserName = result.getString("inviteeUserName");
 
         // Invitee accepts invitation to a Site from Inviter
-<<<<<<< .working
         String acceptInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/accept";
-        MockHttpServletResponse response = putRequest(acceptInviteUrl,
-                Status.STATUS_OK, null, null);
+        Response response = sendRequest(new PutRequest(acceptInviteUrl, (byte[])null, null), Status.STATUS_OK);
 
         //
         // test that invitation represented by invite ID (of invitation started
@@ -535,11 +512,6 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // there should no longer be any invites identified by invite ID pending
         assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
-=======
-        String acceptInviteUrl = URL_INVITERSP_SERVICE + "/" + INVITE_RSP_ACCEPT + "?workflowId=" + workflowId
-            + "&inviteeUserName=" + inviteeUserName + "&siteShortName=" + SITE_SHORT_NAME_INVITE;
-        Response response = sendRequest(new GetRequest(acceptInviteUrl), Status.STATUS_OK);
->>>>>>> .merge-right.r9819
     }
 
     public void testRejectInvite() throws Exception
@@ -558,8 +530,7 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // Invitee rejects invitation to a Site from Inviter
         String rejectInviteUrl = URL_INVITE_SERVICE + "/" + inviteId + "/" + inviteTicket + "/reject";
-        MockHttpServletResponse response = putRequest(rejectInviteUrl,
-                Status.STATUS_OK, null, null);
+        Response response = sendRequest(new PutRequest(rejectInviteUrl, (byte[])null, null), Status.STATUS_OK);
 
         //
         // test that invite represented by invite ID (of invitation started
@@ -569,8 +540,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         //
 
         // get pending invite matching inviteId from invite started above
-        JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
-                Status.STATUS_OK);
+        JSONObject getInvitesResult = getInvitesByInviteId(inviteId, Status.STATUS_OK);
 
         // there should no longer be any invites identified by invite ID pending
         assertEquals(getInvitesResult.getJSONArray("invites").length(), 0);
@@ -592,21 +562,11 @@ public class InviteServiceTest extends BaseWebScriptTest
         JSONObject getInvitesResult = getInvitesByInviteId(inviteId,
                 Status.STATUS_OK);
         
-<<<<<<< .working
         assertEquals(getInvitesResult.getJSONArray("invites").length(), 1);
 
         JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
         assertEquals(inviteId, inviteJSONObj.get("inviteId"));
-=======
-        // get hold of invitee user name that was generated as part of starting the invite
-        String inviteeUserName = result.getString("inviteeUserName");
-        
-        // Invitee rejects invitation to a Site from Inviter
-        String rejectInviteUrl = URL_INVITERSP_SERVICE + "/" + INVITE_RSP_REJECT + "?workflowId=" + workflowId
-            + "&inviteeUserName=" + inviteeUserName + "&siteShortName=" + SITE_SHORT_NAME_INVITE;
-        Response response = sendRequest(new GetRequest(rejectInviteUrl), Status.STATUS_OK);
->>>>>>> .merge-right.r9819
     }
 
     public void testGetInvitesByInviterUserName() throws Exception

@@ -150,7 +150,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
         {
             String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnaildefinitions";
-            MockHttpServletResponse response = this.getRequest(url, 200);
+            Response response = sendRequest(new GetRequest(url), 200);
             
             JSONArray array = new JSONArray(response.getContentAsString());
             assertNotNull(array);
@@ -173,7 +173,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         }
         
         String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnaildefinitions";
-        MockHttpServletResponse response = this.getRequest(url, 200);
+        Response response = sendRequest(new GetRequest(url), 200);
         
         JSONArray array = new JSONArray(response.getContentAsString());
         assertNotNull(array);

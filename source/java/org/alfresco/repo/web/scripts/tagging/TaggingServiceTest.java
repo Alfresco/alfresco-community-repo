@@ -37,8 +37,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test to test tagging Web Script API
@@ -140,19 +141,19 @@ public class TaggingServiceTest extends BaseWebScriptTest
     public void testGetTags()
         throws Exception
     {
-        MockHttpServletResponse response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore", 200);
+        Response response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore"), 200);
         JSONArray jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);
         //assertEquals(5, jsonArray.length());
         
-        response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore?tf=one", 200);
+        response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore?tf=one"), 200);
         jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);
         assertEquals(1, jsonArray.length());
         
-        response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore?tf=none", 200);
+        response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore?tf=none"), 200);
         jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);
@@ -162,7 +163,7 @@ public class TaggingServiceTest extends BaseWebScriptTest
     public void testGetNodes()
         throws Exception
     {
-        MockHttpServletResponse response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/" + TAG_1 + "/nodes", 200);
+        Response response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/" + TAG_1 + "/nodes"), 200);
         JSONArray jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);
@@ -170,13 +171,13 @@ public class TaggingServiceTest extends BaseWebScriptTest
         
         System.out.println(response.getContentAsString());
         
-        response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/" + TAG_2 + "/nodes", 200);
+        response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/" + TAG_2 + "/nodes"), 200);
         jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);
         assertEquals(2, jsonArray.length());
         
-        response = getRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/jumk/nodes", 200);
+        response = sendRequest(new GetRequest("/api/tags/" + StoreRef.PROTOCOL_WORKSPACE + "/SpacesStore/jumk/nodes"), 200);
         jsonArray = new JSONArray(response.getContentAsString());
         
         assertNotNull(jsonArray);

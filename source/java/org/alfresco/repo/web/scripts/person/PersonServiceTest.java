@@ -33,8 +33,11 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.Status;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
@@ -142,8 +145,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("jobtitle", jobTitle);
         person.put("email", email);
         
-        MockHttpServletResponse response = putRequest(
-                URL_PEOPLE + "/" + userName, expectedStatus, person.toString(), "application/json"); 
+        Response response = sendRequest(new PutRequest(URL_PEOPLE + "/" + userName, person.toString(), "application/json"), expectedStatus); 
         
         // switch back to non-admin user
         this.authenticationComponent.setCurrentUser(currentUser);
@@ -191,7 +193,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         String adminUser = this.authenticationComponent.getSystemUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
         
-        MockHttpServletResponse response = deleteRequest(URL_PEOPLE + "/" + userName, expectedStatus); 
+        Response response = sendRequest(new DeleteRequest(URL_PEOPLE + "/" + userName), expectedStatus); 
         this.createdPeople.remove(userName);
         
         // switch back to non-admin user

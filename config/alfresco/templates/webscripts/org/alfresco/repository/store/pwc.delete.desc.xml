@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Cancel Checkout</shortname>
+  <description>Cancel checkout of a private working copy</description>
+  <url>/api/pwc/{store_type}/{store_id}/{id}</url>
+  <authentication>user</authentication>
+  <format default="atomentry"/>
+  <cmis version="0.21"/>
+</webscript>

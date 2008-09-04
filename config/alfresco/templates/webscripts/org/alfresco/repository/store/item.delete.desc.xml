@@ -1,6 +1,6 @@
 <webscript>
   <shortname>Delete item</shortname>
-  <description>Delete item</description>
+  <description>Delete item (and cancel checkout for private working copies)</description>
   <url>/api/node/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
   <url>/api/path/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
   <authentication>user</authentication>

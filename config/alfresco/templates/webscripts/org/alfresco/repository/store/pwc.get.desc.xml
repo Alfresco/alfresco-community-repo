@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Retrieve properties of PWC</shortname>
+  <description>Retrieves the properties of a private working copy</description>
+  <url>/api/pwc/{store_type}/{store_id}/{id}?filter={filter?}</url>
+  <authentication>user</authentication>
+  <format default="atomentry">argument</format>
+  <cmis version="0.21"/>
+</webscript>

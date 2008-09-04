@@ -35,9 +35,13 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test to test site Web Script API
@@ -103,7 +107,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         // Tidy-up any site's create during the execution of the test
         for (String shortName : this.createdSites)
         {
-            deleteRequest(URL_SITES + "/" + shortName, 0);
+            sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 0);
         }
         
         // Clear the list
@@ -137,14 +141,14 @@ public class SiteServiceTest extends BaseWebScriptTest
         site.put("title", title);
         site.put("description", description);
         site.put("isPublic", isPublic);                
-        MockHttpServletResponse response = postRequest(URL_SITES, expectedStatus, site.toString(), "application/json"); 
+        Response response = sendRequest(new PostRequest(URL_SITES, site.toString(), "application/json"), expectedStatus); 
         this.createdSites.add(shortName);
         return new JSONObject(response.getContentAsString());
     }
     
     public void testGetSites() throws Exception
     {
-        MockHttpServletResponse response = getRequest(URL_SITES, 200);        
+        Response response = sendRequest(new GetRequest(URL_SITES), 200);        
         JSONArray result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(0, result.length());
@@ -174,12 +178,12 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testGetSite() throws Exception
     {
         // Get a site that doesn't exist
-        MockHttpServletResponse response = getRequest(URL_SITES + "/" + "somerandomshortname", 404);
+        Response response = sendRequest(new GetRequest(URL_SITES + "/" + "somerandomshortname"), 404);
         
         // Create a site and get it
         String shortName  = GUID.generate();
         JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
-        response = getRequest(URL_SITES + "/" + shortName, 200);
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
        
     }
     
@@ -193,14 +197,14 @@ public class SiteServiceTest extends BaseWebScriptTest
         result.put("title", "abs123abc");
         result.put("description", "123abc123");
         result.put("isPublic", false);
-        MockHttpServletResponse response = putRequest(URL_SITES + "/" + shortName, 200, result.toString(), "application/json");
+        Response response = sendRequest(new PutRequest(URL_SITES + "/" + shortName, result.toString(), "application/json"), 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
         assertFalse(result.getBoolean("isPublic"));
         
         // Try and get the site and double check it's changed
-        response = getRequest(URL_SITES + "/" + shortName, 200);
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
@@ -210,20 +214,20 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testDeleteSite() throws Exception
     {
         // Delete non-existant site
-        MockHttpServletResponse response = deleteRequest(URL_SITES + "/" + "somerandomshortname", 404);
+        Response response = sendRequest(new DeleteRequest(URL_SITES + "/" + "somerandomshortname"), 404);
         
         // Create a site
         String shortName  = GUID.generate();
         JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
         
         // Get the site
-        response = getRequest(URL_SITES + "/" + shortName, 200);
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
         
         // Delete the site
-        response = deleteRequest(URL_SITES + "/" + shortName, 200);
+        response = sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
         
         // Get the site
-        response = getRequest(URL_SITES + "/" + shortName, 404);
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
     }
     
     public void testGetMemeberships() throws Exception
@@ -233,7 +237,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
         
         // Check the memberships
-        MockHttpServletResponse response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200);
+        Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);
         JSONArray result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(1, result.length());
@@ -256,7 +260,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         membership.put("person", person);
         
         // Post the memebership
-        MockHttpServletResponse response = postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
@@ -264,7 +268,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals(USER_TWO, membership.getJSONObject("person").get("userName")); 
         
         // Get the membership list
-        response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200);   
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);   
         JSONArray result2 = new JSONArray(response.getContentAsString());
         assertNotNull(result2);
         assertEquals(2, result2.length());
@@ -277,11 +281,11 @@ public class SiteServiceTest extends BaseWebScriptTest
         createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
         
         // Test error conditions
-        getRequest(URL_SITES + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE, 404);
-        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/baduser", 404);
-        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 404);
+        sendRequest(new GetRequest(URL_SITES + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE), 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/baduser"), 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 404);
         
-        MockHttpServletResponse response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_ONE, 200);
+        Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_ONE), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
@@ -306,12 +310,12 @@ public class SiteServiceTest extends BaseWebScriptTest
         membership.put("person", person);
         
         // Post the memebership
-        MockHttpServletResponse response = postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         JSONObject newMember = new JSONObject(response.getContentAsString());
         
         // Update the role
         newMember.put("role", SiteModel.SITE_COLLABORATOR);
-        response = putRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200, newMember.toString(), "application/json");
+        response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, newMember.toString(), "application/json"), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
@@ -319,7 +323,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
         
         // Double check and get the membership for user two
-        response = getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200);
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals(SiteModel.SITE_COLLABORATOR, result.get("role"));
         assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
@@ -339,13 +343,13 @@ public class SiteServiceTest extends BaseWebScriptTest
         membership.put("person", person);
         
         // Post the membership
-        postRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, 200, membership.toString(), "application/json");
+        sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         
         // Delete the membership
-        deleteRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 200);
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 200);
         
         // Check that the membership has been deleted
-        getRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO, 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 404);
         
     }
     

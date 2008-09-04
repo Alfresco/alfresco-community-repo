@@ -393,7 +393,7 @@
    <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
       <property name="extensionName"><value>cmis</value></property>
       <property name="serviceRegistry" ref="ServiceRegistry" />
-      <property name="repository" ref="webscripts.repo" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="CMISService" ref="webscripts.cmis.service" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>
@@ -406,7 +406,7 @@
       <property name="transactionHelper" ref="retryingTransactionHelper" />
       <property name="tenantDeployerService" ref="tenantAdminService" />
       <property name="nodeService" ref="nodeService" />
-      <property name="repository" ref="webscripts.repo" />
+      <property name="repository" ref="repositoryHelper" />
    </bean>
 
    <bean id="webscripts.cmis.description" class="org.alfresco.repo.cmis.rest.CMISDescription"/>

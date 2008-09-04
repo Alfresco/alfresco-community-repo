@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -37,7 +38,6 @@ import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.scripts.Repository;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -58,7 +58,7 @@ import org.springframework.context.ApplicationListener;
 
 
 /**
- * CMIS Navigation Service
+ * CMIS Service
  * 
  * @author davidc
  */
@@ -84,13 +84,14 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
     private static final String LUCENE_QUERY_SHALLOW_FOLDERS =
         "+PARENT:\"${cm:parent}\" " +
         "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_FOLDER + "\" ";
+        "+TYPE:\"" + ContentModel.TYPE_FOLDER + "\"";
     
     /** Shallow search for all files and folders */
     private static final String LUCENE_QUERY_SHALLOW_FILES =
         "+PARENT:\"${cm:parent}\" " +
         "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_CONTENT + "\" ";
+        "+TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
+        "-ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"";
 
     private static final String LUCENE_QUERY_CHECKEDOUT =
         "+@cm\\:workingCopyOwner:${cm:username}";
@@ -382,16 +383,17 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
             }
         }
         
-        ResultSet resultSet = searchService.query(params);
+        ResultSet resultSet = null;
         try
         {
+            resultSet = searchService.query(params);
             List<NodeRef> results = resultSet.getNodeRefs();
             NodeRef[] nodeRefs = new NodeRef[results.size()];
             return results.toArray(nodeRefs);
         }
         finally
         {
-            resultSet.close();
+            if (resultSet != null) resultSet.close();
         }
     }
 
@@ -420,17 +422,18 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
         {
             params.setQuery(LUCENE_QUERY_SHALLOW_FILES);
         }
-        
-        ResultSet resultSet = searchService.query(params);
+
+        ResultSet resultSet = null;
         try
         {
+            resultSet = searchService.query(params);
             List<NodeRef> results = resultSet.getNodeRefs();
             NodeRef[] nodeRefs = new NodeRef[results.size()];
             return results.toArray(nodeRefs);
         }
         finally
         {
-            resultSet.close();
+            if (resultSet != null) resultSet.close();
         }
     }
     

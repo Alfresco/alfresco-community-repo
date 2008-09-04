@@ -36,10 +36,14 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit Test to test Discussions Web Script API
@@ -151,7 +155,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         JSONObject post = new JSONObject();
         post.put("title", title);
         post.put("content", content);
-	    MockHttpServletResponse response = postRequest(URL_FORUM_POSTS, expectedStatus, post.toString(), "application/json");
+	    Response response = sendRequest(new PostRequest(URL_FORUM_POSTS, post.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -171,7 +175,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         JSONObject post = new JSONObject();
         post.put("title", title);
         post.put("content", content);
-	    MockHttpServletResponse response = putRequest(getPostUrl(nodeRef), expectedStatus, post.toString(), "application/json");
+	    Response response = sendRequest(new PutRequest(URL_FORUM_POST + name, post.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -185,7 +189,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     private JSONObject getPost(String name, int expectedStatus)
     throws Exception
     {
-    	MockHttpServletResponse response = getRequest(URL_FORUM_POST + name, expectedStatus);
+    	Response response = sendRequest(new GetRequest(URL_FORUM_POST + name), expectedStatus);
     	if (expectedStatus == 200)
     	{
     		JSONObject result = new JSONObject(response.getContentAsString());
@@ -213,7 +217,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         JSONObject reply = new JSONObject();
         reply.put("title", title);
         reply.put("content", content);
-	    MockHttpServletResponse response = postRequest(getRepliesUrl(nodeRef), expectedStatus, reply.toString(), "application/json");
+	    Response response = sendRequest(new PostRequest(getRepliesUrl(nodeRef), reply.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -224,6 +228,23 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	return result.getJSONObject("item");
     }
     
+    private JSONObject updateComment(String nodeRef, String title, String content, int expectedStatus)
+    throws Exception
+    {
+    	JSONObject comment = new JSONObject();
+        comment.put("title", title);
+        comment.put("content", content);
+	    Response response = sendRequest(new PutRequest(getPostUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
+	    
+	    if (expectedStatus != 200)
+	    {
+	    	return null;
+	    }
+	    
+	    //logger.debug("Comment updated: " + response.getContentAsString());
+    	JSONObject result = new JSONObject(response.getContentAsString());
+    	return result.getJSONObject("item");
+    }
     
     // Tests
     
@@ -268,7 +289,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     public void testGetAll() throws Exception
     {
     	String url = URL_FORUM_POSTS;
-    	MockHttpServletResponse response = getRequest(url, 200);
+    	Response response = sendRequest(new GetRequest(url), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	
     	// we should have posts.size + drafts.size together
@@ -282,10 +303,10 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	String name = item.getString("name");
     	
     	// delete the post
-    	MockHttpServletResponse response = deleteRequest(URL_FORUM_POST + name, 200);
+    	Response response = sendRequest(new DeleteRequest(URL_FORUM_POST + name), 200);
     	
     	// try to fetch it again
-    	getRequest(URL_FORUM_POST + name, 404);
+    	sendRequest(new GetRequest(URL_FORUM_POST + name), 404);
     }
 
     public void testAddReply() throws Exception
@@ -307,7 +328,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     	assertEquals("test2", reply2.getString("content"));
     	
     	// fetch all replies for the post
-    	MockHttpServletResponse response = getRequest(getRepliesUrl(postNodeRef), 200);
+    	Response response = sendRequest(new GetRequest(getRepliesUrl(postNodeRef)), 200);
     	logger.debug(response.getContentAsString());
     	JSONObject result = new JSONObject(response.getContentAsString());
     	// check the number of replies

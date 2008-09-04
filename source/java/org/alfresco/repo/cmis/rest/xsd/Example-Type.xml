@@ -20,6 +20,7 @@
   <cmis:isContentStreamAllowed>true</cmis:isContentStreamAllowed>
   <cmis:isControllable>true</cmis:isControllable>
 
+  <!--  optional property definitions -->
   <cmis:property cmis:id="foo1">
     <cmis:displayName>foo1</cmis:displayName>
     <cmis:description>Description of foo1</cmis:description>

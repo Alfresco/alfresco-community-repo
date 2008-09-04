@@ -15,7 +15,7 @@
 <@entryLib.folder node=node/>
 <@cmisLib.folder node=node/>
 </entry>
-<#if recurse>
+<#if recurse && node.id != rootNode.id>
    <@parent node=node.parent recurse=true/>
 </#if>
 </#if>

@@ -22,6 +22,7 @@
     	<xs:sequence>
     		<xs:element ref="atom:author" minOccurs="0" maxOccurs="1"></xs:element>
     		<xs:element ref="app:workspace" minOccurs="1" maxOccurs="unbounded"></xs:element>
+    		<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
     	</xs:sequence>
     </xs:complexType>
     

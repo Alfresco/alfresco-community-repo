@@ -30,11 +30,14 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test the Activity Service's User Feed Control Web Script API
@@ -116,7 +119,7 @@ public class FeedControlTest extends BaseWebScriptTest
         feedControl.put("appToolId", appToolId);
         
         int expectedStatus = 200;
-        MockHttpServletResponse response = postRequest(URL_CONTROL, expectedStatus, feedControl.toString(), "application/json"); 
+        Response response = sendRequest(new PostRequest(URL_CONTROL, feedControl.toString(), "application/json"), expectedStatus); 
     
         if (logger.isDebugEnabled())
         {
@@ -128,7 +131,7 @@ public class FeedControlTest extends BaseWebScriptTest
     {
         // Get (retrieve) feed controls
         int expectedStatus = 200;
-        MockHttpServletResponse response = getRequest(URL_CONTROLS, expectedStatus);        
+        Response response = sendRequest(new GetRequest(URL_CONTROLS), expectedStatus);        
         JSONArray result = new JSONArray(response.getContentAsString());
         
         if (logger.isDebugEnabled())
@@ -151,7 +154,7 @@ public class FeedControlTest extends BaseWebScriptTest
     {
         // Unset (delete) feed control
         int expectedStatus = 200;
-        MockHttpServletResponse response = deleteRequest(URL_CONTROL + "?s=" + TEST_SITE_ID + "&a=" + TEST_APP_TOOL_ID, expectedStatus);
+        Response response = sendRequest(new DeleteRequest(URL_CONTROL + "?s=" + TEST_SITE_ID + "&a=" + TEST_APP_TOOL_ID), expectedStatus);
     
         if (logger.isDebugEnabled())
         {

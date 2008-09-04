@@ -17,4 +17,5 @@ script:
     // retrieve parent
     var returnToRoot = cmis.findArg(args.returnToRoot, headers["CMIS-returnToRoot"]);
     model.returnToRoot = returnToRoot == "true" ? true : false;
+    model.rootNode = cmis.defaultRootFolder;
 }

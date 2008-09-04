@@ -37,9 +37,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test to test thumbnail web script API
@@ -110,13 +112,13 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             JSONObject tn = new JSONObject();
             tn.put("thumbnailName", "webpreview");
             
-            MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+            Response response = sendRequest(new PostRequest(url, tn.toString(), "application/json"), 200);
             
             System.out.println(response.getContentAsString());
         }
         
         // Check getAll whilst we are here 
-        MockHttpServletResponse getAllResp = this.getRequest(getThumbnailsURL(jpgNode), 200);
+        Response getAllResp = sendRequest(new GetRequest(getThumbnailsURL(jpgNode)), 200);
         JSONArray getArr = new JSONArray(getAllResp.getContentAsString());
         assertNotNull(getArr);
         assertEquals(0, getArr.length());
@@ -125,16 +127,16 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails";
         JSONObject tn = new JSONObject();
         tn.put("thumbnailName", "medium");
-        MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+        Response response = sendRequest(new PostRequest(url, tn.toString(), "application/json"), 200);
         System.out.println(response.getContentAsString());
         JSONObject result = new JSONObject(response.getContentAsString());
         String thumbnailUrl = result.getString("url").substring(17);
         
         System.out.println(thumbnailUrl);
-        response = getRequest(thumbnailUrl, 200);
+        response = sendRequest(new GetRequest(thumbnailUrl), 200);
         
         // Check getAll whilst we are here 
-        getAllResp = this.getRequest(getThumbnailsURL(jpgNode), 200);
+        getAllResp = sendRequest(new GetRequest(getThumbnailsURL(jpgNode)), 200);
         getArr = new JSONArray(getAllResp.getContentAsString());
         assertNotNull(getArr);
         assertEquals(1, getArr.length());
@@ -203,7 +205,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             JSONObject tn = new JSONObject();
             tn.put("thumbnailName", "webpreview");
             
-            MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+            Response response = sendRequest(new PostRequest(url, tn.toString(), "application/json"), 200);
             assertEquals("", response.getContentAsString().trim());
             getWait(pdfNode, "webpreview");            
         }
@@ -212,7 +214,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails?as=true";
         JSONObject tn = new JSONObject();
         tn.put("thumbnailName", "medium");
-        MockHttpServletResponse response = this.postRequest(url, 200, tn.toString(), "application/json");
+        Response response = sendRequest(new PostRequest(url, tn.toString(), "application/json"), 200);
 
         assertEquals("", response.getContentAsString().trim());
         getWait(jpgNode, "medium");        
@@ -232,7 +234,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
                 fail("Thumbnail never gets created " + thumbnailName);
             }
             
-            MockHttpServletResponse response = getRequest(url, 0);
+            Response response = sendRequest(new GetRequest(url), 0);
             if (response.getStatus() == 200)
             {
                 break;
@@ -257,13 +259,13 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
         {
             // Check that there is no place holder set for webpreview
-            this.getRequest(getThumbnailsURL(pdfNode) + "/webpreview", 404);
-            this.getRequest(getThumbnailsURL(pdfNode) + "/webpreview?ph=true", 404);
+            sendRequest(new GetRequest(getThumbnailsURL(pdfNode) + "/webpreview"), 404);
+            sendRequest(new GetRequest(getThumbnailsURL(pdfNode) + "/webpreview?ph=true"), 404);
         }
         
         // Check that here is a place holder for medium
-        this.getRequest(getThumbnailsURL(jpgNode) + "/medium", 404);
-        this.getRequest(getThumbnailsURL(jpgNode) + "/medium?ph=true", 200);
+        sendRequest(new GetRequest(getThumbnailsURL(jpgNode) + "/medium"), 404);
+        sendRequest(new GetRequest(getThumbnailsURL(jpgNode) + "/medium?ph=true"), 200);
         
         System.out.println(getThumbnailsURL(jpgNode) + "/medium?ph=true");
     }

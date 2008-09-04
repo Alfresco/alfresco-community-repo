@@ -4,6 +4,6 @@
 <beans>
 
     <import resource="classpath:alfresco/application-context.xml" />
-    <import resource="classpath:web-services-application-context.xml" />
+    <import resource="classpath:alfresco/web-services-application-context.xml" />
    
 </beans>

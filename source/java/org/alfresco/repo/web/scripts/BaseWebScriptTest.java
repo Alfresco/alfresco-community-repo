@@ -25,14 +25,30 @@
 package org.alfresco.repo.web.scripts;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.web.scripts.TestWebScriptServer;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.alfresco.web.scripts.TestWebScriptServer.Request;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Base unit test class for web scripts.
@@ -41,11 +57,47 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public abstract class BaseWebScriptTest extends TestCase
 {
-    /** Standard HTTP method names */
-    protected static final String METHOD_POST = "post";
-    protected static final String METHOD_GET = "get";
-    protected static final String METHOD_PUT = "put";
-    protected static final String METHOD_DELETE = "delete";
+    // Logger
+    private static final Log logger = LogFactory.getLog(BaseWebScriptTest.class);
+
+    /** Local / Remote Server access */
+    private String defaultRunAs = null;
+    private RemoteServer remoteServer = null;
+    private HttpClient httpClient = null;
+
+    /**
+     * Set Remote Server context
+     * 
+     * @param server  remote server
+     */
+    public void setRemoteServer(RemoteServer server)
+    {
+        remoteServer = server;
+    }
+    
+    /**
+     * Set Local Run As User
+     * 
+     * @param localRunAs
+     */
+    public void setDefaultRunAs(String localRunAs)
+    {
+        this.defaultRunAs = localRunAs;
+    }
+    
+    @Override
+    protected void setUp() throws Exception
+    {
+        super.setUp();
+        
+        if (remoteServer != null)
+        {
+            httpClient = new HttpClient();
+            httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+            httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials(remoteServer.username, remoteServer.password));
+        }
+    }
+
     
     /** Test web script server */
     private static TestWebScriptServer server = null;
@@ -59,160 +111,222 @@ public abstract class BaseWebScriptTest extends TestCase
         return BaseWebScriptTest.server;
     }
 
+    
     /**
-     * "GET" the url and check for the expected status code 
+     * Send Request to Test Web Script Server (as admin)
      * 
-     * @param url
+     * @param req
      * @param expectedStatus
-     * @return
+     * @return response
      * @throws IOException
      */
-    protected MockHttpServletResponse getRequest(String url, int expectedStatus)
+    protected Response sendRequest(Request req, int expectedStatus)
         throws IOException
     {
-        return getRequest(url, expectedStatus, null);
-    }
-
-    /**
-     * "DELETE" the url and check for the expected status code
-     * 
-     * @param url
-     * @param expectedStatus
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse deleteRequest(String url, int expectedStatus)
-        throws IOException
-    {
-        return sendRequest(METHOD_DELETE, url, expectedStatus, null, null);
+        return sendRequest(req, expectedStatus, null);
     }
     
     /**
-     * "GET" the url and check for the expected status code 
+     * Send Request
      * 
-     * @param url
+     * @param req
      * @param expectedStatus
      * @param asUser
-     * @return
+     * @return response
      * @throws IOException
      */
-    protected MockHttpServletResponse getRequest(String url, int expectedStatus, String asUser)
+    protected Response sendRequest(Request req, int expectedStatus, String asUser)
         throws IOException
     {
-        return sendRequest(METHOD_GET, url, expectedStatus, null, null, asUser);
-    }
-
-    /**
-     * "POST" the url and check for the expected status code
-     * 
-     * @param url
-     * @param expectedStatus
-     * @param body
-     * @param contentType
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse postRequest(String url, int expectedStatus, String body, String contentType)
-        throws IOException
-    {
-        return postRequest(url, expectedStatus, body.getBytes(), contentType, null);
-    }
-
-    /**
-     * "POST" the url and check for the expected status code
-     * 
-     * @param url
-     * @param expectedStatus
-     * @param asUser
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse postRequest(String url, int expectedStatus, String body, String contentType, String asUser)
-        throws IOException
-    {
-        return postRequest(url, expectedStatus, body.getBytes(), contentType, asUser);
-    }
-
-    /**
-     * "POST" the url and check for the expected status code
-     * 
-     * @param url
-     * @param expectedStatus
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse postRequest(String url, int expectedStatus, byte[] body, String contentType)
-        throws IOException
-    {
-        return postRequest(url, expectedStatus, body, contentType, null);
-    }
-
-    /**
-     * "POST" the url and check for the expected status code
-     * 
-     * @param url
-     * @param expectedStatus
-     * @param asUser
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse postRequest(String url, int expectedStatus, byte[] body, String contentType, String asUser)
-        throws IOException
-    {
-        return sendRequest(METHOD_POST, url, expectedStatus, body, contentType, asUser);
-    }
-
-    /**
-     * Send request to Test Web Script Server
-     * 
-     * @param url
-     * @param expectedStatus
-     * @param body
-     * @param contentType
-     * @return
-     * @throws IOException
-     */
-    protected MockHttpServletResponse putRequest(String url, int expectedStatus, String body, String contentType)
-        throws IOException
-    {
-        return sendRequest(METHOD_PUT, url, expectedStatus, body, contentType);
-    }
-    
-    /**
-     * 
-     * @param method
-     * @param url
-     * @param expectedStatus
-     * @param body
-     * @param contentType
-     * @param asUser
-     * @return
-     * @throws IOException
-     */
-    private MockHttpServletResponse sendRequest(final String method, final String url, final int expectedStatus, final byte[] body, final String contentType, String asUser)
-        throws IOException
-    {
-        // send request in context of specified user
-        String runAsUser = (asUser == null) ? AuthenticationUtil.getSystemUserName() : asUser;
-        MockHttpServletResponse response = AuthenticationUtil.runAs(new RunAsWork<MockHttpServletResponse>()
+        if (logger.isDebugEnabled())
         {
-            @SuppressWarnings("synthetic-access")
-            public MockHttpServletResponse doWork() throws Exception
-            {
-                return BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);
-            }
-        }, runAsUser);
-        
-        if (expectedStatus > 0 && expectedStatus != response.getStatus())
-        {
-            //if (response.getStatus() == 500)
-            //{
-            //    System.out.println(response.getContentAsString());
-            //}
-                        
-            fail("Status code " + response.getStatus() + " returned, but expected " + expectedStatus + " for " + url + " (" + method + ")");
+            logger.debug("Request");
+            logger.debug(req.getBody() == null ? null : new String(req.getBody()));
         }
-        return response;
+
+        Response res = null;
+        if (remoteServer == null)
+        {
+            res = sendLocalRequest(req, expectedStatus, asUser);
+        }
+        else
+        {
+            res = sendRemoteRequest(req, expectedStatus);
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Response:");
+            logger.debug(res.getContentAsString());
+        }
+        
+        if (expectedStatus > 0 && expectedStatus != res.getStatus())
+        {
+//            if (res.getStatus() == 500)
+//            {
+//                System.out.println(res.getContentAsString());
+//            }
+            fail("Status code " + res.getStatus() + " returned, but expected " + expectedStatus + " for " + req.getFullUri() + " (" + req.getMethod() + ")");
+        }
+        
+        return res;
     }
 
+    /**
+     * Send Local Request to Test Web Script Server
+     * 
+     * @param req
+     * @param expectedStatus
+     * @param asUser
+     * @return response
+     * @throws IOException
+     */
+    protected Response sendLocalRequest(final Request req, final int expectedStatus, String asUser)
+        throws IOException
+    {
+        asUser = (asUser == null) ? defaultRunAs : asUser;
+        if (asUser == null)
+        {
+            return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getType());
+        }
+        else
+        {
+            // send request in context of specified user
+            return AuthenticationUtil.runAs(new RunAsWork<Response>()
+            {
+                @SuppressWarnings("synthetic-access")
+                public Response doWork() throws Exception
+                {
+                    return BaseWebScriptTest.getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getType());
+                }
+            }, asUser);
+        }
+    }
+    
+    /**
+     * Send Remote Request to stand-alone Web Script Server
+     * 
+     * @param req
+     * @param expectedStatus
+     * @param asUser
+     * @return response
+     * @throws IOException
+     */
+    protected Response sendRemoteRequest(Request req, int expectedStatus)
+        throws IOException
+    {
+        String uri = req.getFullUri();
+        if (!uri.startsWith("http"))
+        {
+            uri = remoteServer.baseAddress + uri;
+        }
+        
+        // construct method
+        HttpMethod httpMethod = null;
+        String method = req.getMethod();
+        if (method.equalsIgnoreCase("GET"))
+        {
+            GetMethod get = new GetMethod(req.getFullUri());
+            httpMethod = get;
+        }
+        else if (method.equalsIgnoreCase("POST"))
+        {
+            PostMethod post = new PostMethod(req.getFullUri());
+            post.setRequestEntity(new ByteArrayRequestEntity(req.getBody(), req.getType()));
+            httpMethod = post;
+        }
+        else if (method.equalsIgnoreCase("PUT"))
+        {
+            PutMethod put = new PutMethod(req.getFullUri());
+            put.setRequestEntity(new ByteArrayRequestEntity(req.getBody(), req.getType()));
+            httpMethod = put;
+        }
+        else if (method.equalsIgnoreCase("DELETE"))
+        {
+            DeleteMethod del = new DeleteMethod(req.getFullUri());
+            httpMethod = del;
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Http Method " + method + " not supported");
+        }
+        if (req.getHeaders() != null)
+        {
+            for (Map.Entry<String, String> header : req.getHeaders().entrySet())
+            {
+                httpMethod.setRequestHeader(header.getKey(), header.getValue());
+            }
+        }
+
+        // execute method
+        httpClient.executeMethod(httpMethod);
+        return new HttpMethodResponse(httpMethod);
+    }
+    
+    
+    /**
+     * Remote Context
+     */
+    public static class RemoteServer
+    {
+        public String baseAddress;
+        public String username;
+        public String password;
+    }
+
+    /**
+     * HttpMethod wrapped as Web Script Test Response
+     */
+    public static class HttpMethodResponse
+        implements Response
+    {
+        private HttpMethod method;
+        
+        public HttpMethodResponse(HttpMethod method)
+        {
+            this.method = method;
+        }
+
+        public byte[] getContentAsByteArray()
+        {
+            try
+            {
+                return method.getResponseBody();
+            }
+            catch (IOException e)
+            {
+                return null;
+            }
+        }
+
+        public String getContentAsString() throws UnsupportedEncodingException
+        {
+            try
+            {
+                return method.getResponseBodyAsString();
+            }
+            catch (IOException e)
+            {
+                return null;
+            }
+        }
+
+        public String getContentType()
+        {
+            return getHeader("Content-Type");
+        }
+
+        public String getHeader(String name)
+        {
+            Header header = method.getResponseHeader(name);
+            return (header != null) ? header.getValue() : null;
+        }
+
+        public int getStatus()
+        {
+            return method.getStatusCode();
+        }
+        
+    }
+    
 }

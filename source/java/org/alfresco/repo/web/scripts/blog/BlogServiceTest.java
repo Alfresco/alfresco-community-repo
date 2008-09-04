@@ -37,11 +37,15 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit Test to test Blog Web Script API
@@ -178,7 +182,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     throws Exception
     {
         JSONObject post = getRequestObject(title, content, tags, isDraft);
-	    MockHttpServletResponse response = postRequest(URL_BLOG_POSTS, expectedStatus, post.toString(), "application/json");
+	    Response response = sendRequest(new PostRequest(URL_BLOG_POSTS, post.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -203,7 +207,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     throws Exception
     {
     	JSONObject post = getRequestObject(title, content, tags, isDraft);
-	    MockHttpServletResponse response = putRequest(URL_BLOG_POST + name, expectedStatus, post.toString(), "application/json");
+	    Response response = sendRequest(new PutRequest(URL_BLOG_POST + name, post.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -217,7 +221,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     private JSONObject getPost(String name, int expectedStatus)
     throws Exception
     {
-    	MockHttpServletResponse response = getRequest(URL_BLOG_POST + name, expectedStatus);
+    	Response response = sendRequest(new GetRequest(URL_BLOG_POST + name), expectedStatus);
     	if (expectedStatus == 200)
     	{
     		JSONObject result = new JSONObject(response.getContentAsString());
@@ -245,7 +249,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject comment = new JSONObject();
         comment.put("title", title);
         comment.put("content", content);
-	    MockHttpServletResponse response = postRequest(getCommentsUrl(nodeRef), expectedStatus, comment.toString(), "application/json");
+	    Response response = sendRequest(new PostRequest(getCommentsUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -263,7 +267,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	JSONObject comment = new JSONObject();
         comment.put("title", title);
         comment.put("content", content);
-	    MockHttpServletResponse response = putRequest(getCommentUrl(nodeRef), expectedStatus, comment.toString(), "application/json");
+	    Response response = sendRequest(new PutRequest(getCommentUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
 	    
 	    if (expectedStatus != 200)
 	    {
@@ -385,7 +389,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     public void testGetAll() throws Exception
     {
     	String url = URL_BLOG_POSTS;
-    	MockHttpServletResponse response = getRequest(url, 200);
+    	Response response = sendRequest(new GetRequest(url), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	
     	// we should have posts.size + drafts.size together
@@ -395,7 +399,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     public void testGetNew() throws Exception
     {
     	String url = URL_BLOG_POSTS + "/new";
-    	MockHttpServletResponse response = getRequest(url, 200);
+    	Response response = sendRequest(new GetRequest(url), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	
     	// we should have posts.size
@@ -405,7 +409,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     public void _testGetDrafts() throws Exception
     {
     	String url = URL_BLOG_POSTS + "/mydrafts";
-    	MockHttpServletResponse response = getRequest(URL_BLOG_POSTS, 200);
+    	Response response = sendRequest(new GetRequest(URL_BLOG_POSTS), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	
     	// we should have drafts.size resultss
@@ -413,7 +417,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	
     	// the second user should have zero
     	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	response = getRequest(url, 200);
+    	response = sendRequest(new GetRequest(url), 200);
     	result = new JSONObject(response.getContentAsString());
     	assertEquals(0, result.getInt("total"));
     	this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -423,7 +427,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     public void _testMyPublished() throws Exception
     {
     	String url = URL_BLOG_POSTS + "/mypublished";
-    	MockHttpServletResponse response = getRequest(url, 200);
+    	Response response = sendRequest(new GetRequest(url), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	
     	// we should have posts.size results
@@ -431,7 +435,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     	
     	// the second user should have zero
     	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	response = getRequest(url, 200);
+    	response = sendRequest(new GetRequest(url), 200);
     	result = new JSONObject(response.getContentAsString());
     	assertEquals(0, result.getInt("total"));
     	this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -447,21 +451,21 @@ public class BlogServiceTest extends BaseWebScriptTest
     	JSONObject commentTwo = createComment(nodeRef, "comment", "content", 200);
     	
     	// fetch the comments
-    	MockHttpServletResponse response = getRequest(getCommentsUrl(nodeRef), 200);
+    	Response response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
     	JSONObject result = new JSONObject(response.getContentAsString());
     	assertEquals(2, result.getInt("total"));
     	
     	// add another one
     	JSONObject commentThree = createComment(nodeRef, "comment", "content", 200);
     	
-    	response = getRequest(getCommentsUrl(nodeRef), 200);
+    	response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
     	result = new JSONObject(response.getContentAsString());
     	assertEquals(3, result.getInt("total"));
     	
     	// delete the last comment
-    	response = deleteRequest(getCommentUrl(commentThree.getString("nodeRef")), 200);
+    	response = sendRequest(new DeleteRequest(getCommentUrl(commentThree.getString("nodeRef"))), 200);
     	
-    	response = getRequest(getCommentsUrl(nodeRef), 200);
+    	response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
     	result = new JSONObject(response.getContentAsString());
     	assertEquals(2, result.getInt("total"));
     	

@@ -24,21 +24,17 @@
  */
 package org.alfresco.repo.web.scripts.preference;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test to test preference Web Script API
@@ -102,7 +98,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
     {
         // Get the preferences before they have been set
         
-        MockHttpServletResponse resp = getRequest(URL, 200);
+        Response resp = sendRequest(new GetRequest(URL), 200);
         JSONObject jsonResult = new JSONObject(resp.getContentAsString());
         
         assertNotNull(jsonResult);
@@ -113,12 +109,12 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         JSONObject jsonObject = getPreferenceObj();
         jsonObject.put("comp1", getPreferenceObj());
         
-        resp = postRequest(URL, 200, jsonObject.toString(), "application/json");
-        assertEquals(0, resp.getContentLength());
+        resp = sendRequest(new PostRequest(URL, jsonObject.toString(), "application/json"), 200);
+        assertEquals(0, resp.getContentAsByteArray().length);
         
         // Get the preferences
         
-        resp = getRequest(URL, 200);
+        resp = sendRequest(new GetRequest(URL), 200);
         jsonResult = new JSONObject(resp.getContentAsString());
         assertNotNull(jsonResult);
         assertTrue(jsonResult.keys().hasNext());
@@ -131,12 +127,12 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         jsonObject.put("stringValue", "updated");
         jsonObject.put("comp2", getPreferenceObj());
         
-        resp = postRequest(URL, 200, jsonObject.toString(), "application/json");
-        assertEquals(0, resp.getContentLength());
+        resp = sendRequest(new PostRequest(URL, jsonObject.toString(), "application/json"), 200);
+        assertEquals(0, resp.getContentAsByteArray().length);
         
         // Get the preferences
         
-        resp = getRequest(URL, 200);
+        resp = sendRequest(new GetRequest(URL), 200);
         jsonResult = new JSONObject(resp.getContentAsString());
         assertNotNull(jsonResult);
         assertTrue(jsonResult.keys().hasNext());
@@ -149,7 +145,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         
         // Filter the preferences retrieved
         
-        resp = getRequest(URL + "?pf=comp2", 200);
+        resp = sendRequest(new GetRequest(URL + "?pf=comp2"), 200);
         jsonResult = new JSONObject(resp.getContentAsString());
         assertNotNull(jsonResult);
         assertTrue(jsonResult.keys().hasNext());
@@ -163,10 +159,10 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         // Clear all the preferences
         
         // Test trying to update another user's permissions
-        postRequest("/api/people/" + USER_BAD + "/preferences", 500, jsonObject.toString(), "application/json");
+        sendRequest(new PostRequest("/api/people/" + USER_BAD + "/preferences", jsonObject.toString(), "application/json"), 500);
         
         // Test error conditions
-        getRequest("/api/people/noExistUser/preferences", 404);
+        sendRequest(new GetRequest("/api/people/noExistUser/preferences"), 404);
     }
     
     private JSONObject getPreferenceObj()

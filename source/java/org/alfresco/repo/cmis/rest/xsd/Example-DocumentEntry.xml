@@ -5,26 +5,23 @@
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
 
-	<title>Document Entry example</title>
+	
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
 
+	<!--  atom:content -->
+	<atom:content src="http://www.cmis.org/rep1/media/document-entry">
+	</atom:content>
 
 	<!-- URI to document entry resource  -->
 	<atom:id>http://www.cmis.org/rep1/document-entry</atom:id>
-	<atom:link rel='self'
-		href="http://www.cmis.org/rep1/document-entry" />
-
-	<!-- lastModifiedDate -->
-	<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-	<!-- createdDate -->
-	<atom:published>2001-12-31T12:00:00</atom:published>
 
 	<!-- atom links -->
+	<atom:link rel='self'
+		href="http://www.cmis.org/rep1/document-entry" />
 	<atom:link rel="edit"
 		href="http://www.cmis.org/rep1/document-entry" />
 	<atom:link rel="edit-media"
@@ -50,44 +47,17 @@
 	<atom:link rel="cmis-stream"
 		href="http://www.cmis.org/rep1/media/document-entry" />
 
-	<!--  atom:content -->
-	<atom:content src="http://www.cmis.org/rep1/media/document-entry">
-	</atom:content>
+	<!-- createdDate -->
+	<atom:published>2001-12-31T12:00:00</atom:published>
 
 	<atom:summary>
 		<!-- auto-generated HTML table of properties -->
 	</atom:summary>
 
+	<atom:title>Document Entry example</atom:title>
 
-	<cmis:properties>
-		<cmis:objectId>docid1</cmis:objectId>
-		<cmis:baseType>document</cmis:baseType>
-		<cmis:lastModifiedBy>2001-12-31T12:00:00</cmis:lastModifiedBy>
-		<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
-		<cmis:objectType>email</cmis:objectType>
-		<cmis:isCheckedOut>false</cmis:isCheckedOut>
-		<cmis:isLatestVersion>true</cmis:isLatestVersion>
-		<cmis:isMajorVersion>true</cmis:isMajorVersion>
-		<cmis:isLatestMajorVersion>true</cmis:isLatestMajorVersion>
-		<cmis:isImmutable>false</cmis:isImmutable>
-		<cmis:isVersionSeriesCheckedOut>
-			false
-		</cmis:isVersionSeriesCheckedOut>
-		<cmis:versionSeriesCheckedOutBy></cmis:versionSeriesCheckedOutBy>
-		<cmis:versionSeriesCheckedOutID></cmis:versionSeriesCheckedOutID>
-		<cmis:checkinComment>
-			This is the initial checkin comment
-		</cmis:checkinComment>
-		<cmis:versionLabel>1.0</cmis:versionLabel>
-		<cmis:contentStreamLength>70</cmis:contentStreamLength>
-		<cmis:contentStreamMimetype>
-			text/plain
-		</cmis:contentStreamMimetype>
-		<cmis:contentStreamName>foo.txt</cmis:contentStreamName>
-		<cmis:contentStreamURI>
-			http://www.cmis.org/rep1/media/document-entry
-		</cmis:contentStreamURI>
-	</cmis:properties>
+	<!-- lastModifiedDate -->
+	<atom:updated>2001-12-31T12:00:00</atom:updated>
 
 	<!-- Optional Allowable actions -->
 	<cmis:allowableActions>
@@ -109,4 +79,36 @@
 		<cmis:canAddPolicy>true</cmis:canAddPolicy>
 		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 	</cmis:allowableActions>
+
+	<cmis:properties>
+		<cmis:propertyBoolean cmis:name="isCheckedOut">false</cmis:propertyBoolean>
+		<cmis:propertyBoolean cmis:name="isLatestVersion">true</cmis:propertyBoolean>
+		<cmis:propertyBoolean cmis:name="isMajorVersion">true</cmis:propertyBoolean>
+		<cmis:propertyBoolean cmis:name="isLatestMajorVersion">true</cmis:propertyBoolean>
+		<cmis:propertyBoolean cmis:name="isImmutable">false</cmis:propertyBoolean>
+		<cmis:propertyBoolean cmis:name="isVersionSeriesCheckedOut">false</cmis:propertyBoolean>
+
+		<cmis:propertyDateTime cmis:name="lastModifiedBy">2001-12-31T12:00:00</cmis:propertyDateTime>
+		<cmis:propertyDateTime cmis:name="creationDate">2001-12-31T12:00:00</cmis:propertyDateTime>
+
+		<cmis:propertyID cmis:name="objectId">docid1</cmis:propertyID>
+		<cmis:propertyID cmis:name="versionSeriesCheckedOutID"></cmis:propertyID>
+
+		<cmis:propertyInteger cmis:name="contentStreamLength">70</cmis:propertyInteger>
+
+		<cmis:propertyString cmis:name="objectType">email</cmis:propertyString>
+		<cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
+		<cmis:propertyString cmis:name="versionSeriesCheckedOutBy"></cmis:propertyString>
+		<cmis:propertyString cmis:name="checkinComment">This is the initial checkin comment</cmis:propertyString>
+		<cmis:propertyString cmis:name="versionLabel">1.0</cmis:propertyString>
+		<cmis:propertyString cmis:name="contentStreamMimetype">text/plain</cmis:propertyString>
+		<cmis:propertyString cmis:name="contentStreamName">foo.txt</cmis:propertyString>
+		
+		<cmis:propertyURI cmis:name="contentStreamURI">
+			http://www.cmis.org/rep1/media/document-entry
+		</cmis:propertyURI>
+		
+	</cmis:properties>
+
+
 </atom:entry>

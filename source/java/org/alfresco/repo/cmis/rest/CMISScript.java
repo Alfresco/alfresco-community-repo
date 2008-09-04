@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.rest;
 import org.alfresco.repo.cmis.rest.CMISService.TypesFilter;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.web.scripts.Repository;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.PagedResults;

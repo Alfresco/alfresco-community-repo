@@ -33,10 +33,11 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.web.scripts.Status;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Unit test to test person Web Script API
@@ -168,7 +169,8 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("jobtitle", jobTitle);
         person.put("email", email);
         
-        MockHttpServletResponse response = postRequest(URL_PEOPLE, expectedStatus, person.toString(), "application/json");
+        Response response = sendRequest(new PostRequest(URL_PEOPLE, person.toString(), "application/json"), expectedStatus); 
+        this.createdPeople.add(userName);
         
         if ((userName != null) && (userName.length() != 0))
         {
@@ -202,22 +204,20 @@ public class PersonServiceTest extends BaseWebScriptTest
     {
         // Test basic GET people with no filters ==
         
-        MockHttpServletResponse response = getRequest(URL_PEOPLE, Status.STATUS_OK);        
-                
+        Response response = sendRequest(new GetRequest(URL_PEOPLE), 200);        
         System.out.println(response.getContentAsString());
     }
     
     public void testGetPerson() throws Exception
     {
         // Get a person that doesn't exist
-        MockHttpServletResponse response = getRequest(URL_PEOPLE + "/" + "nonExistantUser", 404);
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "/" + "nonExistantUser"), 404);
         
         // Create a person and get him/her
         String userName  = RandomStringUtils.randomNumeric(6);
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", Status.STATUS_OK);
-        response = getRequest(URL_PEOPLE + "/" + userName, Status.STATUS_OK);
-       
+                                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 200);
+        response = sendRequest(new GetRequest(URL_PEOPLE + "/" + userName), 200);
     }
     
     public void testUpdatePerson() throws Exception

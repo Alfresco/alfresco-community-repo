@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
@@ -36,6 +38,8 @@ import javax.xml.validation.Validator;
 
 import org.alfresco.repo.cmis.rest.xsd.CMISValidator;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.web.scripts.TestWebScriptServer.Request;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -49,7 +53,27 @@ import org.xml.sax.SAXException;
 public class CMISWebScriptTest extends BaseWebScriptTest
 {
     private CMISValidator cmisValidator = new CMISValidator();
-
+    private boolean argsAsHeaders = false;
+    
+    /**
+     * Pass URL arguments as headers
+     * 
+     * @param argsAsHeaders
+     */
+    protected void setArgsAsHeaders(boolean argsAsHeaders)
+    {
+        this.argsAsHeaders = argsAsHeaders;
+    }
+    
+    /**
+     * Determines if URL arguments are passed as headers
+     * 
+     * @return
+     */
+    protected boolean getArgsAsHeaders()
+    {
+        return argsAsHeaders;
+    }
     
     /**
      * Gets CMIS Validator
@@ -119,6 +143,41 @@ public class CMISWebScriptTest extends BaseWebScriptTest
         }
         
         return writer.toString();
+    }
+    
+    /**
+     * Send Request to Test Web Script Server
+     * @param req
+     * @param expectedStatus
+     * @param asUser
+     * @return response
+     * @throws IOException
+     */
+    protected MockHttpServletResponse sendRequest(Request req, int expectedStatus, String asUser)
+        throws IOException
+    {
+        if (argsAsHeaders)
+        {
+            Map<String, String> args = req.getArgs();
+            if (args != null)
+            {
+                Map<String, String> headers = req.getHeaders();
+                if (headers == null)
+                {
+                    headers = new HashMap<String, String>();
+                }
+                for (Map.Entry<String, String> arg : args.entrySet())
+                {
+                    headers.put("CMIS-" + arg.getKey(), arg.getValue());
+                }
+                
+                req = new Request(req);
+                req.setArgs(null);
+                req.setHeaders(headers);
+            }
+        }
+        
+        return super.sendRequest(req, expectedStatus, asUser);
     }
     
 }

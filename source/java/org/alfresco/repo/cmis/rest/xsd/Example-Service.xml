@@ -20,19 +20,18 @@
         <cmis:capabilityVersionSpecificFiling>true</cmis:capabilityVersionSpecificFiling>
         <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
         <cmis:capabilityAllVersionsSearchable>true</cmis:capabilityAllVersionsSearchable>
-        <cmis:capabilityInnerJoin>true</cmis:capabilityInnerJoin>
-        <cmis:capabilityOuterJoin>true</cmis:capabilityOuterJoin>
-        <cmis:capabilityFullText>fulltextwithmetadata</cmis:capabilityFullText>
+        <cmis:capabilityJoin>innerAndOuter</cmis:capabilityJoin>
+        <cmis:capabilityFullText>fulltextandstructured</cmis:capabilityFullText>
       </cmis:capabilities>
       <cmis:repositorySpecificInformation>Welcome to ACME 99</cmis:repositorySpecificInformation>
     </cmis:repositoryInfo>
     <app:collection cmis:collectionType="unfiled" href="http://www.cmis.org/rep1/unfiled">
     	<atom:title>unfiled collection</atom:title>
     </app:collection>
-    <app:collection cmis:collectionType="root" href="http://www.cmis.org/rep1/root">
+    <app:collection cmis:collectionType="root"  href="http://www.cmis.org/rep1/root">
     	<atom:title>root collection</atom:title>
     </app:collection>
-    <app:collection cmis:collectionType="checkedout" href="http://www.cmis.org/rep1/checkedout">
+    <app:collection cmis:collectionType="checkedout"  href="http://www.cmis.org/rep1/checkedout">
     	<atom:title>checkedout collection</atom:title>
     </app:collection>
     <app:collection cmis:collectionType="types" href="http://www.cmis.org/rep1/types">

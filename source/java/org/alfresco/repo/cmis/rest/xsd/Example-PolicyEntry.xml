@@ -5,25 +5,24 @@
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
-
-	<title>Policy Entry example</title>
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
+	
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
 
+	<!--  atom:content -->
+	<atom:content>
+		<!-- auto-generated HTML table of properties -->
+		Policy Entry Example (policyid1) Property1 Value1
+	</atom:content>
+
 	<!-- URI to document entry resource  -->
 	<atom:id>http://www.cmis.org/rep1/policy-entry</atom:id>
-	<atom:link rel='self'
-		href="http://www.cmis.org/rep1/policy-entry" />
-
-	<!-- lastModifiedDate -->
-	<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-	<!-- createdDate -->
-	<atom:published>2001-12-31T12:00:00</atom:published>
 
 	<!-- atom links -->
+	<atom:link rel='self'
+		href="http://www.cmis.org/rep1/policy-entry" />
 	<atom:link rel="edit"
 		href="http://www.cmis.org/rep1/v-entry" />
 
@@ -37,21 +36,13 @@
 	<atom:link rel="cmis-target"
 		href="http://www.cmis.org/rep1/policy-entry/target" />
 
-	<!--  atom:content -->
-	<atom:content>
-		<!-- auto-generated HTML table of properties -->
-		Policy Entry Example (policyid1) Property1 Value1
-	</atom:content>
+	<!-- createdDate -->
+	<atom:published>2001-12-31T12:00:00</atom:published>
 
-	<cmis:properties>
-		<cmis:objectId>policyid1</cmis:objectId>
-		<cmis:baseType>policy</cmis:baseType>
-		<cmis:lastModifiedBy>2001-12-31T12:00:00</cmis:lastModifiedBy>
-		<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
-		<cmis:objectType>securitypolicy</cmis:objectType>
-		<cmis:source>docid1</cmis:source>
-		<cmis:target>docid2</cmis:target>
-	</cmis:properties>
+	<atom:title>Policy Entry example</atom:title>
+
+	<!-- lastModifiedDate -->
+	<atom:updated>2001-12-31T12:00:00</atom:updated>
 
 	<!-- Optional Allowable actions -->
 	<cmis:allowableActions>
@@ -61,4 +52,15 @@
 		<cmis:canAddPolicy>true</cmis:canAddPolicy>
 		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 	</cmis:allowableActions>
+	
+	<cmis:properties>
+		<cmis:propertyDateTime cmis:name="lastModifiedBy">2001-12-31T12:00:00</cmis:propertyDateTime>
+		<cmis:propertyDateTime cmis:name="creationDate">2001-12-31T12:00:00</cmis:propertyDateTime>
+
+		<cmis:propertyID cmis:name="objectId">policyid1</cmis:propertyID>
+		
+		<cmis:propertyString cmis:name="objectType">security policy</cmis:propertyString>
+		<cmis:propertyString cmis:name="baseType">policy</cmis:propertyString>
+	</cmis:properties>
+
 </atom:entry>

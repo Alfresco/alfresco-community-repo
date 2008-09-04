@@ -10,11 +10,8 @@
 <#list results as child>
 <entry>
 <#if child.isDocument>  
-<@entryLib.document node=child/>
+<@entryLib.pwc node=child/>
 <@cmisLib.document node=child/>
-<#else>
-<@entryLib.folder node=child/>
-<@cmisLib.folder node=child/>
 </#if>
 </entry>
 </#list>

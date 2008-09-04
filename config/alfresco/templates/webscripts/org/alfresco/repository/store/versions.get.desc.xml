@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Retrieve all versions</shortname>
+  <description>Retrieve all versions of a given version series</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/versions?filter={filter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/versions?filter={filter?}</url>
+  <authentication>user</authentication>
+  <format default="atomfeed">argument</format>
+  <cmis version="0.21"/>
+</webscript>

@@ -10,7 +10,7 @@
 <@pagingLib.cursor cursor=cursor/>
 <#list results as child>
 <entry>
-<#if child.isDocument>  
+<#if child.isDocument>
 <@entryLib.document node=child/>
 <@cmisLib.document node=child/>
 <#else>

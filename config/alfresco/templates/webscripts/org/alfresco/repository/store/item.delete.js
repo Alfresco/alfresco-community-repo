@@ -34,8 +34,7 @@ script:
        }
     }
 
-    // TODO: Checked-out documents - are they automatically cancelled?
-
+    // Note: checked-out documents are automatically unlocked if a private working copy is deleted 
     if (!node.remove())
     {
         status.code = 500;

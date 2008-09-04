@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Update properties</shortname>
+  <description>Update the properties of the node</description>
+  <url>/api/node/{store_type}/{store_id}/{id}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}</url>
+  <authentication>user</authentication>
+  <format default="atomentry">argument</format>
+  <cmis version="0.21"/>
+</webscript>

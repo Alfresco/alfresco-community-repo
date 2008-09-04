@@ -5,23 +5,23 @@
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ../ATOM4CMIS.xsd http://www.cmis.org/2008/05 C:\Java\eclipse\workspace\p8cmis\src\main\resources\rest-schema\CMIS-REST.xsd ">
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
 
-	<!-- This is a feed of folder containing:
-		folder1\
+	<!-- This is a feed of folder1 containing:
 			folder2
 			docid1
-	 -->
+	-->
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
-	<atom:title>Folder1's Children - page 3</atom:title>
+
+	<atom:id>http://www.cmis.org/rep1/folder1/children/3</atom:id>
+
 	<atom:link href="http://www.cmis.org/rep1/folder1/children/3" />
-	
+
 	<!--  Points to the folder entry document -->
-	<atom:link rel="cmis-source" href="http://www.cmis.org/rep1/folder1" />
-	
-	<atom:updated>2007-12-31T12:00:00</atom:updated>
+	<atom:link rel="cmis-source"
+		href="http://www.cmis.org/rep1/folder1" />
 
 	<!-- RFC 5005 Feed Paging -->
 	<atom:link rel="first"
@@ -33,25 +33,28 @@
 	<atom:link rel="last"
 		href="http://www.cmis.org/rep1/folder1/children/last" />
 
-	<!--  sub-folder 1 -->
-	<atom:entry xml:base="http://tempuri.org" xml:lang="en-US">
-		<title>Folder Entry example (folder2)</title>
+	<atom:title>Folder1's Children - page 3</atom:title>
+
+	<atom:updated>2007-12-31T12:00:00</atom:updated>
+
+	<!--  child folder2 -->
+	<atom:entry>
 		<atom:author xml:base="http://tempuri.org" xml:lang="">
 			<atom:name>Al Brown</atom:name>
 		</atom:author>
 
+		<!--  atom:content -->
+		<atom:content>
+			<!-- auto-generated HTML table of properties -->
+			Folder Entry Example (folderid2) Property1 Value1
+		</atom:content>
+
 		<!-- URI to document entry resource  -->
 		<atom:id>http://www.cmis.org/rep1/folder-entry2</atom:id>
-		<atom:link rel='self'
-			href="http://www.cmis.org/rep1/folder-entry2" />
-
-		<!-- lastModifiedDate -->
-		<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-		<!-- createdDate -->
-		<atom:published>2001-12-31T12:00:00</atom:published>
 
 		<!-- atom links -->
+		<atom:link rel='self'
+			href="http://www.cmis.org/rep1/folder-entry2" />
 		<atom:link rel="edit"
 			href="http://www.cmis.org/rep1/folder-entry2" />
 
@@ -65,22 +68,13 @@
 		<atom:link rel="cmis-type"
 			href="http://www.cmis.org/rep1/type/emailfolder" />
 
-		<!--  atom:content -->
-		<atom:content>
-			<!-- auto-generated HTML table of properties -->
-			Folder Entry Example (folderid2) Property1 Value1
-		</atom:content>
+		<!-- createdDate -->
+		<atom:published>2001-12-31T12:00:00</atom:published>
 
-		<cmis:properties>
-			<cmis:objectId>folderid2</cmis:objectId>
-			<cmis:baseType>folder</cmis:baseType>
-			<cmis:lastModifiedBy>
-				2001-12-31T12:00:00
-			</cmis:lastModifiedBy>
-			<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
-			<cmis:objectType>emailfolder</cmis:objectType>
-			<cmis:parentId>folderid1</cmis:parentId>
-		</cmis:properties>
+		<atom:title>Folder Entry2 example</atom:title>
+
+		<!-- lastModifiedDate -->
+		<atom:updated>2001-12-31T12:00:00</atom:updated>
 
 		<!-- Optional Allowable actions -->
 		<cmis:allowableActions>
@@ -94,26 +88,48 @@
 			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 			<cmis:canGetChildren>true</cmis:canGetChildren>
 		</cmis:allowableActions>
+
+		<cmis:properties>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				2001-12-31T12:00:00
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				2001-12-31T12:00:00
+			</cmis:propertyDateTime>
+
+			<cmis:propertyID cmis:name="objectId">
+				folderid1
+			</cmis:propertyID>
+			<cmis:propertyID cmis:name="parentId">
+				parentFolderId1
+			</cmis:propertyID>
+
+			<cmis:propertyString cmis:name="objectType">
+				emailfolder
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				folder
+			</cmis:propertyString>
+		</cmis:properties>
 	</atom:entry>
 
-	<atom:entry xml:base="http://tempuri.org" xml:lang="">
-		<title>Document Entry example</title>
+	<!-- child doc -->
+	<atom:entry>
 		<atom:author xml:base="http://tempuri.org" xml:lang="">
 			<atom:name>Al Brown</atom:name>
 		</atom:author>
 
+		<!--  atom:content -->
+		<atom:content
+			src="http://www.cmis.org/rep1/media/document-entry">
+		</atom:content>
+
 		<!-- URI to document entry resource  -->
 		<atom:id>http://www.cmis.org/rep1/document-entry</atom:id>
-		<atom:link rel='self'
-			href="http://www.cmis.org/rep1/document-entry" />
-
-		<!-- lastModifiedDate -->
-		<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-		<!-- createdDate -->
-		<atom:published>2001-12-31T12:00:00</atom:published>
 
 		<!-- atom links -->
+		<atom:link rel='self'
+			href="http://www.cmis.org/rep1/document-entry" />
 		<atom:link rel="edit"
 			href="http://www.cmis.org/rep1/document-entry" />
 		<atom:link rel="edit-media"
@@ -139,47 +155,17 @@
 		<atom:link rel="cmis-stream"
 			href="http://www.cmis.org/rep1/media/document-entry" />
 
-		<!--  atom:content -->
-		<atom:content
-			src="http://www.cmis.org/rep1/media/document-entry">
-		</atom:content>
+		<!-- createdDate -->
+		<atom:published>2001-12-31T12:00:00</atom:published>
 
 		<atom:summary>
 			<!-- auto-generated HTML table of properties -->
 		</atom:summary>
 
+		<atom:title>Document Entry example</atom:title>
 
-		<cmis:properties>
-			<cmis:objectId>docid1</cmis:objectId>
-			<cmis:baseType>document</cmis:baseType>
-			<cmis:lastModifiedBy>
-				2001-12-31T12:00:00
-			</cmis:lastModifiedBy>
-			<cmis:creationDate>2001-12-31T12:00:00</cmis:creationDate>
-			<cmis:objectType>email</cmis:objectType>
-			<cmis:isCheckedOut>false</cmis:isCheckedOut>
-			<cmis:isLatestVersion>true</cmis:isLatestVersion>
-			<cmis:isMajorVersion>true</cmis:isMajorVersion>
-			<cmis:isLatestMajorVersion>true</cmis:isLatestMajorVersion>
-			<cmis:isImmutable>false</cmis:isImmutable>
-			<cmis:isVersionSeriesCheckedOut>
-				false
-			</cmis:isVersionSeriesCheckedOut>
-			<cmis:versionSeriesCheckedOutBy></cmis:versionSeriesCheckedOutBy>
-			<cmis:versionSeriesCheckedOutID></cmis:versionSeriesCheckedOutID>
-			<cmis:checkinComment>
-				This is the initial checkin comment
-			</cmis:checkinComment>
-			<cmis:versionLabel>1.0</cmis:versionLabel>
-			<cmis:contentStreamLength>70</cmis:contentStreamLength>
-			<cmis:contentStreamMimetype>
-				text/plain
-			</cmis:contentStreamMimetype>
-			<cmis:contentStreamName>foo.txt</cmis:contentStreamName>
-			<cmis:contentStreamURI>
-				http://www.cmis.org/rep1/media/document-entry
-			</cmis:contentStreamURI>
-		</cmis:properties>
+		<!-- lastModifiedDate -->
+		<atom:updated>2001-12-31T12:00:00</atom:updated>
 
 		<!-- Optional Allowable actions -->
 		<cmis:allowableActions>
@@ -201,6 +187,70 @@
 			<cmis:canAddPolicy>true</cmis:canAddPolicy>
 			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 		</cmis:allowableActions>
+
+		<cmis:properties>
+			<cmis:propertyBoolean cmis:name="isCheckedOut">
+				false
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isLatestVersion">
+				true
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isMajorVersion">
+				true
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isLatestMajorVersion">
+				true
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isImmutable">
+				false
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean
+				cmis:name="isVersionSeriesCheckedOut">
+				false
+			</cmis:propertyBoolean>
+
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				2001-12-31T12:00:00
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				2001-12-31T12:00:00
+			</cmis:propertyDateTime>
+
+			<cmis:propertyID cmis:name="objectId">
+				docid1
+			</cmis:propertyID>
+			<cmis:propertyID cmis:name="versionSeriesCheckedOutID"></cmis:propertyID>
+
+			<cmis:propertyInteger cmis:name="contentStreamLength">
+				70
+			</cmis:propertyInteger>
+
+			<cmis:propertyString cmis:name="objectType">
+				email
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				document
+			</cmis:propertyString>
+			<cmis:propertyString
+				cmis:name="versionSeriesCheckedOutBy">
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="checkinComment">
+				This is the initial checkin comment
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="versionLabel">
+				1.0
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamMimetype">
+				text/plain
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamName">
+				foo.txt
+			</cmis:propertyString>
+
+			<cmis:propertyURI cmis:name="contentStreamURI">
+				http://www.cmis.org/rep1/media/document-entry
+			</cmis:propertyURI>
+		</cmis:properties>
 	</atom:entry>
 
 	<!-- notification of more items -->

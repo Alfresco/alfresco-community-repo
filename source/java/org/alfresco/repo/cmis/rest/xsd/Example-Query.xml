@@ -2,7 +2,7 @@
 <cmis:query xmlns:cmis="http://www.cmis.org/2008/05" 
 	xmlns:p="http://www.w3.org/1999/xhtml" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://www.cmis.org/2008/05 ../CMIS-REST.xsd ">
+	xsi:schemaLocation="http://www.cmis.org/2008/05 CMIS-REST.xsd ">
   <cmis:statement>SELECT * FROM document</cmis:statement>
   <cmis:searchAllVersions>true</cmis:searchAllVersions>
   <cmis:pageSize>0</cmis:pageSize>

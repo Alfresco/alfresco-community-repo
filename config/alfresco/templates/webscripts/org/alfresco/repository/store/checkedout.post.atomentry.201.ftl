@@ -3,6 +3,6 @@
 <#import "/org/alfresco/cmis/cmis.lib.atom.ftl" as cmisLib/>
 <?xml version="1.0" encoding="UTF-8"?>
 <entry <@nsLib.entryNS/>>
-<@entryLib.document node=pwc/>
+<@entryLib.pwc node=pwc/>
 <@cmisLib.document node=pwc/>
 </entry>

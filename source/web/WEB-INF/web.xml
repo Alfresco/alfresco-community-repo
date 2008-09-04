@@ -72,7 +72,7 @@
          classpath:alfresco/webscript-framework-application-context.xml
          classpath:alfresco/web-client-application-context.xml
          classpath:alfresco/web-scripts-application-context.xml
-         classpath:web-services-application-context.xml
+         classpath:alfresco/web-services-application-context.xml
 
          <!--
          To give final control over the tuning of the custom environment,

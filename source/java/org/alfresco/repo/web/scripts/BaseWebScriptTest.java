@@ -138,12 +138,8 @@ public abstract class BaseWebScriptTest extends TestCase
     protected Response sendRequest(Request req, int expectedStatus, String asUser)
         throws IOException
     {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Request");
-            logger.debug(req.getMethod() + " " + req.getFullUri());
-            logger.debug(req.getBody() == null ? null : new String(req.getBody()));
-        }
+        if (logger.isInfoEnabled())
+            logger.info("Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody())));
 
         Response res = null;
         if (remoteServer == null)
@@ -155,11 +151,8 @@ public abstract class BaseWebScriptTest extends TestCase
             res = sendRemoteRequest(req, expectedStatus);
         }
         
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Response:");
-            logger.debug(res.getContentAsString());
-        }
+        if (logger.isInfoEnabled())
+            logger.info("Response: " + res.getStatus() + " " + req.getMethod() + " " + req.getFullUri() + "\n" + res.getContentAsString());
         
         if (expectedStatus > 0 && expectedStatus != res.getStatus())
         {
@@ -167,7 +160,7 @@ public abstract class BaseWebScriptTest extends TestCase
 //            {
 //                System.out.println(res.getContentAsString());
 //            }
-            fail("Status code " + res.getStatus() + " returned, but expected " + expectedStatus + " for " + req.getFullUri() + " (" + req.getMethod() + ")");
+            fail("Status code " + res.getStatus() + " returned, but expected " + expectedStatus + " for " + req.getFullUri() + " (" + req.getMethod() + ")\n" + res.getContentAsString());
         }
         
         return res;

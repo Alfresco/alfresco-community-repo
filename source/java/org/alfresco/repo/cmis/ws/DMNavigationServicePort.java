@@ -27,113 +27,67 @@ package org.alfresco.repo.cmis.ws;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.cmis.CMISService.TypesFilter;
+import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
+ * Port for navigation service
+ *
  * @author Dmitry Lazurkin
  */
 
 @javax.jws.WebService(name = "NavigationServicePort", serviceName = "NavigationService", portName = "NavigationServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.NavigationServicePort")
 public class DMNavigationServicePort extends DMAbstractServicePort implements NavigationServicePort
 {
-    private static final Log log = LogFactory.getLog("org.alfresco.repo.cmis.ws");
 
-    public org.alfresco.repo.cmis.ws.GetDescendantsResponse getDescendants(GetDescendants parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException,
-            FilterNotValidException, OperationNotSupportedException, FolderNotValidException, PermissionDeniedException
+    public GetCheckedoutDocsResponse getCheckedoutDocs(GetCheckedoutDocs parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
+            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
     {
-        System.out.println(parameters);
-        try
-        {
-            org.alfresco.repo.cmis.ws.GetDescendantsResponse _return = null;
-            return _return;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new FilterNotValidException("FilterNotValidException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new FolderNotValidException("FolderNotValidException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
+        return null;
     }
 
-    public org.alfresco.repo.cmis.ws.GetCheckedoutDocsResponse getCheckedoutDocs(GetCheckedoutDocs parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException,
-            FilterNotValidException, OperationNotSupportedException, FolderNotValidException, PermissionDeniedException
+    /**
+     * Asserts "Folder with folderNodeRef exists"
+     *
+     * @param folderNodeRef node reference
+     * @throws FolderNotValidException folderNodeRef doesn't exist or folderNodeRef isn't for folder object
+     */
+    private void assertExistFolder(NodeRef folderNodeRef) throws FolderNotValidException
     {
-        System.out.println(parameters);
-        try
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
+        if (folderNodeRef == null || nodeService.exists(folderNodeRef) == false || cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(folderNodeRef))) == false)
         {
-            org.alfresco.repo.cmis.ws.GetCheckedoutDocsResponse _return = null;
-            return _return;
+            // TODO: error code
+            throw new FolderNotValidException("OID for non-existent object or not folder object", ExceptionUtils.createBasicFault(null, "OID for non-existent object or not folder object"));
         }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new FilterNotValidException("FilterNotValidException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new FolderNotValidException("FolderNotValidException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
     }
 
-    public org.alfresco.repo.cmis.ws.GetDocumentParentsResponse getDocumentParents(GetDocumentParents parameters) throws RuntimeException, ConcurrencyException,
-            InvalidArgumentException, ObjectNotFoundException, FilterNotValidException, OperationNotSupportedException, PermissionDeniedException
-    {
-        System.out.println(parameters);
-        try
-        {
-            org.alfresco.repo.cmis.ws.GetDocumentParentsResponse _return = null;
-            return _return;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new ObjectNotFoundException("ObjectNotFoundException...");
-        // throw new FilterNotValidException("FilterNotValidException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
-    }
-
-    public org.alfresco.repo.cmis.ws.GetChildrenResponse getChildren(GetChildren parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException,
-            FilterNotValidException, OperationNotSupportedException, FolderNotValidException, PermissionDeniedException
+    public GetChildrenResponse getChildren(GetChildren parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
+            FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
     {
         PropertyFilter propertyFilter = new PropertyFilter(parameters.getFilter());
 
-        NodeRef folderNodeRef = OIDUtils.OIDtoNodeRef(parameters.getFolderId());
-
+        NodeRef folderNodeRef = getNodeRefFromOID(parameters.getFolderId());
         assertExistFolder(folderNodeRef);
 
-        List<FileInfo> listing;
-        if (parameters.getType().equals(TypesOfObjectsEnum.DOCUMENTS))
+        NodeRef[] listing = null;
+        switch (parameters.getType())
         {
-            listing = fileFolderService.listFiles(folderNodeRef);
-        }
-        else if (parameters.getType().equals(TypesOfObjectsEnum.FOLDERS))
-        {
-            listing = fileFolderService.listFolders(folderNodeRef);
-        }
-        else
-        {
-            listing = fileFolderService.list(folderNodeRef);
+        case DOCUMENTS:
+            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Documents);
+            break;
+        case FOLDERS:
+            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Folders);
+            break;
+        case POLICIES:
+            throw new OperationNotSupportedException("Policies listing isn't supported", ExceptionUtils.createBasicFault(null, "Policies listing isn't supported"));
+        case ANY:
+            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Any);
+            break;
         }
 
-        int maxItems = listing.size();
+        int maxItems = listing.length;
         int skipCount = 0;
 
         GetChildrenResponse response = new GetChildrenResponse();
@@ -152,94 +106,42 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
             if (maxItems == 0)
             {
-                maxItems = listing.size();
+                maxItems = listing.length;
             }
 
-            response.setHasMoreItems(maxItems < listing.size());
+            response.setHasMoreItems(maxItems < listing.length);
         }
 
-        response.setDocumentAndFolderCollection(new DocumentAndFolderCollection());
-        List<DocumentOrFolderObjectType> resultListing = response.getDocumentAndFolderCollection().getObject();
+        response.setChildren(new ChildrenType());
+        List<FolderTreeType> resultListing = response.getChildren().getChild();
 
-        for (int index = skipCount; index < listing.size() && maxItems > 0; ++index, --maxItems)
+        for (int index = skipCount; index < listing.length && maxItems > 0; ++index, --maxItems)
         {
-            FileInfo currentFileInfo = listing.get(index);
-            DocumentOrFolderObjectType documentOrFolderObjectType = new DocumentOrFolderObjectType();
-
-            if (currentFileInfo.isFolder())
-            {
-                setFolderObjectTypeProperties(currentFileInfo.getNodeRef(), documentOrFolderObjectType, propertyFilter);
-            }
-            else
-            {
-                setDocumentObjectTypeProperties(currentFileInfo.getNodeRef(), documentOrFolderObjectType, propertyFilter);
-            }
-
-            resultListing.add(documentOrFolderObjectType);
+            NodeRef currentFileInfo = listing[index];
+            FolderTreeType folderTreeType = new FolderTreeType();
+            folderTreeType.setProperties(getPropertiesType(currentFileInfo, propertyFilter));
+            resultListing.add(folderTreeType);
         }
 
         return response;
     }
 
-    /**
-     * Asserts "Folder with folderNodeRef exists"
-     *
-     * @param folderNodeRef node reference
-     * @throws FolderNotValidException folderNodeRef doesn't exist or folderNodeRef isn't for folder object
-     */
-    private void assertExistFolder(NodeRef folderNodeRef) throws FolderNotValidException
+    public GetDescendantsResponse getDescendants(GetDescendants parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
+            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
     {
-        if (folderNodeRef == null || nodeService.exists(folderNodeRef) == false || isFolderType(folderNodeRef) == false)
-        {
-            // TODO: error code
-            BasicFault basicFault = ExceptionUtils.createBasicFault(null, "OID for non-existent object or not folder object");
-            throw new FolderNotValidException("OID for non-existent object or not folder object", basicFault);
-        }
+        return null;
     }
 
-    public org.alfresco.repo.cmis.ws.GetFolderParentResponse getFolderParent(GetFolderParent parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException,
-            FilterNotValidException, OperationNotSupportedException, FolderNotValidException, PermissionDeniedException
+    public GetFolderParentResponse getFolderParent(GetFolderParent parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
+            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
     {
-        System.out.println(parameters);
-        try
-        {
-            org.alfresco.repo.cmis.ws.GetFolderParentResponse _return = null;
-            return _return;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new FilterNotValidException("FilterNotValidException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new FolderNotValidException("FolderNotValidException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
+        return null;
     }
 
-    public org.alfresco.repo.cmis.ws.GetUnfiledDocsResponse getUnfiledDocs(GetUnfiledDocs parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException,
-            FilterNotValidException, OperationNotSupportedException, PermissionDeniedException
+    public GetObjectParentsResponse getObjectParents(GetObjectParents parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException,
+            ConstraintViolationException, FilterNotValidException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
     {
-        System.out.println(parameters);
-        try
-        {
-            org.alfresco.repo.cmis.ws.GetUnfiledDocsResponse _return = null;
-            return _return;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new FilterNotValidException("FilterNotValidException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
+        return null;
     }
 
 }

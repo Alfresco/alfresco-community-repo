@@ -1,6 +1,7 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -19,10 +20,12 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}typesOfObjectsEnum"/>
- *           &lt;element name="depth" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}typesOfFileableObjectsEnum" minOccurs="0"/>
+ *           &lt;element name="depth" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
+ *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -34,22 +37,52 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "folderId",
     "type",
     "depth",
-    "filter"
+    "filter",
+    "includeAllowableActions"
 })
 @XmlRootElement(name = "getDescendants")
 public class GetDescendants {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String folderId;
+    protected String repositoryId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected TypesOfObjectsEnum type;
+    protected String folderId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Object depth;
+    protected TypesOfFileableObjectsEnum type;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected BigInteger depth;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String filter;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected Boolean includeAllowableActions;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the folderId property.
@@ -80,10 +113,10 @@ public class GetDescendants {
      * 
      * @return
      *     possible object is
-     *     {@link TypesOfObjectsEnum }
+     *     {@link TypesOfFileableObjectsEnum }
      *     
      */
-    public TypesOfObjectsEnum getType() {
+    public TypesOfFileableObjectsEnum getType() {
         return type;
     }
 
@@ -92,10 +125,10 @@ public class GetDescendants {
      * 
      * @param value
      *     allowed object is
-     *     {@link TypesOfObjectsEnum }
+     *     {@link TypesOfFileableObjectsEnum }
      *     
      */
-    public void setType(TypesOfObjectsEnum value) {
+    public void setType(TypesOfFileableObjectsEnum value) {
         this.type = value;
     }
 
@@ -104,10 +137,10 @@ public class GetDescendants {
      * 
      * @return
      *     possible object is
-     *     {@link Object }
+     *     {@link BigInteger }
      *     
      */
-    public Object getDepth() {
+    public BigInteger getDepth() {
         return depth;
     }
 
@@ -116,10 +149,10 @@ public class GetDescendants {
      * 
      * @param value
      *     allowed object is
-     *     {@link Object }
+     *     {@link BigInteger }
      *     
      */
-    public void setDepth(Object value) {
+    public void setDepth(BigInteger value) {
         this.depth = value;
     }
 
@@ -145,6 +178,30 @@ public class GetDescendants {
      */
     public void setFilter(String value) {
         this.filter = value;
+    }
+
+    /**
+     * Gets the value of the includeAllowableActions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isIncludeAllowableActions() {
+        return includeAllowableActions;
+    }
+
+    /**
+     * Sets the value of the includeAllowableActions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setIncludeAllowableActions(Boolean value) {
+        this.includeAllowableActions = value;
     }
 
 }

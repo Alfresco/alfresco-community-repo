@@ -19,8 +19,9 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="asUser" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="asUser" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "objectId",
     "asUser"
 })
@@ -39,9 +41,35 @@ import javax.xml.bind.annotation.XmlType;
 public class GetAllowableActions {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String objectId;
+    protected String repositoryId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String objectId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String asUser;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the objectId property.

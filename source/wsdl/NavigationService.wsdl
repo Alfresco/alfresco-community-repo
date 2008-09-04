@@ -1,252 +1,326 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<definitions xmlns:tns="http://www.cmis.org/ns/1.0"
-             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-             xmlns="http://schemas.xmlsoap.org/wsdl/"
-             xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/"
-             name="NavigationService"
-             targetNamespace="http://www.cmis.org/ns/1.0">
-    <types>
-        <!--
-        <xsd:schema>
-            <xsd:import namespace="http://cmis.org/_TBD_" schemaLocation="_TBD_.xsd"/>
-        </xsd:schema>
-        -->
-        <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
-        <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
-            <xsd:include schemaLocation="cmisMessageTypes.xsd"/>
-        </xsd:schema>
-    </types>
-
-    <message name="getDescendants">
-        <part name="parameters" element="tns:getDescendants"/>
-    </message>
-    <message name="getDescendantsResponse">
-        <part name="parameters" element="tns:getDescendantsResponse"/>
-    </message>
-    <message name="getChildren">
-        <part name="parameters" element="tns:getChildren"/>
-    </message>
-    <message name="getChildrenResponse">
-        <part name="parameters" element="tns:getChildrenResponse"/>
-    </message>
-    <message name="getFolderParent">
-        <part name="parameters" element="tns:getFolderParent"/>
-    </message>
-    <message name="getFolderParentResponse">
-        <part name="parameters" element="tns:getFolderParentResponse"/>
-    </message>
-    <message name="getDocumentParents">
-        <part name="parameters" element="tns:getDocumentParents"/>
-    </message>
-    <message name="getDocumentParentsResponse">
-        <part name="parameters" element="tns:getDocumentParentsResponse"/>
-    </message>
-    <message name="getUnfiledDocs">
-        <part name="parameters" element="tns:getUnfiledDocs"/>
-    </message>
-    <message name="getUnfiledDocsResponse">
-        <part name="parameters" element="tns:getUnfiledDocsResponse"/>
-    </message>
-    <message name="getCheckedoutDocs">
-        <part name="parameters" element="tns:getCheckedoutDocs"/>
-    </message>
-    <message name="getCheckedoutDocsResponse">
-        <part name="parameters" element="tns:getCheckedoutDocsResponse"/>
-    </message>
-    <message name="InvalidArgumentException">
-        <part name="InvalidArgumentFault" element="tns:InvalidArgumentFault"/>
-    </message>
-    <message name="PermissionDeniedException">
-        <part name="PermissionDeniedFault" element="tns:PermissionDeniedFault"/>
-    </message>
-    <message name="OperationNotSupportedException">
-        <part name="OperationNotSupportedFault" element="tns:OperationNotSupportedFault"/>
-    </message>
-    <message name="ConcurrencyException">
-        <part name="ConcurrencyFault" element="tns:ConcurrencyFault"/>
-    </message>
-    <message name="RuntimeException">
-        <part name="RuntimeFault" element="tns:RuntimeFault"/>
-    </message>
-    <message name="FilterNotValidException">
-        <part name="FilterNotValidFault" element="tns:FilterNotValidFault"/>
-    </message>
-    <message name="FolderNotValidException">
-        <part name="FolderNotValidFault" element="tns:FolderNotValidFault"/>
-    </message>
-    <message name="ObjectNotFoundException">
-        <part name="ObjectNotFoundFault" element="tns:ObjectNotFoundFault"/>
-    </message>
-
-    <portType name="NavigationServicePort">
-        <operation name="getDescendants">
-            <input message="tns:getDescendants"/>
-            <output message="tns:getDescendantsResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-            <fault message="tns:FolderNotValidException" name="FolderNotValidException"/>
-        </operation>
-        <operation name="getChildren">
-            <input message="tns:getChildren"/>
-            <output message="tns:getChildrenResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-            <fault message="tns:FolderNotValidException" name="FolderNotValidException"/>
-        </operation>
-        <operation name="getFolderParent">
-            <input message="tns:getFolderParent"/>
-            <output message="tns:getFolderParentResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-            <fault message="tns:FolderNotValidException" name="FolderNotValidException"/>
-        </operation>
-        <operation name="getDocumentParents">
-            <input message="tns:getDocumentParents"/>
-            <output message="tns:getDocumentParentsResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-            <fault message="tns:ObjectNotFoundException" name="ObjectNotFoundException"/>
-        </operation>
-        <operation name="getUnfiledDocs">
-            <input message="tns:getUnfiledDocs"/>
-            <output message="tns:getUnfiledDocsResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-        </operation>
-        <operation name="getCheckedoutDocs">
-            <input message="tns:getCheckedoutDocs"/>
-            <output message="tns:getCheckedoutDocsResponse"/>
-            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
-            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
-            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
-            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
-            <fault message="tns:RuntimeException" name="RuntimeException"/>
-            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
-            <fault message="tns:FolderNotValidException" name="FolderNotValidException"/>
-        </operation>
-    </portType>
-    <binding name="NavigationServicePortBinding" type="tns:NavigationServicePort">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-        <operation name="getDescendants">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-            <fault name="FolderNotValidException"><soap:fault name="FolderNotValidException" use="literal"/></fault>
-        </operation>
-        <operation name="getChildren">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-            <fault name="FolderNotValidException"><soap:fault name="FolderNotValidException" use="literal"/></fault>
-        </operation>
-        <operation name="getFolderParent">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-            <fault name="FolderNotValidException"><soap:fault name="FolderNotValidException" use="literal"/></fault>
-        </operation>
-        <operation name="getDocumentParents">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-            <fault name="ObjectNotFoundException"><soap:fault name="ObjectNotFoundException" use="literal"/></fault>
-        </operation>
-        <operation name="getUnfiledDocs">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-        </operation>
-        <operation name="getCheckedoutDocs">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
-            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
-            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
-            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
-            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
-            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
-            <fault name="FolderNotValidException"><soap:fault name="FolderNotValidException" use="literal"/></fault>
-        </operation>
-    </binding>
-    <service name="NavigationService">
-        <port name="NavigationServicePort" binding="tns:NavigationServicePortBinding">
-            <soap:address location="http://localhost:8080/alfresco/cmis/NavigationService"/>
-        </port>
-    </service>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="NavigationService" targetNamespace="http://www.cmis.org/ns/1.0">
+  <types>
+    <!--
+		<xsd:schema>
+			<xsd:import namespace="http://cmis.org/_TBD_" schemaLocation="_TBD_.xsd"/>
+		</xsd:schema>
+		-->
+    <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+      <xsd:include schemaLocation="cmisMessageTypes.xsd" />
+    </xsd:schema>
+  </types>
+  <message name="getDescendants">
+    <part name="parameters" element="tns:getDescendants" />
+  </message>
+  <message name="getDescendantsResponse">
+    <part name="parameters" element="tns:getDescendantsResponse" />
+  </message>
+  <message name="getChildren">
+    <part name="parameters" element="tns:getChildren" />
+  </message>
+  <message name="getChildrenResponse">
+    <part name="parameters" element="tns:getChildrenResponse" />
+  </message>
+  <message name="getFolderParent">
+    <part name="parameters" element="tns:getFolderParent" />
+  </message>
+  <message name="getFolderParentResponse">
+    <part name="parameters" element="tns:getFolderParentResponse" />
+  </message>
+  <message name="getObjectParents">
+    <part name="parameters" element="tns:getObjectParents" />
+  </message>
+  <message name="getObjectParentsResponse">
+    <part name="parameters" element="tns:getObjectParentsResponse" />
+  </message>
+  <message name="getCheckedoutDocs">
+    <part name="parameters" element="tns:getCheckedoutDocs" />
+  </message>
+  <message name="getCheckedoutDocsResponse">
+    <part name="parameters" element="tns:getCheckedoutDocsResponse" />
+  </message>
+  <message name="InvalidArgumentException">
+    <part name="fault" element="tns:invalidArgumentException" />
+  </message>
+  <message name="PermissionDeniedException">
+    <part name="fault" element="tns:permissionDeniedException" />
+  </message>
+  <message name="OperationNotSupportedException">
+    <part name="fault" element="tns:operationNotSupportedException" />
+  </message>
+  <message name="UpdateConflictException">
+    <part name="fault" element="tns:updateConflictException" />
+  </message>
+  <message name="RuntimeException">
+    <part name="fault" element="tns:runtimeException" />
+  </message>
+  <message name="FilterNotValidException">
+    <part name="fault" element="tns:filterNotValidException" />
+  </message>
+  <message name="FolderNotValidException">
+    <part name="fault" element="tns:folderNotValidException" />
+  </message>
+  <message name="ConstraintViolationException">
+    <part name="fault" element="tns:constraintViolationException" />
+  </message>
+  <message name="ObjectNotFoundException">
+    <part name="fault" element="tns:objectNotFoundException" />
+  </message>
+  <portType name="NavigationServicePort">
+    <operation name="getDescendants">
+      <input message="tns:getDescendants" />
+      <output message="tns:getDescendantsResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+    </operation>
+    <operation name="getChildren">
+      <input message="tns:getChildren" />
+      <output message="tns:getChildrenResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+    </operation>
+    <operation name="getFolderParent">
+      <input message="tns:getFolderParent" />
+      <output message="tns:getFolderParentResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+    </operation>
+    <operation name="getObjectParents">
+      <input message="tns:getObjectParents" />
+      <output message="tns:getObjectParentsResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="getCheckedoutDocs">
+      <input message="tns:getCheckedoutDocs" />
+      <output message="tns:getCheckedoutDocsResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+    </operation>
+  </portType>
+  <binding name="NavigationServicePortBinding" type="tns:NavigationServicePort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="getDescendants">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="FolderNotValidException">
+        <soap:fault name="FolderNotValidException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getChildren">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="FolderNotValidException">
+        <soap:fault name="FolderNotValidException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getFolderParent">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="FolderNotValidException">
+        <soap:fault name="FolderNotValidException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getObjectParents">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="FolderNotValidException">
+        <soap:fault name="FolderNotValidException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getCheckedoutDocs">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="FolderNotValidException">
+        <soap:fault name="FolderNotValidException" use="literal" />
+      </fault>
+    </operation>
+  </binding>
+  <service name="NavigationService">
+    <port name="NavigationServicePort" binding="tns:NavigationServicePortBinding">
+      <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
+    </port>
+  </service>
 </definitions>

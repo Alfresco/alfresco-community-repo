@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}documentAndFolderCollection"/>
+ *           &lt;element name="children" type="{http://www.cmis.org/ns/1.0}childrenType"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}hasMoreItems"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
@@ -32,39 +32,39 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "documentAndFolderCollection",
+    "children",
     "hasMoreItems"
 })
 @XmlRootElement(name = "getChildrenResponse")
 public class GetChildrenResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentAndFolderCollection documentAndFolderCollection;
+    protected ChildrenType children;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected boolean hasMoreItems;
 
     /**
-     * Gets the value of the documentAndFolderCollection property.
+     * Gets the value of the children property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentAndFolderCollection }
+     *     {@link ChildrenType }
      *     
      */
-    public DocumentAndFolderCollection getDocumentAndFolderCollection() {
-        return documentAndFolderCollection;
+    public ChildrenType getChildren() {
+        return children;
     }
 
     /**
-     * Sets the value of the documentAndFolderCollection property.
+     * Sets the value of the children property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentAndFolderCollection }
+     *     {@link ChildrenType }
      *     
      */
-    public void setDocumentAndFolderCollection(DocumentAndFolderCollection value) {
-        this.documentAndFolderCollection = value;
+    public void setChildren(ChildrenType value) {
+        this.children = value;
     }
 
     /**

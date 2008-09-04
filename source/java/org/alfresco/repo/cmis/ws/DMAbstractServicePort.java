@@ -28,55 +28,47 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.property.CMISPropertyService;
+import org.alfresco.cmis.search.CMISQueryService;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConverter;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Base class for all CMIS web services
+ *
  * @author Michael Shavnev
  * @author Dmitry Lazurkin
  */
 public class DMAbstractServicePort
 {
-
-    private static final TypeConverter TYPE_CONVERTER = DefaultTypeConverter.INSTANCE;
-
     private DatatypeFactory _datatypeFactory;
 
+    protected CMISDictionaryService cmisDictionaryService;
+    protected CMISQueryService cmisQueryService;
+    protected CMISService cmisService;
+    protected CMISPropertyService cmisPropertyService;
+    protected DescriptorService descriptorService;
     protected NodeService nodeService;
-    protected PersonService personService;
-    protected SearchService searchService;
-    protected NamespaceService namespaceService;
-    protected DictionaryService dictionaryService;
     protected VersionService versionService;
-    protected CheckOutCheckInService checkOutCheckInService;
     protected FileFolderService fileFolderService;
-    protected AuthenticationService authenticationService;
 
-    private DatatypeFactory getDatatypeFactory() throws RuntimeException
+    private DatatypeFactory getDatatypeFactory()
     {
         if (_datatypeFactory == null)
         {
@@ -86,373 +78,165 @@ public class DMAbstractServicePort
             }
             catch (DatatypeConfigurationException e)
             {
-                // TODO: error code
-                throw new RuntimeException(e.getMessage());
+                // suppress
             }
         }
         return _datatypeFactory;
     }
 
-    public void setNodeService(NodeService nodeService)
+    protected NodeRef getNodeRefFromOID(String oid) throws InvalidArgumentException
     {
-        this.nodeService = nodeService;
+        NodeRef nodeRef;
+
+        try
+        {
+            nodeRef = new NodeRef(oid);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // TODO: error code
+            throw new  InvalidArgumentException("Invalid OID value", ExceptionUtils.createBasicFault(null, "Invalid OID value"));
+        }
+
+        return nodeRef;
     }
 
-    public void setPersonService(PersonService personService)
+    private void addBooleanProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.personService = personService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyBooleanType propBoolean = new PropertyBooleanType();
+            propBoolean.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propBoolean.setValue((Boolean) value);
+            properties.getPropertyBoolean().add(propBoolean);
+        }
     }
 
-    public void setSearchService(SearchService searchService)
+    private void addDateTimeProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.searchService = searchService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyDateTimeType propDateTime = new PropertyDateTimeType();
+            propDateTime.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propDateTime.setValue(convert((Date) value));
+            properties.getPropertyDateTime().add(propDateTime);
+        }
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
+    private void addIDProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.namespaceService = namespaceService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyIDType propID = new PropertyIDType();
+            propID.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propID.setValue(value.toString());
+            properties.getPropertyID().add(propID);
+        }
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
+    private void addIntegerProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.dictionaryService = dictionaryService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyIntegerType propInteger = new PropertyIntegerType();
+            propInteger.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propInteger.setValue(BigInteger.valueOf((Long) value));
+            properties.getPropertyInteger().add(propInteger);
+        }
     }
 
-    public void setVersionService(VersionService versionService)
+    private void addStringProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.versionService = versionService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyStringType propString = new PropertyStringType();
+            propString.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propString.setValue(value.toString());
+            properties.getPropertyString().add(propString);
+        }
     }
 
-    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    private void addStringProperty(PropertiesType properties, PropertyFilter filter, String name, String value)
     {
-        this.checkOutCheckInService = checkOutCheckInService;
+        if (filter.allow(name) && value != null)
+        {
+            PropertyStringType propString = new PropertyStringType();
+            propString.setName(name);
+            propString.setValue(value);
+            properties.getPropertyString().add(propString);
+        }
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
+    private void addURIProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
-        this.fileFolderService = fileFolderService;
-    }
-
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
+        Serializable value = cmisPropertyService.getProperty(nodeRef, name);
+        if (filter.allow(name) && value != null)
+        {
+            PropertyURIType propString = new PropertyURIType();
+            propString.setName(CMISPropNamesMapping.getResponsePropertyName(name));
+            propString.setValue(value.toString());
+            properties.getPropertyURI().add(propString);
+        }
     }
 
     /**
-     * Sets properties for ObjectTypeBase object
+     * Get CMIS properties for object
      *
-     * @param nodeRef Node reference
-     * @param target ObjectTypeBase object for setting
-     * @param propertyFilter filter for properties
-     * @return ObjectTypeBase object
+     * @param nodeRef node reference
+     * @param filter property filter
+     * @return properties
      */
-    public ObjectTypeBase setObjectTypeBaseProperties(NodeRef nodeRef, ObjectTypeBase target, PropertyFilter propertyFilter) throws RuntimeException
+    public PropertiesType getPropertiesType(NodeRef nodeRef, PropertyFilter filter)
     {
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
+        QName cmisType = cmisMapping.getCmisType(nodeService.getType(nodeRef));
 
-        target.setObjectID(OIDUtils.toOID(nodeRef));
+        PropertiesType properties = new PropertiesType();
 
-        QName typeQName = nodeService.getType(nodeRef);
-        target.setObjectTypeID(typeQName.toString());
-
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        if (cmisMapping.isValidCmisDocument(cmisType))
         {
-            target.setBaseObjectType(ContentModel.TYPE_FOLDER.toString());
+            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_IMMUTABLE, nodeRef);
+            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_VERSION, nodeRef);
+            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_MAJOR_VERSION, nodeRef);
+            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_MAJOR_VERSION, nodeRef);
+            addBooleanProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT, nodeRef);
+            addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, nodeRef);
+            addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_ID, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID, nodeRef);
+            addIntegerProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_LENGTH, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_NAME, nodeRef);
+            addStringProperty(properties, filter, "baseType", "document");
+            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_FILENAME, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_VERSION_LABEL, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_CHECKIN_COMMENT, nodeRef);
+            addURIProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_URI, nodeRef);
         }
-        else
+        else if (cmisMapping.isValidCmisFolder(cmisType))
         {
-            target.setBaseObjectType(ContentModel.TYPE_CONTENT.toString());
-        }
-
-        if (propertyFilter.allow(CmisProperty.CREATED_BY))
-        {
-            target.setCreatedBy(TYPE_CONVERTER.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
-        }
-
-        if (propertyFilter.allow(CmisProperty.CREATION_DATE))
-        {
-            target.setCreationDate(convert(TYPE_CONVERTER.convert(Date.class, properties.get(ContentModel.PROP_CREATED))));
-        }
-
-        if (propertyFilter.allow(CmisProperty.LAST_MODIFIED_BY))
-        {
-            target.setLastModifiedBy(TYPE_CONVERTER.convert(String.class, properties.get(ContentModel.PROP_MODIFIER)));
-        }
-
-        Date modificationDate = TYPE_CONVERTER.convert(Date.class, properties.get(ContentModel.PROP_MODIFIED));
-
-        if (propertyFilter.allow(CmisProperty.LAST_MODIFICATION_DATE))
-        {
-            target.setLastModificationDate(convert(modificationDate));
-        }
-
-        if (propertyFilter.allow(CmisProperty.CHANGE_TOKEN))
-        {
-            target.setChangeToken(String.valueOf(modificationDate.getTime()));
-        }
-
-        return target;
-    }
-
-    /**
-     * Sets properties for FolderObjectType object
-     *
-     * @param nodeRef Node reference
-     * @param target FolderObjectType object for setting
-     * @param propertyFilter filter for properties
-     * @return FolderObjectType object
-     */
-    public FolderObjectType setFolderObjectTypeProperties(NodeRef folderNodeRef, FolderObjectType target, PropertyFilter propertyFilter) throws RuntimeException
-    {
-        setObjectTypeBaseProperties(folderNodeRef, target, propertyFilter);
-
-        if (propertyFilter.allow(CmisProperty.NAME))
-        {
-            target.setName((String) nodeService.getProperty(folderNodeRef, ContentModel.PROP_NAME));
+            addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, nodeRef);
+            addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_PARENT, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_NAME, nodeRef);
+            addStringProperty(properties, filter, "baseType", "folder");
+            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, nodeRef);
+            addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, nodeRef);
         }
 
-        if (propertyFilter.allow(CmisProperty.PARENT))
-        {
-            target.setParent(OIDUtils.toOID(nodeService.getPrimaryParent(folderNodeRef).getParentRef()));
-        }
-
-        if (propertyFilter.allow(CmisProperty.ALLOWED_CHILD_OBJECT_TYPES))
-        {
-            // TODO: not set this property
-        }
-
-        return target;
-    }
-
-    /**
-     * Sets properties for DocumentOrFolderObjectType object
-     *
-     * @param nodeRef Node reference
-     * @param target DocumentOrFolderObjectType object for setting
-     * @param propertyFilter filter for properties
-     * @return DocumentOrFolderObjectType object
-     */
-    public DocumentOrFolderObjectType setFolderObjectTypeProperties(NodeRef folderNodeRef, DocumentOrFolderObjectType target, PropertyFilter propertyFilter) throws RuntimeException
-    {
-        setObjectTypeBaseProperties(folderNodeRef, target, propertyFilter);
-
-        if (propertyFilter.allow(CmisProperty.NAME))
-        {
-            target.setName((String) nodeService.getProperty(folderNodeRef, ContentModel.PROP_NAME));
-        }
-
-        if (propertyFilter.allow(CmisProperty.PARENT))
-        {
-            target.setParent(OIDUtils.toOID(nodeService.getPrimaryParent(folderNodeRef).getParentRef()));
-        }
-
-        if (propertyFilter.allow(CmisProperty.ALLOWED_CHILD_OBJECT_TYPES))
-        {
-            // TODO: not set this property
-        }
-
-        return target;
-    }
-
-    /**
-     * Sets properties for DocumentObjectType object
-     *
-     * @param nodeRef Node reference
-     * @param target DocumentObjectType object for setting
-     * @param propertyFilter filter for properties
-     * @return DocumentObjectType object
-     */
-    public DocumentObjectType setDocumentObjectTypeProperties(NodeRef documentNodeRef, DocumentObjectType target, PropertyFilter propertyFilter) throws RuntimeException
-    {
-        setObjectTypeBaseProperties(documentNodeRef, target, propertyFilter);
-
-        NodeRef workingCopy = null;
-
-        if (nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_WORKING_COPY))
-        {
-            workingCopy = documentNodeRef;
-
-            if (propertyFilter.allow(CmisProperty.IS_LATEST_VERSION))
-            {
-                target.setIsLatestVersion(false);
-            }
-
-            if (propertyFilter.allow(CmisProperty.IS_MAJOR_VERSION))
-            {
-                target.setIsMajorVersion(false);
-            }
-
-            if (propertyFilter.allow(CmisProperty.IS_LATEST_MAJOR_VERSION))
-            {
-                target.setIsLatestMajorVersion(false);
-            }
-        }
-        else
-        {
-            target.setName((String) nodeService.getProperty(documentNodeRef, ContentModel.PROP_NAME));
-
-            workingCopy = checkOutCheckInService.getWorkingCopy(documentNodeRef);
-
-            Version version = versionService.getCurrentVersion(documentNodeRef);
-
-            if (nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_VERSIONABLE) && version != null)
-            {
-                if (propertyFilter.allow(CmisProperty.IS_LATEST_VERSION))
-                {
-                    target.setIsLatestVersion(version.getVersionedNodeRef().equals(documentNodeRef));
-                }
-
-                if (propertyFilter.allow(CmisProperty.IS_MAJOR_VERSION))
-                {
-                    target.setIsMajorVersion(version.getVersionType().equals(VersionType.MAJOR));
-                }
-
-                if (propertyFilter.allow(CmisProperty.IS_LATEST_MAJOR_VERSION))
-                {
-                    NodeRef latestMajorNodeRef = getLatestVersionNodeRef(documentNodeRef, true);
-                    target.setIsLatestMajorVersion(latestMajorNodeRef.equals(documentNodeRef));
-                }
-
-                if (propertyFilter.allow(CmisProperty.CHECKIN_COMMENT) && workingCopy == null)
-                {
-                    target.setCheckinComment(version.getDescription());
-                }
-            }
-            else
-            {
-                if (propertyFilter.allow(CmisProperty.IS_LATEST_VERSION))
-                {
-                    target.setIsLatestVersion(true);
-                }
-                if (propertyFilter.allow(CmisProperty.IS_MAJOR_VERSION))
-                {
-                    target.setIsMajorVersion(true);
-                }
-                if (propertyFilter.allow(CmisProperty.IS_LATEST_MAJOR_VERSION))
-                {
-                    target.setIsLatestMajorVersion(true);
-                }
-            }
-        }
-
-        if (propertyFilter.allow(CmisProperty.VERSION_SERIES_IS_CHECKED_OUT))
-        {
-            target.setVersionSeriesIsCheckedOut(workingCopy != null);
-        }
-
-        if (propertyFilter.allow(CmisProperty.VERSION_SERIES_CHECKED_OUT_BY) && workingCopy != null)
-        {
-            target.setVersionSeriesCheckedOutBy((String) nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
-        }
-
-        if (propertyFilter.allow(CmisProperty.VERSION_SERIES_CHECKED_OUT_OID) && workingCopy != null)
-        {
-            if (AuthenticationUtil.getCurrentUserName().equals((String) nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER)))
-            {
-                target.setVersionSeriesCheckedOutOID(OIDUtils.toOID(workingCopy));
-            }
-        }
-
-        ContentReader contentReader = null;
-
-        if (nodeService.getType(documentNodeRef).equals(ContentModel.TYPE_LINK))
-        {
-            NodeRef destRef = (NodeRef) nodeService.getProperty(documentNodeRef, ContentModel.PROP_LINK_DESTINATION);
-            if (nodeService.exists(destRef))
-            {
-                contentReader = fileFolderService.getReader(destRef);
-            }
-        }
-        else
-        {
-            contentReader = fileFolderService.getReader(documentNodeRef);
-        }
-
-        if (contentReader != null)
-        {
-            if (propertyFilter.allow(CmisProperty.CONTENT_STREAM_LENGTH))
-            {
-                target.setContentStreamLength(BigInteger.valueOf(contentReader.getSize()));
-            }
-            if (propertyFilter.allow(CmisProperty.CONTENT_STREAM_MIME_TYPE))
-            {
-                target.setContentStreamMimeType(contentReader.getMimetype());
-            }
-            if (propertyFilter.allow(CmisProperty.CONTENT_STREAM_FILENAME))
-            {
-                target.setContentStreamFilename(target.getName()); // TODO: right on not?
-            }
-        }
-
-        return target;
-    }
-
-    /**
-     * Sets properties for RelationshipObjectType object
-     *
-     * @param associationRef Association reference
-     * @param target RelationshipObjectType object for setting
-     * @param propertyFilter filter for properties
-     * @return RelationshipObjectType object
-     */
-    public RelationshipObjectType setRelationshipObjectTypeProperties(AssociationRef associationRef, RelationshipObjectType target, PropertyFilter propertyFilter)
-    {
-        target.setSourceOID(OIDUtils.toOID(associationRef.getSourceRef()));
-        target.setTargetOID(OIDUtils.toOID(associationRef.getTargetRef()));
-        // TODO: other properties
-        return target;
-    }
-
-    /**
-     * Sets properties for DocumentFolderOrRelationshipObjectType object
-     *
-     * @param associationRef Association reference
-     * @param target DocumentFolderOrRelationshipObjectType object for setting
-     * @param propertyFilter filter for properties
-     * @return DocumentFolderOrRelationshipObjectType object
-     */
-    public DocumentFolderOrRelationshipObjectType setRelationshipObjectTypeProperties(AssociationRef associationRef, DocumentFolderOrRelationshipObjectType target, PropertyFilter propertyFilter)
-    {
-        target.setSourceOID(OIDUtils.toOID(associationRef.getSourceRef()));
-        target.setTargetOID(OIDUtils.toOID(associationRef.getTargetRef()));
-        // TODO: other properties
-        return target;
-    }
-
-    /**
-     * @param associationRef a reference to the association to look for
-     * @return Returns true if the association exists, otherwise false
-     */
-    public boolean exists(AssociationRef associationRef)
-    {
-        if (nodeService.exists(associationRef.getSourceRef()))
-        {
-            return nodeService.getTargetAssocs(associationRef.getSourceRef(), associationRef.getTypeQName()).contains(associationRef);
-        }
-
-        return false;
-    }
-
-    /**
-     * @param nodeRef
-     * @return
-     */
-    public boolean isFolderType(NodeRef nodeRef)
-    {
-        QName typeQName = nodeService.getType(nodeRef);
-
-        return dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER);
-    }
-
-    /**
-     * @param nodeRef
-     * @return
-     */
-    public boolean isDocumentType(NodeRef nodeRef)
-    {
-        QName typeQName = nodeService.getType(nodeRef);
-
-        return dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT);
+        return properties;
     }
 
     /**
@@ -482,7 +266,8 @@ public class DMAbstractServicePort
                     do
                     {
                         latestVersion = versionHistory.getPredecessor(latestVersion);
-                    } while (latestVersion.getVersionType().equals(VersionType.MAJOR) == false);
+                    }
+                    while (latestVersion.getVersionType().equals(VersionType.MAJOR) == false);
 
                     latestVersionNodeRef = latestVersion.getFrozenStateNodeRef();
                 }
@@ -497,13 +282,52 @@ public class DMAbstractServicePort
      *
      * @param date Date object
      * @return XMLGregorianCalendar object
-     * @throws RuntimeException
      */
-    private XMLGregorianCalendar convert(Date date) throws RuntimeException
+    private XMLGregorianCalendar convert(Date date)
     {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         return getDatatypeFactory().newXMLGregorianCalendar(calendar);
+    }
+
+    public void setCmisService(CMISService cmisService)
+    {
+        this.cmisService = cmisService;
+    }
+
+    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
+    {
+        this.cmisPropertyService = cmisPropertyService;
+    }
+
+    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService = cmisDictionaryService;
+    }
+
+    public void setCmisQueryService(CMISQueryService cmisQueryService)
+    {
+        this.cmisQueryService = cmisQueryService;
+    }
+
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
 }

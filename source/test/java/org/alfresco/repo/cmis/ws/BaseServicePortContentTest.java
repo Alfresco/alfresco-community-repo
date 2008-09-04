@@ -1,5 +1,28 @@
-package org.alfresco.repo.cmis.ws;
+/*
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.cmis.ws;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -15,7 +38,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -35,7 +57,7 @@ public class BaseServicePortContentTest extends BaseServicePortTest
 {
     protected CheckOutCheckInService checkOutCheckInService;
 
-    private static final String IMPORT = "import-for-cmis-ws-test.acp";
+    private static final String IMPORT = "alfresco/import-for-test.acp";
 
     protected static final String L0_FILE_0 = "L0-File-0";
     protected static final String L0_FILE_1 = "L0-File-1";
@@ -64,9 +86,6 @@ public class BaseServicePortContentTest extends BaseServicePortTest
     protected NodeRef L1_FILE_VERSION_2_1_NODEREF;
     protected NodeRef L1_FILE_VERSION_2_0_NODEREF;
     protected NodeRef L1_FILE_VERSION_1_0_NODEREF;
-
-    protected AssociationRef L0_FILE_1_TO_L0_FILE_0_ASSOCREF;
-    protected AssociationRef NONEXISTENT_ASSOCREF;
 
     @Override
     protected void onSetUp() throws Exception
@@ -126,9 +145,6 @@ public class BaseServicePortContentTest extends BaseServicePortTest
         L1_FOLDER_0_NODEREF = fileFolderService.resolveNamePath(L0_FOLDER_0_NODEREF, Collections.singletonList(L1_FOLDER_0)).getNodeRef();
         L1_FOLDER_1_NODEREF = fileFolderService.resolveNamePath(L0_FOLDER_0_NODEREF, Collections.singletonList(L1_FOLDER_1)).getNodeRef();
         L0_NONEXISTENT_NODEREF = importForTest;
-
-        L0_FILE_1_TO_L0_FILE_0_ASSOCREF = nodeService.createAssociation(L0_FILE_1_NODEREF, L0_FILE_0_NODEREF, ContentModel.ASSOC_REFERENCES);
-        NONEXISTENT_ASSOCREF = new AssociationRef(L1_FILE_0_NODEREF, ContentModel.ASSOC_REFERENCES, L1_FILE_1_NODEREF);
 
         authenticationComponent.clearCurrentSecurityContext();
     }

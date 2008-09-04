@@ -19,9 +19,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="documentId" type="{http://www.cmis.org/ns/1.0}objectID"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="documentId" type="{http://www.cmis.org/ns/1.0}ID"/>
  *           &lt;element name="overwriteFlag" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream" minOccurs="0"/>
+ *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -33,6 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "documentId",
     "overwriteFlag",
     "contentStream"
@@ -41,11 +43,37 @@ import javax.xml.bind.annotation.XmlType;
 public class SetContentStream {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String documentId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected Boolean overwriteFlag;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected ContentStream contentStream;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected ContentStreamType contentStream;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the documentId property.
@@ -100,10 +128,10 @@ public class SetContentStream {
      * 
      * @return
      *     possible object is
-     *     {@link ContentStream }
+     *     {@link ContentStreamType }
      *     
      */
-    public ContentStream getContentStream() {
+    public ContentStreamType getContentStream() {
         return contentStream;
     }
 
@@ -112,10 +140,10 @@ public class SetContentStream {
      * 
      * @param value
      *     allowed object is
-     *     {@link ContentStream }
+     *     {@link ContentStreamType }
      *     
      */
-    public void setContentStream(ContentStream value) {
+    public void setContentStream(ContentStreamType value) {
         this.contentStream = value;
     }
 

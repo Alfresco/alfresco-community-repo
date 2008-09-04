@@ -1,6 +1,6 @@
 [#ftl]
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
-<?xml version="1.0" encoding='utf-8'?> 
+<?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
   <workspace cmis:id="${server.id}">
     <atom:title>${server.name}</atom:title>
@@ -37,7 +37,10 @@
     <collection href="${absurl(url.serviceContext)}/api/types" cmis:collectionType="types"> 
       <atom:title>type collection</atom:title> 
     </collection> 
-
+    <collection href="${absurl(url.serviceContext)}/api/query" cmis:collectionType="query"> 
+      <atom:title>query collection</atom:title> 
+    </collection>
+     
   </workspace> 
 </service> 
 

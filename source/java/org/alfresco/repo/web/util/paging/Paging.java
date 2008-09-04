@@ -234,11 +234,11 @@ public class Paging
     {
         if (pageNumber != null || pageSize != null)
         {
-            return createPage(pageNumber == null ? isZeroBasedPage() ? 0 : 1 : pageNumber, pageSize == null ? 0 : pageSize);
+            return createPage(pageNumber == null ? isZeroBasedPage() ? 0 : 1 : pageNumber, pageSize == null ? -1 : pageSize);
         }
         else if (skipCount != null || maxItems != null)
         {
-            return createWindow(skipCount == null ? isZeroBasedRow() ? 0 : 1 : skipCount, maxItems == null ? 0 : maxItems);
+            return createWindow(skipCount == null ? isZeroBasedRow() ? 0 : 1 : skipCount, maxItems == null ? -1 : maxItems);
         }
         return createUnlimitedPage();
     }
@@ -305,7 +305,19 @@ public class Paging
      */
     public PagedResults createPagedResults(Object[] results, Cursor cursor)
     {
-        return new ArrayPagedResults(results, cursor);
+        return new PagedResults(results, cursor);
     }
-    
+
+    /**
+     * Create a Paged Result Set
+     * 
+     * @param results  the results for the page within the cursor
+     * @param cursor  the cursor
+     * @return  the paged result set
+     */
+    public PagedResults createPagedResult(Object result, Cursor cursor)
+    {
+        return new PagedResults(result, cursor);
+    }
+
 }

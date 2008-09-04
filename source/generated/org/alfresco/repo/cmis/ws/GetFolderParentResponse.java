@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}folderCollection"/>
+ *           &lt;element name="ancestors" type="{http://www.cmis.org/ns/1.0}objectCollectionType"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -31,36 +31,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "folderCollection"
+    "ancestors"
 })
 @XmlRootElement(name = "getFolderParentResponse")
 public class GetFolderParentResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected FolderCollection folderCollection;
+    protected ObjectCollectionType ancestors;
 
     /**
-     * Gets the value of the folderCollection property.
+     * Gets the value of the ancestors property.
      * 
      * @return
      *     possible object is
-     *     {@link FolderCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public FolderCollection getFolderCollection() {
-        return folderCollection;
+    public ObjectCollectionType getAncestors() {
+        return ancestors;
     }
 
     /**
-     * Sets the value of the folderCollection property.
+     * Sets the value of the ancestors property.
      * 
      * @param value
      *     allowed object is
-     *     {@link FolderCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public void setFolderCollection(FolderCollection value) {
-        this.folderCollection = value;
+    public void setAncestors(ObjectCollectionType value) {
+        this.ancestors = value;
     }
 
 }

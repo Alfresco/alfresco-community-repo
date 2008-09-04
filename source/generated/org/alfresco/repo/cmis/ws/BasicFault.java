@@ -18,8 +18,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="errorCode" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
- *         &lt;element name="errorMessage" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="errorCode" type="{http://www.w3.org/2001/XMLSchema}integer"/>
+ *         &lt;element name="errorMessage" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -35,9 +35,9 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class BasicFault {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected BigInteger errorCode;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String errorMessage;
 
     /**

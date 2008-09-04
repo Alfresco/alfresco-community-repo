@@ -2,6 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
     <bean id="dmRepositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -65,26 +66,21 @@
         </property>
     </bean>
 
-    <bean id="dmRepositoryServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
-        <property name="rootPath">
-            <value>workspace://CmisTestWorkspace/alf:root_folder</value>
-        </property>
-    </bean>
+    <bean id="dmRepositoryServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRepositoryServicePort" />
 
     <bean id="dmNavigationServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMNavigationServicePort" />
 
     <bean id="dmObjectServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMObjectServicePort" />
 
     <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
-        <property name="authenticationService" ref="authenticationService" />
-        <property name="personService" ref="personService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="dictionaryService" ref="dictionaryService" />
-        <property name="searchService" ref="searchService" />
-        <property name="namespaceService" ref="namespaceService" />
-        <property name="versionService" ref="versionService" />
-        <property name="checkOutCheckInService" ref="checkOutCheckInService" />
-        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="cmisService" ref="CMISService" />
+        <property name="cmisQueryService" ref="CMISQueryService" />
+        <property name="cmisPropertyService" ref="CMISPropertyService" />
+        <property name="cmisDictionaryService" ref="CMISDictionaryService" />
+        <property name="descriptorService" ref="DescriptorService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="versionService" ref="VersionService" />
+        <property name="fileFolderService" ref="FileFolderService" />
     </bean>
 
     <bean id="exceptionPointcutAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">

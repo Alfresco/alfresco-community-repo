@@ -20,11 +20,13 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="direction" type="{http://www.cmis.org/ns/1.0}relationshipDirectionEnum"/>
- *           &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="direction" type="{http://www.cmis.org/ns/1.0}relationshipDirectionEnum" minOccurs="0"/>
+ *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
  *           &lt;element name="includeSubRelationshipTypes" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
+ *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
  *         &lt;/sequence>
@@ -38,11 +40,13 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "objectId",
     "direction",
     "typeId",
     "includeSubRelationshipTypes",
     "filter",
+    "includeAllowableActions",
     "maxItems",
     "skipCount"
 })
@@ -50,8 +54,10 @@ import javax.xml.bind.annotation.XmlType;
 public class GetRelationships {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String objectId;
+    protected String repositoryId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String objectId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected RelationshipDirectionEnum direction;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String typeId;
@@ -60,9 +66,35 @@ public class GetRelationships {
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String filter;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected Boolean includeAllowableActions;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger maxItems;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger skipCount;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the objectId property.
@@ -182,6 +214,30 @@ public class GetRelationships {
      */
     public void setFilter(String value) {
         this.filter = value;
+    }
+
+    /**
+     * Gets the value of the includeAllowableActions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isIncludeAllowableActions() {
+        return includeAllowableActions;
+    }
+
+    /**
+     * Sets the value of the includeAllowableActions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setIncludeAllowableActions(Boolean value) {
+        this.includeAllowableActions = value;
     }
 
     /**

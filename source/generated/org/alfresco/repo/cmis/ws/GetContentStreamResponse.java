@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="stream" type="{http://www.w3.org/2001/XMLSchema}base64Binary"/>
+ *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -31,34 +31,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "stream"
+    "contentStream"
 })
 @XmlRootElement(name = "getContentStreamResponse")
 public class GetContentStreamResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected byte[] stream;
+    protected ContentStreamType contentStream;
 
     /**
-     * Gets the value of the stream property.
+     * Gets the value of the contentStream property.
      * 
      * @return
      *     possible object is
-     *     byte[]
+     *     {@link ContentStreamType }
+     *     
      */
-    public byte[] getStream() {
-        return stream;
+    public ContentStreamType getContentStream() {
+        return contentStream;
     }
 
     /**
-     * Sets the value of the stream property.
+     * Sets the value of the contentStream property.
      * 
      * @param value
      *     allowed object is
-     *     byte[]
+     *     {@link ContentStreamType }
+     *     
      */
-    public void setStream(byte[] value) {
-        this.stream = ((byte[]) value);
+    public void setContentStream(ContentStreamType value) {
+        this.contentStream = value;
     }
 
 }

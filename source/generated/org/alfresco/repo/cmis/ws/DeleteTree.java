@@ -19,8 +19,9 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="unfileMultiFiledDocuments" type="{http://www.cmis.org/ns/1.0}deleteWithMultiFilingEnum"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="unfileNonfolderObjects" type="{http://www.cmis.org/ns/1.0}unfileNonfolderObjectsEnum"/>
  *           &lt;element name="continueOnFailure" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
@@ -33,19 +34,46 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "folderId",
-    "unfileMultiFiledDocuments",
+    "unfileNonfolderObjects",
     "continueOnFailure"
 })
 @XmlRootElement(name = "deleteTree")
 public class DeleteTree {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String folderId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DeleteWithMultiFilingEnum unfileMultiFiledDocuments;
+    protected UnfileNonfolderObjectsEnum unfileNonfolderObjects;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected Boolean continueOnFailure;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the folderId property.
@@ -72,27 +100,27 @@ public class DeleteTree {
     }
 
     /**
-     * Gets the value of the unfileMultiFiledDocuments property.
+     * Gets the value of the unfileNonfolderObjects property.
      * 
      * @return
      *     possible object is
-     *     {@link DeleteWithMultiFilingEnum }
+     *     {@link UnfileNonfolderObjectsEnum }
      *     
      */
-    public DeleteWithMultiFilingEnum getUnfileMultiFiledDocuments() {
-        return unfileMultiFiledDocuments;
+    public UnfileNonfolderObjectsEnum getUnfileNonfolderObjects() {
+        return unfileNonfolderObjects;
     }
 
     /**
-     * Sets the value of the unfileMultiFiledDocuments property.
+     * Sets the value of the unfileNonfolderObjects property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DeleteWithMultiFilingEnum }
+     *     {@link UnfileNonfolderObjectsEnum }
      *     
      */
-    public void setUnfileMultiFiledDocuments(DeleteWithMultiFilingEnum value) {
-        this.unfileMultiFiledDocuments = value;
+    public void setUnfileNonfolderObjects(UnfileNonfolderObjectsEnum value) {
+        this.unfileNonfolderObjects = value;
     }
 
     /**

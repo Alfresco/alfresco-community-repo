@@ -43,16 +43,39 @@ public interface CMISConstants
 {
     public static final String CMIS_200805_NS = "http://www.cmis.org/2008/05";
 
+    // CMIS Repository Info
+    public static final QName REPOSITORY_INFO = new QName(CMIS_200805_NS, "repositoryInfo");
+    public static final QName REPOSITORY_ID = new QName(CMIS_200805_NS, "repositoryId");
+    public static final QName REPOSITORY_NAME = new QName(CMIS_200805_NS, "repositoryName");
+    public static final QName REPOSITORY_DESCRIPTION = new QName(CMIS_200805_NS, "repositoryDescription");
+    public static final QName REPOSITORY_SPECIFIC_INFO = new QName(CMIS_200805_NS, "repositorySpecificInformation");
+    public static final QName VENDOR_NAME = new QName(CMIS_200805_NS, "vendorName");
+    public static final QName PRODUCT_NAME = new QName(CMIS_200805_NS, "productName");
+    public static final QName PRODUCT_VERSION = new QName(CMIS_200805_NS, "productVersion");
+    public static final QName VERSIONS_SUPPORTED = new QName(CMIS_200805_NS, "cmisVersionsSupported");
+    
+    // CMIS Capabilities
+    public static final QName CAPABILITIES = new QName(CMIS_200805_NS, "capabilities");
+    public static final QName CAPABILITY_MULTIFILING = new QName(CMIS_200805_NS, "capabilityMultifiling");
+    public static final QName CAPABILITY_UNFILING = new QName(CMIS_200805_NS, "capabilityUnfiling");
+    public static final QName CAPABILITY_VERSION_SPECIFIC_FILING = new QName(CMIS_200805_NS, "capabilityVersionSpecificFiling");
+    public static final QName CAPABILITY_PWC_UPDATEABLE = new QName(CMIS_200805_NS, "capabilityPWCUpdateable");
+    public static final QName CAPABILITY_ALL_VERIONS_SEARCHABLE = new QName(CMIS_200805_NS, "capabilityAllVersionsSearchable");
+    public static final QName CAPABILITY_JOIN = new QName(CMIS_200805_NS, "capabilityJoin");
+    public static final QName CAPABILITY_FULLTEXT = new QName(CMIS_200805_NS, "capabilityFullText");
+
     // CMIS Schema
-    public static final QName PROPERTIES  = new QName(CMIS_200805_NS, "properties");
+    public static final QName PROPERTIES = new QName(CMIS_200805_NS, "properties");
     public static final QName PROPERTY_STRING = new QName(CMIS_200805_NS, "propertyString");
     public static final QName PROPERTY_ID = new QName(CMIS_200805_NS, "propertyID");
     public static final QName PROPERTY_BOOLEAN = new QName(CMIS_200805_NS, "propertyBoolean");
     public static final QName PROPERTY_NAME = new QName(CMIS_200805_NS, "name");
     
     // CMIS Properties
+    public static final String PROP_NAME = "name";
     public static final String PROP_OBJECT_ID  = "objectId";
     public static final String PROP_BASETYPE = "baseType";
+    public static final String PROP_OBJECT_TYPE = "objectType";
     public static final String PROP_IS_IMMUTABLE = "isImmutable";
     public static final String PROP_IS_LATEST_VERSION = "isLatestVersion";
     public static final String PROP_IS_MAJOR_VERSION = "isMajorVersion";

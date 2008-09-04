@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="VersioningService" targetNamespace="http://www.cmis.org/ns/1.0">
+  <types>
+    <!--
+		<xsd:schema>
+			<xsd:import namespace="http://cmis.org/_TBD_" schemaLocation="_TBD_.xsd"/>
+		</xsd:schema>
+		-->
+    <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+      <xsd:include schemaLocation="cmisMessageTypes.xsd" />
+    </xsd:schema>
+  </types>
+  <message name="checkOut">
+    <part name="parameters" element="tns:checkOut" />
+  </message>
+  <message name="checkOutResponse">
+    <part name="parameters" element="tns:checkOutResponse" />
+  </message>
+  <message name="cancelCheckOut">
+    <part name="parameters" element="tns:cancelCheckOut" />
+  </message>
+  <message name="cancelCheckOutResponse">
+    <part name="parameters" element="tns:cancelCheckOutResponse" />
+  </message>
+  <message name="checkIn">
+    <part name="parameters" element="tns:checkIn" />
+  </message>
+  <message name="checkInResponse">
+    <part name="parameters" element="tns:checkInResponse" />
+  </message>
+  <message name="getPropertiesOfLatestVersion">
+    <part name="parameters" element="tns:getPropertiesOfLatestVersion" />
+  </message>
+  <message name="getPropertiesOfLatestVersionResponse">
+    <part name="parameters" element="tns:getPropertiesOfLatestVersionResponse" />
+  </message>
+  <message name="getAllVersions">
+    <part name="parameters" element="tns:getAllVersions" />
+  </message>
+  <message name="getAllVersionsResponse">
+    <part name="parameters" element="tns:getAllVersionsResponse" />
+  </message>
+  <message name="deleteAllVersions">
+    <part name="parameters" element="tns:deleteAllVersions" />
+  </message>
+  <message name="deleteAllVersionsResponse">
+    <part name="parameters" element="tns:deleteAllVersionsResponse" />
+  </message>
+  <message name="InvalidArgumentException">
+    <part name="fault" element="tns:invalidArgumentException" />
+  </message>
+  <message name="PermissionDeniedException">
+    <part name="fault" element="tns:permissionDeniedException" />
+  </message>
+  <message name="OperationNotSupportedException">
+    <part name="fault" element="tns:operationNotSupportedException" />
+  </message>
+  <message name="UpdateConflictException">
+    <part name="fault" element="tns:updateConflictException" />
+  </message>
+  <message name="RuntimeException">
+    <part name="fault" element="tns:runtimeException" />
+  </message>
+  <message name="ConstraintViolationException">
+    <part name="fault" element="tns:constraintViolationException" />
+  </message>
+  <message name="ObjectNotFoundException">
+    <part name="fault" element="tns:objectNotFoundException" />
+  </message>
+  <message name="FilterNotValidException">
+    <part name="fault" element="tns:filterNotValidException" />
+  </message>
+  <message name="StreamNotSupportedException">
+    <part name="fault" element="tns:streamNotSupportedException" />
+  </message>
+  <message name="StorageException">
+    <part name="fault" element="tns:storageException" />
+  </message>
+  <portType name="VersioningServicePort">
+    <operation name="checkOut">
+      <input message="tns:checkOut" />
+      <output message="tns:checkOutResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="cancelCheckOut">
+      <input message="tns:cancelCheckOut" />
+      <output message="tns:cancelCheckOutResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="checkIn">
+      <input message="tns:checkIn" />
+      <output message="tns:checkInResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="StreamNotSupportedException" message="tns:StreamNotSupportedException" />
+      <fault name="StorageException" message="tns:StorageException" />
+    </operation>
+    <operation name="getPropertiesOfLatestVersion">
+      <input message="tns:getPropertiesOfLatestVersion" />
+      <output message="tns:getPropertiesOfLatestVersionResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="getAllVersions">
+      <input message="tns:getAllVersions" />
+      <output message="tns:getAllVersionsResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+    </operation>
+    <operation name="deleteAllVersions">
+      <input message="tns:deleteAllVersions" />
+      <output message="tns:deleteAllVersionsResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+  </portType>
+  <binding name="VersioningServicePortBinding" type="tns:VersioningServicePort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="checkOut">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="cancelCheckOut">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="checkIn">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="StreamNotSupportedException">
+        <soap:fault name="StreamNotSupportedException" use="literal" />
+      </fault>
+      <fault name="StorageException">
+        <soap:fault name="StorageException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getPropertiesOfLatestVersion">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getAllVersions">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="deleteAllVersions">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+  </binding>
+  <service name="VersioningService">
+    <port name="VersioningServicePort" binding="tns:VersioningServicePortBinding">
+      <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
+    </port>
+  </service>
+</definitions>

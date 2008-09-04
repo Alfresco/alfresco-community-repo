@@ -112,6 +112,12 @@
                  <constructor-arg><ref bean="CMISPropertyService"/></constructor-arg>    
               </bean>
            </entry>
+           <entry key="cmisresultset">
+              <bean class="org.alfresco.repo.cmis.rest.CMISResultSetMethod">
+                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>    
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>    
+              </bean>
+           </entry>
          </map>
       </property>
       <property name="registryFactory">

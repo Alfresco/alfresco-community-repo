@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Checkin Private Working Copy</shortname>
   <description>Checkin private working copy</description>
-  <url>/api/pwc/{store_type}/{store_id}/{id}?checkinComment={checkinComment?}&amp;major={major?}</url>
+  <url>/api/pwc/{store_type}/{store_id}/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
   <authentication>user</authentication>
   <format default="atomentry"/>
   <family>CMIS</family>

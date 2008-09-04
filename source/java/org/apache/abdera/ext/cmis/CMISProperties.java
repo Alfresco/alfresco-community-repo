@@ -53,6 +53,11 @@ public class CMISProperties extends ElementWrapper
         super(factory, CMISConstants.PROPERTIES);
     }
 
+    public String getName()
+    {
+        return findPropertyString(CMISConstants.PROP_NAME);
+    }
+
     public String getObjectId()
     {
         return findPropertyID(CMISConstants.PROP_OBJECT_ID);
@@ -62,7 +67,12 @@ public class CMISProperties extends ElementWrapper
     {
         return findPropertyString(CMISConstants.PROP_BASETYPE);
     }
-    
+
+    public String getObjectType()
+    {
+        return findPropertyString(CMISConstants.PROP_OBJECT_TYPE);
+    }
+
     public boolean isImmutable()
     {
         return findPropertyBoolean(CMISConstants.PROP_IS_IMMUTABLE);
@@ -114,7 +124,7 @@ public class CMISProperties extends ElementWrapper
     }
 
     
-    private String findPropertyString(String name)
+    public String findPropertyString(String name)
     {
         Element child = getFirstChild(CMISConstants.PROPERTY_STRING);
         while(child != null)
@@ -128,7 +138,7 @@ public class CMISProperties extends ElementWrapper
         return null;
     }
 
-    private String findPropertyID(String name)
+    public String findPropertyID(String name)
     {
         Element child = getFirstChild(CMISConstants.PROPERTY_ID);
         while(child != null)
@@ -142,7 +152,7 @@ public class CMISProperties extends ElementWrapper
         return null;
     }
 
-    private boolean findPropertyBoolean(String name)
+    public boolean findPropertyBoolean(String name)
     {
         Element child = getFirstChild(CMISConstants.PROPERTY_BOOLEAN);
         while(child != null)

@@ -40,15 +40,20 @@ import org.alfresco.web.scripts.TestWebScriptServer.Request;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.alfresco.web.scripts.atom.AbderaService;
 import org.alfresco.web.scripts.atom.AbderaServiceImpl;
+import org.apache.abdera.ext.cmis.CMISCapabilities;
 import org.apache.abdera.ext.cmis.CMISConstants;
 import org.apache.abdera.ext.cmis.CMISExtensionFactory;
 import org.apache.abdera.ext.cmis.CMISProperties;
+import org.apache.abdera.ext.cmis.CMISRepositoryInfo;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.abdera.model.Service;
+import org.apache.abdera.model.Workspace;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -58,6 +63,9 @@ import org.apache.abdera.model.Service;
  */
 public class CMISTest extends BaseCMISWebScriptTest
 {
+    // Logger
+    private static final Log logger = LogFactory.getLog(CMISTest.class);
+    
     private AbderaService abdera;
     
     // test context
@@ -65,6 +73,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     
     // cached responses
     private static Service service = null;
+    private static String fulltextCapability = null;
     private static Entry testsFolder = null;
     private static Entry testRunFolder = null;
 
@@ -78,9 +87,6 @@ public class CMISTest extends BaseCMISWebScriptTest
     {
         this.repositoryUrl = repositoryUrl;
     }
-    
-    
-    // TODO: checkout/checkin tests need to perform version property assertions
     
     
     @Override
@@ -97,6 +103,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         setDefaultRunAs("admin");
         
         super.setUp();
+        
+        if (logger.isInfoEnabled())
+            logger.info("*** Test: " + getName() + " (HEADERS: " + getArgsAsHeaders() + ")");
     }
 
     private Service getRepository()
@@ -108,10 +117,16 @@ public class CMISTest extends BaseCMISWebScriptTest
             String xml = res.getContentAsString();
             assertNotNull(xml);
             assertTrue(xml.length() > 0);
-            //assertValidXML(xml, getCMISValidator().getAppValidator());
             
             service = abdera.parseService(new StringReader(xml), null);
             assertNotNull(service);
+            Workspace workspace = service.getWorkspaces().get(0);
+            CMISRepositoryInfo repoInfo = workspace.getExtension(CMISConstants.REPOSITORY_INFO);
+            assertNotNull(repoInfo);
+            CMISCapabilities capabilities = repoInfo.getCapabilities();
+            assertNotNull(repoInfo);
+            fulltextCapability = capabilities.getFullText();
+            assertNotNull(fulltextCapability);
         }
         return service;
     }
@@ -137,6 +152,15 @@ public class CMISTest extends BaseCMISWebScriptTest
     private IRI getTypesCollection(Service service)
     {
         Collection root = service.getCollection("Main Repository", "type collection");
+        assertNotNull(root);
+        IRI rootHREF = root.getHref();
+        assertNotNull(rootHREF);
+        return rootHREF;
+    }
+
+    private IRI getQueryCollection(Service service)
+    {
+        Collection root = service.getCollection("Main Repository", "query collection");
         assertNotNull(root);
         IRI rootHREF = root.getHref();
         assertNotNull(rootHREF);
@@ -178,7 +202,6 @@ public class CMISTest extends BaseCMISWebScriptTest
         throws Exception
     {
         String createFile = loadString(atomEntryFile);
-        name = name + " " + System.currentTimeMillis();
         createFile = createFile.replace("${NAME}", name);
         Response res = sendRequest(new PostRequest(parent.toString(), createFile, Format.ATOMENTRY.mimetype()), 201, getAtomValidator());
         assertNotNull(res);
@@ -770,6 +793,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         String checkinUrl = pwc.getSelfLink().getHref().toString();
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("checkinComment", guid);
+        args2.put("checkin", "true");
         Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
         assertNotNull(checkinRes);
         String checkinResXML = checkinRes.getContentAsString();
@@ -839,6 +863,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         String checkinUrl = pwc.getSelfLink().getHref().toString();
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("checkinComment", guid);
+        args2.put("checkin", "true");
         Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
         assertNotNull(checkinRes);
         String checkinResXML = checkinRes.getContentAsString();
@@ -892,7 +917,8 @@ public class CMISTest extends BaseCMISWebScriptTest
             checkinFile = checkinFile.replace("${NAME}", "checkin " + i);
             String checkinUrl = pwc.getSelfLink().getHref().toString();
             Map<String, String> args2 = new HashMap<String, String>();
-            args2.put("checkinComment", "checkin " + i);
+            args2.put("checkinComment", "checkin" + i);
+            args2.put("checkin", "true");
             Response checkinRes = sendRequest(new PutRequest(checkinUrl, checkinFile, Format.ATOMENTRY.mimetype()).setArgs(args2), 200, getAtomValidator());
             assertNotNull(checkinRes);
         }
@@ -913,7 +939,9 @@ public class CMISTest extends BaseCMISWebScriptTest
             //assertEquals("Update Title checkin " + i, version.getTitle());
             Response versionContentRes = sendRequest(new GetRequest(version.getContentSrc().toString()), 200);
             assertEquals("updated content checkin " + (NUMBER_OF_VERSIONS -1 - i), versionContentRes.getContentAsString());
-            // TODO: test version specific properties e.g. checkin comment
+            CMISProperties versionProps = version.getExtension(CMISConstants.PROPERTIES);
+            assertNotNull(versionProps);
+            assertEquals("checkin" + + (NUMBER_OF_VERSIONS -1 - i), versionProps.getCheckinComment());
         }
     }
     
@@ -992,6 +1020,99 @@ public class CMISTest extends BaseCMISWebScriptTest
             //Entry type = getEntry(typeLink.getHref());
             assertNotNull(type);
             // TODO: test correct type for entry & properties of type
+        }
+    }
+    
+    public void testQuery()
+        throws Exception
+    {
+        // retrieve query collection
+        IRI queryHREF = getQueryCollection(getRepository());
+        
+        // retrieve test folder for query
+        Entry testFolder = createTestFolder("testQuery");
+        CMISProperties testFolderProps = testFolder.getExtension(CMISConstants.PROPERTIES);
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create documents query
+        Entry document1 = createDocument(childrenLink.getHref(), "apple1");
+        assertNotNull(document1);
+        CMISProperties document1Props = document1.getExtension(CMISConstants.PROPERTIES);
+        assertNotNull(document1Props);
+        String doc2name = "name" + System.currentTimeMillis();
+        Entry document2 = createDocument(childrenLink.getHref(), doc2name);
+        assertNotNull(document2);
+        CMISProperties document2Props = document2.getExtension(CMISConstants.PROPERTIES);
+        assertNotNull(document2Props);
+        Entry document3 = createDocument(childrenLink.getHref(), "banana1");
+        assertNotNull(document3);
+        
+        // TODO: query based on query capabilities
+        String queryDoc = loadString("/cmis/rest/query.cmissqlquery.xml");
+
+        {
+            // construct structured query
+            String query = "SELECT OBJECT_ID, OBJECT_TYPE_ID, NAME FROM DOCUMENT_OBJECT_TYPE " +
+                           "WHERE IN_FOLDER('" + testFolderProps.getObjectId() + "') " +
+                           "AND NAME = 'apple1'";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue structured query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            assertNotNull(queryRes);
+            Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(1, queryFeed.getEntries().size());
+            assertNotNull(queryFeed.getEntry(document1.getId().toString()));
+            CMISProperties result1 = queryFeed.getEntry(document1.getId().toString()).getExtension(CMISConstants.PROPERTIES);
+            assertEquals(document1Props.getName(), result1.findPropertyString("NAME"));
+            assertEquals(document1Props.getObjectId(), result1.findPropertyID("OBJECT_ID"));
+            assertEquals(document1Props.getObjectType(), result1.findPropertyID("OBJECT_TYPE_ID"));
+        }
+        
+        if (fulltextCapability.equals("fulltextonly") || fulltextCapability.equals("fulltextandstructured"))
+        {
+            // construct fulltext query
+            String query = "SELECT OBJECT_ID, OBJECT_TYPE_ID, NAME FROM DOCUMENT_OBJECT_TYPE " +
+                           "WHERE CONTAINS('" + doc2name + "')";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue fulltext query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            assertNotNull(queryRes);
+            Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(1, queryFeed.getEntries().size());
+            assertNotNull(queryFeed.getEntry(document2.getId().toString()));
+            CMISProperties result1 = queryFeed.getEntry(document2.getId().toString()).getExtension(CMISConstants.PROPERTIES);
+            assertEquals(document2Props.getName(), result1.findPropertyString("NAME"));
+            assertEquals(document2Props.getObjectId(), result1.findPropertyID("OBJECT_ID"));
+            assertEquals(document2Props.getObjectType(), result1.findPropertyID("OBJECT_TYPE_ID"));
+        }
+
+        if (fulltextCapability.equals("fulltextandstructured"))
+        {
+            // construct fulltext and structured query
+            String query = "SELECT OBJECT_ID, OBJECT_TYPE_ID, NAME FROM DOCUMENT_OBJECT_TYPE " +
+                           "WHERE IN_FOLDER('" + testFolderProps.getObjectId() + "') " +
+                           "AND NAME = 'apple1'" +
+                           "AND CONTAINS('test content')";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue structured query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), "application/cmisrequest+xml;type=query"), 200, getAtomValidator());
+            assertNotNull(queryRes);
+            Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(1, queryFeed.getEntries().size());
+            assertNotNull(queryFeed.getEntry(document1.getId().toString()));
+            CMISProperties result1 = queryFeed.getEntry(document1.getId().toString()).getExtension(CMISConstants.PROPERTIES);
+            assertEquals(document1Props.getName(), result1.findPropertyString("NAME"));
+            assertEquals(document1Props.getObjectId(), result1.findPropertyID("OBJECT_ID"));
+            assertEquals(document1Props.getObjectType(), result1.findPropertyID("OBJECT_TYPE_ID"));
         }
     }
     

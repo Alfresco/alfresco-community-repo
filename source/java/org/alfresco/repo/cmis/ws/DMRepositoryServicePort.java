@@ -24,180 +24,213 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.math.BigInteger;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.cmis.dictionary.CMISCardinality;
+import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
+import org.alfresco.cmis.dictionary.CMISPropertyType;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.dictionary.CMISUpdatability;
+import org.alfresco.cmis.dictionary.ContentStreamAllowed;
+import org.alfresco.cmis.search.FullTextSearchSupport;
+import org.alfresco.cmis.search.JoinSupport;
+import org.alfresco.service.descriptor.Descriptor;
 
 /**
- * @author Michael Shavnev
+ * Port for repository service
+ *
  * @author Dmitry Lazurkin
  */
 
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
-    private static final Log log = LogFactory.getLog("org.alfresco.repo.cmis.ws");
+    private static Map<FullTextSearchSupport, FulltextEnum> fulltextEnumMapping;
+    private static Map<JoinSupport, JoinEnum> joinEnumMapping;
+    private static Map<ContentStreamAllowed, ContentStreamAllowedEnum> contentStreamAllowedEnumMapping;
+    private static Map<CMISUpdatability, UpdatabilityEnum> updatabilityEnumMapping;
+    private static Map<CMISCardinality, CardinalityEnum> cardinalityEnumMapping;
+    private static Map<CMISPropertyType, PropertyTypeEnum> propertyTypeEnumMapping;
 
-    private String rootPath;
-    private NodeRef rootNodeRef;
-
-    public GetRootFolderResponse getRootFolder(GetRootFolder parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException, FilterNotValidException,
-    OperationNotSupportedException, PermissionDeniedException
+    static
     {
-        PropertyFilter propertyFilter = new PropertyFilter(parameters.getFilter());
-        FolderObjectType folderObject = new FolderObjectType();
+        fulltextEnumMapping = new HashMap<FullTextSearchSupport, FulltextEnum>();
+        fulltextEnumMapping.put(FullTextSearchSupport.NO_FULL_TEXT, FulltextEnum.NO_FULLTEXT);
+        fulltextEnumMapping.put(FullTextSearchSupport.FULL_TEXT_ONLY, FulltextEnum.FULLTEXT_ONLY);
+        fulltextEnumMapping.put(FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED, FulltextEnum.FULLTEXT_AND_STRUCTURED);
 
-        propertyFilter.disableProperty(CmisProperty.NAME);
-        propertyFilter.disableProperty(CmisProperty.PARENT);
-        setFolderObjectTypeProperties(getRootNodeRef(), folderObject, propertyFilter);
-        propertyFilter.enableProperty(CmisProperty.NAME);
-        propertyFilter.enableProperty(CmisProperty.PARENT);
+        joinEnumMapping = new HashMap<JoinSupport, JoinEnum>();
+        joinEnumMapping.put(JoinSupport.INNER_AND_OUTER_JOIN_SUPPORT, JoinEnum.INNER_AND_OUTER);
+        joinEnumMapping.put(JoinSupport.INNER_JOIN_SUPPORT, JoinEnum.INNER_ONLY);
+        joinEnumMapping.put(JoinSupport.NO_JOIN_SUPPORT, JoinEnum.NO_JOIN);
 
-        if (propertyFilter.allow(CmisProperty.NAME))
-        {
-            folderObject.setName("CMIS_Root_Folder");
-        }
+        contentStreamAllowedEnumMapping = new HashMap<ContentStreamAllowed, ContentStreamAllowedEnum>();
+        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.ALLOWED, ContentStreamAllowedEnum.ALLOWED);
+        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.NOT_ALLOWED, ContentStreamAllowedEnum.NOT_ALLOWED);
+        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.REQUIRED, ContentStreamAllowedEnum.REQUIRED);
 
-        if (propertyFilter.allow(CmisProperty.PARENT))
-        {
-            folderObject.setParent(OIDUtils.toOID(rootNodeRef));
-        }
+        updatabilityEnumMapping = new HashMap<CMISUpdatability, UpdatabilityEnum>();
+        updatabilityEnumMapping.put(CMISUpdatability.READ_AND_WRITE, UpdatabilityEnum.READ_WRITE);
+        updatabilityEnumMapping.put(CMISUpdatability.READ_AND_WRITE_WHEN_CHECKED_OUT, UpdatabilityEnum.READ_WRITE_WHEN_CHECKED_OUT);
+        updatabilityEnumMapping.put(CMISUpdatability.READ_ONLY, UpdatabilityEnum.READ_ONLY);
 
-        GetRootFolderResponse response = new GetRootFolderResponse();
-        response.setRootFolder(folderObject);
-        return response;
+        cardinalityEnumMapping = new HashMap<CMISCardinality, CardinalityEnum>();
+        cardinalityEnumMapping.put(CMISCardinality.MULTI_VALUED, CardinalityEnum.MULTI_VALUED);
+        cardinalityEnumMapping.put(CMISCardinality.SINGLE_VALUED, CardinalityEnum.SINGLE_VALUED);
+
+        propertyTypeEnumMapping = new HashMap<CMISPropertyType, PropertyTypeEnum>();
+        propertyTypeEnumMapping.put(CMISPropertyType.Boolean, PropertyTypeEnum.BOOLEAN);
+        propertyTypeEnumMapping.put(CMISPropertyType.DateTime, PropertyTypeEnum.DATE_TIME);
+        propertyTypeEnumMapping.put(CMISPropertyType.Decimal, PropertyTypeEnum.DECIMAL);
+        propertyTypeEnumMapping.put(CMISPropertyType.HTML, PropertyTypeEnum.HTML);
+        propertyTypeEnumMapping.put(CMISPropertyType.ID, PropertyTypeEnum.ID);
+        propertyTypeEnumMapping.put(CMISPropertyType.Integer, PropertyTypeEnum.INTEGER);
+        propertyTypeEnumMapping.put(CMISPropertyType.String, PropertyTypeEnum.STRING);
+        propertyTypeEnumMapping.put(CMISPropertyType.URI, PropertyTypeEnum.URI);
+        propertyTypeEnumMapping.put(CMISPropertyType.XML, PropertyTypeEnum.XML);
     }
 
-    private NodeRef getRootNodeRef()
+    public List<RepositoryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
+            PermissionDeniedException
     {
-        if (rootNodeRef == null)
-        {
-            int indexOfStoreDelim = rootPath.indexOf(StoreRef.URI_FILLER);
-
-            if (indexOfStoreDelim == -1)
-            {
-                throw new java.lang.RuntimeException("Bad path format, " + StoreRef.URI_FILLER + " not found");
-            }
-
-            indexOfStoreDelim += StoreRef.URI_FILLER.length();
-
-            int indexOfPathDelim = rootPath.indexOf("/", indexOfStoreDelim);
-
-            if (indexOfPathDelim == -1)
-            {
-                throw new java.lang.RuntimeException("Bad path format, / not found");
-            }
-
-            String storePath = rootPath.substring(0, indexOfPathDelim);
-            String rootPathInStore = rootPath.substring(indexOfPathDelim);
-
-            StoreRef storeRef = new StoreRef(storePath);
-            if (nodeService.exists(storeRef) == false)
-            {
-                throw new java.lang.RuntimeException("No store for path: " + storeRef);
-            }
-
-            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-
-            if (rootPath.equals("/"))
-            {
-                rootNodeRef = storeRootNodeRef;
-            }
-            else
-            {
-                List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPathInStore, null, namespaceService, false);
-
-                if (nodeRefs.size() > 1)
-                {
-                    throw new java.lang.RuntimeException("Multiple possible roots for : \n" + "   root path: " + rootPath + "\n" + "   results: " + nodeRefs);
-                }
-                else if (nodeRefs.size() == 0)
-                {
-                    throw new java.lang.RuntimeException("No root found for : \n" + "   root path: " + rootPath);
-                }
-                else
-                {
-                    rootNodeRef = nodeRefs.get(0);
-                }
-            }
-        }
-
-        return rootNodeRef;
+        RepositoryType repositoryType = new RepositoryType();
+        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        repositoryType.setRepositoryID(serverDescriptor.getId());
+        System.out.println("**** ID: " + serverDescriptor.getId());
+        repositoryType.setRepositoryName(serverDescriptor.getName());
+        return Collections.singletonList(repositoryType);
     }
 
-    public GetTypesResponse getTypes(GetTypes parameters) throws RuntimeException, ConcurrencyException, InvalidArgumentException, OperationNotSupportedException,
-    PermissionDeniedException
+    public RepositoryInfoType getRepositoryInfo(String repositoryId) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
+            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
-        System.out.println(parameters);
-        try
+        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+
+        if (serverDescriptor.getId().equals(repositoryId) == false)
         {
-            org.alfresco.repo.cmis.ws.GetTypesResponse _return = null;
-            return _return;
+            // TODO: error code
+            throw new InvalidArgumentException("Invalid repository id", ExceptionUtils.createBasicFault(null, "Invalid repository id"));
         }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
+
+        RepositoryInfoType repositoryInfoType = new RepositoryInfoType();
+        repositoryInfoType.setRepositoryId(serverDescriptor.getId());
+        repositoryInfoType.setRepositoryName(serverDescriptor.getName());
+        repositoryInfoType.setRepositoryDescription("");
+        repositoryInfoType.setRootFolderId(cmisService.getDefaultRootNodeRef().toString());
+        repositoryInfoType.setVendorName("Alfresco");
+        repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
+        repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
+        CapabilitiesType capabilities = new CapabilitiesType();
+        capabilities.setCapabilityMultifiling(true);
+        capabilities.setCapabilityUnfiling(false);
+        capabilities.setCapabilityVersionSpecificFiling(false);
+        capabilities.setCapabilityPWCUpdatable(true);
+        capabilities.setCapabilityAllVersionsSearchable(cmisQueryService.getAllVersionsSearchable());
+        capabilities.setCapabilityJoin(joinEnumMapping.get(cmisQueryService.getJoinSupport()));
+        capabilities.setCapabilityFulltext(fulltextEnumMapping.get(cmisQueryService.getFullTextSearchSupport()));
+        repositoryInfoType.setCapabilities(capabilities);
+        repositoryInfoType.setCmisVersionsSupported(cmisService.getCMISVersion());
+
+        return repositoryInfoType;
     }
 
-    public void getTypeDefinition(java.lang.String typeId, java.lang.Boolean includeInheritedProperties, javax.xml.ws.Holder<ObjectTypeDefinitionType> type,
-            javax.xml.ws.Holder<java.lang.Boolean> canCreateInstances) throws RuntimeException, ConcurrencyException, InvalidArgumentException, TypeNotFoundException,
-            OperationNotSupportedException, PermissionDeniedException
-            {
-        System.out.println(typeId);
-        System.out.println(includeInheritedProperties);
-        try
-        {
-            org.alfresco.repo.cmis.ws.ObjectTypeDefinitionType typeValue = null;
-            type.value = typeValue;
-            java.lang.Boolean canCreateInstancesValue = null;
-            canCreateInstances.value = canCreateInstancesValue;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new TypeNotFoundException("TypeNotFoundException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
-            }
-
-    public RepositoryInfoType getRepositoryInfo() throws RuntimeException, ConcurrencyException, InvalidArgumentException, OperationNotSupportedException,
-    PermissionDeniedException
+    /**
+     * @param allowedTypes collection of CMISTypeId
+     * @param allowedTypesResult output list of strings
+     */
+    private void setAllowedTypes(Collection<CMISTypeId> allowedTypes, List<String> allowedTypesResult)
     {
-        try
+        for(CMISTypeId typeId : allowedTypes)
         {
-            org.alfresco.repo.cmis.ws.RepositoryInfoType _return = null;
-            return _return;
+            allowedTypesResult.add(typeId.getTypeId());
         }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            throw new java.lang.RuntimeException(ex);
-        }
-        // throw new RuntimeException("RuntimeException...");
-        // throw new ConcurrencyException("ConcurrencyException...");
-        // throw new InvalidArgumentException("InvalidArgumentException...");
-        // throw new OperationNotSupportedException("OperationNotSupportedException...");
-        // throw new PermissionDeniedException("PermissionDeniedException...");
     }
 
-    public void setRootPath(String rootPath)
+    /**
+     * @param propertyDefinition
+     * @param propertyDefs
+     */
+    private void addPropertyDef(CMISPropertyDefinition propertyDefinition, List<PropertyAttributesType> propertyDefs)
     {
-        this.rootPath = rootPath;
+        PropertyAttributesType propertyAttributes = new PropertyAttributesType();
+
+        propertyAttributes.setPropertyName(propertyDefinition.getPropertyName());
+        propertyAttributes.setPropertyId(propertyDefinition.getPropertyId());
+        propertyAttributes.setDisplayName(propertyDefinition.getDisplayName());
+        propertyAttributes.setDescription(propertyDefinition.getDescription());
+        propertyAttributes.setIsInherited(propertyDefinition.isInherited());
+        propertyAttributes.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getPropertyType()));
+        propertyAttributes.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
+        propertyAttributes.setMaximumLength(BigInteger.valueOf(propertyDefinition.getMaximumLength()));
+        propertyAttributes.setSchemaURI(propertyDefinition.getSchemaURI());
+        propertyAttributes.setEncoding(propertyDefinition.getEncoding());
+        // TODO: add choices
+//        List<ChoiceType> choices = propertyAttributes.getChoice();
+//        for(CMISChoice cmisChoice : propertyDefinition.getChoices())
+//        {
+//            ChoiceType choice = new ChoiceType();
+//            choice.setIndex(BigInteger.valueOf(cmisChoice.getIndex()));
+//            choice.setKey(cmisChoice.getName());
+//            choices.add(choice);
+//        }
+        propertyAttributes.setOpenChoice(propertyDefinition.isOpenChoice());
+        propertyAttributes.setRequired(propertyDefinition.isRequired());
+        propertyAttributes.setDefaultValue(propertyDefinition.getDefaultValue());
+        propertyAttributes.setUpdatability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
+        propertyAttributes.setQueryable(propertyDefinition.isQueryable());
+        propertyAttributes.setOrderable(propertyDefinition.isOrderable());
+
+        propertyDefs.add(propertyAttributes);
+    }
+
+    public ObjectTypeDefinitionType getTypeDefinition(String repositoryId, String typeId) throws RuntimeException, InvalidArgumentException, TypeNotFoundException,
+            ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    {
+        CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId);
+        CMISTypeDefinition typeDefinition = cmisDictionaryService.getType(cmisTypeId);
+
+        if (typeDefinition == null)
+        {
+            // TODO: error code
+            throw new ObjectNotFoundException("Type not found", ExceptionUtils.createBasicFault(null, "Type not found"));
+        }
+
+        ObjectTypeDefinitionType objectTypeDefinitionType = new ObjectTypeDefinitionType();
+        objectTypeDefinitionType.setObjectTypeID(typeDefinition.getObjectTypeId().getTypeId());
+        objectTypeDefinitionType.setObjectTypeQueryName(typeDefinition.getObjectTypeQueryName());
+        objectTypeDefinitionType.setObjectTypeDisplayName(typeDefinition.getObjectTypeDisplayName());
+        objectTypeDefinitionType.setParentTypeID(typeDefinition.getParentTypeId().getTypeId());
+        objectTypeDefinitionType.setRootTypeQueryName(typeDefinition.getRootTypeQueryName());
+        objectTypeDefinitionType.setDescription(typeDefinition.getDescription());
+        objectTypeDefinitionType.setCreatable(typeDefinition.isCreatable());
+        objectTypeDefinitionType.setFileable(typeDefinition.isFileable());
+        objectTypeDefinitionType.setQueryable(typeDefinition.isQueryable());
+        objectTypeDefinitionType.setControllable(typeDefinition.isControllable());
+        objectTypeDefinitionType.setVersionable(typeDefinition.isVersionable());
+        objectTypeDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
+        setAllowedTypes(typeDefinition.getAllowedSourceTypes(), objectTypeDefinitionType.getAllowedSourceType());
+        setAllowedTypes(typeDefinition.getAllowedTargetTypes(), objectTypeDefinitionType.getAllowedTargetType());
+
+        List<PropertyAttributesType> propertyDefs = objectTypeDefinitionType.getProperty();
+
+        for (CMISPropertyDefinition propDef : cmisDictionaryService.getPropertyDefinitions(typeDefinition.getObjectTypeId()).values())
+        {
+            addPropertyDef(propDef, propertyDefs);
+        }
+
+        return objectTypeDefinitionType;
+    }
+
+    public GetTypesResponse getTypes(GetTypes parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
+            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    {
+        return null;
     }
 
 }

@@ -1,14 +1,10 @@
 package org.alfresco.repo.cmis.ws;
 
-
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
-
-import org.alfresco.repo.cmis.ws.OIDUtils;
 
 public class DMObjectServiceTest extends AbstractServiceTest
 {
@@ -34,7 +30,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
     public void testGetDocumentProperties() throws Exception
     {
         GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(ALFRESCO_TUTORIAL_NODE_REF));
+        request.setObjectId(ALFRESCO_TUTORIAL_NODE_REF.toString());
 
         GetPropertiesResponse response = ((ObjectServicePort) servicePort).getProperties(request);
         assertNotNull(response);
@@ -62,43 +58,27 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
     public void testGetContentStream() throws Exception
     {
-        String documentId = OIDUtils.toOID(ALFRESCO_TUTORIAL_NODE_REF);
+        String documentId = ALFRESCO_TUTORIAL_NODE_REF.toString();
 
-        for (int offset = 0; offset < 10; offset++)
+        GetContentStream contStream = new GetContentStream();
+        contStream.setDocumentId(documentId);
+        GetContentStreamResponse result = ((ObjectServicePort) servicePort).getContentStream(contStream);
+        if (result.getContentStream().length.intValue() == 0)
         {
-            for (int length = 0; length < 10; length++)
-            {
-                BigInteger offsetBig = new BigInteger(String.valueOf(offset));
-                BigInteger lengthBig = new BigInteger(String.valueOf(length));
-
-                byte[] result = ((ObjectServicePort) servicePort).getContentStream(documentId, offsetBig, lengthBig);
-
-                assertNotNull(result);
-                if (result.length > length)
-                {
-                    fail();
-                }
-            }
-
+            fail();
         }
 
-        byte[] result = ((ObjectServicePort) servicePort).getContentStream(documentId, null, BigInteger.valueOf(20));
-        assertNotNull(result);
-
         try
-        {result = ((ObjectServicePort) servicePort).getContentStream("Invalid", null, null);}
-        catch (InvalidArgumentException e) {}
-        catch (Throwable e){fail();}
-
-        try
-        {result = ((ObjectServicePort) servicePort).getContentStream(documentId + "s", null, null);}
-        catch (ObjectNotFoundException e) {}
-        catch (Throwable e){fail();}
-
-        try
-        {result = ((ObjectServicePort) servicePort).getContentStream(OIDUtils.toOID(COMPANY_HOME_NODE_REF), null, null);}
-        catch (StreamNotSupportedException e) {}
-        catch (Throwable e){fail();}
-
+        {
+            contStream.setDocumentId(documentId + "s");
+            {result = ((ObjectServicePort) servicePort).getContentStream(contStream);}
+        }
+        catch (ObjectNotFoundException e)
+        {
+        }
+        catch (Throwable e)
+        {
+            fail();
+        }
     }
 }

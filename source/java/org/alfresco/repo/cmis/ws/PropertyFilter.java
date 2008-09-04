@@ -25,7 +25,6 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -41,7 +40,6 @@ public class PropertyFilter
     private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Upper}\\p{Digit}_]+(,[\\p{Upper}\\p{Digit}_]+)*)$");
 
     private Set<String> properties;
-    private EnumSet<CmisProperty> disabledProperties = EnumSet.noneOf(CmisProperty.class);
 
     /**
      * Constructor
@@ -69,29 +67,9 @@ public class PropertyFilter
      * @param property property
      * @return if property is allow by filter then returns true else false
      */
-    public boolean allow(CmisProperty property)
+    public boolean allow(String property)
     {
-        return disabledProperties.contains(property) == false && (properties == null || properties.contains(property.name()));
-    }
-
-    /**
-     * Disables property
-     *
-     * @param property property
-     */
-    public void disableProperty(CmisProperty property)
-    {
-        disabledProperties.add(property);
-    }
-
-    /**
-     * Enables property
-     *
-     * @param property property
-     */
-    public void enableProperty(CmisProperty property)
-    {
-        disabledProperties.remove(property);
+        return properties == null || properties.contains(property);
     }
 
 }

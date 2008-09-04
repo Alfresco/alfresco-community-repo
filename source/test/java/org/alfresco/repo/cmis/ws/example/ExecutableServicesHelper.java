@@ -37,13 +37,14 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.alfresco.repo.cmis.ws.DocumentOrFolderObjectType;
+import org.alfresco.repo.cmis.ws.FolderTreeType;
 import org.alfresco.repo.cmis.ws.GetChildren;
 import org.alfresco.repo.cmis.ws.GetChildrenResponse;
-import org.alfresco.repo.cmis.ws.GetRootFolder;
 import org.alfresco.repo.cmis.ws.NavigationServicePort;
+import org.alfresco.repo.cmis.ws.RepositoryInfoType;
 import org.alfresco.repo.cmis.ws.RepositoryServicePort;
-import org.alfresco.repo.cmis.ws.TypesOfObjectsEnum;
+import org.alfresco.repo.cmis.ws.RepositoryType;
+import org.alfresco.repo.cmis.ws.TypesOfFileableObjectsEnum;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -125,10 +126,10 @@ public class ExecutableServicesHelper
      * entity types.
      *
      * @param servicesPort - <b>NavigationServicePort</b> configured with <b>WSS4J Client</b> instance
-     * @return <b>List< DocumentOrFolderObjectType></b> - list of all children elements of <b>Company Home</b> folder
+     * @return <b>List<FolderTreeType></b> - list of all children elements of <b>Company Home</b> folder
      * @throws Exception This exception throws when any <b>CMIS Services</b> operations was failed
      */
-    public List<DocumentOrFolderObjectType> receiveSpaceContent(NavigationServicePort servicesPort) throws Exception
+    public List<FolderTreeType> receiveSpaceContent(NavigationServicePort servicesPort) throws Exception
     {
         GetChildrenResponse response;
 
@@ -136,9 +137,9 @@ public class ExecutableServicesHelper
         {
             response = servicesPort.getChildren(configureGetChildrenServiceQuery());
 
-            if ((response != null) && (response.getDocumentAndFolderCollection() != null))
+            if ((response != null) && (response.getChildren().getChild() != null))
             {
-                return response.getDocumentAndFolderCollection().getObject();
+                return response.getChildren().getChild();
             }
             else
             {
@@ -162,9 +163,16 @@ public class ExecutableServicesHelper
     {
         try
         {
-            GetRootFolder requestParameters = new GetRootFolder();
-
-            return servicesPort.getRootFolder(requestParameters).getRootFolder().getObjectID();
+            List<RepositoryType> repositories = servicesPort.getRepositories();
+            if (repositories.isEmpty())
+            {
+                throw new RuntimeException("List of repositories is empty");
+            }
+            else
+            {
+                RepositoryInfoType repositoryInfo = servicesPort.getRepositoryInfo(repositories.get(0).getRepositoryID());
+                return repositoryInfo.getRootFolderId();
+            }
         }
         catch (Exception e)
         {
@@ -191,7 +199,7 @@ public class ExecutableServicesHelper
         GetChildren requestParameters = new GetChildren();
         requestParameters.setFilter("*");
         requestParameters.setFolderId(receiveCompanyHomeObjectId(receiveAuthorizedRepositoryServicePort()));
-        requestParameters.setType(TypesOfObjectsEnum.FOLDERS_AND_DOCUMETS);
+        requestParameters.setType(TypesOfFileableObjectsEnum.ANY);
 
         return requestParameters;
     }

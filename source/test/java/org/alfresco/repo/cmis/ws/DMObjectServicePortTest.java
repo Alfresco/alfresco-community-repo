@@ -1,16 +1,36 @@
+/*
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+ */
 package org.alfresco.repo.cmis.ws;
 
-
-import java.math.BigInteger;
-
-import org.alfresco.repo.cmis.ws.OIDUtils;
+import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @see org.alfresco.cmis.ws.ObjectServicePortDM
+ * @see org.alfresco.repo.cmis.ws.ObjectServicePortDM
  *
  * @author Dmitry Lazurkin
- *
  */
 public class DMObjectServicePortTest extends BaseServicePortContentTest
 {
@@ -29,12 +49,12 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(L0_FOLDER_0_NODEREF));
+        request.setObjectId(L0_FOLDER_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(OIDUtils.toOID(rootNodeRef), response.getObject().getParent());
-        assertEquals(L0_FOLDER_0, response.getObject().getName());
+        assertEquals(rootNodeRef.toString(), getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_PARENT));
+        assertEquals(L0_FOLDER_0, getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_NAME));
     }
 
     public void testGetExistentDocumentPropertiesThis() throws Exception
@@ -42,14 +62,12 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(L1_FILE_VERSION_1_0_NODEREF));
+        request.setObjectId(L1_FILE_VERSION_1_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(response.getObject().getCheckinComment(), "1.0");
-        assertEquals(response.getObject().isIsMajorVersion(), Boolean.TRUE);
-        assertEquals(response.getObject().isIsLatestMajorVersion(), Boolean.FALSE);
-        assertEquals(response.getObject().isIsLatestVersion(), Boolean.FALSE);
+        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "1.0");
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetExistentDocumentPropertiesLatestMajor() throws Exception
@@ -58,14 +76,12 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
 
         GetProperties request = new GetProperties();
         request.setReturnVersion(VersionEnum.LATEST_MAJOR);
-        request.setObjectId(OIDUtils.toOID(L1_FILE_VERSION_1_0_NODEREF));
+        request.setObjectId(L1_FILE_VERSION_1_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(response.getObject().getCheckinComment(), "2.0");
-        assertEquals(response.getObject().isIsMajorVersion(), Boolean.TRUE);
-        assertEquals(response.getObject().isIsLatestMajorVersion(), Boolean.TRUE);
-        assertEquals(response.getObject().isIsLatestVersion(), Boolean.FALSE);
+        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.0");
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetExistentDocumentPropertiesLatest() throws Exception
@@ -74,28 +90,12 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
 
         GetProperties request = new GetProperties();
         request.setReturnVersion(VersionEnum.LATEST);
-        request.setObjectId(OIDUtils.toOID(L1_FILE_VERSION_2_0_NODEREF));
+        request.setObjectId(L1_FILE_VERSION_2_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(response.getObject().getCheckinComment(), "2.1");
-        assertEquals(response.getObject().isIsMajorVersion(), Boolean.FALSE);
-        assertEquals(response.getObject().isIsLatestMajorVersion(), Boolean.FALSE);
-        assertEquals(response.getObject().isIsLatestVersion(), Boolean.TRUE);
-    }
-
-    public void testGetExistentRelationshipProperties() throws Exception
-    {
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-
-        GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(L0_FILE_1_TO_L0_FILE_0_ASSOCREF));
-
-        GetPropertiesResponse response = objectServicePort.getProperties(request);
-        assertNotNull(response);
-        assertEquals(OIDUtils.toOID(L0_FILE_1_TO_L0_FILE_0_ASSOCREF.getSourceRef()), response.getObject().getSourceOID());
-        assertEquals(OIDUtils.toOID(L0_FILE_1_TO_L0_FILE_0_ASSOCREF.getTargetRef()), response.getObject().getTargetOID());
-        fail("Not implement");
+        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.1");
+        assertFalse(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetNonExistentObjectProperties() throws Exception
@@ -103,26 +103,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(L0_NONEXISTENT_NODEREF));
-        try
-        {
-            objectServicePort.getProperties(request);
-        }
-        catch (ObjectNotFoundException e)
-        {
-            return;
-        }
-
-        fail("Expects exception");
-    }
-
-    public void testGetNonExistentRelationshipProperties() throws Exception
-    {
-        authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-
-        GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(NONEXISTENT_ASSOCREF));
-
+        request.setObjectId(L0_NONEXISTENT_NODEREF.toString());
         try
         {
             objectServicePort.getProperties(request);
@@ -160,72 +141,53 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(L0_FILE_0_NODEREF);
 
         GetProperties request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(L0_FILE_0_NODEREF));
+        request.setObjectId(L0_FILE_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertNull(response.getObject().getCheckinComment());
-        assertTrue(response.getObject().isIsMajorVersion());
-        assertTrue(response.getObject().isIsLatestMajorVersion());
-        assertTrue(response.getObject().isIsLatestVersion());
-        assertTrue(response.getObject().isVersionSeriesIsCheckedOut());
-        assertEquals(response.getObject().getVersionSeriesCheckedOutBy(), authenticationComponent.getSystemUserName());
-        assertEquals(response.getObject().getVersionSeriesCheckedOutOID(), OIDUtils.toOID(workingCopyNodeRef));
+
+        assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
+        assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
 
         request = new GetProperties();
-        request.setObjectId(OIDUtils.toOID(workingCopyNodeRef));
+        request.setObjectId(workingCopyNodeRef.toString());
 
         response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertNull(response.getObject().getCheckinComment());
-        assertFalse(response.getObject().isIsMajorVersion());
-        assertFalse(response.getObject().isIsLatestMajorVersion());
-        assertFalse(response.getObject().isIsLatestVersion());
-        assertTrue(response.getObject().isVersionSeriesIsCheckedOut());
-        assertEquals(response.getObject().getVersionSeriesCheckedOutBy(), authenticationComponent.getSystemUserName());
-        assertEquals(response.getObject().getVersionSeriesCheckedOutOID(), OIDUtils.toOID(workingCopyNodeRef));
+        assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
+        assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
     }
 
     public void testGetContentStream() throws Exception
     {
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
-        String documentId = OIDUtils.toOID(L0_FILE_0_NODEREF);
-        for (int offset = 0; offset < 10; offset++)
+        String documentId = L0_FILE_0_NODEREF.toString();
+        GetContentStream contStream = new GetContentStream();
+        contStream.setDocumentId(documentId);
+        GetContentStreamResponse result = objectServicePort.getContentStream(contStream);
+        assertNotNull(result);
+        if (result.getContentStream().length.intValue() != 9)
         {
-            for (int length = 0; length < 10; length++)
-            {
-                BigInteger offsetBig = new BigInteger(String.valueOf(offset));
-                BigInteger lengthBig = new BigInteger(String.valueOf(length));
-
-                byte[] result = objectServicePort.getContentStream(documentId, offsetBig, lengthBig);
-
-                assertNotNull(result);
-                if (result.length > length)
-                {
-                    fail();
-                }
-            }
-
+            fail();
         }
 
-        byte[] result = objectServicePort.getContentStream(documentId, null, null);
-        assertNotNull(result);
-
         try
-        {result = objectServicePort.getContentStream("Invalid", null, null);}
-        catch (InvalidArgumentException e) {}
-        catch (Throwable e){fail();}
-
-        try
-        {result = objectServicePort.getContentStream(documentId + "s", null, null);}
-        catch (ObjectNotFoundException e) {}
-        catch (Throwable e){fail();}
-
-        try
-        {result = objectServicePort.getContentStream(OIDUtils.toOID(L0_FOLDER_0_NODEREF), null, null);}
-        catch (StreamNotSupportedException e) {}
-        catch (Throwable e){fail();}
-
+        {
+            contStream.setDocumentId(documentId + "s");
+            result = objectServicePort.getContentStream(contStream);
+        }
+        catch (ObjectNotFoundException e)
+        {
+        }
+        catch (Throwable e)
+        {
+            fail();
+        }
     }
+
 }

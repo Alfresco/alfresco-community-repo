@@ -152,7 +152,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
             throw new IOException(classPath + " not found.");
         }
 
-        InputStreamReader reader = new InputStreamReader(input);
+        InputStreamReader reader = new InputStreamReader(input, "UTF-8");
         StringWriter writer = new StringWriter();
 
         try

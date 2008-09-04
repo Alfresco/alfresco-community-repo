@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://www.cmis.org/ns/1.0" name="DiscoveryService">
+  <types>
+    <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+      <xsd:include schemaLocation="cmisMessageTypes.xsd" />
+    </xsd:schema>
+  </types>
+  <message name="query">
+    <part name="parameters" element="tns:query" />
+  </message>
+  <message name="queryResponse">
+    <part name="parameters" element="tns:queryResponse" />
+  </message>
+  <message name="InvalidArgumentException">
+    <part name="fault" element="tns:invalidArgumentException" />
+  </message>
+  <message name="PermissionDeniedException">
+    <part name="fault" element="tns:permissionDeniedException" />
+  </message>
+  <message name="OperationNotSupportedException">
+    <part name="fault" element="tns:operationNotSupportedException" />
+  </message>
+  <message name="UpdateConflictException">
+    <part name="fault" element="tns:updateConflictException" />
+  </message>
+  <message name="RuntimeException">
+    <part name="fault" element="tns:runtimeException" />
+  </message>
+  <message name="ConstraintViolationException">
+    <part name="fault" element="tns:constraintViolationException" />
+  </message>
+  <portType name="DiscoveryServicePort">
+    <operation name="query">
+      <input message="tns:query" />
+      <output message="tns:queryResponse" />
+      <fault message="tns:InvalidArgumentException" name="InvalidArgumentException" />
+      <fault message="tns:PermissionDeniedException" name="PermissionDeniedException" />
+      <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException" />
+      <fault message="tns:UpdateConflictException" name="UpdateConflictException" />
+      <fault message="tns:RuntimeException" name="RuntimeException" />
+      <fault message="tns:ConstraintViolationException" name="ConstraintViolationException" />
+    </operation>
+  </portType>
+  <binding name="DiscoveryServicePortBinding" type="tns:DiscoveryServicePort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="query">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+    </operation>
+  </binding>
+  <service name="DiscoveryService">
+    <port name="DiscoveryServicePort" binding="tns:DiscoveryServicePortBinding">
+      <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
+    </port>
+  </service>
+</definitions>

@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
  *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}objectTypeDefinitionType"/>
- *           &lt;element name="canCreateInstances" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -32,16 +31,13 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "type",
-    "canCreateInstances"
+    "type"
 })
 @XmlRootElement(name = "getTypeDefinitionResponse")
 public class GetTypeDefinitionResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected ObjectTypeDefinitionType type;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected boolean canCreateInstances;
 
     /**
      * Gets the value of the type property.
@@ -65,22 +61,6 @@ public class GetTypeDefinitionResponse {
      */
     public void setType(ObjectTypeDefinitionType value) {
         this.type = value;
-    }
-
-    /**
-     * Gets the value of the canCreateInstances property.
-     * 
-     */
-    public boolean isCanCreateInstances() {
-        return canCreateInstances;
-    }
-
-    /**
-     * Sets the value of the canCreateInstances property.
-     * 
-     */
-    public void setCanCreateInstances(boolean value) {
-        this.canCreateInstances = value;
     }
 
 }

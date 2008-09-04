@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="source"/>
  *     &lt;enumeration value="target"/>
- *     &lt;enumeration value="sourceAndTarget"/>
+ *     &lt;enumeration value="either"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -24,10 +24,10 @@ import javax.xml.bind.annotation.XmlEnumValue;
 @XmlEnum
 public enum RelationshipDirectionEnum {
 
+    @XmlEnumValue("either")
+    EITHER("either"),
     @XmlEnumValue("source")
     SOURCE("source"),
-    @XmlEnumValue("sourceAndTarget")
-    SOURCE_AND_TARGET("sourceAndTarget"),
     @XmlEnumValue("target")
     TARGET("target");
     private final String value;

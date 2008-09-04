@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import org.alfresco.repo.cmis.ws.BasicFault;
+import org.alfresco.repo.cmis.ws.PermissionDeniedException;
+import org.alfresco.repo.cmis.ws.RuntimeException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +38,7 @@ import org.springframework.aop.ThrowsAdvice;
  */
 public class DMServicePortThrowsAdvice implements ThrowsAdvice
 {
-    private static final Log log = LogFactory.getLog("org.alfresco.cmis.ws");
+    private static final Log log = LogFactory.getLog("org.alfresco.repo.cmis.ws");
 
     public void afterThrowing(AccessDeniedException e) throws PermissionDeniedException
     {

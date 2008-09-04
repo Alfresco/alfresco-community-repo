@@ -4,8 +4,8 @@
 [#-- ATOM Entry for Document --]
 [#--                         --]
 
-[#macro document node]
-<author><name>${node.properties.creator}</name></author>
+[#macro document node propfilter="*"]
+<author><name>${node.properties.creator!""}</name></author>
 <content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
@@ -17,9 +17,9 @@
 <summary>${node.properties.description!node.properties.title!cropContent(node, 50)}</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
-[@documentCMISProps node=node/]
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[@documentCMISProps node propfilter/]
+[#-- TODO: custom ns  <app:edited>${xmldate(node.properties.modified)}</app:edited> --]
+[#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon> --]
 [/#macro]
 
 [#macro documentCMISLinks node]
@@ -31,30 +31,30 @@
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 [/#macro]
 
-[#macro documentCMISProps node]
+[#macro documentCMISProps node propfilter]
 <cmis:properties>
-  <cmis:propertyBoolean cmis:name="isImmutable">${cmisproperty(node, "IS_IMMUTABLE")?string}</cmis:propertyBoolean>
-  <cmis:propertyBoolean cmis:name="isLatestVersion">${cmisproperty(node, "IS_LATEST_VERSION")?string}</cmis:propertyBoolean>
-  <cmis:propertyBoolean cmis:name="isMajorVersion">${cmisproperty(node, "IS_MAJOR_VERSION")?string}</cmis:propertyBoolean>
-  <cmis:propertyBoolean cmis:name="isLatestMajorVersion">${cmisproperty(node, "IS_LATEST_MAJOR_VERSION")?string}</cmis:propertyBoolean>
-  <cmis:propertyBoolean cmis:name="isVersionSeriesCheckedOut">${cmisproperty(node, "VERSION_SERIES_IS_CHECKED_OUT")?string}</cmis:propertyBoolean>
-  <cmis:propertyDateTime cmis:name="creationDate">${xmldate(node.properties.created)}</cmis:propertyDateTime>
-  <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
-  <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
-  <cmis:propertyID cmis:name="versionSeriesID">${cmisproperty(node, "VERSION_SERIES_ID")}</cmis:propertyID>
-  <cmis:propertyID cmis:name="versionSeriesCheckedOutID">${cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_ID")!""}</cmis:propertyID>
-  <cmis:propertyInteger cmis:name="contentStreamLength">${node.properties.content.size}</cmis:propertyInteger>
-  <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
-  <cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
-  <cmis:propertyString cmis:name="objectType">${cmistypeid(node)}</cmis:propertyString>
-  <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
-  <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
-  <cmis:propertyString cmis:name="contentStreamMimetype">${node.properties.content.mimetype}</cmis:propertyString>  
-  <cmis:propertyString cmis:name="contentStreamName">${node.name}</cmis:propertyString>
-  <cmis:propertyString cmis:name="versionLabel">${cmisproperty(node, "VERSION_LABEL")!""}</cmis:propertyString>
-  <cmis:propertyString cmis:name="versionSeriesCheckedOutBy">${cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_BY")!""}</cmis:propertyString>
-  <cmis:propertyString cmis:name="checkinComment">${cmisproperty(node, "CHECKIN_COMMENT")!""}</cmis:propertyString>
-  <cmis:propertyURI cmis:name="contentStreamURI">${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content</cmis:propertyURI>
+  [@filter propfilter "IS_IMMUTABLE"][@prop "isImmutable" cmisproperty(node, "IS_IMMUTABLE") "Boolean"/][/@filter]
+  [@filter propfilter "IS_LATEST_VERSION"][@prop "isLatestVersion" cmisproperty(node, "IS_LATEST_VERSION") "Boolean"/][/@filter]
+  [@filter propfilter "IS_MAJOR_VERSION"][@prop "isMajorVersion" cmisproperty(node, "IS_MAJOR_VERSION") "Boolean"/][/@filter]
+  [@filter propfilter "IS_LATEST_MAJOR_VERSION"][@prop "isLatestMajorVersion" cmisproperty(node, "IS_LATEST_MAJOR_VERSION") "Boolean"/][/@filter]
+  [@filter propfilter "VERSION_SERIES_IS_CHECKED_OUT"][@prop "isVersionSeriesCheckedOut" cmisproperty(node, "VERSION_SERIES_IS_CHECKED_OUT") "Boolean"/][/@filter]
+  [@filter propfilter "CREATION_DATE"][@prop "creationDate" node.properties.created "DateTime"/][/@filter]
+  [@filter propfilter "LAST_MODIFICATION_DATE"][@prop "lastModificationDate" node.properties.modified "DateTime"/][/@filter]
+  [@filter propfilter "OBJECT_ID"][@prop "objectId" node.nodeRef "ID"/][/@filter]
+  [@filter propfilter "VERSION_SERIES_ID"][@prop "versionSeriesID" cmisproperty(node, "VERSION_SERIES_ID") "ID"/][/@filter]
+  [@filter propfilter "VERSION_SERIES_CHECKED_OUT_ID"][@prop "versionSeriesCheckedOutID" cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_ID")!"" "ID"/][/@filter]
+  [@filter propfilter "CONTENT_STREAM_LENGTH"][@prop "contentStreamLength" node.properties.content.size "Integer"/][/@filter]
+  [@filter propfilter "NAME"][@prop "name" node.name "String"/][/@filter]
+  [@filter propfilter "ROOT_TYPE_QUERY_NAME"][@prop "baseType" "document" "String"/][/@filter]  [#-- TODO: spec issue 41 --]
+  [@filter propfilter "OBJECT_TYPE_ID"][@prop "objectType" cmistypeid(node) "String"/][/@filter]
+  [@filter propfilter "CREATED_BY"][@prop "createdBy" node.properties.creator "String"/][/@filter]
+  [@filter propfilter "LAST_MODIFIED_BY"][@prop "lastModifiedBy" node.properties.modifier "String"/][/@filter]
+  [@filter propfilter "CONTENT_STREAM_MIME_TYPE"][@prop "contentStreamMimetype" node.properties.content.mimetype "String"/][/@filter]
+  [@filter propfilter "CONTENT_STREAM_FILENAME"][@prop "contentStreamName" node.name "String"/][/@filter]
+  [@filter propfilter "VERSION_LABEL"][@prop "versionLabel" cmisproperty(node, "VERSION_LABEL")!"" "String"/][/@filter]
+  [@filter propfilter "VERSION_SERIES_CHECKED_OUT_BY"][@prop "versionSeriesCheckedOutBy" cmisproperty(node, "VERSION_SERIES_CHECKED_OUT_BY")!"" "String"/][/@filter]
+  [@filter propfilter "CHECKIN_COMMENT"][@prop "checkinComment" cmisproperty(node, "CHECKIN_COMMENT")!"" "String"/][/@filter]
+  [@filter propfilter "CONTENT_STREAM_URI"][@prop "contentStreamURI" absurl(url.serviceContext) + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id + "/content" "String"/][/@filter]
 </cmis:properties>
 [/#macro]
 
@@ -63,7 +63,7 @@
 [#-- ATOM Entry for Version --]
 [#--                        --]
 
-[#macro version node version]
+[#macro version node version propfilter="*"]
 <author><name>${node.properties.creator}</name></author>
 <content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
 <id>urn:uuid:${node.id}</id>
@@ -74,9 +74,9 @@
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
-[@documentCMISProps node=node/]
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[@documentCMISProps node propfilter/]
+[#-- TODO: custom ns  <app:edited>${xmldate(node.properties.modified)}</app:edited> --]
+[#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>  --]
 [/#macro]
 
 
@@ -84,7 +84,7 @@
 [#-- ATOM Entry for Private Working Copy --]
 [#--                                     --]
 
-[#macro pwc node]
+[#macro pwc node propfilter="*"]
 <author><name>${node.properties.creator}</name></author>
 <content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
 <id>urn:uuid:${node.id}</id>
@@ -97,10 +97,10 @@
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
-[@documentCMISProps node=node/]
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
+[@documentCMISProps node propfilter/]
+[#-- TODO: custom ns  <app:edited>${xmldate(node.properties.modified)}</app:edited> --]
 [#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>  --]
 [/#macro]
 
 
@@ -108,20 +108,20 @@
 [#-- ATOM Entry for Folder --]
 [#--                       --]
 
-[#macro folder node]
+[#macro folder node propfilter="*"]
 <author><name>${node.properties.creator}</name></author>
 <content>${node.id}</content>  [#-- TODO --]
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-[@folderCMISLinks node=node/]
+[@folderCMISLinks node/]
 <published>${xmldate(node.properties.created)}</published>
-<summary>${node.properties.description!node.properties.title}</summary>  [#-- TODO --]
+<summary>${node.properties.description!node.properties.title!""}</summary>  [#-- TODO --]
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
-[@folderCMISProps node=node/]
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[@folderCMISProps node propfilter/]
+[#-- TODO: custom ns  <app:edited>${xmldate(node.properties.modified)}</app:edited>  --]
+[#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>  --]
 [/#macro]
 
 [#macro folderCMISLinks node]
@@ -136,18 +136,46 @@
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 [/#macro]
 
-[#macro folderCMISProps node]
+[#macro folderCMISProps node propfilter]
 <cmis:properties>
-  <cmis:propertyDateTime cmis:name="creationDate">${xmldate(node.properties.created)}</cmis:propertyDateTime>
-  <cmis:propertyDateTime cmis:name="lastModificationDate">${xmldate(node.properties.modified)}</cmis:propertyDateTime>
-  <cmis:propertyID cmis:name="objectId">${node.nodeRef}</cmis:propertyID>
-  <cmis:propertyID cmis:name="parent">${cmisproperty(node, "PARENT")!""}</cmis:propertyID>
-  <cmis:propertyString cmis:name="name">${node.name}</cmis:propertyString>
-  <cmis:propertyString cmis:name="objectType">${cmistypeid(node)}</cmis:propertyString>
-  <cmis:propertyString cmis:name="baseType">folder</cmis:propertyString>
-  <cmis:propertyString cmis:name="createdBy">${node.properties.creator}</cmis:propertyString>
-  <cmis:propertyString cmis:name="lastModifiedBy">${node.properties.modifier}</cmis:propertyString>
+  [@filter propfilter "CREATION_DATE"][@prop "creationDate" node.properties.created "DateTime"/][/@filter]
+  [@filter propfilter "LAST_MODIFICATION_DATE"][@prop "lastModificationDate" node.properties.modified "DateTime"/][/@filter]
+  [@filter propfilter "OBJECT_ID"][@prop "objectId" node.nodeRef "ID"/][/@filter]
+  [@filter propfilter "PARENT"][@prop "parent" cmisproperty(node, "PARENT")!"" "ID"/][/@filter]
+  [@filter propfilter "NAME"][@prop "name" node.name "String"/][/@filter]
+  [@filter propfilter "ROOT_TYPE_QUERY_NAME"][@prop "baseType" "folder" "String"/][/@filter]  [#-- TODO: spec issue 41 --]
+  [@filter propfilter "OBJECT_TYPE_ID"][@prop "objectType" cmistypeid(node) "String"/][/@filter]
+  [@filter propfilter "CREATED_BY"][@prop "createdBy" node.properties.creator "String"/][/@filter]
+  [@filter propfilter "LAST_MODIFIED_BY"][@prop "lastModifiedBy" node.properties.modifier "String"/][/@filter]
 </cmis:properties>
+[/#macro]
+
+
+[#--                          --]
+[#-- ATOM Entry for Query Row --]
+[#--                          --]
+
+[#-- TODO: spec issue 47 --]
+[#macro row row]
+[#if row.nodes??]
+[#assign node = row.nodes?first]
+<author><name>${node.properties.creator!""}</name></author>
+<content type="${node.mimetype}" src="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content"/>
+<id>urn:uuid:${node.id}</id>
+<link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
+<title>${node.name}</title>
+<updated>${xmldate(node.properties.modified)}</updated>
+[/#if]
+[#assign values = row.values]
+[#if values?size &gt; 0]
+<cmis:properties>
+[#list values?keys as colname]
+  [#assign coltype = row.getColumnType(colname)]
+  [@prop colname values[colname] coltype/]
+[/#list]
+</cmis:properties>
+[/#if]
+[#-- TODO: custom ns  <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>  --]
 [/#macro]
 
 
@@ -226,6 +254,35 @@
   <cmis:isOrderable>${propdef.orderable?string}</cmis:isOrderable>
 </cmis:property>
 [/#macro]
+
+
+[#--                 --]
+[#-- CMIS Properties --]
+[#--                 --]
+
+[#macro filter filter value]
+[#if filter == "*" || filter?index_of(value) != -1 || filter?matches(value,'i')][#nested][/#if]
+[/#macro]
+
+[#macro prop name value type]
+[#if type == "String"]
+<cmis:propertyString cmis:name="${name}">${value}</cmis:propertyString>
+[#elseif type == "Integer"]
+<cmis:propertyInteger cmis:name="${name}">${value?c}</cmis:propertyInteger>
+[#elseif type == "Decimal"]
+<cmis:propertyDecimal cmis:name="${name}">${value?c}</cmis:propertyDecimal>
+[#elseif type == "Boolean"]
+<cmis:propertyBoolean cmis:name="${name}">${value?string}</cmis:propertyBoolean>
+[#elseif type == "DateTime"]
+<cmis:propertyDateTime cmis:name="${name}">${xmldate(value)}</cmis:propertyDateTime>
+[#elseif type == "URI"]
+<cmis:propertyURI cmis:name="${name}">${value}</cmis:propertyURI>
+[#elseif type == "ID"]
+<cmis:propertyID cmis:name="${name}">${value}</cmis:propertyID>
+[#-- TODO: remaining property types --]
+[/#if]
+[/#macro]
+
 
 [#-- TODO: spec issue 40 --]
 [#macro cmisBaseType rootType]

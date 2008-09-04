@@ -26,7 +26,9 @@ package org.alfresco.repo.cmis.ws.example;
 
 import java.util.List;
 
-import org.alfresco.repo.cmis.ws.DocumentOrFolderObjectType;
+import org.alfresco.repo.cmis.ws.FolderTreeType;
+import org.alfresco.repo.cmis.ws.PropertiesType;
+import org.alfresco.repo.cmis.ws.PropertyStringType;
 
 /**
  * This class executes simple processing for prompting server address and user name and password for authentication this user on specified server. After successful connection this
@@ -45,7 +47,7 @@ import org.alfresco.repo.cmis.ws.DocumentOrFolderObjectType;
  */
 public class SimpleExecutableCmisServicesUtilizer
 {
-    private static final String FOLDER_IDENTIFICATOR_SAMPLE_STRING = "}folder";
+    private static final String FOLDER_IDENTIFICATOR_SAMPLE_STRING = "folder";
 
     /**
      * Executable entry point - represents main life cycle
@@ -84,7 +86,7 @@ public class SimpleExecutableCmisServicesUtilizer
             return;
         }
 
-        List<DocumentOrFolderObjectType> response;
+        List<FolderTreeType> response;
 
         try
         {
@@ -97,17 +99,33 @@ public class SimpleExecutableCmisServicesUtilizer
         }
 
         System.out.println("Outing Company Home contents:");
-        for (DocumentOrFolderObjectType item : response)
+        for (FolderTreeType item : response)
         {
-            if (item.getBaseObjectType().contains(FOLDER_IDENTIFICATOR_SAMPLE_STRING))
+            if (getPropertyStringValue(item.getProperties(), "baseType").contains(FOLDER_IDENTIFICATOR_SAMPLE_STRING))
             {
-                System.out.println("[" + item.getName() + "]");
+                System.out.println("[" + getPropertyStringValue(item.getProperties(), "name") + "]");
             }
             else
             {
-                System.out.println(item.getName());
+                System.out.println(getPropertyStringValue(item.getProperties(), "name"));
             }
         }
+    }
+
+    private static String getPropertyStringValue(PropertiesType properties, String propertyName)
+    {
+        String result = null;
+
+        for (PropertyStringType property : properties.getPropertyString())
+        {
+            if (propertyName.equals(property.getName()))
+            {
+                result = property.getValue();
+                break;
+            }
+        }
+
+        return result;
     }
 
 }

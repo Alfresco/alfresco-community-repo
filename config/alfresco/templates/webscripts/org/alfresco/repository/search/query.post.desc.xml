@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Issue ad-hoc query</shortname>
+  <description>Issue ad-hoc query statement</description>
+  <url>/api/query</url>
+  <authentication>user</authentication>
+  <format default="atomfeed"/>
+  <family>CMIS</family>
+</webscript>

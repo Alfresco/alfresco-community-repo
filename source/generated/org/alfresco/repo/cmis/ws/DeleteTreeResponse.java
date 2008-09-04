@@ -27,7 +27,7 @@ import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
  *               &lt;complexContent>
  *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                   &lt;sequence>
- *                     &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}objectID" maxOccurs="unbounded" minOccurs="0"/>
+ *                     &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID" maxOccurs="unbounded" minOccurs="0"/>
  *                   &lt;/sequence>
  *                 &lt;/restriction>
  *               &lt;/complexContent>
@@ -87,7 +87,7 @@ public class DeleteTreeResponse {
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}objectID" maxOccurs="unbounded" minOccurs="0"/>
+     *         &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID" maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
      *     &lt;/restriction>
      *   &lt;/complexContent>

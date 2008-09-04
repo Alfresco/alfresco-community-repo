@@ -64,6 +64,7 @@ public class TestRemoteCMIS extends CMISTest
      * 
      * args[0] = serverUrl
      * args[1] = username/password
+     * args[2] = [params=url|headers]
      * 
      * @param args  args
      */
@@ -84,12 +85,28 @@ public class TestRemoteCMIS extends CMISTest
             }
         }
         
-        // execute cmis tests with url arguments 
-        TestRunner.run(new TestSuite(TestRemoteCMIS.class));
+        String params = "both";
+        if (args.length > 2)
+        {
+            String[] paramSegment = args[1].split("=");
+            if (paramSegment[0].equalsIgnoreCase("params"))
+            {
+                params = paramSegment[1].toLowerCase();
+            }
+        }
+        
+        // execute cmis tests with url arguments
+        if (params.equals("both") || params.equals("url"))
+        {
+            TestRunner.run(new TestSuite(TestRemoteCMIS.class));
+        }
         
         // execute cmis tests with headers
-        argsAsHeaders = true;
-        TestRunner.run(new TestSuite(TestRemoteCMIS.class));
+        if (params.equals("both") || params.equals("headers"))
+        {
+            argsAsHeaders = true;
+            TestRunner.run(new TestSuite(TestRemoteCMIS.class));
+        }            
     }
     
 }

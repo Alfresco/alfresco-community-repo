@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="documentId" type="{http://www.cmis.org/ns/1.0}objectID"/>
+ *           &lt;element name="documentId" type="{http://www.cmis.org/ns/1.0}ID"/>
  *           &lt;element name="contentCopied" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;/sequence>
  *       &lt;/restriction>

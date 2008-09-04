@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}documentCollection"/>
+ *           &lt;element name="versions" type="{http://www.cmis.org/ns/1.0}objectCollectionType"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -31,36 +31,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "documentCollection"
+    "versions"
 })
 @XmlRootElement(name = "getAllVersionsResponse")
 public class GetAllVersionsResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentCollection documentCollection;
+    protected ObjectCollectionType versions;
 
     /**
-     * Gets the value of the documentCollection property.
+     * Gets the value of the versions property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public DocumentCollection getDocumentCollection() {
-        return documentCollection;
+    public ObjectCollectionType getVersions() {
+        return versions;
     }
 
     /**
-     * Sets the value of the documentCollection property.
+     * Sets the value of the versions property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public void setDocumentCollection(DocumentCollection value) {
-        this.documentCollection = value;
+    public void setVersions(ObjectCollectionType value) {
+        this.versions = value;
     }
 
 }

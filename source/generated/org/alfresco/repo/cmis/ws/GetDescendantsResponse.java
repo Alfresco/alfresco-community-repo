@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}documentAndFolderCollection"/>
+ *           &lt;element name="descendants" type="{http://www.cmis.org/ns/1.0}childrenType"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -31,36 +31,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "documentAndFolderCollection"
+    "descendants"
 })
 @XmlRootElement(name = "getDescendantsResponse")
 public class GetDescendantsResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentAndFolderCollection documentAndFolderCollection;
+    protected ChildrenType descendants;
 
     /**
-     * Gets the value of the documentAndFolderCollection property.
+     * Gets the value of the descendants property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentAndFolderCollection }
+     *     {@link ChildrenType }
      *     
      */
-    public DocumentAndFolderCollection getDocumentAndFolderCollection() {
-        return documentAndFolderCollection;
+    public ChildrenType getDescendants() {
+        return descendants;
     }
 
     /**
-     * Sets the value of the documentAndFolderCollection property.
+     * Sets the value of the descendants property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentAndFolderCollection }
+     *     {@link ChildrenType }
      *     
      */
-    public void setDocumentAndFolderCollection(DocumentAndFolderCollection value) {
-        this.documentAndFolderCollection = value;
+    public void setDescendants(ChildrenType value) {
+        this.descendants = value;
     }
 
 }

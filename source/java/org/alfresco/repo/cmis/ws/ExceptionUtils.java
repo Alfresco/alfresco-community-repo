@@ -26,6 +26,8 @@ package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
 
+import org.alfresco.repo.cmis.ws.BasicFault;
+
 /**
  * Utils for working with cmis exceptions
  *

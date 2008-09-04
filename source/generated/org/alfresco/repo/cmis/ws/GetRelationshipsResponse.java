@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}relationshipCollection"/>
+ *           &lt;element name="relationships" type="{http://www.cmis.org/ns/1.0}objectCollectionType"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}hasMoreItems"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
@@ -32,39 +32,39 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "relationshipCollection",
+    "relationships",
     "hasMoreItems"
 })
 @XmlRootElement(name = "getRelationshipsResponse")
 public class GetRelationshipsResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected RelationshipCollection relationshipCollection;
+    protected ObjectCollectionType relationships;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected boolean hasMoreItems;
 
     /**
-     * Gets the value of the relationshipCollection property.
+     * Gets the value of the relationships property.
      * 
      * @return
      *     possible object is
-     *     {@link RelationshipCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public RelationshipCollection getRelationshipCollection() {
-        return relationshipCollection;
+    public ObjectCollectionType getRelationships() {
+        return relationships;
     }
 
     /**
-     * Sets the value of the relationshipCollection property.
+     * Sets the value of the relationships property.
      * 
      * @param value
      *     allowed object is
-     *     {@link RelationshipCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public void setRelationshipCollection(RelationshipCollection value) {
-        this.relationshipCollection = value;
+    public void setRelationships(ObjectCollectionType value) {
+        this.relationships = value;
     }
 
     /**

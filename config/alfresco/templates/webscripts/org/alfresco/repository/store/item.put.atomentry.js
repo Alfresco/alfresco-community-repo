@@ -12,8 +12,6 @@ script:
         break script;
     }
 
-    // TODO: check for appropriate permission
-    
     // ensure atom entry is posted
     if (entry === null)
     {
@@ -23,6 +21,15 @@ script:
         break script;
     }
 
+    // check permissions
+    if (!model.node.hasPermission("WriteProperties") || !model.node.hasPermission("WriteContent"))
+    {
+        status.code = 403;
+        status.message = "Permission to update is denied";
+        status.redirect = true;
+        break script;
+    }    
+    
     // update properties
     // NOTE: Only CMIS property name is updatable
     // TODO: support for custom properties

@@ -32,7 +32,9 @@ import org.alfresco.cmis.CMISService.TypesFilter;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
+import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.cmis.search.FullTextSearchSupport;
 import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -212,6 +214,27 @@ public class CMISScript extends BaseScopableProcessorExtension
         catch(NullPointerException e)
         {
             return false;
+        }
+    }
+    
+    /**
+     * Resolve to a Types Filter
+     * 
+     * NOTE: If specified types filter is not specified or invalid, the default types
+     *       filter is returned
+     *       
+     * @param typesFilter  types filter
+     * @return  resolved types filter
+     */
+    private TypesFilter resolveTypesFilter(String typesFilter)
+    {
+        if (isValidTypesFilter(typesFilter))
+        {
+            return TypesFilter.valueOf(typesFilter);
+        }
+        else
+        {
+            return defaultTypesFilter;
         }
     }
     
@@ -419,23 +442,21 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Resolve to a Types Filter
+     * Issue query
      * 
-     * NOTE: If specified types filter is not specified or invalid, the default types
-     *       filter is returned
-     *       
-     * @param typesFilter  types filter
-     * @return  resolved types filter
+     * @param statement  query statement
+     * @param page
+     * 
+     * @return  paged result set
      */
-    private TypesFilter resolveTypesFilter(String typesFilter)
+    public PagedResults query(String statement, Page page)
     {
-        if (isValidTypesFilter(typesFilter))
-        {
-            return TypesFilter.valueOf(typesFilter);
-        }
-        else
-        {
-            return defaultTypesFilter;
-        }
+        CMISQueryOptions options = new CMISQueryOptions(statement, cmisService.getDefaultRootStoreRef());
+        options.setSkipCount(page.getNumber());
+        options.setMaxItems(page.getSize());
+        CMISResultSet resultSet = cmisQueryService.query(options);
+        Cursor cursor = paging.createCursor(resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
+        return paging.createPagedResult(resultSet, cursor);
     }
+    
 }

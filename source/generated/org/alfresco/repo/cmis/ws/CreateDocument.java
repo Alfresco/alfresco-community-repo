@@ -19,9 +19,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
  *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="propertyCollection" type="{http://www.cmis.org/ns/1.0}documentObjectType"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}objectID" minOccurs="0"/>
+ *           &lt;element name="properties" type="{http://www.cmis.org/ns/1.0}propertiesType"/>
+ *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream" minOccurs="0"/>
  *           &lt;element name="versioningState" type="{http://www.cmis.org/ns/1.0}versioningStateEnum" minOccurs="0"/>
  *         &lt;/sequence>
@@ -35,8 +36,9 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "typeId",
-    "propertyCollection",
+    "properties",
     "folderId",
     "contentStream",
     "versioningState"
@@ -45,15 +47,41 @@ import javax.xml.bind.annotation.XmlType;
 public class CreateDocument {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String typeId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentObjectType propertyCollection;
+    protected PropertiesType properties;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String folderId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected ContentStream contentStream;
+    protected ContentStreamType contentStream;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected VersioningStateEnum versioningState;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the typeId property.
@@ -80,27 +108,27 @@ public class CreateDocument {
     }
 
     /**
-     * Gets the value of the propertyCollection property.
+     * Gets the value of the properties property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentObjectType }
+     *     {@link PropertiesType }
      *     
      */
-    public DocumentObjectType getPropertyCollection() {
-        return propertyCollection;
+    public PropertiesType getProperties() {
+        return properties;
     }
 
     /**
-     * Sets the value of the propertyCollection property.
+     * Sets the value of the properties property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentObjectType }
+     *     {@link PropertiesType }
      *     
      */
-    public void setPropertyCollection(DocumentObjectType value) {
-        this.propertyCollection = value;
+    public void setProperties(PropertiesType value) {
+        this.properties = value;
     }
 
     /**
@@ -132,10 +160,10 @@ public class CreateDocument {
      * 
      * @return
      *     possible object is
-     *     {@link ContentStream }
+     *     {@link ContentStreamType }
      *     
      */
-    public ContentStream getContentStream() {
+    public ContentStreamType getContentStream() {
         return contentStream;
     }
 
@@ -144,10 +172,10 @@ public class CreateDocument {
      * 
      * @param value
      *     allowed object is
-     *     {@link ContentStream }
+     *     {@link ContentStreamType }
      *     
      */
-    public void setContentStream(ContentStream value) {
+    public void setContentStream(ContentStreamType value) {
         this.contentStream = value;
     }
 

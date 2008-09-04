@@ -20,10 +20,12 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="folderID" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
+ *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
- *           &lt;element name="folderID" type="{http://www.cmis.org/ns/1.0}objectID" minOccurs="0"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -35,22 +37,76 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
+    "folderID",
     "filter",
+    "includeAllowableActions",
     "maxItems",
-    "skipCount",
-    "folderID"
+    "skipCount"
 })
 @XmlRootElement(name = "getCheckedoutDocs")
 public class GetCheckedoutDocs {
 
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected String folderID;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String filter;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected Boolean includeAllowableActions;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger maxItems;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger skipCount;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String folderID;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
+
+    /**
+     * Gets the value of the folderID property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getFolderID() {
+        return folderID;
+    }
+
+    /**
+     * Sets the value of the folderID property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setFolderID(String value) {
+        this.folderID = value;
+    }
 
     /**
      * Gets the value of the filter property.
@@ -74,6 +130,30 @@ public class GetCheckedoutDocs {
      */
     public void setFilter(String value) {
         this.filter = value;
+    }
+
+    /**
+     * Gets the value of the includeAllowableActions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isIncludeAllowableActions() {
+        return includeAllowableActions;
+    }
+
+    /**
+     * Sets the value of the includeAllowableActions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setIncludeAllowableActions(Boolean value) {
+        this.includeAllowableActions = value;
     }
 
     /**
@@ -122,30 +202,6 @@ public class GetCheckedoutDocs {
      */
     public void setSkipCount(BigInteger value) {
         this.skipCount = value;
-    }
-
-    /**
-     * Gets the value of the folderID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getFolderID() {
-        return folderID;
-    }
-
-    /**
-     * Sets the value of the folderID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setFolderID(String value) {
-        this.folderID = value;
     }
 
 }

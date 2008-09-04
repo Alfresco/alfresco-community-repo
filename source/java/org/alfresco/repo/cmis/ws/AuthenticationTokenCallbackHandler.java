@@ -31,8 +31,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ws.security.WSPasswordCallback;
 
 /**
@@ -40,8 +38,6 @@ import org.apache.ws.security.WSPasswordCallback;
  */
 public class AuthenticationTokenCallbackHandler implements CallbackHandler
 {
-
-    private final Log LOG = LogFactory.getLog(AuthenticationTokenCallbackHandler.class);
 
     private AuthenticationService authenticationService;
 

@@ -238,7 +238,7 @@ public class PagingTest extends TestCase
 
     public void testUnlimitedPage()
     {
-        Cursor cursor1 = paging.createCursor(100, paging.createPage(1, 0));
+        Cursor cursor1 = paging.createCursor(100, paging.createPage(1, -1));
         assertTrue(cursor1.isInRange());
         assertEquals(1, cursor1.getCurrentPage());
         assertEquals(1, cursor1.getFirstPage());
@@ -247,7 +247,7 @@ public class PagingTest extends TestCase
         assertEquals(-1, cursor1.getNextPage());
         assertEquals(0, cursor1.getStartRow());
         assertEquals(99, cursor1.getEndRow());
-        Cursor cursor2 = paging.createCursor(100, paging.createPage(2, 0));
+        Cursor cursor2 = paging.createCursor(100, paging.createPage(2, -1));
         assertFalse(cursor2.isInRange());
     }
 
@@ -337,7 +337,7 @@ public class PagingTest extends TestCase
 
     public void testUnlimitedWindow()
     {
-        Cursor cursor1 = paging.createCursor(100, paging.createWindow(0, 0));
+        Cursor cursor1 = paging.createCursor(100, paging.createWindow(0, -1));
         assertTrue(cursor1.isInRange());
         assertEquals(0, cursor1.getStartRow());
         assertEquals(99, cursor1.getEndRow());

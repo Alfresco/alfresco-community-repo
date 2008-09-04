@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="PolicyService" targetNamespace="http://www.cmis.org/ns/1.0">
+  <types>
+    <!--
+		<xsd:schema>
+			<xsd:import namespace="http://cmis.org/_TBD_" schemaLocation="_TBD_.xsd"/>
+		</xsd:schema>
+		-->
+    <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+      <xsd:include schemaLocation="cmisMessageTypes.xsd" />
+    </xsd:schema>
+  </types>
+  <message name="applyPolicy">
+    <part name="parameters" element="tns:applyPolicy" />
+  </message>
+  <message name="applyPolicyResponse">
+    <part name="parameters" element="tns:applyPolicyResponse" />
+  </message>
+  <message name="removePolicy">
+    <part name="parameters" element="tns:removePolicy" />
+  </message>
+  <message name="removePolicyResponse">
+    <part name="parameters" element="tns:removePolicyResponse" />
+  </message>
+  <message name="getAppliedPolicies">
+    <part name="parameters" element="tns:getAppliedPolicies" />
+  </message>
+  <message name="getAppliedPoliciesResponse">
+    <part name="parameters" element="tns:getAppliedPoliciesResponse" />
+  </message>
+  <message name="InvalidArgumentException">
+    <part name="fault" element="tns:invalidArgumentException" />
+  </message>
+  <message name="PermissionDeniedException">
+    <part name="fault" element="tns:permissionDeniedException" />
+  </message>
+  <message name="OperationNotSupportedException">
+    <part name="fault" element="tns:operationNotSupportedException" />
+  </message>
+  <message name="UpdateConflictException">
+    <part name="fault" element="tns:updateConflictException" />
+  </message>
+  <message name="RuntimeException">
+    <part name="fault" element="tns:runtimeException" />
+  </message>
+  <message name="ConstraintViolationException">
+    <part name="fault" element="tns:constraintViolationException" />
+  </message>
+  <message name="ObjectNotFoundException">
+    <part name="fault" element="tns:objectNotFoundException" />
+  </message>
+  <message name="FilterNotValidException">
+    <part name="fault" element="tns:filterNotValidException" />
+  </message>
+  <portType name="PolicyServicePort">
+    <operation name="applyPolicy">
+      <input message="tns:applyPolicy" />
+      <output message="tns:applyPolicyResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="removePolicy">
+      <input message="tns:removePolicy" />
+      <output message="tns:removePolicyResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+    </operation>
+    <operation name="getAppliedPolicies">
+      <input message="tns:getAppliedPolicies" />
+      <output message="tns:getAppliedPoliciesResponse" />
+      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
+      <fault name="RuntimeException" message="tns:RuntimeException" />
+      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+    </operation>
+  </portType>
+  <binding name="PolicyServicePortBinding" type="tns:PolicyServicePort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="applyPolicy">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="removePolicy">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+    </operation>
+    <operation name="getAppliedPolicies">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+      <fault name="InvalidArgumentException">
+        <soap:fault name="InvalidArgumentException" use="literal" />
+      </fault>
+      <fault name="PermissionDeniedException">
+        <soap:fault name="PermissionDeniedException" use="literal" />
+      </fault>
+      <fault name="OperationNotSupportedException">
+        <soap:fault name="OperationNotSupportedException" use="literal" />
+      </fault>
+      <fault name="UpdateConflictException">
+        <soap:fault name="UpdateConflictException" use="literal" />
+      </fault>
+      <fault name="RuntimeException">
+        <soap:fault name="RuntimeException" use="literal" />
+      </fault>
+      <fault name="ConstraintViolationException">
+        <soap:fault name="ConstraintViolationException" use="literal" />
+      </fault>
+      <fault name="ObjectNotFoundException">
+        <soap:fault name="ObjectNotFoundException" use="literal" />
+      </fault>
+      <fault name="FilterNotValidException">
+        <soap:fault name="FilterNotValidException" use="literal" />
+      </fault>
+    </operation>
+  </binding>
+  <service name="PolicyService">
+    <port name="PolicyServicePort" binding="tns:PolicyServicePortBinding">
+      <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
+    </port>
+  </service>
+</definitions>

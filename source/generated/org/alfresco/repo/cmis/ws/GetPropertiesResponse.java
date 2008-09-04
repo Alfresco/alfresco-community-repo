@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="object" type="{http://www.cmis.org/ns/1.0}documentFolderOrRelationshipObjectType"/>
+ *           &lt;element name="object" type="{http://www.cmis.org/ns/1.0}objectType"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -37,17 +37,17 @@ import javax.xml.bind.annotation.XmlType;
 public class GetPropertiesResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentFolderOrRelationshipObjectType object;
+    protected ObjectType object;
 
     /**
      * Gets the value of the object property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentFolderOrRelationshipObjectType }
+     *     {@link ObjectType }
      *     
      */
-    public DocumentFolderOrRelationshipObjectType getObject() {
+    public ObjectType getObject() {
         return object;
     }
 
@@ -56,10 +56,10 @@ public class GetPropertiesResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentFolderOrRelationshipObjectType }
+     *     {@link ObjectType }
      *     
      */
-    public void setObject(DocumentFolderOrRelationshipObjectType value) {
+    public void setObject(ObjectType value) {
         this.object = value;
     }
 

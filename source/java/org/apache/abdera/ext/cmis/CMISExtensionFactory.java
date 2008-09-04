@@ -46,6 +46,8 @@ public class CMISExtensionFactory extends AbstractExtensionFactory
     public CMISExtensionFactory()
     {
         super(CMIS_200805_NS);
+        addImpl(REPOSITORY_INFO, CMISRepositoryInfo.class);
+        addImpl(CAPABILITIES, CMISCapabilities.class);
         addImpl(PROPERTIES, CMISProperties.class);
     }
 

@@ -20,7 +20,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}getTypesEnum"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
  *           &lt;element name="returnPropertyDefinitions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
@@ -35,7 +36,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "type",
+    "repositoryId",
+    "typeId",
     "returnPropertyDefinitions",
     "maxItems",
     "skipCount"
@@ -44,7 +46,9 @@ import javax.xml.bind.annotation.XmlType;
 public class GetTypes {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected GetTypesEnum type;
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected String typeId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected Boolean returnPropertyDefinitions;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
@@ -53,27 +57,51 @@ public class GetTypes {
     protected BigInteger skipCount;
 
     /**
-     * Gets the value of the type property.
+     * Gets the value of the repositoryId property.
      * 
      * @return
      *     possible object is
-     *     {@link GetTypesEnum }
+     *     {@link String }
      *     
      */
-    public GetTypesEnum getType() {
-        return type;
+    public String getRepositoryId() {
+        return repositoryId;
     }
 
     /**
-     * Sets the value of the type property.
+     * Sets the value of the repositoryId property.
      * 
      * @param value
      *     allowed object is
-     *     {@link GetTypesEnum }
+     *     {@link String }
      *     
      */
-    public void setType(GetTypesEnum value) {
-        this.type = value;
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
+
+    /**
+     * Gets the value of the typeId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTypeId() {
+        return typeId;
+    }
+
+    /**
+     * Sets the value of the typeId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTypeId(String value) {
+        this.typeId = value;
     }
 
     /**

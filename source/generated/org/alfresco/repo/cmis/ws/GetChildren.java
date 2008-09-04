@@ -20,9 +20,11 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}typesOfObjectsEnum"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}typesOfFileableObjectsEnum" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
+ *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
  *         &lt;/sequence>
@@ -36,9 +38,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "folderId",
     "type",
     "filter",
+    "includeAllowableActions",
     "maxItems",
     "skipCount"
 })
@@ -46,15 +50,43 @@ import javax.xml.bind.annotation.XmlType;
 public class GetChildren {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String folderId;
+    protected String repositoryId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected TypesOfObjectsEnum type;
+    protected String folderId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected TypesOfFileableObjectsEnum type;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String filter;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected Boolean includeAllowableActions;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger maxItems;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected BigInteger skipCount;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the folderId property.
@@ -85,10 +117,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link TypesOfObjectsEnum }
+     *     {@link TypesOfFileableObjectsEnum }
      *     
      */
-    public TypesOfObjectsEnum getType() {
+    public TypesOfFileableObjectsEnum getType() {
         return type;
     }
 
@@ -97,10 +129,10 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link TypesOfObjectsEnum }
+     *     {@link TypesOfFileableObjectsEnum }
      *     
      */
-    public void setType(TypesOfObjectsEnum value) {
+    public void setType(TypesOfFileableObjectsEnum value) {
         this.type = value;
     }
 
@@ -126,6 +158,30 @@ public class GetChildren {
      */
     public void setFilter(String value) {
         this.filter = value;
+    }
+
+    /**
+     * Gets the value of the includeAllowableActions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isIncludeAllowableActions() {
+        return includeAllowableActions;
+    }
+
+    /**
+     * Sets the value of the includeAllowableActions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setIncludeAllowableActions(Boolean value) {
+        this.includeAllowableActions = value;
     }
 
     /**

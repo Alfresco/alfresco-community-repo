@@ -6,7 +6,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <entry [@nsLib.entryNS/]>
-  [@entryLib.document node=node/]
+  [#if checkin]
+    [@entryLib.document node/]
+  [#else]
+    [@entryLib.pwc node/]
+  [/#if]
 </entry>
 
 [/#compress]

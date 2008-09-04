@@ -19,9 +19,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}objectID"/>
- *           &lt;element name="sourceFolderId" type="{http://www.cmis.org/ns/1.0}objectID" minOccurs="0"/>
+ *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="targetFolderId" type="{http://www.cmis.org/ns/1.0}ID"/>
+ *           &lt;element name="sourceFolderId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
  *     &lt;/complexContent>
@@ -33,19 +34,46 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
+    "repositoryId",
     "objectId",
-    "folderId",
+    "targetFolderId",
     "sourceFolderId"
 })
 @XmlRootElement(name = "moveObject")
 public class MoveObject {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryId;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String objectId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String folderId;
+    protected String targetFolderId;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String sourceFolderId;
+
+    /**
+     * Gets the value of the repositoryId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    /**
+     * Sets the value of the repositoryId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryId(String value) {
+        this.repositoryId = value;
+    }
 
     /**
      * Gets the value of the objectId property.
@@ -72,27 +100,27 @@ public class MoveObject {
     }
 
     /**
-     * Gets the value of the folderId property.
+     * Gets the value of the targetFolderId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFolderId() {
-        return folderId;
+    public String getTargetFolderId() {
+        return targetFolderId;
     }
 
     /**
-     * Sets the value of the folderId property.
+     * Sets the value of the targetFolderId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFolderId(String value) {
-        this.folderId = value;
+    public void setTargetFolderId(String value) {
+        this.targetFolderId = value;
     }
 
     /**

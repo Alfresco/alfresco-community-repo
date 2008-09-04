@@ -1,6 +1,8 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -17,15 +19,18 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
  *         &lt;element name="repositoryName" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositoryDescription" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="rootFolderId" type="{http://www.cmis.org/ns/1.0}objectID"/>
+ *         &lt;element name="repositoryURI" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
+ *         &lt;element name="repositoryDescription" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="rootFolderId" type="{http://www.cmis.org/ns/1.0}ID"/>
  *         &lt;element name="vendorName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="productVersion" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="repositorySpecificInformation" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="cmisVersionsSupported" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="repositorySpecificInformation" type="{http://www.cmis.org/ns/1.0}XML" minOccurs="0"/>
  *         &lt;element name="capabilities" type="{http://www.cmis.org/ns/1.0}capabilitiesType"/>
+ *         &lt;element name="relatedRepositories" type="{http://www.cmis.org/ns/1.0}relatedRepositoriesType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -38,13 +43,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "repositoryInfoType", propOrder = {
     "repositoryId",
     "repositoryName",
+    "repositoryURI",
     "repositoryDescription",
     "rootFolderId",
     "vendorName",
     "productName",
     "productVersion",
+    "cmisVersionsSupported",
     "repositorySpecificInformation",
-    "capabilities"
+    "capabilities",
+    "relatedRepositories"
 })
 public class RepositoryInfoType {
 
@@ -53,6 +61,8 @@ public class RepositoryInfoType {
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String repositoryName;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected String repositoryURI;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected String repositoryDescription;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String rootFolderId;
@@ -63,9 +73,13 @@ public class RepositoryInfoType {
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected String productVersion;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected String repositorySpecificInformation;
+    protected String cmisVersionsSupported;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    protected XML repositorySpecificInformation;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
     protected CapabilitiesType capabilities;
+    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    protected List<RelatedRepositoriesType> relatedRepositories;
 
     /**
      * Gets the value of the repositoryId property.
@@ -113,6 +127,30 @@ public class RepositoryInfoType {
      */
     public void setRepositoryName(String value) {
         this.repositoryName = value;
+    }
+
+    /**
+     * Gets the value of the repositoryURI property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRepositoryURI() {
+        return repositoryURI;
+    }
+
+    /**
+     * Sets the value of the repositoryURI property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRepositoryURI(String value) {
+        this.repositoryURI = value;
     }
 
     /**
@@ -236,14 +274,38 @@ public class RepositoryInfoType {
     }
 
     /**
-     * Gets the value of the repositorySpecificInformation property.
+     * Gets the value of the cmisVersionsSupported property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getRepositorySpecificInformation() {
+    public String getCmisVersionsSupported() {
+        return cmisVersionsSupported;
+    }
+
+    /**
+     * Sets the value of the cmisVersionsSupported property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCmisVersionsSupported(String value) {
+        this.cmisVersionsSupported = value;
+    }
+
+    /**
+     * Gets the value of the repositorySpecificInformation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link XML }
+     *     
+     */
+    public XML getRepositorySpecificInformation() {
         return repositorySpecificInformation;
     }
 
@@ -252,10 +314,10 @@ public class RepositoryInfoType {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link XML }
      *     
      */
-    public void setRepositorySpecificInformation(String value) {
+    public void setRepositorySpecificInformation(XML value) {
         this.repositorySpecificInformation = value;
     }
 
@@ -281,6 +343,35 @@ public class RepositoryInfoType {
      */
     public void setCapabilities(CapabilitiesType value) {
         this.capabilities = value;
+    }
+
+    /**
+     * Gets the value of the relatedRepositories property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the relatedRepositories property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getRelatedRepositories().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link RelatedRepositoriesType }
+     * 
+     * 
+     */
+    public List<RelatedRepositoriesType> getRelatedRepositories() {
+        if (relatedRepositories == null) {
+            relatedRepositories = new ArrayList<RelatedRepositoriesType>();
+        }
+        return this.relatedRepositories;
     }
 
 }

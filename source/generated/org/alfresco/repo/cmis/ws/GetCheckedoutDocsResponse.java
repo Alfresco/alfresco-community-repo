@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;complexContent>
  *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *         &lt;sequence>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}documentCollection"/>
+ *           &lt;element name="documents" type="{http://www.cmis.org/ns/1.0}objectCollectionType"/>
  *           &lt;element ref="{http://www.cmis.org/ns/1.0}hasMoreItems"/>
  *         &lt;/sequence>
  *       &lt;/restriction>
@@ -32,39 +32,39 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "documentCollection",
+    "documents",
     "hasMoreItems"
 })
 @XmlRootElement(name = "getCheckedoutDocsResponse")
 public class GetCheckedoutDocsResponse {
 
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected DocumentCollection documentCollection;
+    protected ObjectCollectionType documents;
     @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
     protected boolean hasMoreItems;
 
     /**
-     * Gets the value of the documentCollection property.
+     * Gets the value of the documents property.
      * 
      * @return
      *     possible object is
-     *     {@link DocumentCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public DocumentCollection getDocumentCollection() {
-        return documentCollection;
+    public ObjectCollectionType getDocuments() {
+        return documents;
     }
 
     /**
-     * Sets the value of the documentCollection property.
+     * Sets the value of the documents property.
      * 
      * @param value
      *     allowed object is
-     *     {@link DocumentCollection }
+     *     {@link ObjectCollectionType }
      *     
      */
-    public void setDocumentCollection(DocumentCollection value) {
-        this.documentCollection = value;
+    public void setDocuments(ObjectCollectionType value) {
+        this.documents = value;
     }
 
     /**

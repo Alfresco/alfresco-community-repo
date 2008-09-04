@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Retrieve Parent Folder</shortname>
+  <description>Retrieve parent folder</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/parent?returnToRoot={returnToRoot}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/parent?returnToRoot={returnToRoot}</url>
+  <authentication>guest</authentication>
+  <format default="atomfeed">argument</format>
+</webscript>

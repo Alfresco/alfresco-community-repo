@@ -149,6 +149,8 @@
       <property name="searchService" ref="searchService" />
    </bean>
 
+   <bean id="webscripts.cmis.description" class="org.alfresco.repo.cmis.CMISDescription"/>
+
 
    <!--                                    -->
    <!--  Web Script Javascript Extensions  -->
@@ -403,5 +405,14 @@
 
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
+   <!--          -->
+   <!-- CMIS API -->
+   <!--          -->
+
+   <alias alias="webscriptdesc.org.alfresco.repository.repository.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.children.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.parent.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.parents.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.unfiled.get" name="webscripts.cmis.description"/>
    
 </beans>

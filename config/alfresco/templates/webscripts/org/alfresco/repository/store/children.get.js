@@ -2,7 +2,7 @@ script:
 {
     // locate node
     var pathSegments = url.match.split("/");
-    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id, url.templateArgs.id ];
+    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
     model.node = cmis.findNode(pathSegments[2], reference);
     if (model.node === null)
     {

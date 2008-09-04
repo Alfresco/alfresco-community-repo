@@ -1,5 +1,16 @@
 [#ftl]
 
+[#--            --]
+[#-- ATOM Feed  --]
+[#--            --]
+
+[#macro feed ns=""]
+<feed[#if ns != ""] "${ns}"[/#if]>
+[#nested]
+</feed>
+[/#macro]
+
+
 [#--                     --]
 [#-- ATOM Feed (generic) --]
 [#--                     --]
@@ -20,15 +31,15 @@
 [#-- ATOM Feed for Node --]
 [#--                    --]
 
-[#macro node node]
+[#macro node node title=""]
 <author><name>${node.properties.creator!""}</name></author> 
 <generator version="${server.version}">Alfresco (${server.edition})</generator>
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
-<id>urn:uuid:${node.id}</id>
+<id>urn:uuid:${node.id}[#if title != ""]-${title}[/#if]</id>
 <link rel="self" href="${absurl(encodeuri(url.full))?xml}"/>
 <link rel="cmis-source" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 [#nested]  [#-- NOTE: Custom links --]
-<title>${node.name}</title>
+<title>${node.name}[#if title != ""] ${title?capitalize}[/#if]</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 [/#macro]
 
@@ -38,9 +49,9 @@
 [#--             --]
 
 [#macro hasMore more]
-[#if more?is_string && more = "true"]
+[#if more?is_boolean && more]
   <cmis:hasMoreItems>true</cmis:hasMoreItems>
-[#elseif more?is_string && more = "false"]
+[#elseif more?is_boolean && !more]
   <cmis:hasMoreItems>false</cmis:hasMoreItems>
 [#else]  
   <cmis:hasMoreItems>${more.hasNextPage?string}</cmis:hasMoreItems>

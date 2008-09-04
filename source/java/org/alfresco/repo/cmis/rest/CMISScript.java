@@ -27,16 +27,17 @@ package org.alfresco.repo.cmis.rest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.alfresco.cmis.CMISFullTextSearchEnum;
+import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISService;
-import org.alfresco.cmis.CMISService.TypesFilter;
+import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
-import org.alfresco.cmis.search.FullTextSearchSupport;
-import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -56,8 +57,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CMISScript extends BaseScopableProcessorExtension
 {
-    private static final TypesFilter defaultTypesFilter = TypesFilter.Any;
-    
     private ServiceRegistry services;
     private Repository repository;
     private CMISService cmisService;
@@ -191,7 +190,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public String getDefaultTypesFilter()
     {
-        return defaultTypesFilter.toString();
+        return CMISTypesFilterEnum.FACTORY.defaultLabel();
     }
 
     /**
@@ -202,19 +201,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public boolean isValidTypesFilter(String typesFilter)
     {
-        try
-        {
-            TypesFilter.valueOf(typesFilter);
-            return true;
-        }
-        catch(IllegalArgumentException e)
-        {
-            return false;
-        }
-        catch(NullPointerException e)
-        {
-            return false;
-        }
+        return CMISTypesFilterEnum.FACTORY.validLabel(typesFilter);
     }
     
     /**
@@ -226,16 +213,9 @@ public class CMISScript extends BaseScopableProcessorExtension
      * @param typesFilter  types filter
      * @return  resolved types filter
      */
-    private TypesFilter resolveTypesFilter(String typesFilter)
+    private CMISTypesFilterEnum resolveTypesFilter(String typesFilter)
     {
-        if (isValidTypesFilter(typesFilter))
-        {
-            return TypesFilter.valueOf(typesFilter);
-        }
-        else
-        {
-            return defaultTypesFilter;
-        }
+        return (CMISTypesFilterEnum)CMISTypesFilterEnum.FACTORY.toEnum(typesFilter);
     }
     
     /**
@@ -266,7 +246,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults queryChildren(ScriptNode parent, String typesFilter, Page page)
     {
-        TypesFilter filter = resolveTypesFilter(typesFilter);
+        CMISTypesFilterEnum filter = resolveTypesFilter(typesFilter);
         NodeRef[] children = cmisService.getChildren(parent.getNodeRef(), filter);
         
         Cursor cursor = paging.createCursor(children.length, page);
@@ -408,7 +388,17 @@ public class CMISScript extends BaseScopableProcessorExtension
     //
     // SQL Query
     // 
-    
+
+    /**
+     * Can you query the private working copy of a document.
+     *  
+     * @return
+     */
+    public boolean getPwcSearchable()
+    {
+        return cmisQueryService.getPwcSearchable();
+    }
+
     /**
      * Can you query non-latest versions of a document.
      *  
@@ -420,13 +410,23 @@ public class CMISScript extends BaseScopableProcessorExtension
     {
         return cmisQueryService.getAllVersionsSearchable();
     }
-    
+
+    /**
+     * Get the query support level.
+     * 
+     * @return
+     */
+    public CMISQueryEnum getQuerySupport()
+    {
+       return cmisQueryService.getQuerySupport(); 
+    }
+
     /**
      * Get the join support level in queries.
      * 
      * @return
      */
-    public JoinSupport getJoinSupport()
+    public CMISJoinEnum getJoinSupport()
     {
        return cmisQueryService.getJoinSupport(); 
     }
@@ -436,7 +436,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      * 
      * @return
      */
-    public FullTextSearchSupport getFullTextSearchSupport()
+    public CMISFullTextSearchEnum getFullTextSearchSupport()
     {
         return cmisQueryService.getFullTextSearchSupport();
     }

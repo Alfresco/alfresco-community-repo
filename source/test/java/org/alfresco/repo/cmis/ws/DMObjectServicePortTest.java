@@ -53,7 +53,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(rootNodeRef.toString(), getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_PARENT));
+        assertEquals(rootNodeRef.toString(), getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_PARENT_ID));
         assertEquals(L0_FOLDER_0, getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_NAME));
     }
 
@@ -147,7 +147,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         assertNotNull(response);
 
         assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
         assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
 
@@ -157,7 +157,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         response = objectServicePort.getProperties(request);
         assertNotNull(response);
         assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT));
+        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
         assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
     }

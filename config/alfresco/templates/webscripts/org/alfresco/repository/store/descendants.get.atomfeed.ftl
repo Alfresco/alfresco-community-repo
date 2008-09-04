@@ -2,28 +2,24 @@
 [#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/]
 [#import "/org/alfresco/cmis/atomfeed.lib.atom.ftl" as feedLib/]
 [#import "/org/alfresco/cmis/atomentry.lib.atom.ftl" as entryLib/]
-[#import "/org/alfresco/paging.lib.atom.ftl" as pagingLib/]
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.node node]
-  [@pagingLib.links cursor/]
-[/@feedLib.node]
+[@feedLib.node node "descendants"/]
 
-[#list results as child]
-<entry>
+[#if depth &gt; 0 || depth == -1]
+[#list cmischildren(node, typesFilter) as child]
   [#if child.isDocument]
-    [@entryLib.document child filter/]
+    [@entryLib.document node=child propfilter=propFilter/]
   [#else]
-    [@entryLib.folder child filter/]
+    [@entryLib.folder node=child propfilter=propFilter typesfilter=typeFilter depth=1 maxdepth=depth/]
   [/#if]
-</entry>
 [/#list]
+[/#if]
 
-[@feedLib.hasMore cursor/]
-[@pagingLib.opensearch cursor/]
+[@feedLib.hasMore false/]
 
 </feed>
 

@@ -118,6 +118,13 @@
                  <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>    
               </bean>
            </entry>
+           <entry key="cmischildren">
+              <bean class="org.alfresco.repo.cmis.rest.CMISChildrenMethod">
+                 <constructor-arg><ref bean="CMISService"/></constructor-arg>    
+                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>    
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>    
+              </bean>
+           </entry>           
          </map>
       </property>
       <property name="registryFactory">
@@ -422,16 +429,17 @@
    <bean id="webscripts.cmis.formats" parent="webscripts.formatmap">
       <property name="formats">
          <props>
-            <prop key="cmissqlquery">application/cmisrequest+xml;type=query</prop>
+            <prop key="cmisquery">application/cmisquery+xml</prop>
+            <prop key="cmisallowableactions">application/cmisallowableactions+xml</prop>
          </props>
       </property>
       <property name="mimetypes">
          <props>
-            <prop key="application/cmisrequest+xml;type=query">cmissqlquery</prop>
+            <prop key="application/cmisquery+xml">cmisquery</prop>
+            <prop key="application/cmisallowableactions+xml">application/cmisallowableactions+xml</prop>
          </props>
       </property>
    </bean>
-
 
    <!-- CMIS Javsascript API -->
    <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
@@ -446,12 +454,14 @@
 
    <!-- CMIS Helpers -->
    
+   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
+   
    <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
       <property name="abderaService" ref="webscripts.abdera"/>
       <property name="defaultNamespace"><value>http://www.cmis.org/2008/05</value></property>
       <property name="QNames">
          <props>
-            <prop key="cmis_properties">properties</prop>
+            <prop key="cmis_object">object</prop>
          </props>
       </property>
       <property name="extensionFactories">

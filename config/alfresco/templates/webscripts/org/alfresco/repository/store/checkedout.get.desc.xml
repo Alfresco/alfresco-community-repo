@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Checked-out Documents</shortname>
   <description>Retrieve list of documents that are checked-out</description>
-  <url>/api/checkedout</url>
+  <url>/api/checkedout?folderId={folderId?}&amp;includeDescendants={includeDescendants?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
   <authentication>user</authentication>
   <format default="atomfeed"/>
   <family>CMIS</family>

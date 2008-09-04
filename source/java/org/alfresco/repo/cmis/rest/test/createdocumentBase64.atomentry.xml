@@ -12,8 +12,10 @@
 		biB0aGUgcmVwb3NpdG9yeSB3aWxsIGNyZWF0ZSB0aGUgZG9jdW1lbnQgaW4gdGhlIHNwZWNpZmll
 		ZCBmb2xkZXIuICBJZiB0aGUgY29udGVudCBzdHJlYW0gaXMgc3BlY2lmaWVkIG9uIGNyZWF0ZSwg
 		aXQgc2hvdWxkIGJlIGJhc2U2NCBlbmNvZGVkIGluIHRoZSBhdG9tIGVudHJ5Lg==
-    </content>    
-    <cmis:properties>
-       <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>
-    </cmis:properties>
+    </content>
+    <cmis:object>
+       <cmis:properties>
+          <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
+       </cmis:properties>
+    </cmis:object>
 </entry>

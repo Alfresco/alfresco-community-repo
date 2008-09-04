@@ -6,11 +6,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" targetNamespace="http://www.w3.org/2007/app"
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
-	xmlns:cmis="http://www.cmis.org/2008/05">
+	xmlns:cmis="http://www.cmis.org/2008/05"
+	version="0.5">
 	<xs:import namespace="http://www.w3.org/2005/Atom"
 		schemaLocation="ATOM4CMIS.xsd" />
 	<xs:import namespace="http://www.cmis.org/2008/05"
-		schemaLocation="CMIS-REST.xsd" />
+		schemaLocation="CMIS.xsd" />
 	<xs:element name="service" type="app:appServiceType"></xs:element>
 	<xs:complexType name="appServiceType">
 		<xs:sequence>
@@ -35,11 +36,29 @@
 	<xs:complexType name="appCollectionType">
 		<xs:sequence>
 			<xs:element ref="atom:title"></xs:element>
+			<xs:element name="accept" type="xs:string" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="categories" type="app:appCategoriesType"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
+				namespace="##other" />
 		</xs:sequence>
-		<xs:attribute ref="cmis:id"></xs:attribute>
 		<xs:attribute ref="cmis:collectionType"></xs:attribute>
 		<xs:attribute name="href" type="xs:anyURI"></xs:attribute>
 	</xs:complexType>
-	<xs:attribute name="href" type="xs:anyURI"></xs:attribute>
+	<xs:complexType name="appCategoriesType">
+		<xs:sequence>
+			<xs:element name="category" type="app:appCategoryType"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="fixed" type="xs:boolean" />
+	</xs:complexType>
+	<xs:complexType name="appCategoryType">
+		<xs:sequence>
+		</xs:sequence>
+		<xs:attribute name="scheme" type="xs:anyURI" />
+		<xs:attribute name="term" type="xs:string" />
+		<xs:attribute name="label" type="xs:string" />
+	</xs:complexType>
 </xs:schema>
 <!-- EOF -->

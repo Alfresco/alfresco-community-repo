@@ -10,8 +10,8 @@ script:
     }
 
     // extract object id from atom entry
-    var cmisProperties = entry.getExtension(atom.names.cmis_properties);
-    var objectId = (cmisProperties !== null) ? cmisProperties.objectId : null;
+    var object = entry.getExtension(atom.names.cmis_object);
+    var objectId = (object !== null) ? object.objectId.value : null;
     if (objectId === null)
     {
         status.code = 400;

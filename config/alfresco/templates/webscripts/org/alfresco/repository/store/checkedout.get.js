@@ -22,10 +22,15 @@ script:
         }
     }
     // NOTE: includeDescendants is an extension of CMIS
-    model.includeDescendants = (args.includeDescendants == "true") ? true : false;;
+    model.includeDescendants = (args.includeDescendants == "true") ? true : false;
  
-    // TODO: property filters
-    
+    // property filter 
+    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    if (model.filter === null)
+    {
+        model.filter = "*";
+    }
+   
     // TODO: includeAllowableActions 
    
     // retrieve checked-out

@@ -4,13 +4,12 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
+[#assign namespace][@nsLib.entryNS/][/#assign]
 
-<entry [@nsLib.entryNS/]>
-  [#if checkin]
-    [@entryLib.document node/]
-  [#else]
-    [@entryLib.pwc node/]
-  [/#if]
-</entry>
+[#if checkin]
+  [@entryLib.document node=node ns=namespace/]
+[#else]
+  [@entryLib.pwc node=node ns=namespace/]
+[/#if]
 
 [/#compress]

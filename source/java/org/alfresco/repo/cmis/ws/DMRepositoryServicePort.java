@@ -31,15 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.CMISCardinality;
+import org.alfresco.cmis.CMISCardinalityEnum;
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.CMISFullTextSearchEnum;
+import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISPropertyTypeEnum;
+import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISPropertyType;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
-import org.alfresco.cmis.dictionary.CMISUpdatability;
-import org.alfresco.cmis.dictionary.ContentStreamAllowed;
-import org.alfresco.cmis.search.FullTextSearchSupport;
-import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.service.descriptor.Descriptor;
 
 /**
@@ -51,49 +51,49 @@ import org.alfresco.service.descriptor.Descriptor;
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
-    private static Map<FullTextSearchSupport, FulltextEnum> fulltextEnumMapping;
-    private static Map<JoinSupport, JoinEnum> joinEnumMapping;
-    private static Map<ContentStreamAllowed, ContentStreamAllowedEnum> contentStreamAllowedEnumMapping;
-    private static Map<CMISUpdatability, UpdatabilityEnum> updatabilityEnumMapping;
-    private static Map<CMISCardinality, CardinalityEnum> cardinalityEnumMapping;
-    private static Map<CMISPropertyType, PropertyTypeEnum> propertyTypeEnumMapping;
+    private static Map<CMISFullTextSearchEnum, FulltextEnum> fulltextEnumMapping;
+    private static Map<CMISJoinEnum, JoinEnum> joinEnumMapping;
+    private static Map<CMISContentStreamAllowedEnum, ContentStreamAllowedEnum> contentStreamAllowedEnumMapping;
+    private static Map<CMISUpdatabilityEnum, UpdatabilityEnum> updatabilityEnumMapping;
+    private static Map<CMISCardinalityEnum, CardinalityEnum> cardinalityEnumMapping;
+    private static Map<CMISPropertyTypeEnum, PropertyTypeEnum> propertyTypeEnumMapping;
 
     static
     {
-        fulltextEnumMapping = new HashMap<FullTextSearchSupport, FulltextEnum>();
-        fulltextEnumMapping.put(FullTextSearchSupport.NO_FULL_TEXT, FulltextEnum.NO_FULLTEXT);
-        fulltextEnumMapping.put(FullTextSearchSupport.FULL_TEXT_ONLY, FulltextEnum.FULLTEXT_ONLY);
-        fulltextEnumMapping.put(FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED, FulltextEnum.FULLTEXT_AND_STRUCTURED);
+        fulltextEnumMapping = new HashMap<CMISFullTextSearchEnum, FulltextEnum>();
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.NO_FULL_TEXT, FulltextEnum.NO_FULLTEXT);
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_ONLY, FulltextEnum.FULLTEXT_ONLY);
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED, FulltextEnum.FULLTEXT_AND_STRUCTURED);
 
-        joinEnumMapping = new HashMap<JoinSupport, JoinEnum>();
-        joinEnumMapping.put(JoinSupport.INNER_AND_OUTER_JOIN_SUPPORT, JoinEnum.INNER_AND_OUTER);
-        joinEnumMapping.put(JoinSupport.INNER_JOIN_SUPPORT, JoinEnum.INNER_ONLY);
-        joinEnumMapping.put(JoinSupport.NO_JOIN_SUPPORT, JoinEnum.NO_JOIN);
+        joinEnumMapping = new HashMap<CMISJoinEnum, JoinEnum>();
+        joinEnumMapping.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, JoinEnum.INNER_AND_OUTER);
+        joinEnumMapping.put(CMISJoinEnum.INNER_JOIN_SUPPORT, JoinEnum.INNER_ONLY);
+        joinEnumMapping.put(CMISJoinEnum.NO_JOIN_SUPPORT, JoinEnum.NO_JOIN);
 
-        contentStreamAllowedEnumMapping = new HashMap<ContentStreamAllowed, ContentStreamAllowedEnum>();
-        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.ALLOWED, ContentStreamAllowedEnum.ALLOWED);
-        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.NOT_ALLOWED, ContentStreamAllowedEnum.NOT_ALLOWED);
-        contentStreamAllowedEnumMapping.put(ContentStreamAllowed.REQUIRED, ContentStreamAllowedEnum.REQUIRED);
+        contentStreamAllowedEnumMapping = new HashMap<CMISContentStreamAllowedEnum, ContentStreamAllowedEnum>();
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.ALLOWED, ContentStreamAllowedEnum.ALLOWED);
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.NOT_ALLOWED, ContentStreamAllowedEnum.NOT_ALLOWED);
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.REQUIRED, ContentStreamAllowedEnum.REQUIRED);
 
-        updatabilityEnumMapping = new HashMap<CMISUpdatability, UpdatabilityEnum>();
-        updatabilityEnumMapping.put(CMISUpdatability.READ_AND_WRITE, UpdatabilityEnum.READ_WRITE);
-        updatabilityEnumMapping.put(CMISUpdatability.READ_AND_WRITE_WHEN_CHECKED_OUT, UpdatabilityEnum.READ_WRITE_WHEN_CHECKED_OUT);
-        updatabilityEnumMapping.put(CMISUpdatability.READ_ONLY, UpdatabilityEnum.READ_ONLY);
+        updatabilityEnumMapping = new HashMap<CMISUpdatabilityEnum, UpdatabilityEnum>();
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE, UpdatabilityEnum.READ_WRITE);
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, UpdatabilityEnum.READ_WRITE_WHEN_CHECKED_OUT);
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_ONLY, UpdatabilityEnum.READ_ONLY);
 
-        cardinalityEnumMapping = new HashMap<CMISCardinality, CardinalityEnum>();
-        cardinalityEnumMapping.put(CMISCardinality.MULTI_VALUED, CardinalityEnum.MULTI_VALUED);
-        cardinalityEnumMapping.put(CMISCardinality.SINGLE_VALUED, CardinalityEnum.SINGLE_VALUED);
+        cardinalityEnumMapping = new HashMap<CMISCardinalityEnum, CardinalityEnum>();
+        cardinalityEnumMapping.put(CMISCardinalityEnum.MULTI_VALUED, CardinalityEnum.MULTI_VALUED);
+        cardinalityEnumMapping.put(CMISCardinalityEnum.SINGLE_VALUED, CardinalityEnum.SINGLE_VALUED);
 
-        propertyTypeEnumMapping = new HashMap<CMISPropertyType, PropertyTypeEnum>();
-        propertyTypeEnumMapping.put(CMISPropertyType.Boolean, PropertyTypeEnum.BOOLEAN);
-        propertyTypeEnumMapping.put(CMISPropertyType.DateTime, PropertyTypeEnum.DATE_TIME);
-        propertyTypeEnumMapping.put(CMISPropertyType.Decimal, PropertyTypeEnum.DECIMAL);
-        propertyTypeEnumMapping.put(CMISPropertyType.HTML, PropertyTypeEnum.HTML);
-        propertyTypeEnumMapping.put(CMISPropertyType.ID, PropertyTypeEnum.ID);
-        propertyTypeEnumMapping.put(CMISPropertyType.Integer, PropertyTypeEnum.INTEGER);
-        propertyTypeEnumMapping.put(CMISPropertyType.String, PropertyTypeEnum.STRING);
-        propertyTypeEnumMapping.put(CMISPropertyType.URI, PropertyTypeEnum.URI);
-        propertyTypeEnumMapping.put(CMISPropertyType.XML, PropertyTypeEnum.XML);
+        propertyTypeEnumMapping = new HashMap<CMISPropertyTypeEnum, PropertyTypeEnum>();
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.BOOLEAN, PropertyTypeEnum.BOOLEAN);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DATETIME, PropertyTypeEnum.DATE_TIME);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DECIMAL, PropertyTypeEnum.DECIMAL);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.HTML, PropertyTypeEnum.HTML);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.ID, PropertyTypeEnum.ID);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.INTEGER, PropertyTypeEnum.INTEGER);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.STRING, PropertyTypeEnum.STRING);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.URI, PropertyTypeEnum.URI);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.XML, PropertyTypeEnum.XML);
     }
 
     public List<RepositoryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
@@ -102,7 +102,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         RepositoryType repositoryType = new RepositoryType();
         Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
         repositoryType.setRepositoryID(serverDescriptor.getId());
-        System.out.println("**** ID: " + serverDescriptor.getId());
         repositoryType.setRepositoryName(serverDescriptor.getName());
         return Collections.singletonList(repositoryType);
     }

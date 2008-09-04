@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
+    <title>${NAME}</title>
+    <summary>${NAME} (summary)</summary>
+    <content type="text/html">${CONTENT}</content>
+    <cmis:object>    
+	    <cmis:properties>
+	       <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
+	    </cmis:properties>
+    </cmis:object>
+</entry>

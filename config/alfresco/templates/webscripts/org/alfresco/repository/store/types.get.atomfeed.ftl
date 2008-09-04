@@ -10,17 +10,15 @@
 
 [#assign title][#if type = "all"]All Types[#else]Type ${type}[/#if][/#assign]
 [@feedLib.generic "urn:uuid:types-${type}" "${title}" "${person.properties.userName}"]
-  [@pagingLib.links cursor=cursor/]
+  [@pagingLib.links cursor/]
 [/@feedLib.generic]
 
 [#list results as child]
-[#-- <entry>  TODO: spec issue 40 --]
-  [@entryLib.typedef typedef=child includeProperties=returnPropertyDefinitions/]
-[#-- </entry>  TODO: spec issue 40 --]
+[@entryLib.typedef child returnPropertyDefinitions/]
 [/#list]
 
-[@feedLib.hasMore more=cursor/]
-[@pagingLib.opensearch cursor=cursor/]
+[@feedLib.hasMore cursor/]
+[@pagingLib.opensearch cursor/]
 
 </feed>
 

@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atom:entry xml:base="http://tempuri.org" xml:lang="en-US"
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:cmis="http://www.cmis.org/2008/05"
-	xmlns:xml="http://www.w3.org/XML/1998/namespace"
-	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
-
-
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
@@ -24,50 +20,52 @@
 
 	<!-- atom links -->
 	<atom:link rel='self' href="http://www.cmis.org/rep1/folder-entry" />
-	<atom:link rel="edit"
-		href="http://www.cmis.org/rep1/folder-entry" />
+	<atom:link rel="edit" href="http://www.cmis.org/rep1/folder-entry" />
 
 	<!--  CMIS Links -->
-	<atom:link rel="cmis-parent"
-		href="http://www.cmis.org/rep1/folder-entry/parent" />
+	<atom:link rel="cmis-parent" href="http://www.cmis.org/rep1/folder-entry/parent" />
 	<atom:link rel="cmis-allowableactions"
 		href="http://www.cmis.org/rep1/folder-entry/actions" />
 	<atom:link rel="cmis-relationships"
 		href="http://www.cmis.org/rep1/folder-entry/relationships" />
-	<atom:link rel="cmis-type"
-		href="http://www.cmis.org/rep1/type/emailfolder" />
+	<atom:link rel="cmis-type" href="http://www.cmis.org/rep1/type/emailfolder" />
 
 	<!-- createdDate -->
 	<atom:published>2001-12-31T12:00:00</atom:published>
-
 	<atom:title>Folder Entry example</atom:title>
 
 	<!-- lastModifiedDate -->
 	<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-	<!-- Optional Allowable actions -->
-	<cmis:allowableActions>
-		<cmis:canDelete>true</cmis:canDelete>
-		<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
-		<cmis:canGetProperties>true</cmis:canGetProperties>
-		<cmis:canGetParents>true</cmis:canGetParents>
-		<cmis:canGetDescendants>true</cmis:canGetDescendants>
-		<cmis:canMove>true</cmis:canMove>
-		<cmis:canAddPolicy>true</cmis:canAddPolicy>
-		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
-		<cmis:canGetChildren>true</cmis:canGetChildren>
-	</cmis:allowableActions>
+	<cmis:object>
+		<cmis:properties>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyId cmis:name="objectId"><cmis:value>folderid1</cmis:value></cmis:propertyId>
+			<cmis:propertyId cmis:name="parentId"><cmis:value>parentFolderId1</cmis:value></cmis:propertyId>
+			<cmis:propertyString cmis:name="objectType">
+				<cmis:value>emailfolder</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				<cmis:value>folder</cmis:value>
+			</cmis:propertyString>
+		</cmis:properties>
+		<!-- Optional Allowable actions -->
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canGetParents>true</cmis:canGetParents>
+			<cmis:canGetDescendants>true</cmis:canGetDescendants>
+			<cmis:canMove>true</cmis:canMove>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+			<cmis:canGetChildren>true</cmis:canGetChildren>
+		</cmis:allowableActions>
+	</cmis:object>
 	
-	<cmis:properties>
-		<cmis:propertyDateTime cmis:name="lastModifiedBy">2001-12-31T12:00:00</cmis:propertyDateTime>
-		<cmis:propertyDateTime cmis:name="creationDate">2001-12-31T12:00:00</cmis:propertyDateTime>
-
-		<cmis:propertyID cmis:name="objectId">folderid1</cmis:propertyID>
-		<cmis:propertyID cmis:name="parentId">parentFolderId1</cmis:propertyID>
-
-		<cmis:propertyString cmis:name="objectType">emailfolder</cmis:propertyString>
-		<cmis:propertyString cmis:name="baseType">folder</cmis:propertyString>
-	</cmis:properties>
-
-
+	<cmis:terminator />
 </atom:entry>

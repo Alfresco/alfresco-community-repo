@@ -28,7 +28,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.property.CMISPropertyNameMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -122,11 +121,10 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected String getPropertyIDValue(PropertiesType properties, String propertyName)
     {
         String result = null;
-        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyIDType property : properties.getPropertyID())
         {
-            if (realPropertyName.equals(property.getName()))
+            if (propertyName.equals(property.getName()))
             {
                 result = property.getValue();
                 break;
@@ -139,11 +137,10 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected String getPropertyStringValue(PropertiesType properties, String propertyName)
     {
         String result = null;
-        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyStringType property : properties.getPropertyString())
         {
-            if (realPropertyName.equals(property.getName()))
+            if (propertyName.equals(property.getName()))
             {
                 result = property.getValue();
                 break;
@@ -156,11 +153,10 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected boolean getPropertyBooleanValue(PropertiesType properties, String propertyName)
     {
         boolean result = false;
-        String realPropertyName = CMISPropertyNameMapping.getWebServiceName(propertyName);
 
         for (PropertyBooleanType property : properties.getPropertyBoolean())
         {
-            if (realPropertyName.equals(property.getName()))
+            if (propertyName.equals(property.getName()))
             {
                 result = property.isValue();
                 break;

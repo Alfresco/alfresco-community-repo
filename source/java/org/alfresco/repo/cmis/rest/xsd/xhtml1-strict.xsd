@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema version="1.0" xml:lang="en" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml" xmlns:xml="http://www.w3.org/XML/1998/namespace" elementFormDefault="qualified">
+<xs:schema version="1.0" xml:lang="en" 
+xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+targetNamespace="http://www.w3.org/1999/xhtml" 
+xmlns="http://www.w3.org/1999/xhtml" 
+xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+elementFormDefault="qualified">
 
   <xs:annotation>
     <xs:documentation>
@@ -211,7 +216,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:pattern value="[\-+]?(\d+|\d+(\.\d+)?%)"/>
+      <xs:pattern value="[-+]?(\d+|\d+(\.\d+)?%)"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -222,7 +227,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:pattern value="[\-+]?(\d+|\d+(\.\d+)?%)|[1-9]?(\d+)?\*"/>
+      <xs:pattern value="[-+]?(\d+|\d+(\.\d+)?%)|[1-9]?(\d+)?\*"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -257,7 +262,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:pattern value="[\-+]?(\d+|\d+(\.\d+)?%)(,\s*[\-+]?(\d+|\d+(\.\d+)?%))*"/>
+      <xs:pattern value="[-+]?(\d+|\d+(\.\d+)?%)(,\s*[-+]?(\d+|\d+(\.\d+)?%))*"/>
     </xs:restriction>
   </xs:simpleType>
 

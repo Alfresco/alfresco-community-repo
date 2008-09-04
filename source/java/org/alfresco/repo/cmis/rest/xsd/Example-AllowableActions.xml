@@ -3,7 +3,7 @@
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 
 	<!--  if not embedded in entry -->
 	<cmis:parentId>cmis:parentId</cmis:parentId>

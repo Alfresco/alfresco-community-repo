@@ -12,7 +12,12 @@ script:
         break script;
     }
  
-    // TODO: property filters 
+    // property filter 
+    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    if (model.filter === null)
+    {
+        model.filter = "*";
+    }
    
     // TODO: check returnToRoot is required for getDocumentParents
     // retrieve parent

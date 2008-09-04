@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.alfresco.cmis.CMISService.TypesFilter;
+import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -75,15 +75,15 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         switch (parameters.getType())
         {
         case DOCUMENTS:
-            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Documents);
+            listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.DOCUMENTS);
             break;
         case FOLDERS:
-            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Folders);
+            listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.FOLDERS);
             break;
         case POLICIES:
             throw new OperationNotSupportedException("Policies listing isn't supported", ExceptionUtils.createBasicFault(null, "Policies listing isn't supported"));
         case ANY:
-            listing = cmisService.getChildren(folderNodeRef, TypesFilter.Any);
+            listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY);
             break;
         }
 

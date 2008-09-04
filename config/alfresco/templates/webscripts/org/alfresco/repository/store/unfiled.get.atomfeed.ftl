@@ -6,7 +6,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <feed [@nsLib.feedNS/]>
-  [@feedLib.generic id="urn:uuid:unfiled" title="Unfiled Documents"/]
+  [@feedLib.generic "urn:uuid:unfiled" "Unfiled Documents"/]
 </feed>
 
 [/#compress]

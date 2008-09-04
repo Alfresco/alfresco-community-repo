@@ -8,15 +8,13 @@
 
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.generic id="urn:uuid:${node.id}-versions" title="Versions of ${node.displayPath}"/]
+[@feedLib.generic "urn:uuid:${node.id}-versions" "Versions of ${node.displayPath}"/]
 
 [#list nodes as version]
-  <entry>
-    [@entryLib.version node=version version=versions[version_index]/]
-  </entry>
+  [@entryLib.version version versions[version_index]/]
 [/#list]
 
-[@feedLib.hasMore more="false"/]
+[@feedLib.hasMore false/]
 
 </feed>
 

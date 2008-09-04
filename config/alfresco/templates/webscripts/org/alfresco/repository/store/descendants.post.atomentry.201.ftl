@@ -5,12 +5,10 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
 
-<entry [@nsLib.entryNS/]>
-  [#if node.isDocument]  
-    [@entryLib.document node=node/]
-  [#else]
-    [@entryLib.folder node=node/]
-  [/#if]
-</entry>
+[#if node.isDocument]  
+  [@entryLib.document node ns=[@nsLib.entryNS/]/]
+[#else]
+  [@entryLib.folder node ns=[@nsLib.entryNS/]/]
+[/#if]
 
 [/#compress]

@@ -40,7 +40,7 @@ import freemarker.template.TemplateModelException;
  * <p>
  * Retrieve the CMIS Type Id for an Alfresco node
  * <p>
- * Usage: cmistypeid(TemplaateNode node)
+ * Usage: cmistypeid(TemplateNode node)
  *        cmistypeid(QName nodeType)
  *        
  * @author davidc

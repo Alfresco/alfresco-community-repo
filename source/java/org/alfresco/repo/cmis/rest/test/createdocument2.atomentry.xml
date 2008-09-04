@@ -1,0 +1,10 @@
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05" xmlns:app="http://www.w3.org/2007/app">
+  <title type="text">onesentence.txt</title>
+  <content type="text/plain">MQ==&#xd;</content>
+  <cmis:object>
+    <cmis:properties>
+      <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyString>
+      <cmis:propertyString cmis:name="DocumentTitle"><cmis:value>onesentence.txt</cmis:value></cmis:propertyString>
+    </cmis:properties>
+  </cmis:object>
+</entry>

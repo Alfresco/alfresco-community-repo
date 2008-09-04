@@ -5,7 +5,7 @@
 	xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 
 	<!-- This is a feed of folder1 containing:
 			folder2
@@ -76,7 +76,31 @@
 		<!-- lastModifiedDate -->
 		<atom:updated>2001-12-31T12:00:00</atom:updated>
 
-		<!-- Optional Allowable actions -->
+		<cmis:object>
+
+		<cmis:properties>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+
+			<cmis:propertyId cmis:name="objectId">
+				<cmis:value>folderid1</cmis:value>
+			</cmis:propertyId>
+			<cmis:propertyId cmis:name="parentId">
+				<cmis:value>parentFolderId1</cmis:value>
+			</cmis:propertyId>
+
+			<cmis:propertyString cmis:name="objectType">
+				<cmis:value>emailfolder</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				<cmis:value>folder</cmis:value>
+			</cmis:propertyString>
+		</cmis:properties>
+				<!-- Optional Allowable actions -->
 		<cmis:allowableActions>
 			<cmis:canDelete>true</cmis:canDelete>
 			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
@@ -88,29 +112,9 @@
 			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 			<cmis:canGetChildren>true</cmis:canGetChildren>
 		</cmis:allowableActions>
-
-		<cmis:properties>
-			<cmis:propertyDateTime cmis:name="lastModifiedBy">
-				2001-12-31T12:00:00
-			</cmis:propertyDateTime>
-			<cmis:propertyDateTime cmis:name="creationDate">
-				2001-12-31T12:00:00
-			</cmis:propertyDateTime>
-
-			<cmis:propertyID cmis:name="objectId">
-				folderid1
-			</cmis:propertyID>
-			<cmis:propertyID cmis:name="parentId">
-				parentFolderId1
-			</cmis:propertyID>
-
-			<cmis:propertyString cmis:name="objectType">
-				emailfolder
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="baseType">
-				folder
-			</cmis:propertyString>
-		</cmis:properties>
+		
+		</cmis:object>
+		<cmis:terminator />
 	</atom:entry>
 
 	<!-- child doc -->
@@ -167,7 +171,71 @@
 		<!-- lastModifiedDate -->
 		<atom:updated>2001-12-31T12:00:00</atom:updated>
 
-		<!-- Optional Allowable actions -->
+		<cmis:object>
+		<cmis:properties>
+			<cmis:propertyId cmis:name="objectId">
+				<cmis:value>docid1</cmis:value>
+			</cmis:propertyId>
+
+			<cmis:propertyBoolean cmis:name="isCheckedOut">
+				<cmis:value>false</cmis:value>
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isLatestVersion">
+				<cmis:value>true</cmis:value>
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isMajorVersion">
+				<cmis:value>true</cmis:value>
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isLatestMajorVersion">
+				<cmis:value>true</cmis:value>
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isImmutable">
+				<cmis:value>false</cmis:value>
+			</cmis:propertyBoolean>
+			<cmis:propertyBoolean
+				cmis:name="isVersionSeriesCheckedOut">
+				<cmis:value>false</cmis:value>
+			</cmis:propertyBoolean>
+
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+
+			<cmis:propertyId cmis:name="versionSeriesCheckedOutID"></cmis:propertyId>
+
+			<cmis:propertyInteger cmis:name="contentStreamLength">
+				<cmis:value>70</cmis:value>
+			</cmis:propertyInteger>
+
+			<cmis:propertyString cmis:name="objectType">
+				<cmis:value>email</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				<cmis:value>document</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString
+				cmis:name="versionSeriesCheckedOutBy" />
+			<cmis:propertyString cmis:name="checkinComment">
+				<cmis:value>This is the initial checkin comment</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="versionLabel">
+				<cmis:value>1.0</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamMimetype">
+				<cmis:value>text/plain</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamName">
+				<cmis:value>foo.txt</cmis:value>
+			</cmis:propertyString>
+
+			<cmis:propertyUri cmis:name="contentStreamURI"><cmis:value>
+				http://www.cmis.org/rep1/media/document-entry</cmis:value>
+			</cmis:propertyUri>
+		</cmis:properties>
+				<!-- Optional Allowable actions -->
 		<cmis:allowableActions>
 			<cmis:canDelete>true</cmis:canDelete>
 			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
@@ -187,70 +255,9 @@
 			<cmis:canAddPolicy>true</cmis:canAddPolicy>
 			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
 		</cmis:allowableActions>
-
-		<cmis:properties>
-			<cmis:propertyBoolean cmis:name="isCheckedOut">
-				false
-			</cmis:propertyBoolean>
-			<cmis:propertyBoolean cmis:name="isLatestVersion">
-				true
-			</cmis:propertyBoolean>
-			<cmis:propertyBoolean cmis:name="isMajorVersion">
-				true
-			</cmis:propertyBoolean>
-			<cmis:propertyBoolean cmis:name="isLatestMajorVersion">
-				true
-			</cmis:propertyBoolean>
-			<cmis:propertyBoolean cmis:name="isImmutable">
-				false
-			</cmis:propertyBoolean>
-			<cmis:propertyBoolean
-				cmis:name="isVersionSeriesCheckedOut">
-				false
-			</cmis:propertyBoolean>
-
-			<cmis:propertyDateTime cmis:name="lastModifiedBy">
-				2001-12-31T12:00:00
-			</cmis:propertyDateTime>
-			<cmis:propertyDateTime cmis:name="creationDate">
-				2001-12-31T12:00:00
-			</cmis:propertyDateTime>
-
-			<cmis:propertyID cmis:name="objectId">
-				docid1
-			</cmis:propertyID>
-			<cmis:propertyID cmis:name="versionSeriesCheckedOutID"></cmis:propertyID>
-
-			<cmis:propertyInteger cmis:name="contentStreamLength">
-				70
-			</cmis:propertyInteger>
-
-			<cmis:propertyString cmis:name="objectType">
-				email
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="baseType">
-				document
-			</cmis:propertyString>
-			<cmis:propertyString
-				cmis:name="versionSeriesCheckedOutBy">
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="checkinComment">
-				This is the initial checkin comment
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="versionLabel">
-				1.0
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="contentStreamMimetype">
-				text/plain
-			</cmis:propertyString>
-			<cmis:propertyString cmis:name="contentStreamName">
-				foo.txt
-			</cmis:propertyString>
-
-			<cmis:propertyURI cmis:name="contentStreamURI">
-				http://www.cmis.org/rep1/media/document-entry
-			</cmis:propertyURI>
-		</cmis:properties>
+		</cmis:object>
+		
+		<cmis:terminator />
 	</atom:entry>
 
 	<!-- notification of more items -->

@@ -33,13 +33,13 @@ script:
     var description = entry.summary;    
     var updated = entry.updated;
     var author = (entry.author !== null) ? entry.author.name : null;
-    var cmisProperties = entry.getExtension(atom.names.cmis_properties);
-    var objectType = (cmisProperties !== null) ? cmisProperties.objectType : null;
+    var object = entry.getExtension(atom.names.cmis_object);
+    var typeId = (object !== null) ? object.objectTypeId.value : null;
     
     // create the item
     // TODO: author/updated/id
     
-    if (objectType === null || objectType.toLowerCase() == "document")
+    if (typeId === null || typeId.toLowerCase() == "document")
     {
         // TODO: objectTypeId to Alfresco content type
         var node = model.parent.createFile(name);
@@ -66,7 +66,7 @@ script:
         
         // TODO: versioningState argument (CheckedOut/CheckedInMinor/CheckedInMajor)
     }
-    else if (objectType.toLowerCase() == "folder")
+    else if (typeId.toLowerCase() == "folder")
     {
         // TODO: objectTypeId to Alfresco content type
         var node = model.parent.createFolder(name);
@@ -78,7 +78,7 @@ script:
     else
     {
         status.code = 400;
-        status.message = "CMIS object type " + objectType + " not understood";
+        status.message = "CMIS object type " + typeId + " not understood";
         status.redirect = true;
         break script;
     }

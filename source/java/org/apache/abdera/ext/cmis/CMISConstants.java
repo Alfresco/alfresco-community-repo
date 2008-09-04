@@ -26,6 +26,8 @@ package org.apache.abdera.ext.cmis;
 
 import javax.xml.namespace.QName;
 
+import org.apache.abdera.util.Constants;
+
 
 /**
  * CMIS Namespace definitions for the Abdera ATOM library.
@@ -41,10 +43,22 @@ import javax.xml.namespace.QName;
  */
 public interface CMISConstants
 {
+    // Namespace
     public static final String CMIS_200805_NS = "http://www.cmis.org/2008/05";
+    
+    // Mimetypes
+    public static final String MIMETYPE_QUERY = "application/cmisquery+xml";
+    public static final String MIMETYPE_ALLOWABLEACTIONS = "application/cmisallowableactions+xml";
 
     // CMIS Service Document
     public static final QName COLLECTION_TYPE = new QName(CMIS_200805_NS, "collectionType");
+    public static final String COLLECTION_ROOT_CHILDREN = "root-children";
+    public static final String COLLECTION_ROOT_DESCENDANTS = "root-descendants";
+    public static final String COLLECTION_CHECKEDOUT = "checkedout";
+    public static final String COLLECTION_UNFILED = "unfiled";
+    public static final String COLLECTION_TYPES_CHILDREN = "types-children";
+    public static final String COLLECTION_TYPES_DESCENDANTS = "types-descendants";
+    public static final String COLLECTION_QUERY = "query";
     
     // CMIS Repository Info
     public static final QName REPOSITORY_INFO = new QName(CMIS_200805_NS, "repositoryInfo");
@@ -67,35 +81,60 @@ public interface CMISConstants
     public static final QName CAPABILITY_JOIN = new QName(CMIS_200805_NS, "capabilityJoin");
     public static final QName CAPABILITY_FULLTEXT = new QName(CMIS_200805_NS, "capabilityFullText");
 
-    // CMIS Schema
+    // CMIS Object
+    public static final QName OBJECT = new QName(CMIS_200805_NS, "object");
     public static final QName PROPERTIES = new QName(CMIS_200805_NS, "properties");
-    public static final QName PROPERTY_STRING = new QName(CMIS_200805_NS, "propertyString");
-    public static final QName PROPERTY_ID = new QName(CMIS_200805_NS, "propertyID");
-    public static final QName PROPERTY_BOOLEAN = new QName(CMIS_200805_NS, "propertyBoolean");
     public static final QName PROPERTY_NAME = new QName(CMIS_200805_NS, "name");
-    
-    // CMIS Properties
-    public static final String PROP_NAME = "name";
-    public static final String PROP_OBJECT_ID  = "objectId";
-    public static final String PROP_BASETYPE = "baseType";
-    public static final String PROP_OBJECT_TYPE = "objectType";
-    public static final String PROP_IS_IMMUTABLE = "isImmutable";
-    public static final String PROP_IS_LATEST_VERSION = "isLatestVersion";
-    public static final String PROP_IS_MAJOR_VERSION = "isMajorVersion";
-    public static final String PROP_IS_LATEST_MAJOR_VERSION = "isLatestMajorVersion";
-    public static final String PROP_VERSION_LABEL = "versionLabel";
-    public static final String PROP_VERSION_SERIES_ID = "versionSeriesID";
-    public static final String PROP_VERSION_SERIES_IS_CHECKED_OUT = "isVersionSeriesCheckedOut";
-    public static final String PROP_VERSION_SERIES_CHECKED_OUT_BY = "versionSeriesCheckedOutBy";
-    public static final String PROP_VERSION_SERIES_CHECKED_OUT_ID = "versionSeriesCheckedOutID";
-    public static final String PROP_CHECKIN_COMMENT = "checkinComment";
- 
+    public static final QName PROPERTY_VALUE = new QName(CMIS_200805_NS, "value");
+    public static final QName PROPERTY_STRING = new QName(CMIS_200805_NS, "propertyString");
+    public static final QName PROPERTY_DECIMAL = new QName(CMIS_200805_NS, "propertyDecimal");
+    public static final QName PROPERTY_INTEGER = new QName(CMIS_200805_NS, "propertyInteger");
+    public static final QName PROPERTY_BOOLEAN = new QName(CMIS_200805_NS, "propertyBoolean");
+    public static final QName PROPERTY_DATETIME = new QName(CMIS_200805_NS, "propertyDateTime");
+    public static final QName PROPERTY_URI = new QName(CMIS_200805_NS, "propertyUri");
+    public static final QName PROPERTY_ID = new QName(CMIS_200805_NS, "propertyId");
+    public static final QName PROPERTY_XML = new QName(CMIS_200805_NS, "propertyXml");
+    public static final QName PROPERTY_HTML = new QName(CMIS_200805_NS, "propertyHtml");
+        
     // CMIS Relationships
     public static final String REL_CHILDREN = "cmis-children";
+    public static final String REL_DESCENDANTS = "cmis-descendants";
     public static final String REL_PARENT = "cmis-parent";
     public static final String REL_FOLDERPARENT = "cmis-folderparent";
     public static final String REL_PARENTS = "cmis-parents";
     public static final String REL_ALLVERSIONS = "cmis-allversions";
     public static final String REL_TYPE = "cmis-type";
+    public static final String REL_SOURCE = "cmis-source";
+    
+    // CMIS Nested Entry
+    public static final QName NESTED_ENTRY = Constants.ENTRY;
+    
+    
+    // CMIS Properties Names
+    public static final String PROP_NAME = "Name";
+    public static final String PROP_OBJECT_ID  = "ObjectId";
+    public static final String PROP_BASETYPE = "BaseType";
+    public static final String PROP_OBJECT_TYPE_ID = "ObjectTypeId";
+    public static final String PROP_IS_IMMUTABLE = "IsImmutable";
+    public static final String PROP_IS_LATEST_VERSION = "IsLatestVersion";
+    public static final String PROP_IS_MAJOR_VERSION = "IsMajorVersion";
+    public static final String PROP_IS_LATEST_MAJOR_VERSION = "IsLatestMajorVersion";
+    public static final String PROP_VERSION_LABEL = "VersionLabel";
+    public static final String PROP_VERSION_SERIES_ID = "VersionSeriesId";
+    public static final String PROP_IS_VERSION_SERIES_CHECKED_OUT = "IsVersionSeriesCheckedOut";
+    public static final String PROP_VERSION_SERIES_CHECKED_OUT_BY = "VersionSeriesCheckedOutBy";
+    public static final String PROP_VERSION_SERIES_CHECKED_OUT_ID = "VersionSeriesCheckedOutId";
+    public static final String PROP_CHECKIN_COMMENT = "CheckinComment";
+
+    // CMIS Property Types
+    public static final String PROP_TYPE_STRING = "string";
+    public static final String PROP_TYPE_DECIMAL = "decimal";
+    public static final String PROP_TYPE_INTEGER = "integer";
+    public static final String PROP_TYPE_BOOLEAN = "boolean";
+    public static final String PROP_TYPE_DATETIME = "datetime";
+    public static final String PROP_TYPE_URI = "uri";
+    public static final String PROP_TYPE_ID = "id";
+    public static final String PROP_TYPE_XML = "xml";
+    public static final String PROP_TYPE_HTML = "html";
     
 }

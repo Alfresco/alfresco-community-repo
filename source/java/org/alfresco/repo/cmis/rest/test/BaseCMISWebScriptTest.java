@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis.rest;
+package org.alfresco.repo.cmis.rest.test;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -33,7 +33,7 @@
 [#macro opensearch cursor]
 [#-- NOTE: this macro requires the definition of xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" in --]
 [#--       the enclosing document                                                                           --]
-[#-- TODO: custom ns  <opensearch:totalResults>${cursor.totalRows}</opensearch:totalResults>  --]
-[#-- TODO: custom ns  <opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>  --]
-[#-- TODO: custom ns  <opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>  --]
+<opensearch:totalResults>${cursor.totalRows}</opensearch:totalResults>
+<opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>
+<opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
 [/#macro]

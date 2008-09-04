@@ -4,8 +4,7 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
-[#-- <entry>  TODO: spec issue 40 --]
-  [@entryLib.typedef typedef true includeInheritedProperties/]
-[#-- </entry>  TODO: spec issue 40 --]
+[#assign namespace][@nsLib.entryNS/][/#assign]
+[@entryLib.typedef typedef=typedef includeProperties=true includeInheritedProperties=includeInheritedProperties ns=namespace/]
 
 [/#compress]

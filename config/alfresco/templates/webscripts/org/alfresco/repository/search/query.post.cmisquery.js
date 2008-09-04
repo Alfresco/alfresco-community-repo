@@ -10,7 +10,7 @@ script:
     //    <returnAllowableActions>false</returnAllowableActions>
     // </query>
     
-    // XML parsing need to be moved to Java
+    // TODO: XML parsing need to be moved to Java
 
     function ltrim(str){
         return str.replace(/^\s+/, '');

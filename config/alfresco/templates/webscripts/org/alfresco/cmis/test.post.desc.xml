@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>CMIS Test Harness</shortname>
+  <description>Execute a series of tests against a CMIS server</description>
+  <url>/api/cmis/test?url={serviceUrl}&amp;user={user?}&amp;args={args?}&amp;validate={validate?}&amp;trace={trace?}&amp;tests={tests?}</url>
+  <authentication>none</authentication>
+  <format default="text"/>
+  <family>CMIS</family>
+</webscript>

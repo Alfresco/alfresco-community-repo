@@ -24,13 +24,16 @@
  */
 package org.apache.abdera.ext.cmis;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.abdera.factory.Factory;
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.ElementWrapper;
 
 
 /**
- * CMIS Object Element Wrapper for the Abdera ATOM library.
+ * CMIS Properties Element Wrapper for the Abdera ATOM library.
  * 
  * Encapsulates access and modification of CMIS extension values to ATOM.
  * 
@@ -43,128 +46,59 @@ import org.apache.abdera.model.ElementWrapper;
  */
 public class CMISProperties extends ElementWrapper
 {
+    /**
+     * @param internal
+     */
     public CMISProperties(Element internal)
     {
         super(internal);
     }
 
+    /**
+     * @param factory
+     */
     public CMISProperties(Factory factory)
     {
         super(factory, CMISConstants.PROPERTIES);
     }
 
-    public String getName()
+    /**
+     * Gets all property names
+     * 
+     * @return  list of property names
+     */
+    public List<String> getNames()
     {
-        return findPropertyString(CMISConstants.PROP_NAME);
-    }
-
-    public String getObjectId()
-    {
-        return findPropertyID(CMISConstants.PROP_OBJECT_ID);
-    }
-
-    public String getBaseType()
-    {
-        return findPropertyString(CMISConstants.PROP_BASETYPE);
-    }
-
-    public String getObjectType()
-    {
-        return findPropertyString(CMISConstants.PROP_OBJECT_TYPE);
-    }
-
-    public boolean isImmutable()
-    {
-        return findPropertyBoolean(CMISConstants.PROP_IS_IMMUTABLE);
-    }
-
-    public boolean isLatestVersion()
-    {
-        return findPropertyBoolean(CMISConstants.PROP_IS_LATEST_VERSION);
-    }
-
-    public boolean isMajorVersion()
-    {
-        return findPropertyBoolean(CMISConstants.PROP_IS_MAJOR_VERSION);
-    }
-
-    public boolean isLatestMajorVersion()
-    {
-        return findPropertyBoolean(CMISConstants.PROP_IS_LATEST_MAJOR_VERSION);
-    }
-
-    public String getVersionLabel()
-    {
-        return findPropertyString(CMISConstants.PROP_VERSION_LABEL);
-    }
-
-    public String getVersionSeriesId()
-    {
-        return findPropertyID(CMISConstants.PROP_VERSION_SERIES_ID);
-    }
-
-    public boolean isVersionSeriesCheckedOut()
-    {
-        return findPropertyBoolean(CMISConstants.PROP_VERSION_SERIES_IS_CHECKED_OUT);
-    }
-    
-    public String getVersionSeriesCheckedOutBy()
-    {
-        return findPropertyString(CMISConstants.PROP_VERSION_SERIES_CHECKED_OUT_BY);
-    }
-
-    public String getVersionSeriesCheckedOutId()
-    {
-        return findPropertyID(CMISConstants.PROP_VERSION_SERIES_CHECKED_OUT_ID);
-    }
-
-    public String getCheckinComment()
-    {
-        return findPropertyString(CMISConstants.PROP_CHECKIN_COMMENT);
-    }
-
-    
-    public String findPropertyString(String name)
-    {
-        Element child = getFirstChild(CMISConstants.PROPERTY_STRING);
-        while(child != null)
+        List<CMISProperty> props = getElements();
+        List<String> names = new ArrayList<String>(props.size());
+        for (CMISProperty prop : props)
         {
-            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
+            names.add(prop.getName());
+        }
+        return names;
+    }
+    
+    /**
+     * Finds property by name
+     * 
+     * @param name  property name
+     * @return  property
+     */
+    public CMISProperty find(String name)
+    {
+        List<Element> elements = getElements();
+        for (Element element : elements)
+        {
+            if (element instanceof CMISProperty)
             {
-                return child.getText();
+                CMISProperty prop = (CMISProperty)element;
+                if (prop.getName().equals(name))
+                {
+                    return prop;
+                }
             }
-            child = child.getNextSibling(CMISConstants.PROPERTY_STRING);
         }
         return null;
     }
-
-    public String findPropertyID(String name)
-    {
-        Element child = getFirstChild(CMISConstants.PROPERTY_ID);
-        while(child != null)
-        {
-            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
-            {
-                return child.getText();
-            }
-            child = child.getNextSibling(CMISConstants.PROPERTY_ID);
-        }
-        return null;
-    }
-
-    public boolean findPropertyBoolean(String name)
-    {
-        Element child = getFirstChild(CMISConstants.PROPERTY_BOOLEAN);
-        while(child != null)
-        {
-            if (name.equals(child.getAttributeValue(CMISConstants.PROPERTY_NAME)))
-            {
-                return Boolean.valueOf(child.getText());
-            }
-            child = child.getNextSibling(CMISConstants.PROPERTY_BOOLEAN);
-        }
-        return false;
-    }
-
-
+        
 }

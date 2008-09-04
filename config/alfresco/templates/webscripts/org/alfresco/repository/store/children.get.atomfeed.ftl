@@ -8,22 +8,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.node node=node]
-  [@pagingLib.links cursor=cursor/]
+[@feedLib.node node "children"]
+  [@pagingLib.links cursor/]
 [/@feedLib.node]
 
 [#list results as child]
-<entry>
   [#if child.isDocument]
-    [@entryLib.document node=child/]
+    [@entryLib.document child filter/]
   [#else]
-    [@entryLib.folder node=child/]
+    [@entryLib.folder child filter/]
   [/#if]
-</entry>
 [/#list]
 
-[@feedLib.hasMore more=cursor/]
-[@pagingLib.opensearch cursor=cursor/]
+[@feedLib.hasMore cursor/]
+[@pagingLib.opensearch cursor/]
 
 </feed>
 

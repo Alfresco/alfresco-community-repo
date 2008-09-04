@@ -21,6 +21,7 @@ script:
         status.redirect = true;
         break script;
     }
+    
     // property filter 
     model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
     if (model.filter === null)
@@ -28,10 +29,7 @@ script:
         model.filter = "*";
     }
    
-    // TODO: retrieve descendants instead
-    // retrieve children
-    var page = paging.createPageOrWindow(args, headers);
-    var paged = cmis.queryChildren(model.node, model.types, page);
-    model.results = paged.results;
-    model.cursor = paged.cursor;
+    // depth
+    var depth = cmis.findArg(args.depth, headers["CMIS-depth"]);
+    model.depth = (depth === null) ? 1 : parseInt(depth);
 }

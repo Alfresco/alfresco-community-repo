@@ -25,10 +25,15 @@
 package org.alfresco.repo.web.scripts;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestListener;
+import junit.textui.ResultPrinter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,8 +52,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Base unit test class for web scripts.
@@ -57,13 +60,110 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class BaseWebScriptTest extends TestCase
 {
-    // Logger
-    private static final Log logger = LogFactory.getLog(BaseWebScriptTest.class);
+    // Test Listener
+    private WebScriptTestListener listener = null;
+    private boolean traceReqRes = false;
 
     /** Local / Remote Server access */
     private String defaultRunAs = null;
     private RemoteServer remoteServer = null;
     private HttpClient httpClient = null;
+
+    
+    /**
+     * Web Script Test Listener
+     */
+    public static interface WebScriptTestListener extends TestListener
+    {
+        public void addLog(Test test, String log);
+    }
+    
+    /**
+     * Default Test Listener
+     */
+    public static class BaseWebScriptTestListener extends ResultPrinter implements WebScriptTestListener
+    {
+        /**
+         * Construct
+         * 
+         * @param writer
+         */
+        public BaseWebScriptTestListener(PrintStream writer)
+        {
+            super(writer);
+        }
+
+        /* (non-Javadoc)
+         * @see junit.textui.ResultPrinter#addError(junit.framework.Test, java.lang.Throwable)
+         */
+        @Override
+        public void addError(Test test, Throwable t)
+        {
+            getWriter().println("*** Error: " + ((BaseWebScriptTest)test).getName());
+            t.printStackTrace(getWriter());
+        }
+
+        /* (non-Javadoc)
+         * @see junit.textui.ResultPrinter#addFailure(junit.framework.Test, junit.framework.AssertionFailedError)
+         */
+        @Override
+        public void addFailure(Test test, AssertionFailedError t)
+        {
+            getWriter().println("*** Failed: " + ((BaseWebScriptTest)test).getName());
+            t.printStackTrace(getWriter());
+        }
+
+        /* (non-Javadoc)
+         * @see junit.textui.ResultPrinter#endTest(junit.framework.Test)
+         */
+        @Override
+        public void endTest(Test test)
+        {
+            getWriter().println();
+            getWriter().println("*** Test completed: " + ((BaseWebScriptTest)test).getName());
+        }
+
+        /* (non-Javadoc)
+         * @see junit.textui.ResultPrinter#startTest(junit.framework.Test)
+         */
+        @Override
+        public void startTest(Test test)
+        {
+            getWriter().println();
+            getWriter().println("*** Test started: " + ((BaseWebScriptTest)test).getName() + " (remote: " + (((BaseWebScriptTest)test).getRemoteServer() != null));
+        }
+
+        /**
+         * Add an arbitrary log statement
+         * 
+         * @param  test
+         * @param  log
+         */
+        public void addLog(Test test, String log)
+        {
+            this.getWriter().println(log);
+        }
+    }
+        
+    /**
+     * Sets Test Listener
+     * 
+     * @param resultPrinter
+     */
+    public void setListener(WebScriptTestListener listener)
+    {
+        this.listener = listener;
+    }
+
+    /**
+     * Sets whether to trace request / response bodies
+     * 
+     * @param traceReqRes
+     */
+    public void setTraceReqRes(boolean traceReqRes)
+    {
+        this.traceReqRes = traceReqRes;
+    }
 
     /**
      * Set Remote Server context
@@ -73,6 +173,16 @@ public abstract class BaseWebScriptTest extends TestCase
     public void setRemoteServer(RemoteServer server)
     {
         remoteServer = server;
+    }
+
+    /**
+     * Gets Remote Server
+     * 
+     * @return
+     */
+    public RemoteServer getRemoteServer()
+    {
+        return remoteServer;
     }
     
     /**
@@ -97,7 +207,6 @@ public abstract class BaseWebScriptTest extends TestCase
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials(remoteServer.username, remoteServer.password));
         }
     }
-
     
     /** Test web script server */
     private static TestWebScriptServer server = null;
@@ -111,6 +220,28 @@ public abstract class BaseWebScriptTest extends TestCase
         return BaseWebScriptTest.server;
     }
 
+    /**
+     * Is Log Enabled?
+     * 
+     * @return  true => enabled
+     */
+    protected boolean isLogEnabled()
+    {
+        return listener != null;
+    }
+    
+    /**
+     * Log Message to Test Listener
+     * 
+     * @param log
+     */
+    protected void log(String log)
+    {
+        if (listener != null)
+        {
+            listener.addLog(this, log);
+        }
+    }
     
     /**
      * Send Request to Test Web Script Server (as admin)
@@ -138,8 +269,11 @@ public abstract class BaseWebScriptTest extends TestCase
     protected Response sendRequest(Request req, int expectedStatus, String asUser)
         throws IOException
     {
-        if (logger.isInfoEnabled())
-            logger.info("Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody())));
+        if (traceReqRes && isLogEnabled())
+        {
+            log("");
+            log("* Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody())));
+        }
 
         Response res = null;
         if (remoteServer == null)
@@ -151,15 +285,14 @@ public abstract class BaseWebScriptTest extends TestCase
             res = sendRemoteRequest(req, expectedStatus);
         }
         
-        if (logger.isInfoEnabled())
-            logger.info("Response: " + res.getStatus() + " " + req.getMethod() + " " + req.getFullUri() + "\n" + res.getContentAsString());
+        if (traceReqRes && isLogEnabled())
+        {
+            log("");
+            log("* Response: " + res.getStatus() + " " + req.getMethod() + " " + req.getFullUri() + "\n" + res.getContentAsString());
+        }
         
         if (expectedStatus > 0 && expectedStatus != res.getStatus())
         {
-//            if (res.getStatus() == 500)
-//            {
-//                System.out.println(res.getContentAsString());
-//            }
             fail("Status code " + res.getStatus() + " returned, but expected " + expectedStatus + " for " + req.getFullUri() + " (" + req.getMethod() + ")\n" + res.getContentAsString());
         }
         

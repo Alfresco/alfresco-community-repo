@@ -2,7 +2,7 @@
 <entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
     <title>${NAME}</title>
     <summary>${NAME} (summary)</summary>
-    <content type="html">test content ${NAME}</content>    
+    <content type="text/html">${CONTENT}</content>    
     <cmis:properties>
        <cmis:propertyString cmis:name="objectType">document</cmis:propertyString>
     </cmis:properties>

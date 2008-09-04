@@ -10,18 +10,16 @@
 
 [#-- TODO: uuid --]
 [@feedLib.generic "urn:uuid:resultset" "Result set for ${statement}" "${person.properties.userName}"]
-  [@pagingLib.links cursor=cursor/]
+  [@pagingLib.links cursor/]
 [/@feedLib.generic]
 
 [#assign rs = cmisresultset(resultset)]
 [#list rs.rows as row]
-<entry>
-  [@entryLib.row row/]
-</entry>
+[@entryLib.row row/]
 [/#list]
 
-[@feedLib.hasMore more=cursor/]
-[@pagingLib.opensearch cursor=cursor/]
+[@feedLib.hasMore cursor/]
+[@pagingLib.opensearch cursor/]
 
 </feed>
 

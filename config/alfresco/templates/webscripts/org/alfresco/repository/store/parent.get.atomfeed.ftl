@@ -8,9 +8,9 @@
 
 <feed [@nsLib.feedNS/]>
 
-[@feedLib.node node=node/]
-[@parent node=node.parent recurse=returnToRoot/]
-[@feedLib.hasMore more="false"/]
+[@feedLib.node node "parent"/]
+[@parent node.parent returnToRoot/]
+[@feedLib.hasMore false/]
 
 </feed>
 
@@ -18,11 +18,9 @@
 
 [#macro parent node recurse=false]
 [#if node?exists && node.isContainer]
-  <entry>
-    [@entryLib.folder node=node/]
-  </entry>
+  [@entryLib.folder node filter/]
   [#if recurse && node.id != rootNode.id]
-    [@parent node=node.parent recurse=true/]
+    [@parent node.parent true/]
   [/#if]
 [/#if]
 [/#macro]

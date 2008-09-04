@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atom:entry xml:base="http://tempuri.org" xml:lang="en-US"
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:cmis="http://www.cmis.org/2008/05"
-	xmlns:xml="http://www.w3.org/XML/1998/namespace"
-	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
-
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
@@ -21,16 +18,13 @@
 	<atom:id>http://www.cmis.org/rep1/relationship-entry</atom:id>
 
 	<!-- atom links -->
-	<atom:link rel='self'
-		href="http://www.cmis.org/rep1/relationship-entry" />
-	<atom:link rel="edit"
-		href="http://www.cmis.org/rep1/relationship-entry" />
+	<atom:link rel='self' href="http://www.cmis.org/rep1/relationship-entry" />
+	<atom:link rel="edit" href="http://www.cmis.org/rep1/relationship-entry" />
 
 	<!--  CMIS Links -->
 	<atom:link rel="cmis-allowableactions"
 		href="http://www.cmis.org/rep1/relationship-entry/actions" />
-	<atom:link rel="cmis-type"
-		href="http://www.cmis.org/rep1/type/emaillink" />
+	<atom:link rel="cmis-type" href="http://www.cmis.org/rep1/type/emaillink" />
 	<atom:link rel="cmis-source"
 		href="http://www.cmis.org/rep1/relationship-entry/source" />
 	<atom:link rel="cmis-target"
@@ -38,30 +32,43 @@
 
 	<!-- createdDate -->
 	<atom:published>2001-12-31T12:00:00</atom:published>
-
 	<atom:title>Relationship Entry example</atom:title>
 
 	<!-- lastModifiedDate -->
 	<atom:updated>2001-12-31T12:00:00</atom:updated>
-
-	<!-- Optional Allowable actions -->
-	<cmis:allowableActions>
-		<cmis:canDelete>true</cmis:canDelete>
-		<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
-		<cmis:canGetProperties>true</cmis:canGetProperties>
-		<cmis:canAddPolicy>true</cmis:canAddPolicy>
-		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
-	</cmis:allowableActions>
+	<cmis:object>
+		<cmis:properties>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyId cmis:name="objectId">
+				<cmis:value>relid1</cmis:value>
+			</cmis:propertyId>
+			<cmis:propertyId cmis:name="source">
+				<cmis:value>docid1</cmis:value>
+			</cmis:propertyId>
+			<cmis:propertyId cmis:name="target">
+				<cmis:value>docid2</cmis:value>
+			</cmis:propertyId>
+			<cmis:propertyString cmis:name="objectType">
+				<cmis:value>emaillink</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				<cmis:value>relationship</cmis:value>
+			</cmis:propertyString>
+		</cmis:properties>
+		<!-- Optional Allowable actions -->
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+		</cmis:allowableActions>
+	</cmis:object>
 	
-	<cmis:properties>
-		<cmis:propertyDateTime cmis:name="lastModifiedBy">2001-12-31T12:00:00</cmis:propertyDateTime>
-		<cmis:propertyDateTime cmis:name="creationDate">2001-12-31T12:00:00</cmis:propertyDateTime>
-
-		<cmis:propertyID cmis:name="objectId">relid1</cmis:propertyID>
-		<cmis:propertyID cmis:name="source">docid1</cmis:propertyID>
-		<cmis:propertyID cmis:name="target">docid2</cmis:propertyID>
-		
-		<cmis:propertyString cmis:name="objectType">emaillink</cmis:propertyString>
-		<cmis:propertyString cmis:name="baseType">relationship</cmis:propertyString>
-	</cmis:properties>
+	<cmis:terminator />
 </atom:entry>

@@ -4,9 +4,6 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
-
-<entry [@nsLib.entryNS/]>
-  [@entryLib.pwc node=node/]
-</entry>
+[@entryLib.pwc node ns=[@nsLib.entryNS/]/]
 
 [/#compress]

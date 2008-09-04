@@ -21,7 +21,13 @@ script:
         status.redirect = true;
         break script;
     }
-    // TODO: property filters 
+    
+    // property filter
+    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    if (model.filter === null)
+    {
+        model.filter = "*";
+    }
    
     // retrieve children
     var page = paging.createPageOrWindow(args, headers);

@@ -9,18 +9,16 @@
 <feed [@nsLib.feedNS/]>
 
 [@feedLib.generic "urn:uuid:checkedout" "Checked out Documents" "${person.properties.userName}"]
-  [@pagingLib.links cursor=cursor/]
+  [@pagingLib.links cursor/]
 [/@feedLib.generic]
 
 [#list results as child]
-<entry>
   [#if child.isDocument]  
-    [@entryLib.pwc node=child/]
+    [@entryLib.pwc child filter/]
   [/#if]
-</entry>
 [/#list]
 
-[@feedLib.hasMore more=cursor/]
+[@feedLib.hasMore cursor/]
 
 </feed>
 

@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atom:entry xml:base="http://tempuri.org" xml:lang=""
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:cmis="http://www.cmis.org/2008/05"
-	xmlns:xml="http://www.w3.org/XML/1998/namespace"
-	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
-
-	
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
@@ -20,10 +16,8 @@
 	<atom:id>http://www.cmis.org/rep1/document-entry</atom:id>
 
 	<!-- atom links -->
-	<atom:link rel='self'
-		href="http://www.cmis.org/rep1/document-entry" />
-	<atom:link rel="edit"
-		href="http://www.cmis.org/rep1/document-entry" />
+	<atom:link rel='self' href="http://www.cmis.org/rep1/document-entry" />
+	<atom:link rel="edit" href="http://www.cmis.org/rep1/document-entry" />
 	<atom:link rel="edit-media"
 		href="http://www.cmis.org/rep1/media/document-entry" />
 	<atom:link rel="enclosure"
@@ -42,84 +36,80 @@
 		href="http://www.cmis.org/rep1/document-entry/latestversion" />
 	<atom:link rel="cmis-relationships"
 		href="http://www.cmis.org/rep1/document-entry/relationships" />
-	<atom:link rel="cmis-type"
-		href="http://www.cmis.org/rep1/type/email" />
+	<atom:link rel="cmis-type" href="http://www.cmis.org/rep1/type/email" />
 	<atom:link rel="cmis-stream"
 		href="http://www.cmis.org/rep1/media/document-entry" />
 
 	<!-- createdDate -->
 	<atom:published>2001-12-31T12:00:00</atom:published>
-
 	<atom:summary>
 		<!-- auto-generated HTML table of properties -->
 	</atom:summary>
-
 	<atom:title>Document Entry example</atom:title>
 
 	<!-- lastModifiedDate -->
 	<atom:updated>2001-12-31T12:00:00</atom:updated>
 
 	<!-- Optional Allowable actions -->
-	<cmis:allowableActions>
-		<cmis:canDelete>true</cmis:canDelete>
-		<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
-		<cmis:canGetProperties>true</cmis:canGetProperties>
-		<cmis:canGetParents>true</cmis:canGetParents>
-		<cmis:canMove>true</cmis:canMove>
-		<cmis:canDeleteVersion>true</cmis:canDeleteVersion>
-		<cmis:canDeleteContent>true</cmis:canDeleteContent>
-		<cmis:canCheckout>true</cmis:canCheckout>
-		<cmis:canCancelCheckout>true</cmis:canCancelCheckout>
-		<cmis:canCheckin>true</cmis:canCheckin>
-		<cmis:canSetContent>true</cmis:canSetContent>
-		<cmis:canGetAllVersions>true</cmis:canGetAllVersions>
-		<cmis:canAddToFolder>true</cmis:canAddToFolder>
-		<cmis:canRemoveFromFolder>true</cmis:canRemoveFromFolder>
-		<cmis:canViewContent>true</cmis:canViewContent>
-		<cmis:canAddPolicy>true</cmis:canAddPolicy>
-		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
-	</cmis:allowableActions>
-
-	<cmis:properties>
+	<cmis:object>
+			<cmis:properties>
 		<!-- PWC -->
-		<cmis:propertyBoolean cmis:name="isCheckedOut">true</cmis:propertyBoolean>
+			<cmis:propertyId cmis:name="objectId"><cmis:value>docid1pwc</cmis:value></cmis:propertyId>
+			<cmis:propertyString cmis:name="objectType"><cmis:value>email</cmis:value></cmis:propertyString>
+			
 		<!-- PWC -->
-		<cmis:propertyBoolean cmis:name="isLatestVersion">true</cmis:propertyBoolean>
-		<cmis:propertyBoolean cmis:name="isMajorVersion">false</cmis:propertyBoolean>
-		<cmis:propertyBoolean cmis:name="isLatestMajorVersion">false</cmis:propertyBoolean>
-		<cmis:propertyBoolean cmis:name="isImmutable">false</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isCheckedOut"><cmis:value>true</cmis:value></cmis:propertyBoolean>
+		<!-- PWC -->
+			<cmis:propertyBoolean cmis:name="isLatestVersion"><cmis:value>true</cmis:value></cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isMajorVersion"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isLatestMajorVersion"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isImmutable"><cmis:value>false</cmis:value></cmis:propertyBoolean>
 		
 		<!-- PWC -->
-		<cmis:propertyBoolean cmis:name="isVersionSeriesCheckedOut">true</cmis:propertyBoolean>
+			<cmis:propertyBoolean cmis:name="isVersionSeriesCheckedOut"><cmis:value>true</cmis:value></cmis:propertyBoolean>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy"><cmis:value>2007-12-31T12:00:00</cmis:value></cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate"><cmis:value>2007-12-31T12:00:00</cmis:value></cmis:propertyDateTime>
 
-		<cmis:propertyDateTime cmis:name="lastModifiedBy">2007-12-31T12:00:00</cmis:propertyDateTime>
-		<cmis:propertyDateTime cmis:name="creationDate">2007-12-31T12:00:00</cmis:propertyDateTime>
-
-		<!-- PWC -->
-		<cmis:propertyID cmis:name="objectId">docid1pwc</cmis:propertyID>
 		
 		<!-- PWC -->
-		<cmis:propertyID cmis:name="versionSeriesCheckedOutID">docidpwc</cmis:propertyID>
+			<cmis:propertyId cmis:name="versionSeriesCheckedOutID"><cmis:value>docidpwc</cmis:value></cmis:propertyId>
+			<cmis:propertyInteger cmis:name="contentStreamLength"><cmis:value>70</cmis:value></cmis:propertyInteger>
 
-		<cmis:propertyInteger cmis:name="contentStreamLength">70</cmis:propertyInteger>
-
-		<cmis:propertyString cmis:name="objectType">email</cmis:propertyString>
-		<cmis:propertyString cmis:name="baseType">document</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType"><cmis:value>document</cmis:value></cmis:propertyString>
 		
 		<!-- PWC -->
-		<cmis:propertyString cmis:name="versionSeriesCheckedOutBy">Al Brown</cmis:propertyString>
-		<cmis:propertyString cmis:name="checkinComment">This is the initial checkin comment</cmis:propertyString>
+			<cmis:propertyString cmis:name="versionSeriesCheckedOutBy"><cmis:value>Al Brown</cmis:value></cmis:propertyString>
+			<cmis:propertyString cmis:name="checkinComment"><cmis:value>This is the
+				initial checkin comment</cmis:value></cmis:propertyString>
 		
 		<!-- PWC -->
-		<cmis:propertyString cmis:name="versionLabel">1.1</cmis:propertyString>
-		<cmis:propertyString cmis:name="contentStreamMimetype">text/plain</cmis:propertyString>
-		<cmis:propertyString cmis:name="contentStreamName">foo.txt</cmis:propertyString>
-		
-		<cmis:propertyURI cmis:name="contentStreamURI">
-			http://www.cmis.org/rep1/media/document-entry
-		</cmis:propertyURI>
-		
-	</cmis:properties>
+			<cmis:propertyString cmis:name="versionLabel"><cmis:value>1.1</cmis:value></cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamMimetype"><cmis:value>text/plain</cmis:value></cmis:propertyString>
+			<cmis:propertyString cmis:name="contentStreamName"><cmis:value>foo.txt</cmis:value></cmis:propertyString>
+			<cmis:propertyUri cmis:name="contentStreamURI"><cmis:value>
+				http://www.cmis.org/rep1/media/document-entry</cmis:value></cmis:propertyUri>
+		</cmis:properties>
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canGetParents>true</cmis:canGetParents>
+			<cmis:canMove>true</cmis:canMove>
+			<cmis:canDeleteVersion>true</cmis:canDeleteVersion>
+			<cmis:canDeleteContent>true</cmis:canDeleteContent>
+			<cmis:canCheckout>true</cmis:canCheckout>
+			<cmis:canCancelCheckout>true</cmis:canCancelCheckout>
+			<cmis:canCheckin>true</cmis:canCheckin>
+			<cmis:canSetContent>true</cmis:canSetContent>
+			<cmis:canGetAllVersions>true</cmis:canGetAllVersions>
+			<cmis:canAddToFolder>true</cmis:canAddToFolder>
+			<cmis:canRemoveFromFolder>true</cmis:canRemoveFromFolder>
+			<cmis:canViewContent>true</cmis:canViewContent>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+		</cmis:allowableActions>
 
-
+	</cmis:object>
+	
+	<cmis:terminator />
 </atom:entry>

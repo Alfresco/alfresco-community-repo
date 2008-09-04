@@ -36,7 +36,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.property.CMISPropertyNameMapping;
 import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -108,7 +107,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyBooleanType propBoolean = new PropertyBooleanType();
-            propBoolean.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propBoolean.setName(name);
             propBoolean.setValue((Boolean) value);
             properties.getPropertyBoolean().add(propBoolean);
         }
@@ -120,7 +119,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyDateTimeType propDateTime = new PropertyDateTimeType();
-            propDateTime.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propDateTime.setName(name);
             propDateTime.setValue(convert((Date) value));
             properties.getPropertyDateTime().add(propDateTime);
         }
@@ -132,7 +131,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyIDType propID = new PropertyIDType();
-            propID.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propID.setName(name);
             propID.setValue(value.toString());
             properties.getPropertyID().add(propID);
         }
@@ -144,7 +143,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyIntegerType propInteger = new PropertyIntegerType();
-            propInteger.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propInteger.setName(name);
             propInteger.setValue(BigInteger.valueOf((Long) value));
             properties.getPropertyInteger().add(propInteger);
         }
@@ -156,7 +155,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyStringType propString = new PropertyStringType();
-            propString.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propString.setName(name);
             propString.setValue(value.toString());
             properties.getPropertyString().add(propString);
         }
@@ -179,7 +178,7 @@ public class DMAbstractServicePort
         if (filter.allow(name) && value != null)
         {
             PropertyURIType propString = new PropertyURIType();
-            propString.setName(CMISPropertyNameMapping.getWebServiceName(name));
+            propString.setName(name);
             propString.setValue(value.toString());
             properties.getPropertyURI().add(propString);
         }
@@ -205,7 +204,7 @@ public class DMAbstractServicePort
             addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_VERSION, nodeRef);
             addBooleanProperty(properties, filter, CMISMapping.PROP_IS_MAJOR_VERSION, nodeRef);
             addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_MAJOR_VERSION, nodeRef);
-            addBooleanProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_IS_CHECKED_OUT, nodeRef);
+            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT, nodeRef);
             addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, nodeRef);
             addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, nodeRef);
             addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, nodeRef);
@@ -229,7 +228,7 @@ public class DMAbstractServicePort
             addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, nodeRef);
             addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, nodeRef);
             addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, nodeRef);
-            addIDProperty(properties, filter, CMISMapping.PROP_PARENT, nodeRef);
+            addIDProperty(properties, filter, CMISMapping.PROP_PARENT_ID, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_NAME, nodeRef);
             addStringProperty(properties, filter, "baseType", "folder");
             addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);

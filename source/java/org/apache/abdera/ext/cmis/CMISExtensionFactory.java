@@ -24,6 +24,15 @@
  */
 package org.apache.abdera.ext.cmis;
 
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyBoolean;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyDateTime;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyDecimal;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyHtml;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyId;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyInteger;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyString;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyUri;
+import org.apache.abdera.ext.cmis.CMISProperty.CMISPropertyXml;
 import org.apache.abdera.util.AbstractExtensionFactory;
 
 
@@ -48,7 +57,17 @@ public class CMISExtensionFactory extends AbstractExtensionFactory
         super(CMIS_200805_NS);
         addImpl(REPOSITORY_INFO, CMISRepositoryInfo.class);
         addImpl(CAPABILITIES, CMISCapabilities.class);
+        addImpl(OBJECT, CMISObject.class);
         addImpl(PROPERTIES, CMISProperties.class);
+        addImpl(PROPERTY_STRING, CMISPropertyString.class);
+        addImpl(PROPERTY_DECIMAL, CMISPropertyDecimal.class);
+        addImpl(PROPERTY_INTEGER, CMISPropertyInteger.class);
+        addImpl(PROPERTY_BOOLEAN, CMISPropertyBoolean.class);
+        addImpl(PROPERTY_DATETIME, CMISPropertyDateTime.class);
+        addImpl(PROPERTY_URI, CMISPropertyUri.class);
+        addImpl(PROPERTY_ID, CMISPropertyId.class);
+        addImpl(PROPERTY_XML, CMISPropertyXml.class);
+        addImpl(PROPERTY_HTML, CMISPropertyHtml.class);
     }
 
 }

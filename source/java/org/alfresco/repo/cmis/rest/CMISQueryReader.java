@@ -38,6 +38,7 @@ import org.alfresco.web.scripts.FormatReader;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
+import org.apache.abdera.ext.cmis.CMISConstants;
 
 
 /**
@@ -61,7 +62,7 @@ public class CMISQueryReader implements FormatReader<String>
      */
     public String getSourceMimetype()
     {
-        return "application/cmisrequest+xml;type=query";
+        return CMISConstants.MIMETYPE_QUERY;
     }
 
     /* (non-Javadoc)

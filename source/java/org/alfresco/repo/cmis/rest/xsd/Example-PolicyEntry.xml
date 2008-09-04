@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atom:entry xml:base="http://tempuri.org" xml:lang="en-US"
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:cmis="http://www.cmis.org/2008/05"
-	xmlns:xml="http://www.w3.org/XML/1998/namespace"
-	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS-REST.xsd ">
-	
+	xsi:schemaLocation="http://www.w3.org/2005/Atom ATOM4CMIS.xsd http://www.cmis.org/2008/05 CMIS.xsd ">
 	<atom:author xml:base="http://tempuri.org" xml:lang="">
 		<atom:name>Al Brown</atom:name>
 	</atom:author>
@@ -21,46 +18,48 @@
 	<atom:id>http://www.cmis.org/rep1/policy-entry</atom:id>
 
 	<!-- atom links -->
-	<atom:link rel='self'
-		href="http://www.cmis.org/rep1/policy-entry" />
-	<atom:link rel="edit"
-		href="http://www.cmis.org/rep1/v-entry" />
+	<atom:link rel='self' href="http://www.cmis.org/rep1/policy-entry" />
+	<atom:link rel="edit" href="http://www.cmis.org/rep1/v-entry" />
 
 	<!--  CMIS Links -->
 	<atom:link rel="cmis-allowableactions"
 		href="http://www.cmis.org/rep1/policy-entry/actions" />
-	<atom:link rel="cmis-type"
-		href="http://www.cmis.org/rep1/type/securitypolicy" />
-	<atom:link rel="cmis-source"
-		href="http://www.cmis.org/rep1/policy-entry/source" />
-	<atom:link rel="cmis-target"
-		href="http://www.cmis.org/rep1/policy-entry/target" />
+	<atom:link rel="cmis-type" href="http://www.cmis.org/rep1/type/securitypolicy" />
+	<atom:link rel="cmis-source" href="http://www.cmis.org/rep1/policy-entry/source" />
+	<atom:link rel="cmis-target" href="http://www.cmis.org/rep1/policy-entry/target" />
 
 	<!-- createdDate -->
 	<atom:published>2001-12-31T12:00:00</atom:published>
-
 	<atom:title>Policy Entry example</atom:title>
 
 	<!-- lastModifiedDate -->
 	<atom:updated>2001-12-31T12:00:00</atom:updated>
-
+	<cmis:object>
+		<cmis:properties>
+			<cmis:propertyDateTime cmis:name="lastModifiedBy">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyDateTime cmis:name="creationDate">
+				<cmis:value>2001-12-31T12:00:00</cmis:value>
+			</cmis:propertyDateTime>
+			<cmis:propertyId cmis:name="objectId">
+				<cmis:value>policyid1</cmis:value>
+			</cmis:propertyId>
+			<cmis:propertyString cmis:name="objectType">
+				<cmis:value>security policy</cmis:value>
+			</cmis:propertyString>
+			<cmis:propertyString cmis:name="baseType">
+				<cmis:value>policy</cmis:value>
+			</cmis:propertyString>
+		</cmis:properties>
 	<!-- Optional Allowable actions -->
-	<cmis:allowableActions>
-		<cmis:canDelete>true</cmis:canDelete>
-		<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
-		<cmis:canGetProperties>true</cmis:canGetProperties>
-		<cmis:canAddPolicy>true</cmis:canAddPolicy>
-		<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
-	</cmis:allowableActions>
-	
-	<cmis:properties>
-		<cmis:propertyDateTime cmis:name="lastModifiedBy">2001-12-31T12:00:00</cmis:propertyDateTime>
-		<cmis:propertyDateTime cmis:name="creationDate">2001-12-31T12:00:00</cmis:propertyDateTime>
-
-		<cmis:propertyID cmis:name="objectId">policyid1</cmis:propertyID>
-		
-		<cmis:propertyString cmis:name="objectType">security policy</cmis:propertyString>
-		<cmis:propertyString cmis:name="baseType">policy</cmis:propertyString>
-	</cmis:properties>
-
+		<cmis:allowableActions>
+			<cmis:canDelete>true</cmis:canDelete>
+			<cmis:canUpdateProperties>true</cmis:canUpdateProperties>
+			<cmis:canGetProperties>true</cmis:canGetProperties>
+			<cmis:canAddPolicy>true</cmis:canAddPolicy>
+			<cmis:canRemovePolicy>true</cmis:canRemovePolicy>
+		</cmis:allowableActions>
+	</cmis:object>
+	<cmis:terminator />
 </atom:entry>

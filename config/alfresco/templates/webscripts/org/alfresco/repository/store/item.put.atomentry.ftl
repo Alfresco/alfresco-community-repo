@@ -4,13 +4,12 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
+[#assign namespace][@nsLib.entryNS/][/#assign]
 
-<entry [@nsLib.entryNS/]>
-  [#if node.isDocument]
-    [@entryLib.document node=node/]
-  [#else]
-    [@entryLib.folder node=node/]
-  [/#if]
-</entry>
+[#if node.isDocument]
+  [@entryLib.document node=node ns=namespace/]
+[#else]
+  [@entryLib.folder node=node ns=namespace/]
+[/#if]
 
 [/#compress]

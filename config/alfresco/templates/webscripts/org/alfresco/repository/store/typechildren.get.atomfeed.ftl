@@ -9,17 +9,15 @@
 <feed [@nsLib.feedNS/]>
 
 [@feedLib.generic "urn:uuid:type-${typedef.objectTypeId}-children" "Child types of ${typedef.objectTypeId}" "${person.properties.userName}"]
-  [@pagingLib.links cursor=cursor/]
+  [@pagingLib.links cursor/]
 [/@feedLib.generic]
 
 [#list results as child]
-<entry>
-  [@entryLib.typedef typedef=child includeProperties=returnPropertyDefinitions/]
-</entry>
+[@entryLib.typedef child returnPropertyDefinitions/]
 [/#list]
 
-[@feedLib.hasMore more=cursor/]
-[@pagingLib.opensearch cursor=cursor/]
+[@feedLib.hasMore cursor/]
+[@pagingLib.opensearch cursor/]
 
 </feed>
 

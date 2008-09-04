@@ -13,5 +13,12 @@ script:
     }
  
     // TODO: handle version??
-    // TODO: property filters 
+    
+    // property filter 
+    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    if (model.filter === null)
+    {
+        model.filter = "*";
+    }
+   
 }

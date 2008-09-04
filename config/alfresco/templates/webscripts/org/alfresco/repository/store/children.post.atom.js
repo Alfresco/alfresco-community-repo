@@ -9,7 +9,7 @@ script:
         break script;
     }
 
-    // locate node
+    // locate parent node
     var pathSegments = url.match.split("/");
     var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
     model.parent = cmis.findNode(pathSegments[2], reference);
@@ -22,7 +22,6 @@ script:
     }
 
     // pull apart atom entry
-    // TODO: creation of folder
     // TODO: creation of file/folder sub-types
     // TODO: cmis properties
     
@@ -33,24 +32,45 @@ script:
     var updated = entry.updated;
     var author = (entry.author !== null) ? entry.author.name : null;
     var content = entry.content;
+    var cmisObject = entry.getExtension(atom.names.cmis_object);
+    var baseType = (cmisObject !== null) ? cmisObject.baseType : null;
     
     // create the item
     // TODO: author/updated/id
-    var node = model.parent.createFile(name);
-    node.properties.title = title;
-    node.properties.description = description;
-    if (content !== null)
+    
+    if (baseType === null || baseType == "document")
     {
-        node.content = content;
-        node.properties.content.encoding = "UTF-8";
-        node.properties.content.mimetype = atom.toMimeType(entry);
+        var node = model.parent.createFile(name);
+        node.properties.title = title;
+        node.properties.description = description;
+        if (content !== null)
+        {
+            node.content = content;
+            node.properties.content.encoding = "UTF-8";
+            node.properties.content.mimetype = atom.toMimeType(entry);
+        }
+        node.save();
+        model.node = node;
     }
-    node.save();
-    model.node = node;
+    else if (baseType == "folder")
+    {
+        var node = model.parent.createFolder(name);
+        node.properties.title = title;
+        node.properties.description = description;
+        node.save();
+        model.node = node;
+    }
+    else
+    {
+        status.code = 400;
+        status.message = "CMIS base type " + baseType + " not understood";
+        status.redirect = true;
+        break script;
+    }
     
     // setup for 201 Created response
     // TODO: set Content-Location
     status.code = 201;
-    status.location = url.server + url.serviceContext + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id + "/properties";
+    status.location = url.server + url.serviceContext + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id;
     status.redirect = true;
 }

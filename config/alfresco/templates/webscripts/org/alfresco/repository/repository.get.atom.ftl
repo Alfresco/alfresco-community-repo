@@ -1,7 +1,7 @@
 <#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/>
 <?xml version="1.0" encoding='utf-8'?> 
 <service <@nsLib.serviceNS/>>
-  <workspace cmis:id="${server.id}"> 
+  <workspace cmis:id="${server.id}">
     <atom:title>${server.name}</atom:title>
 
     <#-- TODO: cmis version -->
@@ -17,12 +17,13 @@
         <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
         <cmis:capabilityUnfiling>false</cmis:capabilityUnfiling>
         <cmis:capabilityVersionSpecificFiling>false</cmis:capabilityVersionSpecificFiling>        
+        <cmis:capabilityPWCUpdateable>true</cmis:capabilityPWCUpdateable>
         <cmis:capabilityAllVersionsSearchable>false</cmis:capabilityAllVersionsSearchable>
-        <cmis:capabilityPWCUpdatable>true</cmis:capabilityPWCUpdatable>
         <cmis:capabilityInnerJoin>true</cmis:capabilityInnerJoin>
         <cmis:capabilityOuterJoin>true</cmis:capabilityOuterJoin>
+        <cmis:capabilityFullText>fulltextwithmetadata</cmis:capabilityFullText>
       </cmis:capabilities> 
-      <cmis:repositorySpecificInfo></cmis:repositorySpecificInfo>
+      <cmis:repositorySpecificInformation></cmis:repositorySpecificInformation>
     </cmis:repositoryInfo>
 
     <#-- TODO: cmis:id on collection elements - are they required by cmis? -->

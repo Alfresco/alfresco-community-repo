@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="source/xsd"/>
 	<classpathentry kind="src" path="source/generated"/>
 	<classpathentry kind="src" path="source/test/java"/>
 	<classpathentry kind="src" path="source/test-resources"/>

@@ -70,7 +70,7 @@ public abstract class BaseWebScriptTest extends TestCase
     {
         return sendRequest(METHOD_GET, url, expectedStatus, null, null);
     }
-    
+
     /**
      * "DELETE" the url and check for the expected status code
      * 
@@ -96,6 +96,20 @@ public abstract class BaseWebScriptTest extends TestCase
      * @throws IOException
      */
     protected MockHttpServletResponse postRequest(String url, int expectedStatus, String body, String contentType)
+        throws IOException
+    {
+        return postRequest(url, expectedStatus, body.getBytes(), contentType);
+    }
+
+    /**
+     * "POST" the url and check for the expected status code
+     * 
+     * @param url
+     * @param expectedStatus
+     * @return
+     * @throws IOException
+     */
+    protected MockHttpServletResponse postRequest(String url, int expectedStatus, byte[] body, String contentType)
         throws IOException
     {
         return sendRequest(METHOD_POST, url, expectedStatus, body, contentType);
@@ -125,7 +139,7 @@ public abstract class BaseWebScriptTest extends TestCase
      * @return
      * @throws IOException
      */
-    private MockHttpServletResponse sendRequest(String method, String url, int expectedStatus, String body, String contentType)
+    private MockHttpServletResponse sendRequest(String method, String url, int expectedStatus, byte[] body, String contentType)
         throws IOException
     {
         MockHttpServletResponse response = BaseWebScriptTest.getServer().submitRequest(method, url, new HashMap<String, String>(), body, contentType);

@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	-*- rnc -*-
+	RELAX NG Compact Syntax Grammar for the
+	Atom Format Specification Version 11
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified"
+	targetNamespace="http://www.cmis.org/2008/05"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:cmis="http://www.cmis.org/2008/05">
+	<xs:import namespace="http://www.w3.org/1999/xhtml" />
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" />
+
+
+	<xs:element name="repositoryInfo" type="cmis:repositoryInfoType"></xs:element>
+	<xs:element name="property" type="cmis:propertyDefinitionType"></xs:element>
+	<xs:element name="parent" type="xs:string"></xs:element>
+	<xs:element name="displayName" type="xs:string"></xs:element>
+	<xs:element name="isVersionable" type="xs:boolean"></xs:element>
+	<xs:element name="description" type="xs:string"></xs:element>
+	<xs:element name="isQueryable" type="xs:string"></xs:element>
+  <xs:element name="isCreatable" type="xs:string"></xs:element>
+	<xs:element name="queryName" type="xs:string"></xs:element>
+	<xs:element name="baseTypeQueryName" type="xs:string"></xs:element>
+	<xs:element name="isContentStreamAllowed" type="xs:boolean"></xs:element>
+  <xs:element name="AllowedSourceTypes" type="xs:string"></xs:element>
+  <xs:element name="AllowedTargetTypes" type="xs:string"></xs:element>
+  <xs:element name="constraints" type="xs:string"></xs:element>
+  
+
+	<xs:element name="propertyType">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="String"></xs:enumeration>
+				<xs:enumeration value="Decimal"></xs:enumeration>
+				<xs:enumeration value="Integer"></xs:enumeration>
+				<xs:enumeration value="Boolean"></xs:enumeration>
+				<xs:enumeration value="DateTime"></xs:enumeration>
+				<xs:enumeration value="URI"></xs:enumeration>
+				<xs:enumeration value="HTML"></xs:enumeration>
+				<xs:enumeration value="XML"></xs:enumeration>
+				<xs:enumeration value="ID"></xs:enumeration>
+				<xs:enumeration value="TypeID"></xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+
+	<xs:element name="cardinality">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="Single"></xs:enumeration>
+				<xs:enumeration value="Multi"></xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+
+	<xs:element name="maxLength" type="xs:int"></xs:element>
+
+	<xs:element name="schemaURI" type="xs:string"></xs:element>
+
+	<xs:element name="encoding" type="xs:string"></xs:element>
+
+
+	<xs:element name="choices">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="index"
+						type="xs:positiveInteger" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="isOpenChoice" type="xs:boolean"></xs:element>
+
+	<xs:element name="isRequired" type="xs:boolean"></xs:element>
+
+	<xs:element name="defaultValue" type="xs:string"></xs:element>
+
+	<xs:element name="updateability">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="ro"></xs:enumeration>
+				<xs:enumeration value="rw"></xs:enumeration>
+				<xs:enumeration value="checkedout"></xs:enumeration>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+
+	<xs:complexType name="repositoryInfoType">
+		<xs:sequence minOccurs="1">
+			<xs:element name="repositoryId" type="xs:string"
+				minOccurs="1">
+			</xs:element>
+			<xs:element name="repositoryName" type="xs:string"
+				minOccurs="1">
+			</xs:element>
+			<xs:element name="repositoryDescription" type="xs:string"
+				minOccurs="1">
+			</xs:element>
+			<xs:element name="vendorName" type="xs:string"></xs:element>
+			<xs:element name="productName" type="xs:string"></xs:element>
+			<xs:element name="productVersion" type="xs:string"></xs:element>
+			<xs:element name="capabilities"
+				type="cmis:RepositoryInfoCapabilities">
+			</xs:element>
+			<xs:element name="repositorySpecificInformation"
+				type="xs:string" maxOccurs="1" minOccurs="0">
+			</xs:element>
+			<!-- 
+			<xs:any namespace="##any" processContents="skip"
+				minOccurs="0" maxOccurs="unbounded">
+			</xs:any> -->
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="RepositoryInfoCapabilities">
+		<xs:sequence>
+			<xs:element name="capabilityMultifiling" type="xs:boolean"
+				minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityUnfiling" type="xs:boolean"
+				minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityVersionSpecificFiling"
+				type="xs:boolean" minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityPWCUpdateable" type="xs:boolean"
+				minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityAllVersionsSearchable"
+				type="xs:boolean" minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityInnerJoin" type="xs:boolean"
+				minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityOuterJoin" type="xs:boolean"
+				minOccurs="1" maxOccurs="1">
+			</xs:element>
+			<xs:element name="capabilityFullText">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="none"></xs:enumeration>
+						<xs:enumeration value="fulltextonly"></xs:enumeration>
+						<xs:enumeration value="fulltextwithmetadata"></xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:attribute name="id" type="xs:string"></xs:attribute>
+
+	<xs:attribute name="index" type="xs:int"></xs:attribute>
+
+	<xs:element name="creationDate" type="xs:dateTime"></xs:element>
+
+	<xs:element name="lastModifiedBy" type="xs:dateTime"></xs:element>
+
+	<xs:element name="baseType" type="cmis:baseObjectType"></xs:element>
+
+
+	<xs:simpleType name="baseObjectType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="document"></xs:enumeration>
+			<xs:enumeration value="folder"></xs:enumeration>
+			<xs:enumeration value="relationship"></xs:enumeration>
+			<xs:enumeration value="policy"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:element name="objectType" type="xs:string"></xs:element>
+
+
+	<xs:element name="isLatestVersion" type="xs:boolean"></xs:element>
+
+	<xs:element name="isCheckedOut" type="xs:boolean"></xs:element>
+
+	<xs:element name="contentStreamLength" type="xs:int"></xs:element>
+
+	<xs:element name="contentStreamMimetype">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value=".*/.*"></xs:pattern>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+
+	<xs:element name="contentStreamName" type="xs:string"></xs:element>
+
+
+	<xs:element name="contentStreamURI" type="xs:string"></xs:element>
+
+
+
+
+	<xs:group name="entryCommonElements">
+		<xs:sequence>
+			<xs:element ref="cmis:baseType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:lastModifiedBy" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:creationDate" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="entryContentStreamElements">
+		<xs:sequence>
+			<xs:element ref="cmis:contentStreamLength"></xs:element>
+			<xs:element ref="cmis:contentStreamMimetype"></xs:element>
+			<xs:element ref="cmis:contentStreamName"></xs:element>
+			<xs:element ref="cmis:contentStreamURI"></xs:element>
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="propertyDefinitionElements">
+		<xs:sequence>
+			<xs:element ref="cmis:displayName" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:description" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:propertyType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:cardinality" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:maxLength" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:schemaURI" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:encoding" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:choices" minOccurs="0"
+				maxOccurs="unbounded">
+			</xs:element>
+			<xs:element ref="cmis:isOpenChoice" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isRequired" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:defaultValue" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:updateability" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isQueryable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isOrderable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+
+	<xs:element name="isOrderable" type="xs:boolean"></xs:element>
+
+	<xs:complexType name="propertyDefinitionType">
+		<xs:sequence>
+			<xs:element ref="cmis:displayName" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:description" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:propertyType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:cardinality" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:maxLength" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:schemaURI" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:encoding" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:choices" minOccurs="0"
+				maxOccurs="unbounded">
+			</xs:element>
+			<xs:element ref="cmis:isOpenChoice" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isRequired" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:defaultValue" minOccurs="0"
+				maxOccurs="unbounded">
+			</xs:element>
+			<xs:element ref="cmis:updateability" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isQueryable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isOrderable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="cmis:id"></xs:attribute>
+	</xs:complexType>
+
+
+
+
+
+	<xs:element name="canDelete" type="xs:boolean"></xs:element>
+	<xs:element name="canUpdateProperties" type="xs:boolean"></xs:element>
+	<xs:element name="canGetProperties" type="xs:boolean"></xs:element>
+	<xs:element name="canGetParents" type="xs:boolean"></xs:element>
+	<xs:element name="canMove" type="xs:boolean"></xs:element>
+	<xs:element name="canDeleteVersion" type="xs:boolean"></xs:element>
+	<xs:element name="canDeleteContent" type="xs:boolean"></xs:element>
+	<xs:element name="canCheckout" type="xs:boolean"></xs:element>
+	<xs:element name="canCancelCheckout" type="xs:boolean"></xs:element>
+	<xs:element name="canCheckin" type="xs:boolean"></xs:element>
+	<xs:element name="canSetContent" type="xs:boolean"></xs:element>
+	<xs:element name="canGetAllVersions" type="xs:boolean"></xs:element>
+	<xs:element name="canAddToFolder" type="xs:boolean"></xs:element>
+	<xs:element name="canRemoveFromFolder" type="xs:boolean"></xs:element>
+	<xs:element name="canViewContent" type="xs:boolean"></xs:element>
+	<xs:element name="canAddPolicy" type="xs:boolean"></xs:element>
+	<xs:element name="canRemovePolicy" type="xs:boolean"></xs:element>
+	<xs:element name="canGetChildren" type="xs:boolean"></xs:element>
+	<xs:element name="canGetDescendants" type="xs:boolean"></xs:element>
+
+
+
+
+
+	<xs:element name="isControllable" type="xs:boolean"></xs:element>
+
+    <xs:element name="source" type="xs:string"></xs:element>
+
+    <xs:element name="target" type="xs:string"></xs:element>
+
+    <xs:element name="isImmutable" type="xs:boolean"></xs:element>
+
+    <xs:element name="isMajorVersion" type="xs:boolean"></xs:element>
+    <xs:element name="isLatestMajorVersion" type="xs:boolean"></xs:element>
+	<xs:element name="isVersionSeriesCheckedOut" type="xs:boolean"></xs:element>
+	<xs:element name="versionSeriesCheckedOutBy" type="xs:string"></xs:element>
+	<xs:element name="versionSeriesCheckedOutID" type="xs:string"></xs:element>    
+	<xs:element name="checkinComment" type="xs:string"></xs:element>    
+        
+<xs:group name="CMISActionsEntry">
+      <xs:sequence>
+						<xs:element ref="cmis:canDelete" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canUpdateProperties" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canGetProperties" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canGetParents" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canGetDescendants" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canMove" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canDeleteVersion" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canDeleteContent" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canCheckout" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canCancelCheckout" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canCheckin" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canSetContent" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canGetAllVersions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canAddToFolder" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canRemoveFromFolder" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canViewContent" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canAddPolicy" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canRemovePolicy" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:canGetChildren" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+      </xs:sequence>
+
+</xs:group>
+
+
+<xs:group name="CMISTypeEntry">
+      <xs:sequence>
+			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+				maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:queryName" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:displayName" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<!-- 
+			<xs:element ref="cmis:baseType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element> -->
+			<xs:element ref="cmis:baseTypeQueryName" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:parent" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element ref="cmis:description" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+	      <xs:element ref="cmis:isCreatable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isVersionable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isQueryable" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isContentStreamAllowed" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+      <xs:element ref="cmis:AllowedSourceTypes" minOccurs="1" maxOccurs="1">
+      </xs:element>
+        <xs:element ref="cmis:AllowedTargetTypes" minOccurs="1" maxOccurs="1">
+        </xs:element>
+        <xs:element ref="cmis:constraints" minOccurs="0"
+				maxOccurs="unbounded">
+			</xs:element>
+
+			<xs:element ref="cmis:property"></xs:element>
+			<xs:element ref="cmis:isControllable"></xs:element>
+      </xs:sequence>
+
+</xs:group>
+
+
+<xs:group name="CMISDocumentEntry">
+      <xs:sequence>
+			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+				maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:objectType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isCheckedOut" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isLatestVersion" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isMajorVersion" minOccurs="0"
+				maxOccurs="1">
+				</xs:element>
+			<xs:element ref="cmis:isLatestMajorVersion" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isImmutable" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:isVersionSeriesCheckedOut" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:versionSeriesCheckedOutBy" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:versionSeriesCheckedOutID" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:checkinComment" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+
+			<xs:element ref="cmis:versionLabel" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+						
+			<xs:group ref="cmis:entryContentStreamElements"
+				minOccurs="0" maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:allowableActions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+      </xs:sequence>
+</xs:group>
+
+<xs:group name="CMISFolderEntry">
+      <xs:sequence>
+			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+				maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:objectType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:parent" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element ref="cmis:allowableActions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+      </xs:sequence>
+
+</xs:group>
+
+<xs:group name="CMISRelationshipEntry">
+      <xs:sequence>
+			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+				maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:objectType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:source" minOccurs="1"
+				maxOccurs="1">
+				</xs:element>
+			<xs:element ref="cmis:target" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:allowableActions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+		</xs:sequence>
+
+</xs:group>
+
+<xs:group name="CMISPolicyEntry">
+      <xs:sequence>
+			<xs:group ref="cmis:entryCommonElements" minOccurs="1"
+				maxOccurs="1">
+			</xs:group>
+			<xs:element ref="cmis:objectType" minOccurs="1"
+				maxOccurs="1">
+			</xs:element>
+			<xs:element ref="cmis:allowableActions" minOccurs="0"
+				maxOccurs="1">
+			</xs:element>
+      </xs:sequence>
+</xs:group>
+    
+
+    <xs:element name="function" type="xs:string"></xs:element>
+
+    <xs:element name="hasMoreItems" type="xs:boolean"></xs:element>
+
+    <xs:element name="allowableActions" type="cmis:allowableActions"></xs:element>
+    
+    <xs:complexType name="allowableActions">
+    	<xs:sequence maxOccurs="1" minOccurs="1">
+            <xs:group ref="cmis:CMISActionsEntry"></xs:group>
+    	</xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="versionLabel" type="xs:string"></xs:element>
+
+    <xs:element name="query" type="cmis:queryType"></xs:element>
+
+    <xs:complexType name="queryType">
+    	<xs:sequence>
+    		<xs:element ref="cmis:statement" minOccurs="1" maxOccurs="1"></xs:element>
+    		<xs:element ref="cmis:searchAllVersions" minOccurs="0" maxOccurs="1"></xs:element>
+    		<xs:element ref="cmis:pageSize" minOccurs="0" maxOccurs="1"></xs:element>
+    		<xs:element ref="cmis:skipCount" minOccurs="0" maxOccurs="1"></xs:element>
+    		<xs:element ref="cmis:returnAllowableActions" minOccurs="0" maxOccurs="1"></xs:element>
+    	</xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="statement" type="xs:string"></xs:element>
+
+    <xs:element name="pageSize" type="xs:int"></xs:element>
+
+    <xs:element name="skipCount" type="xs:int"></xs:element>
+
+    <xs:element name="returnAllowableActions" type="xs:boolean"></xs:element>
+
+    <xs:element name="searchAllVersions" type="xs:boolean"></xs:element>
+
+    <xs:attribute name="collectionType">
+    	<xs:simpleType>
+    		<xs:restriction base="xs:string">
+    			<xs:enumeration value="root"></xs:enumeration>
+    			<xs:enumeration value="unfiled"></xs:enumeration>
+    			<xs:enumeration value="checkedout"></xs:enumeration>
+    			<xs:enumeration value="types"></xs:enumeration>
+    		</xs:restriction>
+    	</xs:simpleType>
+    </xs:attribute>
+
+    <xs:attribute name="repositoryRelationship">
+    	<xs:simpleType>
+    		<xs:restriction base="xs:string">
+    			<xs:enumeration value="self"></xs:enumeration>
+    			<xs:enumeration value="sibling"></xs:enumeration>
+    			<xs:enumeration value="parent"></xs:enumeration>
+    			<xs:enumeration value="child"></xs:enumeration>
+    			<xs:enumeration value="replica"></xs:enumeration>
+    		</xs:restriction>
+    	</xs:simpleType>
+    </xs:attribute>
+</xs:schema>
+<!-- EOF -->

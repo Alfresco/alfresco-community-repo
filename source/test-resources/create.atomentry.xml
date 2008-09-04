@@ -8,12 +8,12 @@
     <content type="html">content 1</content>    
     <cmis:object>
         <cmis:uri>http://example.org/atom04</cmis:uri>
-        <cmis:objectType>document</cmis:objectType>
+        <cmis:baseType>document</cmis:baseType>
         <cmis:keyword index="0">XML</cmis:keyword>
         <cmis:keyword index="1">standards</cmis:keyword> 
     </cmis:object>
 </entry>
 
 
-post /api/path/workspace/SpacesStore//children application/atom+xml <?xml version="1.0" encoding="utf-8"?> <entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"><title>Iñtërnâtiônàlizætiøn - 6</title><id>urn:uuid:12345678-1234-1234-1234-123412341234</id><summary>Create test 1 summary</summary><updated>2007-02-123T17:09:02Z</updated><author><name>Doolittle</name></author><content type="html">content 1</content><cmis:object><cmis:objectType>document</cmis:objectType></cmis:object></entry>
+post /api/path/workspace/SpacesStore//children application/atom+xml <?xml version="1.0" encoding="utf-8"?> <entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"><title>Iñtërnâtiônàlizætiøn - 20</title><id>urn:uuid:12345678-1234-1234-1234-123412341234</id><summary>Create folder 1 summary</summary><updated>2007-02-123T17:09:02Z</updated><author><name>Doolittle</name></author><content type="html">content 1</content><cmis:object><cmis:baseType>folder</cmis:baseType></cmis:object></entry>
 post /test/ext application/atom+xml <?xml version="1.0" encoding="utf-8"?> <entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"><title>Iñtërnâtiônàlizætiøn - 6</title><id>urn:uuid:12345678-1234-1234-1234-123412341234</id><summary>Create test 1 summary</summary><updated>2007-02-123T17:09:02Z</updated><author><name>Doolittle</name></author><content type="html">content 1</content><cmis:object><cmis:baseType>document</cmis:baseType></cmis:object></entry>

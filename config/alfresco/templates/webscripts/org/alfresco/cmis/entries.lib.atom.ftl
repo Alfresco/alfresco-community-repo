@@ -29,8 +29,9 @@
   <cmis:keyword cmis:index="1">standards</cmis:keyword>  <#-- TODO: -->
 </cmis:object>
 <#-- TODO: ATOM LINKS -->
-<link rel="self" href="${absurl(url.full)}"/>
 <link rel="alternate" href="${absurl(url.serviceContext)}${node.url}"/> <#-- TODO: -->
+<link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}" type="application/atom+xml"/>
+<link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}" type="application/atom+xml"/>
 <#-- CMIS LINKS -->
 <link rel="cmis-parents" href="http://example.org/atom03?getdocumentparents"/> <#-- TODO: -->
 <link rel="cmis-allowableactions" href="http://example.org/atom03?getactions"/> <#-- TODO: -->
@@ -43,7 +44,6 @@
 <#macro folder node>
 <#-- ATOM props -->
 <title>${node.name}</title>
-<link rel="alternate" href="${absurl(url.serviceContext)}${node.url}"/>
 <id>urn:uuid:${node.id}</id>
 <updated>${xmldate(node.properties.modified)}</updated>
 <published>${xmldate(node.properties.created)}</published>
@@ -68,7 +68,9 @@
   <#-- In certain cases, if depth is specified children may appear Here. If there are children, the cmis:object tag will be nested For the children of this item -->
 </cmis:object>
 <#-- TODO: ATOM LINKS -->
-<link rel="self" href="${absurl(url.full)}"/>
+<link rel="alternate" href="${absurl(url.serviceContext)}${node.url}"/>
+<link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}" type="application/atom+xml"/>
+<link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}" type="application/atom+xml"/>
 <#-- CMIS LINKS -->
 <link rel="cmis-parent" href="http://example.org/folders/myfolder?getfolderparent"/>  <#-- TODO: -->
 <link rel="cmis-allowableactions" href="http://example.org/folders/myfolder?getactions"/>  <#-- TODO: -->

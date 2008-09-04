@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Delete tree</shortname>
+  <description>Delete tree</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <authentication>user</authentication>
+  <format default="atomfeed"/>
+  <cmis version="0.21"/>
+</webscript>

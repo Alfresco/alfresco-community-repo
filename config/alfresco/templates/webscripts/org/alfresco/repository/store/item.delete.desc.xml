@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Delete item</shortname>
+  <description>Delete item</description>
+  <url>/api/node/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}?includeChildren={includeChildren?}</url>
+  <authentication>user</authentication>
+  <format default="atomentry"/>
+  <cmis version="0.21"/>
+</webscript>

@@ -322,7 +322,7 @@ public class UIGenericPicker extends UICommand
          out.write("<input name='");
          out.write(clientId + FIELD_CONTAINS);
          out.write("' type='text' maxlength='256' style='width:120px' value=\"");
-         out.write(Utils.replace(this.contains, "\"", "&quot;"));
+         out.write(Utils.encode(this.contains));
          out.write("\">&nbsp;");
       }
       
@@ -341,12 +341,14 @@ public class UIGenericPicker extends UICommand
          String resultsMsg;
          if (getShowFilter() == false)
          {
-            resultsMsg = MessageFormat.format(bundle.getString(MSG_RESULTS1), new Object[] {this.contains});
+            resultsMsg = MessageFormat.format(bundle.getString(MSG_RESULTS1),
+                  new Object[] {Utils.encode(this.contains)});
          }
          else
          {
             String filterMsg = this.filters[this.filterIndex].getLabel();
-            resultsMsg = MessageFormat.format(bundle.getString(MSG_RESULTS2), new Object[] {this.contains, filterMsg});
+            resultsMsg = MessageFormat.format(bundle.getString(MSG_RESULTS2),
+                  new Object[] {Utils.encode(this.contains), filterMsg});
          }
          out.write(resultsMsg);
          out.write("&nbsp;");

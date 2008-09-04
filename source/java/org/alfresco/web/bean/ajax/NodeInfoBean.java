@@ -33,12 +33,14 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
-import org.alfresco.repo.template.CropContentMethod;
+import org.alfresco.repo.content.transform.TransformerInfoException;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.bean.repository.Repository;
@@ -89,8 +91,31 @@ public class NodeInfoBean implements Serializable
             return;
          }
       }
-      Repository.getServiceRegistry(context).getTemplateService().processTemplate(
+      try
+      {
+          Repository.getServiceRegistry(context).getTemplateService().processTemplate(
             "/alfresco/templates/client/" + strTemplate, getModel(nodeRef, requestMap), out);
+      }
+      catch (TemplateException ex)
+      {
+         // Try to catch TransformerInfoException to display it in NodeInfo pane.
+         // Fix bug reported in https://issues.alfresco.com/jira/browse/ETWOTWO-440
+         
+         logger.error(ex);
+         Throwable cause = ex.getCause();
+         while (cause != null)
+         {
+            logger.error(cause);
+            cause = cause.getCause();
+            if (cause != null && cause instanceof TransformerInfoException)
+            {
+               out.write("<tr><td colspan=\"2\"><span class='errorMessage'>" + cause.getMessage() + "</span></td></tr>");
+               return;
+            }
+         }
+         
+         throw ex;
+      }
    }
 
    
@@ -118,7 +143,7 @@ public class NodeInfoBean implements Serializable
    // ------------------------------------------------------------------------------
    // Helper methods
    
-   private Map<String, Object> getModel(NodeRef nodeRef, Map<String, String> requestMap)
+   private Map<String, Object> getModel(NodeRef nodeRef, Map<String, String> requestMap) throws ContentIOException
    {
       FacesContext context = FacesContext.getCurrentInstance();
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);

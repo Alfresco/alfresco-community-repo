@@ -392,9 +392,9 @@ public class WebProject implements Serializable
 	          }
 	      }
 	      
-		  if (LOGGER.isInfoEnabled())
+		  if (LOGGER.isDebugEnabled())
 		  {
-			  LOGGER.info("getWebProjectUserRole: "+currentUser.getUserName()+" "+userrole+" in "+(System.currentTimeMillis()-start)+" ms");
+			  LOGGER.debug("getWebProjectUserRole: "+currentUser.getUserName()+" "+userrole+" in "+(System.currentTimeMillis()-start)+" ms");
 		  }
 		  
 	      return userrole;

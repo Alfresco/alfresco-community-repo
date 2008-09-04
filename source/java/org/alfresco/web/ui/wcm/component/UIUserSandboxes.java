@@ -814,7 +814,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = AVMUtil.getPreviewURI(userStore, assetPath);
+               String previewUrl = AVMUtil.getPreviewURI(userStore, '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + assetPath);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
                // size of files

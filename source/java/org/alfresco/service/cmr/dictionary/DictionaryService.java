@@ -97,7 +97,7 @@ public interface DictionaryService
     
     /**
      * @param type
-     * @param follow  true => follow up the super-class hierarchy, false => immediate sub types only
+     * @param follow  true => all sub-type descendants, false => immediate sub-type children
      * @return the sub types of specified type
      */
     @NotAuditable

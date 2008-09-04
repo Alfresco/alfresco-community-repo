@@ -40,5 +40,6 @@ public interface LuceneIndexerAndSearcher extends IndexerAndSearcher, LuceneConf
     }
 
     public <R> R doWithAllWriteLocks(WithAllWriteLocksWork<R> lockWork);
-  
+ 
+    
 }

@@ -32,5 +32,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPhrase;
  */
 public class LuceneFTSPhrase extends FTSPhrase
 {
-
+    /**
+     * 
+     */
+    public LuceneFTSPhrase()
+    {
+        super();
+    }
 }

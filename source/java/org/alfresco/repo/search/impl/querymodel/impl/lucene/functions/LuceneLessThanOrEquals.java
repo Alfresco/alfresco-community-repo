@@ -38,7 +38,7 @@ public class LuceneLessThanOrEquals extends LessThanOrEquals
      */
     public LuceneLessThanOrEquals()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

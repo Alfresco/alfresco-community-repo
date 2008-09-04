@@ -29,13 +29,16 @@ import java.util.List;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
+import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.Source;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.apache.lucene.search.BooleanQuery;
 
 /**
  * @author andyh
  */
-public class LuceneQuery extends BaseQuery
+public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 {
 
     /**
@@ -47,6 +50,34 @@ public class LuceneQuery extends BaseQuery
     public LuceneQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {
         super(columns, source, constraint, orderings);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildQuery()
+     */
+    public BooleanQuery buildQuery(String selectorName, DictionaryService dictionaryService)
+    {
+        BooleanQuery luceneQuery = new BooleanQuery();
+        BooleanQuery current = luceneQuery;
+        Selector selector = getSource().getSelector(selectorName);
+        if(selector != null)
+        {
+            if(selector instanceof LuceneQueryBuilderComponent)
+            {
+                LuceneQueryBuilderComponent LuceneQueryBuilderComponent = (LuceneQueryBuilderComponent)selector;
+                current = LuceneQueryBuilderComponent.addComponent(luceneQuery, current, dictionaryService);
+                return luceneQuery;
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
+        
     }
 
 }

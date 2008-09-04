@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl;
 
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -40,9 +40,9 @@ public class BaseColumn implements Column
     
     private Function function;
     
-    private List<Argument> functionArguments;
+    private Map<String, Argument> functionArguments;
     
-    public BaseColumn(Function function, List<Argument> functionArguments, String alias)
+    public BaseColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {
         this.function = function;
         this.functionArguments = functionArguments;
@@ -68,7 +68,7 @@ public class BaseColumn implements Column
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments()
      */
-    public List<Argument> getFunctionArguments()
+    public Map<String, Argument> getFunctionArguments()
     {
         return functionArguments;
     }

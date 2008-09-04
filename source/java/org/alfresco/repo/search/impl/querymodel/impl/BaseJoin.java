@@ -133,4 +133,39 @@ public class BaseJoin implements Join
         }
         return answer;
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector(java.lang.String)
+     */
+    public Selector getSelector(String name)
+    {
+        HashMap<String, Selector> answer = new HashMap<String, Selector>();
+        Map<String, Selector> leftSelectors = left.getSelectors();
+        for(String selectorName : leftSelectors.keySet())
+        {
+            Selector selector = leftSelectors.get(selectorName);
+            if(answer.put(selectorName, selector) != null)
+            {
+                throw new DuplicateSelectorNameException("There is a duplicate selector name for "+selectorName);
+            }
+        }
+        Map<String, Selector> rightSelectors = right.getSelectors();
+        for(String selectorName : rightSelectors.keySet())
+        {
+            Selector selector = rightSelectors.get(selectorName);
+            if(answer.put(selectorName, selector) != null)
+            {
+                throw new DuplicateSelectorNameException("There is a duplicate selector name for "+selectorName);
+            }
+        }
+        return answer.get(name);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector()
+     */
+    public String getSelector()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

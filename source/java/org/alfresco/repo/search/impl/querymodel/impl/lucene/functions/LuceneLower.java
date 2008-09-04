@@ -33,5 +33,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Lower;
 public class LuceneLower extends Lower
 {
 
-
+    /**
+     * 
+     */
+    public LuceneLower()
+    {
+        super();
+    }
 }

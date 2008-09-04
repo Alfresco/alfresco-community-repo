@@ -74,5 +74,5 @@ public interface CMISResultSetMetaData
      * @param name
      * @return - the column meta-data.
      */
-    public CMISResultSetColumn getCoumn(String name);
+    public CMISResultSetColumn getColumn(String name);
 }

@@ -31,5 +31,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
  */
 public class LucenePropertyAccessor extends PropertyAccessor
 {
-
+    /**
+     * 
+     */
+    public LucenePropertyAccessor()
+    {
+        super();
+    }
 }

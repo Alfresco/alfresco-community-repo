@@ -38,7 +38,7 @@ public class LuceneNotEquals extends NotEquals
      */
     public LuceneNotEquals()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

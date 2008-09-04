@@ -35,12 +35,14 @@ import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -83,12 +85,16 @@ public abstract class BaseCMISTest extends TestCase
     
     protected CMISQueryService cmisQueryService;
 
+    private AuthenticationService authenticationService;
+
+    private MutableAuthenticationDao authenticationDAO;
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         
-        cmisMapping = (CMISMapping) ctx.getBean("CMISMapping");
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("CMISDictionaryService");
+        cmisMapping = cmisDictionaryService.getCMISMapping();
         cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
         cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
@@ -99,6 +105,9 @@ public abstract class BaseCMISTest extends TestCase
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
+        authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
+        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
+        
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -106,8 +115,20 @@ public abstract class BaseCMISTest extends TestCase
         String storeName = "CMISTest-" + getName() + "-" + (new Date().getTime());
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
         rootNodeRef = nodeService.getRootNode(storeRef);
+        
+        if(authenticationDAO.userExists("cmis"))
+        {
+            authenticationService.deleteAuthentication("cmis");
+        }
+        authenticationService.createAuthentication("cmis", "cmis".toCharArray());
     }
 
+    protected void runAs(String userName)
+    {
+        authenticationService.authenticate(userName, userName.toCharArray());
+        assertNotNull(authenticationService.getCurrentUserName());
+    }
+    
     @Override
     protected void tearDown() throws Exception
     {

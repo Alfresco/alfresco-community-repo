@@ -285,7 +285,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     public NodeRef getPerson()
     {
         NodeRef person = null;
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getCurrentEffectiveUserName();
         if (personService.personExists(currentUserName))
         {
             person = personService.getPerson(currentUserName);

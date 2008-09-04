@@ -32,5 +32,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
  */
 public class LuceneUpper extends Upper
 {
-
+    /**
+     * 
+     */
+    public LuceneUpper()
+    {
+        super();
+    }
 }

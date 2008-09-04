@@ -38,7 +38,7 @@ public class LuceneDescendant extends Descendant
      */
     public LuceneDescendant()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

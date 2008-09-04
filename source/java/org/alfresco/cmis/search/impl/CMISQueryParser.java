@@ -25,9 +25,11 @@
 package org.alfresco.cmis.search.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.cmis.dictionary.CMISCardinality;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
@@ -73,7 +75,6 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.NotEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.antlr.runtime.ANTLRStringStream;
@@ -92,7 +93,7 @@ public class CMISQueryParser
     private CMISDictionaryService cmisDictionaryService;
 
     private CMISMapping cmisMapping;
-    
+
     private JoinSupport joinSupport;
 
     public CMISQueryParser(CMISQueryOptions options, CMISDictionaryService cmisDictionaryService, CMISMapping cmisMapping, JoinSupport joinSupport)
@@ -103,7 +104,7 @@ public class CMISQueryParser
         this.joinSupport = joinSupport;
     }
 
-    public Query parse()
+    public Query parse(QueryModelFactory factory)
     {
         CMISParser parser = null;
         try
@@ -114,12 +115,19 @@ public class CMISQueryParser
             parser = new CMISParser(tokens);
             CommonTree queryNode = (CommonTree) parser.query().getTree();
 
-            QueryModelFactory factory = new LuceneQueryModelFactory();
-
             CommonTree sourceNode = (CommonTree) queryNode.getFirstChildWithType(CMISParser.SOURCE);
             Source source = buildSource(sourceNode, joinSupport, factory);
             Map<String, Selector> selectors = source.getSelectors();
             ArrayList<Column> columns = buildColumns(queryNode, factory, selectors);
+            
+            HashSet<String> columnNames = new HashSet<String>();
+            for(Column column : columns)
+            {
+                if(!columnNames.add(column.getAlias()))
+                {
+                    throw new CMISQueryException("Duplicate column alias for "+column.getAlias());
+                }
+            }
 
             ArrayList<Ordering> orderings = buildOrderings(queryNode, factory, selectors, columns);
 
@@ -131,7 +139,9 @@ public class CMISQueryParser
             }
 
             Query query = factory.createQuery(columns, source, constraint, orderings);
-            
+
+            // TODO: validate query and use of ID, function arguments matching up etc
+
             return query;
         }
         catch (RecognitionException e)
@@ -250,21 +260,21 @@ public class CMISQueryParser
         String functionName;
         Function function;
         CommonTree argNode;
-        List<Argument> functionArguments;
+        Map<String, Argument> functionArguments;
         Argument arg;
         switch (predicateNode.getType())
         {
         case CMISParser.PRED_CHILD:
             functionName = Child.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             argNode = (CommonTree) predicateNode.getChild(0);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(Child.ARG_PARENT), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             if (predicateNode.getChildCount() > 1)
             {
                 arg = getFunctionArgument(argNode, function.getArgumentDefinition(Child.ARG_SELECTOR), factory, selectors);
-                functionArguments.add(arg);
+                functionArguments.put(arg.getName(), arg);
             }
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_COMPARISON:
@@ -297,36 +307,36 @@ public class CMISQueryParser
             default:
                 throw new CMISQueryException("Unknown comparison function " + predicateNode.getChild(2).getText());
             }
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             argNode = (CommonTree) predicateNode.getChild(1);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(BaseComparison.ARG_LHS), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             argNode = (CommonTree) predicateNode.getChild(3);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(BaseComparison.ARG_RHS), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_DESCENDANT:
             functionName = Descendant.NAME;
             function = factory.getFunction(functionName);
             argNode = (CommonTree) predicateNode.getChild(0);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(Child.ARG_PARENT), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             if (predicateNode.getChildCount() > 1)
             {
                 arg = getFunctionArgument(argNode, function.getArgumentDefinition(Child.ARG_SELECTOR), factory, selectors);
-                functionArguments.add(arg);
+                functionArguments.put(arg.getName(), arg);
             }
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_EXISTS:
             functionName = Exists.NAME;
             function = factory.getFunction(functionName);
             argNode = (CommonTree) predicateNode.getChild(0);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(Exists.ARG_PROPERTY), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             arg = factory.createLiteralArgument(Exists.ARG_NOT, DataTypeDefinition.BOOLEAN, (predicateNode.getChildCount() == 1));
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_FTS:
             String ftsExpression = predicateNode.getChild(0).getText();
@@ -334,28 +344,28 @@ public class CMISQueryParser
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             argNode = (CommonTree) predicateNode.getChild(0);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_PROPERTY), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             argNode = (CommonTree) predicateNode.getChild(1);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(In.ARG_COLLECTION), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             arg = factory.createLiteralArgument(In.ARG_NOT, DataTypeDefinition.BOOLEAN, (predicateNode.getChildCount() > 2));
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_LIKE:
             functionName = Like.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             argNode = (CommonTree) predicateNode.getChild(0);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(Like.ARG_PROPERTY), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             argNode = (CommonTree) predicateNode.getChild(1);
             arg = getFunctionArgument(argNode, function.getArgumentDefinition(Like.ARG_EXP), factory, selectors);
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             arg = factory.createLiteralArgument(Like.ARG_NOT, DataTypeDefinition.BOOLEAN, (predicateNode.getChildCount() > 2));
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             return factory.createFunctionalConstraint(function, functionArguments);
         default:
             return null;
@@ -451,7 +461,7 @@ public class CMISQueryParser
     {
         String functionName;
         Function function;
-        List<Argument> functionArguments;
+        Map<String, Argument> functionArguments;
         Argument arg;
         switch (testNode.getType())
         {
@@ -462,38 +472,38 @@ public class CMISQueryParser
         case FTSParser.TERM:
             functionName = FTSTerm.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             arg = factory.createLiteralArgument(FTSTerm.ARG_TERM, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             if (testNode.getChildCount() > 1)
             {
                 arg = buildColumnReference(FTSTerm.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                functionArguments.add(arg);
+                functionArguments.put(arg.getName(), arg);
             }
             return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.EXACT_TERM:
             functionName = FTSExactTerm.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             arg = factory.createLiteralArgument(FTSExactTerm.ARG_TERM, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             if (testNode.getChildCount() > 1)
             {
                 arg = buildColumnReference(FTSExactTerm.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                functionArguments.add(arg);
+                functionArguments.put(arg.getName(), arg);
             }
             return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.PHRASE:
             // TODO: transform "" to " to reverse escaping
             functionName = FTSPhrase.NAME;
             function = factory.getFunction(functionName);
-            functionArguments = new ArrayList<Argument>();
+            functionArguments = new LinkedHashMap<String, Argument>();
             arg = factory.createLiteralArgument(FTSPhrase.ARG_PHRASE, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.add(arg);
+            functionArguments.put(arg.getName(), arg);
             if (testNode.getChildCount() > 1)
             {
                 arg = buildColumnReference(FTSPhrase.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                functionArguments.add(arg);
+                functionArguments.put(arg.getName(), arg);
             }
             return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.SYNONYM:
@@ -585,8 +595,8 @@ public class CMISQueryParser
                             Function function = factory.getFunction(PropertyAccessor.NAME);
                             QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
                             Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
-                            List<Argument> functionArguments = new ArrayList<Argument>(1);
-                            functionArguments.add(arg);
+                            Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                            functionArguments.put(arg.getName(), arg);
 
                             String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
 
@@ -626,8 +636,8 @@ public class CMISQueryParser
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
-                        List<Argument> functionArguments = new ArrayList<Argument>(1);
-                        functionArguments.add(arg);
+                        Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                        functionArguments.put(arg.getName(), arg);
 
                         String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
 
@@ -645,6 +655,7 @@ public class CMISQueryParser
         return orderings;
     }
 
+    @SuppressWarnings("unchecked")
     private ArrayList<Column> buildColumns(CommonTree queryNode, QueryModelFactory factory, Map<String, Selector> selectors)
     {
         ArrayList<Column> columns = new ArrayList<Column>();
@@ -675,9 +686,10 @@ public class CMISQueryParser
                         Function function = factory.getFunction(PropertyAccessor.NAME);
                         QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
-                        List<Argument> functionArguments = new ArrayList<Argument>(1);
-                        functionArguments.add(arg);
-                        Column column = factory.createColumn(function, functionArguments, selector.getAlias() + "." + definition.getPropertyName());
+                        Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                        functionArguments.put(arg.getName(), arg);
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                        Column column = factory.createColumn(function, functionArguments, alias);
                         columns.add(column);
                     }
                 }
@@ -687,61 +699,15 @@ public class CMISQueryParser
         CommonTree columnsNode = (CommonTree) queryNode.getFirstChildWithType(CMISParser.COLUMNS);
         if (columnsNode != null)
         {
-            CommonTree allColumnsNode = (CommonTree) columnsNode.getFirstChildWithType(CMISParser.ALL_COLUMNS);
-            if (allColumnsNode != null)
+            for (CommonTree columnNode : (List<CommonTree>)columnsNode.getChildren())
             {
-                String qualifier = allColumnsNode.getChild(0).getText();
-                Selector selector = selectors.get(qualifier);
-                if (selector == null)
+                if(columnNode.getType() == CMISParser.ALL_COLUMNS)
                 {
-                    throw new CMISQueryException("No selector for " + qualifier + " in " + qualifier + ".*");
-                }
-                QName cmisType = cmisMapping.getCmisType(selector.getType());
-                CMISTypeId typeId = null;
-                if (cmisMapping.isValidCmisDocument(cmisType))
-                {
-                    typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
-                }
-                else if (cmisMapping.isValidCmisFolder(cmisType))
-                {
-                    typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
-                }
-                else
-                {
-                    throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
-                }
-                Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
-                for (CMISPropertyDefinition definition : propDefs.values())
-                {
-                    if (definition.getCardinality() == CMISCardinality.SINGLE_VALUED)
-                    {
-                        Function function = factory.getFunction(PropertyAccessor.NAME);
-                        QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
-                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
-                        List<Argument> functionArguments = new ArrayList<Argument>(1);
-                        functionArguments.add(arg);
-                        Column column = factory.createColumn(function, functionArguments, selector.getAlias() + "." + definition.getPropertyName());
-                        columns.add(column);
-                    }
-                }
-            }
-
-            CommonTree columnNode = (CommonTree) columnsNode.getFirstChildWithType(CMISParser.COLUMN);
-            if (columnNode != null)
-            {
-                CommonTree columnRefNode = (CommonTree) columnNode.getFirstChildWithType(CMISParser.COLUMN_REF);
-                if (columnRefNode != null)
-                {
-                    String columnName = columnRefNode.getChild(0).getText();
-                    String qualifier = "";
-                    if (columnRefNode.getChildCount() > 1)
-                    {
-                        qualifier = columnRefNode.getChild(1).getText();
-                    }
+                    String qualifier = columnNode.getChild(0).getText();
                     Selector selector = selectors.get(qualifier);
                     if (selector == null)
                     {
-                        throw new CMISQueryException("No selector for " + qualifier);
+                        throw new CMISQueryException("No selector for " + qualifier + " in " + qualifier + ".*");
                     }
                     QName cmisType = cmisMapping.getCmisType(selector.getType());
                     CMISTypeId typeId = null;
@@ -757,72 +723,120 @@ public class CMISQueryParser
                     {
                         throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                     }
-                    CMISPropertyDefinition definition = cmisDictionaryService.getPropertyDefinition(typeId, columnName);
-
-                    if (definition == null)
+                    Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
+                    for (CMISPropertyDefinition definition : propDefs.values())
                     {
-                        throw new CMISQueryException("Invalid column for " + cmisMapping.getQueryName(typeId.getQName()) + "." + columnName);
+                        if (definition.getCardinality() == CMISCardinality.SINGLE_VALUED)
+                        {
+                            Function function = factory.getFunction(PropertyAccessor.NAME);
+                            QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
+                            Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
+                            Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                            functionArguments.put(arg.getName(), arg);
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                            Column column = factory.createColumn(function, functionArguments, alias);
+                            columns.add(column);
+                        }
                     }
-
-                    Function function = factory.getFunction(PropertyAccessor.NAME);
-                    QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
-                    Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
-                    List<Argument> functionArguments = new ArrayList<Argument>(1);
-                    functionArguments.add(arg);
-
-                    String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
-                    if (columnNode.getChildCount() > 1)
-                    {
-                        alias = columnNode.getChild(1).getText();
-                    }
-
-                    Column column = factory.createColumn(function, functionArguments, alias);
-                    columns.add(column);
-
                 }
 
-                CommonTree functionNode = (CommonTree) columnNode.getFirstChildWithType(CMISParser.FUNCTION);
-                if (functionNode != null)
+                if(columnNode.getType() == CMISParser.COLUMN)
                 {
-                    String functionName = getFunctionName((CommonTree) functionNode.getChild(0));
-                    Function function = factory.getFunction(functionName);
-                    Set<ArgumentDefinition> definitions = function.getArgumentDefinitions();
-                    List<Argument> functionArguments = new ArrayList<Argument>();
-
-                    int childIndex = 1;
-                    for (ArgumentDefinition definition : definitions)
+                    CommonTree columnRefNode = (CommonTree) columnNode.getFirstChildWithType(CMISParser.COLUMN_REF);
+                    if (columnRefNode != null)
                     {
-                        if (functionNode.getChildCount() > childIndex)
+                        String columnName = columnRefNode.getChild(0).getText();
+                        String qualifier = "";
+                        if (columnRefNode.getChildCount() > 1)
                         {
-                            CommonTree argNode = (CommonTree) functionNode.getChild(childIndex++);
-                            Argument arg = getFunctionArgument(argNode, definition, factory, selectors);
-                            functionArguments.add(arg);
+                            qualifier = columnRefNode.getChild(1).getText();
+                        }
+                        Selector selector = selectors.get(qualifier);
+                        if (selector == null)
+                        {
+                            throw new CMISQueryException("No selector for " + qualifier);
+                        }
+                        QName cmisType = cmisMapping.getCmisType(selector.getType());
+                        CMISTypeId typeId = null;
+                        if (cmisMapping.isValidCmisDocument(cmisType))
+                        {
+                            typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
+                        }
+                        else if (cmisMapping.isValidCmisFolder(cmisType))
+                        {
+                            typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
                         }
                         else
                         {
-                            if (definition.isMandatory())
+                            throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
+                        }
+                        CMISPropertyDefinition definition = cmisDictionaryService.getPropertyDefinition(typeId, columnName);
+
+                        if (definition == null)
+                        {
+                            throw new CMISQueryException("Invalid column for " + cmisMapping.getQueryName(typeId.getQName()) + "." + columnName);
+                        }
+
+                        Function function = factory.getFunction(PropertyAccessor.NAME);
+                        QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
+                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, selector.getAlias(), propertyQName);
+                        Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                        functionArguments.put(arg.getName(), arg);
+
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                        if (columnNode.getChildCount() > 1)
+                        {
+                            alias = columnNode.getChild(1).getText();
+                        }
+
+                        Column column = factory.createColumn(function, functionArguments, alias);
+                        columns.add(column);
+
+                    }
+
+                    CommonTree functionNode = (CommonTree) columnNode.getFirstChildWithType(CMISParser.FUNCTION);
+                    if (functionNode != null)
+                    {
+                        String functionName = getFunctionName((CommonTree) functionNode.getChild(0));
+                        Function function = factory.getFunction(functionName);
+                        Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
+                        Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+
+                        int childIndex = 1;
+                        for (ArgumentDefinition definition : definitions)
+                        {
+                            if (functionNode.getChildCount() > childIndex)
                             {
-                                // throw new CMISQueryException("Insufficient aruments for function " + ((CommonTree)
-                                // functionNode.getChild(0)).getText() );
-                                break;
+                                CommonTree argNode = (CommonTree) functionNode.getChild(childIndex++);
+                                Argument arg = getFunctionArgument(argNode, definition, factory, selectors);
+                                functionArguments.put(arg.getName(), arg);
                             }
                             else
                             {
-                                // ok
+                                if (definition.isMandatory())
+                                {
+                                    // throw new CMISQueryException("Insufficient aruments for function " +
+                                    // ((CommonTree)
+                                    // functionNode.getChild(0)).getText() );
+                                    break;
+                                }
+                                else
+                                {
+                                    // ok
+                                }
                             }
                         }
-                    }
 
-                    String alias = function.getName();
-                    if (columnNode.getChildCount() > 1)
-                    {
-                        alias = columnNode.getChild(1).getText();
-                    }
+                        String alias = function.getName();
+                        if (columnNode.getChildCount() > 1)
+                        {
+                            alias = columnNode.getChild(1).getText();
+                        }
 
-                    Column column = factory.createColumn(function, functionArguments, alias);
-                    columns.add(column);
+                        Column column = factory.createColumn(function, functionArguments, alias);
+                        columns.add(column);
+                    }
                 }
-
             }
         }
 
@@ -918,8 +932,8 @@ public class CMISQueryParser
         {
             String functionName = getFunctionName((CommonTree) argNode.getChild(0));
             Function function = factory.getFunction(functionName);
-            Set<ArgumentDefinition> definitions = function.getArgumentDefinitions();
-            List<Argument> functionArguments = new ArrayList<Argument>();
+            Collection<ArgumentDefinition> definitions = function.getArgumentDefinitions().values();
+            Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
 
             int childIndex = 1;
             for (ArgumentDefinition currentDefinition : definitions)
@@ -928,7 +942,7 @@ public class CMISQueryParser
                 {
                     CommonTree currentArgNode = (CommonTree) argNode.getChild(childIndex++);
                     Argument arg = getFunctionArgument(currentArgNode, currentDefinition, factory, selectors);
-                    functionArguments.add(arg);
+                    functionArguments.put(arg.getName(), arg);
                 }
                 else
                 {
@@ -1022,7 +1036,7 @@ public class CMISQueryParser
                     {
                         throw new UnsupportedOperationException("Outer joins are not supported");
                     }
-                    
+
                     Constraint joinCondition = null;
                     CommonTree joinConditionNode = (CommonTree) joinNode.getFirstChildWithType(CMISParser.ON);
                     if (joinConditionNode != null)
@@ -1031,9 +1045,9 @@ public class CMISQueryParser
                         String functionName = getFunctionName((CommonTree) joinConditionNode.getChild(1));
                         Argument arg2 = buildColumnReference(Equals.ARG_RHS, (CommonTree) joinConditionNode.getChild(2), factory);
                         Function function = factory.getFunction(functionName);
-                        List<Argument> functionArguments = new ArrayList<Argument>(2);
-                        functionArguments.add(arg1);
-                        functionArguments.add(arg2);
+                        Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
+                        functionArguments.put(arg1.getName(), arg1);
+                        functionArguments.put(arg2.getName(), arg2);
                         joinCondition = factory.createFunctionalConstraint(function, functionArguments);
                     }
 

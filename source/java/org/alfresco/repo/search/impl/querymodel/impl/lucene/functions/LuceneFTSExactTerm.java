@@ -33,5 +33,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
 public class LuceneFTSExactTerm extends FTSExactTerm
 {
 
-
+    /**
+     * 
+     */
+    public LuceneFTSExactTerm()
+    {
+        super();
+    }
 }

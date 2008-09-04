@@ -45,6 +45,38 @@ public class CMISDictionaryTest extends BaseCMISTest
         }
     }
 
+    public void testSubTypes()
+    {
+        cmisDictionaryService.setStrict(true);
+        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        {
+            System.out.println(name + " children (strict)");
+            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, false))
+            {
+                System.out.println(" " + subName);
+            }
+            System.out.println(name + " descendants (strict)");
+            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, true))
+            {
+                System.out.println(" " + subName);
+            }
+        }
+        cmisDictionaryService.setStrict(false);
+        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        {
+            System.out.println(name + " children");
+            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, false))
+            {
+                System.out.println(" " + subName);
+            }
+            System.out.println(name + " descendants");
+            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, true))
+            {
+                System.out.println(" " + subName);
+            }
+        }
+    }
+
     public void testTypeIds()
     {
         cmisDictionaryService.setStrict(false);

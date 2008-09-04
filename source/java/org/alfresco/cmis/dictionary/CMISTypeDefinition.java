@@ -25,13 +25,16 @@
 
 package org.alfresco.cmis.dictionary;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -40,8 +43,15 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author andyh
  */
-public class CMISTypeDefinition
+public class CMISTypeDefinition implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2216695347624799934L;
+
+    private CMISDictionaryService cmisDictionary;
+    
     private CMISTypeId objectTypeId;
 
     private String objectTypeQueryName;
@@ -72,12 +82,23 @@ public class CMISTypeDefinition
 
     private ArrayList<CMISTypeId> allowedTargetTypes = new ArrayList<CMISTypeId>(1);
 
-    public CMISTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId)
+    
+    /**
+     * Construct
+     *  
+     * @param cmisDictionary
+     * @param typeId
+     */
+    public CMISTypeDefinition(CMISDictionaryService cmisDictionary, CMISTypeId typeId)
     {
+        this.cmisDictionary = cmisDictionary;
+        DictionaryService dictionaryService = this.cmisDictionary.getDictionaryService();
+        CMISMapping cmisMapping = cmisDictionary.getCMISMapping();
+        
         switch (typeId.getScope())
         {
         case RELATIONSHIP:
-            AssociationDefinition associationDefinition = cmisMapping.getDictionaryService().getAssociation(typeId.getQName());
+            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
             if (associationDefinition != null)
             {
                 objectTypeId = typeId;
@@ -113,12 +134,11 @@ public class CMISTypeDefinition
                 {
                     allowedTargetTypes.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, targetType));
                 }
-
             }
             else
             {
                 // TODO: Add CMIS Association mapping??
-                TypeDefinition typeDefinition = cmisMapping.getDictionaryService().getType(typeId.getQName());
+                TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
                 objectTypeId = typeId;
                 objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
                 displayName = typeDefinition.getTitle();
@@ -136,7 +156,7 @@ public class CMISTypeDefinition
             break;
         case DOCUMENT:
         case FOLDER:
-            TypeDefinition typeDefinition = cmisMapping.getDictionaryService().getType(typeId.getQName());
+            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
             if (typeDefinition != null)
             {
                 objectTypeId = typeId;
@@ -362,6 +382,17 @@ public class CMISTypeDefinition
         return allowedTargetTypes;
     }
 
+    /**
+     * Gets the property definitions for this type
+     * 
+     * @return  property definitions
+     */
+    public Map<String, CMISPropertyDefinition> getPropertyDefinitions()
+    {
+        return cmisDictionary.getPropertyDefinitions(objectTypeId);
+    }
+    
+    
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

@@ -9,7 +9,7 @@
    </imports>
 
    <namespaces>
-      <namespace uri="http://www.alfresco.org/model/cmis/0.3" prefix="cmis" />
+      <namespace uri="http://www.alfresco.org/model/cmis/0.44" prefix="cmis" />
    </namespaces>
     
    <constraints>
@@ -17,9 +17,9 @@
         <constraint name="cmis:allowedValuesForContentStreamAllowed" type="LIST">
             <parameter name="allowedValues">
                 <list>
-                    <value>NOT_ALLOWED</value>
-                    <value>ALLOWED</value>
-                    <value>REQUIRED</value>
+                    <value>notallowed</value>   <!--  spec issue 37 -->
+                    <value>allowed</value>
+                    <value>required</value>
                 </list>
             </parameter>
         </constraint>

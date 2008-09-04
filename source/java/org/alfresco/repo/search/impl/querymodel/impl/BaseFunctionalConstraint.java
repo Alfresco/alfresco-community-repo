@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl;
 
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
@@ -38,9 +38,9 @@ public class BaseFunctionalConstraint implements FunctionalConstraint
 {
     private Function function;
     
-    private List<Argument> arguments;
+    private Map<String, Argument> arguments;
 
-    public BaseFunctionalConstraint(Function function, List<Argument> arguments)
+    public BaseFunctionalConstraint(Function function, Map<String, Argument> arguments)
     {
         this.function = function;
         this.arguments = arguments;
@@ -65,7 +65,7 @@ public class BaseFunctionalConstraint implements FunctionalConstraint
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments()
      */
-    public List<Argument> getFunctionArguments()
+    public Map<String, Argument> getFunctionArguments()
     {
         return arguments;
     }

@@ -32,5 +32,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.In;
  */
 public class LuceneIn extends In
 {
-
+    /**
+     * 
+     */
+    public LuceneIn()
+    {
+        super();
+    }
 }

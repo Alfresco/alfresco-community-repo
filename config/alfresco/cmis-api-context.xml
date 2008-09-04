@@ -20,7 +20,7 @@
             <ref bean="CMISMapping" />
         </property>
         <property name="strict">
-           <value>true</value>
+           <value>false</value>
         </property>
     </bean>
     
@@ -42,7 +42,7 @@
     </bean>
    
     <bean id="CMISService" class="org.alfresco.cmis.CMISService">
-        <property name="CMISSpecVersion"><value>0.43</value></property>
+        <property name="CMISSpecVersion"><value>0.44</value></property>
         <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="searchService" ref="SearchService" />
@@ -59,8 +59,58 @@
         <property name="cmisDictionaryService">
             <ref bean="CMISDictionaryService" />
         </property>
+        <property name="cmisPropertyService">
+            <ref bean="CMISPropertyService" />
+        </property>
         <property name="cmisService">
             <ref bean="CMISService" />
+        </property>
+        <property name="queryEngine">
+            <ref bean="luceneQueryEngine" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+   
+    <bean id="luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="indexAndSearcher">
+            <ref bean="admLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+    </bean>
+   
+    <bean id="luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
+        </property>
+        <property name="target">
+            <ref bean="luceneQueryEngineImpl"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="luceneQueryEngineSecurity"/>
+            </list>
+        </property>
+    </bean>
+   
+   <bean id="luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.executeQuery=AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.getQueryModelFactory=ACL_ALLOW
+            </value>
         </property>
     </bean>
    

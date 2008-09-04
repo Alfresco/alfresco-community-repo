@@ -25,11 +25,12 @@
 package org.alfresco.repo.search.impl.querymodel.impl.functions;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Multiplicity;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
@@ -47,13 +48,13 @@ public class FTSExactTerm extends BaseFunction
     
     public final static String ARG_PROPERTY = "Property";
 
-    public static LinkedHashSet<ArgumentDefinition> args;
+    public static LinkedHashMap<String, ArgumentDefinition> args;
 
     static
     {
-        args = new LinkedHashSet<ArgumentDefinition>();
-        args.add(new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TERM, DataTypeDefinition.ANY, true));
-        args.add(new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
+        args = new LinkedHashMap<String, ArgumentDefinition>();
+        args.put(ARG_TERM, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TERM, DataTypeDefinition.ANY, true));
+        args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
     }
 
     /**
@@ -69,7 +70,7 @@ public class FTSExactTerm extends BaseFunction
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
      */
-    public Serializable getValue(Set<Argument> args)
+    public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();
     }

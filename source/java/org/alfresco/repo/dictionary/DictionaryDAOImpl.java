@@ -540,7 +540,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
         	else
         	{
         		// immediate sub types only
-        		if (allTypesAndParents.get(type).equals(superType))
+        	    QName typesSuperType = allTypesAndParents.get(type);
+        		if (typesSuperType != null && typesSuperType.equals(superType))
         		{
         			subTypes.add(type);
         		}

@@ -32,5 +32,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
  */
 public class LuceneFTSTerm extends FTSTerm
 {
-
+    /**
+     * 
+     */
+    public LuceneFTSTerm()
+    {
+        super();
+    }
 }

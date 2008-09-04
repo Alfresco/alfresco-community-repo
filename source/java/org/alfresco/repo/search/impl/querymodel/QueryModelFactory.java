@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.querymodel;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
 
@@ -47,9 +48,9 @@ public interface QueryModelFactory
 
     public Constraint createNegation(Constraint constraint);
 
-    public Constraint createFunctionalConstraint(Function function, List<Argument> functionArguments);
+    public Constraint createFunctionalConstraint(Function function, Map<String, Argument> functionArguments);
 
-    public Column createColumn(Function function, List<Argument> functionArguments, String alias);
+    public Column createColumn(Function function, Map<String, Argument> functionArguments, String alias);
 
     public LiteralArgument createLiteralArgument(String name, QName type, Serializable value);
 
@@ -65,5 +66,5 @@ public interface QueryModelFactory
 
     public ListArgument createListArgument(String name, ArrayList<Argument> arguments);
     
-    public FunctionArgument createFunctionArgument(String name, Function function, List<Argument> functionArguments);
+    public FunctionArgument createFunctionArgument(String name, Function function, Map<String, Argument> functionArguments);
 }

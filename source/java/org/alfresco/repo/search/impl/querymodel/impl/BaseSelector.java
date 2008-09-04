@@ -87,4 +87,24 @@ public class BaseSelector implements Selector
         return answer;
     }
 
+    
+    public Selector getSelector(String name)
+    {
+        if(getAlias().equals(name))
+        {
+            return this;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector()
+     */
+    public String getSelector()
+    {
+       return getAlias();
+    }
 }

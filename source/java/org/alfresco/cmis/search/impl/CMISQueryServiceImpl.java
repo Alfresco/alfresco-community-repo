@@ -24,15 +24,24 @@
  */
 package org.alfresco.cmis.search.impl;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
+import org.alfresco.cmis.search.CMISResultSetImpl;
 import org.alfresco.cmis.search.FullTextSearchSupport;
 import org.alfresco.cmis.search.JoinSupport;
 import org.alfresco.repo.search.impl.querymodel.Query;
+import org.alfresco.repo.search.impl.querymodel.QueryEngine;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.ResultSet;
 
 /**
  * @author andyh
@@ -42,11 +51,18 @@ public class CMISQueryServiceImpl implements CMISQueryService
     private CMISService cmisService;
 
     private CMISDictionaryService cmisDictionaryService;
+    
+    private CMISPropertyService cmisPropertyService;
 
     private CMISMapping cmisMapping;
-    
+
+    private QueryEngine queryEngine;
+
+    private NodeService nodeService;
+
     /**
-     * @param service the service to set
+     * @param service
+     *            the service to set
      */
     public void setCmisService(CMISService cmisService)
     {
@@ -54,7 +70,8 @@ public class CMISQueryServiceImpl implements CMISQueryService
     }
 
     /**
-     * @param cmisDictionaryService the cmisDictionaryService to set
+     * @param cmisDictionaryService
+     *            the cmisDictionaryService to set
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -62,11 +79,40 @@ public class CMISQueryServiceImpl implements CMISQueryService
     }
 
     /**
-     * @param cmisMapping the cmisMapping to set
+     * @param cmisMapping
+     *            the cmisMapping to set
      */
     public void setCmisMapping(CMISMapping cmisMapping)
     {
         this.cmisMapping = cmisMapping;
+    }
+
+    /**
+     * @param queryEngine
+     *            the queryEngine to set
+     */
+    public void setQueryEngine(QueryEngine queryEngine)
+    {
+        this.queryEngine = queryEngine;
+    }
+
+    /**
+     * @param nodeService
+     *            the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    
+    
+    /**
+     * @param cmisPropertyService the cmisPropertyService to set
+     */
+    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
+    {
+        this.cmisPropertyService = cmisPropertyService;
     }
 
     /*
@@ -77,8 +123,21 @@ public class CMISQueryServiceImpl implements CMISQueryService
     public CMISResultSet query(CMISQueryOptions options)
     {
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, getJoinSupport());
-        Query query = parser.parse();
-        System.out.println(query);  
+        Query query = parser.parse(queryEngine.getQueryModelFactory());
+        System.out.println(query);
+        try
+        {
+            ResultSet lucene = queryEngine.executeQuery(query, query.getSource().getSelector(), options);
+            Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();
+            wrapped.put(query.getSource().getSelector(), lucene);
+            CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, cmisPropertyService);
+            return cmis;
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -93,7 +152,9 @@ public class CMISQueryServiceImpl implements CMISQueryService
         return query(options);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISQueryService#getAllVersionsSearchable()
      */
     public boolean getAllVersionsSearchable()
@@ -101,7 +162,9 @@ public class CMISQueryServiceImpl implements CMISQueryService
         return false;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISQueryService#getFullTextSearchSupport()
      */
     public FullTextSearchSupport getFullTextSearchSupport()
@@ -109,12 +172,14 @@ public class CMISQueryServiceImpl implements CMISQueryService
         return FullTextSearchSupport.FULL_TEXT_AND_STRUCTURED;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.search.CMISQueryService#getJoinSupport()
      */
     public JoinSupport getJoinSupport()
     {
-       return JoinSupport.NO_JOIN_SUPPORT;
+        return JoinSupport.NO_JOIN_SUPPORT;
     }
 
 }

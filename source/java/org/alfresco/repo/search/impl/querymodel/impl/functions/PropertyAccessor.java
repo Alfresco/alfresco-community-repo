@@ -25,15 +25,20 @@
 package org.alfresco.repo.search.impl.querymodel.impl.functions;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Multiplicity;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -44,12 +49,12 @@ public class PropertyAccessor extends BaseFunction
 
     public final static String ARG_PROPERTY = "Property";
 
-    public static LinkedHashSet<ArgumentDefinition> args;
+    public static LinkedHashMap<String, ArgumentDefinition> args;
 
     static
     {
-        args = new LinkedHashSet<ArgumentDefinition>();
-        args.add(new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, true));
+        args = new LinkedHashMap<String, ArgumentDefinition>();
+        args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, true));
     }
 
     /**
@@ -67,9 +72,20 @@ public class PropertyAccessor extends BaseFunction
      * 
      * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
      */
-    public Serializable getValue(Set<Argument> args)
+    public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
-        throw new UnsupportedOperationException();
+        Argument arg = args.get(ARG_PROPERTY);
+        if(!(arg instanceof PropertyArgument))
+        {
+            throw new QueryModelException("Function "+NAME+" requires a property argument");
+        }
+        PropertyArgument propertyArgument = (PropertyArgument)arg;
+        String selectorName = propertyArgument.getSelector();
+        QName propertyQName = propertyArgument.getPropertyName();
+        
+        NodeRef nodeRef = context.getNodeRefs().get(selectorName);
+        return context.getProperty(nodeRef, propertyQName);
+        
     }
 
 }

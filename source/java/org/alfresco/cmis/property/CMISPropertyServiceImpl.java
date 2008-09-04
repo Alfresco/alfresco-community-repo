@@ -64,6 +64,14 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     }
 
     /**
+     * @return  cmis mapping service
+     */
+    public CMISMapping getCMISMapping()
+    {
+        return cmisMapping;
+    }
+    
+    /**
      * @param serviceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

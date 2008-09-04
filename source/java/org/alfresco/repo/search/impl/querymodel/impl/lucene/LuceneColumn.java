@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
@@ -42,10 +42,9 @@ public class LuceneColumn extends BaseColumn
      * @param functionArguments
      * @param alias
      */
-    public LuceneColumn(Function function, List<Argument> functionArguments, String alias)
+    public LuceneColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {
         super(function, functionArguments, alias);
-        // TODO Auto-generated constructor stub
     }
 
 }

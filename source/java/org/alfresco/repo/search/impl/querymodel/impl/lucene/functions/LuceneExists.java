@@ -38,7 +38,7 @@ public class LuceneExists extends Exists
      */
     public LuceneExists()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

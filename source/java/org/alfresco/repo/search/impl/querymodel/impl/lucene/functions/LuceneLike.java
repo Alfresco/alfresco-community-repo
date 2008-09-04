@@ -38,7 +38,7 @@ public class LuceneLike extends Like
      */
     public LuceneLike()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

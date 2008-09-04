@@ -24,6 +24,7 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -47,8 +48,13 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author andyh
  */
-public class CMISPropertyDefinition
+public class CMISPropertyDefinition implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8119257313852558466L;
+
     private String propertyName;
 
     private String propertyId;
@@ -83,9 +89,10 @@ public class CMISPropertyDefinition
 
     private boolean orderable;
 
-    public CMISPropertyDefinition(CMISMapping cmisMapping, QName propertyQName, QName typeQName)
+    public CMISPropertyDefinition(CMISDictionaryService cmisDictionary, QName propertyQName, QName typeQName)
     {
-        PropertyDefinition propDef = cmisMapping.getDictionaryService().getProperty(propertyQName);
+        CMISMapping cmisMapping = cmisDictionary.getCMISMapping();
+        PropertyDefinition propDef = cmisDictionary.getDictionaryService().getProperty(propertyQName);
         if (propDef.getContainerClass().getName().equals(CMISMapping.RELATIONSHIP_QNAME))
         {
             // Properties of associations - all the same
@@ -124,7 +131,7 @@ public class CMISPropertyDefinition
                 Constraint constraint = constraintDef.getConstraint();
                 if (constraint instanceof ListOfValuesConstraint)
                 {
-                    int position = 0;
+                    int position = 1;  // CMIS is 1 based (according to XSDs)
                     ListOfValuesConstraint lovc = (ListOfValuesConstraint) constraint;
                     for (String allowed : lovc.getAllowedValues())
                     {
@@ -284,7 +291,7 @@ public class CMISPropertyDefinition
      * 
      * @return
      */
-    public Collection<CMISChoice> getChioces()
+    public Collection<CMISChoice> getChoices()
     {
         return choices;
     }
@@ -294,7 +301,7 @@ public class CMISPropertyDefinition
      * 
      * @return
      */
-    public boolean isOpenChioce()
+    public boolean isOpenChoice()
     {
         return isOpenChoice;
     }
@@ -363,8 +370,8 @@ public class CMISPropertyDefinition
         builder.append("MaximumLength=").append(getMaximumLength()).append(", ");
         builder.append("SchemaURI=").append(getSchemaURI()).append(", ");
         builder.append("Encoding=").append(getEncoding()).append(", ");
-        builder.append("Choices=").append(getChioces()).append(", ");
-        builder.append("IsOpenChoice=").append(isOpenChioce()).append(", ");
+        builder.append("Choices=").append(getChoices()).append(", ");
+        builder.append("IsOpenChoice=").append(isOpenChoice()).append(", ");
         builder.append("Required=").append(isRequired()).append(", ");
         builder.append("Default=").append(getDefaultValue()).append(", ");
         builder.append("Updatable=").append(getUpdatability()).append(", ");

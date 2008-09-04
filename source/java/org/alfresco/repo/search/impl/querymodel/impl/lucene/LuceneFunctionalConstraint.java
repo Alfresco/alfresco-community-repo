@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
@@ -41,7 +41,7 @@ public class LuceneFunctionalConstraint extends BaseFunctionalConstraint
      * @param function
      * @param arguments
      */
-    public LuceneFunctionalConstraint(Function function, List<Argument> arguments)
+    public LuceneFunctionalConstraint(Function function, Map<String, Argument> arguments)
     {
         super(function, arguments);
     }

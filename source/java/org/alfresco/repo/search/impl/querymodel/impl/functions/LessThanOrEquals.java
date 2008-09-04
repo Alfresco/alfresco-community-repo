@@ -25,20 +25,20 @@
 package org.alfresco.repo.search.impl.querymodel.impl.functions;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseComparison;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 
 /**
  * @author andyh
- *
  */
 public class LessThanOrEquals extends BaseComparison
 {
     public final static String NAME = "LessThanOrEquals";
-    
+
     /**
      * @param name
      * @param returnType
@@ -46,13 +46,15 @@ public class LessThanOrEquals extends BaseComparison
      */
     public LessThanOrEquals()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, args);   
+        super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
      */
-    public Serializable getValue(Set<Argument> args)
+    public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();
     }

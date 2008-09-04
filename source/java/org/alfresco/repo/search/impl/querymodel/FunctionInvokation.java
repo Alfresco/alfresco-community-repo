@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author andyh
@@ -43,5 +43,5 @@ public interface FunctionInvokation
      * 
      * @return
      */
-    public List<Argument> getFunctionArguments();
+    public Map<String, Argument> getFunctionArguments();
 }

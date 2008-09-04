@@ -24,14 +24,21 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
+import java.util.Collection;
+
 import org.alfresco.repo.search.impl.querymodel.impl.BaseSelector;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
  * @author andyh
  *
  */
-public class LuceneSelector extends BaseSelector
+public class LuceneSelector extends BaseSelector implements LuceneQueryBuilderComponent
 {
 
     /**
@@ -43,4 +50,24 @@ public class LuceneSelector extends BaseSelector
         super(type, alias);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery)
+     */
+    public BooleanQuery addComponent(BooleanQuery base, BooleanQuery current, DictionaryService dictionaryService)
+    {
+        Collection<QName> subclasses = dictionaryService.getSubTypes(getType(), true);
+        BooleanQuery booleanQuery = new BooleanQuery();
+        for (QName qname : subclasses)
+        {
+            TermQuery termQuery = new TermQuery(new Term("TYPE", qname.toString()));
+            if (termQuery != null)
+            {
+                booleanQuery.add(termQuery, Occur.SHOULD);
+            }
+        }
+        base.add(booleanQuery, Occur.MUST);
+        return current;
+    }
+
+    
 }

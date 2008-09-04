@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl;
 
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.Function;
@@ -40,9 +40,9 @@ public abstract class BaseFunction implements Function
 
     private QName returnType;
 
-    private LinkedHashSet<ArgumentDefinition> argumentDefinitions;
+    private LinkedHashMap<String, ArgumentDefinition> argumentDefinitions;
 
-    public BaseFunction(String name, QName returnType, LinkedHashSet<ArgumentDefinition> argumentDefinitions)
+    public BaseFunction(String name, QName returnType, LinkedHashMap<String, ArgumentDefinition> argumentDefinitions)
     {
         this.name = name;
         this.returnType = returnType;
@@ -54,7 +54,7 @@ public abstract class BaseFunction implements Function
      * 
      * @see org.alfresco.repo.search.impl.querymodel.Function#getArgumentDefinitions()
      */
-    public LinkedHashSet<ArgumentDefinition> getArgumentDefinitions()
+    public LinkedHashMap<String, ArgumentDefinition> getArgumentDefinitions()
     {
         return argumentDefinitions;
     }
@@ -81,14 +81,15 @@ public abstract class BaseFunction implements Function
 
     public ArgumentDefinition getArgumentDefinition(String name)
     {
-        for (ArgumentDefinition def : getArgumentDefinitions())
+        ArgumentDefinition definition = argumentDefinitions.get(name);
+        if (definition != null)
         {
-            if (def.getName().equals(name))
-            {
-                return def;
-            }
+            return definition;
         }
-        throw new IllegalArgumentException(name);
+        else
+        {
+            throw new IllegalArgumentException(name);
+        }
     }
 
     public String toString()

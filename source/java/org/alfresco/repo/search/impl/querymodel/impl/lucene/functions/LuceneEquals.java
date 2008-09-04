@@ -32,5 +32,8 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
  */
 public class LuceneEquals extends Equals
 {
-
+    public LuceneEquals()
+    {
+        super();
+    }
 }

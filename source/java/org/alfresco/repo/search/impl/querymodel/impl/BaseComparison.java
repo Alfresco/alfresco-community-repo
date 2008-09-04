@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl;
 
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.Multiplicity;
@@ -40,13 +40,13 @@ public abstract class BaseComparison extends BaseFunction
     
     public final static String ARG_RHS = "RHS";
     
-    public static LinkedHashSet<ArgumentDefinition> args;
+    public static LinkedHashMap<String, ArgumentDefinition> args;
     
     static 
     {
-        args = new LinkedHashSet<ArgumentDefinition>();
-        args.add(new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
-        args.add(new BaseArgumentDefinition(Multiplicity.ANY, ARG_RHS, DataTypeDefinition.ANY, true));
+        args = new LinkedHashMap<String, ArgumentDefinition>();
+        args.put(ARG_LHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
+        args.put(ARG_RHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_RHS, DataTypeDefinition.ANY, true));
     }
 
     /**
@@ -54,7 +54,7 @@ public abstract class BaseComparison extends BaseFunction
      * @param returnType
      * @param argumentDefinitions
      */
-    public BaseComparison(String name, QName returnType, LinkedHashSet<ArgumentDefinition> argumentDefinitions)
+    public BaseComparison(String name, QName returnType, LinkedHashMap<String, ArgumentDefinition> argumentDefinitions)
     {
         super(name, returnType, argumentDefinitions);
     }

@@ -25,8 +25,8 @@
 package org.alfresco.repo.search.impl.querymodel;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
 
@@ -34,14 +34,14 @@ import org.alfresco.service.namespace.QName;
  * @author andyh
  */
 public interface Function
-{
+{   
     /**
      * Evaluation a function
      * 
      * @param args
      * @return
      */
-    public Serializable getValue(Set<Argument> args);
+    public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context);
 
     /**
      * Get the return type for the function
@@ -61,7 +61,7 @@ public interface Function
      * Get the argument Definitions
      * @return
      */
-    public LinkedHashSet<ArgumentDefinition> getArgumentDefinitions();
+    public LinkedHashMap<String, ArgumentDefinition> getArgumentDefinitions();
     
     
     /**
@@ -69,5 +69,6 @@ public interface Function
      * @return
      */
     public ArgumentDefinition getArgumentDefinition(String name);
+    
 
 }

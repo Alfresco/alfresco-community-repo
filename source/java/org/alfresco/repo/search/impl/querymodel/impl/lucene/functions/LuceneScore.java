@@ -33,5 +33,11 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 public class LuceneScore extends Score
 {
 
- 
+    /**
+     * 
+     */
+    public LuceneScore()
+    {
+        super();
+    }
 }

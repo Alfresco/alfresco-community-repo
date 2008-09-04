@@ -831,4 +831,12 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.LuceneSearcher#getClosingIndexSearcher()
+     */
+    public ClosingIndexSearcher getClosingIndexSearcher()
+    {
+        return getSearcher(indexer);
+    }
+
 }

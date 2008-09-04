@@ -47,7 +47,7 @@ public class CMISMapping
     /**
      * The Alfresco CMIS model URI.
      */
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.3";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/0.44";
 
     /**
      * The Alfresco CMIS Model name.
@@ -122,9 +122,9 @@ public class CMISMapping
     public static String PROP_IS_MAJOR_VERSION = "IS_MAJOR_VERSION";
 
     public static String PROP_IS_LATEST_MAJOR_VERSION = "IS_LATEST_MAJOR_VERSION";
-    
+
     public static String PROP_VERSION_LABEL = "VERSION_LABEL";
-    
+
     public static String PROP_VERSION_SERIES_ID = "VERSION_SERIES_ID";
 
     public static String PROP_VERSION_SERIES_IS_CHECKED_OUT = "VERSION_SERIES_IS_CHECKED_OUT";
@@ -182,29 +182,28 @@ public class CMISMapping
 
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ANY, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyType.BOOLEAN);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyType.Boolean);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISPropertyType.ID);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CONTENT, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyType.DATE_TIME);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyType.DATE_TIME);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyType.DECIMAL);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyType.DECIMAL);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyType.INTEGER);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyType.DateTime);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyType.DateTime);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyType.Decimal);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyType.Decimal);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyType.Integer);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LOCALE, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyType.INTEGER);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyType.STRING);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyType.Integer);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyType.String);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISPropertyType.ID);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.PATH, null);
         alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.QNAME, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyType.STRING);
+        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyType.String);
     }
 
-    
     private DictionaryService dictionaryService;
+
     private NamespaceService namespaceService;
 
-    
     /**
      * Set the dictionary Service
      * 
@@ -220,11 +219,11 @@ public class CMISMapping
      * 
      * @return dictionaryService
      */
-    /*package*/ DictionaryService getDictionaryService()
+    /* package */DictionaryService getDictionaryService()
     {
         return this.dictionaryService;
     }
-    
+
     /**
      * Set the namespace service
      * 
@@ -234,13 +233,13 @@ public class CMISMapping
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Gets the namespace service
      * 
      * @return namespaceService
      */
-    /*package*/ NamespaceService getNamespaceService()
+    /* package */NamespaceService getNamespaceService()
     {
         return this.namespaceService;
     }
@@ -259,12 +258,13 @@ public class CMISMapping
     /**
      * Gets the CMIS Type Id given the serialized type Id
      * 
-     * @param typeId  type id in the form of <ROOT_TYPE_ID>/<PREFIX>_<LOCALNAME>
+     * @param typeId
+     *            type id in the form of <ROOT_TYPE_ID>/<PREFIX>_<LOCALNAME>
      * @return
      */
     public CMISTypeId getCmisTypeId(String typeId)
     {
-        // Is it a CMIS root object type id? 
+        // Is it a CMIS root object type id?
         if (typeId.equals(DOCUMENT_TYPE_ID.getTypeId()))
         {
             return DOCUMENT_TYPE_ID;
@@ -278,13 +278,13 @@ public class CMISMapping
             return RELATIONSHIP_TYPE_ID;
         }
         // TODO: Policy root object type
-        
+
         // Is it an Alfresco type id?
         if (typeId.length() < 4 || typeId.charAt(1) != '/')
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'");
         }
-        
+
         // Alfresco type id
         CMISScope scope = CMISScope.toScope(typeId.charAt(0));
         if (scope == null)
@@ -296,7 +296,7 @@ public class CMISMapping
         // Construct CMIS Type Id
         return new CMISTypeId(scope, typeQName, typeId);
     }
-    
+
     /**
      * Gets the CMIS Type Id given the Alfresco QName for the type in any Alfresco model
      * 
@@ -318,6 +318,35 @@ public class CMISMapping
         {
             return typeId;
         }
+    }
+
+    public CMISTypeId getCmisTypeId(QName typeQName)
+    {
+        if (isValidCmisDocument(typeQName))
+        {
+            return getCmisTypeId(CMISScope.DOCUMENT, getCmisType(typeQName));
+        }
+        else if (isValidCmisFolder(typeQName))
+        {
+            return getCmisTypeId(CMISScope.FOLDER, getCmisType(typeQName));
+        }
+        else if (typeQName.equals(CMISMapping.RELATIONSHIP_QNAME))
+        {
+            return getCmisTypeId(CMISScope.RELATIONSHIP, getCmisType(typeQName));
+        }
+        else if (typeQName.equals(ContentModel.TYPE_CONTENT))
+        {
+            return getCmisTypeId(CMISScope.DOCUMENT, getCmisType(typeQName));
+        }
+        else if (typeQName.equals(ContentModel.TYPE_FOLDER))
+        {
+            return getCmisTypeId(CMISScope.FOLDER, getCmisType(typeQName));
+        }
+        else
+        {
+            return null;
+        }
+
     }
 
     /**
@@ -498,6 +527,22 @@ public class CMISMapping
         }
         return typeQName;
     }
+    
+    /**
+     * Given a CMIS model type map it to the appropriate Alfresco type.
+     * 
+     * @param cmisTypeQName
+     * @return
+     */
+    public QName getAlfrescoType(QName cmisTypeQName)
+    {
+        QName mapped = cmisToAlfrecsoTypes.get(cmisTypeQName);
+        if (mapped != null)
+        {
+            return mapped;
+        }
+        return cmisTypeQName;
+    }
 
     /**
      * Get the CMIS property name from the property QName.
@@ -521,11 +566,20 @@ public class CMISMapping
     public CMISPropertyType getPropertyType(QName propertyQName)
     {
         PropertyDefinition propertyDefinition = dictionaryService.getProperty(propertyQName);
-        DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
+        DataTypeDefinition dataTypeDefinition;
+        if (propertyDefinition != null)
+        {
+            dataTypeDefinition = propertyDefinition.getDataType();
+        }
+        else
+        {
+            dataTypeDefinition = dictionaryService.getDataType(propertyQName);
+        }
+
         QName dQName = dataTypeDefinition.getName();
         if (propertyQName.getNamespaceURI().equals(CMIS_MODEL_URI))
         {
-            if(dQName.equals(DataTypeDefinition.QNAME) || dQName.equals(DataTypeDefinition.NODE_REF))
+            if (dQName.equals(DataTypeDefinition.QNAME) || dQName.equals(DataTypeDefinition.NODE_REF))
             {
                 return CMISPropertyType.ID;
             }
@@ -647,7 +701,7 @@ public class CMISMapping
                 }
             }
         }
-        
+
         for (QName qname : dictionaryService.getAllAspects())
         {
             if (qname.getNamespaceURI().equals(uri))
@@ -677,7 +731,7 @@ public class CMISMapping
         else
         {
             return propertyQName.toString();
-            
+
         }
     }
 }

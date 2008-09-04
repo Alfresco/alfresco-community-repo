@@ -62,4 +62,10 @@ public interface LuceneSearcher extends SearchService
     * @return
     */
    public List<Pair<String, Integer>> getTopTerms(String field, int count);
+   
+   /**
+    * Get a lucene searcher 
+    * @return
+    */
+   public ClosingIndexSearcher getClosingIndexSearcher();
 }

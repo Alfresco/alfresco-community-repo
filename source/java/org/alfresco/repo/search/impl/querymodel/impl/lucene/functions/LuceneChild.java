@@ -38,7 +38,7 @@ public class LuceneChild extends Child
      */
     public LuceneChild()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

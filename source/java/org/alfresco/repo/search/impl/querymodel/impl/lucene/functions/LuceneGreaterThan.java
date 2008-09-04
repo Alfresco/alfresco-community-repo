@@ -38,7 +38,7 @@ public class LuceneGreaterThan extends GreaterThan
      */
     public LuceneGreaterThan()
     {
-        // TODO Auto-generated constructor stub
+        super();
     }
 
 }

@@ -33,4 +33,8 @@ import java.util.Map;
 public interface Source
 {
     public Map<String, Selector> getSelectors();
+    
+    public Selector getSelector(String name);
+
+    public String getSelector();
 }

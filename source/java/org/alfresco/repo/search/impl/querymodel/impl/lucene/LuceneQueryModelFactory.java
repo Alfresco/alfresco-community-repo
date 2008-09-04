@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -90,9 +91,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class LuceneQueryModelFactory implements QueryModelFactory
 {
-    public static HashMap<String, Function> functions = new HashMap<String, Function>();
+    public HashMap<String, Function> functions = new HashMap<String, Function>();
 
-    static
+    public LuceneQueryModelFactory()
     {
         functions.put(Equals.NAME, new LuceneEquals());
         functions.put(PropertyAccessor.NAME, new LucenePropertyAccessor());
@@ -109,14 +110,13 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         functions.put(In.NAME, new LuceneIn());
         functions.put(Like.NAME, new LuceneLike());
         functions.put(Exists.NAME, new LuceneExists());
-        
+
         functions.put(Child.NAME, new LuceneChild());
         functions.put(Descendant.NAME, new LuceneDescendant());
-        
+
         functions.put(FTSTerm.NAME, new LuceneFTSTerm());
         functions.put(FTSExactTerm.NAME, new LuceneFTSExactTerm());
         functions.put(FTSPhrase.NAME, new LuceneFTSPhrase());
-        
 
     }
 
@@ -126,7 +126,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
      * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createColumn(org.alfresco.repo.search.impl.querymodel.Function,
      *      java.util.List, java.lang.String)
      */
-    public Column createColumn(Function function, List<Argument> functionArguments, String alias)
+    public Column createColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {
         return new LuceneColumn(function, functionArguments, alias);
     }
@@ -157,7 +157,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
      * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionalConstraint(org.alfresco.repo.search.impl.querymodel.Function,
      *      java.util.List)
      */
-    public Constraint createFunctionalConstraint(Function function, List<Argument> functionArguments)
+    public Constraint createFunctionalConstraint(Function function, Map<String, Argument> functionArguments)
     {
         return new LuceneFunctionalConstraint(function, functionArguments);
     }
@@ -280,18 +280,24 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         return new LuceneSelectorArgument(name, selectorAlias);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createListArgument(java.lang.String, java.util.ArrayList)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createListArgument(java.lang.String,
+     *      java.util.ArrayList)
      */
     public ListArgument createListArgument(String name, ArrayList<Argument> arguments)
     {
         return new LuceneListArgument(name, arguments);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionArgument(java.lang.String, org.alfresco.repo.search.impl.querymodel.Function, java.util.List)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionArgument(java.lang.String,
+     *      org.alfresco.repo.search.impl.querymodel.Function, java.util.List)
      */
-    public FunctionArgument createFunctionArgument(String name, Function function, List<Argument> functionArguments)
+    public FunctionArgument createFunctionArgument(String name, Function function, Map<String, Argument> functionArguments)
     {
         return new LuceneFunctionArgument(name, function, functionArguments);
     }

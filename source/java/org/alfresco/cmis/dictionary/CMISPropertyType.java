@@ -31,40 +31,13 @@ package org.alfresco.cmis.dictionary;
  */
 public enum CMISPropertyType
 {
-    /**
-     * String
-     */
-    STRING, 
-    /**
-     * Decimal
-     */
-    DECIMAL, 
-    /**
-     * Integer
-     */
-    INTEGER, 
-    /**
-     * Boolean
-     */
-    BOOLEAN, 
-    /**
-     * Date-time
-     */
-    DATE_TIME, 
-    /**
-     * URI
-     */
+    String, 
+    Decimal, 
+    Integer, 
+    Boolean, 
+    DateTime, 
     URI, 
-    /**
-     * HTML
-     */
-    HTML, 
-    /**
-     * XML
-     */
+    ID,
     XML, 
-    /**
-     * ID
-     */
-    ID;
+    HTML; 
 }

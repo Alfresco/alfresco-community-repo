@@ -25,7 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
@@ -40,9 +40,9 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
 
     private Function function;
     
-    private List<Argument> arguments;
+    private Map<String, Argument> arguments;
 
-    public BaseFunctionArgument(String name, Function function, List<Argument> arguments)
+    public BaseFunctionArgument(String name, Function function, Map<String, Argument> arguments)
     {
         super(name);
         this.function = function;
@@ -68,7 +68,7 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments()
      */
-    public List<Argument> getFunctionArguments()
+    public Map<String, Argument> getFunctionArguments()
     {
         return arguments;
     }

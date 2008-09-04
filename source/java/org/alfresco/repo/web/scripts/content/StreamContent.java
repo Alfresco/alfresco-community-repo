@@ -423,7 +423,6 @@ public class StreamContent extends AbstractWebScript
         reader.setEncoding("UTF-8");
         
         streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate);
-        
     }
     
     /**
@@ -439,7 +438,6 @@ public class StreamContent extends AbstractWebScript
     protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified)
         throws IOException
     {
-
         HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
         HttpServletResponse httpRes = ((WebScriptServletResponse)res).getHttpServletResponse();
         

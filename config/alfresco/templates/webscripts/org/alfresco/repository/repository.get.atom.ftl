@@ -1,20 +1,29 @@
+<#import "/org/alfresco/cmis/ns.lib.atom.ftl" as nsLib/>
 <?xml version="1.0" encoding='utf-8'?> 
-<service xmlns="http://www.w3.org/2007/app" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0">
+<service <@nsLib.serviceNS/>>
   <workspace cmis:id="${server.id}"> 
     <atom:title>${server.name}</atom:title>
-     
-    <cmis:repository_info> 
+
+    <#-- TODO: cmis version -->
+
+    <cmis:repositoryInfo> 
+      <cmis:repositoryId>${server.id}</cmis:repositoryId>
+      <cmis:repositoryName>${server.name}</cmis:repositoryName>
+      <cmis:repositoryDescription></cmis:repositoryDescription>   <#-- TODO -->      
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion> 
       <cmis:capabilities>
         <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
+        <cmis:capabilityUnfiling>false</cmis:capabilityUnfiling>
+        <cmis:capabilityVersionSpecificFiling>false</cmis:capabilityVersionSpecificFiling>        
         <cmis:capabilityAllVersionsSearchable>false</cmis:capabilityAllVersionsSearchable>
         <cmis:capabilityPWCUpdatable>true</cmis:capabilityPWCUpdatable>
+        <cmis:capabilityInnerJoin>true</cmis:capabilityInnerJoin>
+        <cmis:capabilityOuterJoin>true</cmis:capabilityOuterJoin>
       </cmis:capabilities> 
-      <cmis:description></cmis:description>
-      <cmis:repositoryInfo></cmis:repositoryInfo>
-    </cmis:repository_info>
+      <cmis:repositorySpecificInfo></cmis:repositorySpecificInfo>
+    </cmis:repositoryInfo>
 
     <#-- TODO: cmis:id on collection elements - are they required by cmis? -->
     <#-- TODO: collection resources -->

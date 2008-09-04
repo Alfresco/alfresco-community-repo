@@ -13,7 +13,7 @@
   <h1>Test Report</h1>
   <dl>
     <dt>Date</dt>
-    <dd>Mon May 12 15:38:50 2008</dd>
+    <dd>Thu May 22 13:30:14 2008</dd>
   </dl>
   <div class='legend'>
   <h3>Legend</h3>
@@ -48,27 +48,34 @@ transfer-encoding: chunked
 server: Apache-Coyote/1.1
 pragma: no-cache
 cache-control: no-cache
-date: Mon, 12 May 2008 14:38:47 GMT
+date: Thu, 22 May 2008 12:30:05 GMT
 content-type: application/atom+xml;charset=UTF-8
 
 
 </code></pre>
-<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;service xmlns="http://www.w3.org/2007/app" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
-  &lt;workspace cmis:id="63dbba8b-1224-11dd-bee8-852083ea779d"&gt; 
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;service xmlns="http://www.w3.org/2007/app" xmlns:alf="http://www.alfresco.org" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+  &lt;workspace cmis:id="62dad05d-27f9-11dd-a94d-bf697311154a"&gt; 
     &lt;atom:title&gt;Main Repository&lt;/atom:title&gt;
-     
-    &lt;cmis:repository_info&gt; 
+
+
+    &lt;cmis:repositoryInfo&gt; 
+      &lt;cmis:repositoryId&gt;62dad05d-27f9-11dd-a94d-bf697311154a&lt;/cmis:repositoryId&gt;
+      &lt;cmis:repositoryName&gt;Main Repository&lt;/cmis:repositoryName&gt;
+      &lt;cmis:repositoryDescription/&gt;         
       &lt;cmis:vendorName&gt;Alfresco&lt;/cmis:vendorName&gt; 
       &lt;cmis:productName&gt;Alfresco Repository (Community Network)&lt;/cmis:productName&gt;
       &lt;cmis:productVersion&gt;3.0.0 (dev @build-number@)&lt;/cmis:productVersion&gt; 
       &lt;cmis:capabilities&gt;
         &lt;cmis:capabilityMultifiling&gt;true&lt;/cmis:capabilityMultifiling&gt;
+        &lt;cmis:capabilityUnfiling&gt;false&lt;/cmis:capabilityUnfiling&gt;
+        &lt;cmis:capabilityVersionSpecificFiling&gt;false&lt;/cmis:capabilityVersionSpecificFiling&gt;        
         &lt;cmis:capabilityAllVersionsSearchable&gt;false&lt;/cmis:capabilityAllVersionsSearchable&gt;
         &lt;cmis:capabilityPWCUpdatable&gt;true&lt;/cmis:capabilityPWCUpdatable&gt;
+        &lt;cmis:capabilityInnerJoin&gt;true&lt;/cmis:capabilityInnerJoin&gt;
+        &lt;cmis:capabilityOuterJoin&gt;true&lt;/cmis:capabilityOuterJoin&gt;
       &lt;/cmis:capabilities&gt; 
-      &lt;cmis:description/&gt;
-      &lt;cmis:repositoryInfo/&gt;
-    &lt;/cmis:repository_info&gt;
+      &lt;cmis:repositorySpecificInfo/&gt;
+    &lt;/cmis:repositoryInfo&gt;
 
      
     &lt;collection cmis:collectionType="root" href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children"&gt; 
@@ -86,7 +93,8 @@ content-type: application/atom+xml;charset=UTF-8
 &lt;/service&gt;</code></pre></span></li>
   <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
   <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
-  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org</span></li>
   <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 4: atom_title should contain a xml:lang element (4 occurrences)</span></li>
 </ol>
 <h2>Basic Entry Manipulation</h2><p>Add and remove three entries to the collection</p>
@@ -107,110 +115,196 @@ transfer-encoding: chunked
 server: Apache-Coyote/1.1
 pragma: no-cache
 cache-control: no-cache
-date: Mon, 12 May 2008 14:38:50 GMT
+date: Thu, 22 May 2008 12:30:09 GMT
 content-type: application/atom+xml;type=feed;charset=UTF-8
 
 
 </code></pre>
-<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
-  &lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
-  &lt;title&gt;Company Home&lt;/title&gt; 
-  &lt;updated&gt;2008-04-24T18:33:35.511+01:00&lt;/updated&gt;
-  &lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
-  &lt;author&gt; 
-    &lt;name&gt;System&lt;/name&gt;
-  &lt;/author&gt; 
-  &lt;id&gt;urn:uuid:6413e19d-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-  &lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
-
-  &lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?skipCount=0&amp;amp;guest=" rel="first" type="application/atom+xml;type=feed"/&gt;
-  
-  &lt;entry&gt;
-    &lt;title&gt;Data Dictionary&lt;/title&gt;
-    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/642ce7e4-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
-    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
-    &lt;id&gt;urn:uuid:642ce7e4-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-    &lt;updated&gt;2008-04-24T18:33:35.708+01:00&lt;/updated&gt;
-    &lt;published&gt;2008-04-24T18:32:20.013+01:00&lt;/published&gt;
-    &lt;summary&gt;User managed definitions&lt;/summary&gt;
-    &lt;author&gt; 
-      &lt;name&gt;System&lt;/name&gt;
-    &lt;/author&gt; 
-    &lt;alf:noderef&gt;workspace://SpacesStore/642ce7e4-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
-  &lt;/entry&gt;
-  &lt;entry&gt;
-    &lt;title&gt;Guest Home&lt;/title&gt;
-    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/648715e5-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
-    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
-    &lt;id&gt;urn:uuid:648715e5-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-    &lt;updated&gt;2008-04-24T18:33:36.941+01:00&lt;/updated&gt;
-    &lt;published&gt;2008-04-24T18:32:20.608+01:00&lt;/published&gt;
-    &lt;summary&gt;The guest root space&lt;/summary&gt;
-    &lt;author&gt; 
-      &lt;name&gt;System&lt;/name&gt;
-    &lt;/author&gt; 
-    &lt;alf:noderef&gt;workspace://SpacesStore/648715e5-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
-  &lt;/entry&gt;
-  &lt;entry&gt;
-    &lt;title&gt;User Homes&lt;/title&gt;
-    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/64963118-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
-    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
-    &lt;id&gt;urn:uuid:64963118-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-    &lt;updated&gt;2008-04-24T18:33:37.110+01:00&lt;/updated&gt;
-    &lt;published&gt;2008-04-24T18:32:20.699+01:00&lt;/published&gt;
-    &lt;summary&gt;User Homes&lt;/summary&gt;
-    &lt;author&gt; 
-      &lt;name&gt;System&lt;/name&gt;
-    &lt;/author&gt; 
-    &lt;alf:noderef&gt;workspace://SpacesStore/64963118-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
-  &lt;/entry&gt;
-  &lt;entry&gt;
-    &lt;title&gt;Projects&lt;/title&gt;
-    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/90df9f8b-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
-    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
-    &lt;id&gt;urn:uuid:90df9f8b-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-    &lt;updated&gt;2008-04-24T18:33:47.401+01:00&lt;/updated&gt;
-    &lt;published&gt;2008-04-24T18:33:35.091+01:00&lt;/published&gt;
-    &lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
-    &lt;author&gt; 
-      &lt;name&gt;System&lt;/name&gt;
-    &lt;/author&gt; 
-    &lt;alf:noderef&gt;workspace://SpacesStore/90df9f8b-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
-  &lt;/entry&gt;
-  &lt;entry&gt;
-    &lt;title&gt;Web Projects&lt;/title&gt;
-    &lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/a3beb60b-1224-11dd-bee8-852083ea779d" rel="alternate"/&gt;
-    &lt;icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/icon&gt;       
-    &lt;id&gt;urn:uuid:a3beb60b-1224-11dd-bee8-852083ea779d&lt;/id&gt;
-    &lt;updated&gt;2008-04-24T18:34:06.711+01:00&lt;/updated&gt;
-    &lt;published&gt;2008-04-24T18:34:06.649+01:00&lt;/published&gt;
-    &lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
-    &lt;author&gt; 
-      &lt;name&gt;System&lt;/name&gt;
-    &lt;/author&gt; 
-    &lt;alf:noderef&gt;workspace://SpacesStore/a3beb60b-1224-11dd-bee8-852083ea779d&lt;/alf:noderef&gt;
-  &lt;/entry&gt;
-
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"&gt;
+&lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
+&lt;title&gt;Company Home&lt;/title&gt; 
+&lt;updated&gt;2008-05-22T13:25:10.795+01:00&lt;/updated&gt;
+&lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
+&lt;author&gt; 
+  &lt;name&gt;System&lt;/name&gt;
+&lt;/author&gt; 
+&lt;id&gt;urn:uuid:f04d71b0-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
+&lt;opensearch:totalResults&gt;5&lt;/opensearch:totalResults&gt;
+&lt;opensearch:startIndex&gt;0&lt;/opensearch:startIndex&gt;
+&lt;opensearch:itemsPerPage&gt;0&lt;/opensearch:itemsPerPage&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="first" type="application/atom+xml;type=feed"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="last" type="application/atom+xml;type=feed"/&gt;
+&lt;entry&gt;
+&lt;title&gt;Data Dictionary&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:10.989+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:52.689+01:00&lt;/published&gt;
+&lt;summary&gt;User managed definitions&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Guest Home&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.602+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.344+01:00&lt;/published&gt;
+&lt;summary&gt;The guest root space&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;User Homes&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.773+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.457+01:00&lt;/published&gt;
+&lt;summary&gt;User Homes&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:1c33155e-27fa-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:23.035+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:25:06.073+01:00&lt;/published&gt;
+&lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;1c33155e-27fa-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Web Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:b339589e-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:29:19.568+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:29:19.393+01:00&lt;/published&gt;
+&lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;b339589e-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
 &lt;/feed&gt;</code></pre></span></li>
   <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
   <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
-  <li class='Error'><img src='validator/res/error.gif'> [RFC4287] <span class='Error'>line 18, column 4: Undefined entry element: icon (5 occurrences)</span></li>
   <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
 line 2, column 0: Use of unknown namespace: http://www.alfresco.org
-line 11, column 145: "self" link references a non-Atom representation</span></li>
-  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 2: title should contain a xml:lang element (6 occurrences)
-line 22, column 4: summary should contain a xml:lang element (5 occurrences)</span></li>
+line 11, column 143: "self" link references a non-Atom representation
+line 40, column 84: Unregistered link relationship (30 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 0: title should contain a xml:lang element (6 occurrences)
+line 23, column 0: summary should contain a xml:lang element (5 occurrences)</span></li>
   <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Create new entry #1</span></li>
   <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
 POST http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
 content-type: application/atom+xml
-slug: ddabfdegge
+slug: bihjefehka
 
 
 </code></pre>
 <pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;
 &lt;title&gt;Iñtërnâtiônàlizætiøn - 1&lt;/title&gt;
-&lt;id&gt;tag:bitworking.org,2008-02-26:1210603130.5665419&lt;/id&gt;
+&lt;id&gt;tag:bitworking.org,2008-02-26:1211459409.3166161&lt;/id&gt;
 &lt;updated&gt;2005-07-10T12:29:29Z&lt;/updated&gt;
 &lt;author&gt;
 &lt;name&gt;Joe Gregorio&lt;/name&gt;
@@ -223,12 +317,720 @@ slug: ddabfdegge
 &lt;/entry&gt;</code></pre></span></li>
   <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
 
+status: 201
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/properties
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:09 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;bihjefehka&lt;/title&gt;
+&lt;id&gt;urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:09.705+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:09.705+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/bihjefehka" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.2'>[RFC5023] Section 9.2</a> <span class='Warning'>Content-Location: not returned in response headers.</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/properties
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/properties
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:09 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;bihjefehka&lt;/title&gt;
+&lt;id&gt;urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:09.798+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:09.705+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/properties" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/bihjefehka" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Create new entry #2</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+POST http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+content-type: application/atom+xml
+slug: ljlbjjhija
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;
+&lt;title&gt;Iñtërnâtiônàlizætiøn - 2&lt;/title&gt;
+&lt;id&gt;tag:bitworking.org,2008-02-26:1211459411.1896939&lt;/id&gt;
+&lt;updated&gt;2005-07-10T12:29:29Z&lt;/updated&gt;
+&lt;author&gt;
+&lt;name&gt;Joe Gregorio&lt;/name&gt;
+&lt;/author&gt;
+&lt;content type="xhtml"&gt;
+&lt;div xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;p&gt;&lt;i&gt;A test of utf-8&lt;/i&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/content&gt;
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 201
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:11 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;ljlbjjhija&lt;/title&gt;
+&lt;id&gt;urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:11.278+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:11.278+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/ljlbjjhija" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.2'>[RFC5023] Section 9.2</a> <span class='Warning'>Content-Location: not returned in response headers.</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:11 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;ljlbjjhija&lt;/title&gt;
+&lt;id&gt;urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:11.342+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:11.278+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/ljlbjjhija" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Create new entry #3</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+POST http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+content-type: application/atom+xml
+slug: kkaejcfjdk
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;
+&lt;title&gt;Iñtërnâtiônàlizætiøn - 3&lt;/title&gt;
+&lt;id&gt;tag:bitworking.org,2008-02-26:1211459412.675024&lt;/id&gt;
+&lt;updated&gt;2005-07-10T12:29:29Z&lt;/updated&gt;
+&lt;author&gt;
+&lt;name&gt;Joe Gregorio&lt;/name&gt;
+&lt;/author&gt;
+&lt;content type="xhtml"&gt;
+&lt;div xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;p&gt;&lt;i&gt;A test of utf-8&lt;/i&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/content&gt;
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 201
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/properties
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:12 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;kkaejcfjdk&lt;/title&gt;
+&lt;id&gt;urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:12.757+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:12.757+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d3109752-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/kkaejcfjdk" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.2'>[RFC5023] Section 9.2</a> <span class='Warning'>Content-Location: not returned in response headers.</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/properties
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/properties
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:12 GMT
+content-type: application/atom+xml;type=entry;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;entry xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0"&gt;
+&lt;title&gt;kkaejcfjdk&lt;/title&gt;
+&lt;id&gt;urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:12.807+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:12.757+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d3109752-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/properties" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/kkaejcfjdk" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 7, column 9: summary should not be blank
+line 30, column 222: Unregistered link relationship (6 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 3, column 0: title should contain a xml:lang element
+line 7, column 0: summary should contain a xml:lang element</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:12 GMT
+content-type: application/atom+xml;type=feed;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"&gt;
+&lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
+&lt;title&gt;Company Home&lt;/title&gt; 
+&lt;updated&gt;2008-05-22T13:25:10.795+01:00&lt;/updated&gt;
+&lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
+&lt;author&gt; 
+  &lt;name&gt;System&lt;/name&gt;
+&lt;/author&gt; 
+&lt;id&gt;urn:uuid:f04d71b0-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
+&lt;opensearch:totalResults&gt;8&lt;/opensearch:totalResults&gt;
+&lt;opensearch:startIndex&gt;0&lt;/opensearch:startIndex&gt;
+&lt;opensearch:itemsPerPage&gt;0&lt;/opensearch:itemsPerPage&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="first" type="application/atom+xml;type=feed"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="last" type="application/atom+xml;type=feed"/&gt;
+&lt;entry&gt;
+&lt;title&gt;Data Dictionary&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:10.989+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:52.689+01:00&lt;/published&gt;
+&lt;summary&gt;User managed definitions&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Guest Home&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.602+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.344+01:00&lt;/published&gt;
+&lt;summary&gt;The guest root space&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;User Homes&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.773+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.457+01:00&lt;/published&gt;
+&lt;summary&gt;User Homes&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:1c33155e-27fa-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:23.035+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:25:06.073+01:00&lt;/published&gt;
+&lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;1c33155e-27fa-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Web Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:b339589e-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:29:19.568+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:29:19.393+01:00&lt;/published&gt;
+&lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;b339589e-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;bihjefehka&lt;/title&gt;
+&lt;id&gt;urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:09.798+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:09.705+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/bihjefehka" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;ljlbjjhija&lt;/title&gt;
+&lt;id&gt;urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:11.342+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:11.278+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/ljlbjjhija" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;kkaejcfjdk&lt;/title&gt;
+&lt;id&gt;urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:12.807+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:12.757+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d3109752-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/kkaejcfjdk" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;/feed&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 11, column 143: "self" link references a non-Atom representation
+line 40, column 84: Unregistered link relationship (48 occurrences)
+line 172, column 9: summary should not be blank (3 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 0: title should contain a xml:lang element (9 occurrences)
+line 23, column 0: summary should contain a xml:lang element (8 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Check order of entries in the collection document</span></li>
+  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-10'>[RFC5023] Section 10</a> <span class='Error'>Failed to preserve order of entries, was expecting urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1, but found urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1</span></li>
+  <li class='Success'><img src='validator/res/success.gif'>  <span class='Success'>Slug was honored</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.1'>[RFC5023] Section 9.1</a> <span class='Warning'>Member Entry did not contain an atom:link element with a relation of 'edit'</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Update entry #2 and write back to the collection</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+PUT http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
 status: 405
 transfer-encoding: chunked
 server: Apache-Coyote/1.1
 pragma: no-cache
 cache-control: no-cache
-date: Mon, 12 May 2008 14:38:50 GMT
+date: Thu, 22 May 2008 12:30:12 GMT
 content-type: text/html;charset=UTF-8
 
 
@@ -248,15 +1050,15 @@ content-type: text/html;charset=UTF-8
       &lt;/table&gt;
       &lt;br/&gt;
       &lt;table&gt;
-         &lt;tr&gt;&lt;td&gt;The Web Script &lt;a href="/alfresco/service/api/path/workspace/SpacesStore//children"&gt;/alfresco/service/api/path/workspace/SpacesStore//children&lt;/a&gt; has responded with a status of 405 - Method Not Allowed.&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;The Web Script &lt;a href="/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties"&gt;/alfresco/service/api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties&lt;/a&gt; has responded with a status of 405 - Method Not Allowed.&lt;/td&gt;&lt;/tr&gt;
       &lt;/table&gt;
       &lt;br/&gt;
       &lt;table&gt;
          &lt;tr&gt;&lt;td&gt;&lt;b&gt;405 Description:&lt;/b&gt;&lt;/td&gt;&lt;td&gt; The method specified in the Request-Line is not allowed for the resource identified by the Request-URI.&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
-         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Message:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;Script url /api/path/workspace/SpacesStore//children does not support the method POST&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Message:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;Script url /api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties does not support the method PUT&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
-   &lt;tr&gt;&lt;td&gt;&lt;b&gt;Exception:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.WebScriptException - Script url /api/path/workspace/SpacesStore//children does not support the method POST&lt;/td&gt;&lt;/tr&gt;
+   &lt;tr&gt;&lt;td&gt;&lt;b&gt;Exception:&lt;/b&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.WebScriptException - Script url /api/node/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/properties does not support the method PUT&lt;/td&gt;&lt;/tr&gt;
    &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.AbstractRuntime.executeScript(AbstractRuntime.java:113)&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;org.alfresco.web.scripts.servlet.WebScriptServlet.service(WebScriptServlet.java:116)&lt;/td&gt;&lt;/tr&gt;
@@ -280,14 +1082,633 @@ content-type: text/html;charset=UTF-8
          &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;java.lang.Thread.run(Thread.java:613)&lt;/td&gt;&lt;/tr&gt;
    &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&lt;b&gt;Server&lt;/b&gt;:&lt;/td&gt;&lt;td&gt;Alfresco Community Network v3.0.0 (dev @build-number@) schema 124&lt;/td&gt;&lt;/tr&gt;
-         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Time&lt;/b&gt;:&lt;/td&gt;&lt;td&gt;May 12, 2008 3:38:50 PM&lt;/td&gt;&lt;/tr&gt;
+         &lt;tr&gt;&lt;td&gt;&lt;b&gt;Time&lt;/b&gt;:&lt;/td&gt;&lt;td&gt;May 22, 2008 1:30:13 PM&lt;/td&gt;&lt;/tr&gt;
          &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;
       &lt;/table&gt;
    &lt;/body&gt;
 &lt;/html&gt;
 
 </code></pre></span></li>
-  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-9.2'>[RFC5023] Section 9.2</a> <span class='Error'>Entry creation failed with status: 405 Method Not Allowed</span></li>
+  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-9.6'>[RFC2616] Section 9.6</a> <span class='Error'>Failed to accept updated Entry #2</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Check order of entries in the collection document</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:12 GMT
+content-type: application/atom+xml;type=feed;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"&gt;
+&lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
+&lt;title&gt;Company Home&lt;/title&gt; 
+&lt;updated&gt;2008-05-22T13:25:10.795+01:00&lt;/updated&gt;
+&lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
+&lt;author&gt; 
+  &lt;name&gt;System&lt;/name&gt;
+&lt;/author&gt; 
+&lt;id&gt;urn:uuid:f04d71b0-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
+&lt;opensearch:totalResults&gt;8&lt;/opensearch:totalResults&gt;
+&lt;opensearch:startIndex&gt;0&lt;/opensearch:startIndex&gt;
+&lt;opensearch:itemsPerPage&gt;0&lt;/opensearch:itemsPerPage&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="first" type="application/atom+xml;type=feed"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="last" type="application/atom+xml;type=feed"/&gt;
+&lt;entry&gt;
+&lt;title&gt;Data Dictionary&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:10.989+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:52.689+01:00&lt;/published&gt;
+&lt;summary&gt;User managed definitions&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Guest Home&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.602+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.344+01:00&lt;/published&gt;
+&lt;summary&gt;The guest root space&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;User Homes&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.773+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.457+01:00&lt;/published&gt;
+&lt;summary&gt;User Homes&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:1c33155e-27fa-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:23.035+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:25:06.073+01:00&lt;/published&gt;
+&lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;1c33155e-27fa-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Web Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:b339589e-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:29:19.568+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:29:19.393+01:00&lt;/published&gt;
+&lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;b339589e-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;bihjefehka&lt;/title&gt;
+&lt;id&gt;urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:09.798+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:09.705+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/bihjefehka" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;ljlbjjhija&lt;/title&gt;
+&lt;id&gt;urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:11.342+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:11.278+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/ljlbjjhija" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;kkaejcfjdk&lt;/title&gt;
+&lt;id&gt;urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:12.807+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:12.757+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d3109752-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/kkaejcfjdk" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;/feed&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 11, column 143: "self" link references a non-Atom representation
+line 40, column 84: Unregistered link relationship (48 occurrences)
+line 172, column 9: summary should not be blank (3 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 0: title should contain a xml:lang element (9 occurrences)
+line 23, column 0: summary should contain a xml:lang element (8 occurrences)</span></li>
+  <li class='Error'><img src='validator/res/error.gif'> <a href='http://tools.ietf.org/html/rfc5023#section-10'>[RFC5023] Section 10</a> <span class='Error'>Failed to preserve order of entries, was expecting urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1, but found urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1</span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Request <span class='Log'><pre><code>
+GET http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+
+
+
+</code></pre>
+<pre><code class='prettyprint'></code></pre></span></li>
+  <li class='Log'><img src='validator/res/log.gif'> Response <span class='Log'><pre><code>
+
+status: 200
+content-location: http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children
+transfer-encoding: chunked
+server: Apache-Coyote/1.1
+pragma: no-cache
+cache-control: no-cache
+date: Thu, 22 May 2008 12:30:13 GMT
+content-type: application/atom+xml;type=feed;charset=UTF-8
+
+
+</code></pre>
+<pre><code class='prettyprint'>&lt;?xml version="1.0" ?&gt;&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.cmis.org/CMIS/1.0" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"&gt;
+&lt;generator version="3.0.0 (dev @build-number@)"&gt;Alfresco (Community Network)&lt;/generator&gt;
+&lt;title&gt;Company Home&lt;/title&gt; 
+&lt;updated&gt;2008-05-22T13:25:10.795+01:00&lt;/updated&gt;
+&lt;icon&gt;http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico&lt;/icon&gt;
+&lt;author&gt; 
+  &lt;name&gt;System&lt;/name&gt;
+&lt;/author&gt; 
+&lt;id&gt;urn:uuid:f04d71b0-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self" type="application/atom+xml;type=feed"/&gt;
+&lt;opensearch:totalResults&gt;8&lt;/opensearch:totalResults&gt;
+&lt;opensearch:startIndex&gt;0&lt;/opensearch:startIndex&gt;
+&lt;opensearch:itemsPerPage&gt;0&lt;/opensearch:itemsPerPage&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="first" type="application/atom+xml;type=feed"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children?pageNo=1&amp;amp;guest=&amp;amp;format=atomfeed" rel="last" type="application/atom+xml;type=feed"/&gt;
+&lt;entry&gt;
+&lt;title&gt;Data Dictionary&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:10.989+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:52.689+01:00&lt;/published&gt;
+&lt;summary&gt;User managed definitions&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f080ddc7-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Guest Home&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.602+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.344+01:00&lt;/published&gt;
+&lt;summary&gt;The guest root space&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0e8a058-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;User Homes&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:12.773+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:23:53.457+01:00&lt;/published&gt;
+&lt;summary&gt;User Homes&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;f0f8f40b-27f9-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:1c33155e-27fa-11dd-838c-77c853e41f74&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:25:23.035+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:25:06.073+01:00&lt;/published&gt;
+&lt;summary&gt;Project Collaboration Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/1c33155e-27fa-11dd-838c-77c853e41f74&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;1c33155e-27fa-11dd-838c-77c853e41f74&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;Web Projects&lt;/title&gt;
+&lt;link href="http://localhost:8080/alfresco/service/n/browse/workspace/SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1" rel="alternate"/&gt;
+&lt;id&gt;urn:uuid:b339589e-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:29:19.568+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:29:19.393+01:00&lt;/published&gt;
+&lt;summary&gt;Web Content Management Spaces&lt;/summary&gt;
+&lt;author&gt;&lt;name&gt;System&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/b339589e-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;b339589e-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/folders/myfolder&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;folder&lt;/cmis:objectType&gt;  
+  &lt;cmis:baseType&gt;folder&lt;/cmis:baseType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt; 2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:name&gt;Atom-powered folders&lt;/cmis:name&gt;  
+  &lt;cmis:parent&gt;folderIdp1&lt;/cmis:parent&gt;   &lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://example.org/folders/myfolder?getfolderparent" rel="cmis-parent"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getactions" rel="cmis-allowableactions"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getrelationships" rel="cmis-relationships"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getchildren" rel="cmis-children"/&gt;  
+&lt;link href="http://example.org/folders/myfolder?getdescendants" rel="cmis-descendants"/&gt;  
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt;  
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;bihjefehka&lt;/title&gt;
+&lt;id&gt;urn:uuid:d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:09.798+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:09.705+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d134f96a-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d134f96a-27fa-11dd-aace-855fa603cfb1/bihjefehka" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;ljlbjjhija&lt;/title&gt;
+&lt;id&gt;urn:uuid:d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:11.342+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:11.278+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d22dd868-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d22dd868-27fa-11dd-aace-855fa603cfb1/ljlbjjhija" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;entry&gt;
+&lt;title&gt;kkaejcfjdk&lt;/title&gt;
+&lt;id&gt;urn:uuid:d3109752-27fa-11dd-aace-855fa603cfb1&lt;/id&gt;
+&lt;updated&gt;2008-05-22T13:30:12.807+01:00&lt;/updated&gt;
+&lt;published&gt;2008-05-22T13:30:12.757+01:00&lt;/published&gt;
+&lt;summary/&gt;
+&lt;author&gt;&lt;name&gt;admin&lt;/name&gt;&lt;/author&gt; 
+&lt;alf:noderef&gt;workspace://SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1&lt;/alf:noderef&gt;
+&lt;alf:icon&gt;http://localhost:8080/alfresco/images/filetypes/_default.gif&lt;/alf:icon&gt;
+&lt;cmis:object&gt;
+  &lt;cmis:object_id&gt;d3109752-27fa-11dd-aace-855fa603cfb1&lt;/cmis:object_id&gt;
+  &lt;cmis:baseType&gt;document&lt;/cmis:baseType&gt;
+  &lt;cmis:uri&gt;http://example.org/atom03&lt;/cmis:uri&gt;  
+  &lt;cmis:objectType&gt;document&lt;/cmis:objectType&gt;  
+  &lt;cmis:createdBy&gt;Al Brown&lt;/cmis:createdBy&gt;  
+  &lt;cmis:creationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:creationDate&gt;  
+  &lt;cmis:lastModifiedBy&gt;Al Brown&lt;/cmis:lastModifiedBy&gt;  
+  &lt;cmis:lastModificationDate&gt;2003-12-13T18:30:02Z&lt;/cmis:lastModificationDate&gt;  
+  &lt;cmis:isCurrentVersion&gt;true&lt;/cmis:isCurrentVersion&gt;  
+  &lt;cmis:isCheckedOut&gt;false&lt;/cmis:isCheckedOut&gt;  
+  &lt;cmis:contentStreamLength&gt;534&lt;/cmis:contentStreamLength&gt;  
+  &lt;cmis:contentStreamMimetype&gt;application/msword&lt;/cmis:contentStreamMimetype&gt;  
+  &lt;cmis:contentStreamName&gt;myDocument.doc&lt;/cmis:contentStreamName&gt;  
+  &lt;cmis:contentStreamUri&gt;http://example.org/media/atom03&lt;/cmis:contentStreamUri&gt;  
+  &lt;cmis:keyword cmis:index="0"&gt;XML&lt;/cmis:keyword&gt;  
+  &lt;cmis:keyword cmis:index="1"&gt;standards&lt;/cmis:keyword&gt;  
+&lt;/cmis:object&gt;
+&lt;link href="http://localhost:8080/alfresco/service/api/path/workspace/SpacesStore//children" rel="self"/&gt;
+&lt;link href="http://localhost:8080/alfresco/service/d/d/workspace/SpacesStore/d3109752-27fa-11dd-aace-855fa603cfb1/kkaejcfjdk" rel="alternate"/&gt; &lt;link href="http://example.org/atom03?getdocumentparents" rel="cmis-parents"/&gt; 
+&lt;link href="http://example.org/atom03?getactions" rel="cmis-allowableactions"/&gt; 
+&lt;link href="http://example.org/atom03?deleteallversion" rel="cmis-allversions"/&gt; 
+&lt;link href="http://example.org/atom03?getrelationships" rel="cmis-relationships"/&gt; 
+&lt;link href="http://example.org/type1" rel="cmis-type"/&gt; 
+&lt;link href="http://example.org/media/atom03" rel="cmis-stream"/&gt; 
+&lt;/entry&gt;
+&lt;/feed&gt;</code></pre></span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No ETag: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> <a href='http://tools.ietf.org/html/rfc2616#section-13.3.4'>[RFC2616] Section 13.3.4</a> <span class='Warning'>No Last-Modified: header was sent with the response.</span></li>
+  <li class='Warning'><img src='validator/res/warning.gif'> [RFC4287] <span class='Warning'>line 2, column 0: Use of unknown namespace: http://www.cmis.org/CMIS/1.0
+line 2, column 0: Use of unknown namespace: http://www.alfresco.org
+line 11, column 143: "self" link references a non-Atom representation
+line 40, column 84: Unregistered link relationship (48 occurrences)
+line 172, column 9: summary should not be blank (3 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>line 4, column 0: title should contain a xml:lang element (9 occurrences)
+line 23, column 0: summary should contain a xml:lang element (8 occurrences)</span></li>
+  <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Internal error occured while running tests: coercing to Unicode: need string or buffer, NoneType foundTraceback (most recent call last):
+  File "validator/appclienttest.py", line 420, in run
+    test_member_function()
+  File "validator/appclienttest.py", line 590, in testBasic_Entry_Manipulation
+    remove_entries_by_id(self.collection.iter(), ids)
+  File "validator/appclienttest.py", line 516, in remove_entries_by_id
+    idelement = e.etree().find("{%s}id" % atompubbase.model.ATOM)
+  File "/Users/dcaruana/Dev/projects/seamist/code/root/projects/remote-api/source/test/apptest/validator/atompubbase/model.py", line 453, in etree
+    self.get()
+  File "/Users/dcaruana/Dev/projects/seamist/code/root/projects/remote-api/source/test/apptest/validator/atompubbase/events.py", line 131, in wrapped
+    events.trigger("PRE", methodname, self, headers, body)
+  File "/Users/dcaruana/Dev/projects/seamist/code/root/projects/remote-api/source/test/apptest/validator/atompubbase/events.py", line 113, in trigger
+    cb(headers, body, method_filter)
+  File "validator/appclienttest.py", line 346, in log_request_response
+    request_line = method + u" " + uri
+TypeError: coercing to Unicode: need string or buffer, NoneType found
+</span></li>
   <li class='Info'><img src='validator/res/info.gif'>   <span class='Info'>Didn't find any Media Collections that would accept GIF images</span></li>
 </ol>
 

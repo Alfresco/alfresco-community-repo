@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans-2.0.dtd'>
 
 <beans>
  
@@ -94,7 +94,7 @@
    <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer" parent="webscripts.abstractcontainer">
       <property name="name"><value>Repository</value></property>
       <property name="scriptObjects">
-         <map>
+         <map merge="true">
            <entry key="paging">
               <ref bean="webscripts.js.paging" />
            </entry>
@@ -117,7 +117,7 @@
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>
    
-   <bean id="webscripts.registry.prototype" parent="webscripts.registry" singleton="false"/>
+   <bean id="webscripts.registry.prototype" parent="webscripts.registry" scope="prototype"/>
 
 
 
@@ -409,10 +409,15 @@
    <!-- CMIS API -->
    <!--          -->
 
+   <!--  CMIS Index -->
+   <bean id="webscript.org.alfresco.cmis.index.get" class="org.alfresco.repo.cmis.Index" parent="webscript"/>
+
    <alias alias="webscriptdesc.org.alfresco.repository.repository.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.children.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.parent.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.parents.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.properties.get" name="webscripts.cmis.description"/>
    <alias alias="webscriptdesc.org.alfresco.repository.store.unfiled.get" name="webscripts.cmis.description"/>
+   <alias alias="webscriptdesc.org.alfresco.repository.store.content.get" name="webscripts.cmis.description"/>
    
 </beans>

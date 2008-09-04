@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns:tns="http://www.cmis.org/ns/1.0"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/"
+             name="RepositoryService"
+             targetNamespace="http://www.cmis.org/ns/1.0">
+    <types>
+        <!--
+        <xsd:schema>
+            <xsd:import namespace="http://cmis.org/_TBD_" schemaLocation="_TBD_.xsd"/>
+        </xsd:schema>
+        -->
+        <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
+        <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+            <xsd:include schemaLocation="cmisMessageTypes.xsd"/>
+        </xsd:schema>
+    </types>
+    <message name="getRepositoryInfo">
+        <part name="parameters" element="tns:getRepositoryInfo"/>
+    </message>
+    <message name="getRepositoryInfoResponse">
+        <part name="parameters" element="tns:getRepositoryInfoResponse"/>
+    </message>
+    <message name="getTypes">
+        <part name="parameters" element="tns:getTypes"/>
+    </message>
+    <message name="getTypesResponse">
+        <part name="parameters" element="tns:getTypesResponse"/>
+    </message>
+    <message name="getTypeDefinition">
+        <part name="parameters" element="tns:getTypeDefinition"/>
+    </message>
+    <message name="getTypeDefinitionResponse">
+        <part name="parameters" element="tns:getTypeDefinitionResponse"/>
+    </message>
+    <message name="getRootFolder">
+        <part name="parameters" element="tns:getRootFolder"/>
+    </message>
+    <message name="getRootFolderResponse">
+        <part name="parameters" element="tns:getRootFolderResponse"/>
+    </message>
+
+    <message name="InvalidArgumentException">
+        <part name="InvalidArgumentFault" element="tns:InvalidArgumentFault"/>
+    </message>
+    <message name="PermissionDeniedException">
+        <part name="PermissionDeniedFault" element="tns:PermissionDeniedFault"/>
+    </message>
+    <message name="OperationNotSupportedException">
+        <part name="OperationNotSupportedFault" element="tns:OperationNotSupportedFault"/>
+    </message>
+    <message name="ConcurrencyException">
+        <part name="ConcurrencyFault" element="tns:ConcurrencyFault"/>
+    </message>
+    <message name="RuntimeException">
+        <part name="RuntimeFault" element="tns:RuntimeFault"/>
+    </message>
+    <message name="FilterNotValidException">
+        <part name="FilterNotValidFault" element="tns:FilterNotValidFault"/>
+    </message>
+    <message name="TypeNotFoundException">
+        <part name="TypeNotFoundFault" element="tns:TypeNotFoundFault"/>
+    </message>
+
+    <portType name="RepositoryServicePort">
+        <operation name="getRepositoryInfo">
+            <input message="tns:getRepositoryInfo"/>
+            <output message="tns:getRepositoryInfoResponse"/>
+            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
+            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
+            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
+            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
+            <fault message="tns:RuntimeException" name="RuntimeException"/>
+        </operation>
+        <operation name="getTypes">
+            <input message="tns:getTypes"/>
+            <output message="tns:getTypesResponse"/>
+            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
+            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
+            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
+            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
+            <fault message="tns:RuntimeException" name="RuntimeException"/>
+        </operation>
+        <operation name="getTypeDefinition">
+            <input message="tns:getTypeDefinition"/>
+            <output message="tns:getTypeDefinitionResponse"/>
+            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
+            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
+            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
+            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
+            <fault message="tns:RuntimeException" name="RuntimeException"/>
+            <fault message="tns:TypeNotFoundException" name="TypeNotFoundException"/>
+        </operation>
+        <operation name="getRootFolder">
+            <input message="tns:getRootFolder"/>
+            <output message="tns:getRootFolderResponse"/>
+            <fault message="tns:InvalidArgumentException" name="InvalidArgumentException"/>
+            <fault message="tns:PermissionDeniedException" name="PermissionDeniedException"/>
+            <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException"/>
+            <fault message="tns:ConcurrencyException" name="ConcurrencyException"/>
+            <fault message="tns:RuntimeException" name="RuntimeException"/>
+            <fault message="tns:FilterNotValidException" name="FilterNotValidException"/>
+        </operation>
+    </portType>
+    <binding name="RepositoryServicePortBinding" type="tns:RepositoryServicePort">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="getRepositoryInfo">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
+            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
+            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
+            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
+            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
+        </operation>
+        <operation name="getTypes">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
+            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
+            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
+            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
+            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
+        </operation>
+        <operation name="getTypeDefinition">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
+            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
+            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
+            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
+            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
+            <fault name="TypeNotFoundException"><soap:fault name="TypeNotFoundException" use="literal"/></fault>
+        </operation>
+        <operation name="getRootFolder">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="InvalidArgumentException"><soap:fault name="InvalidArgumentException" use="literal"/></fault>
+            <fault name="PermissionDeniedException"><soap:fault name="PermissionDeniedException" use="literal"/></fault>
+            <fault name="OperationNotSupportedException"><soap:fault name="OperationNotSupportedException" use="literal"/></fault>
+            <fault name="ConcurrencyException"><soap:fault name="ConcurrencyException" use="literal"/></fault>
+            <fault name="RuntimeException"><soap:fault name="RuntimeException" use="literal"/></fault>
+            <fault name="FilterNotValidException"><soap:fault name="FilterNotValidException" use="literal"/></fault>
+        </operation>
+    </binding>
+    <service name="RepositoryService">
+        <port name="RepositoryServicePort" binding="tns:RepositoryServicePortBinding">
+            <soap:address location="http://localhost:8080/alfresco/RepositoryService"/>
+        </port>
+    </service>
+</definitions>

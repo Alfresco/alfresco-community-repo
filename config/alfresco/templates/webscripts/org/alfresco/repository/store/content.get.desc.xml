@@ -3,7 +3,10 @@
   <description>Stream a content property from the Repository</description>
   <url>/api/node/content{property}/{store_type}/{store_id}/{node_id}?a={attach?}</url>
   <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}</url>
-  <url>/api/avmpath/content{property}/{store_id}/{path}?a={attach?}</url>  
+  <url>/api/avmpath/content{property}/{store_id}/{path}?a={attach?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
   <authentication>guest</authentication>
   <format default="">argument</format>
+  <cmis version="0.21"/>
 </webscript>

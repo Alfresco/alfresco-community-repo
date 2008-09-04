@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="dmRepositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.RepositoryServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmRepositoryServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmNavigationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.NavigationServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmNavigationServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmObjectService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.cmis.ws.ObjectServicePort</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="dmObjectServiceTarget" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="dmAbstractServiceTx" />
+                <idref local="exceptionPointcutAdvisor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dmAbstractServiceTx" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="dmRepositoryServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
+        <property name="rootPath">
+            <value>workspace://CmisTestWorkspace/alf:root_folder</value>
+        </property>
+    </bean>
+
+    <bean id="dmNavigationServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMNavigationServicePort" />
+
+    <bean id="dmObjectServiceTarget" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMObjectServicePort" />
+
+    <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="personService" ref="personService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="searchService" ref="searchService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="versionService" ref="versionService" />
+        <property name="checkOutCheckInService" ref="checkOutCheckInService" />
+        <property name="fileFolderService" ref="fileFolderService" />
+    </bean>
+
+    <bean id="exceptionPointcutAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <property name="advice">
+            <bean class="org.alfresco.repo.cmis.ws.DMServicePortThrowsAdvice" />
+        </property>
+    </bean>
+
+</beans>

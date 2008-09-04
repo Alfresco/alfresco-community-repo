@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.content;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -87,10 +88,12 @@ public class ContentGet extends StreamContent
         // convert web script URL to node reference in Repository
         String match = req.getServiceMatch().getPath();
         String[] matchParts = match.split("/");
-        String extensionPath = req.getExtensionPath();
-        String[] extParts = extensionPath == null ? new String[1] : extensionPath.split("/");
-        String[] path = new String[extParts.length -1];
-        System.arraycopy(extParts, 1, path, 0, extParts.length -1);
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String[] id = templateVars.get("id").split("/");
+        String[] path = new String[id.length + 2];
+        path[0] = templateVars.get("store_type");
+        path[1] = templateVars.get("store_id");
+        System.arraycopy(id, 0, path, 2, id.length);
         NodeRef nodeRef = repository.findNodeRef(matchParts[2], path);
         if (nodeRef == null)
         {
@@ -99,7 +102,7 @@ public class ContentGet extends StreamContent
         
         // determine content property
         QName propertyQName = ContentModel.PROP_CONTENT;
-        String contentPart = extParts[0];
+        String contentPart = templateVars.get("property");
         if (contentPart.length() > 0 && contentPart.charAt(0) == ';')
         {
             if (contentPart.length() < 2)

@@ -40,18 +40,6 @@ import java.lang.annotation.Target;
 public @interface DirtySessionAnnotation
 {
     /**
-     * Method must flush before execution.<br>
-     * Default: <b>false</b>
-     */
-    boolean flushBefore() default false;
-    
-    /**
-     * Method must flush after execution.<br>
-     * Default: <b>false</b>
-     */
-    boolean flushAfter() default false;
-    
-    /**
      * The session must be flagged as dirty after execution.<br>
      * Default: <b>false</b>
      */

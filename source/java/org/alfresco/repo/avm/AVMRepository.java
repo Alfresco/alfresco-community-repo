@@ -563,32 +563,30 @@ public class AVMRepository
             // branching from. I'd be considerably happier if we disallowed
             // certain scenarios, but Jon won't let me :P (bhp).
 
-            Long parentAcl = dirNode.getAcl() == null ? null : dirNode.getAcl().getId();
+            Long inheritAcl = srcNode.getAcl() == null ? null : srcNode.getAcl().getId();
 
             if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                dstNode = new PlainDirectoryNodeImpl((PlainDirectoryNode)srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                dstNode = new PlainDirectoryNodeImpl((PlainDirectoryNode)srcNode, dstRepo, inheritAcl, ACLCopyMode.INHERIT);
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_DIRECTORY)
             {
                 dstNode =
-                    new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo, sPath, false, parentAcl, ACLCopyMode.COPY);
+                    new LayeredDirectoryNodeImpl((LayeredDirectoryNode)srcNode, dstRepo, sPath, false, inheritAcl, ACLCopyMode.INHERIT);
                 ((LayeredDirectoryNode)dstNode).setLayerID(issueLayerID());
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
             {
-                dstNode = new LayeredFileNodeImpl((LayeredFileNode)srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                dstNode = new LayeredFileNodeImpl((LayeredFileNode)srcNode, dstRepo, inheritAcl, ACLCopyMode.INHERIT);
             }
             else // This is a plain file.
             {
-                dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                dstNode = new PlainFileNodeImpl((PlainFileNode)srcNode, dstRepo, inheritAcl, ACLCopyMode.INHERIT);
             }
             // dstNode.setVersionID(dstRepo.getNextVersionID());
             dstNode.setAncestor(srcNode);
             dirNode.putChild(name, dstNode);
             dirNode.updateModTime();
-            DbAccessControlList acl = srcNode.getAcl();
-            dstNode.setAcl(acl != null ? acl.getCopy(parentAcl, ACLCopyMode.COPY) : null);
             String beginingPath = AVMNodeConverter.NormalizePath(srcPath);
             String finalPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
             finalPath = AVMNodeConverter.NormalizePath(finalPath);

@@ -528,7 +528,7 @@ public class AVMServicePermissionsTest extends TestCase
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
             assertEquals(1, diffs.size());
-            assertEquals("["+storeName+"-layer-base:/layer-to-base/update-dir[-1] > "+storeName+":/base/update-dir[-1]]", diffs.toString());
+            assertEquals("[" + storeName + "-layer-base:/layer-to-base/update-dir[-1] > " + storeName + ":/base/update-dir[-1]]", diffs.toString());
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");
@@ -611,7 +611,7 @@ public class AVMServicePermissionsTest extends TestCase
 
             List<AVMDifference> diffs = avmSyncService.compare(-1, storeName + "-layer-base:/layer-to-base", -1, storeName + ":/base", null);
             assertEquals(1, diffs.size());
-            assertEquals("["+storeName+"-layer-base:/layer-to-base/update-dir[-1] > "+storeName+":/base/update-dir[-1]]", diffs.toString());
+            assertEquals("[" + storeName + "-layer-base:/layer-to-base/update-dir[-1] > " + storeName + ":/base/update-dir[-1]]", diffs.toString());
             avmSyncService.update(diffs, null, false, false, false, false, "A", "A");
 
             desc = avmService.lookup(-1, storeName + ":/base/update-dir");
@@ -2772,6 +2772,98 @@ public class AVMServicePermissionsTest extends TestCase
         finally
         {
             avmService.purgeStore(storeName);
+        }
+    }
+
+    public void testWCMStyleTemplateAsBranch()
+    {
+        runAs("admin");
+        String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String branchName = storeName + "-Branch";
+        try
+        {
+            avmService.createStore(storeName);
+            avmService.createDirectory(storeName + ":/", "www");
+            avmService.createDirectory(storeName + ":/www", "avm-web-apps");
+            avmService.createDirectory(storeName + ":/www/avm-web-apps", "ROOT");
+            AVMNodeDescriptor desc = avmService.lookup(-1, storeName + ":/www");
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            Map<String, Integer> s1 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+            Map<String, Integer> s2 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            permissionService.setPermission(nodeRef, "manager", "ContentManager", true);
+            Map<String, Integer> s3 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            permissionService.setPermission(nodeRef, "publisher", "ContentPublisher", true);
+            Map<String, Integer> s4 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            permissionService.setPermission(nodeRef, "contributor", "ContentContributor", true);
+            Map<String, Integer> s5 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            permissionService.setPermission(nodeRef, "reviewer", "ContentReviewer", true);
+            Map<String, Integer> s6 = avmService.createSnapshot(storeName, null, null);
+            desc = avmService.lookup(-1, storeName + ":/www");
+            
+            desc = avmService.lookup(-1, storeName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
+            
+            avmService.createStore(branchName);
+            avmService.createBranch(-1, storeName + ":/www", branchName + ":/", "www");
+            avmService.createSnapshot(branchName, null, null);
+            
+            
+            desc = avmService.lookup(-1, branchName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
+            desc = avmService.lookup(-1, branchName + ":/www/avm-web-apps");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
+            
+            
+            // Check the branch remains unchanged when the template is changed
+            
+            debugPermissions(storeName + ":/www");
+            debugPermissions(branchName + ":/www");
+            debugPermissions(branchName + ":/www/avm-web-apps");
+            
+            desc = avmService.lookup(-1, storeName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            permissionService.setPermission(nodeRef, "template", "ContentReviewer", true);
+            
+            desc = avmService.lookup(-1, branchName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
+            desc = avmService.lookup(-1, branchName + ":/www/avm-web-apps");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 5);
+            
+            debugPermissions(storeName + ":/www");
+            debugPermissions(branchName + ":/www");
+            debugPermissions(branchName + ":/www/avm-web-apps");
+            
+            desc = avmService.lookup(-1, branchName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            permissionService.setPermission(nodeRef, "new", "ContentReviewer", true);
+            
+            desc = avmService.lookup(-1, branchName + ":/www");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 6);
+            desc = avmService.lookup(-1, branchName + ":/www/avm-web-apps");
+            nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
+            debugPermissions(storeName + ":/www");
+            debugPermissions(branchName + ":/www");
+            debugPermissions(branchName + ":/www/avm-web-apps");
+            assertEquals(permissionService.getSetPermissions(nodeRef).getPermissionEntries().size(), 6);
+            
+            
+        }
+        finally
+        {
+            avmService.purgeStore(storeName);
+            avmService.purgeStore(branchName);
         }
     }
 

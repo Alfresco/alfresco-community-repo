@@ -25,11 +25,14 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -39,7 +42,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * This method interceptor determines if a Hibernate flush is required and performs the
@@ -60,6 +62,13 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * <p>
  * It is also possible to {@link #flushSession(Session) flush the session} manually.  Using this method
  * allows the dirty count to be updated properly, thus avoiding unecessary flushing.
+ * <p>
+ * To trace failures caused by data flushes, it is necessary to track methods called and values passed
+ * that lead to the session being marked as dirty.  If the flush fails or if a method call fails then
+ * the stacks and method values will be dumped.  Turn on trace debugging for this:<br>
+ * <pre>
+ *    log4j.logger.org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor.trace=DEBUG
+ * </pre>
  *
  * @see #setQueryFlushMode(Session, Query)
  * @see #flushSession(Session)
@@ -67,11 +76,23 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * @author Derek Hulley
  * @since 2.1.5
  */
-public class DirtySessionMethodInterceptor extends HibernateDaoSupport implements MethodInterceptor
+public class DirtySessionMethodInterceptor implements MethodInterceptor
 {
     private static final String KEY_FLUSH_DATA = "FlushIfRequiredMethodInterceptor.FlushData";
     
     private static Log logger = LogFactory.getLog(DirtySessionMethodInterceptor.class);
+    private static final boolean loggerDebugEnabled;
+    private static Log traceLogger = LogFactory.getLog(DirtySessionMethodInterceptor.class.getName() + ".trace");
+    private static final boolean traceLoggerDebugEnabled;
+    static
+    {
+        loggerDebugEnabled = logger.isDebugEnabled();
+        traceLoggerDebugEnabled = traceLogger.isDebugEnabled();
+        if (traceLoggerDebugEnabled)
+        {
+            traceLogger.warn("Trace logging is enabled and will affect performance");
+        }
+    }
     
     /**
      * Keep track of methods that have been warned about, i.e. methods that are not annotated.
@@ -91,6 +112,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
     {
         private int dirtyCount;
         private Stack<Pair<String, Boolean>> methodStack;
+        private List<String> traceStacks;
         private FlushData()
         {
             dirtyCount = 0;
@@ -117,6 +139,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         public void resetDirtyCount()
         {
             dirtyCount = 0;
+            traceStacks = null;
         }
         public void pushMethod(String methodName, boolean isAnnotated)
         {
@@ -146,6 +169,39 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
             }
             // All were annotated
             return true;
+        }
+        public void addTraceStack(MethodInvocation method)
+        {
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            StringBuilder sb = new StringBuilder(2048);
+            sb.append("   Method: ").append(method.getMethod().getName());
+            Object[] arguments = method.getArguments();
+            for (int i = 0; i < arguments.length; i++)
+            {
+                String argumentStr;
+                try
+                {
+                    argumentStr = arguments[i] == null ? "NULL" : arguments[i].toString();
+                }
+                catch (Throwable ee)
+                {
+                    argumentStr = "<error: " + e.getMessage();
+                }
+                sb.append("\n").append("      ").append("Arg ").append(i).append(": ").append(argumentStr);
+            }
+            String msg = sb.toString();
+            sb = new StringBuilder(2048);
+            StackTraceUtil.buildStackTrace(msg, e.getStackTrace(), sb, 20);
+            if (traceStacks == null)
+            {
+                traceStacks = new ArrayList<String>(10);
+            }
+            traceStacks.add(sb.toString());
+        }
+        public List<String> getTraceStacks()
+        {
+            return (traceStacks == null) ? Collections.<String>emptyList() : traceStacks;
         }
     }
     
@@ -177,7 +233,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         // play with the session
         if (!flushData.isStackAnnotated())
         {
-            if (logger.isDebugEnabled())
+            if (loggerDebugEnabled)
             {
                 logger.debug(
                         "Method stack is not annotated.  Not setting query flush mode: \n" +
@@ -187,7 +243,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         }
         
         // The stack is fully annotated, so flush if required and set the flush mode on the query
-        if (logger.isDebugEnabled())
+        if (loggerDebugEnabled)
         {
             logger.debug(
                     "Setting query flush mode: \n" +
@@ -230,7 +286,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         FlushData flushData = DirtySessionMethodInterceptor.getFlushData();
         if (force)
         {
-            if (logger.isDebugEnabled())
+            if (loggerDebugEnabled)
             {
                 logger.debug(
                         "Flushing session forcefully: \n" +
@@ -243,7 +299,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         {
             if (flushData.isDirty())
             {
-                if (logger.isDebugEnabled())
+                if (loggerDebugEnabled)
                 {
                     logger.debug(
                             "Flushing dirty session: \n" +
@@ -254,7 +310,7 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (loggerDebugEnabled)
                 {
                     logger.debug(
                             "Session is not dirty - no flush: \n" +
@@ -276,13 +332,9 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
         
         // Get the flush and dirty mark requirements for the call
         DirtySessionAnnotation annotation = method.getAnnotation(DirtySessionAnnotation.class);
-        boolean flushBefore = false;
-        boolean flushAfter = false;
         boolean markDirty = false;
         if (annotation != null)
         {
-            flushBefore = annotation.flushBefore();
-            flushAfter = annotation.flushAfter();
             markDirty = annotation.markDirty();
         }
         else if (unannotatedMethodNames.add(methodName))
@@ -292,17 +344,12 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
 
         FlushData flushData = DirtySessionMethodInterceptor.getFlushData();
         
-        Session session = null;
-        if (flushBefore || flushAfter)
+        // If we are to mark it dirty and we are tracing, then record the stacks
+        if (markDirty && traceLoggerDebugEnabled)
         {
-            session = getSession(false);
+            flushData.addTraceStack(invocation);
         }
         
-        if (flushBefore)
-        {
-            DirtySessionMethodInterceptor.flushSession(session);
-        }
-
         boolean isAnnotated = (annotation != null);
         Object ret = null;
         try
@@ -310,23 +357,36 @@ public class DirtySessionMethodInterceptor extends HibernateDaoSupport implement
             // Push the method onto the stack
             flushData.pushMethod(methodName, isAnnotated);
             
-            if (logger.isDebugEnabled())
+            if (loggerDebugEnabled)
             {
                 logger.debug(
                         "Flush state and parameters for DirtySessionInterceptor: \n" +
                         "   Method:        " + methodName + "\n" +
-                        "   Annotated:     BEFORE=" + flushBefore + ", AFTER=" + flushAfter + ", MARK-DIRTY=" + markDirty + "\n" +
+                        "   Annotated:     MARK-DIRTY=" + markDirty + "\n" +
                         "   Session State: " + flushData);
             }
 
             // Do the call
-            ret = invocation.proceed();
-            
-            if (flushAfter)
+            try
             {
-                DirtySessionMethodInterceptor.flushSession(session);
+                ret = invocation.proceed();
             }
-            else if (markDirty)
+            catch (Throwable e)
+            {
+                // If we are tracing, then dump the current dirty stack
+                if (traceLoggerDebugEnabled)
+                {
+                    traceLogger.debug("Dumping stack traces after exception: " + e.getMessage());
+                    for (String stackTrace : flushData.getTraceStacks())
+                    {
+                        traceLogger.debug("\n" + stackTrace);
+                    }
+                }
+                // Rethrow
+                throw e;
+            }
+            
+            if (markDirty)
             {
                 flushData.incrementDirtyCount();
             }

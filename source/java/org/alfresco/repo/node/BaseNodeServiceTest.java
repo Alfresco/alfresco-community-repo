@@ -1176,6 +1176,43 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
     }
     
+    public void testRemoveProperty() throws Exception
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
+        // Add an aspect with a default value
+        nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
+        // Get the default value
+        Serializable defaultValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNotNull("No default property value assigned", defaultValue);
+        // Now apply the original node properties which didn't contain the value
+        nodeService.setProperties(rootNodeRef, properties);
+        // Ensure that it is now null
+        Serializable nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNull("Property was not removed", nullValue);
+        
+        // Remove the property by removing the aspect
+        nodeService.removeAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE);
+        nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNull("Property was not removed", nullValue);
+        
+        // Do the same, but explicitly set the value to null
+        nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
+        defaultValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNotNull("No default property value assigned", defaultValue);
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_PROP2, null);
+        nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNull("Property was not removed", nullValue);
+        
+        // Now remove the property directly
+        nodeService.removeAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE);
+        nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
+        defaultValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNotNull("No default property value assigned", defaultValue);
+        nodeService.removeProperty(rootNodeRef, PROP_QNAME_PROP2);
+        nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
+        assertNull("Property was not removed", nullValue);
+    }
+    
     /**
      * Makes a read-only transaction and then looks for a property using a non-existent QName.
      * The QName persistence must not lazily create QNameEntity instances for queries.

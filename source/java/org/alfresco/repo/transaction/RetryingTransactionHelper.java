@@ -37,6 +37,7 @@ import net.sf.ehcache.distribution.RemoteCacheException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -255,7 +256,6 @@ public class RetryingTransactionHelper
         for (int count = 0; maxRetries < 0 || count < maxRetries; ++count)
         {
             UserTransaction txn = null;
-            boolean isNew = false;
             try
             {
                 if (requiresNew)
@@ -264,20 +264,36 @@ public class RetryingTransactionHelper
                 }
                 else
                 {
-                    txn = txnService.getUserTransaction(readOnly);
+                    TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
+                    switch (readState)
+                    {
+                        case TXN_READ_ONLY:
+                            if (!readOnly)
+                            {
+                                // The current transaction is read-only, but a writable transaction is requested
+                                throw new AlfrescoRuntimeException("Read-Write transaction started within read-only transaction");
+                            }
+                            // We are in a read-only transaction and this is what we require so continue with it.
+                            break;
+                        case TXN_READ_WRITE:
+                            // We are in a read-write transaction.  It cannot be downgraded so just continue with it.
+                            break;
+                        case TXN_NONE:
+                            // There is no current transaction so we need a new one.
+                            txn = txnService.getUserTransaction(readOnly);
+                            break;
+                        default:
+                            throw new RuntimeException("Unknown transaction state: " + readState);
+                    }
                 }
-                // Only start a transaction if required.  This check isn't necessary as the transactional
-                // behaviour ensures that the appropriate propogation is performed.  It is a useful and
-                // simple optimization.
-                isNew = requiresNew || txn.getStatus() == Status.STATUS_NO_TRANSACTION;
-                if (isNew)
+                if (txn != null)
                 {
                     txn.begin();
                 }
                 // Do the work.
                 R result = cb.execute();
                 // Only commit if we 'own' the transaction.
-                if (isNew)
+                if (txn != null)
                 {
                     if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
                     {
@@ -308,7 +324,7 @@ public class RetryingTransactionHelper
             catch (Throwable e)
             {
                 // Somebody else 'owns' the transaction, so just rethrow.
-                if (!isNew)
+                if (txn == null)
                 {
                     if (e instanceof RuntimeException)
                     {

@@ -82,7 +82,7 @@ UPDATE alf_access_control_entry ace
 
 -- migrate data - build equivalent ACL entries
 INSERT INTO alf_acl_member (version, acl_id, ace_id, pos)
-   select 1, acl_id, id, 0 from alf_access_control_entry;
+   select 1, ace.acl_id, ace.id, 0 from alf_access_control_entry ace join alf_access_control_list acl on acl.id = ace.acl_id;
 
 -- Create ACE context
 CREATE TABLE alf_ace_context (
@@ -125,16 +125,30 @@ CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
 ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id);
    
 
+CREATE TABLE alf_tmp_min_ace (
+  min BIGINT NOT NULL,
+  permission_id BIGINT NOT NULL,
+  authority_id BIGINT NOT NULL,
+  allowed BIT(1) NOT NULL,
+  applies INT NOT NULL,
+  UNIQUE (permission_id, authority_id, allowed, applies)
+) ENGINE=InnoDB;
+
+INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
+    SELECT min(ace1.id), ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies FROM alf_access_control_entry ace1 group by ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies;
+   
 
 -- Update members to point to the first use of an access control entry
 UPDATE alf_acl_member mem
-   SET ace_id = (SELECT min(ace2.id) FROM alf_access_control_entry ace1 
-                     JOIN alf_access_control_entry ace2 
-                             ON ace1.permission_id = ace2.permission_id AND
-                                ace1.authority_id = ace2.authority_id AND 
-                                ace1.allowed = ace2.allowed AND 
-                                ace1.applies = ace2.applies 
-                     WHERE ace1.id = mem.ace_id  );
+   SET ace_id = (SELECT help.min FROM alf_access_control_entry ace 
+                     JOIN alf_tmp_min_ace help
+                     ON		help.permission_id = ace.permission_id AND
+                                help.authority_id = ace.authority_id AND 
+                                help.allowed = ace.allowed AND 
+                                help.applies = ace.applies 
+                     WHERE ace.id = mem.ace_id  );
+
+DROP TABLE alf_tmp_min_ace;
 
 -- Remove duplicate aces the mysql way (as you can not use the deleted table in the where clause ...)
 

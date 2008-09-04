@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.avm.AVMNodeService;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -67,6 +69,7 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This class is resource manager LuceneIndexers and LuceneSearchers. It supports two phase commit inside XA
@@ -932,7 +935,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @author Derek Hulley
      */
-    public static class LuceneIndexBackupComponent
+    public static class LuceneIndexBackupComponent implements InitializingBean
     {
 
         private static String BACKUP_TEMP_NAME = ".indexbackup_temp";
@@ -946,11 +949,23 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         private String targetLocation;
 
+        private boolean checkConfiguration = true;
+
         /**
          * Default constructor
          */
         public LuceneIndexBackupComponent()
         {
+        }
+
+        /**
+         * If false do not check the index configuration.
+         * 
+         * @param checkConfiguration
+         */
+        public void setCheckConfiguration(boolean checkConfiguration)
+        {
+            this.checkConfiguration = checkConfiguration;
         }
 
         /**
@@ -1291,6 +1306,86 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
                 {
                     throw new IOException("Unable to delete directory " + directory);
                 }
+            }
+
+        }
+
+        public void afterPropertiesSet() throws Exception
+        {
+            RetryingTransactionCallback<Object> backupWork = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+                    File targetDir = new File(targetLocation).getCanonicalFile();
+
+                    List<StoreRef> stores;
+                    try
+                    {
+                        stores = nodeService.getStores();
+                    }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
+                    Set<String> protocols = new HashSet<String>();
+                    protocols.add(StoreRef.PROTOCOL_AVM);
+                    protocols.add(StoreRef.PROTOCOL_ARCHIVE);
+                    protocols.add(StoreRef.PROTOCOL_WORKSPACE);
+                    protocols.add("locks");
+                    for (StoreRef store : stores)
+                    {
+                        protocols.add(store.getProtocol());
+                    }
+
+                    for (LuceneIndexerAndSearcher factory : factories)
+                    {
+                        File indexRootDir = new File(factory.getIndexRootLocation()).getCanonicalFile();
+
+                        if (indexRootDir.getCanonicalPath().startsWith(targetDir.getCanonicalPath()))
+                        {
+                            throw new IllegalArgumentException("Backup directory can not contain or be an index directory");
+                        }
+                        if (targetDir.getCanonicalPath().startsWith(indexRootDir.getCanonicalPath()))
+                        {
+                            for (String name : protocols)
+                            {
+                                File test = new File(indexRootDir, name);
+                                if (targetDir.getCanonicalPath().startsWith(test.getCanonicalPath()))
+                                {
+                                    throw new IllegalArgumentException("Backup directory can not be in index directory and match a store protocol name " + targetDir);
+                                }
+                            }
+                        }
+                        // if the back up directory exists make sure it only contains directories that are store
+                        // protocols
+
+                        if (targetDir.exists())
+                        {
+                            for (File file : targetDir.listFiles())
+                            {
+                                if (file.isFile())
+                                {
+                                    throw new IllegalArgumentException("Existing index backup does not look like the expected structure. It constains a file "
+                                            + file.getCanonicalPath());
+                                }
+                                if (!protocols.contains(file.getName()))
+                                {
+                                    throw new IllegalArgumentException(
+                                            "Existing index backup does not look like the expected structure. It constains a directory with a name that does not match a store protocol "
+                                                    + file.getCanonicalPath());
+
+                                }
+                            }
+                        }
+
+                    }
+                    return null;
+                }
+            };
+
+            if (checkConfiguration)
+            {
+                transactionService.getRetryingTransactionHelper().doInTransaction(backupWork);
             }
 
         }

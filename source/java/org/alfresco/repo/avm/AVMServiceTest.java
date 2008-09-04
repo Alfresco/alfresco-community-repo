@@ -89,6 +89,20 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testETWOTWO570() throws Exception
+    {
+        // Check that read-write methods are properly intercepted
+        RetryingTransactionCallback<Object> readOnlyCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                fService.createStore("StagingArea" + "-" + getName() + "-" + System.currentTimeMillis());
+                return null;
+            }
+        };
+        fTransactionService.getRetryingTransactionHelper().doInTransaction(readOnlyCallback, false, true);
+    }
+    
     public void test_WCM_949() throws Exception
     {
         try

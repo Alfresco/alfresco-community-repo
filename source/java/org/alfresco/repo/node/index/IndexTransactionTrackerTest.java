@@ -66,8 +66,8 @@ public class IndexTransactionTrackerTest extends TestCase
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        searchService = serviceRegistry.getSearchService();
-        nodeService = serviceRegistry.getNodeService();
+        searchService = (SearchService) ctx.getBean("searchService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
         threadPoolExecutor = (ThreadPoolExecutor) ctx.getBean("indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");

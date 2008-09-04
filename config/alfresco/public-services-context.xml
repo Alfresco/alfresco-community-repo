@@ -774,6 +774,7 @@
         <property name="interceptorNames">
             <list>
                 <value>crossRepositoryCopyServiceWriteTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>
@@ -798,6 +799,7 @@
             <list>
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
                 <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
@@ -841,6 +843,17 @@
         </property>
     </bean>
 
+    <bean id="checkTxnAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="checkTxnAdvice"/>
+        </property>
+        <property name="patterns">
+            <list>
+                <value>.*</value>
+            </list>
+        </property>
+    </bean>
+    
     <bean id="avmServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
@@ -863,6 +876,7 @@
                 <value>getPaths</value>
                 <value>getHeadPaths</value>
                 <value>getPathsInStoreHead</value>
+                <value>getPathsInStoreVersion</value>
                 <value>getIndirectionPath</value>
                 <value>getHistory</value>
                 <value>getCommonAncestor</value>
@@ -944,6 +958,7 @@
             <list>
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
                 <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
@@ -1043,6 +1058,7 @@
             <list>
                 <value>avmSyncServiceWriteTxnAdvisor</value>
                 <value>avmSyncServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>
@@ -1056,6 +1072,7 @@
         </property>
         <property name="mappedNames">
             <list>
+                <value>getAttribute</value>
                 <value>getAttributes</value>
                 <value>query</value>
                 <value>getKeys</value>
@@ -1095,6 +1112,7 @@
             <list>
                 <value>attributeServiceWriteTxnAdvisor</value>
                 <value>attributeServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>
@@ -1107,18 +1125,17 @@
         </property>
      </bean>
 
-    <!--
+    
     <bean id="deploymentServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
             <ref bean="retryingReadTxnAdvice"/>
         </property>
         <property name="mappedNames">
             <list>
-                <value>deployDifference</value>
+                <value>getRemoteActionService</value>
             </list>
         </property>
     </bean>
-    -->
 
     <bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
         <property name="advice">
@@ -1144,6 +1161,8 @@
         <property name="interceptorNames">
             <list>
                 <value>deploymentServiceWriteTxnAdvisor</value>
+                <value>deploymentServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>
@@ -1158,7 +1177,7 @@
         <property name="mappedNames">
             <list>
                 <value>getLock</value>
-                <value>getUserLocks</value>
+                <value>getUsersLocks</value>
                 <value>getWebProjectLocks</value>
                 <value>getWebProjects</value>
                 <value>getStoreLocks</value>
@@ -1179,6 +1198,7 @@
                 <value>removeWebProject</value>
                 <value>modifyLock</value>
                 <value>removeStoreLocks</value>
+                <value>removeLocksInDirectory</value>
             </list>
         </property>
     </bean>
@@ -1196,6 +1216,7 @@
             <list>
                 <value>avmLockingServiceWriteTxnAdvisor</value>
                 <value>avmLockingServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>
@@ -1420,6 +1441,8 @@
                     <value>getHrefDifference</value>
                     <value>getHrefManifestBrokenByNewOrMod</value>
                     <value>getHrefsDependentUponFile</value>
+                    <value>getPollInterval</value>
+                    <value>isLinkValidationDisabled</value>
             </list>
         </property>
     </bean>
@@ -1432,6 +1455,9 @@
         </property>
         <property name="mappedNames">
             <list>
+                    <value>onBootstrap</value>
+                    <value>onShutdown</value>
+                    <value>setLinkValidationDisabled</value>
                     <value>updateHrefInfo</value>
             </list>
         </property>
@@ -1452,6 +1478,7 @@
             <list>
                 <value>linkValidationServiceWriteTxnAdvisor</value>
                 <value>linkValidationServiceReadTxnAdvisor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>

@@ -356,9 +356,6 @@
    </bean>
 
    <bean id="dbNodeDaoServiceDirtySessionInterceptor" class="org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor" >
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
    </bean>
 
    <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -299,47 +299,31 @@
         </property>
     </bean>
 
-    <bean id="readWriteTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
-        <property name="propagationBehaviorName">
-            <value>PROPAGATION_REQUIRED</value>
+    <bean id="retryingWriteTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
+        <property name="txnHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="readOnly">
             <value>false</value>
         </property>
-    </bean>
-
-    <bean id="readOnlyTransactionDefinition" class="org.springframework.transaction.support.DefaultTransactionDefinition">
-        <property name="propagationBehaviorName">
-            <value>PROPAGATION_REQUIRED</value>
-        </property>
-        <property name="readOnly">
-            <value>true</value>
-        </property>
-    </bean>
-
-    <bean id="retryingWriteTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionDefinition">
-            <ref bean="readWriteTransactionDefinition"/>
-        </property>
-        <property name="maxRetries">
-            <value>20</value>
+        <property name="requiresNew">
+            <value>false</value>
         </property>
     </bean>
 
     <bean id="retryingReadTxnAdvice" class="org.alfresco.repo.transaction.RetryingTransactionAdvice">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
+        <property name="txnHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
-        <property name="transactionDefinition">
-            <ref bean="readOnlyTransactionDefinition"/>
+        <property name="readOnly">
+            <value>true</value>
         </property>
-        <property name="maxRetries">
-            <value>20</value>
+        <property name="requiresNew">
+            <value>false</value>
         </property>
     </bean>
+
+    <bean id="checkTxnAdvice" class="org.alfresco.repo.transaction.CheckTransactionAdvice" />
 
     <!--                        -->
     <!-- I18N                   -->
@@ -1021,6 +1005,9 @@
         </property>
         <property name="targetLocation">
             <value>${dir.indexes.backup}</value>
+        </property>
+        <property name="checkConfiguration">
+            <value>true</value>
         </property>
     </bean>
 

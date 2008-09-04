@@ -153,6 +153,14 @@ public class TransactionServiceImplTest extends TestCase
             int i = 0;
             // expected
         }
+        finally
+        {
+            try
+            {
+                txn.rollback();
+            }
+            catch (Throwable e) {}
+        }
     }
     
     public void testGetRetryingTransactionHelper()

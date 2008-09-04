@@ -31,6 +31,9 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -54,9 +57,15 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 public class PoiHssfContentTransformer extends AbstractContentTransformer2
 {
     /**
+     * Error message to delegate to NodeInfoBean
+     */
+    public static final String WRONG_FORMAT_MESSAGE_ID = "transform.err.format_or_password";
+   
+    /**
      * Windows carriage return line feed pair.
      */
     private static final String LINE_BREAK = "\r\n";
+    private static Log logger = LogFactory.getLog(PoiHssfContentTransformer.class);
     
     /**
      * Currently the only transformation performed is that of text extraction from XLS documents.
@@ -99,6 +108,14 @@ public class PoiHssfContentTransformer extends AbstractContentTransformer2
                 PoiHssfContentTransformer.writeString(os, encoding, LINE_BREAK, false);
                 PoiHssfContentTransformer.writeString(os, encoding, LINE_BREAK, false);
             }
+        }
+        catch (RecordFormatException ex)
+        {
+            // Catching specific exception to propagate it to NodeInfoBean
+            // to fix issue https://issues.alfresco.com/jira/browse/ETWOTWO-440
+           
+            logger.error(ex);
+            throw new TransformerInfoException(WRONG_FORMAT_MESSAGE_ID, ex);
         }
         finally
         {

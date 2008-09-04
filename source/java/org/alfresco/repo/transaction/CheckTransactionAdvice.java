@@ -24,52 +24,31 @@
  */
 package org.alfresco.repo.transaction;
 
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * A this advice wrapper around the {@link RetryingTransactionHelper}.
+ * A wrapper that checks that a transaction is present.
  *
  * @author Derek Hulley
+ * @since 2.2.1
  */
-public class RetryingTransactionAdvice implements MethodInterceptor
+public class CheckTransactionAdvice implements MethodInterceptor
 {
-    private RetryingTransactionHelper txnHelper;
-    private boolean readOnly;
-    private boolean requiresNew;
-
-    public RetryingTransactionAdvice()
+    public CheckTransactionAdvice()
     {
-        readOnly = false;
-        requiresNew = false;
     }
-
-    public void setTxnHelper(RetryingTransactionHelper txnHelper)
-    {
-        this.txnHelper = txnHelper;
-    }
-
-    public void setReadOnly(boolean readOnly)
-    {
-        this.readOnly = readOnly;
-    }
-
-    public void setRequiresNew(boolean requiresNew)
-    {
-        this.requiresNew = requiresNew;
-    }
-
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable
     {
-        // Just call the helper
-        RetryingTransactionCallback<Object> txnCallback = new RetryingTransactionCallback<Object>()
+        // Just check for any transaction
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
         {
-            public Object execute() throws Throwable
-            {
-                return methodInvocation.proceed();
-            }
-        };
-        return txnHelper.doInTransaction(txnCallback, readOnly, requiresNew);
+            String methodName = methodInvocation.getMethod().getName();
+            String className = methodInvocation.getMethod().getDeclaringClass().getName();
+            throw new AlfrescoRuntimeException("A transaction has not be started for method " + methodName + " on " + className);
+        }
+        return methodInvocation.proceed();
     }
 }

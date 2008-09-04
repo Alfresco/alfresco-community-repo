@@ -181,7 +181,8 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         else
         {
             // Found in the cache.  Load using the ID.
-            result = getQNameEntity(id);
+            // Don't use the method that throws an exception as the cache might be invalid.
+            result = (QNameEntity) getSession().get(QNameEntityImpl.class, id);
             if (result == null)
             {
                 // It is not available, so we need to go the query route.

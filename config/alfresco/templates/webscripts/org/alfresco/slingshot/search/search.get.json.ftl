@@ -6,15 +6,10 @@
       {
          "index": ${item_index},
          "nodeRef" : "${item.nodeRef}",
-         "qnamePath" : "${item.qnamePath}",
          "type": "${item.type}",
-         "icon32": "${item.icon32}",
          "name" : "${item.name!''}",
          "displayName": "${item.displayName!''}",
          "tags" : [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
-         <#if item.downloadUrl??>
-         "downloadUrl" : "${item.downloadUrl}",
-         </#if>
          <#if item.browseUrl??>
          "browseUrl" : "${item.browseUrl}",
          </#if>

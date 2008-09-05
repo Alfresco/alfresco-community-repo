@@ -98,7 +98,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
 {
    // PENDING: how to handle comments? the document should
    //          be returned instead
-    
+   
    // check whether we already processed this document
    if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
    {
@@ -107,42 +107,33 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
     
    // check whether this is a folder or a file
+   var item = null;
    if (node.isContainer)
    {
-      var item = {};
+      item = {};
       item.site = getSiteData(siteId);
       item.container = containerId;
       item.nodeRef = node.nodeRef.toString();
       item.type = "folder";
-      item.icon32 = node.icon32;
-      item.qnamePath = node.qnamePath;
       item.tags = (node.tags != null) ? node.tags : [];
       item.name = node.name;
-      item.displayName = "Folder: " + node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",  
+      item.displayName = node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",  
       item.browseUrl = containerId + "#path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
-      return item;
-      // PENDING - return a folder result
-      return null;
    }
    else if (node.isDocument)
    {
-      var item = {};
+      item = {};
       item.site = getSiteData(siteId);
       item.container = containerId;
       item.nodeRef = node.nodeRef.toString();
       item.type = "file";
-      item.icon32 = node.icon32;
-      item.qnamePath = node.qnamePath;
       item.tags = (node.tags != null) ? node.tags : [];
       item.name = node.name;
-      item.displayName = "Document: " + node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",
+      item.displayName = node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",
       item.browseUrl = "document-details?nodeRef=" + node.nodeRef.toString();
-      return item;
    }
-   else
-   {
-      return null;
-   }
+   
+   return item;
 }
 
 function getBlogPostItem(siteId, containerId, restOfPath, node)
@@ -181,12 +172,10 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    item.container = containerId;
    item.nodeRef = child.nodeRef.toString();
    item.type = "blogpost";
-   item.icon32 = child.icon32;
-   item.qnamePath = child.qnamePath;
    item.tags = (child.tags != null) ? child.tags : [];
    item.name = child.name;
-   item.displayName = "Blog post: " + child.properties["cm:title"];
-   item.browseUrl = "blog-postview?container=" + containerId + "&amp;postId=" + child.name;
+   item.displayName = child.properties["cm:title"];
+   item.browseUrl = "blog-postview?container=" + containerId + "&postId=" + child.name;
    
    return item;
 }
@@ -211,23 +200,20 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    }
    addToProcessed(siteId + containerId, "" + topicNode.nodeRef.toString());
    
-   
    // find the first post, which contains the post title
    // PENDING: error prone
    var postNode = topicNode.childAssocs["cm:contains"][0];
    
-   // child is our blog post
+   // child is our forum post
    var item = {};
    item.site = getSiteData(siteId);
    item.container = containerId;
    item.nodeRef = topicNode.nodeRef.toString();
    item.type = "topicpost";
-   item.icon32 = topicNode.icon32;
-   item.qnamePath = topicNode.qnamePath;
    item.tags = (topicNode.tags != null) ? topicNode.tags : [];
    item.name = topicNode.name;
-   item.displayName = "Forum topic: " + postNode.properties["cm:title"];
-   item.browseUrl = "discussions-topicview?container=" + containerId + "&amp;topicId=" + topicNode.name;
+   item.displayName = postNode.properties["cm:title"];
+   item.browseUrl = "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name;
    
    return item;
 }
@@ -252,11 +238,9 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    item.container = containerId;
    item.nodeRef = node.nodeRef.toString();
    item.type = "calendarevent";
-   item.icon32 = node.icon32;
-   item.qnamePath = node.qnamePath;
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
-   item.displayName = "Calendar event: " + node.properties["ia:whatEvent"];
+   item.displayName = node.properties["ia:whatEvent"];
    item.browseUrl = containerId; // this is "calendar"
    
    return item;
@@ -265,7 +249,7 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
 function getWikiItem(siteId, containerId, restOfPath, node)
 {
    // only process documents
-   if (! node.isDocument)
+   if (!node.isDocument)
    {
       return null;
    }
@@ -282,11 +266,9 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    item.container = containerId;
    item.nodeRef = node.nodeRef.toString();
    item.type = "wikipage";
-   item.icon32 = node.icon32;
-   item.qnamePath = node.qnamePath;
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
-   item.displayName = "Wiki page: " + node.properties["cm:name"]; // cm:title at some point?
+   item.displayName = node.properties["cm:name"]; // cm:title at some point?
    item.browseUrl = "wiki-page?title=" + node.properties["cm:name"];
    
    return item;
@@ -336,12 +318,14 @@ function splitQNamePath(node)
    {
       return null;
    }
+   
    var tmp = path.substring(SITES_SPACE_QNAME_PATH.length);
    var pos = tmp.indexOf('/');
    if (pos < 1)
    {
       return null;
    }
+   
    var siteId = tmp.substring(0, pos);
    siteId = siteId.substring(siteId.indexOf(":") + 1);
    tmp = tmp.substring(pos + 1);
@@ -350,6 +334,7 @@ function splitQNamePath(node)
    {
       return null;
    }
+   
    var containerId = tmp.substring(0, pos);
    containerId = containerId.substring(containerId.indexOf(":") + 1);
    var restOfPath = tmp.substring(pos + 1);
@@ -364,7 +349,7 @@ function splitQNamePath(node)
  */
 function processResults(nodes, maxResults)
 {    
-   var results = new Array();
+   var results = new Array(nodes.length);
    
    var added = 0;
    for (var x=0; x < nodes.length && added < maxResults; x++)
@@ -372,16 +357,14 @@ function processResults(nodes, maxResults)
       // for each node we extract the site/container qname path and then
       // let the per-container helper function decide what to do
       var parts = splitQNamePath(nodes[x]);
-      if (parts == null)
+      if (parts != null)
       {
-         continue;
-      }
-      
-      var item = getItem(parts[0], parts[1], parts[2], nodes[x]);
-      if (item != null)
-      {
-         results.push(item);
-         added++;
+         var item = getItem(parts[0], parts[1], parts[2], nodes[x]);
+         if (item != null)
+         {
+            results.push(item);
+            added++;
+         }
       }
    }
    
@@ -390,7 +373,12 @@ function processResults(nodes, maxResults)
    });
 }
 
-/* Create collection of documents */
+/**
+ * Return Search results with the given search terms
+ * Terms are split on whitespace characters.
+ * 
+ * AND, OR and NOT are supported keyboard as their Lucene equivilent.
+ */
 function getSearchResults(term, maxResults, siteId, containerId)
 {
    var path = SITES_SPACE_QNAME_PATH; // "/app:company_home/st:sites/";
@@ -410,32 +398,64 @@ function getSearchResults(term, maxResults, siteId, containerId)
    {
       path += "*/";
    }
-	  
-   var luceneQuery = "+PATH:\"" + path + "/*\"";
-   if (term != null && term.length > 0)
+	
+   var luceneQuery = ""
+   if (term != null && term.length != 0)
    {
-      // TODO: do smarter term pre-processing. For now we simply take all words,
-      // which ignores * and quotes
-      var terms = term.split(/\W/);
-       
+      // TODO: Perform smarter term processing. For now we simply split on whitespace
+      //       which ignores quoted phrases that may be present.
+      var terms = term.split(/\s/);
+      
       for (var x=0; x < terms.length; x++)
       {
          var t = terms[x];
-         if (t.length < 1)
+         // remove quotes - TODO: add support for quoted terms later
+         t = t.replace(/\"/g, "");
+         if (t.length != 0)
          {
-            continue;
+            switch (t.toLowerCase())
+            {
+               case "and":
+                  if (x < terms.length - 1 && terms[x + 1].length != 0)
+                  {
+                     luceneQuery += "AND ";
+                  }
+                  break;
+               
+               case "or":
+                  break;
+               
+               case "not":
+                  if (x < terms.length - 1 && terms[x + 1].length != 0)
+                  {
+                     luceneQuery += "NOT ";
+                  }
+                  break;
+               
+               default:
+                  luceneQuery += "(TEXT:\"" + t + "\"" +        // full text
+                                 " @cm\\:name:\"" + t + "\"" +  // name property
+                                 " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" + // tags
+                                 ") ";
+            }
          }
-         
-         luceneQuery += " +(" +
-                     "    TEXT:\"" + t + "\"" +          // full text
-                     "    @cm\\:name:\"*" + t + "*\"" +  // name property
-                     "    PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" +
-                     "  )";
       }
    }
-         
-   var nodes = search.luceneSearch(luceneQuery);
-       
+   
+   var nodes;
+   
+   // if we processed the search terms, then suffix the PATH query
+   if (luceneQuery.length != 0)
+   {
+      luceneQuery = "+PATH:\"" + path + "/*\" +(" + luceneQuery + ")";
+      nodes = search.luceneSearch(luceneQuery);
+   }
+   else
+   {
+      // failed to process the search string - empty list returned
+      nodes = new Array();
+   }
+   
    return processResults(nodes, maxResults);
 }
 
@@ -448,7 +468,6 @@ function main()
    var maxResults = (args["maxResults"] != undefined) ? parseInt(args["maxResults"]) : DEFAULT_MAX_RESULTS;
    
    model.data = getSearchResults(term, maxResults, siteId, containerId);
-   var x=0;
 }
 
 main();

@@ -37,7 +37,7 @@
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="SearchService" />
       <property name="permissionService" ref="PermissionService" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
    </bean>
 
    <bean name="webscripts.store.repo.extension" parent="webscripts.repostore">
@@ -140,7 +140,7 @@
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />
       <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
    </bean>
    
@@ -339,7 +339,6 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="userNameGenerator" ref="userNameGenerator"/>
       <property name="passwordGenerator" ref="passwordGenerator"/>
-      <property name="namespaceService" ref="NamespaceService" />
    </bean>
    
    <!--                                                                                                       -->

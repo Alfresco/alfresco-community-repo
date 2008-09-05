@@ -283,7 +283,7 @@
                                           <h:outputText value="#{msg.actions}"/>
                                        </f:facet>
                                        <a:actionLink id="view-version-props" value="#{msg.properties}" actionListener="#{VersionedDocumentDetailsDialog.nextItem}" action="showVersionedDetails">
-                                           <f:param name="versionLabel" value="#{r.versionLabel}" />
+                                           <f:param id="view-version-props-versionLabel" name="versionLabel" value="#{r.versionLabel}" />
                                        </a:actionLink>
 
                                        <h:outputText id="space" value=" " />
@@ -291,7 +291,7 @@
 
                                     </a:column>
 
-                                    <a:dataPager styleClass="pager" />
+                                    <a:dataPager id="dataPager-1" styleClass="pager" />
                                  </a:richList>                              </a:panel>
                            </td>
 

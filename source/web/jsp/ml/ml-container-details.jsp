@@ -83,7 +83,7 @@
                   <f:facet name="header">
                      <h:outputText id="outT" value="" />
                   </f:facet>
-                  <h:graphicImage url="/images/filetypes/_default.gif" />
+                  <h:graphicImage id="default-gif" url="/images/filetypes/_default.gif" />
                </a:column>
 
                <%-- Name Columns --%>

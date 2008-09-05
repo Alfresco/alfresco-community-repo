@@ -44,40 +44,6 @@ public class AcceptInviteAction extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 8133039174866049136L;
 
-    /**
-     * Inner class providing functionality (which needs to run under admin
-     * rights) to set membership of invitee (given as invitee user name) to site
-     * (given as site short name) as given site role
-     */
-    private class SetSiteMembershipWorker implements
-            AuthenticationUtil.RunAsWork<Boolean>
-    {
-        private String siteShortName;
-        private String inviteeUserName;
-        private String siteRole;
-
-        private SetSiteMembershipWorker(String siteShortName,
-                String inviteeUserName, String siteRole)
-        {
-            this.siteShortName = siteShortName;
-            this.inviteeUserName = inviteeUserName;
-            this.siteRole = siteRole;
-        }
-
-        /**
-         * Does the work to set the site membership
-         */
-        public Boolean doWork() throws Exception
-        {
-            AcceptInviteAction.this.siteService.setMembership(this.siteShortName,
-                    this.inviteeUserName, this.siteRole);
-
-            return Boolean.TRUE;
-        }
-    }
-
-    private static final String USER_ADMIN = "admin";
-    
     private SiteService siteService;
     private MutableAuthenticationDao mutableAuthenticationDao;
 
@@ -98,9 +64,10 @@ public class AcceptInviteAction extends JBPMSpringActionHandler
     @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
-        String inviteeUserName = (String) executionContext.getVariable("wf_inviteeUserName");
-        String siteShortName = (String) executionContext.getVariable("wf_siteShortName");
-        String inviteeSiteRole = (String) executionContext.getVariable("wf_inviteeSiteRole");
+        final String inviteeUserName = (String) executionContext.getVariable("wf_inviteeUserName");
+        final String siteShortName = (String) executionContext.getVariable("wf_siteShortName");
+        final String inviterUserName = (String) executionContext.getVariable("wf_inviterUserName");
+        final String inviteeSiteRole = (String) executionContext.getVariable("wf_inviteeSiteRole");
         
         // if there is already a user account for the invitee and that account
         // is disabled, then enable the account because he/she has accepted the
@@ -112,8 +79,16 @@ public class AcceptInviteAction extends JBPMSpringActionHandler
         }
 
         // add Invitee to Site with the site role that the inviter "started" the invite process with
-        RunAsWork<Boolean> setSiteMembershipWorker = new SetSiteMembershipWorker(
-                siteShortName, inviteeUserName, inviteeSiteRole);
-        AuthenticationUtil.runAs(setSiteMembershipWorker, USER_ADMIN);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                AcceptInviteAction.this.siteService.setMembership(siteShortName,
+                        inviteeUserName, inviteeSiteRole);
+
+                return null;
+            }
+            
+        }, inviterUserName);
     }
 }

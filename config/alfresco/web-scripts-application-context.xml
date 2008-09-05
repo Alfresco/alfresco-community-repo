@@ -339,6 +339,7 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="userNameGenerator" ref="userNameGenerator"/>
       <property name="passwordGenerator" ref="passwordGenerator"/>
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
    
    <!--                                                                                                       -->

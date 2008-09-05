@@ -80,6 +80,7 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -104,6 +105,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
    protected List<String> locksToReturnToMainStoreOnCancel = null;
+   protected String formDescriptionAttribute;
 
    transient private AVMLockingService avmLockingService;
    transient private AVMService avmService;
@@ -238,6 +240,8 @@ public class CreateWebContentWizard extends CreateContentWizard
          }
       }
 
+      // this.formDescriptionAttribute = buildFormDescriptionAttribute();
+      
       // reset the preview layer
       String storeName = AVMUtil.getStoreName(this.avmBrowseBean.getCurrentPath());
       storeName = AVMUtil.getCorrespondingPreviewStoreName(storeName);
@@ -877,6 +881,15 @@ public class CreateWebContentWizard extends CreateContentWizard
       return false;
    }
 
+   public String getFormDescriptionAttribute()
+   {
+       if (StringUtils.isEmpty(this.formDescriptionAttribute))
+       {
+           this.formDescriptionAttribute = buildFormDescriptionAttribute();
+       }
+       return this.formDescriptionAttribute;
+   }
+
    // ------------------------------------------------------------------------------
    // Action event handlers
 
@@ -887,5 +900,35 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       // clear the content as HTML is not compatible with the plain text box etc.
       this.content = null;
+   }
+   
+   private String buildFormDescriptionAttribute()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       String contextPath = fc.getExternalContext().getRequestContextPath();
+       StringBuilder attribute = new StringBuilder(255);
+       attribute.append("<span style=\"float:right;\">");
+       attribute.append("<a id=\"preview_fid\" href=\"").append(getFormInstanceData().getUrl()).append("\" ");
+       attribute.append("style=\"text-decoration: none;\" ");
+       attribute.append("target=\"window_").append(getFormInstanceData().getName()).append("\">");
+       attribute.append("<img src=\"").append(contextPath).append("/images/icons/preview_website.gif\" ");
+       attribute.append("align=\"absmiddle\" style=\"border: 0px\" ");
+       attribute.append("alt=").append(getFormInstanceData().getName()).append("\">");
+       attribute.append("</a></span>\n");
+       attribute.append(DescriptionAttributeHelper.getTableBegin());
+       String formTitle = null;
+       try
+       {
+           formTitle = getForm().getTitle();
+       }
+       catch (FormNotFoundException e)
+       {
+           formTitle = Application.getMessage(FacesContext.getCurrentInstance(),"form_not_found");
+       }
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "form", formTitle));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "location", 
+                getFormInstanceData().getSandboxRelativePath()));
+       attribute.append(DescriptionAttributeHelper.getTableEnd());
+       return attribute.toString();
    }
 }

@@ -76,6 +76,7 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.common.component.UISelectList;
 import org.alfresco.web.ui.wcm.WebResources;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -83,6 +84,7 @@ import org.apache.commons.logging.LogFactory;
  * Backing bean for the Create Web Project wizard.
  * 
  * @author Kevin Roast
+ * @author Arseny Kovalchuk (The fixer of the issue https://issues.alfresco.com/jira/browse/ETWOTWO-600,601) 
  */
 public class CreateWebsiteWizard extends BaseWizardBean
 {
@@ -120,6 +122,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected List<SelectItem> webappsList;
    protected boolean isSource;
    protected boolean showAllSourceProjects;
+   protected String websiteDescriptionAttribute;
    
    transient private AVMService avmService;
    transient private WorkflowService workflowService;
@@ -1451,6 +1454,42 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
    }
 
+   /**
+    * 
+    * @return Returns a websiteDescriptionAttribute
+    */
+   public String getWebsiteDescriptionAttribute()
+   {
+       if (this.websiteDescriptionAttribute == null)
+       {
+           this.websiteDescriptionAttribute = buildWebsiteDescriptionAttribute();
+       }
+       return this.websiteDescriptionAttribute;
+   }
+   
+   /**
+    * 
+    * @return Returns a HTML code for "description" attribute
+    */
+   private String buildWebsiteDescriptionAttribute()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       StringBuilder attribute = new StringBuilder(255);
+       String sourceWebProjectName = getSourceWebProjectName();
+       sourceWebProjectName = StringUtils.isEmpty(sourceWebProjectName) ?
+                DescriptionAttributeHelper.BLANK : DescriptionAttributeHelper.TRTD_BEGIN + 
+                Application.getMessage(fc, "website_sourcewebsite") + DescriptionAttributeHelper.TD_TD + 
+                sourceWebProjectName + DescriptionAttributeHelper.TDTR_END;
+       attribute.append(DescriptionAttributeHelper.getTableBegin());
+       attribute.append(sourceWebProjectName);
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_dnsname", getDnsName()));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_webapp", getWebapp()));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", getTitle()));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription())));
+       attribute.append(DescriptionAttributeHelper.getTableEnd());
+       return attribute.toString();
+   }
    
    // ------------------------------------------------------------------------------
    // Invite users page
@@ -1478,6 +1517,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private Form form;
       private String title;
       private String description;
+      private String formDescriptionAttribute;
       private WorkflowWrapper workflow;
       private String outputPathPattern;
       private List<PresentationTemplate> templates = null;
@@ -1486,6 +1526,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          this.form = form;
          this.title = form.getName();
+         this.description = form.getDescription();
       }
       
       public Form getForm()
@@ -1516,6 +1557,15 @@ public class CreateWebsiteWizard extends BaseWizardBean
       public void setDescription(String description)
       {
          this.description = description;
+      }
+
+      public String getFormDescriptionAttribute()
+      {
+          if (StringUtils.isEmpty(this.formDescriptionAttribute))
+          {
+              this.formDescriptionAttribute = this.buildFormDescriptionAttribute();
+          }
+          return this.formDescriptionAttribute;
       }
 
       /**
@@ -1600,6 +1650,24 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          this.templates = templates;
       }
+      
+      private String buildFormDescriptionAttribute()
+      {
+          FacesContext fc  = FacesContext.getCurrentInstance();
+          StringBuilder attribute = new StringBuilder(255);
+          String formDescription = DescriptionAttributeHelper.getDescriptionNotEmpty(fc, this.getDescription());
+          String workflowTitle = getWorkflow() == null ?
+                   DescriptionAttributeHelper.SPAN_ITALIC_BEGIN + Application.getMessage(fc, "none") + 
+                   DescriptionAttributeHelper.SPAN_END : getWorkflow().getTitle();
+          attribute.append(DescriptionAttributeHelper.getTableBegin());
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "name", this.getName()));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", this.getTitle()));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", this.getOutputPathPattern()));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", formDescription));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "workflow", workflowTitle));
+          attribute.append(DescriptionAttributeHelper.getTableEnd());
+          return attribute.toString();
+      }
    }
    
 
@@ -1682,6 +1750,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private String title;
       private String description;
       private String filenamePattern;
+      private String workflowDescriptionAttribute;
       private QName type;
       private Map<QName, Serializable> params;
       
@@ -1690,6 +1759,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.name = name;
          this.title = title;
          this.description = description;
+         this.workflowDescriptionAttribute = this.buildWorkflowDescriptionAttribute();
       }
       
       public WorkflowWrapper(String name, String title, String description, String filenamePattern)
@@ -1698,6 +1768,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
          this.title = title;
          this.description = description;
          this.filenamePattern = filenamePattern;
+         this.workflowDescriptionAttribute = this.buildWorkflowDescriptionAttribute();
       }
       
       /**
@@ -1771,6 +1842,35 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          this.type = type;
       }
+      
+      /**
+       * 
+       * @return Returns workflowDescriptionAttribute in HTML format (TABLE tag)
+       */
+      public String getWorkflowDescriptionAttribute()
+      {
+          if (StringUtils.isEmpty(this.workflowDescriptionAttribute))
+          {
+              this.workflowDescriptionAttribute = this.buildWorkflowDescriptionAttribute();
+          }
+          return this.workflowDescriptionAttribute;
+      }
+
+      /**
+       * 
+       * @return Returns HTML representation of the "description" attribute
+       */
+      private String buildWorkflowDescriptionAttribute()
+      {
+          FacesContext fc = FacesContext.getCurrentInstance();
+          String workflowDescription = DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription());
+          StringBuilder attribute = new StringBuilder(255);
+          attribute.append(DescriptionAttributeHelper.getTableBegin());
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", workflowDescription));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_filename_pattern", this.getFilenamePattern()));
+          attribute.append(DescriptionAttributeHelper.getTableEnd());
+          return attribute.toString();
+      }
    }
 
 
@@ -1779,6 +1879,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private static final long serialVersionUID = 6546685548198253273L;
       
       private final String name, role;
+      private String userDescriptionAttribute;
       
       public UserWrapper(final String authority, final String role)
       {
@@ -1796,9 +1897,28 @@ public class CreateWebsiteWizard extends BaseWizardBean
             this.name = authority.substring(PermissionService.GROUP_PREFIX.length());
          }
          this.role = Application.getMessage(FacesContext.getCurrentInstance(), role);
+         this.userDescriptionAttribute = this.buildUserDescriptionAttribute();
       }
 
       public String getName() { return this.name; }
       public String getRole() { return this.role; }
+      public String getUserDescriptionAttribute()
+      {
+          if (StringUtils.isEmpty(this.userDescriptionAttribute))
+          {
+              this.userDescriptionAttribute = buildUserDescriptionAttribute();
+          }
+          return this.userDescriptionAttribute;
+      }
+      
+      private String buildUserDescriptionAttribute()
+      {
+          FacesContext fc = FacesContext.getCurrentInstance();
+          StringBuilder attribute = new StringBuilder(128);
+          attribute.append(DescriptionAttributeHelper.getTableBegin()).append(
+                   DescriptionAttributeHelper.getTableLine(fc, "roles", this.getRole())).append(
+                   DescriptionAttributeHelper.getTableEnd());
+          return attribute.toString();
+      }
    }
 }

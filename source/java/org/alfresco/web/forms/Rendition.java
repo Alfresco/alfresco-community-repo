@@ -67,6 +67,9 @@ public interface Rendition
    /** the output stream for the rendition */
    public OutputStream getOutputStream();
 
+   /** the HTML description attribute for UI */
+   public String getDescriptionAttribute();
+
    /** regenerates the contents of this rendition using the primary form instance data */
    public void regenerate()
       throws IOException,

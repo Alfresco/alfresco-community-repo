@@ -37,32 +37,13 @@
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
-  <a:selectList id="form-list" 
-                multiSelect="false"
-                activeSelect="true" 
-                style="width:100%"
-		itemStyle="vertical-align: top; margin-right: 5px;">
-    <a:listItem label="<b>${WizardManager.bean.formTitle}</b>"
-                value="${WizardManager.bean.formName}"
-                image="/images/icons/webform_large.gif">
-      <jsp:attribute name="description">
-	<table width="100%" cellspacing="0" cellpadding="0" border="0">
-	  <colgroup><col width="25%"/><col width="75%"/></colgroup>
-	  <tbody>
-            <tr><td>${msg.description}:</td>
-	      <td>
-		<c:choose>
-		  <c:when test="${empty WizardManager.bean.formDescription}">
-		    <span style="font-style:italic">${msg.description_not_set}</span>
-		  </c:when>
-		  <c:otherwise>${WizardManager.bean.formDescription}</c:otherwise>
-		</c:choose>
-	      </td>
-	    </tr>
-            <tr><td>${msg.schema_root_element_name}:</td><td>${WizardManager.bean.schemaRootElementName}</td></tr>
-	  </tbody>
-	</table>
-      </jsp:attribute>
-    </a:listItem>
-  </a:selectList>
+   <a:selectList id="form-list" 
+                 multiSelect="false"
+                 activeSelect="true" 
+                 style="width:100%"
+                 itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+      <a:listItem label="<b>${WizardManager.bean.formTitle}</b>" value="${WizardManager.bean.formName}" 
+                  image="/images/icons/webform_large.gif"
+                  description="${WizardManager.bean.formDescriptionAttribute}" />
+   </a:selectList>
 </h:panelGrid>

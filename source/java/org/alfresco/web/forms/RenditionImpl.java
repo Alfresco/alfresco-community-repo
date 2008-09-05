@@ -42,6 +42,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.SAXException;
@@ -62,6 +63,7 @@ import org.xml.sax.SAXException;
    private final NodeRef nodeRef;
    transient private FormsService formsService;
    transient private RenderingEngineTemplate renderingEngineTemplate;
+   private String descriptionAttribute;
 
    /* package */ RenditionImpl(final NodeRef nodeRef, final FormsService formsService)
    {
@@ -266,5 +268,29 @@ import org.xml.sax.SAXException;
               "{path : " + this.getPath() + 
               ", rendering_engine_template : " + this.getRenderingEngineTemplate() +
               "}");
+   }
+   
+   public String getDescriptionAttribute()
+   {
+       if (StringUtils.isEmpty(this.descriptionAttribute))
+       {
+           this.descriptionAttribute = buildDescriptionAttribute();
+       }
+       return this.descriptionAttribute;
+   }
+   
+   private String buildDescriptionAttribute()
+   {
+       int hashCode = hashCode();
+       String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+       StringBuilder attribute = new StringBuilder(255);
+       attribute.append("<span style=\"float:right;\"><a id=\"preview").append(hashCode).append("\" ");
+       attribute.append("href=\"").append(getUrl()).append("\" ");
+       attribute.append("style=\"text-decoration: none;\" ");
+       attribute.append("target=\"window_").append(hashCode).append("_").append(getName()).append("\">");
+       attribute.append("<img src=\"").append(contextPath).append("/images/icons/preview_website.gif\" ");
+       attribute.append("align=\"absmiddle\" style=\"border: 0px\" alt=\"").append(getName()).append("\">");
+       attribute.append("</a></span><span>").append(getDescription()).append("</span>");
+       return attribute.toString();
    }
 }

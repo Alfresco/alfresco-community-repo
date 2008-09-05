@@ -71,6 +71,7 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.XSConstants;
@@ -83,13 +84,14 @@ import org.w3c.dom.Document;
  * Bean implementation for the "Create XML Form" dialog
  * 
  * @author arielb
+ * @author Arseny Kovalchuk (The fixer of the issue https://issues.alfresco.com/jira/browse/ETWOTWO-600,601)
  */
-public class CreateFormWizard extends BaseWizardBean
+public class CreateFormWizard extends BaseWizardBean 
 {
 
    /////////////////////////////////////////////////////////////////////////////
 
-   private static final long serialVersionUID = 4038447699556408567L;
+   private static final long serialVersionUID = -7133077371875949483L;
 
    /**
     * Simple wrapper class to represent a form data renderer
@@ -107,6 +109,7 @@ public class CreateFormWizard extends BaseWizardBean
       private final String mimetypeForRendition;
       private final String outputPathPatternForRendition;
       private final RenderingEngine renderingEngine;
+      private final String renderingEngineDescriptionAttribute;
 
       public RenderingEngineTemplateData(final RenderingEngineTemplate ret)
       {
@@ -118,6 +121,7 @@ public class CreateFormWizard extends BaseWizardBean
          this.outputPathPatternForRendition = ret.getOutputPathPattern();
          this.mimetypeForRendition = ret.getMimetypeForRendition();
          this.renderingEngine = ret.getRenderingEngine();
+         this.renderingEngineDescriptionAttribute = buildREDescriptionAttribute();
       }
 
       public RenderingEngineTemplateData(final File file,
@@ -136,6 +140,7 @@ public class CreateFormWizard extends BaseWizardBean
          this.outputPathPatternForRendition = outputPathPatternForRendition;
          this.mimetypeForRendition = mimetypeForRendition;
          this.renderingEngine = renderingEngine;
+         this.renderingEngineDescriptionAttribute = buildREDescriptionAttribute();
       }
       
       public String getOutputPathPatternForRendition()
@@ -178,6 +183,11 @@ public class CreateFormWizard extends BaseWizardBean
          return this.renderingEngine;
       }
 
+      public String getRenderingEngineDescriptionAttribute()
+      {
+         return this.renderingEngineDescriptionAttribute;
+      }
+
       public String toString()
       {
          return (this.getClass().getName() + "{" +
@@ -186,6 +196,23 @@ public class CreateFormWizard extends BaseWizardBean
                  "outputPathPatternForRendition: " + this.getOutputPathPatternForRendition() + "," +
                  "renderingEngine: " + this.getRenderingEngine().getName() + 
                  "}");
+      }
+      
+      private String buildREDescriptionAttribute()
+      {
+          FacesContext fc = FacesContext.getCurrentInstance();
+          StringBuilder attribute = new StringBuilder(255);
+          attribute.append(DescriptionAttributeHelper.getTableBegin());
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
+                   DescriptionAttributeHelper.getDescriptionNotEmpty(fc, this.getDescription())));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "rendering_engine_type", 
+                   this.getRenderingEngine().getName()));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", 
+                   this.getOutputPathPatternForRendition()));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "mimetype_for_renditions", 
+                   this.getMimetypeForRendition()));
+          attribute.append(DescriptionAttributeHelper.getTableEnd());
+          return attribute.toString();
       }
    }
 
@@ -219,6 +246,8 @@ public class CreateFormWizard extends BaseWizardBean
    private String renderingEngineTemplateName = null;
    private String renderingEngineTemplateTitle = null;
    private String renderingEngineTemplateDescription = null;
+   private String formDescriptionAttribute = null;
+   private String workflowDescriptionAttribute = null;
 
    private RenderingEngine renderingEngine = null;
    protected transient DataModel renderingEngineTemplatesDataModel;
@@ -407,6 +436,9 @@ public class CreateFormWizard extends BaseWizardBean
       this.defaultWorkflowName = null;
       this.defaultWorkflowChoices = null;
       this.applyDefaultWorkflow = true;
+      this.formDescriptionAttribute = null;
+      this.workflowDescriptionAttribute = null;
+
    }
    
    @Override
@@ -492,6 +524,36 @@ public class CreateFormWizard extends BaseWizardBean
       return this.getRenderingEngineTemplateFileName() == null;
    }
 
+   /**
+    * 
+    * @return Returns HTML code of the formDescriptionAttribute
+    *  for the attribute "description" of the <code><a:listItem></code> tag.
+    *  See create-form-wizard/summary.jsp
+    */
+   public String getFormDescriptionAttribute()
+   {
+       if (StringUtils.isEmpty(formDescriptionAttribute))
+       {
+           this.formDescriptionAttribute = buildFormDescriptionAttribute();
+       }
+       return this.formDescriptionAttribute;
+   }
+
+   /**
+    * 
+    * @return Returns HTML code of the formDescriptionAttribute
+    *  for the attribute "description" of the <code><a:listItem></code> tag.
+    *  See create-form-wizard/summary.jsp
+    */
+   public String getWorkflowDescriptionAttribute()
+   {
+       if (StringUtils.isEmpty(workflowDescriptionAttribute))
+       {
+           this.workflowDescriptionAttribute = buildWorkflowDescriptionAttribute();
+       }
+       return this.workflowDescriptionAttribute;
+   }
+   
    /**
     * @return Returns the output path for the rendition.
     */
@@ -1252,4 +1314,47 @@ public class CreateFormWizard extends BaseWizardBean
       final FileUploadBean fileBean = this.getFileUploadBean(id);
       return fileBean != null ? fileBean.getFile() : null;
    }
+   
+   /**
+    * 
+    * @return Returns a HTML code for "description" attribute
+    */
+   private String buildFormDescriptionAttribute()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       StringBuilder attribute = new StringBuilder(255);
+       attribute.append(DescriptionAttributeHelper.getTableBegin());
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getFormDescription())));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "schema_root_element_name", 
+                getSchemaRootElementName()));
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", 
+                getOutputPathPatternForFormInstanceData()));
+       attribute.append(DescriptionAttributeHelper.getTableEnd());
+       return attribute.toString();
+   }
+   /**
+    * 
+    * @return Returns a HTML code for "description" attribute
+    */
+   private String buildWorkflowDescriptionAttribute()
+   {
+       FacesContext fc = FacesContext.getCurrentInstance();
+       StringBuilder attribute = new StringBuilder(255);
+       attribute.append(DescriptionAttributeHelper.getTableBegin());
+       
+       // get workflow description
+       String desc = null;
+       WorkflowDefinition def = getDefaultWorkflowDefinition();
+       if (def != null)
+       {
+          desc = def.getDescription();
+       }
+       
+       attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, desc)));
+       attribute.append(DescriptionAttributeHelper.getTableEnd());
+       return attribute.toString();
+   }
+
 }

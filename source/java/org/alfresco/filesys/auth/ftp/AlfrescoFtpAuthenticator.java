@@ -134,7 +134,7 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
         
         // Start a transaction
       
-        tx = getTransactionService().getUserTransaction( true);
+        tx = getTransactionService().getUserTransaction( false);
         tx.begin();
         
         // Perform local MD4 password check

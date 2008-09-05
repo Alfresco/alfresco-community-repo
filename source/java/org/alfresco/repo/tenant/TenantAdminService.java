@@ -27,6 +27,8 @@ package org.alfresco.repo.tenant;
 import java.io.File;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+
 
 /**
  * Tenant Admin Service interface.
@@ -35,8 +37,30 @@ import java.util.List;
  *
  */
 
-public interface TenantAdminService extends TenantDeployerService
+public interface TenantAdminService extends TenantUserService
 {
+    public void startTenants();
+    
+    public void stopTenants();
+    
+    /*
+     * Deployer methods
+     */
+
+    public void deployTenants(final TenantDeployer deployer, Log logger);
+    
+    public void undeployTenants(final TenantDeployer deployer, Log logger);
+
+    public void register(TenantDeployer tenantDeployer);
+    
+    public void unregister(TenantDeployer tenantDeployer);
+    
+    public List<Tenant> getAllTenants();
+    
+    /*
+     * Deployer methods
+     */
+    
     public void createTenant(String tenantDomain, char[] adminRawPassword);
 
     public void createTenant(String tenantDomain, char[] adminRawPassword, String rootContentStoreDir);
@@ -49,8 +73,6 @@ public interface TenantAdminService extends TenantDeployerService
     
     public void deleteTenant(String tenantDomain);
     
-    public List<Tenant> getAllTenants();
-
     public void enableTenant(String tenantDomain);
     
     public void disableTenant(String tenantDomain);
@@ -58,6 +80,4 @@ public interface TenantAdminService extends TenantDeployerService
     public Tenant getTenant(String tenantDomain);
     
     public boolean isEnabledTenant(String tenantDomain);
-    
-    public boolean isEnabled();
 }

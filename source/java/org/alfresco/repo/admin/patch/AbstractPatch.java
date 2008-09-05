@@ -37,7 +37,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -95,7 +95,7 @@ public abstract class AbstractPatch implements Patch
     /** support service */
     protected AuthenticationComponent authenticationComponent;
     /** support service */
-    protected TenantDeployerService tenantDeployerService;
+    protected TenantAdminService tenantAdminService;
     
 
     /** track completion * */
@@ -176,9 +176,9 @@ public abstract class AbstractPatch implements Patch
         this.authenticationComponent = authenticationComponent;
     }
     
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -385,9 +385,9 @@ public abstract class AbstractPatch implements Patch
 
                             String report = applyInternal();
                             
-                        	if ((tenantDeployerService != null) && tenantDeployerService.isEnabled() && applyToTenants)
+                        	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
                             {
-                            	List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
+                            	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
                                 for (Tenant tenant : tenants)
                                 {          
                                 	String tenantDomain = tenant.getTenantDomain();
@@ -397,7 +397,7 @@ public abstract class AbstractPatch implements Patch
                                         {
                                 			return applyInternal();
                                         }
-                                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
                                 	
                                 	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
                                 }

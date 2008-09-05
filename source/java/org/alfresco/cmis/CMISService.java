@@ -34,8 +34,8 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -95,7 +95,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
     private DictionaryService dictionaryService;
     private SearchService searchService;
     private NodeService nodeService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
     // CMIS supported version
@@ -133,13 +133,11 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
     }
     
     /**
-     * Sets the tenant deployer service
-     * 
-     * @param tenantDeployerService
+     * Sets the tenant admin service
      */
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -241,7 +239,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
         textDataType = dictionaryService.getDataType(DataTypeDefinition.TEXT);
 
         // initialise root node ref
-        tenantDeployerService.register(this);
+        tenantAdminService.register(this);
         if (defaultRootNodeRefs == null)
         {
             defaultRootNodeRefs = new HashMap<String, NodeRef>(1);
@@ -254,7 +252,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      */
     public void destroy()
     {
-        defaultRootNodeRefs.remove(tenantDeployerService.getCurrentUserDomain());
+        defaultRootNodeRefs.remove(tenantAdminService.getCurrentUserDomain());
     }
 
     /**
@@ -284,7 +282,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
      */
     public NodeRef getDefaultRootNodeRef()
     {
-        String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef defaultNodeRef = defaultRootNodeRefs.get(tenantDomain);
         if (defaultNodeRef == null)
         {       

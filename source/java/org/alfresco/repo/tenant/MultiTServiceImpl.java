@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -97,7 +98,8 @@ public class MultiTServiceImpl implements TenantService
         // Check that all the passed values are not null
         ParameterCheck.mandatory("ChildAssocRef", childAssocRef);
         
-        return new ChildAssociationRef(childAssocRef.getTypeQName(),
+        return new ChildAssociationRef(
+                childAssocRef.getTypeQName(),
                 getName(childAssocRef.getParentRef()),
                 childAssocRef.getQName(),
                 getName(childAssocRef.getChildRef()),
@@ -105,6 +107,18 @@ public class MultiTServiceImpl implements TenantService
                 childAssocRef.getNthSibling());
     }
     
+    public AssociationRef getName(AssociationRef assocRef)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("assocRef", assocRef);
+        
+        return new AssociationRef(
+                getName(assocRef.getSourceRef()),
+                assocRef.getTypeQName(),
+                getName(assocRef.getTargetRef())
+                );
+    }
+
     public StoreRef getName(String username, StoreRef storeRef)
     {
         // Check that all the passed values are not null

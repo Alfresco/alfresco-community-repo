@@ -3,6 +3,6 @@
 
 <beans>
 
-   <bean id="tenantAdminService" class="org.alfresco.repo.tenant.SingleTDeployerServiceImpl" />
+   <bean id="tenantAdminService" class="org.alfresco.repo.tenant.SingleTAdminServiceImpl" />
    
 </beans>

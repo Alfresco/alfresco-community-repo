@@ -35,7 +35,7 @@ import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -70,7 +70,7 @@ public class UserUsageTrackingComponent
     private NodeService nodeService;
     private NodeDaoService nodeDaoService;
     private UsageService usageService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     
     private boolean enabled = true;
     
@@ -104,9 +104,9 @@ public class UserUsageTrackingComponent
         this.usageService = usageService;
     }
     
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
     
     public void setEnabled(boolean enabled)
@@ -141,9 +141,9 @@ public class UserUsageTrackingComponent
     	// default domain
     	bootstrapInternal(); 
 		
-		if (tenantDeployerService.isEnabled())
+		if (tenantAdminService.isEnabled())
 		{
-			List<Tenant> tenants = tenantDeployerService.getAllTenants();	                            	
+			List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
             for (Tenant tenant : tenants)
             {          
             	AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -153,7 +153,7 @@ public class UserUsageTrackingComponent
             			bootstrapInternal();
             			return null;
                     }
-                }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
 		}
     }
@@ -423,7 +423,7 @@ public class UserUsageTrackingComponent
                             }
                 			return null;
                         }
-                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDeployerService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
+                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantAdminService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
                 }  
                 return null;
             }

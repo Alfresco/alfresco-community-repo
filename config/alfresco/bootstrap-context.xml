@@ -122,7 +122,7 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="messageService" ref="messageService"/>
-      <property name="tenantDeployerService" ref="tenantAdminService"/>
+      <property name="tenantAdminService" ref="tenantAdminService"/>
          
       <property name="repositoryModelsLocations">
          <list>
@@ -328,8 +328,9 @@
         </property>
     </bean>
 
-    <import resource="classpath:alfresco/bootstrap/st-admin-context.xml"/>
-    <import resource="classpath*:alfresco/extension/mt/mt-admin-context.xml"/>
+    <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
+        <property name="tenantAdminService" ref="tenantAdminService" />
+    </bean>
 
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
@@ -570,7 +571,7 @@
       <property name="personService" ref="personService" />
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="searchService" />
-      <property name="tenantDeployerService" ref="tenantAdminService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
       <property name="avmService" ref="AVMService" />
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>

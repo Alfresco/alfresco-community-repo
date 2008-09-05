@@ -40,7 +40,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -119,7 +119,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     private TenantService tenantService;
     
     /** The tenant deployer service */
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     
     /** Transaction listener */
     private DictionaryModelTypeTransactionListener transactionListener;
@@ -129,8 +129,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the dictionary DAO
-     * 
-     * @param dictionaryDAO     the dictionary DAO
      */
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
@@ -139,8 +137,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the namespace DOA
-     * 
-     * @param namespaceDAO      the namespace DAO
      */
     public void setNamespaceDAO(NamespaceDAO namespaceDAO)
     {
@@ -149,8 +145,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the node service
-     * 
-     * @param nodeService       the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -159,8 +153,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the content service
-     * 
-     * @param contentService    the content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -169,8 +161,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the policy component
-     * 
-     * @param policyComponent   the policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -179,8 +169,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the workflow service
-     *
-     * @param workflowService   the workflow service
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -189,8 +177,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the search service
-     *
-     * @param searchService   the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -199,8 +185,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     /**
      * Set the namespace service
-     *
-     * @param namespaceService   the namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -209,8 +193,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the tenant service
-     *
-     * @param tenantService   the tenant service
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -219,12 +201,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /**
      * Set the tenant admin service
-     * 
-     * @param tenantAdminService    the tenant admin service
      */
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
     
     public void setStoreUrls(List<String> storeUrls)
@@ -557,7 +537,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         if (tenantService.isEnabled() && tenantService.isTenantUser() == false)  
         {
             // shared model - need to check all tenants (whether enabled or disabled) unless they have overridden
-            List<Tenant> tenants = tenantDeployerService.getAllTenants();              
+            List<Tenant> tenants = tenantAdminService.getAllTenants();              
             for (Tenant tenant : tenants)
             {
                 // validate model delete within context of tenant domain                    

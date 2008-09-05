@@ -8,7 +8,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -70,7 +70,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
     private TransactionService transactionService;
     
     /** The tenant deployer service */
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     
     /** The namespace service */
     private NamespaceService namespaceService;
@@ -93,7 +93,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         this.searchService = (SearchService)this.applicationContext.getBean("searchService");
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        this.tenantDeployerService = (TenantDeployerService)this.applicationContext.getBean("tenantAdminService");
+        this.tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.messageService = (MessageService)this.applicationContext.getBean("messageService");
         
@@ -102,7 +102,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         this.bootstrap.setSearchService(this.searchService);
         this.bootstrap.setDictionaryDAO(this.dictionaryDAO);
         this.bootstrap.setTransactionService(this.transactionService);
-        this.bootstrap.setTenantDeployerService(this.tenantDeployerService); 
+        this.bootstrap.setTenantAdminService(this.tenantAdminService); 
         this.bootstrap.setNodeService(this.nodeService);
         this.bootstrap.setNamespaceService(this.namespaceService);
         this.bootstrap.setMessageService(this.messageService);

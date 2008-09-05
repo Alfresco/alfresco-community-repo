@@ -39,11 +39,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyCheck;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A method interceptor to clean up node ref properties as they are passed in and out of the node service. For
@@ -55,8 +53,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
 {
-    private static Log logger = LogFactory.getLog(NodeRefPropertyMethodInterceptor.class);
-
     private boolean filterOnGet = true;
 
     private boolean filterOnSet = true;
@@ -92,10 +88,6 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     
     private DictionaryService getDictionaryService()
     {
-        if (dictionaryService == null)
-        {
-            dictionaryService = (DictionaryService) ApplicationContextHelper.getApplicationContext().getBean("dictionaryService");
-        }
         return dictionaryService;
     }
 
@@ -106,11 +98,13 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     
     private NodeService getNodeService()
     {
-        if (nodeService == null)
-        {
-            nodeService = (NodeService) ApplicationContextHelper.getApplicationContext().getBean("mlAwareNodeService");
-        }
         return nodeService;
+    }
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
     }
 
     @SuppressWarnings("unchecked")

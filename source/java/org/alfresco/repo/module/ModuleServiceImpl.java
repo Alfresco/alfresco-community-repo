@@ -37,7 +37,7 @@ import java.util.Properties;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
@@ -115,9 +115,9 @@ public class ModuleServiceImpl implements ModuleService
         this.moduleComponentHelper.setRegistryService(registryService);
     }
     
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.moduleComponentHelper.setTenantDeployerService(tenantDeployerService);
+        this.moduleComponentHelper.setTenantAdminService(tenantAdminService);
     }
     
     /**

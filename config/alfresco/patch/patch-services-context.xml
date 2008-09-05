@@ -69,7 +69,7 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
         </property>
-        <property name="tenantDeployerService">
+        <property name="tenantAdminService">
             <ref bean="tenantAdminService" />
         </property>
     </bean>

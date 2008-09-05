@@ -50,7 +50,7 @@
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="searchService" ref="SearchService" />
         <property name="transactionHelper" ref="retryingTransactionHelper" />
-        <property name="tenantDeployerService" ref="tenantAdminService" />
+        <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="nodeService" ref="NodeService" />
         <property name="repository" ref="repositoryHelper" />
     </bean>

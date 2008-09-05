@@ -35,8 +35,8 @@ import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -80,8 +80,8 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     /** The node service */
     private NodeService nodeService;
     
-    /** The tenant deployer service */
-    private TenantDeployerService tenantDeployerService;
+    /** The tenant admin service */
+    private TenantAdminService tenantAdminService;
 
     /** The namespace service */
     private NamespaceService namespaceService;
@@ -137,9 +137,9 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      * 
      * @param tenantAdminService    the tenant admin service
      */
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -397,9 +397,9 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }                               
         }, AuthenticationUtil.getSystemUserName());
                
-        if (tenantDeployerService.isEnabled())
+        if (tenantAdminService.isEnabled())
         {
-            tenantDeployerService.deployTenants(this, logger);
+            tenantAdminService.deployTenants(this, logger);
         }
         
     	register();
@@ -432,13 +432,13 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         // register with Message Service to allow (re-)init
         messageService.register(this);
         
-        if (tenantDeployerService.isEnabled())
+        if (tenantAdminService.isEnabled())
         {
             // register dictionary repository bootstrap
-            tenantDeployerService.register(this);
+            tenantAdminService.register(this);
             
             // register repository message (I18N) service
-            tenantDeployerService.register(messageService);
+            tenantAdminService.register(messageService);
         }
     }
     
@@ -447,13 +447,13 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      */
     protected void unregister()
     {
-        if (tenantDeployerService.isEnabled())
+        if (tenantAdminService.isEnabled())
         {
             // register dictionary repository bootstrap
-            tenantDeployerService.unregister(this);
+            tenantAdminService.unregister(this);
             
             // register repository message (I18N) service
-            tenantDeployerService.unregister(messageService);
+            tenantAdminService.unregister(messageService);
         }
     }
 }

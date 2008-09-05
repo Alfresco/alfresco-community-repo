@@ -261,9 +261,6 @@ public class AuditableAspect
 
         /**
          * Construct
-         * 
-         * @param nodeRef
-         * @param properties
          */
         private SetAuditProperties(NodeService nodeService, NodeRef nodeRef, Map<QName, Serializable> properties)
         {

@@ -16,12 +16,18 @@
       </property>
    </bean>
 
-   <bean id="nodeRefPropertyInterceptor" class="org.alfresco.repo.node.NodeRefPropertyMethodInterceptor">
+   <bean id="nodeRefPropertyInterceptor" class="org.alfresco.repo.node.NodeRefPropertyMethodInterceptor" init-method="init">
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
       </property>
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
+      </property>
+   </bean>
+
+   <bean id="multiTNodeServiceInterceptor" class="org.alfresco.repo.tenant.MultiTNodeServiceInterceptor">
+      <property name="tenantService">
+         <ref bean="tenantService" />
       </property>
    </bean>
 
@@ -38,6 +44,7 @@
          <list>
             <value>nodeRefPropertyInterceptor</value>
             <value>mlPropertyInterceptor</value>
+            <value>multiTNodeServiceInterceptor</value>
          </list>
       </property>
    </bean>

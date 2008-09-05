@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -39,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  * This interface provides methods to support either ST or MT implementations.
  *
  */
-public interface TenantService extends TenantBaseService
+public interface TenantService extends TenantUserService
 {
     public static final String SEPARATOR = "@";
     
@@ -66,6 +67,11 @@ public interface TenantService extends TenantBaseService
      * @return          the reference <b>with</b> the tenant-specific ID attached
      */
     public ChildAssociationRef getName(ChildAssociationRef childAssocRef);
+    
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
+    public AssociationRef getName(AssociationRef assocRef);
     
     /**
      * @return          the reference <b>with</b> the tenant-specific ID attached

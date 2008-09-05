@@ -35,8 +35,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantDeployerService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -77,7 +77,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     private FileFolderService fileFolderService;
     private PersonService personService;
     private AVMService avmService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     
     // company home
     private StoreRef companyHomeStore;
@@ -115,8 +115,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
 
     /**
      * Sets the namespace service
-     * 
-     * @param namespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -125,8 +123,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     
     /**
      * Sets the search service
-     * 
-     * @param searchService
      */
     public void setSearchService(SearchService searchService)
     {
@@ -135,8 +131,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     
     /**
      * Sets the node service
-     * 
-     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -145,8 +139,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
 
     /**
      * Sets the file folder service
-     * 
-     * @param nodeService
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -155,8 +147,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
 
     /**
      * Sets the person service
-     * 
-     * @param personService
      */
     public void setPersonService(PersonService personService)
     {
@@ -164,36 +154,26 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     }
     
     /**
-     * Sets the tenant deployer service
-     * 
-     * @param tenantDeployerService
+     * Sets the tenant admin service
      */
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
      * Sets the AVM service
-     * 
-     * @param avmService
      */
     public void setAvmService(AVMService avmService)
     {
     	this.avmService = avmService;
     }
     
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         lifecycle.setApplicationContext(applicationContext);
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
     public void onApplicationEvent(ApplicationEvent event)
     {
         lifecycle.onApplicationEvent(event);
@@ -221,7 +201,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     protected void initContext()
     {
-        tenantDeployerService.register(this);
+        tenantAdminService.register(this);
         
     	if (companyHomeRefs == null)
     	{
@@ -249,7 +229,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getCompanyHome()
     {
-        String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef companyHomeRef = companyHomeRefs.get(tenantDomain);
         if (companyHomeRef == null)
         {		
@@ -448,35 +428,23 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         return nodeRef;
     }    
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
-     */
     public void onEnableTenant()
     {
         init();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
-     */
     public void onDisableTenant()
     {
         destroy();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#init()
-     */
     public void init()
     {
         initContext();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
-     */
     public void destroy()
     {
-        companyHomeRefs.remove(tenantDeployerService.getCurrentUserDomain());
+        companyHomeRefs.remove(tenantAdminService.getCurrentUserDomain());
     }
 }

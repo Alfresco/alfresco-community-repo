@@ -41,7 +41,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -92,7 +92,7 @@ public class ModuleComponentHelper
     private AuthenticationComponent authenticationComponent;
     private RegistryService registryService;
     private ModuleService moduleService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     private Map<String, Map<String, ModuleComponent>> componentsByNameByModule;
 
     /** Default constructor */
@@ -141,9 +141,9 @@ public class ModuleComponentHelper
         this.moduleService = moduleService;
     }
     
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -206,7 +206,7 @@ public class ModuleComponentHelper
         PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
         PropertyCheck.mandatory(this, "registryService", registryService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        PropertyCheck.mandatory(this, "tenantDeployerService", tenantDeployerService);
+        PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);
         /*
          * Ensure transactionality and the correct authentication
          */
@@ -227,15 +227,15 @@ public class ModuleComponentHelper
 		            final Map<String, Set<String>> mapStartedModules = new HashMap<String, Set<String>>(1);
 
 		            // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
-		            final String tenantDomainCtx = tenantDeployerService.getCurrentUserDomain();
+		            final String tenantDomainCtx = tenantAdminService.getCurrentUserDomain();
 		            
 		            mapExecutedComponents.put(tenantDomainCtx, new HashSet<ModuleComponent>(10));
 		            mapStartedModules.put(tenantDomainCtx, new HashSet<String>(2));
 		            
 		            final List<Tenant> tenants;
-		            if (tenantDeployerService.isEnabled() && (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN)))
+		            if (tenantAdminService.isEnabled() && (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN)))
 		            {
-		            	tenants = tenantDeployerService.getAllTenants();
+		            	tenants = tenantAdminService.getAllTenants();
 		            	for (Tenant tenant : tenants)
 		                {
 		                    mapExecutedComponents.put(tenant.getTenantDomain(), new HashSet<ModuleComponent>(10));
@@ -267,7 +267,7 @@ public class ModuleComponentHelper
 		                            			startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
 		                            			return null;
 		                                    }
-		                                }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
 		                            }
 		                        }
 		                        
@@ -291,7 +291,7 @@ public class ModuleComponentHelper
 		                		    checkForMissingModules();
 		                			return null;
 		                        }
-		                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+		                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
 		                }
 		            }
 		            
@@ -310,7 +310,7 @@ public class ModuleComponentHelper
 		                			checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
 		                			return null;
 		                        }
-		                    }, tenantDeployerService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
 		                }
 		            }
 		        }

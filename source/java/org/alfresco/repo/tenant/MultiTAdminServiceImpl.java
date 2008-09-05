@@ -62,22 +62,26 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * MT Admin Service Implementation.
  * 
  */
     
-public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements TenantAdminService, TenantDeployerService
+public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationContextAware
 {
     // Logger
     private static Log logger = LogFactory.getLog(MultiTAdminServiceImpl.class);
+    
+    // Keep hold of the app context
+    private ApplicationContext ctx;
     
     // Dependencies    
     private NodeService nodeService;
@@ -226,8 +230,12 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         PropertyCheck.mandatory(this, "ModuleService - see updated alfresco/extension/mt/mt-admin-context.xml.sample", moduleService);
     }
     
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.ctx = applicationContext;
+    }
+
+    public void startTenants()
     {
         checkProperties();
         
@@ -293,8 +301,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         }
     }
     
-    @Override
-    protected void onShutdown(ApplicationEvent event)
+    public void stopTenants()
     {
         tenantDeployers.clear();
         tenantDeployers = null;
@@ -325,19 +332,19 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
                         tenantFileContentStore.init();
                         
                         // create tenant-specific stores
-                        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
+                        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
                         bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
                         
-                        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
+                        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
                         bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
 
-                        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
+                        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
                         bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
 
-                        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
+                        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
                         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
                         
-                        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+                        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
                         bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);                           
                         
                         // notify listeners that tenant has been created & hence enabled
@@ -703,7 +710,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("systemBootstrap");
+        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
         systemImporterBootstrap.setBootstrapViews(bootstrapViews);
         systemImporterBootstrap.setLog(true);
 
@@ -736,7 +743,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("userBootstrap");
+        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
         userImporterBootstrap.setBootstrapViews(bootstrapViews);
         userImporterBootstrap.setLog(true);
 
@@ -774,7 +781,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("versionBootstrap");
+        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
         versionImporterBootstrap.setBootstrapViews(bootstrapViews);
         versionImporterBootstrap.setLog(true);
 
@@ -802,7 +809,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesArchiveBootstrap");
+        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
         spacesArchiveImporterBootstrap.setBootstrapViews(bootstrapViews);
         spacesArchiveImporterBootstrap.setLog(true);
 
@@ -835,7 +842,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
         spacesImporterBootstrap.setLog(true);
 
@@ -853,7 +860,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
         
-        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)getApplicationContext().getBean("spacesBootstrap");
+        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
         spacesImporterBootstrap.setLog(true);
         
@@ -878,7 +885,7 @@ public class MultiTAdminServiceImpl extends AbstractLifecycleBean implements Ten
         spacesImporterBootstrap.bootstrap();
         
         // calculate any missing usages
-        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)getApplicationContext().getBean(UserUsageBootstrapJob.KEY_COMPONENT);
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean(UserUsageBootstrapJob.KEY_COMPONENT);
         userUsageTrackingComponent.bootstrapInternal();
        
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));

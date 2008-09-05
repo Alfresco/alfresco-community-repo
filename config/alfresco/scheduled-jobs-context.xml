@@ -300,7 +300,7 @@
         <property name="usageService">
             <ref bean="usageService"/>
         </property>
-        <property name="tenantDeployerService">
+        <property name="tenantAdminService">
             <ref bean="tenantAdminService" />
         </property>        
         <property name="enabled">

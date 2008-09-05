@@ -32,7 +32,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
@@ -59,7 +59,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     protected ServiceRegistry serviceRegistry;
     protected AuthenticationComponent authenticationComponent;
     protected ModuleService moduleService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantAdminService;
     
     private String moduleId;
     private String name;
@@ -158,9 +158,9 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
         this.serviceRegistry = serviceRegistry;
     }
     
-    public void setTenantDeployerService(TenantDeployerService tenantDeployerService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantDeployerService = tenantDeployerService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -341,7 +341,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     public final synchronized void execute()
     {
         // ensure that this has not been executed already
-    	String tenantDomain = tenantDeployerService.getCurrentUserDomain();
+    	String tenantDomain = tenantAdminService.getCurrentUserDomain();
     	if (! executed.containsKey(tenantDomain))
     	{
     		executed.put(tenantDomain, false);

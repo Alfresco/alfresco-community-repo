@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.tenant.TenantDeployerService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -85,7 +85,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
     };
     
     private RegistryService registryService;
-    private TenantDeployerService tenantDeployerService;
+    private TenantAdminService tenantDeployerService;
     private DescriptorService descriptorService;
     private DummyModuleService moduleService;
     private ModuleComponentHelper helper;
@@ -97,7 +97,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         super.setUp();
         
         registryService = (RegistryService) ctx.getBean("RegistryService");
-        tenantDeployerService = (TenantDeployerService) ctx.getBean("tenantAdminService");
+        tenantDeployerService = (TenantAdminService) ctx.getBean("tenantAdminService");
         
         descriptorService = serviceRegistry.getDescriptorService();
         
@@ -108,7 +108,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         helper.setRegistryService(registryService);
         helper.setServiceRegistry(serviceRegistry);
         helper.setDescriptorService(descriptorService);
-        helper.setTenantDeployerService(tenantDeployerService);
+        helper.setTenantAdminService(tenantDeployerService);
         
         // Register the components
         components = new DummyModuleComponent[3][3];    // i,j
@@ -124,7 +124,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
                 component.setServiceRegistry(serviceRegistry);
                 component.setAuthenticationComponent(authenticationComponent);
                 component.setModuleService(moduleService);
-                component.setTenantDeployerService(tenantDeployerService);
+                component.setTenantAdminService(tenantDeployerService);
                 // Don't initialize the component as that will do the registration.  We do it manually.
                 helper.registerComponent(component);
                 // Add to array
@@ -266,7 +266,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
             super.setServiceRegistry(serviceRegistry);
             super.setAuthenticationComponent(authenticationComponent);
             super.setModuleService(moduleService);
-            super.setTenantDeployerService(tenantDeployerService);
+            super.setTenantAdminService(tenantDeployerService);
             
             super.setModuleId(moduleId);
             super.setName(name);

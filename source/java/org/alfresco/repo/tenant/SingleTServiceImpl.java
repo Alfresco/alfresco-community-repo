@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,6 +59,11 @@ public class SingleTServiceImpl implements TenantService
     	return childAssocRef;
     }
     
+    public AssociationRef getName(AssociationRef assocRef)
+    {
+        return assocRef;
+    }
+
     public StoreRef getName(String username, StoreRef storeRef)
     {
         return storeRef;

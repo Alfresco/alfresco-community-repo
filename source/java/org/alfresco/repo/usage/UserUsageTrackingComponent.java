@@ -236,6 +236,11 @@ public class UserUsageTrackingComponent
                 
                 for (NodeRef personNodeRef : allPeople)
                 {
+                    // Cater for Lucene indexes being stale
+                    if (!nodeService.exists(personNodeRef))
+                    {
+                        continue;
+                    }
                     Long currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
                     if (currentUsage == null)
                     {
@@ -361,6 +366,11 @@ public class UserUsageTrackingComponent
             public Object execute() throws Throwable
             {
                 NodeRef personNodeRef = personService.getPerson(username);
+                if (!nodeService.exists(personNodeRef))
+                {
+                    // Ignore
+                    return null;
+                }
                 contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                 usageService.deleteDeltas(personNodeRef);
                 return null;

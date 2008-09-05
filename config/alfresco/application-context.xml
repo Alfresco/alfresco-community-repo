@@ -50,6 +50,11 @@
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 
     <!--
+         Import activation extensions for Multi-Tenancy.
+    -->
+    <import resource="classpath*:alfresco/extension/mt/*-context.xml"/>
+    
+    <!--
          Import all modules and related components.
          Extensions are explicitly imported after this so that the default
          mechanism can still be used to override module-specific beans.

@@ -42,9 +42,9 @@
       </property>
       <property name="interceptorNames">
          <list>
+            <value>multiTNodeServiceInterceptor</value>
             <value>nodeRefPropertyInterceptor</value>
             <value>mlPropertyInterceptor</value>
-            <value>multiTNodeServiceInterceptor</value>
          </list>
       </property>
    </bean>

@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
@@ -42,7 +43,7 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
 {
     public static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private String tenant1 = "tenant1";
+    private String tenant1 = "tenant-" + GUID.generate();
     private String tenant1Pwd = "pwd1";
     private boolean enableTest = true;
     private TransactionService transactionService;

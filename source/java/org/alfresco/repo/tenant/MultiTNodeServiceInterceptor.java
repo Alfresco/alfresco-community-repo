@@ -26,6 +26,9 @@ package org.alfresco.repo.tenant;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -91,218 +94,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     {
         this.tenantService = tenantService;
     }
-//    
-//    public void addAspect(NodeRef nodeRef, QName aspectTypeQName, Map<QName, Serializable> aspectProperties) throws InvalidNodeRefException, InvalidAspectException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName qname) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<String> cleanup()
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName) throws InvalidNodeRefException, AssociationExistsException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName, Map<QName, Serializable> properties)
-//            throws InvalidNodeRefException, InvalidTypeException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName) throws InvalidNodeRefException, InvalidTypeException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public StoreRef createStore(String protocol, String identifier) throws StoreExistsException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void deleteStore(StoreRef storeRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean exists(NodeRef nodeRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean exists(StoreRef storeRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public Status getNodeStatus(NodeRef nodeRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public Path getPath(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public NodeRef getStoreArchiveNode(StoreRef storeRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<StoreRef> getStores()
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean hasAspect(NodeRef nodeRef, QName aspectTypeQName) throws InvalidNodeRefException, InvalidAspectException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public ChildAssociationRef moveNode(NodeRef nodeToMoveRef, NodeRef newParentRef, QName assocTypeQName, QName assocQName) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void removeAspect(NodeRef nodeRef, QName aspectTypeQName) throws InvalidNodeRefException, InvalidAspectException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index) throws InvalidChildAssociationRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
-//    {
-//        throw new UnsupportedOperationException();
-//    }
-//
+    
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
@@ -351,6 +143,18 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 AssociationRef ref = (AssociationRef) arg;
                 newArg = tenantService.getName(ref);
             }
+            
+            if (logger.isDebugEnabled())
+            {
+                if (!EqualsHelper.nullSafeEquals(newArg, arg))
+                {
+                    logger.debug(
+                            "Argument converted: \n" +
+                            "   Before: " + arg + "\n" +
+                            "   After:  " + newArg);
+                }
+            }
+            
             // Substitute the new value
             args[i] = newArg;
         }
@@ -370,7 +174,23 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
      */
     private Collection<Object> convertOutboundValues(Collection<Object> rawValues)
     {
-        Collection<Object> convertedValues = new ArrayList<Object>(rawValues.size());
+        /*
+         * Return types can be Lists or Sets, so cater for both.
+         */
+        final Collection<Object> convertedValues;
+        if (rawValues instanceof List)
+        {
+            convertedValues = new ArrayList<Object>(rawValues.size());
+        }
+        else if (rawValues instanceof Set)
+        {
+            convertedValues = new HashSet<Object>(rawValues.size(), 1.0F);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Interceptor can only handle List and Set return types.");
+        }
+        
         for (Object rawValue : rawValues)
         {
             Object convertedValue = convertOutboundValue(rawValue);

@@ -330,10 +330,8 @@ public class InviteServiceTest extends BaseWebScriptTest
             String inviteeLastName, String inviteeSiteRole, String siteShortName, int expectedStatus)
             throws Exception
     {
-        //  String inviteeEmail = INVITEE_EMAIL_PREFIX +
-        //      RandomStringUtils.randomAlphanumeric(6)
-        //      + "@" + INVITEE_EMAIL_DOMAIN;
-        String inviteeEmail = "glen.johnson@alfresco.com";
+        String inviteeEmail = INVITEE_EMAIL_PREFIX + RandomStringUtils.randomAlphanumeric(6)
+                + "@" + INVITEE_EMAIL_DOMAIN;
         
         return startInvite(inviteeFirstName, inviteeLastName, inviteeEmail, inviteeSiteRole, siteShortName,
                 expectedStatus);

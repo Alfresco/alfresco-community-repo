@@ -45,6 +45,8 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -92,6 +94,7 @@ public class Invite extends DeclarativeWebScript
     private MutableAuthenticationDao mutableAuthenticationDao;
     private SiteService siteService;
     private NodeService nodeService;
+    private NamespaceService namespaceService;
 
     // user name and password generation beans
     private UserNameGenerator usernameGenerator;
@@ -189,6 +192,17 @@ public class Invite extends DeclarativeWebScript
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * Set the namespace service property
+     * 
+     * @param namespaceService
+     *          the namespace service to set
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
     
     /*
@@ -612,10 +626,16 @@ public class Invite extends DeclarativeWebScript
                     "No workflow tasks where found on workflow path ID: " + wfPathId);
         }
         
-        // first task in workflow task list associated with the workflow path id above
-        // should be "wf:inviteToSiteTask", otherwise throw web script exception
-        String wfTaskTitle = wfTasks.get(0).title;
-        if (!wfTaskTitle.equals("wf:inviteToSiteTask"))
+        //
+        // first task in workflow task list (there should only be one) associated 
+        // with the workflow path id (above) should be "wf:inviteToSiteTask", otherwise 
+        // throw web script exception
+        //
+        
+        String wfTaskName = wfTasks.get(0).name;
+        QName wfTaskNameQName = QName.createQName(wfTaskName, this.namespaceService);
+        QName inviteToSiteTaskQName = InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE;
+        if (!wfTaskNameQName.equals(inviteToSiteTaskQName))
         {
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "First workflow task found on workflow path ID: " + wfPathId

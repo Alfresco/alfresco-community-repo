@@ -49,7 +49,7 @@ function getUserEvents(user, range)
 		{
 			// Expects the date in the format yyyy/mm/dd
 			var from = range.fromdate.split("/").join("\\-"); 
-			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2032\\-1\\-1T00:00:00]";
+			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
 			luceneQuery += dateClause;
 		}
 		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);

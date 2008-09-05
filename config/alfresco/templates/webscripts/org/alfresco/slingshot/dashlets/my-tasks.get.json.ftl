@@ -15,14 +15,15 @@
 <#--
    Render a task
 -->
+<#macro dateFormat date>${date?datetime?string("yyyy-MM-dd HH:mm:ss 'GMT'Z '('zzz')'")!""}</#macro>
 <#macro taskDetail task>
    {
       "id": "${task.id}",
       "description": "${(task.description!"")?j_string}",
-      "dueDate": "<#if task.properties["bpm:dueDate"]?exists>${task.properties["bpm:dueDate"]?date!""}<#else>${future?date}</#if>",
+      "dueDate": "<#if task.properties["bpm:dueDate"]?exists><@dateFormat task.properties["bpm:dueDate"] /><#else><@dateFormat future /></#if>",
       "status": "${task.properties["bpm:status"]}",
       "priority": "${task.properties["bpm:priority"]}",
-      "startDate": "${task.startDate?date}",
+      "startDate": "<@dateFormat task.startDate />",
       "type": "${task.type}",
       "completeness": "${task.properties["bpm:percentComplete"]}",
       "resources":

@@ -40,8 +40,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -86,7 +86,7 @@ public class RepoStore implements Store, TenantDeployer
     protected FileFolderService fileService;
     protected NamespaceService namespaceService;
     protected PermissionService permissionService;
-    protected TenantService tenantService;
+    protected TenantAdminService tenantAdminService;
 
     
     /**
@@ -146,11 +146,11 @@ public class RepoStore implements Store, TenantDeployer
     }
     
     /**
-     * Sets the tenant deployer service
+     * Sets the tenant admin service
      */
-    public void setTenantService(TenantService tenantService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
-        this.tenantService = tenantService;
+        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -200,12 +200,12 @@ public class RepoStore implements Store, TenantDeployer
      */
     public void destroy()
     {
-        baseNodeRefs.remove(tenantService.getCurrentUserDomain());
+        baseNodeRefs.remove(tenantAdminService.getCurrentUserDomain());
     }
     
     private NodeRef getBaseNodeRef()
     {
-        String tenantDomain = tenantService.getCurrentUserDomain();
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef baseNodeRef = baseNodeRefs.get(tenantDomain);
         if (baseNodeRef == null)
         {

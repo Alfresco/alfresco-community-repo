@@ -57,7 +57,7 @@ public class BaseServicePortContentTest extends BaseServicePortTest
 {
     protected CheckOutCheckInService checkOutCheckInService;
 
-    private static final String IMPORT = "alfresco/import-for-cmis-ws-test.acp";
+    private static final String IMPORT = "import-for-cmis-ws-test.acp";
 
     protected static final String L0_FILE_0 = "L0-File-0";
     protected static final String L0_FILE_1 = "L0-File-1";

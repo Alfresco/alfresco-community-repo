@@ -123,7 +123,7 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     @Override
     protected String[] getConfigLocations()
     {
-        return new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/test-cmis-context.xml" };
+        return new String[] { "classpath:alfresco/application-context.xml", "classpath:test-cmis-context.xml" };
     }
 
 }

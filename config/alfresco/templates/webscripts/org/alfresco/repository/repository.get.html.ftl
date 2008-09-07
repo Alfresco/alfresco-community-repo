@@ -1,10 +1,10 @@
 <#import "/org/alfresco/webscripts.lib.html.ftl" as wsLib/>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <@wsLib.head>Alfresco CMIS v${cmisVersion}</@wsLib.head>
+  <@wsLib.head>Alfresco Draft CMIS Implementation v${cmisVersion}</@wsLib.head>
   <body>
     <div>
-    <@wsLib.header>Alfresco CMIS v${cmisVersion}</@wsLib.header>
+    <@wsLib.header>Alfresco Draft CMIS Implementation v${cmisVersion}</@wsLib.header>
     <br/>
     <span class="mainSubTitle">Introduction</span>
     <table>
@@ -23,7 +23,7 @@
         </tr>
         <tr><td><ul><li><a href="${url.serviceContext}/index/family/CMIS">CMIS REST API Reference</a></li></ul></td></tr>
     </table>
-    <span class="mainSubTitle">REST TEST</span>
+    <span class="mainSubTitle">REST API Binding Test Harness</span>
     <table>
         <tr><td>The following test harness exercises the CMIS REST API binding.  By default, its parameters are setup to this
                 repository, although any CMIS REST provider may be tested.</td></tr>

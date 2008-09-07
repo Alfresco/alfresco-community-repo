@@ -80,16 +80,18 @@ public class InviteServiceTest extends BaseWebScriptTest
 
     private static final String WF_DEFINITION_INVITE = "jbpm$wf:invite";
 
-    private static final String USER_ADMIN = "admin";
     private static final String USER_INVITER = "InviterUser";
+    private static final String USER_INVITER_2 = "InviterUser2";
     private static final String INVITEE_FIRSTNAME = "InviteeFirstName";
     private static final String INVITEE_LASTNAME = "InviteeLastName";
     private static final String INVITER_EMAIL = "FirstName123.LastName123@email.com";
+    private static final String INVITER_EMAIL_2 = "FirstNameabc.LastNameabc@email.com";
     private static final String INVITEE_EMAIL_DOMAIN = "alfrescotesting.com";
     private static final String INVITEE_EMAIL_PREFIX = "invitee";
     private static final String INVITEE_SITE_ROLE = SiteModel.SITE_COLLABORATOR;
-    private static final String SITE_SHORT_NAME_INVITE_1 = "BananaMilkshakeSite";
-    private static final String SITE_SHORT_NAME_INVITE_2 = "DoubleScoopSite";
+    private static final String SITE_SHORT_NAME_INVITE_1 = "SiteOneInviteTest";
+    private static final String SITE_SHORT_NAME_INVITE_2 = "SiteTwoInviteTest";
+    private static final String SITE_SHORT_NAME_INVITE_3 = "SiteThreeInviteTest";
 
     private static final String URL_INVITE = "/api/invite";
     private static final String URL_INVITES = "/api/invites";
@@ -103,65 +105,80 @@ public class InviteServiceTest extends BaseWebScriptTest
         super.setUp();
 
         // get references to services
-        this.authorityService = (AuthorityService) getServer()
-                .getApplicationContext().getBean("AuthorityService");
-        this.authenticationService = (AuthenticationService) getServer()
-                .getApplicationContext().getBean("AuthenticationService");
-        this.authenticationComponent = (AuthenticationComponent) getServer()
-                .getApplicationContext().getBean("AuthenticationComponent");
-        this.personService = (PersonService) getServer()
-                .getApplicationContext().getBean("PersonService");
-        this.siteService = (SiteService) getServer().getApplicationContext()
-                .getBean("siteService");
-        this.nodeService = (NodeService) getServer().getApplicationContext()
-                .getBean("NodeService");
-        this.workflowService = (WorkflowService) getServer()
-                .getApplicationContext().getBean("WorkflowService");
-        this.mutableAuthenticationDao = (MutableAuthenticationDao) getServer()
-                .getApplicationContext().getBean("authenticationDao");
+        this.authorityService = (AuthorityService) getServer().getApplicationContext().getBean("AuthorityService");
+        this.authenticationService = (AuthenticationService) getServer().getApplicationContext()
+                .getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext()
+                .getBean("AuthenticationComponent");
+        this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
+        this.siteService = (SiteService) getServer().getApplicationContext().getBean("SiteService");
+        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+        this.workflowService = (WorkflowService) getServer().getApplicationContext().getBean("WorkflowService");
+        this.mutableAuthenticationDao = (MutableAuthenticationDao) getServer().getApplicationContext()
+                .getBean("authenticationDao");
 
         // Create new invitee email address list
         this.inviteeEmailAddrs = new ArrayList<String>();
 
         //
-        // various setup operations which need to be run as 'admin'
+        // various setup operations which need to be run as system user
         //
-        RunAsWork<Object> runAsWork = new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                // Create inviter
+                // Create inviter person
                 createPerson(USER_INVITER, INVITER_EMAIL);
-
-                // Create sites for Inviter to invite Invitee to
-                SiteInfo siteInfo1 = InviteServiceTest.this.siteService
-                                        .getSite(SITE_SHORT_NAME_INVITE_1);
-                if (siteInfo1 == null)
+                
+                // Create inviter2 person
+                createPerson(USER_INVITER_2, INVITER_EMAIL_2);
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
+        //
+        // various setup operations which need to be run as inviter user
+        //
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // Create first site for Inviter to invite Invitee to
+                SiteInfo siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_1);
+                if (siteInfo == null)
                 {
-                    InviteServiceTest.this.siteService.createSite(
-                            "InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
+                    siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_1,
                             "InviteSiteTitle", "InviteSiteDescription", true);
-                    
-                    InviteServiceTest.this.siteService.setMembership(
-                            SITE_SHORT_NAME_INVITE_1, USER_INVITER, SiteModel.SITE_MANAGER);
                 }
                 
-                SiteInfo siteInfo2 = InviteServiceTest.this.siteService
-                                        .getSite(SITE_SHORT_NAME_INVITE_2);
-                if (siteInfo2 == null)
+                // Create second site for inviter to invite invitee to
+                siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE_2);
+                if (siteInfo == null)
                 {
-                    InviteServiceTest.this.siteService.createSite(
-                            "InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
+                    siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE_2,
                             "InviteSiteTitle", "InviteSiteDescription", true);
-                    
-                    InviteServiceTest.this.siteService.setMembership(
-                            SITE_SHORT_NAME_INVITE_2, USER_INVITER, SiteModel.SITE_MANAGER);
+                }
+
+                // Create third site for inviter to invite invitee to
+                siteInfo = InviteServiceTest.this.siteService.getSite(SITE_SHORT_NAME_INVITE_3);
+                if (siteInfo == null)
+                {
+                    siteService.createSite(
+                        "InviteSitePreset", SITE_SHORT_NAME_INVITE_3,
+                        "InviteSiteTitle", "InviteSiteDescription", true);
+                }
+                
+                // set inviter2's role on third site to collaborator
+                String inviterSiteRole = siteService.getMembersRole(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2);
+                if ((inviterSiteRole == null) || (inviterSiteRole.equals(SiteModel.SITE_COLLABORATOR) == false))
+                {
+                    siteService.setMembership(SITE_SHORT_NAME_INVITE_3, USER_INVITER_2, SiteModel.SITE_COLLABORATOR);
                 }
 
                 return null;
             }
-        };
-        AuthenticationUtil.runAs(runAsWork, USER_ADMIN);
+        }, USER_INVITER);
 
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_INVITER);
@@ -210,7 +227,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 return null;
             }
         };
-        AuthenticationUtil.runAs(runAsWork, USER_ADMIN);
+        AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
 
         // cancel all active invite workflows
         WorkflowDefinition wfDef = InviteServiceTest.this.workflowService
@@ -422,22 +439,30 @@ public class InviteServiceTest extends BaseWebScriptTest
         final String inviteeEmailAddr = INVITEE_EMAIL_PREFIX + randomStr
             + "@" + INVITEE_EMAIL_DOMAIN;
         
+        // create person with invitee user name and invitee email address 
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                // create person with invitee user name and invitee email address 
                 createPerson(inviteeUserName, inviteeEmailAddr);
+                return null;
+            }
+    
+        }, AuthenticationUtil.getSystemUserName());
+        
+        // add invitee person to site: SITE_SHORT_NAME_INVITE
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
                 
-                // add invitee person to site: SITE_SHORT_NAME_INVITE
                 InviteServiceTest.this.siteService.setMembership(
                         SITE_SHORT_NAME_INVITE_1, inviteeUserName,
                         INVITEE_SITE_ROLE);
-                
                 return null;
             }
             
-        }, USER_ADMIN);
+        }, USER_INVITER);
         
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmailAddr, INVITEE_SITE_ROLE, 
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_CONFLICT);
@@ -630,5 +655,13 @@ public class InviteServiceTest extends BaseWebScriptTest
         JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
 
         assertEquals(siteShortName, inviteJSONObj.getJSONObject("site").get("shortName"));
+    }
+    
+    public void testInviteForbiddenWhenInviterNotSiteManager() throws Exception
+    {
+        // inviter2 starts invite workflow, but he/she is not the site manager of the given site
+        AuthenticationUtil.setCurrentUser(USER_INVITER_2);
+        startInvite(INVITEE_FIRSTNAME,
+                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_3, Status.STATUS_FORBIDDEN);
     }
 }

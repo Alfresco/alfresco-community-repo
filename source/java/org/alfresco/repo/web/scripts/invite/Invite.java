@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -494,6 +495,16 @@ public class Invite extends DeclarativeWebScript
         // - in this method set the current user to the system user for some
         // - odd reason
         String inviterUserName = this.authenticationService.getCurrentUserName();
+        
+        // if inviter is not the site manager then throw web script exception
+        String inviterRole = this.siteService.getMembersRole(siteShortName, inviterUserName);
+        if ((inviterRole == null) || (inviterRole.equals(SiteModel.SITE_MANAGER) == false))
+        {
+            throw new WebScriptException(Status.STATUS_FORBIDDEN,
+                    "Cannot proceed with invitation. Inviter with user name : '" + inviterUserName
+                    + "' is not the Site Manager of site: '" + siteShortName + "'. Inviter's role on that site is: '"
+                    + inviterRole + "'");
+        }
         
         //
         // if a person already exists who has the given invitee email address
